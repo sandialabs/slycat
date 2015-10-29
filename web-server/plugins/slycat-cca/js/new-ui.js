@@ -13,6 +13,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
     component.cca_type = ko.observable("local"); // local is selected by default...
+    component.row_count = ko.observable(null);
 
     component.cancel = function() {
       if(component.remote.sid())
@@ -57,6 +58,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         arrays: "0",
         statistics: "0/...",
         success: function(metadata) {
+          component.row_count(metadata.arrays[0].shape[0]); // Set number of rows
           var attributes = [];
           for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
           {
@@ -156,36 +158,47 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           output_columns.push(i);
       }
 
-      client.put_model_parameter({
-        mid: component.model._id(),
-        aid: "input-columns",
-        value: input_columns,
-        input: true,
-        success: function() {
-          client.put_model_parameter({
-            mid: component.model._id(),
-            aid: "output-columns",
-            value: output_columns,
-            input: true,
-            success: function() {
-              client.put_model_parameter({
-                mid: component.model._id(),
-                aid: "scale-inputs",
-                value: component.scale_inputs(),
-                input: true,
-                success: function() {
-                  client.post_model_finish({
-                    mid: component.model._id(),
-                    success: function() {
-                      component.tab(6);
-                    }
-                  });
-                }
-              });
-            }
-          });
-        }
-      });
+      if( input_columns.length > component.row_count() || output_columns.length > component.row_count() )
+      {
+        dialog.dialog({
+          message:"The number of outputs and inputs must be less than or equal to " + component.row_count() + ", because that is the number of rows in the data."
+        })();
+      }
+      else
+      {
+        client.put_model_parameter({
+          mid: component.model._id(),
+          aid: "input-columns",
+          value: input_columns,
+          input: true,
+          success: function() {
+            client.put_model_parameter({
+              mid: component.model._id(),
+              aid: "output-columns",
+              value: output_columns,
+              input: true,
+              success: function() {
+                client.put_model_parameter({
+                  mid: component.model._id(),
+                  aid: "scale-inputs",
+                  value: component.scale_inputs(),
+                  input: true,
+                  success: function() {
+                    client.post_model_finish({
+                      mid: component.model._id(),
+                      success: function() {
+                        component.tab(6);
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+
+      
     };
 
     return component;
