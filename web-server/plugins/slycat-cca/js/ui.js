@@ -504,12 +504,23 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       controls_ready = true;
 
       var color_variables = [];
-      for(var i = 0; i < table_metadata["column-types"].length; i++)
+      // Last column is the index, so it goes first
+      color_variables.push(table_metadata["column-count"] - 1);
+      // Then we add inputs
+      for(var i = 0; i < input_columns.length; i++)
       {
-        if(table_metadata["column-types"][i] != "string")
-        {
+        color_variables.push(input_columns[i]);
+      }
+      // Followed by outputs
+      for(var i = 0; i < output_columns.length; i++)
+      {
+        color_variables.push(output_columns[i]);
+      }
+      // Finally the others
+      for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
+      {
+        if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 && table_metadata["column-types"][i] != "string")
           color_variables.push(i);
-        }
       }
 
       var color_variable = table_metadata["column-count"] - 1;
