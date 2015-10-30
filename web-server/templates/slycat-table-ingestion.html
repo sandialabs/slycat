@@ -40,7 +40,11 @@
         visible: !hidden(),
         css: {
           'selected': selected(),
-          'lastSelected': lastSelected()
+          'lastSelected': lastSelected(),
+          'disabled': constant()
+        },
+        attr: {
+          'title': tooltip ? tooltip() : false
         }
       ">
         <th data-bind="
@@ -76,7 +80,8 @@
                       name: variable.name()+$parent.name, 
                       value: $data
                     },
-                    checked: variable[$parent.name]
+                    checked: variable[$parent.name],
+                    disable: variable.disabled()
                   "
                 />
               </td>

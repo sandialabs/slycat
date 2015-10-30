@@ -26,7 +26,11 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
       });
 
       component.select = function(variable, event) {
-        if(event.shiftKey)
+        if(variable.disabled())
+        {
+          return;
+        }
+        else if(event.shiftKey)
         {
           var lastSelectedIndex = -1;
           var currentIndex = component.variables.indexOf(variable);
@@ -47,7 +51,10 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
           var end = Math.max(lastSelectedIndex, currentIndex);
           for(var i = begin; i <= end; i++)
           {
-            component.variables()[i].selected(true);
+            if(!component.variables()[i].disabled())
+            {
+              component.variables()[i].selected(true);
+            }
           }
           variable.lastSelected(true);
         }
@@ -59,6 +66,7 @@ require(["slycat-server-root", "knockout", "knockout-mapping"], function(server_
           }
           variable.selected( !variable.selected() );
           variable.lastSelected( variable.selected() );
+
         }
         else
         {

@@ -468,6 +468,10 @@ slycat-navbar .alert pre
   user-select: none;
   cursor: pointer;
 }
+.slycat-table-ingestion tbody tr.disabled th
+{
+  cursor: default;
+}
 .slycat-table-ingestion tbody tr:nth-child(odd) {
   background-color: #F2F2F2;
 }
@@ -478,6 +482,10 @@ slycat-navbar .alert pre
 .slycat-table-ingestion tbody tr.selected th
 {
   color: white;
+}
+.slycat-table-ingestion tbody tr.disabled th
+{
+  color: #cccccc;
 }
 
 /* New PIP model wizard */
