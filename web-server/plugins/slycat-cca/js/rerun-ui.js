@@ -34,10 +34,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             name: name, 
             type: type, 
             constant: constant,
+            disabled: constant,
             Classification: 'Neither',
             hidden: type == "string",
             selected: false,
-            lastSelected: false
+            lastSelected: false,
+            tooltip: constant ? "This variable's values are all identical, so it cannot be included in the analysis." : ""
           });
         }
         mapping.fromJS(attributes, component.attributes);
