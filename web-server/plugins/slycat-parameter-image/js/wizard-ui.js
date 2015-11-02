@@ -76,7 +76,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   Editable: false,
                   hidden: media_columns.indexOf(i) !== -1,
                   selected: false,
-                  lastSelected: false
+                  lastSelected: false,
+                  disabled: false,
+                  tooltip: ""
                 });
               mapping.fromJS(attributes, component.attributes);
               component.tab(5);

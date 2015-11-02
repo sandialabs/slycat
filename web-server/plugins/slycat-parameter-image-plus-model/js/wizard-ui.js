@@ -115,7 +115,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   Editable: false,
                   hidden: media_columns.indexOf(i) !== -1,
                   selected: false,
-                  lastSelected: false
+                  lastSelected: false,
+                  disabled: false,
+                  tooltip: ""
                 });
               }
               // find the first image column and set its name to component.cluster_column
