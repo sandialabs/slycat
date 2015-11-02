@@ -25,21 +25,36 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       success: function(metadata) {
         component.row_count(metadata.arrays[0].shape[0]); // Set number of rows
         var attributes = [];
+        var name = null;
+        var type = null;
+        var constant = null;
+        var string = null;
+        var tooltip = null;
         for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
         {
-          var name = metadata.arrays[0].attributes[i].name;
-          var type = metadata.arrays[0].attributes[i].type;
-          var constant = metadata.statistics[i].unique == 1;
+          name = metadata.arrays[0].attributes[i].name;
+          type = metadata.arrays[0].attributes[i].type;
+          constant = metadata.statistics[i].unique == 1;
+          string = type == "string";
+          tooltip = "";
+          if(string)
+          {
+            tooltip = "This variable's values contain strings, so it cannot be included in the analysis.";
+          }
+          else if(constant)
+          {
+            tooltip = "This variable's values are all identical, so it cannot be included in the analysis.";
+          }
           attributes.push({
             name: name, 
             type: type, 
             constant: constant,
-            disabled: constant,
+            disabled: constant || string,
             Classification: 'Neither',
-            hidden: type == "string",
+            hidden: false,
             selected: false,
             lastSelected: false,
-            tooltip: constant ? "This variable's values are all identical, so it cannot be included in the analysis." : ""
+            tooltip: tooltip
           });
         }
         mapping.fromJS(attributes, component.attributes);
