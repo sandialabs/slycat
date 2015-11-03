@@ -7,6 +7,8 @@ services:
   - couchdb
 
 before_install:
+  - sudo mkdir /var/lib/slycat/upload-store
+  - sudo chmod u+rw /var/lib/slycat/upload-store
   - env | sort
   - sudo apt-get update -qq
   - sudo apt-get install -y python-software-properties ssh
