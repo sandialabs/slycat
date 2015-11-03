@@ -7,7 +7,7 @@ services:
   - couchdb
 
 before_install:
-  - sudo mkdir /var/lib/slycat/upload-store
+  - sudo mkdir -p /var/lib/slycat/upload-store
   - sudo chmod u+rw /var/lib/slycat/upload-store
   - env | sort
   - sudo apt-get update -qq
