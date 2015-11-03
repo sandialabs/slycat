@@ -95,6 +95,7 @@ class Connection(object):
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
   def __init__(self, host="http://localhost:8092", **keywords):
+    print(host, keywords)
     self.host = host
     self.keywords = keywords
     self.session = requests.Session()
