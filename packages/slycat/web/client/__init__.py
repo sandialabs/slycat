@@ -94,10 +94,11 @@ class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
-  def __init__(self, host="http://localhost:8092", **keywords):
+  def __init__(self, host="http://localhost:8092", ssl_verify=True, **keywords):
     self.host = host
     self.keywords = keywords
     self.session = requests.Session()
+    self.ssl_verify = ssl_verify
 
   def request(self, method, path, **keywords):
     """Makes a request with the given HTTP method and path, returning the body of
@@ -113,7 +114,7 @@ class Connection(object):
     log_message = "{} {} {}".format(keywords.get("auth", ("", ""))[0], method, uri)
 
     try:
-      response = self.session.request(method, uri, **keywords)
+      response = self.session.request(method, uri, verify=self.ssl_verify, **keywords)
 
       log_message += " => {} {}".format(response.status_code, response.raw.reason)
 

@@ -138,12 +138,12 @@ def require_valid_model(model, name=None, mtype=None, creator=None):
 
 @given(u'a running Slycat server.')
 def step_impl(context):
-  context.server_admin = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.server_admin_user, context.server_admin_password))
-  context.project_admin = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_admin_user, context.project_admin_password))
-  context.project_writer = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_writer_user, context.project_writer_password))
-  context.project_reader = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_reader_user, context.project_reader_password))
-  context.project_outsider = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_outsider_user, context.project_outsider_password))
-  context.unauthenticated_user = slycat.web.client.Connection(host=context.server_host, proxies={"http":context.server_proxy, "https":context.server_proxy})
+  context.server_admin = slycat.web.client.Connection(host=context.server_host, ssl_verify=False, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.server_admin_user, context.server_admin_password))
+  context.project_admin = slycat.web.client.Connection(host=context.server_host, ssl_verify=False, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_admin_user, context.project_admin_password))
+  context.project_writer = slycat.web.client.Connection(host=context.server_host, ssl_verify=False, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_writer_user, context.project_writer_password))
+  context.project_reader = slycat.web.client.Connection(host=context.server_host, ssl_verify=False, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_reader_user, context.project_reader_password))
+  context.project_outsider = slycat.web.client.Connection(host=context.server_host, ssl_verify=False, proxies={"http":context.server_proxy, "https":context.server_proxy}, auth=(context.project_outsider_user, context.project_outsider_password))
+  context.unauthenticated_user = slycat.web.client.Connection(host=context.server_host, ssl_verify=False, proxies={"http":context.server_proxy, "https":context.server_proxy})
   context.server_admin.get_configuration_version()
 
 @given(u'a default project.')
