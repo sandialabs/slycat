@@ -46,8 +46,6 @@ def register_slycat_plugin(context):
     authorization = cherrypy.request.headers.get("authorization")
     if authorization is None:
       cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
-      # Not sure if email should be sent for this error: it is generated everytime a new user hit the homepage...
-      # slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authentication required.")
       raise cherrypy.HTTPError(401, "Authentication required.")
 
     # Parse the client's authentication response.
@@ -128,7 +126,7 @@ def register_slycat_plugin(context):
     # Authentication failed, tell the client to try again.
     cherrypy.log.error("%s@%s: Password check failed." % (username, remote_ip))
     cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
-    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authentication required.")
+    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 401 authentication failed for user %s." % username)
     raise cherrypy.HTTPError(401, "Authentication required.")
 
   authenticate.password_check = None

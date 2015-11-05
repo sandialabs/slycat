@@ -752,13 +752,13 @@ def create_session(hostname, username, password, agent):
 
     if agent:
       if hostname not in remote_hosts:
-        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 400 missing agent configuration")
+        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 400 host %s not in allowed remote hosts." % hostname)
         raise cherrypy.HTTPError("400 Missing agent configuration.")
       if "agent" not in remote_hosts[hostname]:
-        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 400 missing agent configuration")
+        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 400 missing agent configuration for host %s." % hostname)
         raise cherrypy.HTTPError("400 Missing agent configuration.")
       if "command" not in remote_hosts[hostname]["agent"]:
-        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 400 missin agent configuration")
+        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 missing agent configuration for host %s: missing command keyword." % hostname)
         raise cherrypy.HTTPError("500 Missing agent configuration.")
 
       cherrypy.log.error("Starting agent executable for %s@%s with command: %s" % (username, hostname, remote_hosts[hostname]["agent"]["command"]))
@@ -767,11 +767,11 @@ def create_session(hostname, username, password, agent):
       try:
         startup = json.loads(stdout.readline())
       except Exception as e:
-        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 agent startup failed: %s." % str(e))
+        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 agent startup failed for host %s: %s." % (hostname, str(e)))
         raise cherrypy.HTTPError("500 Agent startup failed: %s" % str(e))
       # Handle clean startup failures (the agent process started, but reported an error).
       if not startup["ok"]:
-        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 agent startup failed: %s." % startup["message"])
+        slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 agent startup failed for host %s: %s." % (hostname, startup["message"]))
         raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
       agent = (stdin, stdout, stderr)
       with session_cache_lock:
@@ -819,11 +819,11 @@ def get_session(sid):
       if client != session.client:
         cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (client, session.username, session.hostname, session.client))
         del session_cache[sid]
-        slycat.email.send_error("slycat.web.server.remote.py get_session", "cherrypy.HTTPError 404")
+        slycat.email.send_error("slycat.web.server.remote.py get_session", "cherrypy.HTTPError 404: client %s attempted to access remote session for %s@%s from %s" % (client, session.username, session.hostname, session.client))
         raise cherrypy.HTTPError("404")
 
     if sid not in session_cache:
-      slycat.email.send_error("slycat.web.server.remote.py get_session", "cherrypy.HTTPError 404")
+      slycat.email.send_error("slycat.web.server.remote.py get_session", "cherrypy.HTTPError 404: requested session is not in session cache.")
       raise cherrypy.HTTPError("404")
 
     session = session_cache[sid]
