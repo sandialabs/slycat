@@ -29,15 +29,18 @@ def register_slycat_plugin(context):
     "csv" : csv_distance,
     }
 
-  # Maps the slycat-agent functions to their respective output files
-  filenames = {
-    "jaccard-distance": "slycat_jaccard_distance_matrix.csv",
-    "jaccard2-distance": "slycat_jaccard2_distance_matrix.csv",
-    "one-norm-distance": "slycat_one-norm_distance_matrix.csv",
-    "correlation-distance": "slycat_correlation_distance_matrix.csv",
-    "cosine-distance": "slycat_cosine_distance_matrix.csv",
-    "hamming-distance": "slycat_hamming_distance_matrix.csv"
+  # Maps the slycat-agent functions to their respective distance matrix type
+  distance_matrix_types = {
+    "jaccard-distance": "jaccard",
+    "jaccard2-distance": "jaccard2",
+    "one-norm-distance": "one-norm",
+    "correlation-distance": "correlation",
+    "cosine-distance": "cosine",
+    "hamming-distance": "hamming"
   }
+
+  def generate_filename(column, uid, type):
+    return "slycat_%s_%s_%s_distance_matrix.csv" % (column, uid, type)
 
   def compute_distance(left, right, storage, cluster_name, measure_name, measure, columns):
     distance = numpy.empty(len(left))
@@ -239,16 +242,18 @@ def register_slycat_plugin(context):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
+    uid = kwargs["uid"]
+    columns = kwargs["fn_params"]["columns"]
     output_path = "/".join(kwargs["fn_params"]["input"].split("/")[:-1])
 
     def callback():
-      slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, filenames[fn]), "distance-matrix", "slycat-csv-parser")
+      slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, generate_filename(columns[0], uid, distance_matrix_types[fn])), "distance-matrix", "slycat-csv-parser")
       media_columns(database, model, verb, type, command)
       slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
       finish(database, model)
 
     stop_event = threading.Event()
-    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback, "%s/%s" % (output_path, filenames[fn])))
+    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback, "%s/%s" % (output_path, generate_filename(columns[0], uid, distance_matrix_types[fn]))))
     t.start()
 
     return json.dumps({"ok":True})

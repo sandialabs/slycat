@@ -7,6 +7,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.project = params.projects()[0];
     component.cluster_linkage = ko.observable("average"); // average is selected by default...
     component.cluster_column = ko.observable(false);
+    component.cluster_columns = ko.observableArray();
     component.ps_type = ko.observable("remote"); // local is selected by default...
     component.is_compute = ko.observable("no_compute");
     component.matrix_type = ko.observable("remote"); // local is selected by default...
@@ -24,9 +25,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       });
     });
     component.image_attributes.subscribe(function(newValue){
-      if(this.target().length > 0)
-      {
+      if(this.target().length > 0) {
         component.cluster_column( this.target()[0].name() );
+        this.target().forEach(function(t) {
+          component.cluster_columns.push(t.name());
+        });
       }
     });
     component.server_root = server_root;

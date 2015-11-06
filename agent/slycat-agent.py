@@ -165,8 +165,9 @@ def run_function(command):
   time_minutes = command["command"]["time_minutes"]
   time_seconds = command["command"]["time_seconds"]
   fn = command["command"]["fn"]
+  uid = command["command"]["uid"]
 
-  filename = "batch.slycat-%s.bash" % time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
+  filename = "batch.slycat-%s.bash" % uid
   generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, filename)
   results["output"], results["errors"] = run_remote_command("sbatch %s" % filename)
 
