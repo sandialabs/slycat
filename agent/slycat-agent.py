@@ -140,9 +140,6 @@ def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_t
   f.write("#SBATCH --account=%s\n" % wckey)
   f.write("#SBATCH --job-name=slycat-tmp\n")
   f.write("#SBATCH --partition=%s\n\n" % partition)
-  f.write("nodes=$SLURM_JOB_NUM_NODES\n")
-  f.write("cores=8\n\n")
-  f.write("export TMPDIR=/tmp/$SLURM_JOB_ID\n\n")
   
   for c in fn:
     f.write("%s\n" % c)
