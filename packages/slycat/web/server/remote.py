@@ -321,7 +321,7 @@ class Session(object):
       def create_distance_matrix(fn_id, params):
         f = restricted_fns[fn_id]
         path = "/".join(params["input"].split("/")[:-1])
-        return ["module load slycat-dev", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s %s/slycat_%s_distance_matrix.csv" % (f, params["column"], params["input"], path, f)]
+        return ["source /etc/profile.d/modules.sh", "module load slycat-dev", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s %s/slycat_%s_distance_matrix.csv" % (f, params["column"], params["input"], path, f)]
 
       def agent_functions(fn_id, params):
         # agent_function is a placeholder for the future:
