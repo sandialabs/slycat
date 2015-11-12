@@ -1,6 +1,6 @@
 ## Synopsis
 
-The goal of this repo is to contain the **project notes** for Sandia national labs work.
+The goal of this repo is to contain the **project tests** for Sandia national labs slycat work.
 
 ## Code Example
 
