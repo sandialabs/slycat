@@ -21,7 +21,7 @@ behave -i "(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)"
 ```
 **Running E2E tests**
 
-From the steps directory from any computer:
+From the steps directory from any computer that can connect to slycat:
 
 ```bash
 TODO: add run command
