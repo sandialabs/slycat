@@ -13,13 +13,16 @@ We need to test our code
 ## Installation
 
 **Running all tests**
+
 From the steps directory in the docker container:
 ```bash
 pip install behave
 behave -i "(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)"
 ```
-From the steps directory from any computer:
 **Running E2E tests**
+
+From the steps directory from any computer:
+
 ```bash
 TODO: add run command
 ```
