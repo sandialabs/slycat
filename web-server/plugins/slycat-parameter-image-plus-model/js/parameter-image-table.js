@@ -534,11 +534,11 @@ $.widget("parameter_image.table",
       var cssClasses = "";
       for(var i=0; i != column_end; i++) {
         if(row[ self.analysis_columns[i] ]==null) {
-          cssClasses += "nullRow";
+          cssClasses += "nullRow ";
         }
       }
       if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
-        cssClasses += "hiddenRow";
+        cssClasses += "hiddenRow ";
       }
       if(cssClasses != "")
         return {"cssClasses" : cssClasses};

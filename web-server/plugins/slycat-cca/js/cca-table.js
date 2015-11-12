@@ -108,6 +108,13 @@ define("slycat-cca-table", ["d3"], function(d3)
 
       self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
 
+      self.data.onDataLoaded.subscribe(function (e, args) {
+        for (var i = args.from; i <= args.to; i++) {
+          self.grid.invalidateRow(i);
+        }
+        self.grid.render();
+      });
+
       var header_buttons = new Slick.Plugins.HeaderButtons();
       header_buttons.onCommand.subscribe(function(e, args)
       {
@@ -185,6 +192,21 @@ define("slycat-cca-table", ["d3"], function(d3)
     {
       var self = this;
       self.grid.resizeCanvas();
+    },
+
+    update_data: function()
+    {
+      var self = this;
+      self.data.invalidate();
+      self.grid.invalidate();
+      self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
+      {
+        self.trigger_row_selection = false;
+        self.grid.setSelectedRows(sorted_rows);
+        self.grid.resetActiveCell();
+        if(sorted_rows.length)
+          self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
+      });
     },
 
     _setOption: function(key, value)
@@ -269,7 +291,10 @@ define("slycat-cca-table", ["d3"], function(d3)
       self.ranked_indices = {};
 
       self.pages = {};
+      self.pages_in_progress = {};
       self.page_size = 50;
+
+      self.onDataLoaded = new Slick.Event();
 
       self.getLength = function()
       {
@@ -283,46 +308,83 @@ define("slycat-cca-table", ["d3"], function(d3)
         var page = Math.floor(index / self.page_size);
         var page_begin = page * self.page_size;
 
+        if(self.pages_in_progress[page])
+        {
+          return null;
+        }
+
         if(!(page in self.pages))
         {
+          self.pages_in_progress[page] = true;
           var row_begin = page_begin;
           var row_end = (page + 1) * self.page_size;
 
           var sort = "";
           if(self.sort_column !== null && self.sort_order !== null)
-            sort = "&sort=" + self.sort_column + ":" + self.sort_order;
+          {
+            var sort_column = "a" + self.sort_column;
+            var sort_order = self.sort_order;
+            if(sort_order == 'ascending')
+            {
+              sort_order = 'asc';
+            }
+            else if(sort_order == 'descending')
+            {
+              sort_order = 'desc';
+            }
+            if(self.sort_column == self.metadata["column-count"]-1)
+              sort_column = "index(0)";
+            sort = "/order: rank(" + sort_column + ', "' + sort_order + '")';
+          }
 
           $.ajax(
           {
             type : "GET",
-            url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
-            async : false,
+            url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
             success : function(data)
             {
-              self.pages[page] = data;
+              self.pages[page] = [];
+              for(var i=0; i < data[0].length; i++)
+              {
+                result = {};
+                for(var j = column_begin; j != column_end; ++j)
+                {
+                  result[j] = data[j][i];
+                }
+                self.pages[page].push(result);
+              }
+              self.pages_in_progress[page] = false;
+              self.onDataLoaded.notify({from: row_begin, to: row_end});
             },
             error: function(request, status, reason_phrase)
             {
               console.log("error", request, status, reason_phrase);
             }
           });
+          return null;
         }
 
-        result = {};
-        for(var i = column_begin; i != column_end; ++i)
-          result[i] = self.pages[page].data[i][index - page_begin];
-        return result;
+        return self.pages[page][index - page_begin];
       }
 
       self.getItemMetadata = function(index)
       {
+        var page = Math.floor(index / self.page_size);
+        if((self.pages_in_progress[page]) || !(page in self.pages))
+        {
+          return null;
+        }
+
         var row = this.getItem(index);
         var column_end = self.analysis_columns.length;
+        var cssClasses = "";
         for(var i=0; i != column_end; i++) {
           if(row[ self.analysis_columns[i] ]==null) {
-            return {"cssClasses" : "nullRow"};
+            cssClasses += "nullRow";
           }
         }
+        if(cssClasses != "")
+          return {"cssClasses" : cssClasses};
         return null;
       }
 
