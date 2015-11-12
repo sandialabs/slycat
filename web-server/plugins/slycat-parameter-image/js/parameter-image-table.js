@@ -510,9 +510,18 @@ $.widget("parameter_image.table",
         if(self.sort_column !== null && self.sort_order !== null)
         {
           var sort_column = "a" + self.sort_column;
+          var sort_order = self.sort_order;
+          if(sort_order == 'ascending')
+          {
+            sort_order = 'asc';
+          }
+          else if(sort_order == 'descending')
+          {
+            sort_order = 'desc';
+          }
           if(self.sort_column == self.metadata["column-count"]-1)
             sort_column = "index(0)";
-          sort = "/order: rank(" + sort_column + ', "' + self.sort_order + '")';
+          sort = "/order: rank(" + sort_column + ', "' + sort_order + '")';
         }
 
         $.ajax(
@@ -558,11 +567,11 @@ $.widget("parameter_image.table",
       var cssClasses = "";
       for(var i=0; i != column_end; i++) {
         if(row[ self.analysis_columns[i] ]==null) {
-          cssClasses += "nullRow";
+          cssClasses += "nullRow ";
         }
       }
       if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
-        cssClasses += "hiddenRow";
+        cssClasses += "hiddenRow ";
       }
       if(cssClasses != "")
         return {"cssClasses" : cssClasses};
