@@ -12,10 +12,16 @@ We need to test our code
 
 ## Installation
 
-From the steps directory
+**Running all tests**
+From the steps directory in the docker container:
 ```bash
 pip install behave
 behave -i "(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)"
+```
+From the steps directory from any computer:
+**Running E2E tests**
+```bash
+TODO: add run command
 ```
 
 ## Tests
@@ -27,7 +33,7 @@ Current **working tests** are
 - slycat-web-server
 - slycat-project
 
-## Contributors
+## Contributors/Maintainers 
 
 Matthew Letter mletter@sandia.gov.
 
