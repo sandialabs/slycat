@@ -14,6 +14,11 @@ def before_all(context):
   :return: not used
   """
   context.browser = webdriver.Firefox()
+  # Resize the window to the screen width/height
+  context.browser.set_window_size(800, 600)
+
+  # Move the window to position x/y
+  context.browser.set_window_position(200, 200)
   context.browser.implicitly_wait(2)
   context.server_url = 'https://slycat-dev.sandia.gov'
 
