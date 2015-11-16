@@ -186,20 +186,18 @@ function model_loaded()
   $(".load-status").text("Loading data.");
 
   // Load list of clusters.
-  var fetch_clusters = function(cluster_label) {
-    $.ajax({
-      url : server_root + "models/" + model_id + "/files/clusters-" + cluster_label,
-      contentType : "application/json",
-      success: function(result) {
-        clusters = result;
-        clusters_data = new Array(clusters.length);
-        retrieve_current_cluster();
-        setup_controls();
-        setup_dendrogram();
-      },
-      error: artifact_missing
-    });
-  };
+  $.ajax({
+    url : server_root + "models/" + model_id + "/files/clusters",
+    contentType : "application/json",
+    success: function(result) {
+      clusters = result;
+      clusters_data = new Array(clusters.length);
+      retrieve_current_cluster();
+      setup_controls();
+      setup_dendrogram();
+    },
+    error: artifact_missing
+  });
 
   // Load data table metadata.
   $.ajax({
@@ -210,8 +208,6 @@ function model_loaded()
       table_statistics = new Array(metadata["column-count"]);
       table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
       load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
-
-      fetch_clusters(table_metadata["column-names"][image_columns[0]]);
     },
     error: artifact_missing
   });
@@ -1259,9 +1255,6 @@ function cluster_selection_changed(variable)
 
 function update_dendrogram(cluster_index)
 {
-  console.log(clusters);
-  console.log(cluster_index);
-
   // Retrieve cluster data if it's not already in the cache
   if(clusters_data[cluster_index] === undefined) {
      $.ajax(

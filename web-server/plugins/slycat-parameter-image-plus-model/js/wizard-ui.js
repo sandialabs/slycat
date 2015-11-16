@@ -382,13 +382,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           image_columns.push(i);
       }
 
-      console.log('image-columns:');
-      console.log(image_columns);
-      console.log('cluster_column:');
-      console.log(component.cluster_column());
-      console.log('component.image_columns_names:');
-      console.log(component.image_columns_names());
-
       client.put_model_parameter({
         mid: component.model._id(),
         aid: "input-columns",
