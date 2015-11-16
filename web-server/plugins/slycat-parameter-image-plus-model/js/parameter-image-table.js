@@ -163,6 +163,13 @@ $.widget("parameter_image.table",
       editCommandHandler : self._editCommandHandler,
     });
 
+    self.data.onDataLoaded.subscribe(function (e, args) {
+      for (var i = args.from; i <= args.to; i++) {
+        self.grid.invalidateRow(i);
+      }
+      self.grid.render();
+    });
+
     var header_buttons = new Slick.Plugins.HeaderButtons();
     header_buttons.onCommand.subscribe(function(e, args)
     {
@@ -478,7 +485,10 @@ $.widget("parameter_image.table",
     self.ranked_indices = {};
 
     self.pages = {};
+    self.pages_in_progress = {};
     self.page_size = 50;
+
+    self.onDataLoaded = new Slick.Event();
 
     self.getLength = function()
     {
@@ -492,36 +502,60 @@ $.widget("parameter_image.table",
       var page = Math.floor(index / self.page_size);
       var page_begin = page * self.page_size;
 
+      if(self.pages_in_progress[page])
+      {
+        return null;
+      }
+
       if(!(page in self.pages))
       {
+        self.pages_in_progress[page] = true;
         var row_begin = page_begin;
         var row_end = (page + 1) * self.page_size;
 
         var sort = "";
         if(self.sort_column !== null && self.sort_order !== null)
-          sort = "&sort=" + self.sort_column + ":" + self.sort_order;
+        {
+          var sort_column = "a" + self.sort_column;
+          var sort_order = self.sort_order;
+          if(sort_order == 'ascending')
+          {
+            sort_order = 'asc';
+          }
+          else if(sort_order == 'descending')
+          {
+            sort_order = 'desc';
+          }
+          if(self.sort_column == self.metadata["column-count"]-1)
+            sort_column = "index(0)";
+          sort = "/order: rank(" + sort_column + ', "' + sort_order + '")';
+        }
 
         $.ajax(
         {
           type : "GET",
-          url : server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + row_begin + "-" + row_end + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
-          async : false,
+          url : server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
           success : function(data)
           {
             self.pages[page] = [];
-            for(var i=0; i < data.rows.length; i++)
+            for(var i=0; i < data[0].length; i++)
             {
               result = {};
               for(var j = column_begin; j != column_end; ++j)
-                result[j] = data.data[j][i];
+              {
+                result[j] = data[j][i];
+              }
               self.pages[page].push(result);
             }
+            self.pages_in_progress[page] = false;
+            self.onDataLoaded.notify({from: row_begin, to: row_end});
           },
           error: function(request, status, reason_phrase)
           {
             console.log("error", request, status, reason_phrase);
           }
         });
+        return null;
       }
 
       return self.pages[page][index - page_begin];
@@ -529,16 +563,22 @@ $.widget("parameter_image.table",
 
     self.getItemMetadata = function(index)
     {
+      var page = Math.floor(index / self.page_size);
+      if((self.pages_in_progress[page]) || !(page in self.pages))
+      {
+        return null;
+      }
+
       var row = this.getItem(index);
       var column_end = self.analysis_columns.length;
       var cssClasses = "";
       for(var i=0; i != column_end; i++) {
         if(row[ self.analysis_columns[i] ]==null) {
-          cssClasses += "nullRow";
+          cssClasses += "nullRow ";
         }
       }
       if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
-        cssClasses += "hiddenRow";
+        cssClasses += "hiddenRow ";
       }
       if(cssClasses != "")
         return {"cssClasses" : cssClasses};
