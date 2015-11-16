@@ -94,19 +94,12 @@ def register_slycat_plugin(context):
         column_data = list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", ".../.../..."))
         columns = []
 
-        cherrypy.log.error("*** columns: ***")
         for column_index, column_info in enumerate(column_infos):
-          cherrypy.log.error("*** %s ***" % column_info["name"])
-          cherrypy.log.error("*** column_index: %s ***" % column_index)
-          cherrypy.log.error("*** %s ***" % column_data[column_index])
           columns.append((column_info['name'], column_data[column_index]))
-
-        csv_distance.matrix = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix-%s" % image_columns_names[0], ".../.../..."))
 
         # Create a mapping from unique cluster names to column rows.
         clusters = collections.defaultdict(list)
         for column_index, (name, column) in enumerate(columns):
-          cherrypy.log.error("*** cluster name: %s ***" % name)
           if name not in image_columns_names:
             continue
           for row_index, row in enumerate(column):
@@ -118,8 +111,7 @@ def register_slycat_plugin(context):
         cluster_exemplars = {}
 
         for index, (name, storage) in enumerate(sorted(clusters.items())):
-
-          cherrypy.log.error("*** clusters items: %s ***" % name)
+          csv_distance.matrix = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix-%s" % name, ".../.../..."))
 
           progress_begin = float(index) / float(len(clusters))
           progress_end = float(index + 1) / float(len(clusters))
@@ -190,10 +182,7 @@ def register_slycat_plugin(context):
         model = database.get("model", mid)
 
         # Store each cluster.
-        cherrypy.log.error("*** clusters keys: ***")
         for key in clusters.keys():
-          cherrypy.log.error("*** key: %s ***" % key)
-
           database = slycat.web.server.database.couchdb.connect()
           model = database.get("model", mid)
 
