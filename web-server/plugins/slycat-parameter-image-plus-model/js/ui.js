@@ -52,8 +52,8 @@ var image_uri = document.createElement("a");
 var grid_pane = "#parameter-image-plus-layout";
 // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they are passed inside an array to keep them in sync.
 // http://api.jqueryui.com/jquery.widget/
-// All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
-// Arrays are the only exception, they are referenced as-is. 
+// All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget.
+// Arrays are the only exception, they are referenced as-is.
 // This exception is in place to support data-binding, where the data source has to be kept as a reference.
 var session_cache = {};
 var image_cache = {};
@@ -85,9 +85,9 @@ login_dialog.dialog({
 });
 
 // Enter key in password field triggers click on Login button
-$("#remote-password", login_dialog).keypress(function(event){ 
-  if(event.keyCode == 13) 
-  { 
+$("#remote-password", login_dialog).keypress(function(event){
+  if(event.keyCode == 13)
+  {
     $('.ui-dialog-buttonset', login_dialog.parent()).find('button:contains(Login)').trigger('click');
   }
 });
@@ -101,19 +101,19 @@ $("#parameter-image-plus-layout").layout(
   center:
   {
     // resizeWhileDragging: false,
-    // onresize: function() { 
+    // onresize: function() {
     //   $("#scatterplot").scatterplot("option", {
-    //     width: $("#scatterplot-pane").width(), 
+    //     width: $("#scatterplot-pane").width(),
     //     height: $("#scatterplot-pane").height()
-    //   }); 
+    //   });
     // },
   },
   west:
   {
     size: $("#parameter-image-plus-layout").width() / 2,
     resizeWhileDragging : false,
-    onresize: function() 
-    { 
+    onresize: function()
+    {
       $("#dendrogram-viewer").dendrogram("resize_canvas");
     }
   },
@@ -134,11 +134,11 @@ $("#model-pane").layout(
   center:
   {
     resizeWhileDragging: false,
-    onresize: function() { 
+    onresize: function() {
       $("#scatterplot").scatterplot("option", {
-        width: $("#scatterplot-pane").width(), 
+        width: $("#scatterplot-pane").width(),
         height: $("#scatterplot-pane").height()
-      }); 
+      });
     },
   }
 });
@@ -186,30 +186,32 @@ function model_loaded()
   $(".load-status").text("Loading data.");
 
   // Load list of clusters.
-  $.ajax({
-    url : server_root + "models/" + model_id + "/files/clusters",
-    contentType : "application/json",
-    success: function(result)
-    {
-      clusters = result;
-      clusters_data = new Array(clusters.length);
-      retrieve_current_cluster();
-      setup_controls();
-      setup_dendrogram();
-    },
-    error: artifact_missing
-  });
+  var fetch_clusters = function(cluster_label) {
+    $.ajax({
+      url : server_root + "models/" + model_id + "/files/clusters-" + cluster_label,
+      contentType : "application/json",
+      success: function(result) {
+        clusters = result;
+        clusters_data = new Array(clusters.length);
+        retrieve_current_cluster();
+        setup_controls();
+        setup_dendrogram();
+      },
+      error: artifact_missing
+    });
+  };
 
   // Load data table metadata.
   $.ajax({
     url : server_root + "models/" + model_id + "/tables/data-table/arrays/0/metadata?index=Index",
     contentType : "application/json",
-    success: function(metadata)
-    {
+    success: function(metadata) {
       table_metadata = metadata;
       table_statistics = new Array(metadata["column-count"]);
       table_statistics[metadata["column-count"]-1] = {"max": metadata["row-count"]-1, "min": 0};
       load_table_statistics(d3.range(metadata["column-count"]-1), metadata_loaded);
+
+      fetch_clusters(table_metadata["column-names"][image_columns[0]]);
     },
     error: artifact_missing
   });
@@ -246,7 +248,7 @@ function build_dendrogram_node_options(cluster_index)
   var dendrogram_options = {
     cluster: cluster_index,
   };
-  
+
   dendrogram_options.collapsed_nodes = bookmark[cluster_index  + "-collapsed-nodes"];
   dendrogram_options.expanded_nodes = bookmark[cluster_index  + "-expanded-nodes"];
   dendrogram_options.selected_nodes = bookmark[cluster_index  + "-selected-nodes"];
@@ -441,7 +443,7 @@ function metadata_loaded()
 
 function setup_dendrogram()
 {
-  if(!dendrogram_ready && bookmark && clusters != null && cluster_index != null && clusters_data != null 
+  if(!dendrogram_ready && bookmark && clusters != null && cluster_index != null && clusters_data != null
     && clusters_data[cluster_index] !== undefined && colorscale && v && selected_simulations != null
     && images !== null
     )
@@ -532,7 +534,7 @@ function setup_dendrogram()
 function setup_table()
 {
   if( !table_ready && table_metadata && (table_statistics.length == table_metadata["column-count"]) && colorscale
-    && bookmark && (x_index != null) && (y_index != null) && (images_index !== null) 
+    && bookmark && (x_index != null) && (y_index != null) && (images_index !== null)
     && (selected_simulations != null) && (hidden_simulations != null) )
   {
     table_ready = true;
@@ -542,7 +544,7 @@ function setup_table()
     var other_columns = [];
     for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
     {
-      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1 
+      if($.inArray(i, input_columns) == -1 && $.inArray(i, output_columns) == -1
         && $.inArray(i, rating_columns) == -1 && $.inArray(i, category_columns) == -1)
         other_columns.push(i);
     }
@@ -662,7 +664,7 @@ function setup_table()
     {
       // Changing the color variable updates the table ...
       $("#table").table("option", "variable-selection", [Number(variable)]);
-      
+
       // Handle changes to the color variable ...
       handle_color_variable_change(variable);
     });
@@ -759,7 +761,7 @@ function setup_scatterplot()
 
 function setup_controls()
 {
-  if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null) 
+  if( !controls_ready && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
     && indices
@@ -978,7 +980,7 @@ function selected_node_changed(parameters)
       url : server_root + "events/models/" + model_id + "/select/node/" + parameters.node["node-index"]
     });
   }
-  if(parameters.skip_bookmarking != true) 
+  if(parameters.skip_bookmarking != true)
   {
     var state = {};
     state[ cluster_index + "-selected-nodes" ] = getNodeIndexes(parameters.selection, "node-index");
@@ -1138,8 +1140,8 @@ function update_widgets_after_color_variable_change()
   update_current_colorscale();
   $("#table").table("option", "colorscale", colorscale);
   $("#scatterplot").scatterplot("update_color_scale_and_v", {
-    v : v, 
-    v_string : table_metadata["column-types"][v_index]=="string", 
+    v : v,
+    v_string : table_metadata["column-types"][v_index]=="string",
     colorscale : colorscale
   });
   $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
@@ -1257,6 +1259,9 @@ function cluster_selection_changed(variable)
 
 function update_dendrogram(cluster_index)
 {
+  console.log(clusters);
+  console.log(cluster_index);
+
   // Retrieve cluster data if it's not already in the cache
   if(clusters_data[cluster_index] === undefined) {
      $.ajax(
@@ -1357,8 +1362,8 @@ function update_scatterplot_x(variable)
     success : function(result)
     {
       $("#scatterplot").scatterplot("option", {
-        x_string: table_metadata["column-types"][variable]=="string", 
-        x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+        x_string: table_metadata["column-types"][variable]=="string",
+        x: table_metadata["column-types"][variable]=="string" ? result[0] : result,
         x_label:table_metadata["column-names"][variable]
       });
     },
@@ -1377,8 +1382,8 @@ function update_scatterplot_y(variable)
     success : function(result)
     {
       $("#scatterplot").scatterplot("option", {
-        y_string: table_metadata["column-types"][variable]=="string", 
-        y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+        y_string: table_metadata["column-types"][variable]=="string",
+        y: table_metadata["column-types"][variable]=="string" ? result[0] : result,
         y_label:table_metadata["column-names"][variable]
       });
     },

@@ -814,7 +814,6 @@ def get_project_cache_object(pid, key):
     cherrypy.response.headers["content-type"] = cache_object["_attachments"]["content"]["content_type"]
     return database.get_attachment(cache_object, "content")
 
-  slycat.email.send_error("slycat.web.server.handlers.py get_project_cache_object", "cherrypy.HTTPError 404 no cache for project %s and key %s" % (pid, key))
   raise cherrypy.HTTPError(404)
 
 def delete_project_cache_object(pid, key):

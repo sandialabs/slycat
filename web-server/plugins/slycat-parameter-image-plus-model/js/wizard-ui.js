@@ -7,7 +7,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.project = params.projects()[0];
     component.cluster_linkage = ko.observable("average"); // average is selected by default...
     component.cluster_column = ko.observable(false);
-    component.cluster_columns = ko.observableArray();
+    component.image_columns_names = ko.observableArray();
     component.ps_type = ko.observable("remote"); // local is selected by default...
     component.is_compute = ko.observable("no_compute");
     component.matrix_type = ko.observable("remote"); // local is selected by default...
@@ -28,7 +28,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       if(this.target().length > 0) {
         component.cluster_column( this.target()[0].name() );
         this.target().forEach(function(t) {
-          component.cluster_columns.push(t.name());
+          component.image_columns_names.push(t.name());
         });
       }
     });
@@ -124,7 +124,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                 });
               }
               // find the first image column and set its name to component.cluster_column
-              component.cluster_column
+              // component.cluster_column
 
               mapping.fromJS(attributes, component.attributes);
               component.tab(3);
@@ -381,6 +381,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         if(component.attributes()[i].image())
           image_columns.push(i);
       }
+
+      console.log('image-columns:');
+      console.log(image_columns);
+      console.log('cluster_column:');
+      console.log(component.cluster_column());
+      console.log('component.image_columns_names:');
+      console.log(component.image_columns_names());
 
       client.put_model_parameter({
         mid: component.model._id(),
