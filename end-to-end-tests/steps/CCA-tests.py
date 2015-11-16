@@ -54,11 +54,12 @@ def impl(context):
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-projects > div > div > div > a:nth-child(2)").click()
   context.browser.find_element(By.CSS_SELECTOR,
                                "#slycat-project > div:nth-child(1) > div > div > a:nth-child(1)").click()
-  context.browser.find_element(By.CSS_SELECTOR, "#table > div.slick-viewport > div > div:nth-child(2)").click()
-
   # give the plot a sec to load
   time.sleep(2)
 
+
+@when('we have the Scatterplot load')
+def impl(context):
   # Get the canvas image
   png_url = context.browser.execute_script('return document.getElementById("scatterplot").toDataURL("image/png");')
 
@@ -69,24 +70,17 @@ def impl(context):
   str_decoded = str_base64.decode('base64')
 
   # Write out the image somewhere
-  output_img = "img.png"
+  output_img = "test-img.png"
   fp = open(output_img, 'wb')
   fp.write(str_decoded)
   fp.close()
-
+  time.sleep(5)
   # canvas = context.browser.find_element_by_id("scatterplot")
   # plot = ActionChains(context.browser).move_to_element_with_offset(canvas, -104, -80).click()
   # plot.perform()
-  # table > div.slick-viewport > div > div.ui-widget-content.slick-row.even.active > div.slick-cell.l5.r5.rowInput.active.selected
-  time.sleep(2)
 
 
-@when('we have navigated to our example model')
+@then('we should have an accurate Scatterplot')
 def impl(context):
-  assert True is not False
-
-
-@then('we should be able to highlight rows in the table')
-def impl(context):
-  assert are_images_equal("actual.png", "img.png", "diff.png")
+  assert are_images_equal("actual-img.png", "test-img.png", "imgs-diff.png")
   assert context.failed is False
