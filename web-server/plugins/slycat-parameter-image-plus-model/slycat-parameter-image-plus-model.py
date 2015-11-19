@@ -252,7 +252,7 @@ def register_slycat_plugin(context):
 
     def callback():
       for name in image_columns_names:
-        slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, generate_filename(name, uid, distance_matrix_types[fn])), "distance-matrix-%s" % name, "slycat-csv-parser")
+        slycat.web.server.post_model_file(model["_id"], True, sid, "%s" % generate_filename(name, uid, distance_matrix_types[fn]), "distance-matrix-%s" % name, "slycat-csv-parser")
       finish(database, model, image_columns_names)
 
     stop_event = threading.Event()
