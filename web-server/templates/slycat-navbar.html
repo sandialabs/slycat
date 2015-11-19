@@ -170,7 +170,23 @@
           </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+
+          <!-- Original Username Element. Delete when switching to new Username Dropdown below. -->
           <li class="navbar-text slycat-clickable"><span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span></li>
+          <!-- End Original Username Element -->
+
+          <!-- New Username Dropdown. Uncomment and delete Original Username Element above when switching to this dropdown to implement Sign Out functionality. -->
+          <!-- <li class="dropdown">
+            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">
+              <span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="slycat-clickable"><a data-bind="click:sign_out"><span class="fa fa-sign-out"></span> Sign Out</a></li>
+            </ul>
+          </li> -->
+          <!-- End New Username Dropdown -->
+
           <li class="dropdown">
             <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">Help <span class="caret"></span></a>
             <ul class="dropdown-menu">
