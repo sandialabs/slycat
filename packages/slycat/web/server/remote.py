@@ -274,7 +274,7 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py get_job_output", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
-  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, fn_params):
+  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, fn_params, uid):
     """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 
     Parameters
@@ -321,7 +321,12 @@ class Session(object):
       def create_distance_matrix(fn_id, params):
         f = restricted_fns[fn_id]
         path = "/".join(params["input"].split("/")[:-1])
-        return ["source /etc/profile.d/modules.sh", "module load slycat-dev", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m", "python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s %s/slycat_%s_distance_matrix.csv" % (f, params["column"], params["input"], path, f)]
+        arr = ["source /etc/profile.d/modules.sh", "module load slycat-dev", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m"]
+
+        for c in params["image_columns_names"]:
+          arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s %s/slycat_%s_%s_%s_distance_matrix.csv" % (f, c, params["input"], path, c, uid, f))
+
+        return arr
 
       def agent_functions(fn_id, params):
         # agent_function is a placeholder for the future:
@@ -347,7 +352,8 @@ class Session(object):
             "time_hours": time_hours,
             "time_minutes": time_minutes,
             "time_seconds": time_seconds,
-            "fn": agent_functions(fn, fn_params)
+            "fn": agent_functions(fn, fn_params),
+            "uid": uid
           }
         }
 

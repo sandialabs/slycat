@@ -29,15 +29,18 @@ def register_slycat_plugin(context):
     "csv" : csv_distance,
     }
 
-  # Maps the slycat-agent functions to their respective output files
-  filenames = {
-    "jaccard-distance": "slycat_jaccard_distance_matrix.csv",
-    "jaccard2-distance": "slycat_jaccard2_distance_matrix.csv",
-    "one-norm-distance": "slycat_one-norm_distance_matrix.csv",
-    "correlation-distance": "slycat_correlation_distance_matrix.csv",
-    "cosine-distance": "slycat_cosine_distance_matrix.csv",
-    "hamming-distance": "slycat_hamming_distance_matrix.csv"
+  # Maps the slycat-agent functions to their respective distance matrix type
+  distance_matrix_types = {
+    "jaccard-distance": "jaccard",
+    "jaccard2-distance": "jaccard2",
+    "one-norm-distance": "one-norm",
+    "correlation-distance": "correlation",
+    "cosine-distance": "cosine",
+    "hamming-distance": "hamming"
   }
+
+  def generate_filename(column, uid, type):
+    return "slycat_%s_%s_%s_distance_matrix.csv" % (column, uid, type)
 
   def compute_distance(left, right, storage, cluster_name, measure_name, measure, columns):
     distance = numpy.empty(len(left))
@@ -73,7 +76,7 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(media_cols)
 
-  def compute(mid):
+  def compute(mid, image_columns_names):
     """Called in a thread to perform work on the model."""
     try:
       database = slycat.web.server.database.couchdb.connect()
@@ -90,15 +93,14 @@ def register_slycat_plugin(context):
         column_infos = metadata[0]['attributes']
         column_data = list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", ".../.../..."))
         columns = []
+
         for column_index, column_info in enumerate(column_infos):
           columns.append((column_info['name'], column_data[column_index]))
-
-        csv_distance.matrix = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix", ".../.../..."))
 
         # Create a mapping from unique cluster names to column rows.
         clusters = collections.defaultdict(list)
         for column_index, (name, column) in enumerate(columns):
-          if name not in [cluster_columns]:
+          if name not in image_columns_names:
             continue
           for row_index, row in enumerate(column):
             if row:
@@ -109,6 +111,8 @@ def register_slycat_plugin(context):
         cluster_exemplars = {}
 
         for index, (name, storage) in enumerate(sorted(clusters.items())):
+          csv_distance.matrix = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix-%s" % name, ".../.../..."))
+
           progress_begin = float(index) / float(len(clusters))
           progress_end = float(index + 1) / float(len(clusters))
 
@@ -179,6 +183,9 @@ def register_slycat_plugin(context):
 
         # Store each cluster.
         for key in clusters.keys():
+          database = slycat.web.server.database.couchdb.connect()
+          model = database.get("model", mid)
+
           slycat.web.server.put_model_file(
             database,
             model,
@@ -203,14 +210,14 @@ def register_slycat_plugin(context):
     model = database.get("model", mid)
     slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
 
-  def checkjob_thread(mid, sid, jid, request_from, stop_event, callback, filename):
+  def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
     cherrypy.request.headers["x-forwarded-for"] = request_from
 
     while True:
       try:
         response = slycat.web.server.checkjob(sid, jid)
       except Exception as e:
-        fail_model(mid, "Something went wrong while checking on job %s status: check for the distance matrix file %s when the job completes." % (jid, filename))
+        fail_model(mid, "Something went wrong while checking on job %s status: check for the distance matrix files when the job completes." % jid)
         slycat.email.send_error("slycat-parameter-image-plus-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
         raise Exception("An error occurred while checking on a remote job: %s" % e.message)
         stop_event.set()
@@ -239,23 +246,24 @@ def register_slycat_plugin(context):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
+    uid = kwargs["uid"]
+    image_columns_names = kwargs["fn_params"]["image_columns_names"]
     output_path = "/".join(kwargs["fn_params"]["input"].split("/")[:-1])
 
     def callback():
-      slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, filenames[fn]), "distance-matrix", "slycat-csv-parser")
-      media_columns(database, model, verb, type, command)
-      slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
-      finish(database, model)
+      for name in image_columns_names:
+        slycat.web.server.post_model_file(model["_id"], True, sid, "%s/%s" % (output_path, generate_filename(name, uid, distance_matrix_types[fn])), "distance-matrix-%s" % name, "slycat-csv-parser")
+      finish(database, model, image_columns_names)
 
     stop_event = threading.Event()
-    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback, "%s/%s" % (output_path, filenames[fn])))
+    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
     t.start()
 
     return json.dumps({"ok":True})
 
-  def finish(database, model):
+  def finish(database, model, image_columns_names):
     """Called to finish the model.  This function must return immediately, so the actual work is done in a separate thread."""
-    thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={"mid" : model["_id"]})
+    thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={ "mid" : model["_id"], "image_columns_names": image_columns_names })
     thread.start()
 
   def page_html(database, model):

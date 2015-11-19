@@ -113,7 +113,6 @@ class Session(object):
 
   def put_upload_file_part(self, fid, pid, data):
     if self._parsing_thread is not None:
-      slycat.email.send_error("slycat.web.server.upload.py put_upload_file_part", "cherrypy.HTTPError 409 upload already finished.")
       raise cherrypy.HTTPError("409 Upload already finished.")
 
     storage = path(self._uid, fid, pid)
@@ -126,7 +125,6 @@ class Session(object):
 
   def post_upload_finished(self, uploaded):
     if self._parsing_thread is not None:
-      slycat.email.send_error("slycat.web.server.upload.py post_upload_finished", "cherrypy.HTTPError 409 upload already finished.")
       raise cherrypy.HTTPError("409 Upload already finished.")
 
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
