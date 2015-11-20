@@ -47,6 +47,17 @@ def are_images_equal(img_actual, img_expected, result):
 
   return result_flag
 
+@given('we can navigate to our example CCA model')
+def impl(context):
+  # create project
+  context.browser.get(context.server_url + "/projects")
+  context.browser.find_element(By.CSS_SELECTOR, "#slycat-projects > div > div > div > a:nth-child(2)").click()
+  context.browser.find_element(By.CSS_SELECTOR,
+                               "#slycat-project > div:nth-child(1) > div > div > a:nth-child(1)").click()
+  # give the plot a sec to load
+  time.sleep(2)
+
+
 @given('we can navigate to the main projects window and create a CCA model from Cars csv')
 def impl(context):
   # create project
