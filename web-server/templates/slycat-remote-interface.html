@@ -3,7 +3,7 @@
     <div class="form-group">
       <div class="col-sm-8">
         <label>
-          <input type="radio" value="batch-file" data-bind="checked: radio, attr: {'disabled' : disabled}" style="margin-right: 7px;">
+          <input id="slycat-remote-interface-custom" type="radio" value="batch-file" data-bind="checked: radio, attr: {'disabled' : disabled}" style="margin-right: 7px;">
           Custom job
         </label>
       </div>
@@ -11,13 +11,13 @@
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Batch file</label>
       <div class="col-sm-8">
-        <input class="form-control" type="text" placeholder="enter batch file location here" data-bind="value: batch, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-custom-field" type="text" placeholder="enter batch file location here" data-bind="value: batch, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <div class="col-sm-8">
         <label>
-          <input type="radio" value="slycat-function" data-bind="checked: radio, attr: {'disabled' : disabled}" style="margin-right: 7px;">
+          <input id="slycat-remote-interface-prebuilt" type="radio" value="slycat-function" data-bind="checked: radio, attr: {'disabled' : disabled}" style="margin-right: 7px;">
           Slycat pre-built
         </label>
       </div>
@@ -25,55 +25,55 @@
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">WCID</label>
       <div class="col-sm-8">
-        <input class="form-control" type="text" placeholder="enter workload characterization key" data-bind="value: wckey, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="text" placeholder="enter workload characterization key" data-bind="value: wckey, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Number of nodes</label>
       <div class="col-sm-4">
-        <input class="form-control" type="number" data-bind="value: nnodes, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" data-bind="value: nnodes, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Partition</label>
       <div class="col-sm-4">
-        <input class="form-control" type="text" data-bind="value: partition, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="text" data-bind="value: partition, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Task(s) / node</label>
       <div class="col-sm-4">
-        <input class="form-control" type="number" data-bind="value: ntasks_per_node, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" data-bind="value: ntasks_per_node, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Number of tasks</label>
       <div class="col-sm-4">
-        <input class="form-control" type="number" data-bind="value: ntasks, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" data-bind="value: ntasks, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">CPU(s) / task</label>
       <div class="col-sm-4">
-        <input class="form-control" type="number" data-bind="value: ncpu_per_task, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" data-bind="value: ncpu_per_task, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Time</label>
       <div class="col-sm-2">
-        <input class="form-control" type="number" placeholder="hours" data-bind="value: time_hours, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" placeholder="hours" data-bind="value: time_hours, attr: {'disabled' : disabled}">
       </div>
       <div class="col-sm-2">
-        <input class="form-control" type="number" placeholder="minutes" data-bind="value: time_minutes, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" placeholder="minutes" data-bind="value: time_minutes, attr: {'disabled' : disabled}">
       </div>
       <div class="col-sm-2">
-        <input class="form-control" type="number" placeholder="seconds" data-bind="value: time_seconds, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" placeholder="seconds" data-bind="value: time_seconds, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Job name</label>
       <div class="col-sm-8">
-        <select id="slycat-remote-interface-agent-functions" class="form-control" data-bind="options: agent_functions, attr: {'disabled' : disabled}"></select>
+        <select id="slycat-remote-interface-agent-functions" class="form-control slycat-remote-interface-prebuilt-field" data-bind="options: agent_functions, attr: {'disabled' : disabled}"></select>
       </div>
     </div>
   </form>
