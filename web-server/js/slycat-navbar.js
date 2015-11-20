@@ -388,6 +388,11 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       }
 
       component.update_references();
+      component.sign_out = function()
+      {
+        window.alert("hello");
+        client.sign_out({success:function(){window.alert("you are logged out");},error: function(){window.alert("something went wrong");}})
+      }
 
     },
     template: { require: "text!" + server_root + "templates/slycat-navbar.html" }

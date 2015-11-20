@@ -1092,5 +1092,24 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+    module.sign_out = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "logout",
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      },
+    });
+  }
+
   return module;
 });

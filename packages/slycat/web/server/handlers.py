@@ -662,6 +662,19 @@ def delete_upload(uid):
   slycat.web.server.upload.delete_session(uid)
   cherrypy.response.status = "204 Upload session deleted."
 
+def logout():
+  # See if the client has a valid session.
+  if "slycatauth" in cherrypy.request.cookie:
+    sid = cherrypy.request.cookie["slycatauth"].value
+    couchdb = slycat.web.server.database.couchdb.connect()
+    session = couchdb.get("session", sid)
+    if session is not None:
+      cherrypy.response.status = "204 session deleted." + json.dumps(session) + str(couchdb.delete(session))
+    else:
+      cherrypy.response.status = "204 session not deleted." + json.dumps(session) + sid + str(session.get("_id") is sid) + ":::::" + session.get("_id") + ":::::" + sid
+  else:
+    cherrypy.response.status = "404 no auth found"
+
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
   database = slycat.web.server.database.couchdb.connect()
