@@ -321,6 +321,18 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           jid: vm.jid()
         });
       });
+
+      $('.slycat-remote-interface-custom-field').on('focus', function(e) {
+        $('#slycat-remote-interface-prebuilt').prop('checked', false);
+        $('#slycat-remote-interface-custom').prop('checked', true);
+        vm.radio('batch-file');
+      });
+
+      $('.slycat-remote-interface-prebuilt-field').on('focus', function(e) {
+        $('#slycat-remote-interface-custom').prop('checked', false);
+        $('#slycat-remote-interface-prebuilt').prop('checked', true);
+        vm.radio('slycat-function');
+      });
     },
 
     template: { require: 'text!' + server_root + 'templates/slycat-remote-interface.html' }
