@@ -6,7 +6,7 @@ rights in this software.
 define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
 {
   var module = {};//uploader object we wish to populate and return
-  module.MEGABYTE = 1000000;//the number we will split large files on
+  module.MEGABYTE = 400000000;//the number we will split large files on
 
   /**
    *  File uploader that can either be given a file or
