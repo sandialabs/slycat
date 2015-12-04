@@ -25,8 +25,9 @@
     {
       function login()
       {
+        user_name = document.getElementById("Username").value
         //TODO: add post call for username and password
-        window.alert("login");
+        window.alert("login " + user_name);
       }
       document.getElementById("go").addEventListener("click", login, false);
     });
