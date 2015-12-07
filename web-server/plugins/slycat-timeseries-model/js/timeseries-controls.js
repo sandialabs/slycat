@@ -1,0 +1,302 @@
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
+define("slycat-timeseries-controls", ["slycat-server-root", "slycat-dialog"], function(server_root, dialog) {
+$.widget("timeseries.controls",
+{
+  options:
+  {
+    mid : null,
+    model_name : null,
+    aid : null,
+    metadata : null,
+    // cluster_index : null,
+    "color-variable" : null,
+    // clusters : [],
+    color_variables : [],
+    selection : [],
+    hidden_simulations : [],
+    indices : [],
+  },
+
+  _create: function()
+  {
+    var self = this;
+    var scatterplot_controls = $("#scatterplot-controls", this.element);
+    var selection_controls = $("#selection-controls", this.element);
+
+    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(scatterplot_controls)
+      ;
+    this.color_button = $('\
+      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Waveform Color"> \
+        Waveform Color \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.color_control)
+      ;
+
+    this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
+      .appendTo(self.color_control)
+      ;
+
+    this.csv_button = $("\
+      <button class='btn btn-default' title='Download Data Table'> \
+        <span class='fa fa-download' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        if (self.options.selection.length == 0 && self.options.hidden_simulations.length == 0) {
+          self._write_data_table();
+        } else {
+          openCSVSaveChoiceDialog();
+        }
+      })
+      .appendTo(selection_controls)
+      ;
+
+    function openCSVSaveChoiceDialog(){
+      var txt = "";
+      var buttons_save = [
+        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
+      ];
+
+      if(self.options.selection.length > 0)
+      {
+        txt += "You have " + self.options.selection.length + " rows selected. ";
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
+      }
+      if(self.options.hidden_simulations.length > 0)
+      {
+        var visibleRows = self.options.metadata['row-count'] - self.options.hidden_simulations.length;
+        txt += "You have " + visibleRows + " rows visible. ";
+        buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Visible", icon_class:"fa fa-eye"});
+      }
+
+      txt += "What would you like to do?";
+
+      dialog.dialog(
+      {
+        title: "Download Choices",
+        message: txt,
+        buttons: buttons_save,
+        callback: function(button)
+        {
+          if(button.label == "Save Entire Table")
+            self._write_data_table();
+          else if(button.label == "Save Selected")
+            self._write_data_table( self.options.selection );
+          else if(button.label == "Save Visible")
+            self._write_data_table( self._filterIndices() );
+        },
+      });
+    }
+
+    // if(self.options.clusters.length > 0)
+    // {
+    //   self._set_clusters();
+    // }
+    self._set_color_variables();
+  },
+
+
+  _write_data_table: function(sl)
+  {
+    var selectionList = sl || [];
+    var self = this;
+    var numRows = self.options.metadata['row-count'];
+    var numCols = self.options.metadata['column-count'];
+    var rowRequest = "";
+
+    if (selectionList.length > 0) {
+      selectionList.sort(function(x,y) {return x-y});
+      rowRequest = "rows=" + selectionList.toString();
+    } else {
+      rowRequest = "rows=0-" + numRows;
+    }
+
+    $.ajax(
+    {
+      type : "GET",
+      url : server_root + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?" + rowRequest + "&columns=0-" + numCols + "&index=Index",
+      //url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
+      success : function(result)
+      {
+        self._write_csv( self._convert_to_csv(result), self.options.model_name + "_data_table.csv" );
+      },
+      error: function(request, status, reason_phrase)
+      {
+        window.alert("Error retrieving data table: " + reason_phrase);
+      }
+    });
+  },
+
+  _write_csv: function(csvData, defaultFilename)
+  {
+    var self = this;
+    var D = document;
+    var a = D.createElement("a");
+    var strMimeType = "text/plain";
+    var defaultFilename = defaultFilename || "slycatDataTable.csv";
+
+    //build download link:
+    a.href = "data:" + strMimeType + ";charset=utf-8," + encodeURIComponent(csvData);  //encodeURIComponent() handles all special chars
+
+    if ('download' in a) { //FF20, CH19
+      a.setAttribute("download", defaultFilename);
+      a.innerHTML = "downloading...";
+      D.body.appendChild(a);
+      setTimeout(function() {
+        var e = D.createEvent("MouseEvent");
+	e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+	a.dispatchEvent(e);
+	D.body.removeChild(a);
+      }, 66);
+      return true;
+    } else {   // end if('download' in a)
+      console.log("++ firefox/chrome detect failed");
+    }
+/*
+    if (window.MSBlobBuilder) { // IE10
+      console.log( "doing the IE10 stuff" );
+      var bb = new MSBlobBuilder();
+      bb.append(strData);
+      return navigator.msSaveBlob(bb, strFileName);
+    }
+
+    //do iframe dataURL download: (older W3)
+    console.log( "doing the older W3 stuff" );
+    var f = D.createElement("iframe");
+    D.body.appendChild(f);
+    f.src = "data:" + (A[2] ? A[2] : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(strData);
+    setTimeout(function() {
+      D.body.removeChild(f);
+    }, 333);
+    return true;
+*/
+  },
+
+  _convert_to_csv: function(array)
+  {
+    // Note that array.data is column-major:  array.data[0][*] is the first column
+    var numRows = array.rows.length;
+    var numCols = array.columns.length;
+    var rowMajorOutput = "";
+    numCols = numCols - 1;  // skip last column which is slycat index
+    var r, c;
+    // add the headers
+    for(c=0; c<numCols; c++) {
+      rowMajorOutput += array["column-names"][c] + ",";
+    }
+    rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
+    rowMajorOutput += "\n";
+    // add the data
+    for(r=0; r<numRows; r++) {
+      for(c=0; c<numCols; c++) {
+        rowMajorOutput += array.data[c][r] + ",";
+      }
+      rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
+      rowMajorOutput += "\n";
+    }
+    return rowMajorOutput;
+  },
+
+  _set_color_variables: function()
+  {
+    var self = this;
+    this.color_items.empty();
+    for(var i = 0; i < this.options.color_variables.length; i++) {
+      $("<li role='presentation'>")
+        .toggleClass("active", self.options["color-variable"] == self.options.color_variables[i])
+        .attr("data-colorvariable", this.options.color_variables[i])
+        .appendTo(self.color_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1">')
+            .html(this.options.metadata['column-names'][this.options.color_variables[i]])
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("active"))
+                return false;
+
+              self.color_items.find("li").removeClass("active");
+              menu_item.addClass("active");
+
+              self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+            })
+        )
+        ;
+    }
+  },
+
+  _set_selected_color: function()
+  {
+    var self = this;
+    self.color_items.find("li").removeClass("active");
+    self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
+  },
+
+  // Remove hidden_simulations from indices
+  _filterIndices: function()
+  {
+    var self = this;
+    var indices = self.options.indices;
+    var hidden_simulations = self.options.hidden_simulations;
+    var filtered_indices = self._cloneArrayBuffer(indices);
+    var length = indices.length;
+
+    // Remove hidden simulations and NaNs and empty strings
+    for(var i=length-1; i>=0; i--){
+      var hidden = $.inArray(indices[i], hidden_simulations) > -1;
+      if(hidden) {
+        filtered_indices.splice(i, 1);
+      }
+    }
+
+    return filtered_indices;
+  },
+
+  // Clones an ArrayBuffer or Array
+  _cloneArrayBuffer: function(source)
+  {
+    // Array.apply method of turning an ArrayBuffer into a normal array is very fast (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
+    // if(source.length > 1)
+    // {
+    //   return Array.apply( [], source );
+    // }
+    // else if(source.length == 1)
+    // {
+    //   return [source[0]];
+    // }
+    // return [];
+
+    // For loop method is much shower (around 300ms for 250K) but works in WebKit. Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
+    var clone = [];
+    for(var i = 0; i < source.length; i++)
+    {
+      clone.push(source[i]);
+    }
+    return clone;
+  },
+
+  _setOption: function(key, value)
+  {
+    var self = this;
+
+    this.options[key] = value;
+
+    if(key == "color-variable")
+    {
+      self._set_selected_color();
+    }
+    else if(key == 'color_variables')
+    {
+      self._set_color_variables();
+    }
+  },
+});
+});
