@@ -662,6 +662,11 @@ def delete_upload(uid):
   slycat.web.server.upload.delete_session(uid)
   cherrypy.response.status = "204 Upload session deleted."
 
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def login(un, pw):
+  cherrypy.response.status = "404 no auth found" + un + pw
+
 def logout():
   # See if the client has a valid session.
   if "slycatauth" in cherrypy.request.cookie:
