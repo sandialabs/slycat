@@ -669,16 +669,19 @@ def login(un, pw):
 
 def logout():
   # See if the client has a valid session.
-  if "slycatauth" in cherrypy.request.cookie:
-    sid = cherrypy.request.cookie["slycatauth"].value
-    couchdb = slycat.web.server.database.couchdb.connect()
-    session = couchdb.get("session", sid)
-    if session is not None:
-      cherrypy.response.status = "204 session deleted." + json.dumps(session) + str(couchdb.delete(session))
+  try:
+    if "slycatauth" in cherrypy.request.cookie:
+      sid = cherrypy.request.cookie["slycatauth"].value
+      couchdb = slycat.web.server.database.couchdb.connect()
+      session = couchdb.get("session", sid)
+      if session is not None:
+        cherrypy.response.status = "204 session deleted." + json.dumps(session) + str(couchdb.delete(session))
+      else:
+        cherrypy.response.status = "204 session not deleted." + json.dumps(session) + sid + str(session.get("_id") is sid) + ":::::" + session.get("_id") + ":::::" + sid
     else:
-      cherrypy.response.status = "204 session not deleted." + json.dumps(session) + sid + str(session.get("_id") is sid) + ":::::" + session.get("_id") + ":::::" + sid
-  else:
-    cherrypy.response.status = "404 no auth found"
+      cherrypy.response.status = "401 no auth found"
+  except Exception as e:
+    raise
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
