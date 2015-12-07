@@ -17,19 +17,61 @@
         <button class="btn btn-default" id="go">GO</button>
       </div>
     </form>
+    <div class="button-container">
+      <button class="btn btn-default" id="logout">LOGOUT</button>
+    </div>
   </div>
   </div>
 
   <script type="text/javascript">
-    require(["slycat-web-client"], function(client)
+    require(["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
     {
       function login()
       {
         user_name = document.getElementById("Username").value
+        password = document.getElementById("Password").value
         //TODO: add post call for username and password
-        window.alert("login " + user_name);
+        console.log("calling webservice with")
+        console.log("login " + user_name + " " + password);
+        console.log(server_root + "login/user/" + user_name + "/password/" + password)
+
+        $.ajax(
+        {
+          dataType: "json",
+          type: "POST",
+          url: URI(server_root + "login/user/" + user_name + "/password/" + password),
+          success: function(result)
+          {
+            console.log("success " + result);
+          },
+          error: function(request, status, reason_phrase)
+          {
+            console.log("error " + request + status + reason_phrase);
+          },
+        });
+
+        console.log("done")
+      }
+
+      function logout()
+      {
+        console.log("logging out");
+        $.ajax(
+        {
+          type: "DELETE",
+          url: server_root + "logout",
+          success: function()
+          {
+            console.log("success")
+          },
+          error: function(request, status, reason_phrase)
+          {
+            console.log("fail")
+          },
+        });
       }
       document.getElementById("go").addEventListener("click", login, false);
+      document.getElementById("logout").addEventListener("click", logout, false);
     });
   </script>
 </div>
