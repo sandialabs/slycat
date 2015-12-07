@@ -214,6 +214,8 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
       tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
     except tornado.web.HTTPError as e:
       self.set_status(e.status, e.reason)
+    except couch.NotFound:
+      raise tornado.web.HTTPError(404, reason="Session not found, could be expired, authorization required.")
     except Exception as e:
       raise
 
