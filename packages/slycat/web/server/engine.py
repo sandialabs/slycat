@@ -212,7 +212,15 @@ def start(root_path, config_file):
     "tools.expires.on": True,
     "tools.expires.secs": 3600,
     "tools.%s.on" % authentication : False,
-    "tools.staticfile.filename": abspath("logout.html"),
+    "tools.staticfile.filename": abspath("templates/slycat-logout.html"),
+    "tools.staticfile.on": True,
+    }
+  configuration["/resources/global/slycat-logo-navbar.png"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticfile.filename": abspath("css/slycat-logo-navbar.png"),
     "tools.staticfile.on": True,
     }
   # Load plugin modules.
