@@ -30,10 +30,21 @@ def register_slycat_plugin(context):
     # See if the client already has a valid session.
     if "slycatauth" in cherrypy.request.cookie:
       sid = cherrypy.request.cookie["slycatauth"].value
+      couchdb = slycat.web.server.database.couchdb.connect()
+      session = None
+      try:
+        session = couchdb.get("session", sid)
+      except:
+        pass
       if sid in authenticate.sessions:
         started = authenticate.sessions[sid]["created"]
         if datetime.datetime.utcnow() - started > cherrypy.request.app.config["slycat"]["session-timeout"]:
           del authenticate.sessions[sid]
+        elif session is None:
+          cherrypy.log.error("@%s: deleting local session." % (remote_ip))
+          del authenticate.sessions[sid]
+          cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
+          raise cherrypy.HTTPError(401, "Authentication required.")
         else:
           # Ensure that the user is logged correctly ...
           cherrypy.request.login = authenticate.sessions[sid]["creator"]
