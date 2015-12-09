@@ -321,7 +321,13 @@ class Session(object):
       def create_distance_matrix(fn_id, params):
         f = restricted_fns[fn_id]
         path = "/".join(params["input"].split("/")[:-1])
-        arr = ["source /etc/profile.d/modules.sh", "module load slycat-dev", "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m"]
+
+        if "module-name" in slycat.web.server.config["slycat-web-server"]:
+          module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
+        else:
+          module_name = "slycat-dev"
+
+        arr = ["source /etc/profile.d/modules.sh", "module load %s" % module_name, "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m"]
 
         for c in params["image_columns_names"]:
           arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv" % (f, c, params["input"], c, uid, f))
