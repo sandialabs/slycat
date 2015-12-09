@@ -165,6 +165,7 @@ def start(root_path, config_file):
 
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
+  # configuration["/logout"]["tools.%s.on" % authentication] = False
   for key, value in configuration["slycat-web-server"]["authentication"]["kwargs"].items():
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
@@ -206,7 +207,14 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("templates"),
     "tools.staticdir.on": True,
     }
-
+  configuration["/logout.html"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticfile.filename": abspath("logout.html"),
+    "tools.staticfile.on": True,
+    }
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
   for item in configuration["slycat-web-server"]["plugins"]:
@@ -241,5 +249,5 @@ def start(root_path, config_file):
   cherrypy.config.update({ 'error_page.404': os.path.join(root_path, "templates/slycat-404.html") })
 
   # Start the web server.
-  cherrypy.quickstart(None, "/", configuration)
+  cherrypy.quickstart(None, "", configuration)
 
