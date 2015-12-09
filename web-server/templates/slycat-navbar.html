@@ -23,7 +23,7 @@
         <ul class="nav navbar-nav navbar-left">
           <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
             <button type="button" id="slycat-create-wizards" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_create_wizards -->
                 <li class="slycat-clickable"><a class="" data-bind="text: label, click:$parent.run_wizard"></a></li>
               <!-- /ko -->
@@ -39,7 +39,7 @@
           </li>
           <li class="dropdown" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length">
             <button type="button" id="slycat-edit-wizards" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_edit_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
               <!-- /ko -->
@@ -55,7 +55,7 @@
           </li>
           <li class="dropdown" data-bind="visible: project_info_wizards().length" data-toggle="dropdown">
             <button type="button" id="slycat-info-wizards" class="btn btn-xs btn-info navbar-btn dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: project_info_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click: $parent.run_wizard"></a></li>
               <!-- /ko -->
@@ -66,7 +66,7 @@
               data-bind="css: { disabled: model_id() ? false : saved_project_bookmarks().length < 1 && saved_model_bookmarks().length < 1 }">
               Bookmarks <span class="caret"/>
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_bookmark_wizards -->
                 <li class="slycat-clickable">
                   <a class="bookmark-new" data-bind="click: $parent.run_wizard">
@@ -132,7 +132,7 @@
           </li>
           <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length">
             <button type="button" id="slycat-delete-wizards" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_delete_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
               <!-- /ko -->
@@ -172,19 +172,21 @@
         <ul class="nav navbar-nav navbar-right">
 
           <!-- Original Username Element. Delete when switching to new Username Dropdown below. -->
-          <li class="navbar-text slycat-clickable"><span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span></li>
+          <!-- <li class="navbar-text slycat-clickable"><span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span></li> -->
           <!-- End Original Username Element -->
 
           <!-- New Username Dropdown. Uncomment and delete Original Username Element above when switching to this dropdown to implement Sign Out functionality. -->
-          <!-- <li class="dropdown">
+          <li class="dropdown">
             <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">
-              <span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span>
+              <span class="fa fa-user"></span> <span data-bind="
+                text:user.name,
+                popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span>
               <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
               <li class="slycat-clickable"><a data-bind="click:sign_out"><span class="fa fa-sign-out"></span> Sign Out</a></li>
             </ul>
-          </li> -->
+          </li>
           <!-- End New Username Dropdown -->
 
           <li class="dropdown">

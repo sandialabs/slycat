@@ -153,6 +153,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   " inputs and " + output_columns.length + " outputs."
         });
       }
+      else if( input_columns.length == 0 )
+      {
+        dialog.dialog({
+          message:"The number of inputs must be at least one."
+        });
+      }
+      else if( output_columns.length == 0 )
+      {
+        dialog.dialog({
+          message:"The number of outputs must be at least one."
+        });
+      }
       else
       {
         client.put_model_parameter(
