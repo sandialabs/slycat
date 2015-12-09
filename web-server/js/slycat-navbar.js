@@ -392,7 +392,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         client.sign_out({ 
           success: function(){ 
-            window.location.href = "/";
+            window.location.href = "/logout.html";
           }, 
           error: function(){ 
             window.alert("Sorry, something went wrong and you are not signed out."); 
