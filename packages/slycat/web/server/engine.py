@@ -255,6 +255,7 @@ def start(root_path, config_file):
 
   # sets a custom 404 page
   cherrypy.config.update({ 'error_page.404': os.path.join(root_path, "templates/slycat-404.html") })
+  cherrypy.config.update({ 'error_page.401': os.path.join(root_path, "templates/slycat-404.html") })
 
   # Start the web server.
   cherrypy.quickstart(None, "", configuration)
