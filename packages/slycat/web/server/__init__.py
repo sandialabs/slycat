@@ -210,22 +210,22 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
-        hdf5_array = hdf5_arrayset[array.index]
+  # with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
 
-        if array.order is not None:
-          order = evaluate(hdf5_array, array.order, "order")
+      if array.order is not None:
+        order = evaluate(hdf5_array, array.order, "order")
 
-        for attribute in array.attributes(len(hdf5_array.attributes)):
-          for hyperslice in attribute.hyperslices():
-            values = evaluate(hdf5_array, attribute.expression, "attribute")
-            if array.order is not None:
-              yield values[order][hyperslice]
-            else:
-              yield values[hyperslice]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        for hyperslice in attribute.hyperslices():
+          values = evaluate(hdf5_array, attribute.expression, "attribute")
+          if array.order is not None:
+            yield values[order][hyperslice]
+          else:
+            yield values[hyperslice]
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
