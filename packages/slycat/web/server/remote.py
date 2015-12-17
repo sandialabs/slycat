@@ -325,7 +325,7 @@ class Session(object):
         if "module-name" in slycat.web.server.config["slycat-web-server"]:
           module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
         else:
-          module_name = "slycat-dev"
+          module_name = "slycat"
 
         arr = ["source /etc/profile.d/modules.sh", "module load %s" % module_name, "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m"]
 
