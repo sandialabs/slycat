@@ -65,3 +65,8 @@ def register_slycat_plugin(context):
   ]
   for dev in devs:
     context.register_page_resource("timeseries", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Register a wizard for creating instances of the new model
+  context.register_wizard("timeseries", "New Timeseries Model", require={"action":"create", "context":"project"})
+  context.register_wizard_resource("timeseries", "ui.js", os.path.join(os.path.dirname(__file__), "wizard-ui.js"))
+  context.register_wizard_resource("timeseries", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))

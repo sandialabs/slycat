@@ -71,7 +71,7 @@ pid = connection.find_or_create_project(arguments.project_name, arguments.projec
 # Compute the model.
 try:
   slycat.web.client.log.info("Examining and verifying data.")
-  # find number of timeseries and accurate cluster sample count before starting model  
+  # find number of timeseries and accurate cluster sample count before starting model
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
     array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
@@ -94,7 +94,7 @@ try:
 
   # Create the new, empty model.
   mid = connection.post_project_models(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
-    
+
   # Store clustering parameters.
   connection.update_model(mid, message="Storing clustering parameters.")
   slycat.web.client.log.info("Storing clustering parameters.")
