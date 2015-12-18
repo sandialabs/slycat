@@ -76,6 +76,139 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(media_cols)
 
+  def compute_uploaded_distance(mid):
+    """Computes for a single uploaded distance matrix. Called in a thread to
+    perform work on the model.
+
+    Parameters:
+    -----------
+    mid : string
+      Model unique identifier
+    """
+    try:
+      database = slycat.web.server.database.couchdb.connect()
+      model = database.get("model", mid)
+
+      # Do useful work here
+      try:
+        clusters_model_file = slycat.web.server.get_model_file(database, model, "clusters")
+      except:
+        cluster_columns = slycat.web.server.get_model_parameter(database, model, "cluster-columns")
+        cluster_measure = slycat.web.server.get_model_parameter(database, model, "cluster-measure")
+        cluster_linkage = slycat.web.server.get_model_parameter(database, model, "cluster-linkage")
+        metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
+        column_infos = metadata[0]['attributes']
+        column_data = list(slycat.web.server.get_model_arrayset_data(database, model, "data-table", ".../.../..."))
+        columns = []
+        for column_index, column_info in enumerate(column_infos):
+          columns.append((column_info['name'], column_data[column_index]))
+
+        csv_distance.matrix = list(slycat.web.server.get_model_arrayset_data(database, model, "distance-matrix", ".../.../..."))
+
+        # Create a mapping from unique cluster names to column rows.
+        clusters = collections.defaultdict(list)
+        for column_index, (name, column) in enumerate(columns):
+          if name not in [cluster_columns]:
+            continue
+          for row_index, row in enumerate(column):
+            if row:
+              clusters[name].append((row_index, column_index))
+
+        # Compute a hierarchical clustering for each cluster column.
+        cluster_linkages = {}
+        cluster_exemplars = {}
+
+        for index, (name, storage) in enumerate(sorted(clusters.items())):
+          progress_begin = float(index) / float(len(clusters))
+          progress_end = float(index + 1) / float(len(clusters))
+
+          # Compute a distance matrix comparing every image to every other ...
+          observation_count = len(storage)
+          left, right = numpy.triu_indices(observation_count, k=1)
+          distance = compute_distance(left, right, storage, name, cluster_measure, measures[cluster_measure], columns)
+
+          # Use the distance matrix to cluster observations ...
+          print "Clustering %s" % name
+          #distance = scipy.spatial.distance.squareform(distance_matrix)
+          linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_linkage))
+          cluster_linkages[name] = linkage
+
+          # Identify exemplar waveforms for each cluster ...
+          distance_matrix = scipy.spatial.distance.squareform(distance)
+
+          summed_distances = numpy.zeros(shape=(observation_count))
+          exemplars = dict()
+          cluster_membership = []
+
+          for i in range(observation_count):
+            exemplars[i] = i
+            cluster_membership.append(set([i]))
+
+          print "Identifying examplars for %s" % (name)
+          for i in range(len(linkage)):
+            cluster_id = i + observation_count
+            (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
+            cluster1 = int(f_cluster1)
+            cluster2 = int(f_cluster2)
+            # Housekeeping: assemble the membership of the new cluster
+            cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
+            # We need to update the distance from each member of the new
+            # cluster to all the other members of the cluster.  That means
+            # that for all the members of cluster1, we need to add in the
+            # distances to members of cluster2, and for all members of
+            # cluster2, we need to add in the distances to members of
+            # cluster1.
+            for cluster1_member in cluster_membership[cluster1]:
+              for cluster2_member in cluster_membership[cluster2]:
+                summed_distances[cluster1_member] += distance_matrix[cluster1_member][cluster2_member]
+
+            for cluster2_member in cluster_membership[int(cluster2)]:
+              for cluster1_member in cluster_membership[cluster1]:
+                summed_distances[cluster2_member] += distance_matrix[cluster2_member][cluster1_member]
+
+            min_summed_distance = None
+            max_summed_distance = None
+
+            exemplar_id = 0
+            for member in cluster_membership[cluster_id]:
+              if min_summed_distance is None or summed_distances[member] < min_summed_distance:
+                min_summed_distance = summed_distances[member]
+                exemplar_id = member
+
+              if max_summed_distance is None or summed_distances[member] > min_summed_distance:
+                max_summed_distance = summed_distances[member]
+
+            exemplars[cluster_id] = exemplar_id
+          cluster_exemplars[name] = exemplars
+
+        # Ingest the raw data into Slycat.
+        # Store an alphabetized collection of cluster names.
+        slycat.web.server.put_model_file(database, model, "clusters", value=json.dumps(sorted(clusters.keys())), content_type="application/json", input=True)
+
+        model = database.get("model", mid)
+
+        # Store each cluster.
+        for key in clusters.keys():
+          slycat.web.server.put_model_file(
+            database,
+            model,
+            "cluster-%s" % key,
+            value=json.dumps({"linkage" : cluster_linkages[key].tolist(), "exemplars" : cluster_exemplars[key], "input-indices" : [row_index for row_index, column_index in clusters[key]],}),
+            content_type="application/json",
+            input=True)
+
+      model = database.get("model", mid)
+      slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+      print "Finished computing new model."
+
+    except:
+      cherrypy.log.error("%s" % traceback.format_exc())
+
+      database = slycat.web.server.database.couchdb.connect()
+      model = database.get("model", mid)
+      slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
+
+
   def compute(mid, image_columns_names):
     """Called in a thread to perform work on the model."""
     try:
@@ -261,6 +394,20 @@ def register_slycat_plugin(context):
 
     return json.dumps({"ok":True})
 
+  def finish_command(database, model, verb, type, command, **kwargs):
+    """Finishes a model by calling the compute_uploaded_distance method. This
+    method should be used for an uploaded distance matrix vs the computed ones
+    on a cluster. This function must return immediately so the actual work is
+    done in a separate thread.
+
+    kwargs:
+    -------
+    mid : string
+      Model unique identifier
+    """
+    thread = threading.Thread(name="Compute Generic Model", target=compute_uploaded_distance, kwargs={ "mid": kwargs["mid"] })
+    thread.start()
+
   def finish(database, model, image_columns_names):
     """Called to finish the model.  This function must return immediately, so the actual work is done in a separate thread."""
     thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={ "mid" : model["_id"], "image_columns_names": image_columns_names })
@@ -366,6 +513,7 @@ def register_slycat_plugin(context):
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)
   context.register_model_command("POST", "parameter-image-plus", "checkjob", checkjob)
+  context.register_model_command("POST", "parameter-image-plus", "finish-command", finish_command)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image-plus", "New Parameter Image Model", require={"action":"create", "context":"project"})
