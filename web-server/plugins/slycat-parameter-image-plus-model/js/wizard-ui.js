@@ -453,9 +453,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.finish = function() {
       component.tab(7);
 
-      client.post_model_finish({
+      client.post_sensitive_model_command({
         mid: component.model._id(),
-        success: function() {}
+        type: 'parameter-image-plus',
+        command: 'finish-command',
+        parameters: {
+          mid: component.model._id()
+        },
+        error: dialog.ajax_error("There was a problem finishing the project")
       });
     };
 
