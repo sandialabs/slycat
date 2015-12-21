@@ -386,7 +386,7 @@ def register_slycat_plugin(context):
     def callback():
       for name in image_columns_names:
         slycat.web.server.post_model_file(model["_id"], True, sid, "%s" % generate_filename(name, uid, distance_matrix_types[fn]), "distance-matrix-%s" % name, "slycat-csv-parser")
-      finish(database, model, image_columns_names)
+      finish_with_image_columns_names(database, model, image_columns_names)
 
     stop_event = threading.Event()
     t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
@@ -394,23 +394,14 @@ def register_slycat_plugin(context):
 
     return json.dumps({"ok":True})
 
-  def finish_command(database, model, verb, type, command, **kwargs):
-    """Finishes a model by calling the compute_uploaded_distance method. This
-    method should be used for an uploaded distance matrix vs the computed ones
-    on a cluster. This function must return immediately so the actual work is
-    done in a separate thread.
-
-    kwargs:
-    -------
-    mid : string
-      Model unique identifier
-    """
-    thread = threading.Thread(name="Compute Generic Model", target=compute_uploaded_distance, kwargs={ "mid": kwargs["mid"] })
-    thread.start()
-
-  def finish(database, model, image_columns_names):
+  def finish_with_image_columns_names(database, model, image_columns_names):
     """Called to finish the model.  This function must return immediately, so the actual work is done in a separate thread."""
     thread = threading.Thread(name="Compute Generic Model", target=compute, kwargs={ "mid" : model["_id"], "image_columns_names": image_columns_names })
+    thread.start()
+
+  def finish(database, model):
+    """Called to finish the model. This function must return immediately, so the actual work is done in a separate thread."""
+    thread = threading.Thread(name="Compute Generic Model", target=compute_uploaded_distance, kwargs={"mid" : model["_id"]})
     thread.start()
 
   def page_html(database, model):
@@ -513,7 +504,7 @@ def register_slycat_plugin(context):
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)
   context.register_model_command("POST", "parameter-image-plus", "checkjob", checkjob)
-  context.register_model_command("POST", "parameter-image-plus", "finish-command", finish_command)
+  context.register_model_command("POST", "parameter-image-plus", "finish-with-image-columns-names", finish_with_image_columns_names)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image-plus", "New Parameter Image Model", require={"action":"create", "context":"project"})
