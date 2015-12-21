@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
   ###########################################################################################
   # Setup a connection to the Slycat Web Server, and test it before we do a lot of work.
-
+  arguments.no_verify = True
   connection = slycat.web.client.connect(arguments)
   version = connection.get_configuration_version()
   slycat.web.client.log.info("Connected to server version %s%s." % (version["version"], " (" + version["commit"] + ")" if "commit" in version else ""))
