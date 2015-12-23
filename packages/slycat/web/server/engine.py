@@ -139,7 +139,7 @@ def start(root_path, config_file):
   dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
 
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
-  dispatcher.connect("login", "/login/user/:un/password/:pw", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
+  dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
 
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
