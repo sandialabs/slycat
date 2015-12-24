@@ -56,6 +56,7 @@ def register_slycat_plugin(context):
     # If the client hasn't authenticated, tell them to do so.
     authorization = cherrypy.request.headers.get("authorization")
     if authorization is None:
+      #raise cherrypy.HTTPRedirect("/login.html", 307)
       cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
       raise cherrypy.HTTPError(401, "Authentication required.")
 
