@@ -675,7 +675,16 @@ def login():
   and determins with the user can be authenticated with slycat
   :return: authentication status
   """
-  cherrypy.response.status = "404 no auth found!!!"
+
+  if "slycatauth" in cherrypy.request.cookie:
+    try:
+      sid = cherrypy.request.cookie["slycatauth"].value
+      couchdb = slycat.web.server.database.couchdb.connect()
+      session = couchdb.get("session", sid)
+      if session is not None:
+        couchdb.delete(session)
+    except:
+      pass
 
   # try and decode the username and password
   try:
@@ -711,7 +720,7 @@ def login():
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": user_name}
     database = slycat.web.server.database.couchdb.connect()
-    #database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"]})
+    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"]})
 
     login.sessions[sid] = session
 
@@ -719,7 +728,10 @@ def login():
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
-    #cherrypy.request.login = user_name
+    cherrypy.response.status = "200 OK"
+    cherrypy.request.login = user_name
+  else:
+    cherrypy.response.status = "404 no auth found!!!"
   return {'session': 'stuff','sid' : sid, 'user_name': user_name, 'password': password, 'success': success, 'groups': groups, 'ip': remote_ip}
 
 
@@ -738,8 +750,8 @@ def logout():
       sid = cherrypy.request.cookie["slycatauth"].value
 
       # expire the old cookie
-      # cherrypy.response.cookie["slycatauth"] = sid
-      # cherrypy.response.cookie["slycatauth"]['expires'] = 0
+      cherrypy.response.cookie["slycatauth"] = sid
+      cherrypy.response.cookie["slycatauth"]['expires'] = 0
 
       couchdb = slycat.web.server.database.couchdb.connect()
       session = couchdb.get("session", sid)
@@ -751,7 +763,6 @@ def logout():
       cherrypy.response.status = "403 Forbidden"
   except Exception as e:
     raise cherrypy.HTTPError("400 Bad Request")
-  #TODO: log the exception
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
