@@ -215,13 +215,13 @@ def start(root_path, config_file):
     "tools.staticfile.filename": abspath("templates/slycat-logout.html"),
     "tools.staticfile.on": True,
     }
-  configuration["/login.html"] = {
+  configuration["/login"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,
     "tools.expires.secs": 3600,
     "tools.%s.on" % authentication : False,
-    "tools.staticfile.filename": abspath("templates/slycat-login.html"),
-    "tools.staticfile.on": True,
+    "tools.staticdir.dir": abspath("slycat-login"),
+    "tools.staticdir.on": True,
     }
   configuration["/resources/global/slycat-logo-navbar.png"] = {
     "tools.expires.force": True,
