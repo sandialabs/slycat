@@ -5,8 +5,8 @@ require(["jquery", "URI"], function($, URI)
 {
   function login()
   {
-    user_name = document.getElementById("Username").value
-    password = document.getElementById("Password").value
+    user_name = b64EncodeUnicode(document.getElementById("Username").value)
+    password = b64EncodeUnicode(document.getElementById("Password").value)
     //TODO: add post call for username and password
     console.log("calling webservice with")
     console.log("login " + user_name + " " + password);
@@ -54,6 +54,11 @@ require(["jquery", "URI"], function($, URI)
       },
     });
   }
+  function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+}
   document.getElementById("go").addEventListener("click", login, false);
   document.getElementById("logout").addEventListener("click", logout, false);
 });
