@@ -34,8 +34,12 @@ def register_slycat_plugin(context):
       session = None
       try:
         session = couchdb.get("session", sid)
-      except:
-        pass
+      except Exception as e:
+        cherrypy.log.error("@%s: could not get db session." % (e))
+        # cherrypy.response.headers["www-authenticate"] = "Basic realm=\"%s\"" % realm
+        # raise cherrypy.HTTPError(401, "Authentication required.")
+        # TODO: add redirect
+
       if sid in authenticate.sessions:
         started = authenticate.sessions[sid]["created"]
         if datetime.datetime.utcnow() - started > cherrypy.request.app.config["slycat"]["session-timeout"]:
