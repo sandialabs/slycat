@@ -330,7 +330,7 @@ class Session(object):
         arr = ["source /etc/profile.d/modules.sh", "module load %s" % module_name, "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m"]
 
         for c in params["image_columns_names"]:
-          arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv" % (f, c, params["input"], c, uid, f))
+          arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv" % (f, c, params["input"], c, uid, f))
 
         return arr
 
