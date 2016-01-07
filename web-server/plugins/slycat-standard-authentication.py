@@ -35,47 +35,52 @@ def register_slycat_plugin(context):
       try:
         session = couchdb.get("session", sid)
         started = session["created"]
+        user_name = session["creator"]
+        groups = session["groups"]
         if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]:
           couchdb.delete(session)
           # expire the old cookie
           cherrypy.response.cookie["slycatauth"] = sid
           cherrypy.response.cookie["slycatauth"]['expires'] = 0
           session = None
+        cherrypy.request.login = user_name
+             # Apply (optional) authentication rules.
+        if rules and user_name is not None:
+          deny = None
+          for operation, category, members in rules:
+            if operation not in ["allow", "deny"]:
+              slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 unknown operation: %s." % operation)
+              raise cherrypy.HTTPError("500 Unknown operation: %s." % operation)
+            if category not in ["users", "groups"]:
+              slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 unknown category: %s." % category)
+              raise cherrypy.HTTPError("500 Unknown category: %s." % category)
+
+            operation_default = True if operation == "allow" else False
+            operation_deny = False if operation == "allow" else True
+
+            if deny is None:
+              deny = operation_default
+            if category == "users":
+              if user_name in members:
+                deny = operation_deny
+            elif category == "groups":
+              for group in groups:
+                if group in members:
+                  deny = operation_deny
+                  break
+
+          if deny:
+            raise cherrypy.HTTPError("403 User denied by authentication rules.")
       except Exception as e:
         cherrypy.log.error("@%s: could not get db session." % (e))
 
       # there was no session time to authenticate
       if session is None:
         raise cherrypy.HTTPRedirect("/login/slycat-login.html", 307)
-    return
-    #   # Apply (optional) authentication rules.
-    #   if rules is not None:
-    #     deny = None
-    #     for operation, category, members in rules:
-    #       if operation not in ["allow", "deny"]:
-    #         slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 unknown operation: %s." % operation)
-    #         raise cherrypy.HTTPError("500 Unknown operation: %s." % operation)
-    #       if category not in ["users", "groups"]:
-    #         slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 unknown category: %s." % category)
-    #         raise cherrypy.HTTPError("500 Unknown category: %s." % category)
-    #
-    #       operation_default = True if operation == "allow" else False
-    #       operation_deny = False if operation == "allow" else True
-    #
-    #       if deny is None:
-    #         deny = operation_default
-    #       if category == "users":
-    #         if username in members:
-    #           deny = operation_deny
-    #       elif category == "groups":
-    #         for group in groups:
-    #           if group in members:
-    #             deny = operation_deny
-    #             break
-    #
-    #     if deny:
-    #       raise cherrypy.HTTPError("403 User denied by authentication rules.")
-    #
-    #   # Successful authentication, create a session and return.
+
+      # Successful authentication, create a session and return.
+      #return
+    else:
+      raise cherrypy.HTTPRedirect("/login/slycat-login.html", 307)
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)

@@ -720,7 +720,7 @@ def login():
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": user_name}
     database = slycat.web.server.database.couchdb.connect()
-    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"]})
+    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"], 'groups': groups, 'ip': remote_ip})
 
     login.sessions[sid] = session
 
@@ -729,7 +729,7 @@ def login():
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
     cherrypy.response.status = "200 OK"
-    cherrypy.request.login = user_name
+    cherrypy.request.login = user_name#TODO:might be able to delete this
   else:
     cherrypy.response.status = "404 no auth found!!!"
   return {'session': 'stuff','sid' : sid, 'user_name': user_name, 'password': password, 'success': success, 'groups': groups, 'ip': remote_ip}
