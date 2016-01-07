@@ -37,6 +37,12 @@ def register_slycat_plugin(context):
         started = session["created"]
         user_name = session["creator"]
         groups = session["groups"]
+
+        # no chaching plz
+        cherrypy.response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate" # HTTP 1.1.
+        cherrypy.response.headers["Pragma"] = "no-cache" # HTTP 1.0.
+        cherrypy.response.headers["Expires"] = "0" # Proxies.
+
         if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]:
           couchdb.delete(session)
           # expire the old cookie
