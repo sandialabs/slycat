@@ -37,6 +37,9 @@ import sys
 import threading
 import time
 import uuid
+import functools
+from cherrypy._cpcompat import base64_decode
+import datetime
 
 def css_bundle():
   with css_bundle._lock:
@@ -663,26 +666,103 @@ def delete_upload(uid):
   slycat.web.server.upload.delete_session(uid)
   cherrypy.response.status = "204 Upload session deleted."
 
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def login(un, pw):
-  cherrypy.response.status = "404 no auth found" + un + pw
+def login():
+  """
+  Takes the post object under cherrypy.request.json with the users name and password
+  and determins with the user can be authenticated with slycat
+  :return: authentication status
+  """
 
-def logout():
-  # See if the client has a valid session.
-  try:
-    if "slycatauth" in cherrypy.request.cookie:
+  if "slycatauth" in cherrypy.request.cookie:
+    try:
       sid = cherrypy.request.cookie["slycatauth"].value
       couchdb = slycat.web.server.database.couchdb.connect()
       session = couchdb.get("session", sid)
       if session is not None:
-        cherrypy.response.status = "204 session deleted." + json.dumps(session) + str(couchdb.delete(session))
+        couchdb.delete(session)
+    except:
+      pass
+
+  # try and decode the username and password
+  try:
+    user_name = base64_decode(cherrypy.request.json["user_name"])
+    password = base64_decode(cherrypy.request.json["password"])
+  except:
+    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
+    raise cherrypy.HTTPError(400)
+  realm = None
+
+  # Get the client ip, which might be forwarded by a proxy.
+  remote_ip = cherrypy.request.headers.get("x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
+
+  # see if we have a registered password checking function from our config
+  if login.password_check is None:
+    if "password-check" not in cherrypy.request.app.config["slycat-web-server"]:
+      raise cherrypy.HTTPError("500 No password check configured.")
+    plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
+    args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
+    kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
+    if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 no password check plugin found.")
+      raise cherrypy.HTTPError("500 No password check plugin found.")
+    login.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs)
+
+  # time to test username and password
+  success, groups = login.password_check(realm, user_name, password)
+
+  if success:
+    # Successful authentication, create a session and return.
+    cherrypy.log.error("%s@%s: Password check succeeded." % (user_name, remote_ip))
+
+    sid = uuid.uuid4().hex
+    session = {"created": datetime.datetime.utcnow(), "creator": user_name}
+    database = slycat.web.server.database.couchdb.connect()
+    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"], 'groups': groups, 'ip': remote_ip})
+
+    login.sessions[sid] = session
+
+    cherrypy.response.cookie["slycatauth"] = sid
+    cherrypy.response.cookie["slycatauth"]["path"] = "/"
+    cherrypy.response.cookie["slycatauth"]["secure"] = 1
+    cherrypy.response.cookie["slycatauth"]["httponly"] = 1
+    cherrypy.response.status = "200 OK"
+    cherrypy.request.login = user_name#TODO:might be able to delete this
+  else:
+    cherrypy.response.status = "404 no auth found!!!"
+  return {'session': 'stuff','sid' : sid, 'user_name': user_name, 'password': password, 'success': success, 'groups': groups, 'ip': remote_ip}
+
+
+login.password_check = None
+login.sessions = {}
+login.session_cleanup = None
+
+def logout():
+  """
+  See if the client has a valid session.
+  If so delete it
+  :return: the status of the request
+  """
+  try:
+    if "slycatauth" in cherrypy.request.cookie:
+      sid = cherrypy.request.cookie["slycatauth"].value
+
+      # expire the old cookie
+      cherrypy.response.cookie["slycatauth"] = sid
+      cherrypy.response.cookie["slycatauth"]['expires'] = 0
+
+      couchdb = slycat.web.server.database.couchdb.connect()
+      session = couchdb.get("session", sid)
+      if session is not None:
+        cherrypy.response.status = "200 session deleted." + str(couchdb.delete(session))
       else:
-        cherrypy.response.status = "204 session not deleted." + json.dumps(session) + sid + str(session.get("_id") is sid) + ":::::" + session.get("_id") + ":::::" + sid
+        cherrypy.response.status = "400 Bad Request no session to delete."
     else:
-      cherrypy.response.status = "401 no auth found"
+      cherrypy.response.status = "403 Forbidden"
   except Exception as e:
-    raise
+    raise cherrypy.HTTPError("400 Bad Request")
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
