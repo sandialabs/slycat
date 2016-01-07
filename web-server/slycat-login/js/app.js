@@ -26,6 +26,7 @@ require(["jquery", "URI"], function($, URI)
       success: function(result)
       {
         console.log("success " + result);
+        window.location.replace("/");
       },
       error: function(request, status, reason_phrase)
       {
