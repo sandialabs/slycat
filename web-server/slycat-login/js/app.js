@@ -7,10 +7,6 @@ require(["jquery", "URI"], function($, URI)
   {
     user_name = b64EncodeUnicode(document.getElementById("Username").value)
     password = b64EncodeUnicode(document.getElementById("Password").value)
-    //TODO: add post call for username and password
-    console.log("calling webservice with")
-    console.log("login " + user_name + " " + password);
-    console.log("/" + "login/")
     var sendInfo = JSON.stringify(
       {
         "user_name": user_name,
