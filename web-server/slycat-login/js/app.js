@@ -34,28 +34,28 @@ require(["jquery", "URI"], function($, URI)
     console.log("done")
   }
 
-  function logout()
-  {
-    console.log("logging out");
-    $.ajax(
-    {
-      type: "DELETE",
-      url: "/" + "logout",
-      success: function()
-      {
-        console.log("success")
-      },
-      error: function(request, status, reason_phrase)
-      {
-        console.log("fail")
-      },
-    });
-  }
+//  function logout()
+//  {
+//    console.log("logging out");
+//    $.ajax(
+//    {
+//      type: "DELETE",
+//      url: "/" + "logout",
+//      success: function()
+//      {
+//        console.log("success")
+//      },
+//      error: function(request, status, reason_phrase)
+//      {
+//        console.log("fail")
+//      },
+//    });
+//  }
   function b64EncodeUnicode(str) {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
     }));
 }
   document.getElementById("go").addEventListener("click", login, false);
-  document.getElementById("logout").addEventListener("click", logout, false);
+  //document.getElementById("logout").addEventListener("click", logout, false);
 });
