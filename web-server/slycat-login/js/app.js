@@ -5,8 +5,8 @@ require(["jquery", "URI"], function($, URI)
 {
   function login()
   {
-    user_name = b64EncodeUnicode(document.getElementById("Username").value)
-    password = b64EncodeUnicode(document.getElementById("Password").value)
+    user_name = b64EncodeUnicode(document.getElementById("username").value)
+    password = b64EncodeUnicode(document.getElementById("password").value)
     var sendInfo = JSON.stringify(
       {
         "user_name": user_name,
@@ -57,5 +57,9 @@ require(["jquery", "URI"], function($, URI)
     }));
 }
   document.getElementById("go").addEventListener("click", login, false);
+  $("form").submit(function(e) {
+    e.preventDefault();
+    //login();
+  });
   //document.getElementById("logout").addEventListener("click", logout, false);
 });
