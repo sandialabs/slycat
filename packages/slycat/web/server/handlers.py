@@ -732,7 +732,7 @@ def login():
     cherrypy.request.login = user_name#TODO:might be able to delete this
   else:
     cherrypy.response.status = "404 no auth found!!!"
-  return {'session': 'stuff','sid' : sid, 'user_name': user_name, 'password': password, 'success': success, 'groups': groups, 'ip': remote_ip}
+  return {'success': success}
 
 
 login.password_check = None
