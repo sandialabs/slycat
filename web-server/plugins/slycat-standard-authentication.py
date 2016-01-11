@@ -43,6 +43,8 @@ def register_slycat_plugin(context):
         cherrypy.response.headers["Pragma"] = "no-cache" # HTTP 1.0.
         cherrypy.response.headers["Expires"] = "0" # Proxies.
 
+        # cherrypy.log.error("%s ::: %s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
+        # cherrypy.log.error("%s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
         if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]:
           couchdb.delete(session)
           # expire the old cookie
