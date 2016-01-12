@@ -6,105 +6,22 @@
     <title>Sign in</title>
     <script src="js/require.js" data-main="js/app"></script>
     <!-- CSS -->
-
-	<link rel="stylesheet" href="css/reset.css">
-	<link rel="stylesheet" href="css/animate.css">
-	<link rel="stylesheet" href="css/styles.css">
-    <style type="text/css" media="screen">
-
-      body {
-        height: 100%;
-        background-color: #F2F2F2;
-        background-image: url('/resources/global/slycat-logo-navbar.png');
-        background-repeat: no-repeat;
-        background-position: 50% 15%;
-        background-size: 50%;
-        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-      }
-
-      .not-found {
-        font-size: 74px;
-        font-weight: bold;
-        text-align: center;
-        margin-top: 28%;
-      }
-
-      .increased-security {
-        text-align: center;
-        margin-bottom: 40px;
-        font-size: 24px;
-      }
-      .increased-security a {
-        color: black;
-        text-decoration: none;
-        cursor: default;
-      }
-
-      .return-home {
-        text-align: center;
-        margin-top: 1%;
-      }
-
-      .return-home a {
-        font-weight: bold;
-        color: #800;
-      }
-    </style>
+    <link rel="stylesheet" href="css/namespaced-bootstrap.min.css">
+  	<link rel="stylesheet" href="css/styles.css">
   </head>
-
   <body>
-  	<!-- Begin Page Content -->
+    <div class="container bootstrap-styles">
+      <form class="form-signin">
 
-	<div id="container">
+        <label for="username" class="sr-only">Username</label>
+        <input id="username" class="form-control" placeholder="Username" required="" autofocus="" type="text">
 
-		<form>
+        <label for="password" class="sr-only">Password</label>
+        <input id="password" class="form-control" placeholder="Password" required="" type="password">
 
-		<label for="name">Username:</label>
+        <button class="btn btn-lg btn-primary btn-block" id="go" type="submit">Sign In</button>
 
-		<input type="name" id="username">
-
-		<label for="username">Password:</label>
-
-		<p>
-
-		<input type="password" id="password">
-
-		<div id="lower">
-
-		<input type="submit" id="go" value="Login">
-
-		</div>
-
-		</form>
-
-	</div>
-
-
-	<!-- End Page Content -->
-    <!--<div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:20%;">-->
-      <!--<div class="form-group">-->
-
-        <!--<h1 class="title">Login</h1>-->
-        <!--<form>-->
-          <!--<div class="input-container">-->
-            <!--<input type="text" id="Username" required="required"/>-->
-            <!--<label for="Username" class="col-sm-2 control-label" >Username</label>-->
-            <!--<div class="bar"></div>-->
-          <!--</div>-->
-          <!--<div class="input-container">-->
-            <!--<input type="password" id="Password" required="required"/>-->
-            <!--<label for="Password" class="col-sm-2 control-label">Password</label>-->
-            <!--<div class="bar"></div>-->
-          <!--</div>-->
-        <!--</form>-->
-        <!--<div class="button-container">-->
-          <!--<button class="btn btn-default" id="go">GO</button>-->
-        <!--</div>-->
-        <!--&lt;!&ndash;<div class="button-container">&ndash;&gt;-->
-          <!--&lt;!&ndash;<button class="btn btn-default" id="logout">LOGOUT</button>&ndash;&gt;-->
-        <!--&lt;!&ndash;</div>&ndash;&gt;-->
-
-      <!--</div>-->
-    <!--</div>-->
+      </form>
+    </div>
   </body>
 </html>
