@@ -220,8 +220,8 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
         order = evaluate(hdf5_array, array.order, "order")
 
       for attribute in array.attributes(len(hdf5_array.attributes)):
+        values = evaluate(hdf5_array, attribute.expression, "attribute")
         for hyperslice in attribute.hyperslices():
-          values = evaluate(hdf5_array, attribute.expression, "attribute")
           if array.order is not None:
             yield values[order][hyperslice]
           else:
