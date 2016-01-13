@@ -1420,8 +1420,8 @@ def run_agent_function():
   nnodes = cherrypy.request.json["nnodes"]
   partition = cherrypy.request.json["partition"]
   ntasks_per_node = cherrypy.request.json["ntasks_per_node"]
-  ntasks = cherrypy.request.json["ntasks"]
-  ncpu_per_task = cherrypy.request.json["ncpu_per_task"]
+  # ntasks = cherrypy.request.json["ntasks"]
+  # ncpu_per_task = cherrypy.request.json["ncpu_per_task"]
   time_hours = cherrypy.request.json["time_hours"]
   time_minutes = cherrypy.request.json["time_minutes"]
   time_seconds = cherrypy.request.json["time_seconds"]
@@ -1429,7 +1429,7 @@ def run_agent_function():
   fn_params = cherrypy.request.json["fn_params"]
   uid = cherrypy.request.json["uid"]
   with slycat.web.server.remote.get_session(sid) as session:
-    return session.run_agent_function(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, fn_params, uid)
+    return session.run_agent_function(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, fn_params, uid)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
