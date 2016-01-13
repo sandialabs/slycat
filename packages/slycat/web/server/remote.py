@@ -347,8 +347,8 @@ class Session(object):
         ]
 
         for c in params["image_columns_names"]:
-          # arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
-          arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
+          arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
+          # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
 
         return arr
 
