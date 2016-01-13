@@ -19,11 +19,11 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.batch = ko.observable('');
 
       vm.wckey = ko.observable('');
-      vm.nnodes = ko.observable(1);
+      vm.nnodes = ko.observable(4);
       vm.partition = ko.observable('');
       vm.ntasks_per_node = ko.observable(1);
-      vm.ntasks = ko.observable(1);
-      vm.ncpu_per_task = ko.observable(4);
+      // vm.ntasks = ko.observable(1);
+      // vm.ncpu_per_task = ko.observable(4);
       vm.time_hours = ko.observable();
       vm.time_minutes = ko.observable(5);
       vm.time_seconds = ko.observable();
@@ -105,15 +105,15 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             invalid = true;
           }
 
-          if (vm.ntasks() === undefined || parseInt(vm.ntasks(), 10) < 1) {
-            out += '\n' + 'Invalid input for the number of task(s): ' + vm.ntasks() + '.';
-            invalid = true;
-          }
+          // if (vm.ntasks() === undefined || parseInt(vm.ntasks(), 10) < 1) {
+          //   out += '\n' + 'Invalid input for the number of task(s): ' + vm.ntasks() + '.';
+          //   invalid = true;
+          // }
 
-          if (vm.ncpu_per_task() === undefined || parseInt(vm.ncpu_per_task(), 10) < 1) {
-            out += '\n' + 'Invalid input for the number of CPU(s) per task: ' + vm.ncpu_per_task() + '.';
-            invalid = true;
-          }
+          // if (vm.ncpu_per_task() === undefined || parseInt(vm.ncpu_per_task(), 10) < 1) {
+          //   out += '\n' + 'Invalid input for the number of CPU(s) per task: ' + vm.ncpu_per_task() + '.';
+          //   invalid = true;
+          // }
 
 
           var hr = vm.time_hours() === undefined ? 0 : parseInt(vm.time_hours(), 10);
@@ -258,8 +258,8 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           nnodes: vm.nnodes(),
           partition: vm.partition(),
           ntasks_per_node: vm.ntasks_per_node(),
-          ntasks: vm.ntasks(),
-          ncpu_per_task: vm.ncpu_per_task(),
+          // ntasks: vm.ntasks(),
+          // ncpu_per_task: vm.ncpu_per_task(),
           time_hours: vm.time_hours() === undefined ? 0 : vm.time_hours(),
           time_minutes: vm.time_minutes() === undefined ? 0 : vm.time_minutes(),
           time_seconds: vm.time_seconds() === undefined ? 0 : vm.time_seconds(),
