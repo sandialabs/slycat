@@ -33,6 +33,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
       });
     };
 
+    component.process_parameters = function() {
+      component.tab(2);
+    };
+
     component.go_to_model = function() {
       location = server_root + 'models/' + component.model._id();
     };
@@ -84,7 +88,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.finish = function() {
-
+      component.tab(3);
     };
 
     return component;
