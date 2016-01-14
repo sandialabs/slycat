@@ -13,15 +13,33 @@
         <label for="Password">Password</label>
         <div class="bar"></div>
       </div>
-      <div class="button-container">
-        <button class="btn btn-default" id="go">GO</button>
-      </div>
     </form>
+    <div class="button-container">
+      <button class="btn btn-default" id="go">GO</button>
+    </div>
     <div class="button-container">
       <button class="btn btn-default" id="logout">LOGOUT</button>
     </div>
   </div>
   </div>
+</div>
+<!--div class="form-group">
+  <label for="slycat-login-username" class="col-sm-2 control-label">Username</label>
+  <div class="col-sm-10">
+    <input id="slycat-login-username" class="form-control" type="text" data-bind="enable:enable, textInput:username"></input>
+  </div>
+</div>
+<div class="form-group">
+  <label for="slycat-login-password" class="col-sm-2 control-label">Password</label>
+  <div class="col-sm-10">
+    <input id="slycat-login-password" class="form-control" type="password" data-bind="enable:enable, textInput:password"></input>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-offset-2 col-sm-10">
+    <div class="alert fade" role="alert" data-bind="css:status_classes,text:status"></div>
+  </div>
+</div-->
 
   <script type="text/javascript">
     require(["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
@@ -33,21 +51,30 @@
         //TODO: add post call for username and password
         console.log("calling webservice with")
         console.log("login " + user_name + " " + password);
-        console.log(server_root + "login/user/" + user_name + "/password/" + password)
+        console.log(server_root + "login/")
+        var sendInfo = JSON.stringify(
+          {
+            "user_name": user_name,
+            "password": password
+          }
+        );
 
         $.ajax(
         {
-          dataType: "json",
+          contentType: "application/json",
           type: "POST",
-          url: URI(server_root + "login/user/" + user_name + "/password/" + password),
+          url: URI(server_root + "login"),
           success: function(result)
           {
+            window.alert("success " + result);
             console.log("success " + result);
           },
           error: function(request, status, reason_phrase)
           {
-            console.log("error " + request + status + reason_phrase);
+            window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+            console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
           },
+          data: sendInfo
         });
 
         console.log("done")
@@ -74,4 +101,3 @@
       document.getElementById("logout").addEventListener("click", logout, false);
     });
   </script>
-</div>
