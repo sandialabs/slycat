@@ -274,7 +274,7 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py get_job_output", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
-  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, fn_params, uid):
+  def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, fn_params, uid):
     """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 
     Parameters
@@ -325,12 +325,30 @@ class Session(object):
         if "module-name" in slycat.web.server.config["slycat-web-server"]:
           module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
         else:
-          module_name = "slycat-dev"
+          module_name = "slycat"
 
-        arr = ["source /etc/profile.d/modules.sh", "module load %s" % module_name, "ipcluster start -n %s &" % ncpu_per_task, "sleep 2m"]
+        arr = [
+          "source /etc/profile.d/modules.sh",
+          "module load %s" % module_name,
+
+          "profile=slurm_${SLURM_JOB_ID}_$(hostname)",
+          "echo \"Creating profile ${profile}\"",
+          "ipython profile create --parallel --profile=${profile}",
+
+          "echo \"Launching controller\"",
+          "ipcontroller --ip='*' --profile=${profile} &",
+          "sleep 1m",
+
+          "echo \"Launching engines\"",
+          "srun ipengine --profile=${profile} --location=$(hostname) &",
+          "sleep 1m",
+
+          "echo \"Launching job\""
+        ]
 
         for c in params["image_columns_names"]:
-          arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv" % (f, c, params["input"], c, uid, f))
+          arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
+          # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
 
         return arr
 
@@ -353,8 +371,6 @@ class Session(object):
             "nnodes": nnodes,
             "partition": partition,
             "ntasks_per_node": ntasks_per_node,
-            "ntasks": ntasks,
-            "ncpu_per_task": ncpu_per_task,
             "time_hours": time_hours,
             "time_minutes": time_minutes,
             "time_seconds": time_seconds,

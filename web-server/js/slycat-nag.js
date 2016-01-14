@@ -8,6 +8,17 @@ define("slycat-nag", ["slycat-dialog"], function(dialog)
 {
   var nag = false;
 
+  function FlexBoxSupport(){
+    var c = " ", f = "flex", fw = "-webkit-"+f, e = document.createElement('b');
+    try { 
+      e.style.display = fw; 
+      e.style.display = f; 
+      return (e.style.display == f || e.style.display == fw); 
+    } catch(e) { 
+      return false; 
+    }
+  }
+
   // We use json everywhere.
   if(!(window.JSON && window.JSON.parse && window.JSON.toString))
     nag = true;
@@ -18,6 +29,22 @@ define("slycat-nag", ["slycat-dialog"], function(dialog)
 
   // We need localStorage for many of our standarized controls and bookmarks.
   if(!window.localStorage)
+    nag = true;
+
+  // We need SVG for many visualizations
+  if(!document.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#BasicStructure", "1.1"))
+    nag = true;
+
+  // We need WebGL for some models
+  if(!window.WebGLRenderingContext)
+    nag = true;
+
+  // We need Canvas for some models
+  if(!window.HTMLCanvasElement)
+    nag = true;
+
+  // We need CSS3 flexbox
+  if(!FlexBoxSupport())
     nag = true;
 
   if(nag)
