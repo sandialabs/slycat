@@ -139,7 +139,7 @@ def start(root_path, config_file):
   dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
 
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
-  dispatcher.connect("login", "/login/user/:un/password/:pw", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
+  dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
 
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
@@ -214,6 +214,14 @@ def start(root_path, config_file):
     "tools.%s.on" % authentication : False,
     "tools.staticfile.filename": abspath("templates/slycat-logout.html"),
     "tools.staticfile.on": True,
+    }
+  configuration["/login"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticdir.dir": abspath("slycat-login"),
+    "tools.staticdir.on": True,
     }
   configuration["/resources/global/slycat-logo-navbar.png"] = {
     "tools.expires.force": True,
