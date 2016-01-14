@@ -122,7 +122,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
   #with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       results = []
       for array in sorted(hdf5_arrayset.keys()):
@@ -211,7 +211,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
   # with slycat.web.server.hdf5.lock:
-  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
     hdf5_arrayset = slycat.hdf5.ArraySet(file)
     for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
       hdf5_array = hdf5_arrayset[array.index]
