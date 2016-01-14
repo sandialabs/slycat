@@ -27,6 +27,7 @@ require(["jquery", "URI"], function($, URI)
       error: function(request, status, reason_phrase)
       {
         console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+        $("#signin-alert").show(200);
       },
       data: sendInfo
     });
