@@ -505,7 +505,7 @@ def get_page_resource(ptype, resource):
       if page_resource == resource:
         return cherrypy.lib.static.serve_file(page_path)
 
-  slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404 invalid input type: %s" % ptype)
+  # slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404 invalid input type: %s" % ptype)
   raise cherrypy.HTTPError("404")
 
 def get_wizard_resource(wtype, resource):
