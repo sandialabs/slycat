@@ -5,6 +5,8 @@ rights in this software.
 -->
 
 <script type="text/javascript">
+	var model_name = "{{name}}";
+	
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   [
@@ -31,8 +33,11 @@ rights in this software.
 <div id="timeseries-model" style="-webkit-flex:1; flex:1;">
   <div id="content-pane" class="ui-layout-center">
 	  <div id="cluster-pane" class="ui-layout-north">
+	  	<div class="center bootstrap-styles" id="controls">
+	  		<div id="general-controls" class="btn-group btn-group-xs"></div>
+	  		<div id="color-switcher" class="btn-group btn-group-xs"></div>
+	  	</div>
 	    <div class="load-status"></div>
-	    <div id="color-switcher"></div>
 	    <table id="cluster-viewer"></table>
 	  </div>
 	  <div id="model-pane" class="ui-layout-center">
