@@ -33,9 +33,13 @@ rights in this software.
 
 #cluster-pane
 {
-  overflow: auto;
-  color: #665;
-  font-size: small;
+  z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
+}
+#controls {
+  margin: 2px 0px;
+}
+.center {
+  text-align: center;
 }
 
 #cluster-viewer
@@ -232,32 +236,15 @@ rights in this software.
   shape-rendering: crispedges;
 }
 
-#color-switcher {
-  float: right;
-  margin: 9px;
+#color-switcher ul.dropdown-menu
+{
+  background-color: #F2F2F2;
 }
-#color-switcher .label {
-  font-weight: bold;
+.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
+{
+  background-color: #E4E4E4;
 }
-.cca #color-switcher {
-  position: absolute;
-  right: 0px;
-  bottom: 5px;
-}
-#color-switcher .color {
-  background-color: #DBD9EB;
-  padding: 4px;
-}
-.cca #color-switcher .color {
-  background-color: white;
-}
-#color-switcher .color:hover {
-  cursor: pointer;
-}
-#color-switcher .selected:hover {
-  cursor: default;
-}
-#color-switcher .selected {
-  background-color: #7767B0 !important;
-  color: white;
+.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
+{
+  background-color: #337AB7;
 }

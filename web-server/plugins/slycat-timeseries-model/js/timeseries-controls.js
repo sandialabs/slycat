@@ -19,16 +19,16 @@ $.widget("timeseries.controls",
     selection : [],
     hidden_simulations : [],
     indices : [],
+    highlight: [],
   },
 
   _create: function()
   {
     var self = this;
-    var scatterplot_controls = $("#scatterplot-controls", this.element);
-    var selection_controls = $("#selection-controls", this.element);
+    var general_controls = $("#general-controls", this.element);
 
     this.color_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(scatterplot_controls)
+      .appendTo(general_controls)
       ;
     this.color_button = $('\
       <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Waveform Color"> \
@@ -49,13 +49,13 @@ $.widget("timeseries.controls",
       </button> \
       ")
       .click(function(){
-        if (self.options.selection.length == 0 && self.options.hidden_simulations.length == 0) {
+        if (self.options.highlight.length == 0) {
           self._write_data_table();
         } else {
           openCSVSaveChoiceDialog();
         }
       })
-      .appendTo(selection_controls)
+      .appendTo(general_controls)
       ;
 
     function openCSVSaveChoiceDialog(){
@@ -65,9 +65,9 @@ $.widget("timeseries.controls",
         {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
 
-      if(self.options.selection.length > 0)
+      if(self.options.highlight.length > 0)
       {
-        txt += "You have " + self.options.selection.length + " rows selected. ";
+        txt += "You have " + self.options.highlight.length + " rows selected. ";
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
       }
       if(self.options.hidden_simulations.length > 0)

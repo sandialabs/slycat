@@ -113,6 +113,7 @@ var selected_column_min = null; // This holds the min value of the currently sel
 var selected_column_max = null; // This holds the max value of the currently selected column
 var selected_simulations = null; // This hold the currently selected rows
 
+var controls_ready = false;
 var colorswitcher_ready = false;
 var cluster_ready = false;
 var dendrogram_ready = false;
@@ -170,7 +171,7 @@ function setup_page()
       clusters_data = new Array(clusters.length);
       waveforms_data = new Array(clusters.length);
       waveforms_metadata = new Array(clusters.length);
-      setup_cluster();
+      setup_controls();
       setup_widgets();
       setup_waveforms();
     },
@@ -186,6 +187,7 @@ function setup_page()
       table_metadata = metadata;
       setup_widgets();
       setup_colordata();
+      setup_controls();
     },
     error: artifact_missing
   });
@@ -204,7 +206,7 @@ function setup_page()
       selected_simulations = bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
     }
 
-    setup_cluster();
+    setup_controls();
     setup_widgets();
     setup_waveforms();
     setup_colordata();
@@ -272,7 +274,7 @@ function retrieve_sorted_column(parameters)
   });
 }
 
-function setup_cluster()
+function setup_controls()
 {
   if(bookmark && clusters)
   {
@@ -290,6 +292,44 @@ function setup_cluster()
       },
       error: artifact_missing
     });
+  }
+
+  if(
+    !controls_ready && bookmark && clusters
+    && (selected_simulations != null) && table_metadata
+  )
+  {
+    console.log("Setting up second part of controls.");
+
+    controls_ready = true;
+
+    var controls_options =
+    {
+      mid : model._id,
+      model_name: model_name,
+      aid : "data-table",
+      metadata: table_metadata,
+      highlight: selected_simulations,
+      // clusters : clusters,
+      // x_variables: axes_variables,
+      // y_variables: axes_variables,
+      // image_variables: image_columns,
+      // color_variables: color_variables,
+      // rating_variables : rating_columns,
+      // category_variables : category_columns,
+      // cluster_index : cluster_index,
+      // "x-variable" : x_index,
+      // "y-variable" : y_index,
+      // "image-variable" : images_index,
+      // "color-variable" : color_variable,
+      // "auto-scale" : auto_scale,
+      // indices : indices,
+    };
+
+    if(bookmark[initial_cluster + "-selected-waveform-indexes"] !== undefined)
+      controls_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
+
+    $("#controls").controls(controls_options);
   }
 }
 
