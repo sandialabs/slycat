@@ -83,7 +83,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-version", "/configuration/version", slycat.web.server.handlers.get_configuration_version, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
   dispatcher.connect("get-global-resource", "/resources/global/{resource:.*}", slycat.web.server.handlers.get_global_resource, conditions={"method" : ["GET"]})
-  #dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.get_model_arrayset_data, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/arraysets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
@@ -137,7 +137,9 @@ def start(root_path, config_file):
   dispatcher.connect("put-upload-file-part", "/uploads/:uid/files/:fid/parts/:pid", slycat.web.server.handlers.put_upload_file_part, conditions={"method" : ["PUT"]})
   dispatcher.connect("post-upload-finshed", "/uploads/:uid/finished", slycat.web.server.handlers.post_upload_finished, conditions={"method" : ["POST"]})
   dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
+
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
 
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
@@ -163,6 +165,7 @@ def start(root_path, config_file):
 
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
+  # configuration["/logout"]["tools.%s.on" % authentication] = False
   for key, value in configuration["slycat-web-server"]["authentication"]["kwargs"].items():
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
@@ -204,7 +207,30 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("templates"),
     "tools.staticdir.on": True,
     }
-
+  configuration["/logout.html"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticfile.filename": abspath("templates/slycat-logout.html"),
+    "tools.staticfile.on": True,
+    }
+  configuration["/login"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticdir.dir": abspath("slycat-login"),
+    "tools.staticdir.on": True,
+    }
+  configuration["/resources/global/slycat-logo-navbar.png"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticfile.filename": abspath("css/slycat-logo-navbar.png"),
+    "tools.staticfile.on": True,
+    }
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
   for item in configuration["slycat-web-server"]["plugins"]:
@@ -237,7 +263,8 @@ def start(root_path, config_file):
 
   # sets a custom 404 page
   cherrypy.config.update({ 'error_page.404': os.path.join(root_path, "templates/slycat-404.html") })
+  cherrypy.config.update({ 'error_page.401': os.path.join(root_path, "templates/slycat-404.html") })
 
   # Start the web server.
-  cherrypy.quickstart(None, "/", configuration)
+  cherrypy.quickstart(None, "", configuration)
 

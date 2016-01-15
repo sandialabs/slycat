@@ -420,12 +420,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                             success: function() {
                               client.put_model_parameter({
                                 mid: component.model._id(),
-                                aid: "cluster-measure",
-                                value: 'csv',
+                                aid: "default-image",
+                                value: component.image_columns_names.indexOf(component.cluster_column()),
                                 input: true,
                                 success: function() {
-                                  if (callback)
-                                    callback();
+                                  client.put_model_parameter({
+                                    mid: component.model._id(),
+                                    aid: "cluster-measure",
+                                    value: 'csv',
+                                    input: true,
+                                    success: function() {
+                                      if (callback)
+                                        callback();
+                                    }
+                                  });
                                 }
                               });
                             }

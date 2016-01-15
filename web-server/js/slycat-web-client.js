@@ -1092,7 +1092,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
-    module.sign_out = function(params)
+  module.sign_out = function(params)
   {
     $.ajax(
     {

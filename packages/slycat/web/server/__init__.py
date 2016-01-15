@@ -121,71 +121,71 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
-    with slycat.web.server.hdf5.lock:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
-        hdf5_arrayset = slycat.hdf5.ArraySet(file)
-        results = []
-        for array in sorted(hdf5_arrayset.keys()):
-          hdf5_array = hdf5_arrayset[array]
-          results.append({
-            "array": int(array),
-            "index" : int(array),
-            "dimensions" : hdf5_array.dimensions,
-            "attributes" : hdf5_array.attributes,
-            "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-            })
-        return results
-
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
+  #with slycat.web.server.hdf5.lock:
+    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      results = {}
-      if arrays is not None:
-        results["arrays"] = []
-        for array in slycat.hyperchunks.arrays(arrays, hdf5_arrayset.array_count()):
-          hdf5_array = hdf5_arrayset[array.index]
-          results["arrays"].append({
-            "index" : array.index,
-            "dimensions" : hdf5_array.dimensions,
-            "attributes" : hdf5_array.attributes,
-            "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-            })
-      if statistics is not None:
-        results["statistics"] = []
-        for array in slycat.hyperchunks.arrays(statistics, hdf5_arrayset.array_count()):
-          hdf5_array = hdf5_arrayset[array.index]
-          for attribute in array.attributes(len(hdf5_array.attributes)):
-            statistics = {}
-            statistics["array"] = array.index
-            if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-              statistics["attribute"] = attribute.expression.index
-              statistics.update(hdf5_array.get_statistics(attribute.expression.index))
-            else:
-              values = evaluate(hdf5_array, attribute.expression, "statistics")
-              statistics["min"] = values.min()
-              statistics["max"] = values.max()
-              statistics["unique"] = len(numpy.unique(values))
-            results["statistics"].append(statistics)
-
-      if unique is not None:
-        results["unique"] = []
-        for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
-          hdf5_array = hdf5_arrayset[array.index]
-          for attribute in array.attributes(len(hdf5_array.attributes)):
-            unique = {}
-            unique["array"] = array.index
-            unique["values"] = []
-            if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-              for hyperslice in attribute.hyperslices():
-                unique["attribute"] = attribute.expression.index
-                unique["values"].append(hdf5_array.get_unique(attribute.expression.index, hyperslice)["values"])
-            else:
-              values = evaluate(hdf5_array, attribute.expression, "uniques")
-              for hyperslice in attribute.hyperslices():
-                unique["values"].append(numpy.unique(values)[hyperslice])
-            results["unique"].append(unique)
-
+      results = []
+      for array in sorted(hdf5_arrayset.keys()):
+        hdf5_array = hdf5_arrayset[array]
+        results.append({
+          "array": int(array),
+          "index" : int(array),
+          "dimensions" : hdf5_array.dimensions,
+          "attributes" : hdf5_array.attributes,
+          "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
+          })
       return results
+
+  #with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    results = {}
+    if arrays is not None:
+      results["arrays"] = []
+      for array in slycat.hyperchunks.arrays(arrays, hdf5_arrayset.array_count()):
+        hdf5_array = hdf5_arrayset[array.index]
+        results["arrays"].append({
+          "index" : array.index,
+          "dimensions" : hdf5_array.dimensions,
+          "attributes" : hdf5_array.attributes,
+          "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
+          })
+    if statistics is not None:
+      results["statistics"] = []
+      for array in slycat.hyperchunks.arrays(statistics, hdf5_arrayset.array_count()):
+        hdf5_array = hdf5_arrayset[array.index]
+        for attribute in array.attributes(len(hdf5_array.attributes)):
+          statistics = {}
+          statistics["array"] = array.index
+          if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+            statistics["attribute"] = attribute.expression.index
+            statistics.update(hdf5_array.get_statistics(attribute.expression.index))
+          else:
+            values = evaluate(hdf5_array, attribute.expression, "statistics")
+            statistics["min"] = values.min()
+            statistics["max"] = values.max()
+            statistics["unique"] = len(numpy.unique(values))
+          results["statistics"].append(statistics)
+
+    if unique is not None:
+      results["unique"] = []
+      for array in slycat.hyperchunks.arrays(unique, hdf5_arrayset.array_count()):
+        hdf5_array = hdf5_arrayset[array.index]
+        for attribute in array.attributes(len(hdf5_array.attributes)):
+          unique = {}
+          unique["array"] = array.index
+          unique["values"] = []
+          if isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+            for hyperslice in attribute.hyperslices():
+              unique["attribute"] = attribute.expression.index
+              unique["values"].append(hdf5_array.get_unique(attribute.expression.index, hyperslice)["values"])
+          else:
+            values = evaluate(hdf5_array, attribute.expression, "uniques")
+            for hyperslice in attribute.hyperslices():
+              unique["values"].append(numpy.unique(values)[hyperslice])
+          results["unique"].append(unique)
+
+    return results
 
 def get_model_arrayset_data(database, model, aid, hyperchunks):
   """Read data from an arrayset artifact.
@@ -210,22 +210,22 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r") as file:
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
-        hdf5_array = hdf5_arrayset[array.index]
+  # with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
 
-        if array.order is not None:
-          order = evaluate(hdf5_array, array.order, "order")
+      if array.order is not None:
+        order = evaluate(hdf5_array, array.order, "order")
 
-        for attribute in array.attributes(len(hdf5_array.attributes)):
-          for hyperslice in attribute.hyperslices():
-            values = evaluate(hdf5_array, attribute.expression, "attribute")
-            if array.order is not None:
-              yield values[order][hyperslice]
-            else:
-              yield values[hyperslice]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        values = evaluate(hdf5_array, attribute.expression, "attribute")
+        for hyperslice in attribute.hyperslices():
+          if array.order is not None:
+            yield values[order][hyperslice]
+          else:
+            yield values[hyperslice]
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
@@ -238,22 +238,22 @@ def put_model_arrayset(database, model, aid, input=False):
   """Start a new model array set artifact."""
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
   storage = uuid.uuid4().hex
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.create(storage) as file:
-      arrayset = slycat.hdf5.start_arrayset(file)
-      database.save({"_id" : storage, "type" : "hdf5"})
-      model["artifact:%s" % aid] = storage
-      model["artifact-types"][aid] = "hdf5"
-      if input:
-        model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
-      database.save(model)
+#with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.create(storage) as file:
+    arrayset = slycat.hdf5.start_arrayset(file)
+    database.save({"_id" : storage, "type" : "hdf5"})
+    model["artifact:%s" % aid] = storage
+    model["artifact-types"][aid] = "hdf5"
+    if input:
+      model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+    database.save(model)
 
 def put_model_array(database, model, aid, array_index, attributes, dimensions):
   slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
   storage = model["artifact:%s" % aid]
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(storage, "r+") as file:
-      slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
+#with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(storage, "r+") as file:
+    slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 def put_model_arrayset_data(database, model, aid, hyperchunks, data):
   """Write data to an arrayset artifact.
@@ -281,23 +281,23 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
   slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
-        hdf5_array = hdf5_arrayset[array.index]
-        for attribute in array.attributes(len(hdf5_array.attributes)):
-          if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-            slycat.email.send_error("slycat.web.server.__init__.py put_model_arrayset_data", "Cannot write to computed attribute.")
-            raise ValueError("Cannot write to computed attribute.")
-          stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
-          for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing to %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
+#with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+          slycat.email.send_error("slycat.web.server.__init__.py put_model_arrayset_data", "Cannot write to computed attribute.")
+          raise ValueError("Cannot write to computed attribute.")
+        stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Writing to %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
 
-            data_hyperslice = next(data)
-            if isinstance(data_hyperslice, list):
-              data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-            hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
+          data_hyperslice = next(data)
+          if isinstance(data_hyperslice, list):
+            data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
+          hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
 
 def put_model_file(database, model, aid, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
@@ -331,8 +331,8 @@ def put_model_inputs(database, model, source, deep_copy=False):
       if deep_copy:
         new_value = uuid.uuid4().hex
         os.makedirs(os.path.dirname(slycat.web.server.hdf5.path(new_value)))
-        with slycat.web.server.hdf5.lock:
-          shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
+        #with slycat.web.server.hdf5.lock:
+        shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
         model["artifact:%s" % aid] = new_value
         database.save({"_id" : new_value, "type" : "hdf5"})
       else:
