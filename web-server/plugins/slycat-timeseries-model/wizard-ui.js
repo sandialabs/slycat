@@ -2,11 +2,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
 
   function constructor(params) {
     var component = {};
-
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: null });
-
     component.directory = ko.observable('');
     component.cluster_sample_count = ko.observable(1000);
     component.cluster_sample_types = ko.observableArray(['uniform-paa', 'uniform-pla']);

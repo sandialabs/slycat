@@ -23,6 +23,15 @@ def register_slycat_plugin(context):
     context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
+  def checkjob(database, model, verb, type, command, **kwargs):
+    sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
+    jid = kwargs["jid"]
+    fn = kwargs["fn"]
+    uid = kwargs["uid"]
+
+    print "slycat-timeseries-model checkjob ran!"
+
+
   # Register our new model type
   context.register_model("timeseries", finish)
 
@@ -65,6 +74,9 @@ def register_slycat_plugin(context):
   ]
   for dev in devs:
     context.register_page_resource("timeseries", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Register custom commands for use by wizards
+  context.register_model_command("POST", "timeseries", "checkjob", checkjob)
 
   # Register a wizard for creating instances of the new model
   context.register_wizard("timeseries", "New Timeseries Model", require={"action":"create", "context":"project"})
