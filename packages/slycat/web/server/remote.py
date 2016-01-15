@@ -315,40 +315,53 @@ class Session(object):
         "one-norm-distance": "one-norm",
         "correlation-distance": "correlation",
         "cosine-distance": "cosine",
-        "hamming-distance": "hamming"
+        "hamming-distance": "hamming",
+        "timeseries-model": "timeseries-model"
       }
+
+      if "module-name" in slycat.web.server.config["slycat-web-server"]:
+          module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
+      else:
+        module_name = "slycat"
+
+      # setup necessary for using IPython parallel with the agent function
+      ipython_parallel_setup_arr = [
+        "source /etc/profile.d/modules.sh",
+        "module load %s" % module_name,
+
+        "profile=slurm_${SLURM_JOB_ID}_$(hostname)",
+        "echo \"Creating profile ${profile}\"",
+        "ipython profile create --parallel --profile=${profile}",
+
+        "echo \"Launching controller\"",
+        "ipcontroller --ip='*' --profile=${profile} &",
+        "sleep 1m",
+
+        "echo \"Launching engines\"",
+        "srun ipengine --profile=${profile} --location=$(hostname) &",
+        "sleep 1m",
+
+        "echo \"Launching job\""
+      ]
 
       def create_distance_matrix(fn_id, params):
         f = restricted_fns[fn_id]
         path = "/".join(params["input"].split("/")[:-1])
 
-        if "module-name" in slycat.web.server.config["slycat-web-server"]:
-          module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
-        else:
-          module_name = "slycat"
-
-        arr = [
-          "source /etc/profile.d/modules.sh",
-          "module load %s" % module_name,
-
-          "profile=slurm_${SLURM_JOB_ID}_$(hostname)",
-          "echo \"Creating profile ${profile}\"",
-          "ipython profile create --parallel --profile=${profile}",
-
-          "echo \"Launching controller\"",
-          "ipcontroller --ip='*' --profile=${profile} &",
-          "sleep 1m",
-
-          "echo \"Launching engines\"",
-          "srun ipengine --profile=${profile} --location=$(hostname) &",
-          "sleep 1m",
-
-          "echo \"Launching job\""
-        ]
+        arr = list(ipython_parallel_setup_arr)
 
         for c in params["image_columns_names"]:
+          # uncomment this line for production
           arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
+          # uncomment this line for local development
           # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
+
+        return arr
+
+      def compute_timeseries(fn_id, params):
+        arr = list(ipython_parallel_setup_arr)
+
+        arr.append("python slycat-agent-compute-timeseries.py")
 
         return arr
 
@@ -356,7 +369,10 @@ class Session(object):
         # agent_function is a placeholder for the future:
         # it will contain the logic for different type of agent functions
         # depending on the function identifier.
-        return create_distance_matrix(fn_id, params)
+        if fn_id == "timeseries-model":
+          return compute_timeseries(fn_id, params)
+        else:
+          return create_distance_matrix(fn_id, params)
 
       if fn not in restricted_fns:
         cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
