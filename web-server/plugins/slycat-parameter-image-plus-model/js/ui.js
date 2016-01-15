@@ -160,6 +160,11 @@ $.ajax(
     image_columns = model["artifact:image-columns"];
     rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
     category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
+    default_image = model["artifact:default-image"];
+
+    if (default_image === null || default_image === undefined)
+      default_image = 0;
+
     model_loaded();
   },
   error: function(request, status, reason_phrase)
@@ -407,7 +412,7 @@ function metadata_loaded()
       });
     }
 
-    images_index = image_columns[0];
+    images_index = image_columns[default_image];
     if("images-selection" in bookmark)
       images_index = bookmark["images-selection"];
     setup_table();

@@ -13,6 +13,7 @@ import logging.handlers
 import numbers
 import numpy
 import os
+import time
 import Queue
 import re
 import slycat.email
@@ -36,6 +37,9 @@ import sys
 import threading
 import time
 import uuid
+import functools
+from cherrypy._cpcompat import base64_decode
+import datetime
 
 def css_bundle():
   with css_bundle._lock:
@@ -501,7 +505,7 @@ def get_page_resource(ptype, resource):
       if page_resource == resource:
         return cherrypy.lib.static.serve_file(page_path)
 
-  slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404 invalid input type: %s" % ptype)
+  # slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404 invalid input type: %s" % ptype)
   raise cherrypy.HTTPError("404")
 
 def get_wizard_resource(wtype, resource):
@@ -662,18 +666,103 @@ def delete_upload(uid):
   slycat.web.server.upload.delete_session(uid)
   cherrypy.response.status = "204 Upload session deleted."
 
-def logout():
-  # See if the client has a valid session.
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def login():
+  """
+  Takes the post object under cherrypy.request.json with the users name and password
+  and determins with the user can be authenticated with slycat
+  :return: authentication status
+  """
+
   if "slycatauth" in cherrypy.request.cookie:
-    sid = cherrypy.request.cookie["slycatauth"].value
-    couchdb = slycat.web.server.database.couchdb.connect()
-    session = couchdb.get("session", sid)
-    if session is not None:
-      cherrypy.response.status = "204 session deleted." + json.dumps(session) + str(couchdb.delete(session))
-    else:
-      cherrypy.response.status = "204 session not deleted." + json.dumps(session) + sid + str(session.get("_id") is sid) + ":::::" + session.get("_id") + ":::::" + sid
+    try:
+      sid = cherrypy.request.cookie["slycatauth"].value
+      couchdb = slycat.web.server.database.couchdb.connect()
+      session = couchdb.get("session", sid)
+      if session is not None:
+        couchdb.delete(session)
+    except:
+      pass
+
+  # try and decode the username and password
+  try:
+    user_name = base64_decode(cherrypy.request.json["user_name"])
+    password = base64_decode(cherrypy.request.json["password"])
+  except:
+    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
+    raise cherrypy.HTTPError(400)
+  realm = None
+
+  # Get the client ip, which might be forwarded by a proxy.
+  remote_ip = cherrypy.request.headers.get("x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
+
+  # see if we have a registered password checking function from our config
+  if login.password_check is None:
+    if "password-check" not in cherrypy.request.app.config["slycat-web-server"]:
+      raise cherrypy.HTTPError("500 No password check configured.")
+    plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
+    args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
+    kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
+    if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
+      slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 500 no password check plugin found.")
+      raise cherrypy.HTTPError("500 No password check plugin found.")
+    login.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args, **kwargs)
+
+  # time to test username and password
+  success, groups = login.password_check(realm, user_name, password)
+
+  if success:
+    # Successful authentication, create a session and return.
+    cherrypy.log.error("%s@%s: Password check succeeded." % (user_name, remote_ip))
+
+    sid = uuid.uuid4().hex
+    session = {"created": datetime.datetime.utcnow(), "creator": user_name}
+    database = slycat.web.server.database.couchdb.connect()
+    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"], 'groups': groups, 'ip': remote_ip})
+
+    login.sessions[sid] = session
+
+    cherrypy.response.cookie["slycatauth"] = sid
+    cherrypy.response.cookie["slycatauth"]["path"] = "/"
+    cherrypy.response.cookie["slycatauth"]["secure"] = 1
+    cherrypy.response.cookie["slycatauth"]["httponly"] = 1
+    cherrypy.response.status = "200 OK"
+    cherrypy.request.login = user_name#TODO:might be able to delete this
   else:
-    cherrypy.response.status = "404 no auth found"
+    cherrypy.response.status = "404 no auth found!!!"
+  return {'success': success}
+
+
+login.password_check = None
+login.sessions = {}
+login.session_cleanup = None
+
+def logout():
+  """
+  See if the client has a valid session.
+  If so delete it
+  :return: the status of the request
+  """
+  try:
+    if "slycatauth" in cherrypy.request.cookie:
+      sid = cherrypy.request.cookie["slycatauth"].value
+
+      # expire the old cookie
+      cherrypy.response.cookie["slycatauth"] = sid
+      cherrypy.response.cookie["slycatauth"]['expires'] = 0
+
+      couchdb = slycat.web.server.database.couchdb.connect()
+      session = couchdb.get("session", sid)
+      if session is not None:
+        cherrypy.response.status = "200 session deleted." + str(couchdb.delete(session))
+      else:
+        cherrypy.response.status = "400 Bad Request no session to delete."
+    else:
+      cherrypy.response.status = "403 Forbidden"
+  except Exception as e:
+    raise cherrypy.HTTPError("400 Bad Request")
 
 @cherrypy.tools.json_in(on = True)
 def put_model_inputs(mid):
@@ -752,49 +841,49 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
     data = json.load(data.file)
     data_iterator = iter(data)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
-      hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
-        hdf5_array = hdf5_arrayset[array.index]
-        for attribute in array.attributes(len(hdf5_array.attributes)):
-          if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
-            raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
-          for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
+#with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+      hdf5_array = hdf5_arrayset[array.index]
+      for attribute in array.attributes(len(hdf5_array.attributes)):
+        if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
+          raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
+        for hyperslice in attribute.hyperslices():
+          cherrypy.log.error("Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
 
-            # We have to convert our hyperslice into a shape with explicit extents so we can compute
-            # how many bytes to extract from the input data.
-            if hyperslice == (Ellipsis,):
-              data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
-            else:
-              data_shape = []
-              for hyperslice_dimension, array_dimension in zip(hyperslice, hdf5_array.dimensions):
-                if isinstance(hyperslice_dimension, numbers.Integral):
-                  data_shape.append(1)
-                elif isinstance(hyperslice_dimension, type(Ellipsis)):
-                  data_shape.append(array_dimension["end"] - array_dimension["begin"])
-                elif isinstance(hyperslice_dimension, slice):
-                  # TODO: Handle step
-                  start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
-                  data_shape.append(stop - start)
-                else:
-                  slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "Unexpected hyperslice: %s" % hyperslice_dimension)
-                  raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
+          # We have to convert our hyperslice into a shape with explicit extents so we can compute
+          # how many bytes to extract from the input data.
+          if hyperslice == (Ellipsis,):
+            data_shape = [dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]
+          else:
+            data_shape = []
+            for hyperslice_dimension, array_dimension in zip(hyperslice, hdf5_array.dimensions):
+              if isinstance(hyperslice_dimension, numbers.Integral):
+                data_shape.append(1)
+              elif isinstance(hyperslice_dimension, type(Ellipsis)):
+                data_shape.append(array_dimension["end"] - array_dimension["begin"])
+              elif isinstance(hyperslice_dimension, slice):
+                # TODO: Handle step
+                start, stop, step = hyperslice_dimension.indices(array_dimension["end"] - array_dimension["begin"])
+                data_shape.append(stop - start)
+              else:
+                slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "Unexpected hyperslice: %s" % hyperslice_dimension)
+                raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
 
-            # Convert data to an array ...
-            data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
-            data_size = numpy.prod(data_shape)
+          # Convert data to an array ...
+          data_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
+          data_size = numpy.prod(data_shape)
 
-            if byteorder is None:
-              hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
-            elif byteorder == sys.byteorder:
-              hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
-            else:
-              slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "Not implemented error.")
-              raise NotImplementedError()
+          if byteorder is None:
+            hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
+          elif byteorder == sys.byteorder:
+            hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(data_shape)
+          else:
+            slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data", "Not implemented error.")
+            raise NotImplementedError()
 
-            hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
+          hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
 
 def delete_model(mid):
   couchdb = slycat.web.server.database.couchdb.connect()
@@ -843,63 +932,63 @@ def delete_project_cache_object(pid, key):
   slycat.email.send_error("slycat.web.server.handlers.py delete_project_cache_object", "cherrypy.HTTPError 404")
   raise cherrypy.HTTPError(404)
 
-# def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
-#   try:
-#     attribute = int(attribute)
-#   except:
-#     raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
-#
-#   try:
-#     ranges = [int(spec) for spec in arguments["ranges"].split(",")]
-#     i = iter(ranges)
-#     ranges = list(itertools.izip(i, i))
-#   except:
-#     raise cherrypy.HTTPError("400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
-#
-#   byteorder = arguments.get("byteorder", None)
-#   if byteorder is not None:
-#     if byteorder not in ["little", "big"]:
-#       raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
-#     accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
-#   else:
-#     accept = cherrypy.lib.cptools.accept(["application/json"])
-#   cherrypy.response.headers["content-type"] = accept
-#
-#   database = slycat.web.server.database.couchdb.connect()
-#   model = database.get("model", mid)
-#   project = database.get("project", model["project"])
-#   slycat.web.server.authentication.require_project_reader(project)
-#
-#   artifact = model.get("artifact:%s" % aid, None)
-#   if artifact is None:
-#     raise cherrypy.HTTPError(404)
-#   artifact_type = model["artifact-types"][aid]
-#   if artifact_type not in ["hdf5"]:
-#     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
-#
-#   with slycat.web.server.hdf5.lock:
-#     with slycat.web.server.hdf5.open(artifact) as file:
-#       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-#       hdf5_array = hdf5_arrayset[array]
-#
-#       if not(0 <= attribute and attribute < len(hdf5_array.attributes)):
-#         raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
-#       if len(ranges) != hdf5_array.ndim:
-#         raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
-#
-#       ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(hdf5_array.dimensions, ranges)]
-#       index = tuple([slice(begin, end) for begin, end in ranges])
-#
-#       attribute_type =  hdf5_array.attributes[attribute]["type"]
-#       data = hdf5_array.get_data(attribute)[index]
-#
-#       if byteorder is None:
-#         return json.dumps(data.tolist())
-#       else:
-#         if sys.byteorder != byteorder:
-#           return data.byteswap().tostring(order="C")
-#         else:
-#           return data.tostring(order="C")
+def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
+  try:
+    attribute = int(attribute)
+  except:
+    raise cherrypy.HTTPError("400 Malformed attribute argument must be a zero-based integer attribute index.")
+
+  try:
+    ranges = [int(spec) for spec in arguments["ranges"].split(",")]
+    i = iter(ranges)
+    ranges = list(itertools.izip(i, i))
+  except:
+    raise cherrypy.HTTPError("400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
+
+  byteorder = arguments.get("byteorder", None)
+  if byteorder is not None:
+    if byteorder not in ["little", "big"]:
+      raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+# with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(artifact) as file:
+    hdf5_arrayset = slycat.hdf5.ArraySet(file)
+    hdf5_array = hdf5_arrayset[array]
+
+    if not(0 <= attribute and attribute < len(hdf5_array.attributes)):
+      raise cherrypy.HTTPError("400 Attribute argument out-of-range.")
+    if len(ranges) != hdf5_array.ndim:
+      raise cherrypy.HTTPError("400 Ranges argument doesn't contain the correct number of dimensions.")
+
+    ranges = [(max(dimension["begin"], range[0]), min(dimension["end"], range[1])) for dimension, range in zip(hdf5_array.dimensions, ranges)]
+    index = tuple([slice(begin, end) for begin, end in ranges])
+
+    attribute_type =  hdf5_array.attributes[attribute]["type"]
+    data = hdf5_array.get_data(attribute)[index]
+
+    if byteorder is None:
+      return json.dumps(data.tolist())
+    else:
+      if sys.byteorder != byteorder:
+        return data.byteswap().tostring(order="C")
+      else:
+        return data.tostring(order="C")
 
 @cherrypy.tools.json_out(on = True)
 def get_model_arrayset_metadata(mid, aid, **kwargs):
@@ -943,10 +1032,12 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
   return results
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
-  #cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
-
+  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
+  start = time.time()
   try:
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
+    finish = time.time()-start
+    cherrypy.log.error(":::Parsing hyperchunks took %s miliseconds" % (finish*1000))
   except:
     slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
@@ -960,10 +1051,16 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
     accept = cherrypy.lib.cptools.accept(["application/json"])
   cherrypy.response.headers["content-type"] = accept
 
+  finish = time.time()-start
+  cherrypy.log.error(":::point A %s miliseconds" % (finish*1000))
+
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
+
+  finish = time.time()-start
+  cherrypy.log.error(":::point B %s miliseconds" % (finish*1000))
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
@@ -990,6 +1087,8 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
           yield hyperslice.byteswap().tostring(order="C")
         else:
           yield hyperslice.tostring(order="C")
+  finish = time.time()-start
+  cherrypy.log.error(":::method took %s miliseconds" % (finish*1000))
   return content()
 get_model_arrayset_data._cp_config = {"response.stream" : True}
 
@@ -1132,9 +1231,9 @@ def get_model_table_metadata(mid, aid, array, index = None):
     slycat.email.send_error("slycat.web.server.handlers.py get_model_table_metadata", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(artifact, "r+") as file: # We have to open the file with writing enabled because the statistics cache may need to be updated.
-      metadata = get_table_metadata(file, array, index)
+  # with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(artifact, "r+") as file: # We have to open the file with writing enabled because the statistics cache may need to be updated.
+    metadata = get_table_metadata(file, array, index)
   return metadata
 
 @cherrypy.tools.json_out(on = True)
@@ -1157,44 +1256,44 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
     slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(artifact, mode="r+") as file:
-      metadata = get_table_metadata(file, array, index)
+#with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(artifact, mode="r+") as file:
+    metadata = get_table_metadata(file, array, index)
 
-      # Constrain end <= count along both dimensions
-      rows = rows[rows < metadata["row-count"]]
-      if numpy.any(columns >= metadata["column-count"]):
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "cherrypy.HTTPError 400 column out-of-range.")
-        raise cherrypy.HTTPError("400 Column out-of-range.")
-      if sort is not None:
-        for column, order in sort:
-          if column >= metadata["column-count"]:
-            slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "400 sort column out-of-range.")
-            raise cherrypy.HTTPError("400 Sort column out-of-range.")
+    # Constrain end <= count along both dimensions
+    rows = rows[rows < metadata["row-count"]]
+    if numpy.any(columns >= metadata["column-count"]):
+      slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "cherrypy.HTTPError 400 column out-of-range.")
+      raise cherrypy.HTTPError("400 Column out-of-range.")
+    if sort is not None:
+      for column, order in sort:
+        if column >= metadata["column-count"]:
+          slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "400 sort column out-of-range.")
+          raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-      # Retrieve the data
-      data = []
-      sort_index = get_table_sort_index(file, metadata, array, sort, index)
-      slice = sort_index[rows]
-      slice_index = numpy.argsort(slice, kind="mergesort")
-      slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
-      for column in columns:
-        type = metadata["column-types"][column]
-        if index is not None and column == metadata["column-count"]-1:
-          values = slice.tolist()
-        else:
-          values = slycat.hdf5.ArraySet(file)[array].get_data(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
-          if type in ["float32", "float64"]:
-            values = [None if numpy.isnan(value) else value for value in values]
-        data.append(values)
+    # Retrieve the data
+    data = []
+    sort_index = get_table_sort_index(file, metadata, array, sort, index)
+    slice = sort_index[rows]
+    slice_index = numpy.argsort(slice, kind="mergesort")
+    slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
+    for column in columns:
+      type = metadata["column-types"][column]
+      if index is not None and column == metadata["column-count"]-1:
+        values = slice.tolist()
+      else:
+        values = slycat.hdf5.ArraySet(file)[array].get_data(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+        if type in ["float32", "float64"]:
+          values = [None if numpy.isnan(value) else value for value in values]
+      data.append(values)
 
-      result = {
-        "rows" : rows.tolist(),
-        "columns" : columns.tolist(),
-        "column-names" : [metadata["column-names"][column] for column in columns],
-        "data" : data,
-        "sort" : sort
-        }
+    result = {
+      "rows" : rows.tolist(),
+      "columns" : columns.tolist(),
+      "column-names" : [metadata["column-names"][column] for column in columns],
+      "data" : data,
+      "sort" : sort
+      }
 
   return result
 
@@ -1217,21 +1316,21 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
     slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(artifact, mode="r+") as file:
-      metadata = get_table_metadata(file, array, index)
+  # with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(artifact, mode="r+") as file:
+    metadata = get_table_metadata(file, array, index)
 
-      # Constrain end <= count along both dimensions
-      rows = rows[rows < metadata["row-count"]]
-      if sort is not None:
-        for column, order in sort:
-          if column >= metadata["column-count"]:
-            slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
-            raise cherrypy.HTTPError("400 Sort column out-of-range.")
+    # Constrain end <= count along both dimensions
+    rows = rows[rows < metadata["row-count"]]
+    if sort is not None:
+      for column, order in sort:
+        if column >= metadata["column-count"]:
+          slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
+          raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-      # Retrieve the data ...
-      sort_index = get_table_sort_index(file, metadata, array, sort, index)
-      slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
+    # Retrieve the data ...
+    sort_index = get_table_sort_index(file, metadata, array, sort, index)
+    slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
 
   if byteorder is None:
     return json.dumps(slice.tolist())
@@ -1260,21 +1359,21 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
     slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
     raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
-  with slycat.web.server.hdf5.lock:
-    with slycat.web.server.hdf5.open(artifact, mode="r+") as file:
-      metadata = get_table_metadata(file, array, index)
+  # with slycat.web.server.hdf5.lock:
+  with slycat.web.server.hdf5.open(artifact, mode="r+") as file:
+    metadata = get_table_metadata(file, array, index)
 
-      # Constrain end <= count along both dimensions
-      rows = rows[rows < metadata["row-count"]]
-      if sort is not None:
-        for column, order in sort:
-          if column >= metadata["column-count"]:
-            slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
-            raise cherrypy.HTTPError("400 Sort column out-of-range.")
+    # Constrain end <= count along both dimensions
+    rows = rows[rows < metadata["row-count"]]
+    if sort is not None:
+      for column, order in sort:
+        if column >= metadata["column-count"]:
+          slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices", "cherrypy.HTTPError 400 sort column out-of-range.")
+          raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-      # Generate a database query
-      sort_index = get_table_sort_index(file, metadata, array, sort, index)
-      slice = sort_index[rows].astype("int32")
+    # Generate a database query
+    sort_index = get_table_sort_index(file, metadata, array, sort, index)
+    slice = sort_index[rows].astype("int32")
 
   if byteorder is None:
     return json.dumps(slice.tolist())
@@ -1401,8 +1500,8 @@ def run_agent_function():
   nnodes = cherrypy.request.json["nnodes"]
   partition = cherrypy.request.json["partition"]
   ntasks_per_node = cherrypy.request.json["ntasks_per_node"]
-  ntasks = cherrypy.request.json["ntasks"]
-  ncpu_per_task = cherrypy.request.json["ncpu_per_task"]
+  # ntasks = cherrypy.request.json["ntasks"]
+  # ncpu_per_task = cherrypy.request.json["ncpu_per_task"]
   time_hours = cherrypy.request.json["time_hours"]
   time_minutes = cherrypy.request.json["time_minutes"]
   time_seconds = cherrypy.request.json["time_seconds"]
@@ -1410,7 +1509,7 @@ def run_agent_function():
   fn_params = cherrypy.request.json["fn_params"]
   uid = cherrypy.request.json["uid"]
   with slycat.web.server.remote.get_session(sid) as session:
-    return session.run_agent_function(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, fn_params, uid)
+    return session.run_agent_function(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, fn_params, uid)
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

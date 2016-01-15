@@ -174,6 +174,7 @@ if __name__ == "__main__":
   parser.add_argument("input", help="Input CSV file containing image paths")
   parser.add_argument("output", help="Output CSV file")
   parser.add_argument("--distance-measure", default="jaccard", help="Distance metric to be used. Options: jaccard, jaccard2 (for very light-colored images), one-norm, correlation, cosine, or hamming. For most image data, correlation or jaccard will yield best results.")
+  parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
   arguments = parser.parse_args()
 
   ###########################################################################################
@@ -210,9 +211,10 @@ if __name__ == "__main__":
   # for use by the parallel code.
 
   try:
-    workers = IPython.parallel.Client()[:]
-  except:
-    raise Exception("A running IPython paralle cluster is required.")
+    workers = IPython.parallel.Client(profile=arguments.profile)[:]
+  except Exception, e:
+    print str(e)
+    raise Exception("A running IPython parallel cluster is required.")
 
   workers.use_dill()
   with workers.sync_imports():

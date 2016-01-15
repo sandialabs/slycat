@@ -203,7 +203,7 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
       sid = self.get_cookie("slycatauth")
       database = couch.BlockingCouch("slycat")
       session = database.get_doc(sid)
-
+      log.error("current session is at %s seconds ::: session expires at %s seconds,  is current session expired? %s" % ((datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds(), configuration["slycat"]["session-timeout"].total_seconds(),(datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > configuration["slycat"]["session-timeout"].total_seconds()))
       if (datetime.datetime.utcnow() - datetime.datetime.strptime(session["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds() > configuration["slycat"]["session-timeout"].total_seconds():
         raise tornado.web.HTTPError(403, reason="Session expired.")
 
@@ -214,6 +214,8 @@ class ChangeFeed(tornado.websocket.WebSocketHandler):
       tornado.websocket.WebSocketHandler.get(self, *args, **kwargs)
     except tornado.web.HTTPError as e:
       self.set_status(e.status, e.reason)
+    except couch.NotFound:
+      raise tornado.web.HTTPError(404, reason="Session not found, could be expired, authorization required.")
     except Exception as e:
       raise
 
