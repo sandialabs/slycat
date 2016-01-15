@@ -32,26 +32,26 @@
       <div class="form-group">
         <label class="col-sm-4">Cluster Sample Type</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-sample-type" class="form-control" data-bind="options: cluster_sample_types"></select>
+          <select id="timeseries-wizard-cluster-sample-type" class="form-control" data-bind="options: cluster_sample_type"></select>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-4">Cluster Type</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-type" class="form-control" data-bind="options: cluster_types"></select>
+          <select id="timeseries-wizard-cluster-type" class="form-control" data-bind="options: cluster_type"></select>
         </div>
       </div>
       <div class="form-group">
         <label class="col-sm-4">Cluster Metric</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metrics"></select>
+          <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric"></select>
         </div>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 2">
       <form class="compute form-horizontal" role="form">
-      <slycat-remote-interface params="agent_functions: ['timeseries-model'], agent_functions_params: { 'directory': directory(), 'cluster_sample_count': cluster_sample_count(), 'cluster_sample_types': cluster_sample_types(), 'cluster_types': cluster_types(), 'cluster_metrics': cluster_metrics() }, model_type: 'timeseries', mid: model._id()"></slycat-remote-interface>
+      <slycat-remote-interface params="agent_functions: ['timeseries-model'], agent_functions_params: { 'directory': directory(), 'cluster_sample_count': cluster_sample_count(), 'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 'cluster_type': $('#timeseries-wizard-cluster-type').val(), 'cluster_metric': $('#timeseries-wizard-cluster-metric').val() }, model_type: 'timeseries', mid: model._id()"></slycat-remote-interface>
       </form>
     </div>
 

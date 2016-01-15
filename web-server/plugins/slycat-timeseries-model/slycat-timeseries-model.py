@@ -1,8 +1,12 @@
 def register_slycat_plugin(context):
   """Called during startup when the plugin is loaded."""
+  import cherrypy
   import datetime
+  import time
   import os
+  import json
   import slycat.web.server
+  import threading
 
   def finish(database, model):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
@@ -23,14 +27,60 @@ def register_slycat_plugin(context):
     context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
+  def compute():
+    print "compute() ran!"
+
+  def fail_model(mid, message):
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
+
+  def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
+    cherrypy.request.headers["x-forwarded-for"] = request_from
+
+    while True:
+      try:
+        response = slycat.web.server.checkjob(sid, jid)
+      except Exception as e:
+        fail_model(mid, "Something went wrong while checking on job %s status: check for the generated files when the job completes." % jid)
+        slycat.email.send_error("slycat-timeseries-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
+        raise Exception("An error occurred while checking on a remote job: %s" % e.message)
+        stop_event.set()
+
+      state = response["status"]["state"]
+      cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
+
+      if state == "CANCELLED":
+        fail_model(mid, "Job %s was cancelled." % jid)
+        stop_event.set()
+        break
+
+      if state == "FAILED":
+        fail_model(mid, "Job %s has failed." % jid)
+        stop_event.set()
+        break
+
+      if state == "COMPLETED":
+        callback()
+        stop_event.set()
+        break
+
+      time.sleep(5)
+
+
   def checkjob(database, model, verb, type, command, **kwargs):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
     uid = kwargs["uid"]
 
-    print "slycat-timeseries-model checkjob ran!"
+    def callback():
+      compute()
+      finish(database, model)
 
+    stop_event = threading.Event()
+    t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
+    t.start()
 
   # Register our new model type
   context.register_model("timeseries", finish)
