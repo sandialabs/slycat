@@ -7,9 +7,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: null });
     component.directory = ko.observable('');
     component.cluster_sample_count = ko.observable(1000);
-    component.cluster_sample_types = ko.observableArray(['uniform-paa', 'uniform-pla']);
-    component.cluster_types = ko.observableArray(['average', 'single', 'complete', 'weighted']);
-    component.cluster_metrics = ko.observableArray(['euclidean']);
+    component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
+    component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
+    component.cluster_metric = ko.observableArray(['euclidean']);
 
     component.cancel = function() {
       if (component.model._id())
