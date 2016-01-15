@@ -21,7 +21,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
-        type: "stl",
+        type: "timeseries",
         name: component.model.name(),
         description: component.model.description(),
         marking: component.model.marking(),
