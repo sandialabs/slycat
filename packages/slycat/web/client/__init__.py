@@ -17,7 +17,7 @@ import slycat.darray
 import slycat.email
 import sys
 import time
-
+import base64
 try:
   import cStringIO as StringIO
 except:
@@ -95,9 +95,18 @@ class Connection(object):
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
   def __init__(self, host="http://localhost:8092", **keywords):
+    proxies = keywords.get("proxies", {"http": "", "https": ""})
+    verify = True
+    if keywords.get("verify") == "False":
+      verify = False
+    data = {"user_name":base64.encodestring(keywords.get("auth", ("", ""))[0]), "password":base64.encodestring(keywords.get("auth", ("", ""))[1])}
+    url = host + "/login"
     self.host = host
     self.keywords = keywords
     self.session = requests.Session()
+    self.session.post(url, json=data, proxies=proxies, verify=verify)
+    if len(self.session.cookies.keys()) is 0 or None:
+      raise NameError('bad username or password, for username:%s' % keywords.get("auth", ("", ""))[0])
 
   def request(self, method, path, **keywords):
     """Makes a request with the given HTTP method and path, returning the body of
