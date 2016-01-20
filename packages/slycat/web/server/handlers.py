@@ -734,6 +734,7 @@ def login():
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = user_name#TODO:might be able to delete this
   else:
+    cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
     cherrypy.response.status = "404 no auth found!!!"
   return {'success': success}
 
