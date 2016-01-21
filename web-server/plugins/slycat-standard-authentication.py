@@ -28,7 +28,7 @@ def register_slycat_plugin(context):
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
       slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 403 secure connection required.")
       raise cherrypy.HTTPError("403 Secure connection required.")
-    
+
     # Get the client ip, which might be forwarded by a proxy.
     remote_ip = cherrypy.request.headers.get("x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
 
@@ -89,11 +89,13 @@ def register_slycat_plugin(context):
 
       # there was no session time to authenticate
       if session is None:
+        cherrypy.log.error("no session found redirecting to login")
         raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html", 307)
 
       # Successful authentication, create a session and return.
       #return
     else:
+      cherrypy.log.error("no cookie found redirecting to login")
       raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html", 307)
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
