@@ -104,7 +104,6 @@ Feature: REST API
     And project readers can retrieve the model file artifact.
     And project outsiders cannot retrieve the model file artifact.
     And unauthenticated clients cannot retrieve the model file artifact.
-    And retrieving a nonexistent file artifact returns 404.
 
   Scenario: GET Model
     Given a running Slycat server.
@@ -128,7 +127,6 @@ Feature: REST API
     And project readers can retrieve the model parameter artifact.
     And project outsiders cannot retrieve the model parameter artifact.
     And unauthenticated clients cannot retrieve the model parameter artifact.
-    And retrieving a nonexistent parameter returns 404.
 
   Scenario: GET Model Resource
     Given a running Slycat server.
