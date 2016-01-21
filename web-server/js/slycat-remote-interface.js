@@ -279,7 +279,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             server_checkjob(uid);
           },
           error: function(request, status, reason_phrase) {
-            vm.output(vm.output() + '\n' + '[Error] Could not start batch file batch.' + fn + '.bash: ' + reason_phrase);
+            vm.output(vm.output() + '\n' + '[Error] Could not start batch file: ' + reason_phrase);
           }
         });
       };

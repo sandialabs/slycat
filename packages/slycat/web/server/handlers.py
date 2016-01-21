@@ -675,9 +675,10 @@ def login():
   and determins with the user can be authenticated with slycat
   :return: authentication status
   """
-
+  cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
   if "slycatauth" in cherrypy.request.cookie:
     try:
+      cherrypy.log.error("found old session trying to delete it ")
       sid = cherrypy.request.cookie["slycatauth"].value
       couchdb = slycat.web.server.database.couchdb.connect()
       session = couchdb.get("session", sid)
@@ -688,9 +689,11 @@ def login():
 
   # try and decode the username and password
   try:
+    cherrypy.log.error("decoding username and password")
     user_name = base64_decode(cherrypy.request.json["user_name"])
     password = base64_decode(cherrypy.request.json["password"])
   except:
+    cherrypy.log.error("username and password could not be decoded")
     slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
     raise cherrypy.HTTPError(400)
   realm = None
@@ -731,6 +734,7 @@ def login():
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = user_name#TODO:might be able to delete this
   else:
+    cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
     cherrypy.response.status = "404 no auth found!!!"
   return {'success': success}
 
