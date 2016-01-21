@@ -496,7 +496,7 @@ def step_impl(context):
 
 @then(u'retrieving a nonexistent parameter returns 404.')
 def step_impl(context):
-  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"):
+  with nose.tools.assert_raises_regexp(slycat.web.client.exceptions.HTTPError, "^404"or"^500"):
     context.server_admin.get_model_parameter(context.mid, "nonexistent-artifact")
 
 @then(u'any authenticated user can request a model resource.')
