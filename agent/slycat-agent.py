@@ -130,16 +130,17 @@ def get_job_output(command):
   sys.stdout.flush()
 
 
-def generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, filename):
+def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, filename):
   name = os.path.expanduser('~') + ("/%s" % filename) 
   f = open(name, 'w')
 
   f.write("#!/bin/bash\n\n")
-  f.write("#SBATCH --nodes=%s\n" % nnodes)
-  f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
   f.write("#SBATCH --account=%s\n" % wckey)
   f.write("#SBATCH --job-name=slycat-tmp\n")
   f.write("#SBATCH --partition=%s\n\n" % partition)
+  f.write("#SBATCH --nodes=%s\n" % nnodes)
+  f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
+  f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
   
   for c in fn:
     f.write("%s\n" % c)
@@ -156,8 +157,6 @@ def run_function(command):
   nnodes = command["command"]["nnodes"]
   partition = command["command"]["partition"]
   ntasks_per_node = command["command"]["ntasks_per_node"]
-  ntasks = command["command"]["ntasks"]
-  ncpu_per_task = command["command"]["ncpu_per_task"]
   time_hours = command["command"]["time_hours"]
   time_minutes = command["command"]["time_minutes"]
   time_seconds = command["command"]["time_seconds"]
@@ -165,7 +164,7 @@ def run_function(command):
   uid = command["command"]["uid"]
 
   filename = "batch.slycat-%s.bash" % uid
-  generate_batch(wckey, nnodes, partition, ntasks_per_node, ntasks, ncpu_per_task, time_hours, time_minutes, time_seconds, fn, filename)
+  generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, filename)
   results["output"], results["errors"] = run_remote_command("sbatch %s" % filename)
 
   sys.stdout.write("%s\n" % json.dumps(results))
