@@ -70,9 +70,9 @@ $.widget("timeseries.controls",
         txt += "You have " + self.options.highlight.length + " rows selected. ";
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
       }
-      if(self.options.hidden_simulations.length > 0)
+      if(self.options.selection.length < self.options.metadata['row-count'])
       {
-        var visibleRows = self.options.metadata['row-count'] - self.options.hidden_simulations.length;
+        var visibleRows = self.options.selection.length;
         txt += "You have " + visibleRows + " rows visible. ";
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Visible", icon_class:"fa fa-eye"});
       }
@@ -89,9 +89,9 @@ $.widget("timeseries.controls",
           if(button.label == "Save Entire Table")
             self._write_data_table();
           else if(button.label == "Save Selected")
-            self._write_data_table( self.options.selection );
+            self._write_data_table( self.options.highlight );
           else if(button.label == "Save Visible")
-            self._write_data_table( self._filterIndices() );
+            self._write_data_table( self.options.selection );
         },
       });
     }
