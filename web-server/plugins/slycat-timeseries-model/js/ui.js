@@ -206,6 +206,9 @@ function setup_page()
       selected_simulations = bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
     }
 
+    // Set state of initial cluster
+    
+
     setup_controls();
     setup_widgets();
     setup_waveforms();
@@ -295,7 +298,7 @@ function setup_controls()
   }
 
   if(
-    !controls_ready && bookmark && clusters
+    !controls_ready && bookmark && clusters && (initial_cluster !== null)
     && (selected_simulations != null) && table_metadata
   )
   {
@@ -307,7 +310,7 @@ function setup_controls()
     {
       mid : model._id,
       model_name: model_name,
-      aid : "data-table",
+      aid : "inputs",
       metadata: table_metadata,
       highlight: selected_simulations,
       // clusters : clusters,
@@ -330,6 +333,37 @@ function setup_controls()
       controls_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
 
     $("#controls").controls(controls_options);
+
+    // Changing the table row selection updates the controls ...
+    $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+    {
+      $("#controls").controls("option", "highlight", waveform_indexes);
+    });
+
+    // Changing the dendrogram waveform selection updates the controls ...
+    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+    {
+      $("#controls").controls("option", "highlight", waveform_indexes);
+    });
+
+    // Changing the waveform selection updates the controls ...
+    $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+    {
+      $("#controls").controls("option", "highlight", waveform_indexes);
+    });
+
+    // Changing the selected dendrogram node updates the controls ...
+    $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
+    {
+      // Only want to update the controls if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the controls at that time.
+      if(parameters.skip_bookmarking != true) {
+        // $("#waveform-viewer").waveformplot("option", "selection", getWaveformIndexes(parameters.selection));
+        // $("#waveform-viewer").waveformplot("option", "highlight", selected_simulations);
+
+        $("#controls").controls("option", "selection", getWaveformIndexes(parameters.selection));
+        $("#controls").controls("option", "highlight", selected_simulations);
+      }
+    });
   }
 }
 
