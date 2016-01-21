@@ -99,6 +99,8 @@ class Connection(object):
     verify = True
     if keywords.get("verify") == "False":
       verify = False
+    elif not keywords.get("verify"):
+      verify = False
     data = {"user_name":base64.encodestring(keywords.get("auth", ("", ""))[0]), "password":base64.encodestring(keywords.get("auth", ("", ""))[1])}
     url = host + "/login"
     self.host = host
