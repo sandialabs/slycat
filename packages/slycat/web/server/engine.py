@@ -207,14 +207,6 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("templates"),
     "tools.staticdir.on": True,
     }
-  configuration["/logout.html"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.%s.on" % authentication : False,
-    "tools.staticfile.filename": abspath("templates/slycat-logout.html"),
-    "tools.staticfile.on": True,
-    }
   configuration["/login"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,
