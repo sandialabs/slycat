@@ -23,8 +23,8 @@ require(["jquery", "URI"], function($, URI)
       success: function(result)
       {
         console.log("success " + result);
-        window.location.replace("/");
-        //window.location.replace(result.target);
+        //window.location.replace("/");
+        window.location.replace(result.target);
       },
       error: function(request, status, reason_phrase)
       {
