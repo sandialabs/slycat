@@ -27,6 +27,21 @@ $.widget("timeseries.controls",
     var self = this;
     var general_controls = $("#general-controls", this.element);
 
+    this.outputs_control = $('<div class="btn-group btn-group-xs"></div>')
+      .appendTo(general_controls)
+      ;
+    this.outputs_button = $('\
+      <button class="btn btn-default dropdown-toggle" type="button" id="outputs-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Outputs"> \
+        Outputs \
+        <span class="caret"></span> \
+      </button> \
+      ')
+      .appendTo(self.outputs_control)
+      ;
+    this.outputs_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="outputs-dropdown">')
+      .appendTo(self.outputs_control)
+      ;
+
     this.color_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(general_controls)
       ;
@@ -38,7 +53,6 @@ $.widget("timeseries.controls",
       ')
       .appendTo(self.color_control)
       ;
-
     this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
       .appendTo(self.color_control)
       ;
@@ -112,6 +126,7 @@ $.widget("timeseries.controls",
     //   self._set_clusters();
     // }
     self._set_color_variables();
+    self._set_outputs();
   },
 
 
