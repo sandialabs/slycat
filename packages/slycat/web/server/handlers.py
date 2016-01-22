@@ -743,6 +743,7 @@ def login():
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
+    cherrypy.response.cookie["slycatauth"]["Max-Age"] = cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds()
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = user_name
   else:
