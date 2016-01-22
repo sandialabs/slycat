@@ -40,6 +40,7 @@ import uuid
 import functools
 from cherrypy._cpcompat import base64_decode
 import datetime
+import urlparse
 
 def css_bundle():
   with css_bundle._lock:
@@ -692,11 +693,17 @@ def login():
     cherrypy.log.error("decoding username and password")
     user_name = base64_decode(cherrypy.request.json["user_name"])
     password = base64_decode(cherrypy.request.json["password"])
+    location = cherrypy.request.json["location"]
   except:
     cherrypy.log.error("username and password could not be decoded")
     slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
     raise cherrypy.HTTPError(400)
   realm = None
+
+  if urlparse.parse_qs(urlparse.urlparse(location).query)['from']:
+    unparsed_url = urlparse.parse_qs(urlparse.urlparse(location).query)['from']
+    response_url = urlparse.urlparse(unparsed_url)
+    # if response_url.__contains__()
 
   # Get the client ip, which might be forwarded by a proxy.
   remote_ip = cherrypy.request.headers.get("x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
@@ -732,11 +739,11 @@ def login():
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
     cherrypy.response.status = "200 OK"
-    cherrypy.request.login = user_name#TODO:might be able to delete this
+    cherrypy.request.login = user_name
   else:
     cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
     cherrypy.response.status = "404 no auth found!!!"
-  return {'success': success}
+  return {'success': success, 'location':location}
 
 
 login.password_check = None
