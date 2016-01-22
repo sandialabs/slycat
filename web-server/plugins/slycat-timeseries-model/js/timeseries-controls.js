@@ -64,13 +64,24 @@ $.widget("timeseries.controls",
         {className: "btn-default", label:"Cancel"}, 
         {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
-
-      if(self.options.highlight.length > 0)
+      var filteredHighlight;
+      if(self.options.selection.length > 0)
       {
-        txt += "You have " + self.options.highlight.length + " rows selected. ";
+        filteredHighlight = self.options.highlight.filter(function(el){
+          return self.options.selection.indexOf(el) != -1;
+        });
+      }
+      else
+      {
+        filteredHighlight = self.options.highlight;
+      }
+
+      if(filteredHighlight.length > 0)
+      {
+        txt += "You have " + filteredHighlight.length + " rows selected. ";
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
       }
-      if(self.options.selection.length < self.options.metadata['row-count'])
+      if(self.options.selection.length > 0 && self.options.selection.length < self.options.metadata['row-count'])
       {
         var visibleRows = self.options.selection.length;
         txt += "You have " + visibleRows + " rows visible. ";
@@ -89,9 +100,9 @@ $.widget("timeseries.controls",
           if(button.label == "Save Entire Table")
             self._write_data_table();
           else if(button.label == "Save Selected")
-            self._write_data_table( self.options.highlight );
+            self._write_data_table(filteredHighlight);
           else if(button.label == "Save Visible")
-            self._write_data_table( self.options.selection );
+            self._write_data_table(self.options.selection);
         },
       });
     }
@@ -238,26 +249,6 @@ $.widget("timeseries.controls",
     var self = this;
     self.color_items.find("li").removeClass("active");
     self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
-  },
-
-  // Remove hidden_simulations from indices
-  _filterIndices: function()
-  {
-    var self = this;
-    var indices = self.options.indices;
-    var hidden_simulations = self.options.hidden_simulations;
-    var filtered_indices = self._cloneArrayBuffer(indices);
-    var length = indices.length;
-
-    // Remove hidden simulations and NaNs and empty strings
-    for(var i=length-1; i>=0; i--){
-      var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-      if(hidden) {
-        filtered_indices.splice(i, 1);
-      }
-    }
-
-    return filtered_indices;
   },
 
   // Clones an ArrayBuffer or Array
