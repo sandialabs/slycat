@@ -748,7 +748,7 @@ def login():
   else:
     cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
     cherrypy.response.status = "404 no auth found!!!"
-  return {'success': success, 'location':response_url}
+  return {'success': success, 'target':response_url}
 
 
 login.password_check = None
