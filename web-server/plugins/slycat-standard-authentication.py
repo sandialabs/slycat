@@ -22,7 +22,7 @@ def register_slycat_plugin(context):
 
     # we need to parse the current url so we can do an https redirect
     # cherrypy will redirect http by default :(
-    current_url = urlparse(cherrypy.url())\
+    current_url = urlparse(cherrypy.url())
 
     # Require a secure connection.
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
