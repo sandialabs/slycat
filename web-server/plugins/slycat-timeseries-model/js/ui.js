@@ -207,7 +207,7 @@ function setup_page()
     }
 
     // Set state of initial cluster
-    
+    initial_cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
     setup_controls();
     setup_widgets();
@@ -281,16 +281,14 @@ function setup_controls()
 {
   if(bookmark && clusters)
   {
-    var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
     $.ajax(
     {
-      url : server_root + "models/" + model._id + "/files/cluster-" + clusters[cluster],
+      url : server_root + "models/" + model._id + "/files/cluster-" + clusters[initial_cluster],
       contentType : "application/json",
       success : function(cluster_data)
       {
-        clusters_data[cluster] = cluster_data;
-        initial_cluster = cluster;
+        clusters_data[initial_cluster] = cluster_data;
         setup_widgets();
       },
       error: artifact_missing
@@ -369,20 +367,18 @@ function setup_controls()
 
 function setup_waveforms()
 {
-  if(bookmark && clusters)
+  if(bookmark && clusters && initial_cluster !== null && waveforms_data !== null)
   {
-    var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
     // Load the waveforms.
     get_model_arrayset({
       server_root : server_root + "",
       mid : model._id,
-      aid : "preview-" + clusters[cluster],
+      aid : "preview-" + clusters[initial_cluster],
       success : function(result, metadata)
       {
-        waveforms_data[cluster] = result;
-        waveforms_metadata[cluster] = metadata;
-        initial_cluster = cluster;
+        waveforms_data[initial_cluster] = result;
+        waveforms_metadata[initial_cluster] = metadata;
         setup_widgets();
       },
       error : artifact_missing
@@ -463,17 +459,15 @@ function setup_widgets()
   }
 
   // Setup the cluster ...
-  if(!cluster_ready && bookmark && clusters)
+  if(!cluster_ready && bookmark && clusters && (initial_cluster !== null))
   {
     cluster_ready = true;
 
     $("#cluster-pane .load-status").css("display", "none");
 
-    var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
-
     $("#cluster-viewer").cluster({
       clusters: clusters,
-      cluster: cluster,
+      cluster: initial_cluster,
     });
 
     // Log changes to the cluster selection ...
@@ -492,7 +486,7 @@ function setup_widgets()
 
   // Setup the waveform plot ...
   if(
-    !waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined) 
+    !waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data !== null) && (waveforms_data[initial_cluster] !== undefined) 
     && color_array !== null && table_metadata !== null && selected_simulations !== null
     )
   {
