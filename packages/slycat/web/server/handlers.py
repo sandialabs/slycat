@@ -699,11 +699,13 @@ def login():
     slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
     raise cherrypy.HTTPError(400)
   realm = None
-
-  if urlparse.parse_qs(urlparse.urlparse(location).query)['from']:
-    unparsed_url = urlparse.parse_qs(urlparse.urlparse(location).query)['from']
-    response_url = urlparse.urlparse(unparsed_url)
-    # if response_url.__contains__()
+  try:
+    if urlparse.parse_qs(urlparse.urlparse(location).query)['from']:
+      unparsed_url = urlparse.parse_qs(urlparse.urlparse(location).query)['from']
+      response_url = urlparse.urlparse(unparsed_url)
+      # if response_url.__contains__()
+  except:
+    pass
 
   # Get the client ip, which might be forwarded by a proxy.
   remote_ip = cherrypy.request.headers.get("x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
