@@ -22,7 +22,7 @@ def register_slycat_plugin(context):
 
     # we need to parse the current url so we can do an https redirect
     # cherrypy will redirect http by default :(
-    current_url = urlparse(cherrypy.url())
+    current_url = urlparse(cherrypy.url())\
 
     # Require a secure connection.
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
@@ -90,12 +90,12 @@ def register_slycat_plugin(context):
       # there was no session time to authenticate
       if session is None:
         cherrypy.log.error("no session found redirecting to login")
-        raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html", 307)
+        raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
       # Successful authentication, create a session and return.
       #return
     else:
       cherrypy.log.error("no cookie found redirecting to login")
-      raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html", 307)
+      raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
