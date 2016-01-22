@@ -12,12 +12,17 @@ def register_slycat_plugin(context):
   import slycat.web.server.plugin
   import slycat.email
   import uuid
+  from urlparse import urlparse
 
   def authenticate(realm, rules=None):
     # Sanity-check our inputs.
     if '"' in realm:
       slycat.email.send_error("slycat-standard-authentication.py authenticate", "Realm cannot contain the \" (quote) character.")
       raise ValueError("Realm cannot contain the \" (quote) character.")
+
+    # we need to parse the current url so we can do an https redirect
+    # cherrypy will redirect http by default :(
+    current_url = urlparse(cherrypy.url())
 
     # Require a secure connection.
     if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
@@ -84,11 +89,13 @@ def register_slycat_plugin(context):
 
       # there was no session time to authenticate
       if session is None:
-        raise cherrypy.HTTPRedirect("/login/slycat-login.html", 307)
+        cherrypy.log.error("no session found redirecting to login")
+        raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html", 307)
 
       # Successful authentication, create a session and return.
       #return
     else:
-      raise cherrypy.HTTPRedirect("/login/slycat-login.html", 307)
+      cherrypy.log.error("no cookie found redirecting to login")
+      raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html", 307)
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)

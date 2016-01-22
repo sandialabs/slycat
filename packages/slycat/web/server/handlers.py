@@ -1037,11 +1037,8 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
-  start = time.time()
   try:
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
-    finish = time.time()-start
-    cherrypy.log.error(":::Parsing hyperchunks took %s miliseconds" % (finish*1000))
   except:
     slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
@@ -1055,16 +1052,10 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
     accept = cherrypy.lib.cptools.accept(["application/json"])
   cherrypy.response.headers["content-type"] = accept
 
-  finish = time.time()-start
-  cherrypy.log.error(":::point A %s miliseconds" % (finish*1000))
-
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_reader(project)
-
-  finish = time.time()-start
-  cherrypy.log.error(":::point B %s miliseconds" % (finish*1000))
 
   artifact = model.get("artifact:%s" % aid, None)
   if artifact is None:
@@ -1091,8 +1082,6 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
           yield hyperslice.byteswap().tostring(order="C")
         else:
           yield hyperslice.tostring(order="C")
-  finish = time.time()-start
-  cherrypy.log.error(":::method took %s miliseconds" % (finish*1000))
   return content()
 get_model_arrayset_data._cp_config = {"response.stream" : True}
 
