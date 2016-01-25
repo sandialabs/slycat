@@ -105,6 +105,11 @@ rights in this software.
   cursor: pointer;
 }
 
+a 
+{
+  cursor: pointer;
+}
+
 #dendrogram-viewer .node .subtree path
 {
   stroke: none;
