@@ -14,7 +14,8 @@ $.widget("timeseries.controls",
     metadata : null,
     // cluster_index : null,
     "color-variable" : null,
-    // clusters : [],
+    clusters : [],
+    cluster : null,
     color_variables : [],
     selection : [],
     hidden_simulations : [],
@@ -264,6 +265,35 @@ $.widget("timeseries.controls",
     var self = this;
     self.color_items.find("li").removeClass("active");
     self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
+  },
+
+  _set_outputs: function()
+  {
+    var self = this;
+    this.outputs_items.empty();
+    for(var i = 0; i < this.options.clusters.length; i++) {
+      $("<li role='presentation'>")
+        .toggleClass("active", self.options["cluster"] == i)
+        .attr("data-cluster", i)
+        .appendTo(self.outputs_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1">')
+            .html(this.options.clusters[i])
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("active"))
+                return false;
+
+              self.outputs_items.find("li").removeClass("active");
+              menu_item.addClass("active");
+
+              self.options.cluster = menu_item.attr("data-cluster");
+              self.element.trigger("cluster-changed", menu_item.attr("data-cluster"));
+            })
+        )
+        ;
+    }
   },
 
   // Clones an ArrayBuffer or Array

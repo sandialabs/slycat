@@ -304,6 +304,8 @@ function setup_controls()
 
     controls_ready = true;
 
+    $("#cluster-pane .load-status").css("display", "none");
+
     var controls_options =
     {
       mid : model._id,
@@ -311,6 +313,8 @@ function setup_controls()
       aid : "inputs",
       metadata: table_metadata,
       highlight: selected_simulations,
+      clusters: clusters,
+      cluster: initial_cluster,
       // clusters : clusters,
       // x_variables: axes_variables,
       // y_variables: axes_variables,
@@ -360,6 +364,33 @@ function setup_controls()
 
         $("#controls").controls("option", "selection", getWaveformIndexes(parameters.selection));
         $("#controls").controls("option", "highlight", selected_simulations);
+      }
+    });
+
+    // Changes to the cluster selection ...
+    $("#controls").bind("cluster-changed", function(event, cluster)
+    {
+      // Log changes to the cluster selection ...
+      selected_cluster_changed(cluster);
+
+      // Changing the cluster updates the dendrogram and waveformplot ...
+      update_dendrogram(cluster);
+      update_waveformplot(cluster);
+
+      // Changing the cluster updates the legend ...
+      if(bookmark[cluster + "-column-index"] !== undefined)
+      {
+        $("#legend").legend("option", {
+          min: table_metadata["column-min"][bookmark[cluster + "-column-index"]],
+          max: table_metadata["column-max"][bookmark[cluster + "-column-index"]],
+          label: table_metadata["column-names"][bookmark[cluster + "-column-index"]],
+        });
+      }
+
+      // Changing the cluster updates the table variable selection ...
+      if(bookmark[$("#controls").controls("option", "cluster") + "-column-index"] !== undefined)
+      {
+        $("#table").table("option", "variable-selection", [bookmark[$("#controls").controls("option", "cluster") + "-column-index"]]);
       }
     });
   }
@@ -443,19 +474,6 @@ function setup_widgets()
       });
     });
 
-    // Changing the cluster updates the legend ...
-    $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
-    {
-      if(bookmark[cluster + "-column-index"] !== undefined)
-      {
-        $("#legend").legend("option", {
-          min: table_metadata["column-min"][bookmark[cluster + "-column-index"]],
-          max: table_metadata["column-max"][bookmark[cluster + "-column-index"]],
-          label: table_metadata["column-names"][bookmark[cluster + "-column-index"]],
-        });
-      }
-    });
-
   }
 
   // Setup the cluster ...
@@ -463,24 +481,9 @@ function setup_widgets()
   {
     cluster_ready = true;
 
-    $("#cluster-pane .load-status").css("display", "none");
-
     $("#cluster-viewer").cluster({
       clusters: clusters,
       cluster: initial_cluster,
-    });
-
-    // Log changes to the cluster selection ...
-    $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
-    {
-      selected_cluster_changed(cluster);
-    });
-
-    // Changing the cluster updates the dendrogram and waveformplot ...
-    $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
-    {
-      update_dendrogram(cluster);
-      update_waveformplot(cluster);
     });
   }
 
@@ -665,12 +668,6 @@ function setup_widgets()
         }
       });
     });
-
-    $("#cluster-viewer").bind("cluster-changed", function(event, cluster)
-    {
-      if(bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"] !== undefined)
-        $("#table").table("option", "variable-selection", [bookmark[$("#cluster-viewer").cluster("option", "cluster") + "-column-index"]]);
-    });
   }
 
   // Setup the dendrogram ...
@@ -793,8 +790,8 @@ function selected_node_changed(parameters)
     });
   if(parameters.skip_bookmarking != true) {
     var state = {};
-    state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
-    state[ $("#cluster-viewer").cluster("option", "cluster") + "-selected-waveform-indexes" ] = getWaveformIndexes(parameters.selection);
+    state[ $("#controls").controls("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
+    state[ $("#controls").controls("option", "cluster") + "-selected-waveform-indexes" ] = getWaveformIndexes(parameters.selection);
     bookmarker.updateState(state);
   }
 }
@@ -821,7 +818,7 @@ function selected_variable_changed(variable)
     url : server_root + "events/models/" + model._id + "/select/variable/" + variable
   });
   var selected_variable = {};
-  selected_variable[ $("#cluster-viewer").cluster("option", "cluster") + "-column-index"] = variable[0];
+  selected_variable[ $("#controls").controls("option", "cluster") + "-column-index"] = variable[0];
   bookmarker.updateState(selected_variable);
 }
 
@@ -837,8 +834,8 @@ function variable_sort_changed(variable, order)
 
 function expanded_collapsed_nodes_changed(nodes){
   var cluster_state = {};
-  cluster_state[$("#cluster-viewer").cluster("option", "cluster") + "-expanded-nodes"] = nodes.expanded;
-  cluster_state[$("#cluster-viewer").cluster("option", "cluster") + "-collapsed-nodes"] = nodes.collapsed;
+  cluster_state[$("#controls").controls("option", "cluster") + "-expanded-nodes"] = nodes.expanded;
+  cluster_state[$("#controls").controls("option", "cluster") + "-collapsed-nodes"] = nodes.collapsed;
   bookmarker.updateState(cluster_state);
 }
 
