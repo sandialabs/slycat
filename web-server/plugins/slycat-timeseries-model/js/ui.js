@@ -650,23 +650,7 @@ function setup_widgets()
     $("#table").bind("variable-selection-changed", function(event, parameters)
     {
       selected_variable_changed(parameters.variable);
-
-      selected_column = parameters.variable[0];
-      selected_column_min = table_metadata["column-min"][selected_column];
-      selected_column_max = table_metadata["column-max"][selected_column];
-
-      retrieve_sorted_column({
-        column : selected_column,
-        callback : function(array){
-          var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
-          var parameters = {
-            color_array : array,
-            color_scale : $("#color-switcher").colorswitcher("get_color_scale", currentColormap, selected_column_min, selected_column_max),
-          }
-          $("#waveform-viewer").waveformplot("option", "color-options", parameters);
-          $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
-        }
-      });
+      update_waveform_dendrogram_on_selected_variable_changed(parameters.variable[0]);
     });
   }
 
@@ -820,6 +804,26 @@ function selected_variable_changed(variable)
   var selected_variable = {};
   selected_variable[ $("#controls").controls("option", "cluster") + "-column-index"] = variable[0];
   bookmarker.updateState(selected_variable);
+}
+
+function update_waveform_dendrogram_on_selected_variable_changed(variable)
+{
+  selected_column = variable;
+  selected_column_min = table_metadata["column-min"][selected_column];
+  selected_column_max = table_metadata["column-max"][selected_column];
+
+  retrieve_sorted_column({
+    column : selected_column,
+    callback : function(array){
+      var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
+      var parameters = {
+        color_array : array,
+        color_scale : $("#color-switcher").colorswitcher("get_color_scale", currentColormap, selected_column_min, selected_column_max),
+      }
+      $("#waveform-viewer").waveformplot("option", "color-options", parameters);
+      $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
+    }
+  });
 }
 
 function variable_sort_changed(variable, order)
