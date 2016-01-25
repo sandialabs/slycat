@@ -693,8 +693,12 @@ def login():
     cherrypy.log.error("decoding username and password")
     user_name = base64_decode(cherrypy.request.json["user_name"])
     password = base64_decode(cherrypy.request.json["password"])
-    location = cherrypy.request.json["location"]
-  except:
+    try:
+      location = cherrypy.request.json["location"]
+    except Exception as e:
+      location = None
+      cherrypy.log.error("no location provided moving on")
+  except Exception as e:
     cherrypy.log.error("username and password could not be decoded")
     slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
     raise cherrypy.HTTPError(400)
@@ -703,11 +707,15 @@ def login():
   # get the route they came from and check if the server root is the same,
   # if so redirect to the place they came from
   current_url = urlparse.urlparse(cherrypy.url())# gets current location on the server
-  if urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from']:# get from query href
-    response_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
-    if not response_url.__contains__(current_url.netloc):# check net location to avoid cross site script attacks
+  try:
+    if urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from']:# get from query href
+      response_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
+      if not response_url.__contains__(current_url.netloc):# check net location to avoid cross site script attacks
+        response_url = "https://" + current_url.netloc + "/projects"
+    else:
       response_url = "https://" + current_url.netloc + "/projects"
-  else:
+  except Exception as e:
+    cherrypy.log.error("no location provided setting target to /projects")
     response_url = "https://" + current_url.netloc + "/projects"
 
   # Get the client ip, which might be forwarded by a proxy.
@@ -743,12 +751,15 @@ def login():
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
-    cherrypy.response.cookie["slycatauth"]["Max-Age"] = cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds()
+    #cherrypy.response.cookie["slycatauth"]["Max-Age"] = cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds()
+    cherrypy.response.cookie["slycatauth"]["Max-Age"] = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = user_name
+    cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (cherrypy.response.cookie["slycatauth"], success, response_url))
   else:
     cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
     cherrypy.response.status = "404 no auth found!!!"
+
   return {'success': success, 'target':response_url}
 
 
