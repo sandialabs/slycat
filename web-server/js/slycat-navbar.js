@@ -391,10 +391,10 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.sign_out = function()
       {
         client.sign_out({ 
-          success: function(){ 
-            window.location.href = "/logout.html";
+          success: function(){
+            window.location.href = "/login/slycat-login.html?from=" + window.location.href;
           }, 
-          error: function(){ 
+          error: function(){
             window.alert("Sorry, something went wrong and you are not signed out."); 
           } 
         })

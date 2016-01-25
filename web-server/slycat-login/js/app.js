@@ -10,7 +10,8 @@ require(["jquery", "URI"], function($, URI)
     var sendInfo = JSON.stringify(
       {
         "user_name": user_name,
-        "password": password
+        "password": password,
+        "location": window.location,
       }
     );
 
@@ -22,7 +23,8 @@ require(["jquery", "URI"], function($, URI)
       success: function(result)
       {
         console.log("success " + result);
-        window.location.replace("/");
+        //window.location.replace("/");
+        window.location.replace(result.target);
       },
       error: function(request, status, reason_phrase)
       {

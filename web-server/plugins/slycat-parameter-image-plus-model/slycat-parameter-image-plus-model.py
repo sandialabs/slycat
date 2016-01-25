@@ -350,7 +350,7 @@ def register_slycat_plugin(context):
       try:
         response = slycat.web.server.checkjob(sid, jid)
       except Exception as e:
-        fail_model(mid, "Something went wrong while checking on job %s status: check for the distance matrix files when the job completes." % jid)
+        fail_model(mid, "Something went wrong while checking on job %s status: check for the slurm-%s.out file when the job completes." % (jid, jid))
         slycat.email.send_error("slycat-parameter-image-plus-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
         raise Exception("An error occurred while checking on a remote job: %s" % e.message)
         stop_event.set()
