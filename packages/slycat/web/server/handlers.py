@@ -1288,29 +1288,29 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
             slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk", "400 sort column out-of-range.")
             raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
-    # Retrieve the data
-    data = []
-    sort_index = get_table_sort_index(file, metadata, array, sort, index)
-    slice = sort_index[rows]
-    slice_index = numpy.argsort(slice, kind="mergesort")
-    slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
-    for column in columns:
-      type = metadata["column-types"][column]
-      if index is not None and column == metadata["column-count"]-1:
-        values = slice.tolist()
-      else:
-        values = slycat.hdf5.ArraySet(file)[array].get_data(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
-        if type in ["float32", "float64"]:
-          values = [None if numpy.isnan(value) else value for value in values]
-      data.append(values)
+      # Retrieve the data
+      data = []
+      sort_index = get_table_sort_index(file, metadata, array, sort, index)
+      slice = sort_index[rows]
+      slice_index = numpy.argsort(slice, kind="mergesort")
+      slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
+      for column in columns:
+        type = metadata["column-types"][column]
+        if index is not None and column == metadata["column-count"]-1:
+          values = slice.tolist()
+        else:
+          values = slycat.hdf5.ArraySet(file)[array].get_data(column)[slice[slice_index].tolist()][slice_reverse_index].tolist()
+          if type in ["float32", "float64"]:
+            values = [None if numpy.isnan(value) else value for value in values]
+        data.append(values)
 
-    result = {
-      "rows" : rows.tolist(),
-      "columns" : columns.tolist(),
-      "column-names" : [metadata["column-names"][column] for column in columns],
-      "data" : data,
-      "sort" : sort
-      }
+      result = {
+        "rows" : rows.tolist(),
+        "columns" : columns.tolist(),
+        "column-names" : [metadata["column-names"][column] for column in columns],
+        "data" : data,
+        "sort" : sort
+        }
 
   return result
 
