@@ -9,6 +9,11 @@ A directory of sample data that can be used by slycat
 
 # Ensemble analysis and Visualization
 
+## Parameter Space Exploration
+1. Results Clustering
+2. Design Optimization
+3. Model Tuning
+
 ## Anomaly Detection
 1. Unique Features
 2. Bugs
