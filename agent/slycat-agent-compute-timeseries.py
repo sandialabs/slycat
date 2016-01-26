@@ -5,6 +5,14 @@
 # or on behalf of the U.S. Government. Export of this program may require a
 # license from the United States Government.
 
+"""Compute a timeseries model locally from hdf5 data, uploading the results to Slycat Web Server.
+
+This script loads data from a directory containing:
+
+    One inputs.hdf5 file containing a single table.
+    One timeseries-N.hdf5 file for each row in the input table .
+"""
+import argparse
 import collections
 import datetime
 import h5py
@@ -15,8 +23,8 @@ import numpy
 import os
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
-import argparse
 import hdf5
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
@@ -24,8 +32,7 @@ parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Samp
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
 parser.add_argument("--cluster-metric", default="euclidean", choices=["euclidean"], help="Hierarchical clustering distance metric.  Default: %(default)s")
-parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
-parser.add_argument("--output", default=None, help="Output directory")
+parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
 arguments = parser.parse_args()
 
 if arguments.cluster_sample_count < 1:
@@ -34,15 +41,18 @@ if arguments.cluster_sample_count < 1:
 _numSamples = arguments.cluster_sample_count
 
 try:
-  pool = IPython.parallel.Client(profile=arguments.profile)[:]
-except Exception, e:
-  print str(e)
+  pool = IPython.parallel.Client()
+except:
   raise Exception("A running IPython parallel cluster is required to run this script.")
-
 
 def mix(a, b, amount):
   return ((1.0 - amount) * a) + (amount * b)
 
+# Setup a connection to the Slycat Web Server.
+#connection = slycat.web.client.connect(arguments)
+
+# Create a new project to contain our model.
+#pid = connection.find_or_create_project(arguments.project_name, arguments.project_description)
 
 # Compute the model.
 try:
@@ -65,18 +75,27 @@ try:
     _numSamples = timeseries_samples.min()
     print("Reducing cluster sample count to minimum found in data: %s", _numSamples)
 
-  if arguments.cluster_sample_type in ["uniform-pla", "uniform-paa"]:
-    print("Cluster sample count: %s.\n" % _numSamples)
+  # Create the new, empty model.
+  #mid = connection.post_project_models(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
 
+  # Store clustering parameters.
+  #connection.update_model(mid, message="Storing clustering parameters.")
   print("Storing clustering parameters.")
 
-  # TODO
-  # connection.put_model_parameter(mid, "cluster-bin-count", _numSamples)
-  # connection.put_model_parameter(mid, "cluster-bin-type", arguments.cluster_sample_type)
-  # connection.put_model_parameter(mid, "cluster-type", arguments.cluster_type)
-  # connection.put_model_parameter(mid, "cluster-metric", arguments.cluster_metric)
+  dirname = os.path.expanduser('~') + ("/slycat_timeseries_%s" % arguments.hash)
+  model_parameters = dict(cluster_bin_count=_numSamples, cluster_bin_type=arguments.cluster_sample_type, cluster_type=arguments.cluster_type, cluster_metric=arguments.cluster_metric)
+  if not os.path.exists(dirname):
+    os.makedirs(dirname)
+  
+  with open(os.path.join(dirname, "model_parameters.json"), "w") as model_parameters_json:
+    json.dump(model_parameters, model_parameters_json)
 
-  # connection.update_model(mid, message="Storing input table.")
+  #connection.put_model_parameter(mid, "cluster-bin-count", _numSamples)
+  #connection.put_model_parameter(mid, "cluster-bin-type", arguments.cluster_sample_type)
+  #connection.put_model_parameter(mid, "cluster-type", arguments.cluster_type)
+  #connection.put_model_parameter(mid, "cluster-metric", arguments.cluster_metric)
+
+  #connection.update_model(mid, message="Storing input table.")
 
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
     array = hdf5.ArraySet(file)[0]
@@ -87,18 +106,20 @@ try:
     if len(dimensions) != 1:
       raise Exception("Inputs table must have exactly one dimension.")
     timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
+  
+    arrayset_inputs = dict(aid="inputs", array=0, dimensions=dimensions, attributes=attributes)
+    with open(os.path.join(dirname, "arrayset_inputs.json"), "w") as arrayset_inputs_json:
+      json.dump(arrayset_inputs, arrayset_inputs_json)
 
-    # TODO
-    # connection.put_model_arrayset(mid, "inputs")
-    # connection.put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
-    for attribute in range(len(attributes)):
-      print("Storing input table attribute %s", attribute)
-      data = array.get_data(attribute)[...]
-      # connection.put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
+    #connection.put_model_arrayset(mid, "inputs")
+    #connection.put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
+    #for attribute in range(len(attributes)):
+      #print("Storing input table attribute %s", attribute)
+      #data = array.get_data(attribute)[...]
+      #connection.put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
 
-  # TODO
   # Create a mapping from unique cluster names to timeseries attributes.
-  # connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
+  #connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
 
   clusters = collections.defaultdict(list)
   timeseries_samples = numpy.zeros(shape=(timeseries_count))
@@ -111,9 +132,12 @@ try:
     for attribute_index, attribute in enumerate(attributes):
       clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
-  # TODO
   # Store an alphabetized collection of cluster names.
-  # connection.post_model_files(mid, ["clusters"], [json.dumps(sorted(clusters.keys()))], parser="slycat-blob-parser", parameters={"content-type": "application/json"})
+  #connection.post_model_files(mid, ["clusters"], [json.dumps(sorted(clusters.keys()))], parser="slycat-blob-parser", parameters={"content-type": "application/json"})
+
+  file_clusters = dict(aid="clusters", file=json.dumps(sorted(clusters.keys())), parser="slycat-blob-parser")
+  with open(os.path.join(dirname, "file_clusters.json"), "w") as file_clusters_json:
+    json.dump(file_clusters, file_clusters_json)
 
   # Get the minimum and maximum times for every timeseries.
   def get_time_range(directory, timeseries_index):
@@ -124,17 +148,18 @@ try:
       statistics = hdf5.ArraySet(file)[0].get_statistics(0)
     return statistics["min"], statistics["max"]
 
-  # connection.update_model(mid, message="Collecting timeseries statistics.")
+  #connection.update_model(mid, message="Collecting timeseries statistics.")
   print("Collecting timeseries statistics.")
   time_ranges = pool[:].map_sync(get_time_range, list(itertools.repeat(arguments.directory, timeseries_count)), range(timeseries_count))
 
   # For each cluster ...
   for index, (name, storage) in enumerate(sorted(clusters.items())):
+    print("cluster index: %s" % index)
     progress_begin = float(index) / float(len(clusters))
     progress_end = float(index + 1) / float(len(clusters))
 
     # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-    # connection.update_model(mid, message="Resampling data for %s" % name, progress=progress_begin)
+    #connection.update_model(mid, message="Resampling data for %s" % name, progress=progress_begin)
     print("Resampling data for %s" % name)
 
     # Get the minimum and maximum times across every series in the cluster.
@@ -211,7 +236,7 @@ try:
         distance_matrix[j, i] = distance
 
     # Use the distance matrix to cluster observations ...
-    # connection.update_model(mid, message="Clustering %s" % name)
+    #connection.update_model(mid, message="Clustering %s" % name)
     print("Clustering %s" % name)
     distance = scipy.spatial.distance.squareform(distance_matrix)
     linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type), metric=str(arguments.cluster_metric))
@@ -225,7 +250,7 @@ try:
       exemplars[i] = i
       cluster_membership.append(set([i]))
 
-    # connection.update_model(mid, message="Identifying examplars for %s" % (name))
+    #connection.update_model(mid, message="Identifying examplars for %s" % (name))
     print("Identifying examplars for %s" % (name))
     for i in range(len(linkage)):
       cluster_id = i + observation_count
@@ -266,26 +291,37 @@ try:
 
     # Store the cluster.
     print("Storing %s" % name)
-    # TODO
-    # connection.post_model_files(mid, ["cluster-%s" % name], [json.dumps({
-    #   "linkage":linkage.tolist(),
-    #   "exemplars":exemplars,
-    #   "input-indices":[waveform["input-index"] for waveform in waveforms],
-    #   })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
+    #connection.post_model_files(mid, ["cluster-%s" % name], [json.dumps({
+    #  "linkage":linkage.tolist(),
+    #  "exemplars":exemplars,
+    #  "input-indices":[waveform["input-index"] for waveform in waveforms],
+    #  })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
+
+    file_cluster_n = dict(aid="cluster-%s" % name, file=json.dumps({
+      "linkage": linkage.tolist(),
+      "exemplars": exemplars,
+      "input-indices": [waveform["input-index"] for waveform in waveforms]
+      }), parser="slycat-blob-parser")
+    with open(os.path.join(dirname, "file_cluster_%s.json" % name), "w") as file_cluster_n_json:
+      json.dump(file_cluster_n, file_cluster_n_json)
 
     arrayset_name = "preview-%s" % name
-    # connection.put_model_arrayset(mid, arrayset_name)
+    #connection.put_model_arrayset(mid, arrayset_name)
     for index, waveform in enumerate(waveforms):
       print("Uploading preview timeseries %s" % index)
       dimensions = [dict(name="sample", end=len(waveform["times"]))]
       attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
       print("Creating array %s %s" % (attributes, dimensions))
-      # connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
+      #connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
       print("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
-      # connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
+      #connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
+      arrayset_preview_n = dict(aid="preview-%s" % name, array=index, dimensions=dimensions, attributes=attributes)
+      with open(os.path.join(dirname, "arrayset_preview_%s.json" % name), "w") as arrayset_preview_n_json:
+        json.dump(arrayset_preview_n, arrayset_preview_n_json)
 
-  # connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 except:
   import traceback
   print(traceback.format_exc())
-  # connection.update_model(mid, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=traceback.format_exc())
+
+# Supply the user with a direct link to the new model.
+print("done.")
