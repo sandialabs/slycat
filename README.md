@@ -6,3 +6,19 @@ For installation, tutorials, and developer documentation, go to http://slycat.re
 
 # [Slycat-data](https://github.com/sandialabs/slycat-data)
 A directory of sample data that can be used by slycat
+
+# Ensemble analysis and Visualization
+
+## Anomaly Detection
+1. Unique Features
+2. Bugs
+
+
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection1.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection2.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection3.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection4.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection5.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection6.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection7.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/Anomaly%20detection/AnomalyDetection8.png)
