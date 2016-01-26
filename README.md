@@ -14,6 +14,11 @@ A directory of sample data that can be used by slycat
 2. Design Optimization
 3. Model Tuning
 
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/ParameterSpaceExploration1.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/ParameterSpaceExploration2.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/ParameterSpaceExploration3.png)
+
+
 ## Anomaly Detection
 1. Unique Features
 2. Bugs
