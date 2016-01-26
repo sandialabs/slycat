@@ -9,6 +9,28 @@ A directory of sample data that can be used by slycat
 
 # Ensemble analysis and Visualization
 
+## Multiple Levels of Abstraction
+* Ensemble summaries (correlations or similarities)
+
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction.png)
+
+* Individual runs relative to the group (distributions or behaviors)
+
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction2.png)
+
+* Run-specific data (numeric values, images, or videos)
+
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction3.png)
+
+##Sensitivity Analysis
+1. Model Understanding 
+2. Model Validation
+3. Model Simplification
+
+
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction4.png)
+![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction5.png)
+
 ## Parameter Space Exploration
 1. Results Clustering
 2. Design Optimization
