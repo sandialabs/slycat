@@ -1251,10 +1251,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         clear_hover_timer(self);
         frame = d3.select(d3.event.target.parentNode);
 
-        if (frame.select('.resize').size())
-          theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
-        else
-          theImage = frame.classed("hover-image", false).classed("open-image", true);
+        // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
+        // Alex is commenting it out and always assigning the open-image class to the frame instead.
+        // if (frame.select('.resize').size())
+        //   theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
+        // else
+        //   theImage = frame.classed("hover-image", false).classed("open-image", true);
+        theImage = frame.classed("hover-image", false).classed("open-image", true);
 
         imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
         imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
