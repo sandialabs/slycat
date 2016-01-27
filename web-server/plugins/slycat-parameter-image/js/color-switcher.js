@@ -182,7 +182,6 @@ define("slycat-color-switcher", ["d3"], function(d3)
       {
         this.list.find(".color").removeClass("active");
         this.list.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
-
       }
     },
 
