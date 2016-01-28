@@ -874,17 +874,21 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var images = [];
       self.options.open_images.forEach(function(image, index)
       {
-        images.push({
-          index : image.index,
-          uri : image.uri.trim(),
-          image_class : "open-image",
-          x : width * image.relx,
-          y : height * image.rely,
-          width : image.width,
-          height : image.height,
-          target_x : self.x_scale(self.options.x[image.index]),
-          target_y : self.y_scale(self.options.y[image.index]),
-          });
+        // Making sure we have an index and uri before attempting to open an image
+        if(image.index != null && image.uri != undefined)
+        {
+          images.push({
+            index : image.index,
+            uri : image.uri.trim(),
+            image_class : "open-image",
+            x : width * image.relx,
+            y : height * image.rely,
+            width : image.width,
+            height : image.height,
+            target_x : self.x_scale(self.options.x[image.index]),
+            target_y : self.y_scale(self.options.y[image.index]),
+            });
+        }
       });
       self._open_images(images);
     }
