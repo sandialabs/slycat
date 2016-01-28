@@ -10,6 +10,34 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
   {
     viewModel: function(params)
     {
+      var refreshTimer = setInterval(checkCookie,60000)
+
+      function checkCookie(){
+        var myCookie = getCookie("slycattimeout");
+        if(myCookie == null){
+            window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+        }
+      }
+
+      function getCookie(name) {
+        var dc = document.cookie;
+        var prefix = name + "=";
+        var begin = dc.indexOf("; " + prefix);
+        if (begin == -1) {
+            begin = dc.indexOf(prefix);
+            if (begin != 0) return null;
+        }
+        else
+        {
+            begin += 2;
+            var end = document.cookie.indexOf(";", begin);
+            if (end == -1) {
+            end = dc.length;
+            }
+        }
+        return unescape(dc.substring(begin + prefix.length, end));
+      }
+
       var component = this;
       component.server_root = server_root;
       component.model_names = model_names;
