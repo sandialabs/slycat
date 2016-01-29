@@ -16,7 +16,9 @@
 
         <ol class="breadcrumb navbar-left">
           <!-- ko foreach: project -->
-            <li><a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a></li>
+            <li data-bind="css: {'slycat-unclickable': $parent.model().length == 0}">
+              <a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
+            </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
             <li class="slycat-unclickable"><a data-bind="text:name,popover:{trigger:'hover',html:true,content:$parent.model_popover()}"></a></li>

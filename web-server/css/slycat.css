@@ -212,9 +212,9 @@ slycat-navbar .alert pre
   min-height: calc(100vh - 50px);
 }
 
-#slycat-projects, #slycat-project
+#slycat-projects .container
 {
-  padding-top: 12px;
+  padding-top: 15px;
 }
 
 /* slycat-remote-browser component */
@@ -419,9 +419,14 @@ slycat-navbar .alert pre
   cursor: pointer;
 }
 
-.slycat-unclickable
+.slycat-unclickable,
+.slycat-unclickable a
 {
   cursor: default;
+}
+.slycat-unclickable a:hover
+{
+  text-decoration: none;
 }
 
 .zoom-sensitive
@@ -519,7 +524,7 @@ slycat-navbar .alert pre
   font-weight: normal;
 }
 .bootstrap-styles .navbar-menus {
-  margin: 15px;
+  margin: 14px 15px;
 }
 .navbar-personal .dropdown-toggle {
   padding-right: 0 !important;
