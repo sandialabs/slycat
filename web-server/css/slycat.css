@@ -37,13 +37,15 @@ body
   background-size: auto 20px;
   padding-right: 0;
   text-align: right;
-  width: 155px;
+  padding-left: 110px;
+  color: #353535 !important;
 }
 
 .bootstrap-styles .navbar .breadcrumb
 {
   background-color: transparent;
   margin: 8px 0 0 0;
+  padding-left: 0;
 }
 
 .bootstrap-styles .navbar .breadcrumb a
@@ -511,4 +513,20 @@ slycat-navbar .alert pre
 #slycat-wizard .parameter-image-plus-model-wizard .cluster-column
 {
   margin-top: 30px;
+}
+.bootstrap-styles .navbar .dropdown-header {
+  color: #777777;
+  font-weight: normal;
+}
+.bootstrap-styles .navbar-menus {
+  margin: 15px;
+}
+.navbar-personal .dropdown-toggle {
+  padding-right: 0 !important;
+}
+.bootstrap-styles .navbar-default .navbar-nav > .open > a, 
+.bootstrap-styles .navbar-default .navbar-nav > .open > a:hover, 
+.bootstrap-styles .navbar-default .navbar-nav > .open > a:focus 
+{
+  background-color: transparent;
 }
