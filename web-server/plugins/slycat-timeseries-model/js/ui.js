@@ -68,16 +68,16 @@ var modelPaneLayout = $("#model-pane").layout({
   {
     size : $("#model-pane").width() / 2,
     resizeWhileDragging : false,
-    onresize: function() 
-    { 
+    onresize: function()
+    {
       $("#dendrogram-viewer").dendrogram("resize_canvas");
     },
   },
   center :
   {
     resizeWhileDragging: false,
-    onresize: function() 
-    { 
+    onresize: function()
+    {
       $("#waveform-viewer").waveformplot("resize_canvas");
     },
   },
@@ -146,6 +146,20 @@ $.ajax(
 //////////////////////////////////////////////////////////////////////////////////////////
 // If the model is ready, start retrieving data, including bookmarked state.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+function s_to_a(s) {
+  if (Array.isArray(s))
+    return s;
+  else
+    return JSON.parse(s);
+}
+
+function s_to_o(s) {
+  if (typeof(s) === "object")
+    return s;
+  else
+    return JSON.parse(s);
+}
 
 function setup_page()
 {
@@ -277,6 +291,7 @@ function setup_cluster()
   if(bookmark && clusters)
   {
     var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
+    clusters = s_to_a(clusters);
 
     $.ajax(
     {
@@ -398,7 +413,7 @@ function setup_widgets()
     var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
 
     $("#cluster-viewer").cluster({
-      clusters: clusters,
+      clusters: s_to_a(clusters),
       cluster: cluster,
     });
 
@@ -418,7 +433,7 @@ function setup_widgets()
 
   // Setup the waveform plot ...
   if(
-    !waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined) 
+    !waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data[initial_cluster] !== undefined)
     && color_array !== null && table_metadata !== null && selected_simulations !== null
     )
   {
@@ -539,7 +554,7 @@ function setup_widgets()
       $("#table").table("option", "row-selection-silent", selected_simulations);
       $("#table").table("option", "selection", parameters.selection);
     });
-    
+
     // Changing the waveform selection updates the table row selection ...
     $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
     {
@@ -606,7 +621,7 @@ function setup_widgets()
   }
 
   // Setup the dendrogram ...
-  if(!dendrogram_ready && bookmark && clusters && initial_cluster !==  null && clusters_data[initial_cluster] !== undefined 
+  if(!dendrogram_ready && bookmark && clusters && initial_cluster !==  null && clusters_data[initial_cluster] !== undefined
       && color_array !== null && selected_simulations !== null
     )
   {
@@ -628,7 +643,7 @@ function setup_widgets()
     dendrogram_options["server-root"]=server_root;
     dendrogram_options.mid=model._id;
     dendrogram_options.clusters=clusters;
-    dendrogram_options.cluster_data=clusters_data[initial_cluster];
+    dendrogram_options.cluster_data=s_to_o(clusters_data[initial_cluster]);
     dendrogram_options.color_scale=color_scale;
     dendrogram_options.color_array=color_array;
 
@@ -846,7 +861,7 @@ function build_dendrogram_node_options(cluster)
   var dendrogram_options = {
     cluster: cluster,
   };
-  
+
   dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
   dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
   dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
