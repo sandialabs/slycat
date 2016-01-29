@@ -117,8 +117,8 @@ try:
       attributes_data["%s" % attribute] = data
 
     arrayset_inputs = dict(aid="inputs", array=0, dimensions=dimensions, attributes=attributes)
-    with open(os.path.join(dirname, "arrayset_inputs.pickle"), "wb") as arrayset_inputs:
-      pickle.dump(arrayset_inputs, arrayset_inputs)
+    with open(os.path.join(dirname, "arrayset_inputs.pickle"), "wb") as arrayset_inputs_pickle:
+      pickle.dump(arrayset_inputs, arrayset_inputs_pickle)
     with open(os.path.join(dirname, "inputs_attributes_data.pickle"), "wb") as inputs_attributes_data:
       pickle.dump(attributes_data, inputs_attributes_data)
 
@@ -149,6 +149,8 @@ try:
   file_clusters = dict(aid="clusters", file=json.dumps(sorted(clusters.keys())), parser="slycat-blob-parser")
   with open(os.path.join(dirname, "file_clusters.json"), "w") as file_clusters_json:
     json.dump(file_clusters, file_clusters_json)
+  with open(os.path.join(dirname, "file_clusters.out"), "wb") as file_clusters_out:
+    json.dump(sorted(clusters.keys()), file_clusters_out)
 
   # Get the minimum and maximum times for every timeseries.
   def get_time_range(directory, timeseries_index):
@@ -308,13 +310,18 @@ try:
     #  "input-indices":[waveform["input-index"] for waveform in waveforms],
     #  })], parser="slycat-blob-parser", parameters={"content-type":"application/json"})
 
-    file_cluster_n = dict(aid="cluster-%s" % name, file=json.dumps({
-      "linkage": linkage.tolist(),
-      "exemplars": exemplars,
-      "input-indices": [waveform["input-index"] for waveform in waveforms]
-      }), parser="slycat-blob-parser")
+    file_cluster_n = dict(aid="cluster-%s" % name, parser="slycat-blob-parser")
     with open(os.path.join(dirname, "file_cluster_%s.json" % name), "w") as file_cluster_n_json:
       json.dump(file_cluster_n, file_cluster_n_json)
+    with open(os.path.join(dirname, "file_cluster_%s.out" % name), "w") as file_cluster_n_out:
+      json.dump({
+        "linkage": linkage.tolist(),
+        "exemplars": exemplars,
+        "input-indices": [waveform["input-index"] for waveform in waveforms]
+        }, file_cluster_n_out)
+
+    with open(os.path.join(dirname, "waveforms_%s.pickle" % name), "wb") as waveforms_file:
+      pickle.dump(waveforms, waveforms_file)
 
     arrayset_name = "preview-%s" % name
     #connection.put_model_arrayset(mid, arrayset_name)
@@ -326,9 +333,6 @@ try:
       #connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
       print("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
       #connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
-      arrayset_preview_n = dict(aid="preview-%s" % name, array=index, dimensions=dimensions, attributes=attributes)
-      with open(os.path.join(dirname, "arrayset_preview_%s.pickle" % name), "w") as arrayset_preview_n_pickle:
-        pickle.dump(arrayset_preview_n, arrayset_preview_n_pickle)
 
 except:
   import traceback

@@ -197,7 +197,10 @@ class Session(object):
       # arranges items from scontrol show into a flat list
       # items are formatted as: item_name=value
       out = sum([s.strip().split() for s in out.splitlines()], [])
-      js = [s.split('=')[1] for s in out if s.split('=')[0] == 'JobState'][0]
+      try:
+        js = [s.split('=')[1] for s in out if s.split('=')[0] == 'JobState'][0]
+      except:
+        js = "FAILED"
 
       status = {
         "state": js
@@ -367,9 +370,9 @@ class Session(object):
         ]
 
         # uncomment this line for production
-        # arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --profile ${profile} --output ~/slycat_timeseries_%s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        arr.append("python $SLYCAT_HOME/slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
         # uncomment this line for local development
-        arr.append("python slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        # arr.append("python slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
 
         return arr
 

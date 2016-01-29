@@ -13,6 +13,8 @@ def register_slycat_plugin(context):
     import pickle
 
   def finish(database, model):
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", model["_id"])
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
@@ -32,32 +34,42 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   def compute(database, model, sid, uid, username):
-    inputs = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/arrayset_inputs.json" % (username, uid)))
-    cherrypy.log.error("***** inputs")
-    cherrypy.log.error("%s" % inputs)
+    inputs = slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (username, uid))
+    inputs = pickle.loads(inputs)
 
-    slycat.web.server.put_model_arrayset(database, model, "inputs")
+    slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
     attributes = inputs["attributes"]
-    slycat.web.server.put_model_array(database, model, "inputs", 0, attributes, inputs["dimensions"])
+    slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
 
     inputs_attributes_data = slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (username, uid))
     inputs_attributes_data = pickle.loads(inputs_attributes_data)
 
     for attribute in range(len(attributes)):
       data = inputs_attributes_data["%s" % attribute]
-      cherrypy.log.error("***** data")
-      cherrypy.log.error("%s" % [data])
-      slycat.web.server.put_model_arrayset_data(database, model, "inputs", "0/%s/..." % attribute, [data])
+      slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [data])
 
     clusters = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/file_clusters.json" % (username, uid)))
     clusters_file = json.JSONDecoder().decode(clusters["file"])
 
-    clusters_files_content = {}
-    for f in clusters_file:
-      clusters_files_content["cluster-%s" % f] = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/file_cluster_%s.json" % (username, uid, f)))
+    slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/slycat_timeseries_%s/file_clusters.out" % (username, uid), clusters["aid"], clusters["parser"])
 
-    cherrypy.log.error("***** clusters file content")
-    cherrypy.log.error("%s" % clusters_files_content)
+    for f in clusters_file:
+      cherrypy.log.error("***** f: %s" % f)
+      file_cluster_attr = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/file_cluster_%s.json" % (username, uid, f)))
+      slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/slycat_timeseries_%s/file_cluster_%s.out" % (username, uid, f), file_cluster_attr["aid"], file_cluster_attr["parser"])
+
+      waveforms = slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/waveforms_%s.pickle" % (username, uid, f))
+      waveforms = pickle.loads(waveforms)
+
+      database = slycat.web.server.database.couchdb.connect()
+      model = database.get("model", model["_id"])
+      slycat.web.server.put_model_arrayset(database, model, "preview-%s" % f)
+      for index, waveform in enumerate(waveforms):
+        waveform_dimensions = [dict(name="sample", end=len(waveform["times"]))]
+        waveform_attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
+        slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes, waveform_dimensions)
+        slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
+
 
   def fail_model(mid, message):
     database = slycat.web.server.database.couchdb.connect()
