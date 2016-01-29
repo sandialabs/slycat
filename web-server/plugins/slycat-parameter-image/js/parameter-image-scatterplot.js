@@ -1462,6 +1462,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       add_resize_handle(frame_html);
       add_pin_button(frame_html);
 
+      self._open_images(images.slice(1), true);
+
+      // Do not comment out this return because it will cause and infinite loop and Firefox will blacklist WebGL.
       return;
     }
 
