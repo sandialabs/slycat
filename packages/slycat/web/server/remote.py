@@ -359,12 +359,17 @@ class Session(object):
         return arr
 
       def compute_timeseries(fn_id, params):
-        arr = list(ipython_parallel_setup_arr)
+        # arr = list(ipython_parallel_setup_arr)
+        arr = [
+          "module load %s" % module_name,
+          "ipcluster start -n %s &" % ntasks_per_node,
+          "sleep 1m"
+        ]
 
         # uncomment this line for production
-        arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --profile ${profile} --output ~/slycat_timeseries_%s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        # arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --profile ${profile} --output ~/slycat_timeseries_%s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
         # uncomment this line for local development
-        # arr.append("python slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --profile ${profile} --output ~/slycat_timeseries_%s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        arr.append("python slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
 
         return arr
 

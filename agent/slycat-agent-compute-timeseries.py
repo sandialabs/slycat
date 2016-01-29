@@ -25,6 +25,10 @@ import scipy.cluster.hierarchy
 import scipy.spatial.distance
 import hdf5
 import json
+try:
+  import cpickle as pickle
+except:
+  import pickle
 
 parser = argparse.ArgumentParser()
 parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
@@ -83,10 +87,10 @@ try:
   print("Storing clustering parameters.")
 
   dirname = os.path.expanduser('~') + ("/slycat_timeseries_%s" % arguments.hash)
-  model_parameters = dict(cluster_bin_count=_numSamples, cluster_bin_type=arguments.cluster_sample_type, cluster_type=arguments.cluster_type, cluster_metric=arguments.cluster_metric)
   if not os.path.exists(dirname):
     os.makedirs(dirname)
-  
+
+  model_parameters = dict(directory=arguments.directory)
   with open(os.path.join(dirname, "model_parameters.json"), "w") as model_parameters_json:
     json.dump(model_parameters, model_parameters_json)
 
@@ -106,10 +110,17 @@ try:
     if len(dimensions) != 1:
       raise Exception("Inputs table must have exactly one dimension.")
     timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
-  
+ 
+    attributes_data = {}
+    for attribute in range(len(attributes)):
+      data = array.get_data(attribute)[...]
+      attributes_data["%s" % attribute] = data
+
     arrayset_inputs = dict(aid="inputs", array=0, dimensions=dimensions, attributes=attributes)
-    with open(os.path.join(dirname, "arrayset_inputs.json"), "w") as arrayset_inputs_json:
-      json.dump(arrayset_inputs, arrayset_inputs_json)
+    with open(os.path.join(dirname, "arrayset_inputs.pickle"), "wb") as arrayset_inputs:
+      pickle.dump(arrayset_inputs, arrayset_inputs)
+    with open(os.path.join(dirname, "inputs_attributes_data.pickle"), "wb") as inputs_attributes_data:
+      pickle.dump(attributes_data, inputs_attributes_data)
 
     #connection.put_model_arrayset(mid, "inputs")
     #connection.put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
@@ -316,8 +327,8 @@ try:
       print("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
       #connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
       arrayset_preview_n = dict(aid="preview-%s" % name, array=index, dimensions=dimensions, attributes=attributes)
-      with open(os.path.join(dirname, "arrayset_preview_%s.json" % name), "w") as arrayset_preview_n_json:
-        json.dump(arrayset_preview_n, arrayset_preview_n_json)
+      with open(os.path.join(dirname, "arrayset_preview_%s.pickle" % name), "w") as arrayset_preview_n_pickle:
+        pickle.dump(arrayset_preview_n, arrayset_preview_n_pickle)
 
 except:
   import traceback

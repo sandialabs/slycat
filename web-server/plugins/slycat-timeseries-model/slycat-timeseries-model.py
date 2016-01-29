@@ -7,6 +7,10 @@ def register_slycat_plugin(context):
   import json
   import slycat.web.server
   import threading
+  try:
+    import cpickle as pickle
+  except:
+    import pickle
 
   def finish(database, model):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
@@ -27,8 +31,33 @@ def register_slycat_plugin(context):
     context["cluster-bin-count"] = model["artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
-  def compute():
-    print "compute() ran!"
+  def compute(database, model, sid, uid, username):
+    inputs = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/arrayset_inputs.json" % (username, uid)))
+    cherrypy.log.error("***** inputs")
+    cherrypy.log.error("%s" % inputs)
+
+    slycat.web.server.put_model_arrayset(database, model, "inputs")
+    attributes = inputs["attributes"]
+    slycat.web.server.put_model_array(database, model, "inputs", 0, attributes, inputs["dimensions"])
+
+    inputs_attributes_data = slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (username, uid))
+    inputs_attributes_data = pickle.loads(inputs_attributes_data)
+
+    for attribute in range(len(attributes)):
+      data = inputs_attributes_data["%s" % attribute]
+      cherrypy.log.error("***** data")
+      cherrypy.log.error("%s" % [data])
+      slycat.web.server.put_model_arrayset_data(database, model, "inputs", "0/%s/..." % attribute, [data])
+
+    clusters = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/file_clusters.json" % (username, uid)))
+    clusters_file = json.JSONDecoder().decode(clusters["file"])
+
+    clusters_files_content = {}
+    for f in clusters_file:
+      clusters_files_content["cluster-%s" % f] = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/file_cluster_%s.json" % (username, uid, f)))
+
+    cherrypy.log.error("***** clusters file content")
+    cherrypy.log.error("%s" % clusters_files_content)
 
   def fail_model(mid, message):
     database = slycat.web.server.database.couchdb.connect()
@@ -73,9 +102,10 @@ def register_slycat_plugin(context):
     jid = kwargs["jid"]
     fn = kwargs["fn"]
     uid = kwargs["uid"]
+    username = kwargs["username"]
 
     def callback():
-      compute()
+      compute(database, model, sid, uid, username)
       finish(database, model)
 
     stop_event = threading.Event()
