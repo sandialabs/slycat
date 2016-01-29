@@ -32,6 +32,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.process_parameters = function() {
+      component.put_model_parameters();
       component.tab(2);
     };
 
@@ -49,25 +50,25 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
         success: function() {
           client.put_model_parameter({
             mid: component.model._id(),
-            aid: 'cluster_sample_count',
-            value: component.cluster_sample_count,
+            aid: 'cluster-sample-count',
+            value: component.cluster_sample_count(),
             input: true,
             success: function() {
               client.put_model_parameter({
                 mid: component.model._id(),
-                aid: 'cluster_sample_type',
+                aid: 'cluster-sample-type',
                 value: $('#timeseries-wizard-cluster-sample-type').val(),
                 input: true,
                 success: function() {
                   client.put_model_parameter({
                     mid: component.model._id(),
-                    aid: 'cluster_type',
+                    aid: 'cluster-type',
                     value: $('#timeseries-wizard-cluster-type').val(),
                     input: true,
                     success: function() {
                       client.put_model_parameter({
                         mid: component.model._id(),
-                        aid: 'cluster_metric',
+                        aid: 'cluster-metric',
                         value: $('#timeseries-wizard-cluster-metric').val(),
                         input: true,
                         success: function() {
