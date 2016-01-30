@@ -54,7 +54,6 @@ def register_slycat_plugin(context):
     slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/slycat_timeseries_%s/file_clusters.out" % (username, uid), clusters["aid"], clusters["parser"])
 
     for f in clusters_file:
-      cherrypy.log.error("***** f: %s" % f)
       file_cluster_attr = json.loads(slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/file_cluster_%s.json" % (username, uid, f)))
       slycat.web.server.post_model_file(model["_id"], True, sid, "/home/%s/slycat_timeseries_%s/file_cluster_%s.out" % (username, uid, f), file_cluster_attr["aid"], file_cluster_attr["parser"])
 
