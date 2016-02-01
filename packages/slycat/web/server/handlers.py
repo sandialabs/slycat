@@ -203,6 +203,7 @@ def get_project(pid):
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-project"] = project
+    context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
     return slycat.web.server.template.render("slycat-project.html", context)
 
 def get_remote_host_dict():
@@ -435,8 +436,13 @@ def get_model(mid, **kwargs):
     context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
     context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking["page-before"]
     context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking["page-after"]
+
     context["slycat-model"] = model
+    context["slycat-model-name"] = model.get("name","").replace("'", "\\'")
+    
     context["slycat-project"] = project
+    context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
+
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-model-type"] = mtype
