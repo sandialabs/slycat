@@ -46,17 +46,6 @@ body
   background-color: transparent;
   margin: 8px 0 0 0;
   padding-left: 0;
-  padding-right: 0;
-  height: 36px;
-  max-width: 566px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.navbar .breadcrumb .project,
-.navbar .breadcrumb .model
-{
-  display: inline;
 }
 
 .bootstrap-styles .navbar .breadcrumb a
