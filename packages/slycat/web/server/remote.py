@@ -565,6 +565,11 @@ class Session(object):
         cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (self.hostname, path)
         slycat.email.send_error("slycat.web.server.remote.py get_file", "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (self.hostname, path))
         raise cherrypy.HTTPError("400 Path not absolute.")
+      elif metadata["message"] == "No read permission.":
+        cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (self.hostname, path)
+        cherrypy.response.headers["x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (self.hostname, path)
+        slycat.email.send_error("slycat.web.server.remote.py get_file", "cherrypy.HTTPError 400 you do not have permission to retrieve %s:%s. Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories." % (self.hostname, path, self.hostname, path))
+        raise cherrypy.HTTPError("400 Access denied.")
       elif metadata["message"] == "Path not found.":
         cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (self.hostname, path)
         slycat.email.send_error("slycat.web.server.remote.py get_file", "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (self.hostname, path))
