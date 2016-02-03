@@ -11,6 +11,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
       var vm = this;
       vm.disabled = params.disabled === undefined ? false : params.disabled;
+      vm.nnodes_disabled = params.disabled === undefined ? false : params.disabled;
       vm.output_max_height = params.output_max_height === undefined ? 150 : params.output_max_height;
       vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null });
       vm.remote.focus.extend({ notify: 'always' });
@@ -44,6 +45,25 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       var previous_state = '';
 
       $('.slycat-remote-interface-output').css('max-height', vm.output_max_height);
+
+      // Process suggestions if any
+      (function() {
+        var suggestions = params.suggestions === undefined ? [] : params.suggestions;
+        suggestions.forEach(function(s) {
+          var key = Object.keys(s)[0];
+          vm[key](s[key]);
+        });
+      })();
+
+      // Process restrictions if any
+      (function() {
+        var restrictions = params.restrictions === undefined ? [] : params.restrictions;
+        restrictions.forEach(function(r) {
+          var key = Object.keys(r)[0];
+          vm[key](r[key]);
+          vm[key + '_disabled'] = true;
+        });
+      })();
 
       vm.connect = function() {
         vm.remote.enable(false);
