@@ -5,7 +5,7 @@ This is Slycat - a web-based ensemble analysis and visualization platform, creat
 For installation, tutorials, and developer documentation, go to http://slycat.readthedocs.org
 
 # [Slycat-data](https://github.com/sandialabs/slycat-data)
-A directory of sample data that can be used by slycat
+A github repo of sample data that can be used by slycat
 
 ****
 

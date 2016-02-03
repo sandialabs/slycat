@@ -874,17 +874,21 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var images = [];
       self.options.open_images.forEach(function(image, index)
       {
-        images.push({
-          index : image.index,
-          uri : image.uri.trim(),
-          image_class : "open-image",
-          x : width * image.relx,
-          y : height * image.rely,
-          width : image.width,
-          height : image.height,
-          target_x : self.x_scale(self.options.x[image.index]),
-          target_y : self.y_scale(self.options.y[image.index]),
-          });
+        // Making sure we have an index and uri before attempting to open an image
+        if(image.index != null && image.uri != undefined)
+        {
+          images.push({
+            index : image.index,
+            uri : image.uri.trim(),
+            image_class : "open-image",
+            x : width * image.relx,
+            y : height * image.rely,
+            width : image.width,
+            height : image.height,
+            target_x : self.x_scale(self.options.x[image.index]),
+            target_y : self.y_scale(self.options.y[image.index]),
+            });
+        }
       });
       self._open_images(images);
     }
@@ -1251,10 +1255,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         clear_hover_timer(self);
         frame = d3.select(d3.event.target.parentNode);
 
-        if (frame.select('.resize').size())
-          theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
-        else
-          theImage = frame.classed("hover-image", false).classed("open-image", true);
+        // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
+        // Alex is commenting it out and always assigning the open-image class to the frame instead.
+        // if (frame.select('.resize').size())
+        //   theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
+        // else
+        //   theImage = frame.classed("hover-image", false).classed("open-image", true);
+        theImage = frame.classed("hover-image", false).classed("open-image", true);
 
         imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
         imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
@@ -1455,6 +1462,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       add_resize_handle(frame_html);
       add_pin_button(frame_html);
 
+      self._open_images(images.slice(1), true);
+
+      // Do not comment out this return because it will cause and infinite loop and Firefox will blacklist WebGL.
       return;
     }
 

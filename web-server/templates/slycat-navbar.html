@@ -8,21 +8,79 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" data-bind="attr:{href:server_root + 'projects'}">Slycat</a>
+        <a class="navbar-brand" data-bind="attr:{href:server_root + 'projects'}" title="Slycat">
+          <span data-bind="visible: project().length == 0">Slycat</span>
+        </a>
       </div>
       <div class="collapse navbar-collapse" id="slycat-navbar-content">
+
         <ol class="breadcrumb navbar-left">
-          <li data-bind="visible: true"><a data-bind="attr:{href:server_root + 'projects'}">Projects</a></li>
           <!-- ko foreach: project -->
-            <li><a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a></li>
+            <li data-bind="css: {'slycat-unclickable': $parent.model().length == 0}">
+              <a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
+            </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
             <li class="slycat-unclickable"><a data-bind="text:name,popover:{trigger:'hover',html:true,content:$parent.model_popover()}"></a></li>
           <!-- /ko -->
         </ol>
-        <ul class="nav navbar-nav navbar-left">
-          <li class="dropdown" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
-            <button type="button" id="slycat-create-wizards" class="btn btn-xs btn-success navbar-btn dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
+
+        <ul class="nav navbar-personal navbar-nav navbar-right">
+          <li class="dropdown">
+            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">
+              <span class="fa fa-user"></span>
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="dropdown-header" data-bind="text: user.name">User's Actual Name</li>
+              <li class="dropdown-header" data-bind="text:'Username: ' + user.uid()">Username</li>
+              <li role="separator" class="divider"></li>
+              <li class="slycat-clickable">
+                <a data-bind="click:sign_out">
+                  <span class="fa fa-sign-out"></span> Sign Out
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">
+              <span class="fa fa-question-circle"></span> <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li class="slycat-clickable"><a data-bind="click:about"><span class="fa fa-fw"></span> About Slycat</a></li>
+              <li class="slycat-clickable"><a data-bind="click:support_request"><span class="fa fa-fw fa-envelope-o"></span> Support Request</a></li>
+              <li class="slycat-clickable"><a data-bind="click:open_documentation"><span class="fa fa-fw fa-book"></span> Documentation</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li class="dropdown" data-bind="visible:open_models().length">
+            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <!-- ko foreach: finished_models -->
+                <li>
+                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()},popover:{trigger:'hover',content:$data.message()}">
+                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{'btn-success':$data.result && $data.result()==='succeeded','btn-danger':$data.result && $data.result()!=='succeeded'}"><span class="fa fa-check"></span></button>
+                    <span data-bind="text:name"></span>
+                  </a>
+                </li>
+              <!-- /ko -->
+              <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li>
+              <!-- ko foreach: running_models -->
+                <li>
+                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()}">
+                    <span data-bind="text:name"></span>
+                  </a>
+                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}">
+                </li>
+              <!-- /ko -->
+            </ul>
+          </li>
+        </ul>
+
+        <div class="nav navbar-menus navbar-nav navbar-right btn-group">
+          <div class="btn-group" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
+            <button type="button" id="slycat-create-wizards" class="btn btn-xs btn-success dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_create_wizards -->
                 <li class="slycat-clickable"><a class="" data-bind="text: label, click:$parent.run_wizard"></a></li>
@@ -36,9 +94,9 @@
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
               <!-- /ko -->
             </ul>
-          </li>
-          <li class="dropdown" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length">
-            <button type="button" id="slycat-edit-wizards" class="btn btn-xs btn-warning navbar-btn dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button>
+          </div>
+          <div class="btn-group" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length">
+            <button type="button" id="slycat-edit-wizards" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown">Edit <span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_edit_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
@@ -52,17 +110,17 @@
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
               <!-- /ko -->
             </ul>
-          </li>
-          <li class="dropdown" data-bind="visible: project_info_wizards().length" data-toggle="dropdown">
-            <button type="button" id="slycat-info-wizards" class="btn btn-xs btn-info navbar-btn dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
+          </div>
+          <div class="btn-group" data-bind="visible: project_info_wizards().length">
+            <button type="button" id="slycat-info-wizards" class="btn btn-xs btn-info dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
             <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: project_info_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click: $parent.run_wizard"></a></li>
               <!-- /ko -->
             </ul>
-          </li>
-          <li class="dropdown nav-bookmarks" data-bind="visible: model_id() || project_id()">
-            <button type="button" class="btn btn-xs btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown"
+          </div>
+          <div class="btn-group nav-bookmarks" data-bind="visible: model_id() || project_id()">
+            <button type="button" class="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown"
               data-bind="css: { disabled: model_id() ? false : saved_project_bookmarks().length < 1 && saved_model_bookmarks().length < 1 }">
               Bookmarks <span class="caret"/>
             </button>
@@ -129,9 +187,9 @@
                 </li>
               <!-- /ko -->
             </ul>
-          </li>
-          <li class="dropdown" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length">
-            <button type="button" id="slycat-delete-wizards" class="btn btn-xs btn-danger navbar-btn dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button>
+          </div>
+          <div class="btn-group" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length">
+            <button type="button" id="slycat-delete-wizards" class="btn btn-xs btn-danger dropdown-toggle" data-toggle="dropdown">Delete <span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: model_delete_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click:$parent.run_wizard"></a></li>
@@ -145,59 +203,9 @@
                 <li><a data-bind="text: label, click:$parent.run_wizard"></a></li>
               <!-- /ko -->
             </ul>
-          </li>
-          <li class="dropdown" data-bind="visible:open_models().length">
-            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <!-- ko foreach: finished_models -->
-                <li>
-                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()},popover:{trigger:'hover',content:$data.message()}">
-                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{'btn-success':$data.result && $data.result()==='succeeded','btn-danger':$data.result && $data.result()!=='succeeded'}"><span class="fa fa-check"></span></button>
-                    <span data-bind="text:name"></span>
-                  </a>
-                </li>
-              <!-- /ko -->
-              <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li>
-              <!-- ko foreach: running_models -->
-                <li>
-                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()}">
-                    <span data-bind="text:name"></span>
-                  </a>
-                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}">
-                </li>
-              <!-- /ko -->
-            </ul>
-          </li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
+          </div>
+        </div>
 
-          <!-- Original Username Element. Delete when switching to new Username Dropdown below. -->
-          <!-- <li class="navbar-text slycat-clickable"><span class="fa fa-user"></span> <span data-bind="text:user.name,popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span></li> -->
-          <!-- End Original Username Element -->
-
-          <!-- New Username Dropdown. Uncomment and delete Original Username Element above when switching to this dropdown to implement Sign Out functionality. -->
-          <li class="dropdown">
-            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">
-              <span class="fa fa-user"></span> <span data-bind="
-                text:user.name,
-                popover:{trigger:'hover',content:'Username: ' + user.uid()}"></span>
-              <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li class="slycat-clickable"><a data-bind="click:sign_out"><span class="fa fa-sign-out"></span> Sign Out</a></li>
-            </ul>
-          </li>
-          <!-- End New Username Dropdown -->
-
-          <li class="dropdown">
-            <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">Help <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li class="slycat-clickable"><a data-bind="click:about"><span class="fa fa-fw"></span> About Slycat</a></li>
-              <li class="slycat-clickable"><a data-bind="click:support_request"><span class="fa fa-fw fa-envelope-o"></span> Support Request</a></li>
-              <li class="slycat-clickable"><a data-bind="click:open_documentation"><span class="fa fa-fw fa-book"></span> Documentation</a></li>
-            </ul>
-          </li>
-        </ul>
       </div>
     </div>
   </nav>

@@ -123,31 +123,54 @@ define("slycat-color-switcher", ["d3"], function(d3)
         },
       };
 
-      this.container = $("<div>")
+      this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true" title="Waveform Color Theme"> \
+            Colors \
+            <span class="caret"></span> \
+          </button>')
         .appendTo(this.element)
-        .append('<span class="label">Colors: </span>')
+        ;
+      this.list = $('<ul class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
+        .appendTo(this.element)
         ;
       $.each(this.color_maps, function(key, value)
       {
-        var button = $("<span>")
+        var gradient_data = self.get_gradient_data(key);
+        var color_stops = [];
+        for(var i = 0; i < gradient_data.length; i++)
+        {
+          color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
+        }
+        var background_color = self.get_background(key);
+        var item = $('<li role="presentation">')
           .addClass("color")
-          .toggleClass("selected", key == self.options.colormap)
-          .appendTo(self.container)
+          .toggleClass("active", key == self.options.colormap)
           .attr("data-colormap", key)
-          .html(value.label)
-          .click(function()
-          {
-            if($(this).hasClass("selected"))
-              return;
+          .appendTo(self.list)
+          .append(
+            $('<a role="menuitem" tabindex="-1">')
+              .html(value.label)
+              .click(function()
+              {
+                var menu_item = $(this).parent();
+                if(menu_item.hasClass("active"))
+                  return false;
 
-            self.options.colormap = this.getAttribute("data-colormap");
-            self.container.find(".color").removeClass("selected");
-            $(this).addClass("selected");
+                self.options.colormap = menu_item.attr("data-colormap");
+                self.list.find(".color").removeClass("active");
+                menu_item.addClass("active");
 
-            self.element.trigger("colormap-changed", [self.options.colormap]);
-          })
+                self.element.trigger("colormap-changed", [self.options.colormap]);
+              })
+              .css({
+                "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
+                "background-size" : "5px 75%, 50px 100%",
+                "background-position" : "right 10px center, right 5px center",
+                "background-repeat" : "no-repeat, no-repeat",
+              })
+          )
           ;
       });
+
     },
 
     _setOption: function(key, value)
@@ -157,8 +180,8 @@ define("slycat-color-switcher", ["d3"], function(d3)
 
       if(key == "colormap")
       {
-        this.container.find(".color").removeClass("selected");
-        this.container.find("[data-colormap='" + this.options.colormap + "']").addClass("selected");
+        this.list.find(".color").removeClass("active");
+        this.list.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
       }
     },
 

@@ -203,6 +203,7 @@ def get_project(pid):
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-project"] = project
+    context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
     return slycat.web.server.template.render("slycat-project.html", context)
 
 def get_remote_host_dict():
@@ -435,8 +436,13 @@ def get_model(mid, **kwargs):
     context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
     context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking["page-before"]
     context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking["page-after"]
+
     context["slycat-model"] = model
+    context["slycat-model-name"] = model.get("name","").replace("'", "\\'")
+    
     context["slycat-project"] = project
+    context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
+
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-model-type"] = mtype
@@ -751,8 +757,13 @@ def login():
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
-    #cherrypy.response.cookie["slycatauth"]["Max-Age"] = cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds()
-    cherrypy.response.cookie["slycatauth"]["Max-Age"] = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
+    timeout = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
+    cherrypy.response.cookie["slycatauth"]["Max-Age"] = timeout
+
+    cherrypy.response.cookie["slycattimeout"] = "timeout"
+    cherrypy.response.cookie["slycattimeout"]["path"] = "/"
+    cherrypy.response.cookie["slycattimeout"]["Max-Age"] = timeout
+
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = user_name
     cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (cherrypy.response.cookie["slycatauth"], success, response_url))
@@ -777,9 +788,12 @@ def logout():
     if "slycatauth" in cherrypy.request.cookie:
       sid = cherrypy.request.cookie["slycatauth"].value
 
-      # expire the old cookie
+      # expire the old cookies
       cherrypy.response.cookie["slycatauth"] = sid
       cherrypy.response.cookie["slycatauth"]['expires'] = 0
+
+      cherrypy.response.cookie["slycattimeout"] = "timeout"
+      cherrypy.response.cookie["slycattimeout"]['expires'] = 0
 
       couchdb = slycat.web.server.database.couchdb.connect()
       session = couchdb.get("session", sid)
