@@ -7,9 +7,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: null });
     component.is_compute_hdf5 = ko.observable('compute');
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.is_compute_hdf5() == 'compute' ? true : false;}), focus: false, sid: null});
-    component.remote.focus.extend({notify: "always"});
+    component.remote.focus.extend({notify: 'always'});
     component.browser = mapping.fromJS({path:null, selection: []});
-    component.csv_url = ko.observable('');
+    component.timeseries_file = ko.observable('');
+    component.in_directory = ko.observable('');
     component.directory = ko.observable('');
     component.cluster_sample_count = ko.observable(1000);
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
@@ -24,7 +25,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
-        type: "timeseries",
+        type: 'timeseries',
         name: component.model.name(),
         description: component.model.description(),
         marking: component.model.marking(),
@@ -37,20 +38,23 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.connect = function() {
-      component.remote.status_type("info");
-      component.remote.status("Connecting ...");
+      component.remote.status_type('info');
+      component.remote.status('Connecting ...');
       client.post_remotes({
         hostname: component.remote.hostname(),
         username: component.remote.username(),
         password: component.remote.password(),
         success: function(sid) {
+          $('.modal-dialog').addClass('modal-lg');
+          $('.ps-tab-remote-data').css('display', 'block');
+
           component.remote.sid(sid);
           component.tab(2);
         },
         error: function(request, status, reason_phrase) {
-          component.remote.status_type("danger");
+          component.remote.status_type('danger');
           component.remote.status(reason_phrase);
-          component.remote.focus("password");
+          component.remote.focus('password');
         }
       });
     };
@@ -58,12 +62,12 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.select_compute = function() {
       var c = component.is_compute_hdf5();
 
-      if (c === 'compute') {
-        $(".modal-dialog").addClass("modal-lg");
-        $(".ps-tab-remote-data").css("display", "block");
+      if (c === 'compute')
         component.connect();
-      } else if (c === 'no-compute')
+      else if (c === 'no-compute') {
+        $('#timeseries-input-directory').hide();
         component.tab(3);
+      }
     };
 
     component.process_parameters = function() {
@@ -75,10 +79,16 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
       location = server_root + 'models/' + component.model._id();
     };
 
-    component.load_csv = function() {
-      $('.remote-browser-continue-data').toggleClass("disabled", true);
-      component.csv_url(component.browser.selection()[0]);
-      console.log(component.csv_url());
+    component.load_timeseries_file = function() {
+      $('.remote-browser-continue-data').toggleClass('disabled', true);
+
+      var url = component.browser.selection()[0];
+      url = url.split('/');
+      var file = url[url.length - 1];
+      url.pop();
+
+      component.timeseries_file(file);
+      component.in_directory(url.join('/'));
       component.tab(3);
     };
 
