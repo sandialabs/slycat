@@ -369,6 +369,9 @@ class Session(object):
           "sleep 1m"
         ]
 
+        if params["timeseries_file"]:
+          arr.append("slycat-xyce-timeseries-push1.py --timeseries-file=%s --force %s %s" % (params["timeseries_file"], params["in_directory"], params["directory"]))
+
         # uncomment this line for production
         arr.append("python $SLYCAT_HOME/slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
         # uncomment this line for local development
