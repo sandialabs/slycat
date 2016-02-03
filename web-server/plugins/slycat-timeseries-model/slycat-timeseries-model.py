@@ -147,6 +147,7 @@ def register_slycat_plugin(context):
     os.path.join(os.path.dirname(__file__), "js/timeseries-waveformplot.js"),
     os.path.join(os.path.dirname(__file__), "js/timeseries-table.js"),
     os.path.join(os.path.dirname(__file__), "js/timeseries-legend.js"),
+    os.path.join(os.path.dirname(__file__), "js/timeseries-controls.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),

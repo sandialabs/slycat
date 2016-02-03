@@ -16,12 +16,15 @@ rights in this software.
   </head>
 
   <body>
-    <slycat-navbar params="project_id:'{{slycat-project._id}}', project_name:'{{slycat-project.name}}'"></slycat-navbar>
+    <slycat-navbar params="project_id:'{{slycat-project._id}}', project_name:'{{slycat-project-name}}'"></slycat-navbar>
 
     <div id="slycat-project" class="bootstrap-styles slycat-content">
-      <div class="container" data-bind="visible: models().length">
+      <div class="container">
         <h3>Models</h3>
         <div class="panel panel-default">
+          <div class="list-group" data-bind="visible: models().length == 0">
+            <div class="list-group-item">There are no models in this project. You can add a model by using the Create menu above.</div>
+          </div>
           <div class="list-group" data-bind="foreach: models">
             <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
               <span class="label label-default" data-bind="text: $root.model_names.translate_model_type($data['model-type']()) + ' model'"></span>
