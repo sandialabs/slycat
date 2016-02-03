@@ -147,6 +147,20 @@ $.ajax(
 // If the model is ready, start retrieving data, including bookmarked state.
 //////////////////////////////////////////////////////////////////////////////////////////
 
+function s_to_a(s) {
+  if (Array.isArray(s))
+    return s;
+  else
+    return JSON.parse(s);
+}
+
+function s_to_o(s) {
+  if (typeof(s) === "object")
+    return s;
+  else
+    return JSON.parse(s);
+}
+
 function setup_page()
 {
   // If the model isn't ready or failed, we're done.
@@ -278,12 +292,11 @@ function retrieve_sorted_column(parameters)
 
 function setup_controls()
 {
-  if(bookmark && clusters)
+  if(bookmark && s_to_a(clusters))
   {
-
     $.ajax(
     {
-      url : server_root + "models/" + model._id + "/files/cluster-" + clusters[initial_cluster],
+      url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[initial_cluster],
       contentType : "application/json",
       success : function(cluster_data)
       {
@@ -295,7 +308,7 @@ function setup_controls()
   }
 
   if(
-    !controls_ready && bookmark && clusters && (initial_cluster !== null)
+    !controls_ready && bookmark && s_to_a(clusters) && (initial_cluster !== null)
     && (selected_simulations != null) && table_metadata
   )
   {
@@ -327,7 +340,7 @@ function setup_controls()
       aid : "inputs",
       metadata: table_metadata,
       highlight: selected_simulations,
-      clusters: clusters,
+      clusters: s_to_a(clusters),
       cluster: initial_cluster,
       color_variables: color_variables,
       "color-variable" : color_variable,
@@ -411,14 +424,14 @@ function setup_controls()
 
 function setup_waveforms()
 {
-  if(bookmark && clusters && initial_cluster !== null && waveforms_data !== null)
+  if(bookmark && s_to_a(clusters) && initial_cluster !== null && waveforms_data !== null)
   {
 
     // Load the waveforms.
     get_model_arrayset({
       server_root : server_root + "",
       mid : model._id,
-      aid : "preview-" + clusters[initial_cluster],
+      aid : "preview-" + s_to_a(clusters)[initial_cluster],
       success : function(result, metadata)
       {
         waveforms_data[initial_cluster] = result;
@@ -661,7 +674,7 @@ function setup_widgets()
   }
 
   // Setup the dendrogram ...
-  if(!dendrogram_ready && bookmark && clusters && initial_cluster !==  null && clusters_data[initial_cluster] !== undefined
+  if(!dendrogram_ready && bookmark && s_to_a(clusters) && initial_cluster !==  null && clusters_data[initial_cluster] !== undefined
       && color_array !== null && selected_simulations !== null
     )
   {
@@ -681,11 +694,11 @@ function setup_widgets()
 
     var dendrogram_options = build_dendrogram_node_options(initial_cluster);
     dendrogram_options["server-root"]=server_root;
-    dendrogram_options.mid=model._id;
-    dendrogram_options.clusters=clusters;
-    dendrogram_options.cluster_data=clusters_data[initial_cluster];
-    dendrogram_options.color_scale=color_scale;
-    dendrogram_options.color_array=color_array;
+    dendrogram_options.mid = model._id;
+    dendrogram_options.clusters = s_to_a(clusters);
+    dendrogram_options.cluster_data = s_to_o(clusters_data[initial_cluster]);
+    dendrogram_options.color_scale = color_scale;
+    dendrogram_options.color_array = color_array;
 
     if(bookmark["sort-variable"] != undefined) {
       dendrogram_options.dendrogram_sort_order = false;
@@ -825,7 +838,8 @@ function update_waveform_dendrogram_on_selected_variable_changed(variable)
       var parameters = {
         color_array : array,
         color_scale : $("#color-switcher").colorswitcher("get_color_scale", currentColormap, selected_column_min, selected_column_max),
-      }
+      };
+
       $("#waveform-viewer").waveformplot("option", "color-options", parameters);
       $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
     }
@@ -864,20 +878,20 @@ function update_dendrogram(cluster)
   if(clusters_data[cluster] === undefined) {
      $.ajax(
     {
-      url : server_root + "models/" + model._id + "/files/cluster-" + clusters[cluster],
+      url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster],
       contentType : "application/json",
       success : function(cluster_data)
       {
         clusters_data[cluster] = cluster_data;
         var dendrogram_options = build_dendrogram_node_options(cluster);
-        dendrogram_options.cluster_data = clusters_data[cluster];
+        dendrogram_options.cluster_data = s_to_o(clusters_data[cluster]);
         $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
       },
       error: artifact_missing
     });
   } else {
     var dendrogram_options = build_dendrogram_node_options(cluster);
-    dendrogram_options.cluster_data = clusters_data[cluster];
+    dendrogram_options.cluster_data = s_to_o(clusters_data[cluster]);
     $("#dendrogram-viewer").dendrogram("option", dendrogram_options);
   }
 }
@@ -890,7 +904,7 @@ function update_waveformplot(cluster)
     get_model_arrayset({
       server_root : server_root,
       mid : model._id,
-      aid : "preview-" + clusters[cluster],
+      aid : "preview-" + s_to_a(clusters)[cluster],
       success : function(result, metadata)
       {
         waveforms_data[cluster] = result;

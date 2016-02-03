@@ -97,7 +97,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
 
       // We have collapse/expand/selected node data. Let's go ahead and apply it.
       if( (collapsed_nodes!=null) || (expanded_nodes!=null) || (selected_nodes!=null) ){
-        nodes.forEach(function(d) { 
+        nodes.forEach(function(d) {
           if(selected_nodes != null && selected_nodes.length>0) {
             if( selected_nodes.indexOf(d["node-index"]) > -1 ) {
               d.selected = true;
@@ -201,7 +201,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         var selection = [];
         find_selected_nodes(root, selection);
         context.options.selected_nodes = getNodeIndexes(selection);
-        
+
         context.element.trigger("node-selection-changed", {node:d, skip_bookmarking:skip_bookmarking, selection:selection});
       }
 
@@ -290,14 +290,14 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
             var selected_state = false;
             var child_selected_state = false;
             if(d.children)
-              $.each(d.children,  function(index, subtree) { 
+              $.each(d.children,  function(index, subtree) {
                 child_selected_state = prune_tree(subtree);
-                selected_state = selected_state || child_selected_state; 
+                selected_state = selected_state || child_selected_state;
               })
             if(d._children)
-              $.each(d._children, function(index, subtree) { 
+              $.each(d._children, function(index, subtree) {
                 child_selected_state = prune_tree(subtree);
-                selected_state = selected_state || child_selected_state; 
+                selected_state = selected_state || child_selected_state;
               })
             d.selected = selected_state;
             return selected_state;
@@ -334,7 +334,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
               // If this child is at the correct depth and it is expanded, we collapse it
               if(d.children[i].depth == level && d.children[i].children) {
                 toggle(d.children[i]);
-              } 
+              }
               // If this child is above the correct depth and it is collapsed, we expand it and process its children
               else if(d.children[i].depth < level && d.children[i]._children) {
                 toggle(d.children[i]);
@@ -345,7 +345,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
                 expandUpToLevel(d.children[i], level);
               }
             }
-          } 
+          }
           // If d has no children, we do nothing
           else {
             return;
@@ -366,7 +366,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
           .style("opacity", 1e-6)
           .style("display", function(d) { return d.leaves > 1 ? "inline" : "none"; })
           .on("click", function(d) {
-            toggle(d); 
+            toggle(d);
             // Change expandThisFar to however deep below the target node you want to expand
             var expandThisFar = 9999;
             expandUpToLevel(d, d.depth + expandThisFar);
@@ -493,11 +493,18 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
           })
           ;
         self._set_highlight();
-        
+
+        function s_to_a(s) {
+          if (Array.isArray(s))
+            return s;
+          else
+            return JSON.parse(s);
+        }
+
         get_model_arrayset_metadata({
           server_root : self.options["server-root"],
           mid : self.options.mid,
-          aid : "preview-" + self.options.clusters[self.options.cluster],
+          aid : "preview-" + s_to_a(self.options.clusters)[self.options.cluster],
           success : function(parameters)
           {
             node_sparkline_path.each(function(d,i){
@@ -507,7 +514,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
                 get_model_arrayset({
                   server_root : self.options["server-root"],
                   mid : self.options.mid,
-                  aid : "preview-" + self.options.clusters[self.options.cluster],
+                  aid : "preview-" + s_to_a(self.options.clusters)[self.options.cluster],
                   arrays : d["exemplar"] + ":" + (d["exemplar"]+1),
                   element : this,
                   success : function(result, metadata, parameters)
@@ -553,7 +560,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         // Transition new nodes to their final position.
         var node_update = node.transition()
           .duration(duration)
-          .attr("transform", function(d) { 
+          .attr("transform", function(d) {
             return "translate(" + (d._children ? (diagram_width - 40) : d.y) + "," + d.x + ")"; // Draws extended horizontal lines for collapsed nodes
           })
           .style("opacity", 1.0)
@@ -569,7 +576,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         node_update.select(".subtree-glyph")
           .style("fill", "url(#subtree-gradient)")
           ;
-        
+
         node_update.select(".sparkline")
           .style("opacity", function(d) { return d._children || (!d.children && !d._children) ? 1.0 : 1e-6; })
           .each("end", function() { d3.select(this).style("display", function(d) { return d._children || (!d.children && !d._children) ? "inline" : "none"; }); })
@@ -578,7 +585,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         node_update.select(".glyph text")
           .style("display", function(d) { return d._children || (!d.children && !d._children) ? "none" : "inline"; })
           ;
-        
+
         // Transition exiting nodes to the parent's new position.
         var node_exit = node.exit().transition()
           .duration(duration)
@@ -586,11 +593,11 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
           .style("opacity", 1e-6)
           .remove()
           ;
-        
+
         node_exit.select(".sparkline")
           .each("start", function() { d3.select(this).style("display", "none"); })
           ;
-        
+
         // Update the links.
         var link = vis.selectAll("path.link")
           .data(layout.links(nodes), function(d) { return d.target["node-index"]; });
