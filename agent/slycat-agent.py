@@ -238,6 +238,8 @@ def get_file(command):
   path = command["path"]
   if not os.path.isabs(path):
     raise Exception("Path must be absolute.")
+  if not os.access(path, os.R_OK):
+    raise Exception("No read permission.")
   if not os.path.exists(path):
     raise Exception("Path not found.")
   if os.path.isdir(path):
