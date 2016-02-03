@@ -171,10 +171,8 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
         renderFixed(animation, renderer, scene, camera, controls, fps, ms);
       });
 
-      /** this is necessary to move the settings modal up in the DOM */
       var parent_class = 'slycat-content';
       var $c = $('.' + parent_class);
-      // if (!$c.hasClass('bootstrap-styles')) $c.addClass('bootstrap-styles');
 
       vm.show_settings = ko.observable(false).extend({ notify: 'always' });
       vm.show_settings.subscribe(function(value) {
