@@ -174,7 +174,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
       /** this is necessary to move the settings modal up in the DOM */
       var parent_class = 'slycat-content';
       var $c = $('.' + parent_class);
-      if (!$c.hasClass('bootstrap-styles')) $c.addClass('bootstrap-styles');
+      // if (!$c.hasClass('bootstrap-styles')) $c.addClass('bootstrap-styles');
 
       vm.show_settings = ko.observable(false).extend({ notify: 'always' });
       vm.show_settings.subscribe(function(value) {
@@ -186,7 +186,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
         if (value && !moved) {
           /** moves the settings modal higher up in the DOM... */
           $m.detach();
-          $c.prepend($m);
+          $('#model-pane')
+            .addClass('bootstrap-styles')
+            .prepend($m);
         }
 
         $m.modal(value ? 'show' : 'hide');
