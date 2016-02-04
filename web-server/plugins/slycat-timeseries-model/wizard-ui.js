@@ -17,6 +17,15 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
 
+    $('#compute-radio').click(function() {
+      if ($(this).is(':checked')) {
+        $('#slycat-timeseries-file-wrapper').show();
+      } else {
+        $('#slycat-timeseries-file-wrapper').hide();
+        component.timeseries_file('');
+      }
+    });
+
     component.cancel = function() {
       if (component.model._id())
         client.delete_model({ mid: component.model._id() });
@@ -37,42 +46,23 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
       });
     };
 
-    component.connect = function() {
-      component.remote.status_type('info');
-      component.remote.status('Connecting ...');
-      client.post_remotes({
-        hostname: component.remote.hostname(),
-        username: component.remote.username(),
-        password: component.remote.password(),
-        success: function(sid) {
-          $('.modal-dialog').addClass('modal-lg');
-          $('.ps-tab-remote-data').css('display', 'block');
-
-          component.remote.sid(sid);
-          component.tab(2);
-        },
-        error: function(request, status, reason_phrase) {
-          component.remote.status_type('danger');
-          component.remote.status(reason_phrase);
-          component.remote.focus('password');
-        }
-      });
-    };
-
     component.select_compute = function() {
       var c = component.is_compute_hdf5();
 
-      if (c === 'compute')
-        component.connect();
-      else if (c === 'no-compute') {
-        $('#timeseries-input-directory').hide();
-        component.tab(3);
+      if (c === 'compute' && !component.timeseries_file().trim().length) {
+        $('#slycat-timeseries-file-wrapper > input').css('border-color', 'salmon');
+        return;
       }
+
+      if (c !== 'compute')
+        $('#timeseries-input-directory').hide();
+
+      component.tab(2);
     };
 
     component.process_parameters = function() {
       component.put_model_parameters();
-      component.tab(4);
+      component.tab(3);
     };
 
     component.go_to_model = function() {
@@ -80,16 +70,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.load_timeseries_file = function() {
-      $('.remote-browser-continue-data').toggleClass('disabled', true);
-
-      var url = component.browser.selection()[0];
-      url = url.split('/');
-      var file = url[url.length - 1];
-      url.pop();
-
-      component.timeseries_file(file);
-      component.in_directory(url.join('/'));
-      component.tab(3);
+      component.tab(2);
     };
 
     component.put_model_parameters = function(callback) {
@@ -138,7 +119,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.finish = function() {
-      component.tab(5);
+      component.tab(4);
     };
 
     return component;
