@@ -26,7 +26,7 @@ install instructions are platform-independent.
 
 .. NOTE::
 
-  If you're using Boot2Docker behind a proxy, you'll need additional configuration
+  If you're using `Docker <http://www.docker.com>`_ behind a proxy, you'll need additional configuration
   so it can access the network to download the Slycat image:
 
   * To configure proxy information, ssh into the Boot2Docker VM::
@@ -66,7 +66,7 @@ Download the Image and Create a Container
 Now that you have the Docker daemon running and DOCKER_HOST set to connect to it,
 you're ready to download the Slycat image and create a container::
 
-  $ docker run -d -p 2222:22 -p 80:80 -p 443:443 --name slycat sandialabs/slycat-demo
+  $ docker run -d -p 2222:22 -p 80:80 -p 443:443 --name slycat sandialabs/slycat-developer
 
 Docker will begin downloading the `sandialabs/slycat` image, and will create a
 container with the name `slycat` (you will use this name as a convenient way to
