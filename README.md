@@ -7,11 +7,30 @@ For installation, tutorials, and developer documentation, go to http://slycat.re
 # [Slycat-data](https://github.com/sandialabs/slycat-data)
 A github repo of sample data that can be used by slycat
 
+# Quick build 
+
+* install docker 
+* build slycat image
+```bash
+python ~/open-source-docker/docker/open-source-build/build.py slycat-developer-image
+````
+* load the newly built images into docker
+```bash
+docker load -i slycat-developer-****-****.image
+```
+* make the container
+```bash
+docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat-developer sandialabs/slycat-developer
+```
+* log into slycat @ https:/192.168.99.100 and play around!
+* for logging into this quick container the only requirement is username = pasword
+
 ****
 
 # Ensemble analysis and Visualization
 
 ## Multiple Levels of Abstraction
+
 * Ensemble summaries (correlations or similarities)
 
 ![alt tag](https://github.com/sandialabs/slycat/blob/master/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction.png)
