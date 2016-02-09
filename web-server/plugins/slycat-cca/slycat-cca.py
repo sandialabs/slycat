@@ -22,6 +22,7 @@ def register_slycat_plugin(context):
       output_columns = slycat.web.server.get_model_parameter(database, model, "output-columns")
       scale_inputs = slycat.web.server.get_model_parameter(database, model, "scale-inputs")
 
+      # double check the number of inputs and outputs
       if len(input_columns) < 1:
         slycat.email.send_error("slycat-cca.py compute", "CCA model requires at least one input column.")
         raise Exception("CCA model requires at least one input column.")
