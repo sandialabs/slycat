@@ -10,7 +10,7 @@ A github repo of sample data that can be used by slycat
 # Quick build 
 
 * install docker 
-* build slycat image
+* build slycat image from command line
 ```bash
 python ~/open-source-docker/docker/open-source-build/build.py slycat-developer-image
 ````
