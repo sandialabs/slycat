@@ -12,36 +12,17 @@ your own hardware to perform large-scale analyses.
 Install Docker
 --------------
 
-Mac OSX Installation
+Installation
 ~~~~~~~~~~~~~~~~~~~~
 
 Because Docker uses Linux-specific kernel features, you will need to run Docker
-in a virtual machine (VM) on your Mac.  Fortunately, Docker makes this relatively easy:
+in a virtual machine (VM) on your Mac or Windows environment. Fortunately, Docker makes this relatively easy:
 
-* Download the latest `Boot2Docker` installer from https://github.com/boot2docker/osx-installer/releases
-* Run the installer.  This will install a set of docker commands, plus a `VirtualBox <https://www.virtualbox.org>`_ hypervisor, if you don't already have one.
-* In a terminal window, initialize the Boot2Docker VM::
+* Download the latest `docker` for your specific environment from https://www.docker.com/
+* follow the instruction for installing docker on your machine
 
-  $ boot2docker init
-
-* Next, start the Boot2Docker VM::
-
-  $ boot2docker start
-
-* Once the Boot2Docker VM begins running, a message on the console instructs you to set several environment variables.  Copy and paste the commands into the terminal (note that your configuration may look different)::
-
-  $ export DOCKER_CERT_PATH=/Users/fred/.boot2docker/certs/boot2docker-vm
-  $ export DOCKER_TLS_VERIFY=1
-  $ export DOCKER_HOST=tcp://192.168.59.103:2376
-
-With Boot2Docker installed and running and the DOCKER_* environment variables set, the rest of the
+With docker installed and running and the DOCKER_* environment variables set, the rest of the
 install instructions are platform-independent.
-
-Other Platforms
-~~~~~~~~~~~~~~~
-
-You will need to install the Docker engine on your host, following the instructions
-at https://docs.docker.com/installation/#installation
 
 .. NOTE::
 
@@ -50,7 +31,7 @@ at https://docs.docker.com/installation/#installation
 
   * To configure proxy information, ssh into the Boot2Docker VM::
 
-    $ boot2docker ssh
+    $ docker-machine ssh default
 
   * Create / modify the `/var/lib/boot2docker/profile` file to set proxy info::
 
@@ -76,7 +57,8 @@ at https://docs.docker.com/installation/#installation
 
   * If your site uses SSL interception, you must append the certificate to
     /etc/ssl/cacerts.pem and restart the Docker service before downloading
-    images every time you restart boot2docker.
+    images.
+
 
 Download the Image and Create a Container
 -----------------------------------------
@@ -92,6 +74,11 @@ reference the container in subsequent commands).  The Slycat server will begin
 running as soon as the download is complete.  Leave the container running for
 the remainder of these tutorials.
 
+.. WARNING::
+
+  A new image is currently being created so the image has to currently be built from scratch via
+  build.py in the slycat github repi /open-source-docker/docker/open-source-build/build.py
+
 Connect to Slycat with a Web Browser
 ------------------------------------
 
@@ -101,9 +88,9 @@ Open a web browser and point it to the Slycat server at https://<docker host ip>
 
 * If you're running the Slycat container using boot2docker on another platform, this will be the IP address returned by::
 
-    $ boot2docker ip
+    $ docker-machine ip
      
-    The VM's Host only interface IP address is: 192.168.59.103
+    The VM's Host only interface IP address is: 192.168.99.100
 
 * The browser will complain that the server certificate is untrusted.  This is because we use a self-signed certificate for the Docker container.  Follow your browser's procedures to temporarily trust the connection.
 
