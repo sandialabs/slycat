@@ -5,7 +5,6 @@
 from __future__ import absolute_import
 
 import cherrypy
-import datetime
 import hashlib
 import itertools
 import json
@@ -557,16 +556,17 @@ def post_model_finish(mid):
   project = database.get("project", model["project"])
   slycat.web.server.authentication.require_project_writer(project)
 
+  # check state of the model
   if model["state"] != "waiting":
     slycat.email.send_error("slycat.web.server.handlers.py post_model_finish", "cherrypy.HTTPError 400 only waiting models can be finished.")
     raise cherrypy.HTTPError("400 Only waiting models can be finished.")
+  # check if the model type exists
   if model["model-type"] not in slycat.web.server.plugin.manager.models.keys():
     slycat.email.send_error("slycat.web.server.handlers.py post_model_finish", "cherrypy.HTTPError 500 cannot finish unknown model type.")
     raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
-
+  #
   slycat.web.server.update_model(database, model, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0)
-  if model["model-type"] in slycat.web.server.plugin.manager.models.keys():
-    slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
+  slycat.web.server.plugin.manager.models[model["model-type"]]["finish"](database, model)
   cherrypy.response.status = "202 Finishing model."
 
 def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=None, parser=None, **kwargs):
