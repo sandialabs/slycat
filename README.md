@@ -9,8 +9,9 @@ A github repo of sample data that can be used by slycat
 
 # Quick build 
 
+## build slycat image from command line
+
 * install docker 
-* build slycat image from command line
 * clone the slycat repo then
 ```bash
 cd /open-source-docker/docker/open-source-build/
