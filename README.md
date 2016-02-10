@@ -9,7 +9,7 @@ A github repo of sample data that can be used by slycat
 
 # Quick build 
 
-## Run from docker hub image (note image may not be up there yet but it will be soon)
+## Run from docker hub image (fastest way to start playing with slycat)
 
 ```bash
 docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer
