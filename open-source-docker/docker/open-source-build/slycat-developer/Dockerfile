@@ -78,7 +78,7 @@ RUN echo "alias vi=vim" >> /home/slycat/.bash
 ADD .vimrc /home/slycat/.vimrc
 # Setup useful git defaults.
 RUN HOME=/home/slycat git config --global color.ui true
-RUN cd /home/slycat; wget -e http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz; mkdir ffmpeg; tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
+RUN cd /home/slycat; wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz; mkdir ffmpeg; tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
 RUN export PATH=$HOME/ffmpeg:$PATH
 RUN echo "export PATH=$HOME/ffmpeg:/home/slycat/install/conda/bin:$PATH" >> /home/slycat/.bashrc
 RUN echo "alias testslycat=\"behave -i \\\"(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)\\\" /home/slycat/src/slycat/features/\"" >> /home/slycat/.bashrc
