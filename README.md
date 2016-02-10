@@ -7,7 +7,7 @@ For installation, tutorials, and developer documentation, go to http://slycat.re
 # [Slycat-data](https://github.com/sandialabs/slycat-data)
 A github repo of sample data that can be used by slycat
 
-# Quick build 
+# Quick Start
 
 ## Run from docker hub image (fastest way to start playing with slycat)
 
