@@ -418,6 +418,11 @@ function setup_controls()
       selected_variable_changed([variable]);
       update_waveform_dendrogram_on_selected_variable_changed(variable);
       $("#table").table("option", "variable-selection", [variable]);
+      $("#legend").legend("option", {
+        min: table_metadata["column-min"][variable],
+        max: table_metadata["column-max"][variable],
+        label: table_metadata["column-names"][variable],
+      });
     });
   }
 }
