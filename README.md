@@ -11,6 +11,7 @@ A github repo of sample data that can be used by slycat
 
 ## Run from docker hub image (fastest way to start playing with slycat)
 
+* install [Docker](http://www.docker.com)
 ```bash
 docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer
 ```
@@ -19,8 +20,7 @@ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/s
 * root user:pass is slycat:slycat for the container
 
 ## Build slycat image from scratch command line
-
-* install docker 
+* install [Docker](http://www.docker.com) 
 * clone the slycat repo then
 ```bash
 cd /open-source-docker/docker/open-source-build/
