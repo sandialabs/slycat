@@ -12,7 +12,7 @@ A github repo of sample data that can be used by slycat
 ## Run from docker hub image (note image may not be up there yet but it will be soon)
 
 ```bash
-docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat-developer slycat/slycat-developer
+docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer
 ```
 * log into slycat @ (https:/192.168.99.100 for mac/windows and localhost for linux) and play around!
 * for logging into this quick container the only requirement is username = pasword
