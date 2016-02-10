@@ -11,8 +11,10 @@ A github repo of sample data that can be used by slycat
 
 * install docker 
 * build slycat image from command line
+* clone the slycat repo then
 ```bash
-python ~/open-source-docker/docker/open-source-build/build.py slycat-developer-image
+cd /open-source-docker/docker/open-source-build/
+python build.py slycat-developer-image
 ````
 * load the newly built images into docker
 ```bash
