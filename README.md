@@ -21,7 +21,11 @@ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/s
 
 ## Build slycat image from scratch command line
 * install [Docker](http://www.docker.com) 
-* clone the slycat repo then
+* clone the slycat repo 
+```bash
+git clone https://github.com/sandialabs/slycat.git
+```
+* in a terminal shell move into the /open-source-build directory inside the repo
 ```bash
 cd /open-source-docker/docker/open-source-build/
 python build.py slycat-developer-image
