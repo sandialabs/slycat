@@ -9,7 +9,13 @@ A github repo of sample data that can be used by slycat
 
 # Quick build 
 
-## build slycat image from command line
+## run from docker hub image
+
+```bash
+docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat-developer slycat/slycat-developer
+```
+
+## build slycat image from scratch command line
 
 * install docker 
 * clone the slycat repo then
