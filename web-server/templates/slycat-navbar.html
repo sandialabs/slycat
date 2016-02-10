@@ -14,17 +14,7 @@
       </div>
       <div class="collapse navbar-collapse" id="slycat-navbar-content">
 
-        <ol class="breadcrumb navbar-left ellipsis" data-bind="css: {'slycat-no-models': model().length == 0}">
-          <!-- ko foreach: {data:project, afterRender:updateEllipsis} -->
-            <li class="project" data-bind="css: {'slycat-unclickable': $parent.model().length == 0}">
-              <a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
-            </li>
-          <!-- /ko -->
-          <!-- ko foreach: model -->
-            <li class="slycat-unclickable model"><a data-bind="text:name,popover:{trigger:'hover',html:true,content:$parent.model_popover()}"></a></li>
-          <!-- /ko -->
-        </ol>
-
+        <!-- Personal Tools -->
         <ul class="nav navbar-personal navbar-nav navbar-right">
           <li class="dropdown">
             <a class="dropdown-toggle slycat-clickable" data-toggle="dropdown">
@@ -53,7 +43,8 @@
           </li>
         </ul>
 
-        <ul class="nav navbar-nav navbar-right">
+        <!-- Model Status -->
+        <ul class="nav navbar-nav navbar-right model-status">
           <li class="dropdown" data-bind="visible:open_models().length">
             <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a>
             <ul class="dropdown-menu">
@@ -78,6 +69,7 @@
           </li>
         </ul>
 
+        <!-- Menus -->
         <div class="nav navbar-menus navbar-nav navbar-right btn-group">
           <div class="btn-group" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
             <button type="button" id="slycat-create-wizards" class="btn btn-xs btn-success dropdown-toggle" data-toggle="dropdown">Create <span class="caret"></span></button>
@@ -205,6 +197,18 @@
             </ul>
           </div>
         </div>
+
+        <!-- Breadcrumb -->
+        <ol class="breadcrumb ellipsis" data-bind="css: {'slycat-no-models': model().length == 0}">
+          <!-- ko foreach: project -->
+            <li class="project" data-bind="css: {'slycat-unclickable': $parent.model().length == 0}">
+              <a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
+            </li>
+          <!-- /ko -->
+          <!-- ko foreach: model -->
+            <li class="slycat-unclickable model"><a data-bind="text:name,popover:{trigger:'hover',html:true,content:$parent.model_popover()}"></a></li>
+          <!-- /ko -->
+        </ol>
 
       </div>
     </div>

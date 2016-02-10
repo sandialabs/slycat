@@ -30,6 +30,10 @@ body
   border-radius: 0;
   margin: 0;
 }
+.bootstrap-styles .navbar .container
+{
+  width: auto !important;
+}
 
 .bootstrap-styles .navbar-brand
 {
@@ -48,7 +52,6 @@ body
   padding-left: 0;
   padding-right: 0;
   height: 36px;
-  max-width: 566px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
