@@ -572,6 +572,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
       self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
       self._close_hidden_simulations();
+      self._open_shown_simulations();
     }
 
     else if(key == "auto-scale")
@@ -1010,11 +1011,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     // Get the scatterplot width so we can convert absolute to relative coordinates.
     var width = Number(self.svg.attr("width"));
     var height = Number(self.svg.attr("height"));
-    var open_images = [];
+
+    self.options.open_images = [];
     $(".open-image").each(function(index, frame)
     {
       var frame = $(frame);
-      open_images.push({
+      self.options.open_images.push({
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
         relx : Number(frame.attr("data-transx")) / width,
@@ -1024,7 +1026,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         });
     });
 
-    self.element.trigger("open-images-changed", [open_images]);
+    self.element.trigger("open-images-changed", [self.options.open_images]);
   },
 
   _open_images: function(images, is_stl_return)
@@ -1586,6 +1588,39 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       .each(function(){
         self._remove_image_and_leader_line(d3.select(this));
       });
+  },
+
+  _open_shown_simulations: function() {
+    var self = this;
+    var areOpen = [];
+
+    $(".media-layer div.image-frame")
+      .each(function(){
+        areOpen.push($(this).data("index"));
+      });
+
+    var width = Number(self.svg.attr("width"));
+    var height = Number(self.svg.attr("height"));
+    var images = [];
+    self.options.open_images.forEach(function(image, index)
+    {
+      // Making sure we have an index and uri before attempting to open an image
+      if( image.index != null && image.uri != undefined && self.options.filtered_indices.indexOf(image.index) != -1 && areOpen.indexOf(image.index) == -1 )
+      {
+        images.push({
+          index : image.index,
+          uri : image.uri.trim(),
+          image_class : "open-image",
+          x : width * image.relx,
+          y : height * image.rely,
+          width : image.width,
+          height : image.height,
+          target_x : self.x_scale(self.options.x[image.index]),
+          target_y : self.y_scale(self.options.y[image.index]),
+          });
+      }
+    });
+    self._open_images(images);
   },
 
   close_all_simulations: function() {
