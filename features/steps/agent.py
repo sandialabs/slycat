@@ -196,6 +196,10 @@ def step_impl(context):
 def step_impl(context):
   nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"ok": False, "message": "Access denied."})
 
+@then(u'the agent should return a no read permission error')
+def step_impl(context):
+  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"ok": False, "message": "No read permission."})
+
 @then(u'the agent should return the csv file')
 def step_impl(context):
   metadata = json.loads(context.agent.stdout.readline())

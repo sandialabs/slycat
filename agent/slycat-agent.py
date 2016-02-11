@@ -131,7 +131,7 @@ def get_job_output(command):
 
 
 def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, filename):
-  name = os.path.expanduser('~') + ("/%s" % filename) 
+  name = os.path.expanduser('~') + ("/%s" % filename)
   f = open(name, 'w')
 
   f.write("#!/bin/bash\n\n")
@@ -141,7 +141,7 @@ def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_m
   f.write("#SBATCH --nodes=%s\n" % nnodes)
   f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
   f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-  
+
   for c in fn:
     f.write("%s\n" % c)
 
@@ -238,10 +238,10 @@ def get_file(command):
   path = command["path"]
   if not os.path.isabs(path):
     raise Exception("Path must be absolute.")
+  if not os.access(path, os.F_OK):
+    raise Exception("Path not found.")
   if not os.access(path, os.R_OK):
     raise Exception("No read permission.")
-  if not os.path.exists(path):
-    raise Exception("Path not found.")
   if os.path.isdir(path):
     raise Exception("Directory unreadable.")
 

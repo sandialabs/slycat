@@ -100,7 +100,7 @@ Feature: Slycat Agent
     And a sample csv file
     And the file has no permissions
     When retrieving a file
-    Then the agent should return an access denied error
+    Then the agent should return a no read permission error
 
   Scenario: Get csv file
     Given a running Slycat agent
