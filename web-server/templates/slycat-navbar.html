@@ -1,5 +1,5 @@
 <div class="bootstrap-styles zooming-modals">
-  <nav class="navbar navbar-default">
+  <nav class="navbar navbar-default" data-bind="css: {'model' : model_id()}">
     <div class="container">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#slycat-navbar-content">
@@ -202,11 +202,11 @@
         <ol class="breadcrumb ellipsis" data-bind="css: {'slycat-no-models': model().length == 0}">
           <!-- ko foreach: project -->
             <li class="project" data-bind="css: {'slycat-unclickable': $parent.model().length == 0}">
-              <a data-bind="text:name,popover:{trigger:'hover',html:true,content:popover()},attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
+              <a data-bind="text:name,attr:{href:$parent.server_root + 'projects/' + _id()},popover:{trigger:'hover',html:true,placement:'bottom',content:$parent.navbar_popover()}"></a>
             </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
-            <li class="slycat-unclickable model"><a data-bind="text:name,popover:{trigger:'hover',html:true,content:$parent.model_popover()}"></a></li>
+            <li class="slycat-unclickable model"><a data-bind="text:name,popover:{trigger:'hover',html:true,placement:'bottom',content:$parent.navbar_popover()}"></a></li>
           <!-- /ko -->
         </ol>
 
