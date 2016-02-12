@@ -37,6 +37,7 @@ parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["un
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
 parser.add_argument("--cluster-metric", default="euclidean", choices=["euclidean"], help="Hierarchical clustering distance metric.  Default: %(default)s")
 parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
+parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
 arguments = parser.parse_args()
 
 if arguments.cluster_sample_count < 1:
@@ -45,7 +46,7 @@ if arguments.cluster_sample_count < 1:
 _numSamples = arguments.cluster_sample_count
 
 try:
-  pool = IPython.parallel.Client()
+  pool = IPython.parallel.Client(profile=arguments.profile)[:]
 except:
   raise Exception("A running IPython parallel cluster is required to run this script.")
 
@@ -163,7 +164,7 @@ try:
 
   #connection.update_model(mid, message="Collecting timeseries statistics.")
   print("Collecting timeseries statistics.")
-  time_ranges = pool[:].map_sync(get_time_range, list(itertools.repeat(arguments.directory, timeseries_count)), range(timeseries_count))
+  time_ranges = pool.map_sync(get_time_range, list(itertools.repeat(arguments.directory, timeseries_count)), range(timeseries_count))
 
   # For each cluster ...
   for index, (name, storage) in enumerate(sorted(clusters.items())):
@@ -204,7 +205,7 @@ try:
       bin_counts = list(itertools.repeat(_numSamples, len(storage)))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
-      waveforms = pool[:].map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
+      waveforms = pool.map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
     elif arguments.cluster_sample_type == "uniform-paa":
       def uniform_paa(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
         import h5py
@@ -235,7 +236,7 @@ try:
       bin_counts = list(itertools.repeat(_numSamples, len(storage)))
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
-      waveforms = pool[:].map_sync(uniform_paa, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
+      waveforms = pool.map_sync(uniform_paa, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
 
     # Compute a distance matrix comparing every series to every other ...
     observation_count = len(waveforms)
