@@ -686,6 +686,11 @@ def put_upload_file_part(uid, fid, pid, file=None, sid=None, path=None):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_upload_finished(uid):
+  """
+  ask the server to finish the upload
+  :param uid: upload session ID
+  :return: status of upload
+  """
   uploaded = require_integer_array_json_parameter("uploaded")
   with slycat.web.server.upload.get_session(uid) as session:
     return session.post_upload_finished(uploaded)
