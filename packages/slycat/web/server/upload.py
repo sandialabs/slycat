@@ -127,7 +127,7 @@ class Session(object):
     """
     checks for missing and excess files, if neither are found moves on to
     finishing the upload and parsing the uploaded item.
-    :param uploaded:
+    :param uploaded: description of uploaded parts of the file
     :return:
       if missing:
         {"missing": missing}
