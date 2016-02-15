@@ -643,6 +643,10 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_uploads():
+  """
+  creates a session for uploading a file to
+  :return: Upload ID
+  """
   mid = require_json_parameter("mid")
   input = require_boolean_json_parameter("input")
   parser = require_json_parameter("parser")
