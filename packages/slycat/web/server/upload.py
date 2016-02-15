@@ -118,7 +118,7 @@ class Session(object):
     storage = path(self._uid, fid, pid)
     if not os.path.exists(os.path.dirname(storage)):
       os.makedirs(os.path.dirname(storage))
-    cherrypy.log.error("Storing upload file part %s" % storage)
+    # cherrypy.log.error("Storing upload file part %s" % storage)
     with open(storage, "wb") as file:
       file.write(data)
     self._received.add((fid, pid))
@@ -128,7 +128,6 @@ class Session(object):
       raise cherrypy.HTTPError("409 Upload already finished.")
 
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
-
     missing = [part for part in uploaded if part not in self._received]
     excess = [part for part in self._received if part not in uploaded]
 
