@@ -180,6 +180,14 @@ def post_projects():
   return {"id" : pid}
 
 def get_project(pid):
+  """
+  returns a project based on "content-type" header
+  :param pid: project ID
+  :return: Either html landing page of given project or the json
+  representation of the project
+  """
+
+  # Return the client’s preferred media-type (from the given Content-Types)
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -438,7 +446,7 @@ def get_model(mid, **kwargs):
 
     context["slycat-model"] = model
     context["slycat-model-name"] = model.get("name","").replace("'", "\\'")
-    
+
     context["slycat-project"] = project
     context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
 
