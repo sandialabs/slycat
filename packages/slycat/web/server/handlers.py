@@ -293,6 +293,12 @@ def get_project_references(pid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_project_models(pid):
+  """
+  When a pid along with json "model-type", "marking", "name" is sent with POST
+  creates a model and saves it to the database
+  :param pid: project ID for created model
+  :return: json {"id" : mid}
+  """
   database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
