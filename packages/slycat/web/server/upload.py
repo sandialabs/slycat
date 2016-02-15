@@ -124,6 +124,20 @@ class Session(object):
     self._received.add((fid, pid))
 
   def post_upload_finished(self, uploaded):
+    """
+    checks for missing and excess files, if neither are found moves on to
+    finishing the upload and parsing the uploaded item.
+    :param uploaded:
+    :return:
+      if missing:
+        {"missing": missing}
+      if excess:
+        {"excess": excess}
+      if moving to finished state
+        "202 Upload session finished."
+      if previously finished
+        "409 Upload already finished."
+    """
     if self._parsing_thread is not None:
       raise cherrypy.HTTPError("409 Upload already finished.")
 
