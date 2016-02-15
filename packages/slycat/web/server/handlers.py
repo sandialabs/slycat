@@ -303,21 +303,24 @@ def post_project_models(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
 
+  # check for required keys in our json
   for key in ["model-type", "marking", "name"]:
     if key not in cherrypy.request.json:
       slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError 400 missing required key: %s" % key)
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
+  # create the model
   model_type = cherrypy.request.json["model-type"]
   allowed_model_types = slycat.web.server.plugin.manager.models.keys()
   if model_type not in allowed_model_types:
     slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError allowed model types: %s" % ", ".joing(allowed_model_types))
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
-  marking = cherrypy.request.json["marking"]
 
+  marking = cherrypy.request.json["marking"]
   if marking not in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]:
     slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError 400 allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
     raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
+
   name = cherrypy.request.json["name"]
   description = cherrypy.request.json.get("description", "")
   mid = uuid.uuid4().hex
