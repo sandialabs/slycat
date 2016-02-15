@@ -187,7 +187,7 @@ def get_project(pid):
   representation of the project
   """
 
-  # Return the client’s preferred media-type (from the given Content-Types)
+  # Return the client's preferred media-type (from the given Content-Types)
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
