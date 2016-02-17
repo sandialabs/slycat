@@ -25,11 +25,9 @@ def parse_file(file):
   # go through the csv by column
   for column in zip(*rows):
     column_has_floats = False
-    count = 0
 
     # start from 1 to avoid the column name
     for value in column[1:]:
-      count += 1
       if isfloat(value):
         column_has_floats = True
         try:# note NaN's are floats
