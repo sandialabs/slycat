@@ -5,6 +5,15 @@ import slycat.email
 import StringIO
 
 def parse_file(file):
+  import cherrypy
+  def isfloat(value):
+    try:
+      float(value)
+      return True
+    except ValueError:
+      return False
+
+  cherrypy.log.error("parsing:::::::")
   rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
   if len(rows) < 2:
     slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
@@ -13,11 +22,25 @@ def parse_file(file):
   attributes = []
   dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
   data = []
+  # go through the csv by column
   for column in zip(*rows):
-    try:
-      data.append(numpy.array(column[1:]).astype("float64"))
-      attributes.append({"name":column[0], "type":"float64"})
-    except:
+    column_has_floats = False
+
+    # start from 1 to avoid the column name
+    for value in column[1:]:
+      if isfloat(value):
+        column_has_floats = True
+        try:# note NaN's are floats
+          output_list = map(lambda x: 'NaN' if x=='' else x, column[1:])
+          data.append(numpy.array(output_list).astype("float64"))
+          attributes.append({"name":column[0], "type":"float64"})
+
+        # could not convert something to a float defaulting to string
+        except Exception as e:
+          column_has_floats = False
+          cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
+        break
+    if not column_has_floats:
       data.append(numpy.array(column[1:]))
       attributes.append({"name":column[0], "type":"string"})
 

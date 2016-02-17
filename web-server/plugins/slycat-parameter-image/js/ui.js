@@ -95,12 +95,15 @@ $("#model-pane").layout(
   center:
   {
     resizeWhileDragging: false,
-    onresize: function() {
-      $("#scatterplot").scatterplot("option", {
-        width: $("#scatterplot-pane").width(),
-        height: $("#scatterplot-pane").height()
-      });
-    },
+    onresize: function() 
+    {
+      if($("#scatterplot").data("parameter_image-scatterplot")) {
+        $("#scatterplot").scatterplot("option", {
+          width: $("#scatterplot-pane").width(),
+          height: $("#scatterplot-pane").height()
+        });
+      }
+    }
   }
 });
 

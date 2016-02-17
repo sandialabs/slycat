@@ -118,17 +118,30 @@ class Session(object):
     storage = path(self._uid, fid, pid)
     if not os.path.exists(os.path.dirname(storage)):
       os.makedirs(os.path.dirname(storage))
-    cherrypy.log.error("Storing upload file part %s" % storage)
+    # cherrypy.log.error("Storing upload file part %s" % storage)
     with open(storage, "wb") as file:
       file.write(data)
     self._received.add((fid, pid))
 
   def post_upload_finished(self, uploaded):
+    """
+    checks for missing and excess files, if neither are found moves on to
+    finishing the upload and parsing the uploaded item.
+    :param uploaded: description of uploaded parts of the file
+    :return:
+      if missing:
+        {"missing": missing}
+      if excess:
+        {"excess": excess}
+      if moving to finished state
+        "202 Upload session finished."
+      if previously finished
+        "409 Upload already finished."
+    """
     if self._parsing_thread is not None:
       raise cherrypy.HTTPError("409 Upload already finished.")
 
     uploaded = {(fid, pid) for fid in range(len(uploaded)) for pid in range(uploaded[fid])}
-
     missing = [part for part in uploaded if part not in self._received]
     excess = [part for part in self._received if part not in uploaded]
 
