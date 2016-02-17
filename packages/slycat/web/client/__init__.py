@@ -102,6 +102,7 @@ class Connection(object):
     elif not keywords.get("verify"):
       verify = False
     data = {"user_name":base64.encodestring(keywords.get("auth", ("", ""))[0]), "password":base64.encodestring(keywords.get("auth", ("", ""))[1])}
+    log.info("$$$$$$$$$$$$$ Requests Version ::::: " + requests.__version__)
     url = host + "/login"
     self.host = host
     self.keywords = keywords
