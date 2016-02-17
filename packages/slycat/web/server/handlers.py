@@ -180,6 +180,14 @@ def post_projects():
   return {"id" : pid}
 
 def get_project(pid):
+  """
+  returns a project based on "content-type" header
+  :param pid: project ID
+  :return: Either html landing page of given project or the json
+  representation of the project
+  """
+
+  # Return the client's preferred media-type (from the given Content-Types)
   accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
   cherrypy.response.headers["content-type"] = accept
 
@@ -285,25 +293,34 @@ def get_project_references(pid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_project_models(pid):
+  """
+  When a pid along with json "model-type", "marking", "name" is sent with POST
+  creates a model and saves it to the database
+  :param pid: project ID for created model
+  :return: json {"id" : mid}
+  """
   database = slycat.web.server.database.couchdb.connect()
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
 
+  # check for required keys in our json
   for key in ["model-type", "marking", "name"]:
     if key not in cherrypy.request.json:
       slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError 400 missing required key: %s" % key)
       raise cherrypy.HTTPError("400 Missing required key: %s" % key)
 
+  # create the model
   model_type = cherrypy.request.json["model-type"]
   allowed_model_types = slycat.web.server.plugin.manager.models.keys()
   if model_type not in allowed_model_types:
     slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError allowed model types: %s" % ", ".joing(allowed_model_types))
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
-  marking = cherrypy.request.json["marking"]
 
+  marking = cherrypy.request.json["marking"]
   if marking not in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]:
     slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError 400 allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
     raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
+
   name = cherrypy.request.json["name"]
   description = cherrypy.request.json.get("description", "")
   mid = uuid.uuid4().hex
@@ -438,7 +455,7 @@ def get_model(mid, **kwargs):
 
     context["slycat-model"] = model
     context["slycat-model-name"] = model.get("name","").replace("'", "\\'")
-    
+
     context["slycat-project"] = project
     context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
 
@@ -626,6 +643,10 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_uploads():
+  """
+  creates a session for uploading a file to
+  :return: Upload ID
+  """
   mid = require_json_parameter("mid")
   input = require_boolean_json_parameter("input")
   parser = require_json_parameter("parser")
@@ -665,6 +686,11 @@ def put_upload_file_part(uid, fid, pid, file=None, sid=None, path=None):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_upload_finished(uid):
+  """
+  ask the server to finish the upload
+  :param uid: upload session ID
+  :return: status of upload
+  """
   uploaded = require_integer_array_json_parameter("uploaded")
   with slycat.web.server.upload.get_session(uid) as session:
     return session.post_upload_finished(uploaded)
