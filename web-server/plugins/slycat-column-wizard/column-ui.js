@@ -14,6 +14,53 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.ps_type = ko.observable("remote"); // remote is selected by default...
     component.server_root = server_root;
 
+    component._id = params.models()[0]._id();
+    component.input_columns = params.models()[0]["artifact:input-columns"] != undefined ? params.models()[0]["artifact:input-columns"]() : [];
+    component.output_columns = params.models()[0]["artifact:output-columns"] != undefined ? params.models()[0]["artifact:output-columns"]() : [];
+    component.category_columns = params.models()[0]["artifact:category-columns"] != undefined ? params.models()[0]["artifact:category-columns"]() : [];
+    component.rating_columns = params.models()[0]["artifact:rating-columns"] != undefined ? params.models()[0]["artifact:rating-columns"]() : [];
+    component.media_columns = params.models()[0]["artifact:image-columns"] != undefined ? params.models()[0]["artifact:image-columns"]() : [];
+
+    client.get_model_table_metadata({
+      mid: component._id,
+      aid: "data-table",
+      success: function(metadata) {
+        var attributes = [];
+        for(var i = 0; i != metadata["column-names"].length; ++i)
+        {
+          var classification = 'Neither';
+          if(component.input_columns.indexOf(i) !== -1)
+          {
+            classification = 'Input';
+          }
+          else if(component.output_columns.indexOf(i) !== -1)
+          {
+            classification = 'Output';
+          }
+          attributes.push({
+            name:metadata["column-names"][i], 
+            type:metadata["column-types"][i], 
+            input:false,
+            output:false,
+            category:false,
+            rating:false,
+            image: component.media_columns.indexOf(i) !== -1,
+            Classification: classification,
+            Categorical: component.category_columns.indexOf(i) !== -1,
+            Editable: component.rating_columns.indexOf(i) !== -1,
+            hidden: component.media_columns.indexOf(i) !== -1,
+            selected: false,
+            lastSelected: false,
+            disabled: false,
+            tooltip: ""
+          });
+        }
+        mapping.fromJS(attributes, component.attributes);
+        component.tab(5);
+        $('.browser-continue').toggleClass("disabled", false);
+      }
+    });
+
     component.cancel = function() {
       if(component.remote.sid())
         client.delete_remote({ sid: component.remote.sid() });
@@ -275,6 +322,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/parameter-image/ui.html" },
+    template: { require: "text!" + server_root + "resources/wizards/column-wizard/ui.html" },
   };
 });
