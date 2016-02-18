@@ -5,6 +5,12 @@ import slycat.email
 import StringIO
 
 def parse_file(file):
+  """
+  parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
+  and sets attributes (attributes)
+  :param file: csv file to be parsed
+  :returns: attributes, dimensions, data
+  """
   import cherrypy
   def isfloat(value):
     try:
@@ -51,6 +57,16 @@ def parse_file(file):
   return attributes, dimensions, data
 
 def parse(database, model, input, files, aids, **kwargs):
+  """
+  parses a file as a csv and then uploads the parsed data to associated storage for a
+  model
+  :param database: slycat.web.server.database.couchdb.connect()
+  :param model: database.get("model", self._mid)
+  :param input: boolean
+  :param files: files to be parsed
+  :param aids: artifact ID
+  :param kwargs:
+  """
   if len(files) != len(aids):
     slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
     raise Exception("Number of files and artifact ids must match.")
