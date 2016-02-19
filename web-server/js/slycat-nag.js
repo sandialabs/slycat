@@ -47,6 +47,10 @@ define("slycat-nag", ["slycat-dialog"], function(dialog)
   if(!FlexBoxSupport())
     nag = true;
 
+  // We don't work with IE
+  if(window.navigator.userAgent.indexOf("MSIE ") > 0)
+    nag = true;
+
   if(nag)
   {
     dialog.dialog(
