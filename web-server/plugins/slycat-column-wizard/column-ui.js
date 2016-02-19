@@ -62,11 +62,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     });
 
     component.cancel = function() {
-      if(component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
+      // if(component.remote.sid())
+      //   client.delete_remote({ sid: component.remote.sid() });
 
-      if(component.model._id())
-        client.delete_model({ mid: component.model._id() });
+      // if(component.model._id())
+      //   client.delete_model({ mid: component.model._id() });
     };
 
     component.create_model = function() {
@@ -270,41 +270,42 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       }
 
       client.put_model_parameter({
-        mid: component.model._id(),
+        mid: component._id,
         aid: "input-columns",
         value: input_columns,
         input: true,
         success: function() {
           client.put_model_parameter({
-            mid: component.model._id(),
+            mid: component._id,
             aid: "output-columns",
             value: output_columns,
             input: true,
             success: function() {
               client.put_model_parameter({
-                mid: component.model._id(),
+                mid: component._id,
                 aid: "rating-columns",
                 value: rating_columns,
                 input: true,
                 success: function() {
                   client.put_model_parameter({
-                    mid: component.model._id(),
+                    mid: component._id,
                     aid: "category-columns",
                     value: category_columns,
                     input: true,
                     success: function() {
                       client.put_model_parameter({
-                        mid: component.model._id(),
+                        mid: component._id,
                         aid: "image-columns",
                         value: image_columns,
                         input: true,
                         success: function() {
-                          client.post_model_finish({
-                            mid: component.model._id(),
-                            success: function() {
-                              component.tab(6);
-                            }
-                          });
+                          document.location.reload(true);
+                          // client.post_model_finish({
+                          //   mid: component.model._id(),
+                          //   success: function() {
+                          //     component.tab(6);
+                          //   }
+                          // });
                         }
                       });
                     }

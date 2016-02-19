@@ -2,9 +2,8 @@
   <h3 class="modal-title">Select Columns</h3>
 </div>
 <div class="modal-body">
-
   <div class="tab-content">
-    <div data-bind="visible:tab() == 5">
+    <div>
       <slycat-table-ingestion params="
         variables: attributes,
         properties: [
@@ -14,14 +13,9 @@
         ]
       "></slycat-table-ingestion>
     </div>
-
-    <div data-bind="visible:tab() == 6">
-      <slycat-model-results params="{mid: model._id}"></slycat-model-results>
-    </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible:tab() != 6,click:cancel" data-dismiss="modal">Cancel</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 5,click:finish">Finish</button>
-  <button class="btn btn-default pull-left" data-bind="visible:tab() == 6" data-dismiss="modal">Close</button>
+  <button class="btn btn-default pull-left" data-bind="click:cancel" data-dismiss="modal">Cancel</button>
+  <button class="btn btn-default" data-bind="click:finish" data-dismiss="modal">Finish</button>
 </div>
