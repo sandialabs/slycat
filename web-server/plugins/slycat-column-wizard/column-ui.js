@@ -1,4 +1,4 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, ko, mapping, fileUploader)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-bookmark-manager", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, bookmark_manager, ko, mapping, fileUploader)
 {
   function constructor(params)
   {
@@ -74,6 +74,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       }
 
       //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+      bookmark_manager;
 
       client.put_model_parameter({
         mid: component._id,
