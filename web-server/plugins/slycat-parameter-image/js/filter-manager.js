@@ -91,6 +91,8 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
       var rateLimit = 500;
       if ("allFilters" in self.bookmark) {
         self.allFilters = mapping.fromJS(self.bookmark["allFilters"]);
+        // Can't trust that bookmark contains accurare categorical/numeric type information, so must verify here
+        
         buildComputedFilters(self.allFilters);
 
         _.each(numericFilters(), function (filter) {
