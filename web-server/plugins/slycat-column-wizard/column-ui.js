@@ -75,38 +75,85 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
 
       //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
       bookmark_manager;
+      var bookmarker = bookmark_manager.create(params.projects()[0]._id(), component._id);
+      bookmarker.getState(function(state){
+        // Check if there are filters in the bookmark
+        var filters = state.allFilters;
+        if(filters != undefined)
+        {
+          // Iterate over all filters and find ones that no longer match their bookmarked categorical/numeric type
+          var switchedVariables = [];
+          var switchedVariableNames = [];
+          for(var i=0; i < filters.length; i++)
+          {
+            var filter = filters[i];
+            var switchedToCategorical = category_columns.indexOf(filter.index) > -1 && filter.type == 'numeric';
+            var switchedToNumeric = category_columns.indexOf(filter.index) == -1 && filter.type == 'category';
+            if(switchedToCategorical || switchedToNumeric)
+            {
+              switchedVariables.push(i);
+              switchedVariableNames.push(filter.name);
+            }
+          }
+          if(switchedVariables.length)
+          {
+            // Alert user
+            var message = "You made changes to the Categorial attribute of the following variables: ";
+            message += switchedVariableNames.join(", ");
+            message +=  ". If you continue, filters for these variables will be reset. Do you want to continue?";
+            dialog.confirm({
+              title: "Reset Filters?",
+              message: message,
+              ok: function()
+              {
+                save_new_parameters();
+              }
+            });
+          }
+          else
+          {
+            save_new_parameters();
+          }
+        }
+        else
+        {
+          save_new_parameters();
+        }
 
-      client.put_model_parameter({
-        mid: component._id,
-        aid: "input-columns",
-        value: input_columns,
-        input: true,
-        success: function() {
+        function save_new_parameters(){
           client.put_model_parameter({
             mid: component._id,
-            aid: "output-columns",
-            value: output_columns,
+            aid: "input-columns",
+            value: input_columns,
             input: true,
             success: function() {
               client.put_model_parameter({
                 mid: component._id,
-                aid: "rating-columns",
-                value: rating_columns,
+                aid: "output-columns",
+                value: output_columns,
                 input: true,
                 success: function() {
                   client.put_model_parameter({
                     mid: component._id,
-                    aid: "category-columns",
-                    value: category_columns,
+                    aid: "rating-columns",
+                    value: rating_columns,
                     input: true,
                     success: function() {
                       client.put_model_parameter({
                         mid: component._id,
-                        aid: "image-columns",
-                        value: image_columns,
+                        aid: "category-columns",
+                        value: category_columns,
                         input: true,
                         success: function() {
-                          document.location.reload(true);
+                          client.put_model_parameter({
+                            mid: component._id,
+                            aid: "image-columns",
+                            value: image_columns,
+                            input: true,
+                            success: function() {
+                              document.location.reload(true);
+                            }
+                          });
                         }
                       });
                     }
@@ -116,6 +163,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-book
             }
           });
         }
+
       });
     };
 
