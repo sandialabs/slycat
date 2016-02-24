@@ -1005,16 +1005,21 @@ function update_widgets_when_hidden_simulations_change()
   if(auto_scale)
   {
     update_current_colorscale();
-    $("#table").table("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
+    if($("#table").data("parameter_image-table"))
+      $("#table").table("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
     // TODO this will result in 2 updates to canvas, one to redraw points according to hidden simulations and another to color them according to new colorscale. Need to combine this to a single update when converting to canvas.
-    $("#scatterplot").scatterplot("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
+    if($("#scatterplot").data("parameter_image-scatterplot"))
+      $("#scatterplot").scatterplot("option", {hidden_simulations : hidden_simulations, colorscale : colorscale});
   }
   else
   {
-    $("#table").table("option", "hidden_simulations", hidden_simulations);
-    $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
+    if($("#table").data("parameter_image-table"))
+      $("#table").table("option", "hidden_simulations", hidden_simulations);
+    if($("#scatterplot").data("parameter_image-scatterplot"))
+      $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
   }
-  $("#controls").controls("option", "hidden_simulations", hidden_simulations);
+  if($("#controls").data("parameter_image-controls"))
+    $("#controls").controls("option", "hidden_simulations", hidden_simulations);
 }
 
 function update_current_colorscale()
@@ -1252,7 +1257,10 @@ function active_filters_ready()
 
   filter_manager.active_filters.subscribe(function(newValue) {
     filters_changed(newValue);
-    $("#controls").controls("option", "disable_hide_show",  newValue.length > 0);
+    if($("#controls").data("parameter_image-controls"))
+    {
+      $("#controls").controls("option", "disable_hide_show",  newValue.length > 0);
+    }
   });
 }
 
