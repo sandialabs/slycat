@@ -1160,22 +1160,18 @@ def post_model_arrayset_data(mid, aid):
   :param aid: artifact id
   :return: stream of data
   """
-
-  # try and decode the username and password
+  #TODO: add docs for this endpoint
+  # try and grab hyperchunk
   hyperchunks = None
   byteorder = None
+  require_json_parameter("hyperchunks")
+  cherrypy.log.error("parsing post arrayset data")
+  hyperchunks = cherrypy.request.json["hyperchunks"]
   try:
-    cherrypy.log.error("parsing post arrayset data")
-    hyperchunks = cherrypy.request.json["hyperchunks"]
-    try:
-      byteorder = cherrypy.request.json["byteorder"]
-    except Exception as e:
-      byteorder = None
-      cherrypy.log.error("no byteorder provided moving on")
+    byteorder = cherrypy.request.json["byteorder"]
   except Exception as e:
-    cherrypy.log.error("hyperchunks missing")
-    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
-    raise cherrypy.HTTPError(400)
+    byteorder = None
+    cherrypy.log.error("no byteorder provided moving on")
 
   # parse the hyperchunks
   cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
