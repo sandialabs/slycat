@@ -18,7 +18,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
     self.allFilters = null;
     self.active_filters = null;
     self.active_filters_ready = ko.observable(false);
-
+    self.foundMismatches = false;
   }
 
   /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
@@ -88,9 +88,68 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
         });
       };
 
+      var buildCategoryFilter = function(index){
+        var categories = ko.observableArray();
+        self.allFilters.push({
+          name: ko.observable( self.table_metadata["column-names"][index] ),
+          type: ko.observable('category'),
+          index: ko.observable( index ),
+          active: ko.observable(false),
+          categories: categories,
+          selected: ko.pureComputed( function(){ 
+              return _.filter(categories(), function(category) { return category.selected() === true; });
+            })
+            .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
+            ,
+          autowidth: ko.observable(false),
+          order: ko.observable( variable_order.indexOf(index) ) 
+        });
+      };
+
+      var buildNumericFilter = function(index){
+        var high = ko.observable( self.table_statistics[index]["max"] );
+        var low = ko.observable( self.table_statistics[index]["min"] );
+        self.allFilters.push({
+          name: ko.observable( self.table_metadata["column-names"][index] ),
+          type: ko.observable('numeric'),
+          index: ko.observable( index ),
+          max_stats: ko.observable( self.table_statistics[index]["max"] ),
+          min_stats: ko.observable( self.table_statistics[index]["min"] ),
+          max: ko.observable( self.table_statistics[index]["max"] ).extend({ notify: 'always' }),
+          min: ko.observable( self.table_statistics[index]["min"] ).extend({ notify: 'always' }),
+          high: high,
+          low: low,
+          invert: ko.observable(false),
+          active: ko.observable(false),
+          order: ko.observable( variable_order.indexOf(index) ),
+          rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
+          rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
+        });
+      };
+
       var rateLimit = 500;
       if ("allFilters" in self.bookmark) {
         self.allFilters = mapping.fromJS(self.bookmark["allFilters"]);
+        // Can't trust that bookmark contains accurare categorical/numeric type information, so must verify here
+        for(var i=self.allFilters().length-1; i >= 0; i--)
+        {
+          var filter = self.allFilters()[i];
+          if(filter.type() == 'category' && self.category_columns.indexOf(filter.index()) == -1)
+          {
+            // Mismatch
+            self.allFilters.splice(i, 1);
+            buildNumericFilter(filter.index());
+            self.foundMismatches = true;
+          }
+          else if(filter.type() == 'numeric' && numeric_variables.indexOf(filter.index()) == -1)
+          {
+            // Mismatch
+            self.allFilters.splice(i, 1);
+            buildCategoryFilter(filter.index());
+            self.foundMismatches = true;
+          }
+        }
+
         buildComputedFilters(self.allFilters);
 
         _.each(numericFilters(), function (filter) {
@@ -116,46 +175,15 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
             .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
             ;
         });
+        if(self.foundMismatches)
+        {
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
+        }
       }
       else {
-        _.each(self.category_columns, function(i) {
-          var categories = ko.observableArray();
-          self.allFilters.push({
-            name: ko.observable( self.table_metadata["column-names"][i] ),
-            type: ko.observable('category'),
-            index: ko.observable( i ),
-            active: ko.observable(false),
-            categories: categories,
-            selected: ko.pureComputed( function(){ 
-                return _.filter(categories(), function(category) { return category.selected() === true; });
-              })
-              .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
-              ,
-            autowidth: ko.observable(false),
-            order: ko.observable( variable_order.indexOf(i) ) 
-          });
-        });
+        _.each(self.category_columns, buildCategoryFilter);
 
-        _.each(numeric_variables, function(i) {
-          var high = ko.observable( self.table_statistics[i]["max"] );
-          var low = ko.observable( self.table_statistics[i]["min"] );
-          self.allFilters.push({
-            name: ko.observable( self.table_metadata["column-names"][i] ),
-            type: ko.observable('numeric'),
-            index: ko.observable( i ),
-            max_stats: ko.observable( self.table_statistics[i]["max"] ),
-            min_stats: ko.observable( self.table_statistics[i]["min"] ),
-            max: ko.observable( self.table_statistics[i]["max"] ).extend({ notify: 'always' }),
-            min: ko.observable( self.table_statistics[i]["min"] ).extend({ notify: 'always' }),
-            high: high,
-            low: low,
-            invert: ko.observable(false),
-            active: ko.observable(false),
-            order: ko.observable( variable_order.indexOf(i) ),
-            rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
-            rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
-          });
-        });
+        _.each(numeric_variables, buildNumericFilter);
 
         buildComputedFilters(self.allFilters);
       }
@@ -431,6 +459,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
       );
 
       self.active_filters_ready(true);
+      if(self.foundMismatches)
+      {
+        self.allFilters.valueHasMutated();
+      }
     }
   };
 
