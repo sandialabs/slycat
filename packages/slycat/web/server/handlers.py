@@ -1149,6 +1149,85 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   return content()
 get_model_arrayset_data._cp_config = {"response.stream" : True}
 
+@cherrypy.tools.json_in(on = True)
+def post_model_arrayset_data(mid, aid):
+  """
+  get the arrayset data based on aid, mid, byteorder, and hyperchunks
+
+  requires hyperchunks to be included in the json payload
+
+  :param mid: model id
+  :param aid: artifact id
+  :return: stream of data
+  """
+
+  # try and decode the username and password
+  hyperchunks = None
+  byteorder = None
+  try:
+    cherrypy.log.error("parsing post arrayset data")
+    hyperchunks = cherrypy.request.json["hyperchunks"]
+    try:
+      byteorder = cherrypy.request.json["byteorder"]
+    except Exception as e:
+      byteorder = None
+      cherrypy.log.error("no byteorder provided moving on")
+  except Exception as e:
+    cherrypy.log.error("hyperchunks missing")
+    slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
+    raise cherrypy.HTTPError(400)
+
+  # parse the hyperchunks
+  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
+  try:
+    hyperchunks = slycat.hyperchunks.parse(hyperchunks)
+  except:
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+
+  #
+  if byteorder is not None:
+    if byteorder not in ["big", "little"]:
+      slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
+      raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
+    accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
+  else:
+    accept = cherrypy.lib.cptools.accept(["application/json"])
+  cherrypy.response.headers["content-type"] = accept
+
+  database = slycat.web.server.database.couchdb.connect()
+  model = database.get("model", mid)
+  project = database.get("project", model["project"])
+  slycat.web.server.authentication.require_project_reader(project)
+
+  artifact = model.get("artifact:%s" % aid, None)
+  if artifact is None:
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 404")
+    raise cherrypy.HTTPError(404)
+  artifact_type = model["artifact-types"][aid]
+  if artifact_type not in ["hdf5"]:
+    slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
+    raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
+
+  def mask_nans(array):
+    """Convert an array containing nans into a masked array."""
+    try:
+      return numpy.ma.masked_where(numpy.isnan(array), array)
+    except:
+      return array
+
+  def content():
+    if byteorder is None:
+      yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
+    else:
+      for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
+        if sys.byteorder != byteorder:
+          yield hyperslice.byteswap().tostring(order="C")
+        else:
+          yield hyperslice.tostring(order="C")
+  return content()
+post_model_arrayset_data._cp_config = {"response.stream" : True}
+
 def validate_table_rows(rows):
   try:
     rows = [spec.split("-") for spec in rows.split(",")]
