@@ -18,7 +18,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
     self.allFilters = null;
     self.active_filters = null;
     self.active_filters_ready = ko.observable(false);
-
+    self.foundMismatches = false;
   }
 
   /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
@@ -139,12 +139,14 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
             // Mismatch
             self.allFilters.splice(i, 1);
             buildNumericFilter(filter.index());
+            self.foundMismatches = true;
           }
           else if(filter.type() == 'numeric' && numeric_variables.indexOf(filter.index()) == -1)
           {
             // Mismatch
             self.allFilters.splice(i, 1);
             buildCategoryFilter(filter.index());
+            self.foundMismatches = true;
           }
         }
 
@@ -173,6 +175,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
             .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
             ;
         });
+        if(self.foundMismatches)
+        {
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(self.allFilters())} );
+        }
       }
       else {
         _.each(self.category_columns, buildCategoryFilter);
@@ -453,6 +459,10 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
       );
 
       self.active_filters_ready(true);
+      if(self.foundMismatches)
+      {
+        self.allFilters.valueHasMutated();
+      }
     }
   };
 
