@@ -238,7 +238,14 @@ def get_model_parameter(database, model, aid):
   return model["artifact:" + aid]
 
 def put_model_arrayset(database, model, aid, input=False):
-  """Start a new model array set artifact."""
+  """
+  Start a new model array set artifact.
+  :param database: the database with our model
+  :param model: the model
+  :param aid: artifact id
+  :param input:
+  :return:
+  """
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
   storage = uuid.uuid4().hex
   with slycat.web.server.hdf5.lock:
