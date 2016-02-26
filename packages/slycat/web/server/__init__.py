@@ -261,13 +261,14 @@ def put_model_arrayset(database, model, aid, input=False):
 def put_model_array(database, model, aid, array_index, attributes, dimensions):
   """
   store array for model
+  
   :param database: database of model
   :param model: model as an object
   :param aid: artifact id (eg data-table)
   :param array_index: index of the array
   :param attributes: name and type in column
   :param dimensions: number of data rows
-  :return: 
+  :return:
   """
   slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
   storage = model["artifact:%s" % aid]
