@@ -79,7 +79,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level = 0):
     raise ValueError("Unknown expression: %s" % expression)
 
 def update_model(database, model, **kwargs):
-  """Update the model, and signal any waiting threads that it's changed."""
+  """
+  Update the model, and signal any waiting threads that it's changed.
+  will only update model base on "state", "result", "started", "finished", "progress", "message"
+  """
   for name, value in kwargs.items():
     if name in ["state", "result", "started", "finished", "progress", "message"]:
       model[name] = value
