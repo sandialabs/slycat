@@ -645,10 +645,10 @@ def post_uploads():
   mid = require_json_parameter("mid")
   input = require_boolean_json_parameter("input")
   parser = require_json_parameter("parser")
+  aids = require_json_parameter("aids")
   if parser not in slycat.web.server.plugin.manager.parsers:
     slycat.email.send_error("slycat.web.server.handlers.py post_uploads", "cherrypy.HTTPError 400 unknown parser plugin: %s." % parser)
     raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
-  aids = require_json_parameter("aids")
 
   kwargs = {key : value for key, value in cherrypy.request.json.items() if key not in ["mid", "input", "parser", "aids"]}
 
