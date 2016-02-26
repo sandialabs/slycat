@@ -549,3 +549,9 @@ slycat-navbar .alert pre
 {
   background-color: transparent;
 }
+textarea,
+input,
+#slycat-wizard .modal-body
+{
+  resize: none;
+}
