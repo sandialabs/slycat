@@ -357,7 +357,7 @@ def post_project_bookmarks(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project) # This is intentionally out-of-the-ordinary - we explicitly allow project *readers* to store bookmarks.
 
-  content = json.dumps(cherrypy.request.json, separators=(",",":"), indent=None, sort_keys=True)
+  content = json.dumps(cherrypy.request.json, separators=(",", ":"), indent=None, sort_keys=True)
   bid = hashlib.md5(pid + content).hexdigest()
 
   try:
