@@ -5,7 +5,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New BBT Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
@@ -14,6 +14,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.scale_inputs = ko.observable(true);
     component.cca_type = ko.observable("local"); // local is selected by default...
     component.row_count = ko.observable(null);
+
 
     component.cancel = function() {
       if(component.remote.sid())
@@ -238,6 +239,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/new-cca/ui.html"}
+    template: { require: "text!" + server_root + "resources/wizards/new-bbt/ui.html"}
   };
 });
