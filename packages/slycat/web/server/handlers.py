@@ -313,7 +313,7 @@ def post_project_models(pid):
   model_type = require_json_parameter("model-type")
   allowed_model_types = slycat.web.server.plugin.manager.models.keys()
   if model_type not in allowed_model_types:
-    slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError allowed model types: %s" % ", ".joing(allowed_model_types))
+    slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError allowed model types: %s" % ", ".join(allowed_model_types))
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
 
   marking = require_json_parameter("marking")
