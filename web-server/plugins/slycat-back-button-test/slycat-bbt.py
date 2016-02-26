@@ -151,8 +151,8 @@ def register_slycat_plugin(context):
   # Register custom wizards for creating bbt models.
   context.register_wizard("new-bbt", "New BBT Model", require={"action":"create", "context":"project"})
   context.register_wizard_resource("new-bbt", "ui.js", os.path.join(os.path.dirname(__file__), "js/new-ui.js"))
-  context.register_wizard_resource("new-bbt", "ui.html", os.path.join(os.path.dirname(__file__), "new-ui.html"))
+  context.register_wizard_resource("new-bbt", "ui.html", os.path.join(os.path.dirname(__file__), "new-bbt-ui.html"))
 
   context.register_wizard("rerun-bbt", "Modified BBT Model", require={"action":"create", "context":"model", "model-type":["cca"]})
   context.register_wizard_resource("rerun-bbt", "ui.js", os.path.join(os.path.dirname(__file__), "js/rerun-ui.js"))
-  context.register_wizard_resource("rerun-bbt", "ui.html", os.path.join(os.path.dirname(__file__), "rerun-ui.html"))
+  context.register_wizard_resource("rerun-bbt", "ui.html", os.path.join(os.path.dirname(__file__), "rerun-bbt-ui.html"))
