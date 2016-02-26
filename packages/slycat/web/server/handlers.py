@@ -382,11 +382,6 @@ def post_project_references(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
 
-  for key in ["name"]:
-    if key not in cherrypy.request.json:
-      slycat.email.send_error("slycat.web.server.handlers.py post_project_references", "cherrypy.HTTPError 400 missing required key: %s" % key)
-      raise cherrypy.HTTPError("400 Missing required key: %s" % key)
-
   rid = uuid.uuid4().hex
 
   reference = {
@@ -395,7 +390,7 @@ def post_project_references(pid):
     "project" : pid,
     "created" : datetime.datetime.utcnow().isoformat(),
     "creator" : cherrypy.request.login,
-    "name" : cherrypy.request.json["name"],
+    "name" : require_json_parameter("name"),
     "model-type" : cherrypy.request.json.get("model-type", None),
     "mid" : cherrypy.request.json.get("mid", None),
     "bid" : cherrypy.request.json.get("bid", None),
