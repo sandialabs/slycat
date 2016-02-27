@@ -204,8 +204,8 @@ slycat-navbar .alert pre
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a,
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover
 {
-  color: white;
-  background-color: #337AB7;
+  color: black;
+  background-color: #d7d7d7;
 }
 .bootstrap-styles #slycat-wizard .modal-footer button i
 {

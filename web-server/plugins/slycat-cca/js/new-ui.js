@@ -15,6 +15,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.cca_type = ko.observable("local"); // local is selected by default...
     component.row_count = ko.observable(null);
 
+    component.cca_type.subscribe(function(newValue) {
+      if(newValue == 'local')
+      {
+        $(".modal-dialog").removeClass("modal-lg");
+      }
+      else
+      {
+        $(".modal-dialog").addClass("modal-lg");
+      }
+    });
+
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
@@ -45,11 +56,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var type = component.cca_type();
 
       if (type === "local") {
-        $(".cca-tab-local").css("display", "block");
         component.tab(1);
       } else if (type === "remote") {
-        $(".modal-dialog").addClass("modal-lg");
-        $(".cca-tab-remote").css("display", "block");
         component.tab(2);
       }
     };
@@ -134,6 +142,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         success: function(sid) {
           component.remote.sid(sid);
           component.tab(3);
+          component.remote.enable(true);
+          component.remote.status_type(null);
+          component.remote.status(null);
         },
         error: function(request, status, reason_phrase) {
           component.remote.enable(true);
@@ -219,12 +230,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   value: component.scale_inputs(),
                   input: true,
                   success: function() {
-                    client.post_model_finish({
-                      mid: component.model._id(),
-                      success: function() {
-                        component.tab(5);
-                      }
-                    });
+                    component.tab(5);
                   }
                 });
               }
@@ -243,10 +249,32 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         marking: component.model.marking(),
         success: function()
         {
-          component.tab(6);
+          client.post_model_finish({
+            mid: component.model._id(),
+            success: function() {
+              component.tab(6);
+            }
+          });
         },
         error: dialog.ajax_error("Error updating model."),
       });
+    };
+
+    component.back = function() {
+      var target = component.tab();
+      // Skip Upload Table tab if we're on the Choose Host tab.
+      if(component.tab() == 2)
+      {
+        target--;
+      }
+      // Skip remote ui tabs if we are local
+      if(component.cca_type() == 'local' && component.tab() == 4)
+      {
+        target--;
+        target--;
+      }
+      target--;
+      component.tab(target);
     };
 
     return component;
