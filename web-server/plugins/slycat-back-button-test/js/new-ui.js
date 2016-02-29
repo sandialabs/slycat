@@ -101,7 +101,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     };
 
     component.upload_table = function() {
-      $('.local-browser-continue').toggleClass("disabled", true);
+//      $('.local-browser-continue').toggleClass("disabled", true);
       //TODO: add logic to the file uploader to look for multiple files list to add
       var file = component.browser.selection()[0];
       var fileObject ={
@@ -111,7 +111,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
        aids: ["data-table"],
        parser: component.parser(),
        success: function(){
-         upload_success();
+//         upload_success();
+          alert("table uploaded! woot");
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
