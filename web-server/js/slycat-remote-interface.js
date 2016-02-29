@@ -254,19 +254,16 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           return void 0;
         }
 
-        //TODO check sid server-side
         client.post_checksid({
           sid: vm.remote.sid(),
           success: function(results) {
-            console.log(results);
-
             if (results.errors)
               return void 0
 
-            console.log('SUCCESS!');
             callback_map[vm.radio()]();
           },
           error: function(request, status, reason_phrase) {
+            vm.remote.password('');
             $('#' + modal_id).modal('show');
           }
         });
