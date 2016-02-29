@@ -154,6 +154,13 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         if (!vm.mid)
           return void 0;
 
+        client.put_model_parameter({
+          mid: vm.mid(),
+          aid: 'jid',
+          value: vm.jid(),
+          input: true
+        });
+
         client.post_sensitive_model_command({
           mid: vm.mid(),
           type: vm.model_type,
