@@ -715,6 +715,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.post_checksid = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({
+        sid: params.sid
+      }),
+      type: 'POST',
+      url: server_root + 'remotes/checksid',
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.post_remote_launch = function(params) {
     $.ajax({
       contentType: 'application/json',

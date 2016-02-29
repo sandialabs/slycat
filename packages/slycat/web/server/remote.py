@@ -881,7 +881,6 @@ def get_session(sid):
         raise cherrypy.HTTPError("404")
 
     if sid not in session_cache:
-      slycat.email.send_error("slycat.web.server.remote.py get_session", "cherrypy.HTTPError 404: requested session is not in session cache.")
       raise cherrypy.HTTPError("404")
 
     session = session_cache[sid]

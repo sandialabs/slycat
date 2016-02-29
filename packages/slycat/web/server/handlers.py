@@ -1585,6 +1585,13 @@ def delete_remote(sid):
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
+def post_checksid():
+  sid = cherrypy.request.json["sid"]
+  with slycat.web.server.remote.get_session(sid) as session:
+    return "success"
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
 def post_remote_launch():
   sid = cherrypy.request.json["sid"]
   command = cherrypy.request.json["command"]
