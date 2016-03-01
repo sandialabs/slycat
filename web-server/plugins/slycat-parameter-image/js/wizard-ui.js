@@ -11,16 +11,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
-    component.ps_type = ko.observable("remote"); // remote is selected by default...
     component.server_root = server_root;
-
-    component.cancel = function() {
-      if(component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
-
-      if(component.model._id())
-        client.delete_model({ mid: component.model._id() });
-    };
+    component.ps_type = ko.observable(null);
+    component.ps_type.subscribe(function(newValue) {
+      if(newValue == 'local')
+      {
+        $(".modal-dialog").removeClass("modal-lg");
+      }
+      else
+      {
+        $(".modal-dialog").addClass("modal-lg");
+      }
+    });
+    component.ps_type("remote"); // remote is selected by default...
 
     component.create_model = function() {
       client.post_project_models({
@@ -31,23 +34,30 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         marking: component.model.marking(),
         success: function(mid) {
           component.model._id(mid);
-          component.tab(1);
           component.remote.focus(true);
         },
         error: dialog.ajax_error("Error creating model."),
       });
     };
 
+    // Create a model as soon as the dialog loads. We rename, change description and marking later.
+    component.create_model();
+
+    component.cancel = function() {
+      if(component.remote.sid())
+        client.delete_remote({ sid: component.remote.sid() });
+
+      if(component.model._id())
+        client.delete_model({ mid: component.model._id() });
+    };
+
     component.select_type = function() {
       var type = component.ps_type();
 
       if (type === "local") {
-        $(".ps-tab-local").css("display", "block");
-        component.tab(2);
+        component.tab(1);
       } else if (type === "remote") {
-        $(".modal-dialog").addClass("modal-lg");
-        $(".ps-tab-remote").css("display", "block");
-        component.tab(3);
+        component.tab(2);
       }
     };
 
@@ -81,7 +91,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   tooltip: ""
                 });
               mapping.fromJS(attributes, component.attributes);
-              component.tab(5);
+              component.tab(4);
               $('.browser-continue').toggleClass("disabled", false);
             }
           });
@@ -120,7 +130,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         password: component.remote.password(),
         success: function(sid) {
           component.remote.sid(sid);
-          component.tab(4);
+          component.tab(3);
+          component.remote.enable(true);
+          component.remote.status_type(null);
+          component.remote.status(null);
         },
         error: function(request, status, reason_phrase) {
           component.remote.enable(true);
@@ -210,14 +223,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           category_columns.push(i);
         if(component.attributes()[i].Editable())
           rating_columns.push(i);
-        // if(component.attributes()[i].input())
-        //   input_columns.push(i);
-        // if(component.attributes()[i].output())
-        //   output_columns.push(i);
-        // if(component.attributes()[i].category())
-        //   category_columns.push(i);
-        // if(component.attributes()[i].rating())
-        //   rating_columns.push(i);
         if(component.attributes()[i].image())
           image_columns.push(i);
       }
@@ -252,12 +257,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                         value: image_columns,
                         input: true,
                         success: function() {
-                          client.post_model_finish({
-                            mid: component.model._id(),
-                            success: function() {
-                              component.tab(6);
-                            }
-                          });
+                          component.tab(5);
                         }
                       });
                     }
@@ -268,6 +268,43 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
           });
         }
       });
+    };
+
+    component.name_model = function() {
+      client.put_model(
+      {
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function()
+        {
+          client.post_model_finish({
+            mid: component.model._id(),
+            success: function() {
+              component.tab(6);
+            }
+          });
+        },
+        error: dialog.ajax_error("Error updating model."),
+      });
+    };
+
+    component.back = function() {
+      var target = component.tab();
+      // Skip Upload Table tab if we're on the Choose Host tab.
+      if(component.tab() == 2)
+      {
+        target--;
+      }
+      // Skip remote ui tabs if we are local
+      if(component.ps_type() == 'local' && component.tab() == 4)
+      {
+        target--;
+        target--;
+      }
+      target--;
+      component.tab(target);
     };
 
     return component;

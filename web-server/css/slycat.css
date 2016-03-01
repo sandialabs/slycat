@@ -110,7 +110,10 @@ slycat-navbar .alert pre
 {
   margin: 12px 0 0 0;
 }
-
+#slycat-wizard .nav-pills a
+{
+  cursor: default;
+}
 #slycat-wizard .nav-tabs, #slycat-wizard .nav-pills
 {
   margin-bottom: 24px;
@@ -204,8 +207,8 @@ slycat-navbar .alert pre
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a,
 .bootstrap-styles #slycat-wizard .nav-pills > li.active > a:hover
 {
-  color: white;
-  background-color: #337AB7;
+  color: black;
+  background-color: #d7d7d7;
 }
 .bootstrap-styles #slycat-wizard .modal-footer button i
 {
@@ -548,4 +551,10 @@ slycat-navbar .alert pre
 .bootstrap-styles .navbar-default .navbar-nav > .open > a:focus 
 {
   background-color: transparent;
+}
+textarea,
+input,
+#slycat-wizard .modal-body
+{
+  resize: none;
 }

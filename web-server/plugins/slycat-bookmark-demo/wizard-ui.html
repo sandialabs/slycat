@@ -1,4 +1,7 @@
 <div class="modal-header">
+  <button type="button" class="close" data-bind="click: tab() != 1 ? cancel : false" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
   <h3 class="modal-title">New Bookmark Demo Model</h3>
 </div>
 <div class="modal-body">
@@ -9,7 +12,7 @@
 
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
-      <form class="form-horizontal" role="form">
+      <form class="form-horizontal" role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
@@ -19,8 +22,6 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible:tab() != 1, click:cancel" data-dismiss="modal">Cancel</button>
   <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Continue</button>
-  <button class="btn btn-default pull-left" data-bind="visible:tab() == 1" data-dismiss="modal">Close</button>
   <button class="btn btn-default" data-bind="visible:tab() == 1,click:go_to_model">Go To Model</button>
 </div>
