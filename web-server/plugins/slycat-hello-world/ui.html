@@ -1,4 +1,7 @@
 <div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span> 
+  </button>
   <h3 class="modal-title">New Hello World Model</h3>
 </div>
 <div class="modal-body">
@@ -10,7 +13,7 @@
 
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
-      <form class="form-horizontal">
+      <form class="form-horizontal" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
@@ -30,9 +33,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible:tab() != 2" data-dismiss="modal">Cancel</button>
   <button class="btn btn-default" data-bind="visible:tab() == 0,click:create">Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 1,click:finish">Finish</button>
-  <button class="btn btn-default pull-left" data-bind="visible:tab() == 2" data-dismiss="modal">Close</button>
   <button class="btn btn-default" data-bind="visible:tab() == 2,click:go_to_model">Go To Model</button>
 </div>
