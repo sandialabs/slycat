@@ -84,17 +84,17 @@ def register_slycat_plugin(context):
           if deny:
             raise cherrypy.HTTPError("403 User denied by authentication rules.")
       except Exception as e:
-        cherrypy.log.error("@%s: could not get db session." % (e))
+        cherrypy.log.error("@%s: could not get db session from cookie for %s" % (e, remote_ip))
 
       # there was no session time to authenticate
       if session is None:
-        cherrypy.log.error("no session found redirecting to login")
+        cherrypy.log.error("no session found redirecting %s to login" % remote_ip)
         raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
       # Successful authentication, create a session and return.
       #return
     else:
-      cherrypy.log.error("no cookie found redirecting to login")
+      cherrypy.log.error("no cookie found redirecting %s to login" % remote_ip)
       raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
   context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
