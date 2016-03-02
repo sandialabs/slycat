@@ -45,6 +45,7 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI",
     var websocket = new WebSocket(websocket_uri);
     websocket.onmessage = function(message)
     {
+      console.log("\nmessage recieved: " + message.data + "\n");
       var change = JSON.parse(message.data);
 
       // Keep track of project changes.

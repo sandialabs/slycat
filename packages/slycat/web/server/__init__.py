@@ -79,7 +79,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level = 0):
     raise ValueError("Unknown expression: %s" % expression)
 
 def update_model(database, model, **kwargs):
-  """Update the model, and signal any waiting threads that it's changed."""
+  """
+  Update the model, and signal any waiting threads that it's changed.
+  will only update model base on "state", "result", "started", "finished", "progress", "message"
+  """
   for name, value in kwargs.items():
     if name in ["state", "result", "started", "finished", "progress", "message"]:
       model[name] = value
@@ -235,7 +238,14 @@ def get_model_parameter(database, model, aid):
   return model["artifact:" + aid]
 
 def put_model_arrayset(database, model, aid, input=False):
-  """Start a new model array set artifact."""
+  """
+  Start a new model array set artifact.
+  :param database: the database with our model
+  :param model: the model
+  :param aid: artifact id
+  :param input:
+  :return:
+  """
   slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
   storage = uuid.uuid4().hex
   with slycat.web.server.hdf5.lock:
@@ -249,6 +259,17 @@ def put_model_arrayset(database, model, aid, input=False):
       database.save(model)
 
 def put_model_array(database, model, aid, array_index, attributes, dimensions):
+  """
+  store array for model
+  
+  :param database: database of model
+  :param model: model as an object
+  :param aid: artifact id (eg data-table)
+  :param array_index: index of the array
+  :param attributes: name and type in column
+  :param dimensions: number of data rows
+  :return:
+  """
   slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
   storage = model["artifact:%s" % aid]
   with slycat.web.server.hdf5.lock:
