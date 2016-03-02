@@ -107,6 +107,12 @@ js_bundle._lock = threading.Lock()
 js_bundle._bundle = None
 
 def require_json_parameter(name):
+  """
+  checks to see if the parameter is in the cherrypy.request.json
+  and errors gracefully if it is not there
+  :param name: name of json param
+  :return: value of the json param
+  """
   if name not in cherrypy.request.json:
     slycat.email.send_error("slycat.web.server.handlers.py require_json_parameter", "cherrypy.HTTPError 404 missing '%s' parameter." % name)
     raise cherrypy.HTTPError("400 Missing '%s' parameter." % name)
@@ -303,25 +309,19 @@ def post_project_models(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
 
-  # check for required keys in our json
-  for key in ["model-type", "marking", "name"]:
-    if key not in cherrypy.request.json:
-      slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError 400 missing required key: %s" % key)
-      raise cherrypy.HTTPError("400 Missing required key: %s" % key)
-
   # create the model
-  model_type = cherrypy.request.json["model-type"]
+  model_type = require_json_parameter("model-type")
   allowed_model_types = slycat.web.server.plugin.manager.models.keys()
   if model_type not in allowed_model_types:
-    slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError allowed model types: %s" % ", ".joing(allowed_model_types))
+    slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError allowed model types: %s" % ", ".join(allowed_model_types))
     raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
 
-  marking = cherrypy.request.json["marking"]
+  marking = require_json_parameter("marking")
   if marking not in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]:
     slycat.email.send_error("slycat.web.server.handlers.py post_project_models", "cherrypy.HTTPError 400 allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
     raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
 
-  name = cherrypy.request.json["name"]
+  name = require_json_parameter("name")
   description = cherrypy.request.json.get("description", "")
   mid = uuid.uuid4().hex
 
@@ -357,7 +357,7 @@ def post_project_bookmarks(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_reader(project) # This is intentionally out-of-the-ordinary - we explicitly allow project *readers* to store bookmarks.
 
-  content = json.dumps(cherrypy.request.json, separators=(",",":"), indent=None, sort_keys=True)
+  content = json.dumps(cherrypy.request.json, separators=(",", ":"), indent=None, sort_keys=True)
   bid = hashlib.md5(pid + content).hexdigest()
 
   try:
@@ -382,11 +382,6 @@ def post_project_references(pid):
   project = database.get("project", pid)
   slycat.web.server.authentication.require_project_writer(project)
 
-  for key in ["name"]:
-    if key not in cherrypy.request.json:
-      slycat.email.send_error("slycat.web.server.handlers.py post_project_references", "cherrypy.HTTPError 400 missing required key: %s" % key)
-      raise cherrypy.HTTPError("400 Missing required key: %s" % key)
-
   rid = uuid.uuid4().hex
 
   reference = {
@@ -395,7 +390,7 @@ def post_project_references(pid):
     "project" : pid,
     "created" : datetime.datetime.utcnow().isoformat(),
     "creator" : cherrypy.request.login,
-    "name" : cherrypy.request.json["name"],
+    "name" : require_json_parameter("name"),
     "model-type" : cherrypy.request.json.get("model-type", None),
     "mid" : cherrypy.request.json.get("mid", None),
     "bid" : cherrypy.request.json.get("bid", None),
@@ -650,10 +645,10 @@ def post_uploads():
   mid = require_json_parameter("mid")
   input = require_boolean_json_parameter("input")
   parser = require_json_parameter("parser")
+  aids = require_json_parameter("aids")
   if parser not in slycat.web.server.plugin.manager.parsers:
     slycat.email.send_error("slycat.web.server.handlers.py post_uploads", "cherrypy.HTTPError 400 unknown parser plugin: %s." % parser)
     raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
-  aids = require_json_parameter("aids")
 
   kwargs = {key : value for key, value in cherrypy.request.json.items() if key not in ["mid", "input", "parser", "aids"]}
 
