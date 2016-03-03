@@ -154,10 +154,11 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default local-browser-continue-data" data-bind="visible:tab() == 0,click:select_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-default pull-left" data-bind="visible: [0,7].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-default local-browser-continue-data browser-continue" data-bind="visible:tab() == 0,click:select_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 1,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 2,click:select_columns">Continue</button>
-  <button class="btn btn-default local-browser-continue-matrix" data-bind="visible:tab() == 3,click:select_matrix_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-default local-browser-continue-matrix browser-continue" data-bind="visible:tab() == 3,click:select_matrix_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 4,click:select_compute">Continue</button>
   <button class="btn btn-default remote-browser-continue-matrix browser-continue" data-bind="visible:tab() == 5,click:load_distance_matrix"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 6,click:name_model">Finish</button>
