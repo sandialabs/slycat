@@ -471,7 +471,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
               client.post_model_finish({
                 mid: component.model._id(),
                 success: function() {
-                  component.tab(7);
+                  component.go_to_model();
                 }
               });
             }
