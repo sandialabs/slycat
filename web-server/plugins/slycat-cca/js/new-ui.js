@@ -252,7 +252,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
           client.post_model_finish({
             mid: component.model._id(),
             success: function() {
-              component.tab(6);
+              component.go_to_model();
             }
           });
         },
