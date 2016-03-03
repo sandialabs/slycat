@@ -79,6 +79,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
       if (type == "compute") {
         component.tab(4);
+        $('.browser-continue').toggleClass("disabled", false);
       }
       else if (type === "local") {
         component.upload_distance_matrix();
@@ -145,7 +146,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-          $('.local-browser-continue').toggleClass("disabled", false);
+          $('.browser-continue').toggleClass("disabled", false);
         }
       };
       fileUploader.uploadFile(fileObject);
@@ -216,7 +217,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-          $('.local-browser-continue').toggleClass("disabled", false);
+          $('.browser-continue').toggleClass("disabled", false);
         }
       };
       fileUploader.uploadFile(fileObject);
@@ -232,11 +233,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         success: function(sid) {
           component.remote.sid(sid);
           component.tab(1);
+          $('.browser-continue').toggleClass("disabled", false);
+          component.remote.status_type(null);
+          component.remote.status(null);
         },
         error: function(request, status, reason_phrase) {
           component.remote.status_type("danger");
           component.remote.status(reason_phrase);
           component.remote.focus("password");
+          $('.browser-continue').toggleClass("disabled", false);
         }
       });
     };
@@ -251,11 +256,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         success: function(sid) {
           component.remote_matrix.sid(sid);
           component.tab(5);
+          $('.browser-continue').toggleClass("disabled", false);
+          component.remote_matrix.status_type(null);
+          component.remote_matrix.status(null);
         },
         error: function(request, status, reason_phrase) {
           component.remote_matrix.status_type("danger");
           component.remote_matrix.status(reason_phrase);
           component.remote_matrix.focus("password");
+          $('.browser-continue').toggleClass("disabled", false);
         }
       });
     };
@@ -274,7 +283,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-          $('.local-browser-continue').toggleClass("disabled", false);
+          $('.browser-continue').toggleClass("disabled", false);
         }
       };
       fileUploader.uploadFile(fileObject);
@@ -294,7 +303,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-          $('.local-browser-continue').toggleClass("disabled", false);
+          $('.browser-continue').toggleClass("disabled", false);
         }
       };
       fileUploader.uploadFile(fileObject);
@@ -441,6 +450,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.finish = function() {
       component.tab(6);
+      $('.browser-continue').toggleClass("disabled", false);
     };
 
     component.name_model = function() {
@@ -469,6 +479,33 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         },
         error: dialog.ajax_error("Error updating model."),
       });
+    };
+
+    component.back = function() {
+      var target = component.tab();
+      // Skip Select Table tabs if we are local
+      if(component.tab() == 2 && component.ps_type() == 'local')
+      {
+        target--;
+      }
+      // Skip Compute Distances tab if we are on Select Distances tab
+      else if(component.tab() == 5)
+      {
+        target--;
+      }
+      // Skip Select Distances and Compute Distances tabs if we are doing local matrix
+      else if(component.tab() == 6 && component.matrix_type() == 'local')
+      {
+        target--;
+        target--;
+      }
+      // Skip Select Distances tab if we are doing compute matrix
+      else if(component.tab() == 6 && component.matrix_type() == 'compute')
+      {
+        target--;
+      }
+      target--;
+      component.tab(target);
     };
 
     return component;
