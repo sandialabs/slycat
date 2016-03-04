@@ -1,23 +1,18 @@
 <div class="modal-header">
-  <button type="button" class="close" data-bind="click: tab() != 2 ? cancel : false" data-dismiss="modal" aria-label="Close">
+  <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
   <h3 class="modal-title">Modified CCA Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Name Model</a></li>
-    <li data-bind="css:{active:tab() == 1}"><a>Select Columns</a></li>
-    <li data-bind="css:{active:tab() == 2}"><a>Results</a></li>
+    <li data-bind="css:{active:tab() == 0}"><a>Select Columns</a></li>
+    <li data-bind="css:{active:tab() == 1}"><a>Name Model</a></li>
   </ul>
 
   <div class="tab-content">
+
     <div data-bind="visible:tab() == 0">
-      <form class="form-horizontal" role="form" onsubmit="return false">
-        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
-      </form>
-    </div>
-    <div data-bind="visible:tab() == 1">
       <slycat-table-ingestion params="
         variables: attributes,
         properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
@@ -34,13 +29,17 @@
         </div>
       </form>
     </div>
-    <div data-bind="visible:tab() == 2">
-      <slycat-model-results params="{mid: model._id}"></slycat-model-results>
+
+    <div data-bind="visible:tab() == 1">
+      <form class="form-horizontal" role="form" onsubmit="return false">
+        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+      </form>
     </div>
+
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 1,click:finish">Finish</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 2,click:go_to_model">Go To Model</button>
+  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 0,click:finish">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 1,click:name_model">Finish & Go To Model</button>
 </div>
