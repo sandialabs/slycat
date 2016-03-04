@@ -355,9 +355,9 @@ class Session(object):
 
         for c in params["image_columns_names"]:
           # uncomment this line for production
-          arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
+          arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
           # uncomment this line for local development
-          # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column %s %s ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
+          # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
 
         return arr
 
@@ -365,12 +365,12 @@ class Session(object):
         arr = list(ipython_parallel_setup_arr)
 
         if params["timeseries_file"]:
-          arr.append("slycat-xyce-timeseries-push1.py --timeseries-file=%s --force %s %s" % (params["timeseries_file"], params["in_directory"], params["directory"]))
+          arr.append("slycat-xyce-timeseries-push1.py --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["timeseries_file"], params["in_directory"], params["directory"]))
 
         # uncomment this line for production
-        arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
         # uncomment this line for local development
-        # arr.append("python slycat-agent-compute-timeseries.py %s --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
 
         return arr
 
