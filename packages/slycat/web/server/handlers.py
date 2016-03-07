@@ -3,7 +3,7 @@
 # rights in this software.
 
 from __future__ import absolute_import
-
+import traceback
 import cherrypy
 import hashlib
 import itertools
@@ -1098,9 +1098,9 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
   try:
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
-  except:
+  except Exception as e:
     slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
-    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.%s%s"%(e,traceback.print_exc()))
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:
