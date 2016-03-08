@@ -57,6 +57,8 @@ def register_slycat_plugin(context):
           session = None
         cherrypy.request.login = user_name
              # Apply (optional) authentication rules.
+             
+        #wlh: is this still working for groups
         if rules and user_name is not None:
           deny = None
           for operation, category, members in rules:
