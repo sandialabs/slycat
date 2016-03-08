@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" data-bind="click: tab() != 6 ? cancel : false" data-dismiss="modal" aria-label="Close">
+  <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
   <h3 class="modal-title">New CCA Model</h3>
@@ -12,7 +12,6 @@
     <li data-bind="css:{active:tab() == 3}, visible: cca_type() == 'remote'"><a>Select Table</a></li>
     <li data-bind="css:{active:tab() == 4}"><a>Select Columns</a></li>
     <li data-bind="css:{active:tab() == 5}"><a>Name Model</a></li>
-    <li data-bind="css:{active:tab() == 6}"><a>Results</a></li>
   </ul>
 
   <div class="tab-content">
@@ -71,18 +70,14 @@
       </form>
     </div>
 
-    <div data-bind="visible:tab() == 6">
-      <slycat-model-results params="{mid: model._id}"></slycat-model-results>
-    </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible: [0,6].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
   <button class="btn btn-primary local-browser-continue browser-continue" data-bind="visible:tab() == 1,click:upload_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 2,click:connect,enable:remote.enable">Continue</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 5,click:name_model">Finish</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 6,click:go_to_model">Go To Model</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 5,click:name_model">Finish & Go To Model</button>
 </div>

@@ -1,11 +1,11 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, markings, ko, mapping, fileUploader)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, ko, mapping, fileUploader)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: markings.preselected()});
+    component.model = mapping.fromJS({_id: null, name: "New BBT Model", description: "", marking: null});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
@@ -15,16 +15,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.cca_type = ko.observable("local"); // local is selected by default...
     component.row_count = ko.observable(null);
 
-    component.cca_type.subscribe(function(newValue) {
-      if(newValue == 'local')
-      {
-        $(".modal-dialog").removeClass("modal-lg");
-      }
-      else
-      {
-        $(".modal-dialog").addClass("modal-lg");
-      }
-    });
+
+    component.cancel = function() {
+      if(component.remote.sid())
+        client.delete_remote({ sid: component.remote.sid() });
+
+      if(component.model._id())
+        client.delete_model({ mid: component.model._id() });
+    };
 
     component.create_model = function() {
       client.post_project_models({
@@ -35,30 +33,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         marking: component.model.marking(),
         success: function(mid) {
           component.model._id(mid);
-          //component.tab(1);
+          component.tab(1);
         },
         error: dialog.ajax_error("Error creating model.")
       });
-    };
-
-    // Create a model as soon as the dialog loads. We rename, change description and marking later.
-    component.create_model();
-
-    component.cancel = function() {
-      if(component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
-
-      if(component.model._id())
-        client.delete_model({ mid: component.model._id() });
     };
 
     component.select_type = function() {
       var type = component.cca_type();
 
       if (type === "local") {
-        component.tab(1);
-      } else if (type === "remote") {
+        $(".cca-tab-local").css("display", "block");
         component.tab(2);
+      } else if (type === "remote") {
+        $(".modal-dialog").addClass("modal-lg");
+        $(".cca-tab-remote").css("display", "block");
+        component.tab(3);
       }
     };
 
@@ -104,14 +94,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             });
           }
           mapping.fromJS(attributes, component.attributes);
-          component.tab(4);
+          component.tab(5);
           $('.browser-continue').toggleClass("disabled", false);
         }
       });
     };
 
     component.upload_table = function() {
-      $('.local-browser-continue').toggleClass("disabled", true);
+//      $('.local-browser-continue').toggleClass("disabled", true);
       //TODO: add logic to the file uploader to look for multiple files list to add
       var file = component.browser.selection()[0];
       var fileObject ={
@@ -121,7 +111,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
        aids: ["data-table"],
        parser: component.parser(),
        success: function(){
-         upload_success();
+//         upload_success();
+          alert("table uploaded! woot");
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
@@ -141,10 +132,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         password: component.remote.password(),
         success: function(sid) {
           component.remote.sid(sid);
-          component.tab(3);
-          component.remote.enable(true);
-          component.remote.status_type(null);
-          component.remote.status(null);
+          component.tab(4);
         },
         error: function(request, status, reason_phrase) {
           component.remote.enable(true);
@@ -230,7 +218,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                   value: component.scale_inputs(),
                   input: true,
                   success: function() {
-                    component.tab(5);
+                    client.post_model_finish({
+                      mid: component.model._id(),
+                      success: function() {
+                        component.tab(6);
+                      }
+                    });
                   }
                 });
               }
@@ -238,43 +231,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
           }
         });
       }
-    };
 
-    component.name_model = function() {
-      client.put_model(
-      {
-        mid: component.model._id(),
-        name: component.model.name(),
-        description: component.model.description(),
-        marking: component.model.marking(),
-        success: function()
-        {
-          client.post_model_finish({
-            mid: component.model._id(),
-            success: function() {
-              component.go_to_model();
-            }
-          });
-        },
-        error: dialog.ajax_error("Error updating model."),
-      });
-    };
-
-    component.back = function() {
-      var target = component.tab();
-      // Skip Upload Table tab if we're on the Choose Host tab.
-      if(component.tab() == 2)
-      {
-        target--;
-      }
-      // Skip remote ui tabs if we are local
-      if(component.cca_type() == 'local' && component.tab() == 4)
-      {
-        target--;
-        target--;
-      }
-      target--;
-      component.tab(target);
+      
     };
 
     return component;
@@ -282,6 +240,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
   return {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/new-cca/ui.html"}
+    template: { require: "text!" + server_root + "resources/wizards/new-bbt/ui.html"}
   };
 });
