@@ -76,6 +76,8 @@ connection = slycat.web.client.connect(arguments)
 
 # Create a new project to contain our model.
 pid = connection.find_or_create_project(arguments.project_name, arguments.project_description)
+# Create the new, empty model.
+mid = connection.post_project_models(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
 
 # Compute the model.
 try:
@@ -100,9 +102,6 @@ try:
 
   if arguments.cluster_sample_type in ["uniform-pla", "uniform-paa"]:
     arguments.model_description += "Cluster sample count: %s.\n" % _numSamples
-
-  # Create the new, empty model.
-  mid = connection.post_project_models(pid, "timeseries", arguments.model_name, arguments.marking, arguments.model_description)
 
   # Store clustering parameters.
   connection.update_model(mid, message="Storing clustering parameters.")
@@ -225,7 +224,7 @@ try:
           "times" : bin_times,
           "values" : bin_values,
         }
-      directories = list(itertools.repeat(.directory_full_path, len(storage)))
+      directories = list(itertools.repeat(directory_full_path, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
       bin_counts = list(itertools.repeat(_numSamples, len(storage)))
@@ -318,6 +317,11 @@ try:
       connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
 
   connection.update_model(mid, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+except IOError, err:
+  import traceback
+  slycat.web.client.log.error(traceback.format_exc())
+  slycat.web.client.log.error("%s" % err)
+  connection.update_model(mid, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message="%s" % err)
 except:
   import traceback
   slycat.web.client.log.error(traceback.format_exc())
