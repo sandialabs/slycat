@@ -46,4 +46,4 @@ POST Login Function
 See Also
 --------
 
-- :http:get:`/projects`
+- :http:delete:`/logout`
