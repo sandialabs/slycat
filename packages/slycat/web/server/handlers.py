@@ -764,10 +764,18 @@ def login():
   success, groups = login.password_check(realm, user_name, password)
 
   if success:
-    # Successful authentication, now check access rules.
-    cherrypy.log.error("%s@%s: Password check succeeded." % (user_name, remote_ip))
+    cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
 
-    # if rules is not None:
+    # Successful authentication, now check access rules.
+    authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
+    rules = []
+    if "rules" in authentication_kwargs:
+      rules = authentication_kwargs["rules"]
+    if "realm" in authentication_kwargs:
+      realm = authentication_kwargs["realm"]
+    cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)) )
+
+    # if rules:
     #   deny = True
     #   for operation, category, members in rules:
     #     if operation not in ["allow"]:
