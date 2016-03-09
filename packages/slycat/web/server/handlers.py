@@ -775,31 +775,32 @@ def login():
       realm = authentication_kwargs["realm"]
     cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)) )
 
-    # if rules:
-    #   deny = True
-    #   for operation, category, members in rules:
-    #     if operation not in ["allow"]:
-    #       raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
-    #     if category not in ["users", "groups"]:
-    #       raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)    
-    #
-    #     if category in ["groups"]
-    #       # see the slycat-dev web config for an example with this rule
-    #       # verify the group given in rules is one of the user's meta groups as returned by the ldap password fn
-    #       for group in groups:
-    #         if group in members:
-    #           deny = False    
-    #     if category in ["directory"]:
-    #       try:
-    #         lookupResult = cherrypy.request.app.config["slycat-web-server"]["directory"](user_name)
-    #       except:
-    #         cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
-    #       if lookupResult != {}:
-    #         deny = False    
-    #
-    #     if deny:
-    #       raise cherrypy.HTTPError("403 User denied by authentication rules.")    
-    
+    if rules:
+      #found rules now time to apply them
+      cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
+      deny = True
+      for operation, category, members in rules:
+        if operation not in ["allow"]:
+          raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
+        if category not in ["users", "groups"]:
+          raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)
+        if category in ["groups"]:
+          # see the slycat-dev web config for an example with this rule
+          # verify the group given in rules is one of the user's meta groups as returned by the ldap password fn
+          for group in groups:
+            if group in members:
+              deny = False
+        if category in ["directory"]:
+          try:
+            lookupResult = cherrypy.request.app.config["slycat-web-server"]["directory"](user_name)
+            if lookupResult != {}:
+              deny = False
+          except:
+            cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
+        if deny:
+          raise cherrypy.HTTPError("403 User denied by authentication rules.")
+    else:
+      cherrypy.log.error("no rules were found")
     # Successful authentication and access verification, create a session and return.
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": user_name}
