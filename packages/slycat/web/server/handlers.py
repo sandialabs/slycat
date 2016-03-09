@@ -782,7 +782,7 @@ def login():
       for operation, category, members in rules:
         if operation not in ["allow"]:
           raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
-        if category not in ["users", "groups"]:
+        if category not in ["users", "groups", "directory"]:
           raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)
         if category in ["groups"]:
           # see the slycat-dev web config for an example with this rule
