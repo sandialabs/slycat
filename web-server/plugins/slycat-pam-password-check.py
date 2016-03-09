@@ -9,16 +9,17 @@ def register_slycat_plugin(context):
     try:
       import pam
       
+      groups = []
       pServer = pam.pam()
       returnCode = pServer.authenticate(username, password)
       if returnCode == True:
-        return True
+        return True, groups
       else:
         cherrypy.log.error("PAM password check failed to authenticate %s" % username )
-        return False
+        return False, groups
       
     except Exception as e:
       cherrypy.log.error("%s" % e)
-      return False
+      return False, groups
 
   context.register_password_check("slycat-pam-password-check", check_password)
