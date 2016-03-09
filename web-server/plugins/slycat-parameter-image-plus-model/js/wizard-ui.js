@@ -483,29 +483,68 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
 
     component.back = function() {
       var target = component.tab();
-      // Skip Select Table tabs if we are local
-      if(component.tab() == 2 && component.ps_type() == 'local')
+
+      // Ask user if they want to cancel their compute job
+      if(component.tab() == 6 && component.matrix_type() == 'compute')
       {
-        target--;
+        dialog.confirm({
+          title: 'Stop Computing Distances?',
+          message: 'To go back, you need to stop the compute distances job. Do you want to stop this job and go back?',
+          ok: function(){
+            // Stop the compute job
+            var contextData = ko.contextFor(document.getElementsByClassName('slycat-remote-interface')[0]).$data;
+            var sid = contextData.remote.sid();
+            var jid = contextData.jid();
+            if(jid > -1 && sid !== null)
+            {
+              client.post_cancel_job({
+                sid: sid,
+                jid: jid,
+                success: function(){
+                  go_back();
+                },
+                error: function(){
+                  go_back();
+                }
+              });
+            }
+            else
+            {
+              go_back();
+            }
+          },
+          cancel: function(){
+            return;
+          }
+        });
+
+        function go_back(){
+          target--;
+          target--;
+          component.tab(target);
+        }
       }
-      // Skip Compute Distances tab if we are on Select Distances tab
-      else if(component.tab() == 5)
+      else
       {
+        // Skip Select Table tabs if we are local
+        if(component.tab() == 2 && component.ps_type() == 'local')
+        {
+          target--;
+        }
+        // Skip Compute Distances tab if we are on Select Distances tab
+        else if(component.tab() == 5)
+        {
+          target--;
+        }
+        // Skip Select Distances and Compute Distances tabs if we are doing local matrix
+        else if(component.tab() == 6 && component.matrix_type() == 'local')
+        {
+          target--;
+          target--;
+        }
         target--;
+        component.tab(target);
       }
-      // Skip Select Distances and Compute Distances tabs if we are doing local matrix
-      else if(component.tab() == 6 && component.matrix_type() == 'local')
-      {
-        target--;
-        target--;
-      }
-      // Skip Select Distances tab if we are doing compute matrix
-      else if(component.tab() == 6 && component.matrix_type() == 'compute')
-      {
-        target--;
-      }
-      target--;
-      component.tab(target);
     };
 
     return component;
