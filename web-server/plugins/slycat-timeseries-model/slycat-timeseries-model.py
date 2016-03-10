@@ -37,6 +37,8 @@ def register_slycat_plugin(context):
     inputs = slycat.web.server.get_remote_file(sid, "/home/%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (username, uid))
     inputs = pickle.loads(inputs)
 
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", model["_id"])
     slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
     attributes = inputs["attributes"]
     slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
