@@ -485,7 +485,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       var target = component.tab();
 
       // Ask user if they want to cancel their compute job
-      if(component.tab() == 4 && component.matrix_type() == 'compute')
+      if(component.tab() == 6 && component.matrix_type() == 'compute')
       {
         dialog.confirm({
           title: 'Stop Computing Distances?',
