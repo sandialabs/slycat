@@ -3,7 +3,7 @@
 # rights in this software.
 
 from __future__ import absolute_import
-
+import traceback
 import cherrypy
 import hashlib
 import itertools
@@ -764,9 +764,44 @@ def login():
   success, groups = login.password_check(realm, user_name, password)
 
   if success:
-    # Successful authentication, create a session and return.
-    cherrypy.log.error("%s@%s: Password check succeeded." % (user_name, remote_ip))
+    cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
 
+    # Successful authentication, now check access rules.
+    authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
+    rules = []
+    if "rules" in authentication_kwargs:
+      rules = authentication_kwargs["rules"]
+    if "realm" in authentication_kwargs:
+      realm = authentication_kwargs["realm"]
+    cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)) )
+
+    if rules:
+      #found rules now time to apply them
+      cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
+      deny = True
+      for operation, category, members in rules:
+        if operation not in ["allow"]:
+          raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
+        if category not in ["users", "groups", "directory"]:
+          raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)
+        if category in ["groups"]:
+          # see the slycat-dev web config for an example with this rule
+          # verify the group given in rules is one of the user's meta groups as returned by the ldap password fn
+          for group in groups:
+            if group in members:
+              deny = False
+        if category in ["directory"]:
+          try:
+            lookupResult = cherrypy.request.app.config["slycat-web-server"]["directory"](user_name)
+            if lookupResult != {}:
+              deny = False
+          except:
+            cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
+        if deny:
+          raise cherrypy.HTTPError("403 User denied by authentication rules.")
+    else:
+      cherrypy.log.error("no rules were found")
+    # Successful authentication and access verification, create a session and return.
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": user_name}
     database = slycat.web.server.database.couchdb.connect()
@@ -1098,9 +1133,9 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
   cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
   try:
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
-  except:
+  except Exception as e:
     slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
-    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+    raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.%s%s"%(e,traceback.print_exc()))
 
   if byteorder is not None:
     if byteorder not in ["big", "little"]:

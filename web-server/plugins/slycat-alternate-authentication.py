@@ -1,6 +1,13 @@
 # Copyright 2013, Sandia Corporation. Under the terms of Contract
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
+#
+# This alternate method is based on:
+#   -authentication:  user authenticates with their kerberos password through pam
+#   -authorization :  a successful pam result typically implies authorization also
+#   -access rule   :  the passwd directory plugin grants access based on membership in
+#                     /etc/passwd (which is a bit redundant due to the pam authorization)
+# Note this method does not employ external (ldap or active directory) groups.
 
 def register_slycat_plugin(context):
   from cherrypy._cpcompat import base64_decode
@@ -57,8 +64,6 @@ def register_slycat_plugin(context):
           session = None
         cherrypy.request.login = user_name
              # Apply (optional) authentication rules.
-             
-        #wlh: is this still working for groups
         if rules and user_name is not None:
           deny = None
           for operation, category, members in rules:
@@ -99,4 +104,4 @@ def register_slycat_plugin(context):
       cherrypy.log.error("no cookie found redirecting %s to login" % remote_ip)
       raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
-  context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
+  context.register_tool("slycat-alternate-authentication", "on_start_resource", authenticate)
