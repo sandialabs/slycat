@@ -1321,17 +1321,10 @@ function filters_changed(newValue)
     }
     filterxhr = $.ajax(
     {
-      // type : "GET",
-      // url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/index(0)|" + filter_expression + "/...",
       type : "POST",
       url : self.server_root + "models/" + model_id + "/arraysets/data-table/data",
-      //data: "hyperchunks=0/index(0)|" + filter_expression + "/...",
       data: JSON.stringify({"hyperchunks": "0/index(0)|" + filter_expression + "/..."}),
-      //data: JSON.stringify({}),
-      //beforeSend: function(xhr){xhr.setRequestHeader('json', '{"hyperchunks":"0/index(0)|' + filter_expression + '/..."}');},
-      dataType: 'json',
       contentType: "application/json",
-      // processData: false,
       success : function(data)
       {
         var filter_indices = data[0];
