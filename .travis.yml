@@ -18,9 +18,9 @@ before_install:
   - sudo apt-get install haproxy
   - sudo apt-get install xvfb firefox
   # Install ffmpeg for our agent testing.
-  - wget https://ffmpeg.org/releases/ffmpeg-2.8.6.tar.xz
+  - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
   - mkdir ffmpeg
-  - tar xf ffmpeg-2.8.6.tar.xz --strip-components 1 -C ffmpeg
+  - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
   - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
   # Point Python to the Slycat packages.
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
