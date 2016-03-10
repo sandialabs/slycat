@@ -20,7 +20,7 @@ before_install:
   # Install ffmpeg for our agent testing.
   - wget https://ffmpeg.org/releases/ffmpeg-2.8.6.tar.xz
   - mkdir ffmpeg
-  - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
+  - tar xf ffmpeg-2.8.6.tar.xz --strip-components 1 -C ffmpeg
   - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
   # Point Python to the Slycat packages.
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
