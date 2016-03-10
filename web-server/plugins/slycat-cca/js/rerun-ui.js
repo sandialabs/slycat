@@ -120,13 +120,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
             sid: component.original._id(),
             success: function()
             {
-              component.tab(1);
+              // component.tab(1);
             }
           });
         },
         error: dialog.ajax_error("Error creating model."),
       });
     }
+
+    // Create a model as soon as the dialog loads. We rename, change description and marking later.
+    component.create_model();
 
     component.go_to_model = function() {
       location = server_root + 'models/' + component.model._id();
@@ -191,14 +194,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
                   input: true,
                   success: function()
                   {
-                    client.post_model_finish(
-                    {
-                      mid: component.model._id(),
-                      success: function()
-                      {
-                        component.tab(2);
-                      }
-                    });
+                    component.tab(1);
                   }
                 });
               }
@@ -207,6 +203,32 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         });
       }
     }
+
+    component.name_model = function() {
+      client.put_model(
+      {
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function()
+        {
+          client.post_model_finish({
+            mid: component.model._id(),
+            success: function() {
+              component.go_to_model();
+            }
+          });
+        },
+        error: dialog.ajax_error("Error updating model."),
+      });
+    };
+
+    component.back = function() {
+      var target = component.tab();
+      target--;
+      component.tab(target);
+    };
 
     return component;
   }

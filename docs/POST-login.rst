@@ -26,9 +26,20 @@ POST Login Function
     Accept: */*
     User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.2.1.el6.x86_64
     content-type: application/json
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
 
-    {"name": "username", "description": ""}
+    {
+    "user_name":"slycat",
+    "password":"slycat",
+    "location":{
+        "href":"https://192.168.99.100/login/slycat-login.html",
+        "origin":"https://192.168.99.100",
+        "protocol":"https:",
+        "host":"192.168.99.100",
+        "hostname":"192.168.99.100",
+        "port":"",
+        "pathname":"/login/slycat-login.html",
+        "search":"","hash":""}
+    }
 
   **Sample Response**
 

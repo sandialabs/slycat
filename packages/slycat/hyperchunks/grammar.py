@@ -50,7 +50,8 @@ decimal_integer_literal_p.setParseAction(lambda tokens: int("".join(tokens)))
 integer_literal_p = decimal_integer_literal_p
 
 #floating point number  -1.2 or 1. includes scientific notation
-point_float_p = pp.Optional("-") + pp.Word(pp.nums) + pp.Optional(".") + pp.Optional(pp.Word(pp.nums)) + pp.Optional("e") + pp.Optional("-") + pp.Optional(pp.Word(pp.nums))
+point_float_p = (pp.Optional("-") + pp.Word(pp.nums) + "." + pp.Optional(pp.Word(pp.nums)) + pp.Optional("e") + pp.Optional("-") + pp.Optional(pp.Word(pp.nums))) \
+                | (pp.Optional("-") + pp.Word(pp.nums) + "e" + pp.Optional("-") + pp.Word(pp.nums))
 
 float_literal_p = point_float_p
 float_literal_p.setParseAction(lambda tokens: float("".join(tokens)))
