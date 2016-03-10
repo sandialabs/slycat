@@ -100,7 +100,8 @@ def js_bundle():
         "js/slycat-resizing-modals.js",
         "js/slycat-table-ingestion.js",
         "js/slycat-3d-viewer.js",
-        "js/slycat-remote-interface.js"
+        "js/slycat-remote-interface.js",
+        "js/slycat-job-checker.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()
