@@ -177,7 +177,6 @@ var show_checkjob = function() {
 
 function setup_page()
 {
-  console.log(model);
   // If the model isn't ready or failed, we're done.
   if(model["state"] == "waiting" || model["state"] == "running") {
     show_checkjob();
