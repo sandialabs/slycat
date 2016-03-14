@@ -101,8 +101,14 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
 
       vm.set_jid = function(jid) {
         vm.jid(jid);
-        $('#slycat-job-checker-connect-modal').modal();
       };
+
+      $('#slycat-job-checker-connect').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $('#slycat-job-checker-connect-modal').modal();
+      });
 
 			$('#slycat-job-checker-clear').on('click', function(e) {
         e.preventDefault();
