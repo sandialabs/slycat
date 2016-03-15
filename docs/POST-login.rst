@@ -1,4 +1,4 @@
-POST Login Function
+POST Login
 ===================
 
 .. http:post:: /login
