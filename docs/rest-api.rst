@@ -11,6 +11,7 @@ any programming language or library that supports HTTP requests.
 
   hyperchunks.rst
 
+  DELETE-logout.rst
   DELETE-Model.rst
   DELETE-Project.rst
   DELETE-Project-Cache-Object.rst
