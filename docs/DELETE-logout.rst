@@ -1,4 +1,4 @@
-DELETE Model
+DELETE Logout
 ============
 
 .. http:delete:: /logout
