@@ -43,6 +43,7 @@ any programming language or library that supports HTTP requests.
   POST-Check-Job.rst
   POST-Events.rst
   POST-Get-Job-Output.rst
+  POST-login.rst
   POST-Model-Command.rst
   POST-Model-Finish.rst
   POST-Project-Bookmark.rst
