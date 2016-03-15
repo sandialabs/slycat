@@ -18,7 +18,7 @@ POST Model Arrayset Data
     The request must contain a parameter `hyperchunks` that
     specifies the arrays, attributes, and hyperslices to be returned, in :ref:`hyperchunks` format.
 
-  :<json string byteorder: byteorder:
+  :<json string byteorder:
 
     The request may optionally contain a parameter `byteorder` that specifies
     that the response should be binary data with the given endianness. The
