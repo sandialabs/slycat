@@ -47,15 +47,16 @@ POST Model Arrayset Data
   .. sourcecode:: http
 
     POST /models/6706e78890884845b6c709572a140681/arraysets/foo/dataH TTP/1.1
-    json: {
-        hyperchunks: "0/1/...,"
-        byteorder: "little"
-        }
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
     accept: application/octet-stream
     User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
+
+    {
+        hyperchunks: "0/1/...,"
+        byteorder: "little"
+    }
 
   **Sample Response**
 
