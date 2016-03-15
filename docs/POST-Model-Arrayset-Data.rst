@@ -48,8 +48,8 @@ POST Model Arrayset Data
 
     POST /models/6706e78890884845b6c709572a140681/arraysets/foo/dataH TTP/1.1
     json: {
-        hyperchunks=0/1/...,
-        byteorder=little
+        hyperchunks: "0/1/...,"
+        byteorder: "little"
         }
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
