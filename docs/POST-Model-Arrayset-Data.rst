@@ -14,17 +14,11 @@ POST Model Arrayset Data
 
   :requestheader Content-Type: application/json
 
-  :<json string hyperchunks: HQL
-  :<json string byteorder: byteorder:
-
-  :responseheader Content-Type: application/json
-
-  :query hyperchunks:
-
+  :<json string hyperchunks:
     The request must contain a parameter `hyperchunks` that
     specifies the arrays, attributes, and hyperslices to be returned, in :ref:`hyperchunks` format.
 
-  :query byteorder:
+  :<json string byteorder: byteorder:
 
     The request may optionally contain a parameter `byteorder` that specifies
     that the response should be binary data with the given endianness. The
@@ -43,9 +37,7 @@ POST Model Arrayset Data
     for the corresponding hyperslice, in the same order as the requested
     hyperchunks / hyperslices.  For multi-dimension arrays, data for the
     corresponding hyperslice will be nested further, in "C" order (the last
-    coordinate varies the fastest).
-
-  :responseheader Content-Type: application/octet-stream or application/json
+  :responseheader Content-Type: application/json
 
   The following request will return all of the data for array 0, attribute 1 from
   an arrayset artifact with id "foo":
@@ -54,7 +46,7 @@ POST Model Arrayset Data
 
   .. sourcecode:: http
 
-    GET /models/6706e78890884845b6c709572a140681/arraysets/foo/data?hyperchunks=0/1/...&byteorder=little HTTP/1.1
+    POST /models/6706e78890884845b6c709572a140681/arraysets/foo/data?hyperchunks=0/1/...&byteorder=little HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
