@@ -38,7 +38,9 @@ POST Login
         "hostname":"192.168.99.100",
         "port":"",
         "pathname":"/login/slycat-login.html",
-        "search":"","hash":""}
+        "search":"",
+        "hash":""
+        }
     }
 
   **Sample Response**
