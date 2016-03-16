@@ -4,8 +4,10 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-parameter-image-plus-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "d3", "URI", "domReady!"], function(server_root, client, bookmark_manager, dialog, d3, URI)
+define("slycat-parameter-image-plus-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "knockout", "d3", "URI", "domReady!"], function(server_root, client, bookmark_manager, dialog, ko, d3, URI)
 {
+  ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -177,11 +179,25 @@ $.ajax(
 // Once the model has been loaded, retrieve metadata / bookmarked state
 //////////////////////////////////////////////////////////////////////////////////////////
 
+var show_checkjob = function() {
+  var jc = $('#parameter-image-plus-layout').children()[0];
+  var $jc = $(jc);
+  $jc.detach();
+
+  $($('#parameter-image-plus-layout').children()).remove();
+  $('#parameter-image-plus-layout').append($jc);
+
+  var vm = ko.dataFor($('.slycat-job-checker')[0]);
+  vm.set_jid(model['artifact:jid']);
+};
+
 function model_loaded()
 {
   // If the model isn't ready or failed, we're done.
-  if(model["state"] == "waiting" || model["state"] == "running")
+  if(model["state"] == "waiting" || model["state"] == "running") {
+    show_checkjob();
     return;
+  }
   if(model["state"] == "closed" && model["result"] === null)
     return;
   if(model["result"] == "failed")
