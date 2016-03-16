@@ -13,7 +13,8 @@ POST Login
 
   :responseheader Content-Type: application/json
 
-  :>json boolean success: boolean
+  :>json boolean success: boolean representing successful login
+  :>json string target: original url user tried to access (for a redirect after login)
 
   **Sample Request**
 
