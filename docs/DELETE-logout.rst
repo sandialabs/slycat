@@ -3,7 +3,7 @@ DELETE Logout
 
 .. http:delete:: /logout
 
-  Deletes a session and its cookie.
+  Deletes a session and its browser cookie.
 
   **Sample Request**
 
