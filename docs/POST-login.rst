@@ -7,9 +7,9 @@ POST Login
 
   :requestheader Content-Type: application/json
 
-  :<json string name: username
-  :<json string password: password
-  :<json object url: url from which you came
+  :<json 64 bit encoded string name: username
+  :<json 64 bit encoded string password: password
+  :<json object url: origin url from which you came
 
   :responseheader Content-Type: application/json
 
@@ -19,7 +19,7 @@ POST Login
 
   .. sourcecode:: http
 
-    POST /projects HTTP/1.1
+    POST /login HTTP/1.1
     Host: localhost:8092
     Content-Length: 45
     Accept-Encoding: gzip, deflate, compress
@@ -28,8 +28,8 @@ POST Login
     content-type: application/json
 
     {
-    "user_name":"slycat",
-    "password":"slycat",
+    "user_name":"64 bit encoded slycat(c2x5Y2F0)",
+    "password":"64 bit encoded slycat(c2x5Y2F0)",
     "location":{
         "href":"https://192.168.99.100/login/slycat-login.html",
         "origin":"https://192.168.99.100",
@@ -49,10 +49,11 @@ POST Login
     Date: Thu, 11 Apr 2013 21:30:16 GMT
     Content-Length: 42
     Content-Type: application/json
+    Set-Cookie:"slycatauth=xyz;httponly;Max-Age=60000;Path=/;secure;slycattimeout=timeout;Max-Age=60000;Path=/"
     Location: http://localhost:8092/projects/505d0e463d5ed4a32bb6b0fe9a000d36
     Server: CherryPy/3.2.2
 
-    {"id": "505d0e463d5ed4a32bb6b0fe9a000d36"}
+    {"target": "https://192.168.99.100/projects","success":true}
 
 See Also
 --------
