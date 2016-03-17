@@ -1321,10 +1321,8 @@ function filters_changed(newValue)
     }
     filterxhr = $.ajax(
     {
-      type : "POST",
-      url : self.server_root + "models/" + model_id + "/arraysets/data-table/data",
-      data: JSON.stringify({"hyperchunks": "0/index(0)|" + filter_expression + "/..."}),
-      contentType: "application/json",
+      type : "GET",
+      url : self.server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/index(0)|" + filter_expression + "/...",
       success : function(data)
       {
         var filter_indices = data[0];

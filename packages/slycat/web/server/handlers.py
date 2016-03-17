@@ -1191,6 +1191,7 @@ def post_model_arrayset_data(mid, aid):
   :param aid: artifact id
   :return: stream of data
   """
+  #TODO: add docs for this endpoint
   # try and grab hyperchunk
   hyperchunks = None
   byteorder = None
@@ -1252,8 +1253,7 @@ def post_model_arrayset_data(mid, aid):
         else:
           yield hyperslice.tostring(order="C")
   return content()
-# TODO: streaming was turned off because this is now a post, in the future we may wan to turn this back on to increase speed
-# post_model_arrayset_data._cp_config = {"response.stream" : True}
+post_model_arrayset_data._cp_config = {"response.stream" : True}
 
 def validate_table_rows(rows):
   try:
