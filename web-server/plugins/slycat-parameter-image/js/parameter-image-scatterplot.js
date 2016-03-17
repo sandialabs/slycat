@@ -1425,6 +1425,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       else {
         // We don't support this file type, so just create a download link
         console.log("creating download link");
+        frame_html
+          .style({
+            "width": "200px",
+            "height": "200px",
+          });
+        self._adjust_leader_line(frame_html);
         var download = frame_html
           .append("a")
           .attr("href", image_url)
