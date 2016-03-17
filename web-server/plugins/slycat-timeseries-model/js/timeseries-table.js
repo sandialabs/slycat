@@ -373,9 +373,7 @@ define("slycat-timeseries-table", ["d3"], function(d3)
           column.colormap = self.options.colormap.copy();
 
           var new_domain = []
-          var domain_scale = d3.scale.linear()
-            .domain([0, column.colormap.range().length - 1])
-            .range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
+          var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
           for(var i in column.colormap.range())
             new_domain.push(domain_scale(i));
           column.colormap.domain(new_domain);
