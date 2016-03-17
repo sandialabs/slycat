@@ -897,3 +897,9 @@ a {
   max-height: 500px;
   overflow-y: auto;
 }
+.image-frame .download-link
+{
+  margin: 20px;
+  display: block;
+  text-align: center;
+}
