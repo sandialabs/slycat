@@ -559,10 +559,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         else if(component.tab() == 6)
         {
           target--;
+          target--;
         }
         // Skip Select Distances and Compute Distances tabs if we are doing local matrix
         else if(component.tab() == 7 && component.matrix_type() == 'local')
         {
+          target--;
           target--;
           target--;
         }
