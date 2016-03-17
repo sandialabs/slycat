@@ -4,8 +4,10 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "slycat-dialog", "URI", "slycat-timeseries-controls", "domReady!"], function(server_root, bookmark_manager, dialog, URI)
+define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "slycat-dialog", "knockout", "URI", "slycat-timeseries-controls", "domReady!"], function(server_root, bookmark_manager, dialog, ko, URI)
 {
+  ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout and forms.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -161,11 +163,28 @@ function s_to_o(s) {
     return JSON.parse(s);
 }
 
+var show_checkjob = function() {
+  var jc = $('#timeseries-model').children()[0];
+  var $jc = $(jc);
+  $jc.detach();
+
+  $($('#timeseries-model').children()).remove();
+  $('#timeseries-model').append($jc);
+
+  var vm = ko.dataFor($('.slycat-job-checker')[0]);
+  vm.set_jid(model['artifact:jid']);
+};
+
 function setup_page()
 {
   // If the model isn't ready or failed, we're done.
-  if(model["state"] == "waiting" || model["state"] == "running")
+  if(model["state"] == "waiting" || model["state"] == "running") {
+    show_checkjob();
     return;
+  }
+
+  $('.slycat-job-checker').remove();
+
   if(model["state"] == "closed" && model["result"] === null)
     return;
   if(model["result"] == "failed")

@@ -32,6 +32,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       }
     });
     component.server_root = server_root;
+    component.distance_measures = ko.observableArray([
+      { name: 'Correlation Distance', value: 'correlation-distance' },
+      { name: 'Jaccard Distance', value: 'jaccard-distance' },
+      { name: 'Jaccard Distance (2)', value: 'jaccard2-distance' },
+      { name: 'One-Norm Distance', value: 'one-norm-distance' },
+      { name: 'Cosine Distance', value: 'cosine-distance' },
+      { name: 'Hamming Distance', value: 'hamming-distance' }
+    ]);
+    component.distance_measure = ko.observable('correlation-distance');
 
     // Let's use a large dialog for this wizard because there are so many steps
     $(".modal-dialog").addClass("modal-lg");
@@ -163,8 +172,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       // }
     };
 
+    component.select_distance_measure = function() {
+      component.distance_measure($('#distance_measure').val());
+      component.tab(5);
+    };
+
     component.select_compute = function() {
-      component.tab(6);
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      vm.agent_function(component.distance_measure());
+      vm.submit_job();
+    };
+
+    component.to_last_step = function() {
+      component.tab(7);
     };
 
     var upload_matrix_success = function() {
@@ -255,7 +275,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         password: component.remote_matrix.password(),
         success: function(sid) {
           component.remote_matrix.sid(sid);
-          component.tab(5);
+          component.tab(6);
           $('.browser-continue').toggleClass("disabled", false);
           component.remote_matrix.status_type(null);
           component.remote_matrix.status(null);
@@ -449,7 +469,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     };
 
     component.finish = function() {
-      component.tab(6);
+      component.tab(7);
       $('.browser-continue').toggleClass("disabled", false);
     };
 
@@ -468,12 +488,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             value: component.cluster_linkage(),
             input: true,
             success: function() {
-              client.post_model_finish({
-                mid: component.model._id(),
-                success: function() {
-                  component.go_to_model();
-                }
-              });
+              if (component.matrix_type() === "compute")
+                component.go_to_model();
+              else {
+                client.post_model_finish({
+                  mid: component.model._id(),
+                  success: function() {
+                    component.go_to_model();
+                  }
+                });
+              }
             }
           });
         },
@@ -485,7 +509,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       var target = component.tab();
 
       // Ask user if they want to cancel their compute job
-      if(component.tab() == 6 && component.matrix_type() == 'compute')
+      if(component.tab() == 7 && component.matrix_type() == 'compute')
       {
         dialog.confirm({
           title: 'Stop Computing Distances?',
@@ -532,13 +556,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
           target--;
         }
         // Skip Compute Distances tab if we are on Select Distances tab
-        else if(component.tab() == 5)
+        else if(component.tab() == 6)
         {
+          target--;
           target--;
         }
         // Skip Select Distances and Compute Distances tabs if we are doing local matrix
-        else if(component.tab() == 6 && component.matrix_type() == 'local')
+        else if(component.tab() == 7 && component.matrix_type() == 'local')
         {
+          target--;
           target--;
           target--;
         }

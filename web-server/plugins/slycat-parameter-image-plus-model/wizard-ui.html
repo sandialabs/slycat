@@ -11,9 +11,10 @@
     <li data-bind="css:{active:tab() == 1}, visible: ps_type() == 'remote'" class="ps-tab-remote-data"><a>Select Table</a></li>
     <li data-bind="css:{active:tab() == 2}"><a>Select Columns</a></li>
     <li data-bind="css:{active:tab() == 3}" class="ps-tab-locate-matrix"><a>Locate Distances</a></li>
-    <li data-bind="css:{active:tab() == 4}, visible: matrix_type() == 'compute'" class="ps-tab-compute-matrix"><a>Compute Distances</a></li>
-    <li data-bind="css:{active:tab() == 5}, visible: matrix_type() == 'remote'" class="ps-tab-remote-matrix"><a>Select Distances</a></li>
-    <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
+    <li data-bind="css:{active:tab() == 4}, visible: matrix_type() == 'compute'" class="ps-tab-locate-matrix"><a>Select Distance Metric</a></li>
+    <li data-bind="css:{active:tab() == 5}, visible: matrix_type() == 'compute'" class="ps-tab-compute-matrix"><a>Compute Distances</a></li>
+    <li data-bind="css:{active:tab() == 6}, visible: matrix_type() == 'remote'" class="ps-tab-remote-matrix"><a>Select Distances</a></li>
+    <li data-bind="css:{active:tab() == 7}"><a>Name Model</a></li>
   </ul>
 
   <div class="tab-content">
@@ -100,18 +101,29 @@
     </div>
 
     <div data-bind="visible:tab() == 4">
+      <div class="form-horizontal">
+        <div class="distance-measure form-group">
+          <label class="col-sm-4 control-label">Select Distance Metric</label>
+          <div class="col-sm-6">
+            <select id="distance-measure" class="form-control" data-bind="options: distance_measures, optionsText: 'name', optionsValue: 'value', value: distance_measure"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-bind="visible:tab() == 5">
       <div class="compute-interface">
         <form class="compute form-horizontal" role="form">
-          <slycat-remote-interface params="agent_functions: ['correlation-distance', 'jaccard-distance', 'jaccard2-distance', 'one-norm-distance', 'cosine-distance', 'hamming-distance'], agent_functions_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id()"></slycat-remote-interface>
+          <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, password: remote.password, on_submit_callback: to_last_step"></slycat-remote-interface>
         </form>
       </div>
     </div>
 
-    <div data-bind="visible:tab() == 5" style="height: 400px">
+    <div data-bind="visible:tab() == 6" style="height: 400px">
       <slycat-remote-browser params="type:'remote',sid:remote_matrix.sid,hostname:remote_matrix.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_distance_matrix"></slycat-remote-browser>
     </div>
 
-    <div data-bind="visible:tab() == 6">
+    <div data-bind="visible:tab() == 7">
       <form class="form-horizontal" role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         <div class="form-group">
@@ -154,8 +166,9 @@
   <button class="btn btn-primary remote-browser-continue-data browser-continue" data-bind="visible:tab() == 1,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 2,click:select_columns">Continue</button>
   <button class="btn btn-primary local-browser-continue-matrix browser-continue" data-bind="visible:tab() == 3,click:select_matrix_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 4,click:select_compute">Continue</button>
-  <button class="btn btn-primary remote-browser-continue-matrix browser-continue" data-bind="visible:tab() == 5,click:load_distance_matrix"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 6,click:name_model">Finish & Go To Model</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 4,click:select_distance_measure">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 5,click:select_compute">Continue</button>
+  <button class="btn btn-primary remote-browser-continue-matrix browser-continue" data-bind="visible:tab() == 6,click:load_distance_matrix"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 7,click:name_model">Finish & Go To Model</button>
 </div>
 </div>

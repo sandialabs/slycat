@@ -8,7 +8,7 @@ rights in this software.
   var project_id = "{{full-project._id}}";
   var model_id = "{{_id}}";
   var model_name = "{{name}}";
-  
+
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
   [
@@ -32,6 +32,7 @@ rights in this software.
   });
 </script>
 <div class="parameter-image" id="parameter-image-plus-layout">
+  <slycat-job-checker></slycat-job-checker>
 
 	<div id="controls-pane" class="ui-layout-north">
     <div class="center">
