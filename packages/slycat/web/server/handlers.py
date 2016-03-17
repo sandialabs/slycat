@@ -100,7 +100,8 @@ def js_bundle():
         "js/slycat-resizing-modals.js",
         "js/slycat-table-ingestion.js",
         "js/slycat-3d-viewer.js",
-        "js/slycat-remote-interface.js"
+        "js/slycat-remote-interface.js",
+        "js/slycat-job-checker.js"
       ])
   return js_bundle._bundle
 js_bundle._lock = threading.Lock()
@@ -1612,6 +1613,13 @@ def post_remotes():
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
   cherrypy.response.status = "204 Remote deleted."
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def post_checksid():
+  sid = cherrypy.request.json["sid"]
+  with slycat.web.server.remote.get_session(sid) as session:
+    return "success"
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)

@@ -546,9 +546,9 @@ slycat-navbar .alert pre
 .navbar-personal .dropdown-toggle {
   padding-right: 0 !important;
 }
-.bootstrap-styles .navbar-default .navbar-nav > .open > a, 
-.bootstrap-styles .navbar-default .navbar-nav > .open > a:hover, 
-.bootstrap-styles .navbar-default .navbar-nav > .open > a:focus 
+.bootstrap-styles .navbar-default .navbar-nav > .open > a,
+.bootstrap-styles .navbar-default .navbar-nav > .open > a:hover,
+.bootstrap-styles .navbar-default .navbar-nav > .open > a:focus
 {
   background-color: transparent;
 }
@@ -557,4 +557,20 @@ input,
 #slycat-wizard .modal-body
 {
   resize: none;
+}
+
+/* slycat-job-checker component */
+.slycat-job-checker {
+  padding: 10px;
+}
+
+.slycat-job-checker-controls {
+  margin-bottom: 15px;
+}
+
+.slycat-job-checker-output {
+  padding: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  word-wrap: break-word;
 }

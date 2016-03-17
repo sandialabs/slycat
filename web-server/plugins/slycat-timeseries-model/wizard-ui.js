@@ -153,6 +153,11 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.finish = function() {
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      vm.submit_job();
+    };
+
+    component.to_last_step = function() {
       component.tab(5);
     };
 
