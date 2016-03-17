@@ -21,11 +21,9 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
           success: function(sid) {
             vm.remote.sid(sid);
             $('#slycat-job-checker-connect-modal').modal('hide');
-            $('#slycat-job-checker-cancel').removeAttr('disabled');
             vm.checkjob();
           },
           error: function(request, status, reason_phrase) {
-            $('#slycat-job-checker-cancel').attr('disabled');
             vm.remote.enable(true);
             vm.remote.status_type('danger');
             vm.remote.status(reason_phrase);
