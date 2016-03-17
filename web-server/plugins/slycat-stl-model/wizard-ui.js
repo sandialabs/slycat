@@ -1,9 +1,9 @@
-define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 'knockout-mapping', 'slycat_file_uploader_factory'], function(server_root, client, dialog, ko, mapping, fileUploader) {
+define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-markings', 'knockout', 'knockout-mapping', 'slycat_file_uploader_factory'], function(server_root, client, dialog, markings, ko, mapping, fileUploader) {
   function constructor(params) {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: 'New STL Model', description: '', marking: null});
+    component.model = mapping.fromJS({_id: null, name: 'New STL Model', description: '', marking: markings.preselected()});
     component.browser = mapping.fromJS({selection: []});
 
     component.cancel = function() {
