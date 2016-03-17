@@ -1,25 +1,32 @@
-/* app.js */
-console.log( "loaded" );
-
+/*
+  Copyright 2016, Sandia Corporation. Under the terms of Contract
+  DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+  rights in this software.
+ */
 require(["jquery", "URI"], function($, URI)
 {
+  /**
+   * creates and submits json login payload to slycat server
+   */
   function login()
   {
-    user_name = b64EncodeUnicode(document.getElementById("username").value)
-    password = b64EncodeUnicode(document.getElementById("password").value)
+    //build json payload
+    user_name = b64EncodeUnicode(document.getElementById("username").value);
+    password = b64EncodeUnicode(document.getElementById("password").value);
     var sendInfo = JSON.stringify(
       {
         "user_name": user_name,
         "password": password,
-        "location": window.location,
+        "location": window.location
       }
     );
-
+    //send the request to login
     $.ajax(
     {
       contentType: "application/json",
       type: "POST",
       url: URI("/" + "login"),
+      data: sendInfo,//json payload
       success: function(result)
       {
         console.log("success " + result);
@@ -30,30 +37,15 @@ require(["jquery", "URI"], function($, URI)
       {
         console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
         $("#signin-alert").show(200);
-      },
-      data: sendInfo
+      }
     });
-
-    console.log("done")
   }
 
-//  function logout()
-//  {
-//    console.log("logging out");
-//    $.ajax(
-//    {
-//      type: "DELETE",
-//      url: "/" + "logout",
-//      success: function()
-//      {
-//        console.log("success")
-//      },
-//      error: function(request, status, reason_phrase)
-//      {
-//        console.log("fail")
-//      },
-//    });
-//  }
+  /**
+   * takes a string and base64 encodes it
+   * @param str
+   * @returns {string} base 64 encoded
+   */
   function b64EncodeUnicode(str) {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
@@ -62,7 +54,5 @@ require(["jquery", "URI"], function($, URI)
   document.getElementById("go").addEventListener("click", login, false);
   $("form").submit(function(e) {
     e.preventDefault();
-    //login();
   });
-  //document.getElementById("logout").addEventListener("click", logout, false);
 });
