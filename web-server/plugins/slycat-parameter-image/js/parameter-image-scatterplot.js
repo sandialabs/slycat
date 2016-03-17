@@ -1356,7 +1356,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       if(blob.type.indexOf('image/') == 0) {
         // Create the html image ...
-        var htmlImage = frame_html.append("img")
+        var htmlImage = frame_html
+          .append("img")
           .attr("class", "image resize")
           .attr("src", image_url)
           .attr("data-ratio", image.width / image.height)
@@ -1420,6 +1421,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               });
             self._adjust_leader_line(frame_html);
           });
+      }
+      else {
+        // We don't support this file type, so just create a download link
+        console.log("creating download link");
+        var download = frame_html
+          .append("a")
+          .attr("href", image_url)
+          .attr("class", "download-link")
+          .attr("download", "download")
+          .text("Download " + image.uri)
+          ;
       }
 
       // Remove loading indicator image

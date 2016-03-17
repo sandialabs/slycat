@@ -86,8 +86,8 @@ $.widget("parameter_image.controls",
         .appendTo(scatterplot_controls)
         ;
       this.image_button = $('\
-        <button class="btn btn-default dropdown-toggle" type="button" id="image-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Image Set Variable"> \
-          Image Set \
+        <button class="btn btn-default dropdown-toggle" type="button" id="image-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Media Set Variable"> \
+          Media Set \
           <span class="caret"></span> \
         </button> \
         ')
