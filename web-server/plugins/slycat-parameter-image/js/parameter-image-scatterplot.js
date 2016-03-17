@@ -1203,7 +1203,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
         } else if (target.classed("image-frame")) {
           // Move this image to the top of the Z order ...
-          target.detach().appendTo(self.media_layer.node());
+          $(d3.event.target).detach().appendTo(self.media_layer.node());
         } else if (target.classed('slycat-3d-btn-settings')) {
           d3.select('#slycat-3d-modal')
             .on('.drag', null)
