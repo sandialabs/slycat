@@ -1,11 +1,11 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, ko, mapping, fileUploader)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, markings, ko, mapping, fileUploader)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New Linear Regression Demo Model", description: "This model demonstrates plotting with d3.js", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New Linear Regression Demo Model", description: "This model demonstrates plotting with d3.js", marking: markings.preselected()});
     component.browser = mapping.fromJS({selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);

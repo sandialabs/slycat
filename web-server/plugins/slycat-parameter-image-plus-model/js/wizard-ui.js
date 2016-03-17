@@ -1,4 +1,4 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, ko, mapping, fileUploader)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings", "knockout", "knockout-mapping", "slycat_file_uploader_factory"], function(server_root, client, dialog, markings, ko, mapping, fileUploader)
 {
   function constructor(params)
   {
@@ -10,7 +10,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
     component.image_columns_names = ko.observableArray();
     component.ps_type = ko.observable("remote"); // local is selected by default...
     component.matrix_type = ko.observable("remote"); // remote is selected by default...
-    component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: null});
+    component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null});
     component.remote.focus.extend({notify: "always"});
     component.remote_matrix = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.matrix_type() == 'remote' ? true : false;}), focus: false, sid: null});
