@@ -1,10 +1,10 @@
-define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 'knockout-mapping'], function(server_root, client, dialog, ko, mapping) {
+define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-markings', 'knockout', 'knockout-mapping'], function(server_root, client, dialog, markings, ko, mapping) {
 
   function constructor(params) {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: null });
+    component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
     component.is_compute_hdf5 = ko.observable('compute');
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return true;}), focus: false, sid: null});
     component.remote.focus.extend({notify: 'always'});
@@ -153,6 +153,11 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'knockout', 
     };
 
     component.finish = function() {
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      vm.submit_job();
+    };
+
+    component.to_last_step = function() {
       component.tab(5);
     };
 
