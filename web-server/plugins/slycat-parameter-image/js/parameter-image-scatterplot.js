@@ -1172,7 +1172,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
 
-        if (sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image") || sourceEventTarget.classed("bootstrap-styles")) {
+        if ( sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image") || sourceEventTarget.classed("bootstrap-styles") || d3.event.sourceEvent.target.nodeName == "VIDEO") {
           frame = d3.select(this);
 
           if (frame.classed("hover-image")) {
