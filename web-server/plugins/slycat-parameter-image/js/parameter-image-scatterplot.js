@@ -1218,16 +1218,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       resize: (function() {
         var frame, min, target_width, x, y;
+        min = 50;
         x = d3.event.x;
         y = d3.event.y;
-        min = 50;
         if (0 <= y && y <= self.options.height && 0 <= x && x <= self.options.width && x > min && y > min) {
           frame = d3.select(this.parentNode);
           var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
+          var video = frame.attr("data-type") == "video";
           target_width = self._scale_width(ratio, x, y);
+          target_height = self._scale_height(ratio, x, y);
+          if(video)
+          {
+            target_height += 40;
+          }
           frame.style({
             width: target_width + "px",
-            height: y + "px"
+            height: target_height + "px"
           });
           self._adjust_leader_line(frame);
         }
@@ -1256,7 +1262,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         d3.event.sourceEvent.stopPropagation();
       }),
       pin: (function() {
-        var frame, imageHeight, imageWidth, target_width, theImage, x, y;
+        var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
         self.opening_image = null;
         clear_hover_timer(self);
         frame = d3.select(d3.event.target.parentNode);
@@ -1283,6 +1289,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
         var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
         target_width = self._scale_width(ratio, imageWidth, imageHeight);
+        target_height = self._scale_height(ratio, imageWidth, imageHeight);
+        if(frame.attr("data-type") == "video")
+        {
+          target_height += 40;
+        }
         x = self._getDefaultXPosition(image.index, imageWidth);
         y = self._getDefaultYPosition(image.index, imageHeight);
 
@@ -1290,6 +1301,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           left: x + "px",
           top: y + "px",
           width: target_width + "px",
+          height: target_height + "px",
         });
 
         if (isStl)
@@ -1411,6 +1423,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               .attr("data-width", width)
               .attr("data-height", height)
               .attr("data-ratio", ratio)
+              .attr("data-type", "video")
               .style({
                 "width": target_width + "px",
                 "height": "auto",
@@ -1849,6 +1862,19 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     else
     {
       return ratio * target_height;
+    }
+  },
+
+  _scale_height: function(ratio, target_width, target_height)
+  {
+    var target_ratio = target_width / target_height;
+    if(ratio > target_ratio)
+    {
+      return target_width / ratio;
+    }
+    else
+    {
+      return target_height;
     }
   },
 
