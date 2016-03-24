@@ -23,7 +23,7 @@ import numpy
 import os
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
-import hdf5
+import slycat.hdf5
 import json
 try:
   import cpickle as pickle
@@ -64,7 +64,7 @@ try:
   print("Examining and verifying data.")
   # find number of timeseries and accurate cluster sample count before starting model
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
-    array = hdf5.ArraySet(file)[0]
+    array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
     if len(dimensions) != 1:
       raise Exception("Inputs table must have exactly one dimension.")
@@ -73,7 +73,7 @@ try:
   timeseries_samples = numpy.zeros(shape=(_numTimeseries))
   for timeseries_index in range(_numTimeseries):
     with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-      timeseries_samples[timeseries_index] = len(hdf5.ArraySet(file)[0].get_data(0)[:])
+      timeseries_samples[timeseries_index] = len(slycat.hdf5.ArraySet(file)[0].get_data(0)[:])
 
   # reduce the num of samples if fewer timeseries that curr cluster-sample-count
   if timeseries_samples.min() < _numSamples:
@@ -103,7 +103,7 @@ try:
   #connection.update_model(mid, message="Storing input table.")
 
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
-    array = hdf5.ArraySet(file)[0]
+    array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
     attributes = array.attributes
     if len(attributes) < 1:
@@ -137,8 +137,8 @@ try:
   timeseries_samples = numpy.zeros(shape=(timeseries_count))
   for timeseries_index in range(timeseries_count):
     with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-      attributes = hdf5.ArraySet(file)[0].attributes[1:] # Skip the timestamps
-      timeseries_samples[timeseries_index] = len(hdf5.ArraySet(file)[0].get_data(0)[:])
+      attributes = slycat.hdf5.ArraySet(file)[0].attributes[1:] # Skip the timestamps
+      timeseries_samples[timeseries_index] = len(slycat.hdf5.ArraySet(file)[0].get_data(0)[:])
     if len(attributes) < 1:
       raise Exception("A timeseries must have at least one attribute.")
     for attribute_index, attribute in enumerate(attributes):
@@ -157,9 +157,9 @@ try:
   def get_time_range(directory, timeseries_index):
     import h5py
     import os
-    import hdf5
+    import slycat.hdf5
     with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r+") as file: # We have to open the file with writing enabled in case the statistics cache gets updated.
-      statistics = hdf5.ArraySet(file)[0].get_statistics(0)
+      statistics = slycat.hdf5.ArraySet(file)[0].get_statistics(0)
     return statistics["min"], statistics["max"]
 
   #connection.update_model(mid, message="Collecting timeseries statistics.")
@@ -186,13 +186,13 @@ try:
         import h5py
         import numpy
         import os
-        import hdf5
+        import slycat.hdf5
 
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
         with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-          original_times = hdf5.ArraySet(file)[0].get_data(0)[:]
-          original_values = hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
+          original_times = slycat.hdf5.ArraySet(file)[0].get_data(0)[:]
+          original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
         bin_values = numpy.interp(bin_times, original_times, original_values)
         return {
           "input-index" : timeseries_index,
@@ -211,13 +211,13 @@ try:
         import h5py
         import numpy
         import os
-        import hdf5
+        import slycat.hdf5
 
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
         with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
-          original_times = hdf5.ArraySet(file)[0].get_data(0)[:]
-          original_values = hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
+          original_times = slycat.hdf5.ArraySet(file)[0].get_data(0)[:]
+          original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
         bin_indices = numpy.digitize(original_times, bin_edges[1:])
         bin_counts = numpy.bincount(bin_indices, minlength=bin_count+1)[1:]
         bin_sums = numpy.bincount(bin_indices, original_values, minlength=bin_count+1)[1:]
