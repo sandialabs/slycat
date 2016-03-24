@@ -488,7 +488,6 @@ class Session(object):
       response = json.loads(stdout.readline())
       if not response["ok"]:
         cherrypy.response.headers["x-slycat-message"] = response["message"]
-        slycat.email.send_error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s : %s" % (response["message"], path))
         raise cherrypy.HTTPError(400)
       return {"path": response["path"], "names": response["names"], "sizes": response["sizes"], "types": response["types"], "mtimes": response["mtimes"], "mime-types": response["mime-types"]}
 
