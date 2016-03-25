@@ -1601,6 +1601,25 @@ def get_user(uid):
   user["uid"] = uid
   return user
 
+@cherrypy.tools.json_out(on = True)
+def get_model_statistics(mid):
+  """
+  returns statistics on the model that
+  :param mid: model ID
+  :return json: {}
+  """
+  database = slycat.web.server.database.couchdb.connect()
+  try:
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+  except:
+    raise cherrypy.HTTPError(404)
+  slycat.web.server.authentication.require_project_reader(project)
+
+
+  #TODO logic
+  # return json
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remotes():
