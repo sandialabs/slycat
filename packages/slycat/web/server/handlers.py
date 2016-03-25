@@ -1615,8 +1615,11 @@ def get_model_statistics(mid):
   except:
     raise cherrypy.HTTPError("404 error: %s" % mid)
   slycat.web.server.authentication.require_project_reader(project)
-  #TODO logic
-  return {"mystats":"hello world of stats", "mid":mid, "model":model}
+
+  # amount of time it took to make the model
+  delta_creation_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+  
+  return {"mystats":"hello world of stats", "mid":mid, "model":model, "delta_creation_time":delta_creation_time}
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
