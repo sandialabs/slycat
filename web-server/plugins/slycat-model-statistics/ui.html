@@ -1,0 +1,64 @@
+<div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:12px;">
+TODO add ui, add json
+</div>
+
+  <script type="text/javascript">
+    require(["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
+    {
+      function login()
+      {
+        user_name = document.getElementById("Username").value
+        password = document.getElementById("Password").value
+        //TODO: add post call for username and password
+        console.log("calling webservice with")
+        console.log("login " + user_name + " " + password);
+        console.log(server_root + "login/")
+        var sendInfo = JSON.stringify(
+          {
+            "user_name": user_name,
+            "password": password
+          }
+        );
+
+        $.ajax(
+        {
+          contentType: "application/json",
+          type: "POST",
+          url: URI(server_root + "login"),
+          success: function(result)
+          {
+            window.alert("success " + result);
+            console.log("success " + result);
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+            console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+          },
+          data: sendInfo
+        });
+
+        console.log("done")
+      }
+
+      function logout()
+      {
+        console.log("logging out");
+        $.ajax(
+        {
+          type: "DELETE",
+          url: server_root + "logout",
+          success: function()
+          {
+            console.log("success")
+          },
+          error: function(request, status, reason_phrase)
+          {
+            console.log("fail")
+          },
+        });
+      }
+      document.getElementById("go").addEventListener("click", login, false);
+      document.getElementById("logout").addEventListener("click", logout, false);
+    });
+  </script>
