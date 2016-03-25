@@ -1613,12 +1613,10 @@ def get_model_statistics(mid):
     model = database.get("model", mid)
     project = database.get("project", model["project"])
   except:
-    raise cherrypy.HTTPError(404)
+    raise cherrypy.HTTPError("404 error: %s" % mid)
   slycat.web.server.authentication.require_project_reader(project)
-
-
   #TODO logic
-  # return json
+  return {"mystats":"hello world of stats", "mid":mid, "model":model}
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
