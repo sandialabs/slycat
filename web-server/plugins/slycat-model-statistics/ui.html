@@ -1,10 +1,22 @@
 <div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:12px;">
-    <div class="button-container">
-      <button class="btn btn-default" id="go">GO</button>
-    </div>
-    <div id="json">
-    </div>
 
+    <div class="form-group">
+        <div class="card">
+            <h1 class="title">Get model Info/Stats</h1>
+            <form>
+              <div class="input-container">
+                <input type="text" id="mid" value="550b84c301b44c6595be897016365693" required="required"/>
+                <label for="mid">Model ID</label>
+                <div class="bar"></div>
+              </div>
+            </form>
+            <div class="button-container">
+              <button class="btn btn-default" id="go">GO</button>
+            </div>
+            <div id="json">
+            </div>
+        </div>
+    </div>
 </div>
 
   <script type="text/javascript">
@@ -13,7 +25,8 @@
       var data = null;
       function login()
       {
-        var mid = "550b84c301b44c6595be897016365693";
+        var mid = document.getElementById("mid").value
+        //var mid = "550b84c301b44c6595be897016365693";
         console.log("calling webservice with");
         console.log(server_root + "get-model-statistics/" + mid);
 
