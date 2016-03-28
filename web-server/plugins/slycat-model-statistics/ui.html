@@ -1,3 +1,9 @@
+<style>
+.modal-body {
+    max-height: calc(70vh - 210px);
+    overflow-y: auto;
+}
+</style>
 <div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:12px;">
 
     <div class="form-group">
@@ -11,7 +17,7 @@
               </div>
             </form>
             <div class="button-container">
-              <button class="btn btn-default" id="go">GO</button>
+              <button class="btn btn-primary btn-lg" id="go">Get Model Data</button>
             </div>
             <div id="json">
             </div>
@@ -64,19 +70,12 @@
         '        <h4 class="modal-title">Model '+ data_to_present.mid +'</h4>'+
         '      </div>'+
         '      <div class="modal-body">'+
-        '       <div class="panel panel-success">'+
-        '           <div class="panel-heading">Model Data</div>'+
-        '           <div class="panel-body">'+
         '               <ul class="list-group">'+
         '<li class="list-group-item"><span class="label label-primary">Delta creation time:</span> '+ data_to_present.delta_creation_time + ' seconds</li>'+
         '<li class="list-group-item"><span class="label label-primary">Couchdb doc size:</span> '+ data_to_present.couchdb_doc_size + ' bytes</li>'+
-        '<li class="list-group-item"><span class="label label-primary">Model:</span> <div class="well">'+ JSON.stringify(data_to_present.model, null, 4) + '</div></li>'+
-        '<li class="list-group-item"><span class="label label-primary">Model raw data:</span> <div class="well">'+ JSON.stringify(data_to_present.model, null, 4) + '</div></li>'+
+        '<li class="list-group-item"><span class="label label-primary">Model raw data:</span> <div class="well"><pre><code>'+ JSON.stringify(data_to_present.model, null, 4) + '</code></pre></div></li>'+
         //all fields here
         '               </ul>'+
-        '       </div>'+
-        '      </div>'+
-        '      </div>'+
         '      <div class="modal-footer">'+
         '        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
         '      </div>'+
