@@ -1,64 +1,77 @@
 <div class="bootstrap-styles" style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:12px;">
-TODO add ui, add json
+    <div class="button-container">
+      <button class="btn btn-default" id="go">GO</button>
+    </div>
+    <div id="json">
+    </div>
+
 </div>
 
   <script type="text/javascript">
     require(["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
     {
+      var data = null;
       function login()
       {
-        user_name = document.getElementById("Username").value
-        password = document.getElementById("Password").value
-        //TODO: add post call for username and password
-        console.log("calling webservice with")
-        console.log("login " + user_name + " " + password);
-        console.log(server_root + "login/")
-        var sendInfo = JSON.stringify(
-          {
-            "user_name": user_name,
-            "password": password
-          }
-        );
+        var mid = "550b84c301b44c6595be897016365693";
+        console.log("calling webservice with");
+        console.log(server_root + "get-model-statistics/" + mid);
 
         $.ajax(
         {
-          contentType: "application/json",
-          type: "POST",
-          url: URI(server_root + "login"),
+          dataType: "json",
+          type: "GET",
+          url: URI(server_root + "get-model-statistics/" + mid),
           success: function(result)
           {
-            window.alert("success " + result);
-            console.log("success " + result);
+            data = result
+            //window.alert("success " + result.delta_creation_time);
+            //console.log("success " + JSON.stringify(result));
+            present_data(data);
           },
           error: function(request, status, reason_phrase)
           {
             window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
             console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
-          },
-          data: sendInfo
+          }
         });
 
-        console.log("done")
+        console.log("done");
       }
 
-      function logout()
-      {
-        console.log("logging out");
-        $.ajax(
-        {
-          type: "DELETE",
-          url: server_root + "logout",
-          success: function()
-          {
-            console.log("success")
-          },
-          error: function(request, status, reason_phrase)
-          {
-            console.log("fail")
-          },
-        });
-      }
+      function present_data(data_to_present){
+        var text = JSON.stringify(data_to_present);
+        //document.getElementById("json").innerHTML = text;
+        $('#json').html(
+        '<div id="myModal" class="modal fade" role="dialog">'+
+        '  <div class="modal-dialog">'+
+        '    <div class="modal-content">'+
+        '      <div class="modal-header">'+
+        '        <button type="button" class="close" data-dismiss="modal">&times;</button>'+
+        '        <h4 class="modal-title">Modle '+ data_to_present.mid +'</h4>'+
+        '      </div>'+
+        '      <div class="modal-body">'+
+        '       <div class="panel panel-success">'+
+        '           <div class="panel-heading">Model Data</div>'+
+        '           <div class="panel-body">'+
+        '               <ul class="list-group">'+
+        '<li class="list-group-item">Delta creation time: '+ data_to_present.delta_creation_time + ' seconds</li>'+
+        '<li class="list-group-item">Couchdb doc size: '+ data_to_present.couchdb_doc_size + ' bytes</li>'+
+        '<li class="list-group-item">model: <div class="well">'+ JSON.stringify(data_to_present.model, null, 4) + '</div></li>'+
+        //all fields here
+        '               </ul>'+
+        '       </div>'+
+        '      </div>'+
+        '      </div>'+
+        '      <div class="modal-footer">'+
+        '        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
+        '      </div>'+
+        '    </div>'+
+        '  </div>'+
+        '</div>'
+        );
+        $('#myModal').modal('show');
+      };
       document.getElementById("go").addEventListener("click", login, false);
-      document.getElementById("logout").addEventListener("click", logout, false);
     });
   </script>
