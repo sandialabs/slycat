@@ -1625,13 +1625,12 @@ def get_model_statistics(mid):
   hdf5_file_size = os.path.getsize(hdf5_file_path)
   total_server_data_size = hdf5_file_size + sys.getsizeof(model)
   return {
-    "mystats":"hello world of stats",
     "mid":mid,
     "hdf5_file_size":hdf5_file_size,
     "total_server_data_size": total_server_data_size,
     "model":model,
     "delta_creation_time":delta_creation_time,
-    "couchdb_doc_size":str(sys.getsizeof(model))+" bytes"
+    "couchdb_doc_size": sys.getsizeof(model)
   }
 
 @cherrypy.tools.json_in(on = True)
