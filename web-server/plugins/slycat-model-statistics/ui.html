@@ -61,7 +61,7 @@
         '    <div class="modal-content">'+
         '      <div class="modal-header">'+
         '        <button type="button" class="close" data-dismiss="modal">&times;</button>'+
-        '        <h4 class="modal-title">Model raw data '+ data_to_present.mid +'</h4>'+
+        '        <h4 class="modal-title">Model '+ data_to_present.mid +'</h4>'+
         '      </div>'+
         '      <div class="modal-body">'+
         '       <div class="panel panel-success">'+
@@ -71,6 +71,7 @@
         '<li class="list-group-item"><span class="label label-primary">Delta creation time:</span> '+ data_to_present.delta_creation_time + ' seconds</li>'+
         '<li class="list-group-item"><span class="label label-primary">Couchdb doc size:</span> '+ data_to_present.couchdb_doc_size + ' bytes</li>'+
         '<li class="list-group-item"><span class="label label-primary">Model:</span> <div class="well">'+ JSON.stringify(data_to_present.model, null, 4) + '</div></li>'+
+        '<li class="list-group-item"><span class="label label-primary">Model raw data:</span> <div class="well">'+ JSON.stringify(data_to_present.model, null, 4) + '</div></li>'+
         //all fields here
         '               </ul>'+
         '       </div>'+
