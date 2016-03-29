@@ -1624,10 +1624,18 @@ def get_model_statistics(mid):
   hdf5_file_path = os.path.join(directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")
   hdf5_file_size = os.path.getsize(hdf5_file_path)
   total_server_data_size = hdf5_file_size + sys.getsizeof(model)
+
+  total_size = 0
+  for dirpath, dirnames, filenames in os.walk(directory):
+      for f in filenames:
+          fp = os.path.join(dirpath, f)
+          total_size += os.path.getsize(fp)
+
   return {
     "mid":mid,
     "hdf5_file_size":hdf5_file_size,
     "total_server_data_size": total_server_data_size,
+    "hdf5_store_size":total_size,
     "model":model,
     "delta_creation_time":delta_creation_time,
     "couchdb_doc_size": sys.getsizeof(model)
