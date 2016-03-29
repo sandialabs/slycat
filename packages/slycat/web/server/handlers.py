@@ -1619,7 +1619,14 @@ def get_model_statistics(mid):
   # amount of time it took to make the model
   delta_creation_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
 
+  #get models hdf5 footprint
+  for key,value in model["artifact-types"].iteritems():
+    cherrypy.log.error("artifact: %s%s" % (key, value))
+    if value == "hdf5":
+      cherrypy.log.error("artifact: %s" % model["artifact:%s" % key])
+
   array = model["artifact:data-table"]
+  cherrypy.log.error("type of artifact: %s" % type(array))
   directory = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
   hdf5_file_path = os.path.join(directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")
   hdf5_file_size = os.path.getsize(hdf5_file_path)
