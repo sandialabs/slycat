@@ -22,7 +22,6 @@ def before_all(context):
   context.browser.implicitly_wait(2)
   context.server_url = 'https://slycat-dev.sandia.gov'
 
-
 def after_all(context):
   """
   we have a running browser so we need to kill it after we are done

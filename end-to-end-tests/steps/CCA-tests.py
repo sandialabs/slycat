@@ -51,6 +51,7 @@ def are_images_equal(img_actual, img_expected, result):
 def impl(context):
   # create project
   context.browser.get(context.server_url + "/projects")
+  time.sleep(10)
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-projects > div > div > div > a:nth-child(2)").click()
   context.browser.find_element(By.CSS_SELECTOR,
                                "#slycat-project > div:nth-child(1) > div > div > a:nth-child(1)").click()
@@ -62,16 +63,17 @@ def impl(context):
 def impl(context):
   # create project
   context.browser.get(context.server_url + "/projects")
+  time.sleep(10)
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-create-wizards").click()
-  context.browser.find_element(By.CSS_SELECTOR, "#slycat-navbar-content > ul.nav.navbar-nav.navbar-left > li.dropdown.open > ul > li.slycat-clickable > a").click()
+  context.browser.find_element(By.CSS_SELECTOR, "#slycat-navbar-content > div > div.btn-group.open > ul > li.slycat-clickable > a").click()
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-create-project-name").send_keys("selenium-test")
-  context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > li:nth-child(2)").click()
+  context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > li").click()
   time.sleep(2)
   #create model
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-create-wizards").click()
-  context.browser.find_element(By.CSS_SELECTOR, "#slycat-navbar-content > ul.nav.navbar-nav.navbar-left > li.dropdown.open > ul > li:nth-child(3) > a").click()
+  context.browser.find_element(By.CSS_SELECTOR, "#slycat-navbar-content > div > div.btn-group.open > ul > li:nth-child(3) > a").click()
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button:nth-child(2)").click()
-  context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button:nth-child(3)").click()
+  context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button:nth-child(4)").click()
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-local-browser-file").send_keys("/Users/mletter/Documents/gitRepos/slycat/data/cars.csv")
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button.btn.btn-default.local-browser-continue.browser-continue").click()
   time.sleep(5)
