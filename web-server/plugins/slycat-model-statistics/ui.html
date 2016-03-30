@@ -73,8 +73,9 @@
         '               <ul class="list-group">'+
         '<li class="list-group-item"><span class="label label-primary">Delta creation time:</span> '+ data_to_present.delta_creation_time + ' seconds</li>'+
         '<li class="list-group-item"><span class="label label-primary">Couchdb doc size:</span> '+ data_to_present.couchdb_doc_size + ' bytes</li>'+
-        '<li class="list-group-item"><span class="label label-primary">hdf5 file size:</span> '+ data_to_present.hdf5_file_size + ' bytes</li>'+
-        '<li class="list-group-item"><span class="label label-primary">Total server data size:</span> '+ data_to_present.total_server_data_size + ' bytes</li>'+
+        '<li class="list-group-item"><span class="label label-primary">Model hdf5 file size:</span> '+ data_to_present.hdf5_file_size + ' bytes</li>'+
+        '<li class="list-group-item"><span class="label label-primary">Total model data size:</span> '+ data_to_present.total_server_data_size + ' bytes</li>'+
+        '<li class="list-group-item"><span class="label label-primary">Server hdf5 file store size:</span> '+ data_to_present.hdf5_store_size + ' bytes</li>'+
         '<li class="list-group-item"><span class="label label-primary">Model raw data:</span> <div class="well"><pre><code>'+ JSON.stringify(data_to_present.model, null, 4) + '</code></pre></div></li>'+
         //all fields here
         '               </ul>'+
