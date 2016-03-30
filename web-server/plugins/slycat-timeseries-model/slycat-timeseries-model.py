@@ -118,8 +118,9 @@ def register_slycat_plugin(context):
     username = kwargs["username"]
 
     def callback():
-      compute(database, model, sid, uid, username)
-      finish(database, model)
+      # compute(database, model, sid, uid, username)
+      # finish(database, model)
+      pass
 
     stop_event = threading.Event()
     t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
