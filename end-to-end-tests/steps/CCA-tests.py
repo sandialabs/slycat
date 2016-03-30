@@ -81,7 +81,7 @@ def impl(context):
 
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button:nth-child(6)").click()
   context.browser.implicitly_wait(30)
-  context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button:nth-child(9)").click()
+  context.browser.find_element(By.CSS_SELECTOR, "#slycat-wizard > div.modal-dialog > div > div > div > div.modal-footer > button:nth-child(7)").click()
 
   time.sleep(5)
 
