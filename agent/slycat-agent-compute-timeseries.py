@@ -31,7 +31,8 @@ except:
   import pickle
 
 parser = argparse.ArgumentParser()
-parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple timeseries-N.hdf5 files).")
+parser.add_argument("directory", help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple sub-directories with multiple timeseries-N.hdf5 files).")
+parser.add_argument("--timeseries-name", default=None, help="Name of the timeseries, i.e. sub-directory name in the input directory.")
 parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Sample count used for the uniform-pla and uniform-paa resampling algorithms.  Default: %(default)s")
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
@@ -39,6 +40,13 @@ parser.add_argument("--cluster-metric", default="euclidean", choices=["euclidean
 parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
 parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
 arguments = parser.parse_args()
+
+if arguments.timeseries_name is None:
+  raise Exception("A timeseries name, i.e. sub-directory must be specified.")
+
+directory_full_path = os.path.join(arguments.directory, arguments.timeseries_name)
+if not os.path.exists(directory_full_path):
+  raise Exception("Directory %s does not exists." % directory_full_path)
 
 if arguments.cluster_sample_count < 1:
   raise Exception("Cluster sample count must be greater than zero.")
@@ -72,7 +80,7 @@ try:
 
   timeseries_samples = numpy.zeros(shape=(_numTimeseries))
   for timeseries_index in range(_numTimeseries):
-    with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+    with h5py.File(os.path.join(directory_full_path, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
       timeseries_samples[timeseries_index] = len(slycat.hdf5.ArraySet(file)[0].get_data(0)[:])
 
   # reduce the num of samples if fewer timeseries that curr cluster-sample-count
@@ -136,7 +144,7 @@ try:
   clusters = collections.defaultdict(list)
   timeseries_samples = numpy.zeros(shape=(timeseries_count))
   for timeseries_index in range(timeseries_count):
-    with h5py.File(os.path.join(arguments.directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
+    with h5py.File(os.path.join(directory_full_path, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
       attributes = slycat.hdf5.ArraySet(file)[0].attributes[1:] # Skip the timestamps
       timeseries_samples[timeseries_index] = len(slycat.hdf5.ArraySet(file)[0].get_data(0)[:])
     if len(attributes) < 1:
@@ -164,7 +172,7 @@ try:
 
   #connection.update_model(mid, message="Collecting timeseries statistics.")
   print("Collecting timeseries statistics.")
-  time_ranges = pool.map_sync(get_time_range, list(itertools.repeat(arguments.directory, timeseries_count)), range(timeseries_count))
+  time_ranges = pool.map_sync(get_time_range, list(itertools.repeat(directory_full_path, timeseries_count)), range(timeseries_count))
 
   # For each cluster ...
   for index, (name, storage) in enumerate(sorted(clusters.items())):
@@ -199,7 +207,7 @@ try:
           "times" : bin_times,
           "values" : bin_values,
         }
-      directories = list(itertools.repeat(arguments.directory, len(storage)))
+      directories = list(itertools.repeat(directory_full_path, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
       bin_counts = list(itertools.repeat(_numSamples, len(storage)))
@@ -230,7 +238,7 @@ try:
           "times" : bin_times,
           "values" : bin_values,
         }
-      directories = list(itertools.repeat(arguments.directory, len(storage)))
+      directories = list(itertools.repeat(directory_full_path, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
       bin_counts = list(itertools.repeat(_numSamples, len(storage)))
