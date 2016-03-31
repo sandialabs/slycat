@@ -12,6 +12,11 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.output_directory = ko.observable('');
     component.id_column = ko.observable('%eval_id');
     component.inputs_file_delimiter = ko.observable(',');
+    component.timeseries_name = ko.observable('');
+		component.cluster_sample_count = ko.observable(500);
+    component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
+    component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
+    component.cluster_metric = ko.observableArray(['euclidean']);
 
     component.create_model = function() {
       client.post_project_models({
@@ -81,10 +86,49 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.put_model_parameters = function(callback) {
+      client.put_model_parameter({
+        mid: component.model._id(),
+        aid: 'cluster-sample-count',
+        value: component.cluster_sample_count(),
+        input: true,
+        success: function() {
+          client.put_model_parameter({
+            mid: component.model._id(),
+            aid: 'cluster-sample-type',
+            value: $('#timeseries-wizard-cluster-sample-type').val(),
+            input: true,
+            success: function() {
+              client.put_model_parameter({
+                mid: component.model._id(),
+                aid: 'cluster-type',
+                value: $('#timeseries-wizard-cluster-type').val(),
+                input: true,
+                success: function() {
+                  client.put_model_parameter({
+                    mid: component.model._id(),
+                    aid: 'cluster-metric',
+                    value: $('#timeseries-wizard-cluster-metric').val(),
+                    input: true,
+                    success: function() {
+                      if (callback)
+                        callback();
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    };
+
+    component.to_timeseries_parameters = function() {
+      component.tab(3);
     };
 
     component.to_compute = function() {
-      component.tab(3);
+      component.put_model_parameters();
+      component.tab(4);
     };
 
     component.compute = function() {
@@ -93,7 +137,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.to_compute_next_step = function() {
-      component.tab(4);
+      component.tab(5);
     };
 
     return component;
