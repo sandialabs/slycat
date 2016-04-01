@@ -26,7 +26,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
       color_scale: null,
       data_table_index_array: null,
       dendrogram_sort_order: true,
-      highlight: [],
+      highlight: []
     },
 
     _create: function()
@@ -280,9 +280,9 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
           if(!d.selected){
             // Branch node is unselected, so just process its children
             if(d.children)
-              $.each(d.children,  function(index, subtree) { prune_tree(subtree); })
+              $.each(d.children,  function(index, subtree) { prune_tree(subtree); });
             if(d._children)
-              $.each(d._children, function(index, subtree) { prune_tree(subtree); })
+              $.each(d._children, function(index, subtree) { prune_tree(subtree); });
             return false;
           }
           else {
@@ -293,12 +293,12 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
               $.each(d.children,  function(index, subtree) {
                 child_selected_state = prune_tree(subtree);
                 selected_state = selected_state || child_selected_state;
-              })
+              });
             if(d._children)
               $.each(d._children, function(index, subtree) {
                 child_selected_state = prune_tree(subtree);
                 selected_state = selected_state || child_selected_state;
-              })
+              });
             d.selected = selected_state;
             return selected_state;
           }
@@ -483,10 +483,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
             }
           })
           .classed("nullValue", function(d, i){
-            if (d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null))
-              return false;
-            else
-              return true;
+            return !(d["data-table-index"] == null || (d["data-table-index"] != null && self.options.color_array[d["data-table-index"]] !== null));
           })
           .on("click", function(d){
             self._handle_highlight(d, d3.event, this);
@@ -539,11 +536,11 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
 
                     $(parameters.element).attr("d", path(data));
                     //$(parameters.element).attr("d", "M 0 0 L 50 0 L 100 -5");
-                  },
+                  }
                 });
               }
             });
-          },
+          }
         });
         // Set the d attribute of each sparkline path. Currently doing this by downloading each waveform individually. In the future we might want to batch it up.
 
@@ -849,7 +846,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
           this.options.highlight = [];
         this._set_highlight();
       }
-    },
+    }
   });
 
 });
