@@ -270,6 +270,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       component.project_edit_wizards = edit_wizards.filter(project_wizard_filter);
       component.model_edit_wizards = edit_wizards.filter(model_wizard_filter);
       component.project_info_wizards = info_wizards.filter(project_wizard_filter);
+      component.model_info_wizards = info_wizards.filter(model_wizard_filter);
       component.model_bookmark_wizards = create_wizards.filter(bookmark_wizard_filter);
       component.global_delete_wizards = delete_wizards.filter(global_wizard_filter);
       component.project_delete_wizards = delete_wizards.filter(project_wizard_filter);

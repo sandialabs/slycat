@@ -24,3 +24,6 @@ def register_slycat_plugin(context):
   context.register_wizard_resource("slycat-reset-model", "ui.js", os.path.join(os.path.dirname(__file__), "reset-ui.js"))
   context.register_wizard_resource("slycat-reset-model", "ui.html", os.path.join(os.path.dirname(__file__), "reset-ui.html"))
 
+  context.register_wizard("slycat-info-model", "Model Details", require={"action":"info", "context":"model"})
+  context.register_wizard_resource("slycat-info-model", "ui.js", os.path.join(os.path.dirname(__file__), "info-ui.js"))
+  context.register_wizard_resource("slycat-info-model", "ui.html", os.path.join(os.path.dirname(__file__), "info-ui.html"))
