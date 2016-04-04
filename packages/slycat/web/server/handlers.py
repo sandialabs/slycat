@@ -1601,6 +1601,63 @@ def get_user(uid):
   user["uid"] = uid
   return user
 
+@cherrypy.tools.json_out(on = True)
+def get_model_statistics(mid):
+  """
+  returns statistics on the model
+  :param mid: model ID
+  :return json: {
+    "mid":mid,
+    "hdf5_file_size":hdf5_file_size,
+    "total_server_data_size": total_server_data_size,
+    "hdf5_store_size":total_hdf5_server_size,
+    "model":model,
+    "delta_creation_time":delta_creation_time,
+    "couchdb_doc_size": sys.getsizeof(model)
+  }
+  """
+  database = slycat.web.server.database.couchdb.connect()
+  try:
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+  except:
+    raise cherrypy.HTTPError("404 error: %s" % mid)
+  slycat.web.server.authentication.require_project_reader(project)
+
+  # amount of time it took to make the model
+  delta_creation_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+
+  #get hdf5 root dir
+  hdf5_root_directory = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
+
+  #get models hdf5 footprint
+  hdf5_file_size = 0
+  for key,value in model["artifact-types"].iteritems():
+    if value == "hdf5":
+      array = model["artifact:%s" % key]
+      hdf5_file_path = os.path.join(hdf5_root_directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")
+      hdf5_file_size += os.path.getsize(hdf5_file_path)
+
+  #calc total model server data footprint
+  total_server_data_size = hdf5_file_size + sys.getsizeof(model)
+
+  #get total hdf5 file store size for server
+  total_hdf5_server_size = 0
+  for dirpath, dirnames, filenames in os.walk(hdf5_root_directory):
+      for f in filenames:
+          fp = os.path.join(dirpath, f)
+          total_hdf5_server_size += os.path.getsize(fp)
+
+  return {
+    "mid":mid,
+    "hdf5_file_size":hdf5_file_size,
+    "total_server_data_size": total_server_data_size,
+    "hdf5_store_size":total_hdf5_server_size,
+    "model":model,
+    "delta_creation_time":delta_creation_time,
+    "couchdb_doc_size": sys.getsizeof(model)
+  }
+
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remotes():

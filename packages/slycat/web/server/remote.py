@@ -364,13 +364,12 @@ class Session(object):
       def compute_timeseries(fn_id, params):
         arr = list(ipython_parallel_setup_arr)
 
-        if params["timeseries_file"]:
-          arr.append("slycat-xyce-timeseries-push1.py --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["timeseries_file"], params["in_directory"], params["directory"]))
-
         # uncomment this line for production
-        arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        arr.append("python $SLYCAT_HOME/slycat-timeseries-to-hdf5.py --output-directory %s --id-column=%s --inputs-file %s --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
+        arr.append("python $SLYCAT_HOME/slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
         # uncomment this line for local development
-        # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
+        # arr.append("python slycat-timeseries-to-hdf5.py --output-directory %s --id-column=%s --inputs-file %s --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
+        # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], uid))
 
         return arr
 
@@ -488,7 +487,6 @@ class Session(object):
       response = json.loads(stdout.readline())
       if not response["ok"]:
         cherrypy.response.headers["x-slycat-message"] = response["message"]
-        slycat.email.send_error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s : %s" % (response["message"], path))
         raise cherrypy.HTTPError(400)
       return {"path": response["path"], "names": response["names"], "sizes": response["sizes"], "types": response["types"], "mtimes": response["mtimes"], "mime-types": response["mime-types"]}
 
