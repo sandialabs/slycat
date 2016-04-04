@@ -103,10 +103,13 @@
               <!-- /ko -->
             </ul>
           </div>
-          <div class="btn-group" data-bind="visible: project_info_wizards().length">
+          <div class="btn-group" data-bind="visible: project_info_wizards().length || model_info_wizards().length">
             <button type="button" id="slycat-info-wizards" class="btn btn-xs btn-info dropdown-toggle" data-toggle="dropdown"> Info <span class="caret"/></button>
             <ul class="dropdown-menu dropdown-menu-right">
               <!-- ko foreach: project_info_wizards -->
+                <li class="slycat-clickable"><a data-bind="text: label, click: $parent.run_wizard"></a></li>
+              <!-- /ko -->
+              <!-- ko foreach: model_info_wizards -->
                 <li class="slycat-clickable"><a data-bind="text: label, click: $parent.run_wizard"></a></li>
               <!-- /ko -->
             </ul>
