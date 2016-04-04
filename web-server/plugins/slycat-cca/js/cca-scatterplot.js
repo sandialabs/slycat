@@ -291,23 +291,26 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
         var indices = this.options.indices;
         var color = this.options.color;
 
-        // Draw points using circles ...
-        if(count < 100000)
+        // Draw points using rectangles ...
+        if(count < 50000)
         {
-          var radius = 4;
-          var twopi = Math.PI * 2;
-          this.data_context.stokeStyle = "black";
-          this.data_context.lineWidth = 1;
+          var cx, cy,
+           square_size = 8,
+           border_width = 1,
+           half_border_width = border_width / 2,
+           fillWidth = fillHeight = square_size - (2 * border_width),
+           strokeWidth = strokeHeight = square_size - border_width;
+
           for(var i = 0; i != count; ++i)
           {
+            cx = Math.round( this.x_scale(x[i]) - (square_size/2) - border_width );
+            cy = Math.round( this.y_scale(y[i]) - (square_size/2) - border_width );
             this.data_context.fillStyle = color(v[indices[i]]);
-            this.data_context.beginPath();
-            this.data_context.arc(this.x_scale(x[i]), this.y_scale(y[i]), radius, 0, twopi);
-            this.data_context.fill();
-            this.data_context.stroke();
+            this.data_context.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
+            this.data_context.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
           }
         }
-        // Draw points using rectangles ...
+        // Draw points using tiny rectangles ...
         else
         {
           var size = 2;
@@ -315,7 +318,7 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
           for(var i = 0; i != count; ++i)
           {
             this.data_context.fillStyle = color(v[indices[i]]);
-            this.data_context.fillRect(this.x_scale(x[i]) - offset, this.y_scale(y[i]) - offset, size, size);
+            this.data_context.fillRect(Math.round(this.x_scale(x[i]) - offset), Math.round(this.y_scale(y[i]) - offset), size, size);
           }
         }
       }
@@ -331,22 +334,27 @@ define("slycat-cca-scatterplot", ["d3"], function(d3)
         this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
         this.selection_context.clearRect(0, 0, width, height);
 
-        var radius = 8;
-        var twopi = Math.PI * 2;
-        this.selection_context.strokeStyle = "black";
-        this.selection_context.lineWidth = 1;
-
         var selection = this.options.selection;
         var selection_count = selection.length;
+        var cx, cy,
+           square_size = 16,
+           border_width = 2,
+           half_border_width = border_width / 2,
+           fillWidth = fillHeight = square_size - (2 * border_width),
+           strokeWidth = strokeHeight = square_size - border_width;
+
+        this.selection_context.strokeStyle = "black";
+        this.selection_context.lineWidth = border_width;
+
         for(var i = 0; i != selection_count; ++i)
         {
           var global_index = selection[i];
           var local_index = this.inverse_indices[global_index];
           this.selection_context.fillStyle = color(v[global_index]);
-          this.selection_context.beginPath();
-          this.selection_context.arc(this.x_scale(x[local_index]), this.y_scale(y[local_index]), radius, 0, twopi);
-          this.selection_context.fill();
-          this.selection_context.stroke();
+          cx = Math.round( this.x_scale(x[local_index]) - (square_size/2) - border_width );
+          cy = Math.round( this.y_scale(y[local_index]) - (square_size/2) - border_width );
+          this.selection_context.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
+          this.selection_context.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
         }
       }
 
