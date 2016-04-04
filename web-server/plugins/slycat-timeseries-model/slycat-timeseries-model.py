@@ -24,9 +24,6 @@ def register_slycat_plugin(context):
     import pystache
 
     context = dict()
-    # context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
-    # context["name"] = model["name"];
-    # context["full-project"] = database.get("project", model["project"]);
     context["_id"] = model["_id"];
     context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
     context["cluster-bin-type"] = model["artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
@@ -120,6 +117,7 @@ def register_slycat_plugin(context):
     def callback():
       compute(database, model, sid, uid, username)
       finish(database, model)
+      pass
 
     stop_event = threading.Event()
     t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
