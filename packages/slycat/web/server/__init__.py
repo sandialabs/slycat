@@ -20,7 +20,7 @@ import Queue
 import threading
 
 config = {}
-
+server_cache = {}
 
 class ServeCache(object):
     __cache = {}
@@ -29,12 +29,24 @@ class ServeCache(object):
     def __init__(self):
         pass
 
-    @property
-    def cache(self):
-      return self.__cache
-    @cache.deleter
-    def cache(self):
-      __cache = {}
+    def __delitem__(self, key):
+        cached = self.__cache.get(key, None)
+        if cached:
+          del self.__cache[key]
+
+    def __getitem__(self, key):
+
+        cached = self.__cache.get(key, None)
+        if not cached:
+            self.__cache.update({key:{}})
+            return self.__cache[key]
+        return self.__cache[key]
+
+    def __setitem__(self, key, value):
+        cached = self.__cache.get(key, None)
+        if not cached:
+          self.__cache.update({key:{}})
+        self.__cache[key] = value
 
     @property
     def queue(self):
@@ -48,7 +60,7 @@ class ServeCache(object):
 
 
 server_cache_new = ServeCache()
-server_cache = server_cache_new.cache
+
 
 
 
@@ -160,7 +172,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
-    mydict_as_string = cPickle.dumps(server_cache_new.cache)
+    mydict_as_string = cPickle.dumps(server_cache)
     server_cache_new.clean()
     cherrypy.log.error("\n\n in metadata call server cache size %s\n" % sys.getsizeof(mydict_as_string))
     if "artifact:%s" % aid in server_cache:
