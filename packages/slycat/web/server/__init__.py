@@ -23,11 +23,23 @@ server_cache = {}
 class ServeCache(object):
     __cache = {}
     def __delitem__(self, key):
-        pass
+        cached = self.__cache.get(key, None)
+        if cached:
+          del self.__cache[key]
+
     def __getitem__(self, key):
-        pass
+        cached = self.__cache.get(key, None)
+        if not cached:
+            self.__cache.update({key:{}})
+            return self.__cache[key]
+        return self.__cache[key]
+
     def __setitem__(self, key, value):
-        pass
+        cached = self.__cache.get(key, None)
+        if not cached:
+          self.__cache.update({key:{}})
+        self.__cache[key] = value
+
 
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
