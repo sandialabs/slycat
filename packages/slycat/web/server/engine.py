@@ -169,6 +169,8 @@ def start(root_path, config_file):
   # Setup root server parameters.
   configuration["/"] = {}
   configuration["/"]["request.dispatch"] = dispatcher
+  configuration["/"]["tools.caching.on"] = True
+  configuration["/"]["tools.caching.delay"] = 3600
 
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
