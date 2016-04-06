@@ -16,18 +16,23 @@ import stat
 import uuid
 import sys
 import cPickle
+import Queue
+import threading
 
 config = {}
 server_cache = {}
 
 class ServeCache(object):
     __cache = {}
+    __queue = Queue.Queue()
+
     def __delitem__(self, key):
         cached = self.__cache.get(key, None)
         if cached:
           del self.__cache[key]
 
     def __getitem__(self, key):
+
         cached = self.__cache.get(key, None)
         if not cached:
             self.__cache.update({key:{}})
@@ -39,6 +44,31 @@ class ServeCache(object):
         if not cached:
           self.__cache.update({key:{}})
         self.__cache[key] = value
+
+    def _cache_cleanup_worker(self):
+      cherrypy.log.error("Started cache cleanup worker.")
+      while True:
+        msg = self.__queue.get()
+        cherrypy.log.error("running %s" % msg)
+        break
+
+    _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
+    _cache_cleanup_worker.thread.daemon = True
+
+    def start(self):
+      """Called to start all of the cleanup worker threads."""
+      self._cache_cleanup_worker.thread.start()
+
+    def clean(self):
+      """Request a cleanup pass for unused arrays."""
+      self.__queue.put("cleanup")
+
+
+
+server_cache_new = ServeCache()
+
+
+
 
 
 def mix(a, b, amount):
