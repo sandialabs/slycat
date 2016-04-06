@@ -7,8 +7,11 @@ import datetime
 import Queue
 import slycat.web.server.database.couchdb
 import slycat.web.server.hdf5
+import slycat.web.server
 import threading
 import time
+
+server_cache = slycat.web.server.server_cache_new
 
 def _array_cleanup_worker():
   cherrypy.log.error("Started array cleanup worker.")
@@ -49,13 +52,24 @@ def _login_session_cleanup_worker():
 _login_session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=_login_session_cleanup_worker)
 _login_session_cleanup_worker.thread.daemon = True
 
+def _cache_cleanup_worker():
+      import cherrypy
+      cherrypy.log.error("Started server cache cleanup worker.")
+      while True:
+        msg = server_cache.queue.get()
+        cherrypy.log.error("running server cache clean thread with: %s" % msg)
+_cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
+_cache_cleanup_worker.thread.daemon = True
+
 def start():
   """Called to start all of the cleanup worker threads."""
   _array_cleanup_worker.thread.start()
   _login_session_cleanup_worker.thread.start()
+  _cache_cleanup_worker.thread.start()
 
 def arrays():
   """Request a cleanup pass for unused arrays."""
+  server_cache.clean()
   arrays.queue.put("cleanup")
 arrays.queue = Queue.Queue()
 arrays.queue.put("cleanup")

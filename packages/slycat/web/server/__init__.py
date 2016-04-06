@@ -26,6 +26,9 @@ class ServeCache(object):
     __cache = {}
     __queue = Queue.Queue()
 
+    def __init__(self):
+        pass
+
     def __delitem__(self, key):
         cached = self.__cache.get(key, None)
         if cached:
@@ -45,22 +48,13 @@ class ServeCache(object):
           self.__cache.update({key:{}})
         self.__cache[key] = value
 
-    def _cache_cleanup_worker(self):
-      cherrypy.log.error("Started cache cleanup worker.")
-      while True:
-        msg = self.__queue.get()
-        cherrypy.log.error("running %s" % msg)
-        break
-
-    _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
-    _cache_cleanup_worker.thread.daemon = True
-
-    def start(self):
-      """Called to start all of the cleanup worker threads."""
-      self._cache_cleanup_worker.thread.start()
+    @property
+    def queue(self):
+      return self.__queue
 
     def clean(self):
       """Request a cleanup pass for unused arrays."""
+      cherrypy.log.error("updating queue")
       self.__queue.put("cleanup")
 
 
@@ -179,6 +173,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
     mydict_as_string = cPickle.dumps(server_cache)
+    server_cache_new.clean()
     cherrypy.log.error("\n\n in metadata call server cache size %s\n" % sys.getsizeof(mydict_as_string))
     if "artifact:%s" % aid in server_cache:
       cherrypy.log.error("\n\n found artifact\n")
