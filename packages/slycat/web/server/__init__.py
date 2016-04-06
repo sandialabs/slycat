@@ -14,8 +14,11 @@ import slycat.web.server.hdf5
 import slycat.web.server.remote
 import stat
 import uuid
+import sys
+import cPickle
 
 config = {}
+server_cache = {}
 
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -124,6 +127,17 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 
   # Handle legacy behavior.
   if arrays is None and statistics is None and unique is None:
+    mydict_as_string = cPickle.dumps(server_cache)
+    cherrypy.log.error("\n\n in metadata call server cache size %s\n" % sys.getsizeof(mydict_as_string))
+    if "artifact:%s" % aid in server_cache:
+      cherrypy.log.error("\n\n found artifact\n")
+      if "metadata" in server_cache["artifact:%s" % aid]:
+        cherrypy.log.error("metadata janga %s\n" % server_cache.keys())
+        return server_cache["artifact:%s" % aid]["metadata"]
+    else:
+      server_cache["artifact:%s" % aid] = {}
+      cherrypy.log.error("metadata server cache: %s" % server_cache.keys())
+
     with slycat.web.server.hdf5.lock:
       with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -137,6 +151,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
             "attributes" : hdf5_array.attributes,
             "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
             })
+        server_cache["artifact:%s" % aid]["metadata"] = results
         return results
 
   with slycat.web.server.hdf5.lock:
@@ -212,6 +227,13 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
   """
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
+  #slycat.hyperchunks.tostring(expression)
+  if "artifact:%s" % aid in server_cache:
+    pass
+    # cherrypy.log.error("\n\n janga %s\n" % server_cache.keys())
+  else:
+    server_cache["artifact:%s" % aid] = {}
+    # cherrypy.log.error("server cache: %s" % server_cache.keys())
 
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
@@ -219,16 +241,30 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
 
+        if array.index not in server_cache["artifact:%s" % aid]:
+          # cherrypy.log.error("\n\n%s array key not in cache" %(array.index))
+          server_cache["artifact:%s" % aid][array.index]={}
+        else:
+          pass
+          # cherrypy.log.error("\n\n%s array key in cache" %(array.index))
+
         if array.order is not None:
           order = evaluate(hdf5_array, array.order, "order")
 
         for attribute in array.attributes(len(hdf5_array.attributes)):
-          values = evaluate(hdf5_array, attribute.expression, "attribute")
+
+          if slycat.hyperchunks.tostring(attribute.expression) not in server_cache["artifact:%s" % aid][array.index]:
+            # cherrypy.log.error("key not in cache %s" % server_cache["artifact:%s" % aid][array.index].keys())
+            server_cache["artifact:%s" % aid][array.index][slycat.hyperchunks.tostring(attribute.expression)] = evaluate(hdf5_array, attribute.expression, "attribute")
+          else:
+            pass
+            # cherrypy.log.error("key in cache %s" % server_cache["artifact:%s" % aid][array.index].keys())
+          #values = evaluate(hdf5_array, attribute.expression, "attribute")
           for hyperslice in attribute.hyperslices():
             if array.order is not None:
-              yield values[order][hyperslice]
+              yield server_cache["artifact:%s" % aid][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
             else:
-              yield values[hyperslice]
+              yield server_cache["artifact:%s" % aid][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
