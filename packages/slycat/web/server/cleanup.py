@@ -11,6 +11,8 @@ import slycat.web.server
 import threading
 import time
 
+server_cache = slycat.web.server.server_cache_new
+
 def _array_cleanup_worker():
   cherrypy.log.error("Started array cleanup worker.")
   while True:
@@ -58,7 +60,6 @@ def _cache_cleanup_worker():
         cherrypy.log.error("running server cache clean thread with: %s" % msg)
 _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
 _cache_cleanup_worker.thread.daemon = True
-server_cache = slycat.web.server.server_cache_new
 
 def start():
   """Called to start all of the cleanup worker threads."""
