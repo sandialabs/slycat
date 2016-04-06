@@ -20,6 +20,15 @@ import cPickle
 config = {}
 server_cache = {}
 
+class ServeCache(object):
+    __cache = {}
+    def __delitem__(self, key):
+        pass
+    def __getitem__(self, key):
+        pass
+    def __setitem__(self, key, value):
+        pass
+
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
   return ((1.0 - amount) * a) + (amount * b)
