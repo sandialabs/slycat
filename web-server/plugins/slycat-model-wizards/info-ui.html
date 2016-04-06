@@ -67,7 +67,7 @@
         <strong>Model Raw Data</strong>
       </div>
       <div class="panel-body">
-        <pre><code data-bind="text:JSON.stringify(details.model(), null, 4)"></code></pre>
+        <pre><code data-bind="text:JSON.stringify(ko.toJS(details.model()), null, 2)"></code></pre>
       </div>
     </div>
     
