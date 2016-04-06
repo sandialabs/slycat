@@ -68,6 +68,7 @@ def start():
 
 def arrays():
   """Request a cleanup pass for unused arrays."""
+  server_cache.clean()
   arrays.queue.put("cleanup")
 arrays.queue = Queue.Queue()
 arrays.queue.put("cleanup")
