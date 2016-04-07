@@ -4,6 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 var arrayset_metadata_cache = {};
+var arrayset_metadata_retrieval_inprogress = {};
+var arrayset_metadata_callbacks = {};
 
 function is_little_endian()
 {
@@ -41,6 +43,7 @@ function get_model_array_attribute_metadata(parameters, dfd)
 // Retrieve an arrayset's metadata asynchronously, calling a callback when it's ready ...
 function get_model_arrayset_metadata(parameters)
 {
+  // It's cached, so just execute callback with cached metadata
   if(arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
     parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
     if(parameters.metadataSuccess !== undefined) {
@@ -48,18 +51,35 @@ function get_model_arrayset_metadata(parameters)
     } else {
       parameters.success(parameters);
     }
-  } else {
+  }
+  // It's being cached now, so add callback to queue
+  else if(arrayset_metadata_retrieval_inprogress[parameters.server_root + parameters.mid + parameters.aid]) {
+    var callback = parameters.metadataSuccess !== undefined ? parameters.metadataSuccess : parameters.success;
+    arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid].push({callback:callback, parameters: parameters});
+  } 
+  // It's not in the cache and it's not being cached, so retrieve it and execute callback queue
+  else {
+    arrayset_metadata_retrieval_inprogress[parameters.server_root + parameters.mid + parameters.aid] = true;
+    var callback = parameters.metadataSuccess !== undefined ? parameters.metadataSuccess : parameters.success;
+    if(arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid] === undefined)
+    {
+      arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid] = [];
+    }
+    arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid].push({callback:callback, parameters: parameters});
+
     $.ajax({
       url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata",
       contentType : "application/json",
       success: function(metadata)
       {
         arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] = metadata;
-        parameters.metadata = metadata;
-        if(parameters.metadataSuccess !== undefined) {
-          parameters.metadataSuccess(parameters);
-        } else {
-          parameters.success(parameters);
+        arrayset_metadata_retrieval_inprogress[parameters.server_root + parameters.mid + parameters.aid] = false;
+        // Execute callback queue
+        for(var i=0; i < arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid].length; i++)
+        {
+          var callback_parameters = arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid][i].parameters;
+          callback_parameters.metadata = metadata;
+          arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid][i].callback(callback_parameters);
         }
       },
       error: function(request, status, reason_phrase)
