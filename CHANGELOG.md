@@ -2,7 +2,41 @@
 
 ## [Unreleased](https://github.com/sandialabs/slycat/tree/HEAD)
 
-[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.2.0...HEAD)
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.3.0...HEAD)
+
+**Implemented enhancements:**
+
+- Add info button to model page to access Matt's model stats [\#612](https://github.com/sandialabs/slycat/issues/612)
+- Round Points in CCA model draw slowly [\#609](https://github.com/sandialabs/slycat/issues/609)
+- update docs for new api end points [\#601](https://github.com/sandialabs/slycat/issues/601)
+- Integrate Timeseries agent function with Slycat packages [\#597](https://github.com/sandialabs/slycat/issues/597)
+- Remove Results tab from model creation wizards [\#585](https://github.com/sandialabs/slycat/issues/585)
+- Add back button to enable changing CSV file in wizard during ingestion [\#584](https://github.com/sandialabs/slycat/issues/584)
+- User must redo data ingestion to change variable types/attributes [\#574](https://github.com/sandialabs/slycat/issues/574)
+- Missing values in numeric columns force string-type on input [\#573](https://github.com/sandialabs/slycat/issues/573)
+- Create an open source docker script [\#569](https://github.com/sandialabs/slycat/issues/569)
+- Add easy setup guide in the README.md for slycat [\#543](https://github.com/sandialabs/slycat/issues/543)
+
+**Fixed bugs:**
+
+- Image/movie scaling in the vertical direction wrong during pinning \(Firefox and Chrome on Windows 7\) [\#605](https://github.com/sandialabs/slycat/issues/605)
+- Movie behavior different than images when pinning \(Firefox and Chrome on Windows 7\) [\#604](https://github.com/sandialabs/slycat/issues/604)
+- Some table column headers not displayed on hover \(Firefox only, Windows 7\) [\#603](https://github.com/sandialabs/slycat/issues/603)
+- Remove time series columns from image selection drop down list [\#598](https://github.com/sandialabs/slycat/issues/598)
+- GET Model Arrayset Data breaks with large categorical filters [\#596](https://github.com/sandialabs/slycat/issues/596)
+- Scientific Notation not supported in hyperchunk query language [\#591](https://github.com/sandialabs/slycat/issues/591)
+- Parameter Space model throws JS error on load [\#588](https://github.com/sandialabs/slycat/issues/588)
+- Getting file not found instead of permission denied error [\#580](https://github.com/sandialabs/slycat/issues/580)
+- Waveform Color selection fails to change legend [\#579](https://github.com/sandialabs/slycat/issues/579)
+- Pinned Images lost once filtered out \(Firefox and Chrome on Windows 7\) [\#578](https://github.com/sandialabs/slycat/issues/578)
+- Colors in table are inaccurate and don't match waveforms or dendrogram sparklines [\#567](https://github.com/sandialabs/slycat/issues/567)
+
+**Closed issues:**
+
+- Can't bring video above another video or image by clicking on it [\#608](https://github.com/sandialabs/slycat/issues/608)
+
+## [v1.3.0](https://github.com/sandialabs/slycat/tree/v1.3.0) (2016-02-03)
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.2.0...v1.3.0)
 
 **Implemented enhancements:**
 
@@ -10,62 +44,22 @@
 - Add browser requirement checks [\#563](https://github.com/sandialabs/slycat/issues/563)
 - Prevent caching for back button on browsers [\#558](https://github.com/sandialabs/slycat/issues/558)
 - Add ipyparallel python package to developer docker image [\#552](https://github.com/sandialabs/slycat/issues/552)
-- Bring HAproxy to the latest version 1.6.2 [\#551](https://github.com/sandialabs/slycat/issues/551)
-- Bring couch to the latest version 1.6.1 [\#550](https://github.com/sandialabs/slycat/issues/550)
 - Custom Authentication [\#549](https://github.com/sandialabs/slycat/issues/549)
 - Build login page [\#548](https://github.com/sandialabs/slycat/issues/548)
-- Need logout mechanism [\#542](https://github.com/sandialabs/slycat/issues/542)
 
 **Fixed bugs:**
 
 - STL viewer breaks table header in PS model [\#577](https://github.com/sandialabs/slycat/issues/577)
-- cherrypy redirect can't pass on ?bid=XXXXXXXXXX for login [\#571](https://github.com/sandialabs/slycat/issues/571)
 - Single quotes ' in project name breaks everything else down the line  [\#570](https://github.com/sandialabs/slycat/issues/570)
+- Multiple copies of the same model listed \(Windows 7, Firefox only\) [\#566](https://github.com/sandialabs/slycat/issues/566)
 - Bookmark corrupted during image pin \(Windows 7, Firefox and Chrome\) [\#565](https://github.com/sandialabs/slycat/issues/565)
 - /slycat/packages/slycat/web/client/\_\_init\_\_.py needs to be updated for new login configuration [\#564](https://github.com/sandialabs/slycat/issues/564)
 - Time out on login doesn't go to login page [\#561](https://github.com/sandialabs/slycat/issues/561)
-- Model names with an apostrophe create an error \(Windows Firefox & Chrome\) [\#559](https://github.com/sandialabs/slycat/issues/559)
 - undefined value in param image rest call [\#556](https://github.com/sandialabs/slycat/issues/556)
-- Table Column Sort Slow [\#545](https://github.com/sandialabs/slycat/issues/545)
 - SLURM popup form Firefox issue [\#544](https://github.com/sandialabs/slycat/issues/544)
-- Need logout mechanism [\#542](https://github.com/sandialabs/slycat/issues/542)
-- Behave /features/steps/rest-api.py tests are opening a connection incorrectly [\#541](https://github.com/sandialabs/slycat/issues/541)
-- Make slycat-agent-create-image-distance-matrix.py globally available on remote systems [\#539](https://github.com/sandialabs/slycat/issues/539)
-- Issue with Slycat Agent distance matrix script [\#538](https://github.com/sandialabs/slycat/issues/538)
-- Travis failing for unknown reason [\#526](https://github.com/sandialabs/slycat/issues/526)
-- Sample timeseries creation script is broken [\#521](https://github.com/sandialabs/slycat/issues/521)
-
-**Closed issues:**
-
-- Gracefully handle corrupted bookmarks [\#572](https://github.com/sandialabs/slycat/issues/572)
-- Expand the remote distance matrix computation to compute for all image columns [\#523](https://github.com/sandialabs/slycat/issues/523)
 
 ## [v1.2.0](https://github.com/sandialabs/slycat/tree/v1.2.0) (2015-12-08)
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.1.0...v1.2.0)
-
-**Implemented enhancements:**
-
-- SLURM interface improvement [\#535](https://github.com/sandialabs/slycat/issues/535)
-- Video works on parameter space model but not parameter image model [\#527](https://github.com/sandialabs/slycat/issues/527)
-- Integrate email error reporting to the backend [\#515](https://github.com/sandialabs/slycat/issues/515)
-
-**Fixed bugs:**
-
-- CCA table sorting loses selected row \(Firefox & Chrome on Windows 7\) [\#528](https://github.com/sandialabs/slycat/issues/528)
-- When isStringAttribute is true byteorder needs to be removed for calls to GET Model Arrayset Data [\#514](https://github.com/sandialabs/slycat/issues/514)
-- Travis failing with new file api upload change  [\#513](https://github.com/sandialabs/slycat/issues/513)
-
-**Closed issues:**
-
-- Timeseries model using old APIs [\#537](https://github.com/sandialabs/slycat/issues/537)
-- Styling missing on hidden rows that are also contain nulls [\#534](https://github.com/sandialabs/slycat/issues/534)
-- CCA handling for string variables [\#524](https://github.com/sandialabs/slycat/issues/524)
-- Color coding by string column is broken [\#519](https://github.com/sandialabs/slycat/issues/519)
-- String columns breaking axes and color legend [\#518](https://github.com/sandialabs/slycat/issues/518)
-- Missing image in CCA [\#517](https://github.com/sandialabs/slycat/issues/517)
-- import slycat.darray broken [\#516](https://github.com/sandialabs/slycat/issues/516)
-- Selection broken when sorting by column with duplicate values [\#512](https://github.com/sandialabs/slycat/issues/512)
-- Change model names in model listings to reflect current ones [\#507](https://github.com/sandialabs/slycat/issues/507)
 
 ## [v1.1.0](https://github.com/sandialabs/slycat/tree/v1.1.0) (2014-05-21)
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.0...v1.1.0)
