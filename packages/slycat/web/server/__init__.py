@@ -163,33 +163,34 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 
   # Handle legacy behavior
   if arrays is None and statistics is None and unique is None:
-    mydict_as_string = cPickle.dumps(server_cache_new.cache)
-    server_cache_new.clean()
-    cherrypy.log.error("\n\n in metadata call server cache size %s %s\n" % (sys.getsizeof(mydict_as_string),model["_id"]))
-    if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
-      cherrypy.log.error("\n\n found artifact\n")
-      if "metadata" in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
-        cherrypy.log.error("metadata janga %s\n" % server_cache_new.cache.keys())
-        return server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]["metadata"]
-    else:
-      server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
-      cherrypy.log.error("metadata server cache: %s" % server_cache_new.cache.keys())
+    with server_cache_new.lock:
+      mydict_as_string = cPickle.dumps(server_cache_new.cache)
+      server_cache_new.clean()
+      cherrypy.log.error("\n\n in metadata call server cache size %s %s\n" % (sys.getsizeof(mydict_as_string),model["_id"]))
+      if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
+        cherrypy.log.error("\n\n found artifact\n")
+        if "metadata" in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
+          cherrypy.log.error("metadata janga %s\n" % server_cache_new.cache.keys())
+          return server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]["metadata"]
+      else:
+        server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
+        cherrypy.log.error("metadata server cache: %s" % server_cache_new.cache.keys())
 
-    with slycat.web.server.hdf5.lock:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
-        hdf5_arrayset = slycat.hdf5.ArraySet(file)
-        results = []
-        for array in sorted(hdf5_arrayset.keys()):
-          hdf5_array = hdf5_arrayset[array]
-          results.append({
-            "array": int(array),
-            "index" : int(array),
-            "dimensions" : hdf5_array.dimensions,
-            "attributes" : hdf5_array.attributes,
-            "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
-            })
-        server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]["metadata"] = results
-        return results
+      with slycat.web.server.hdf5.lock:
+        with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+          hdf5_arrayset = slycat.hdf5.ArraySet(file)
+          results = []
+          for array in sorted(hdf5_arrayset.keys()):
+            hdf5_array = hdf5_arrayset[array]
+            results.append({
+              "array": int(array),
+              "index" : int(array),
+              "dimensions" : hdf5_array.dimensions,
+              "attributes" : hdf5_array.attributes,
+              "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
+              })
+          server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]["metadata"] = results
+          return results
 
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file: # We have to open the file with writing enabled in case the statistics cache needs to be updated.
@@ -266,45 +267,46 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
   #slycat.hyperchunks.tostring(expression)
 
-  update_cache = False
-  if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
-    if slycat.hyperchunks.tostring(hyperchunks) in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
-      for value in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)]:
-        yield value
+  with server_cache_new.lock:
+    update_cache = False
+    if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
+      if slycat.hyperchunks.tostring(hyperchunks) in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
+        for value in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)]:
+          yield value
+      else:
+        update_cache = True
+        server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
     else:
       update_cache = True
+      server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
       server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
-  else:
-    update_cache = True
-    server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
-    server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
 
-  if update_cache:
-    with slycat.web.server.hdf5.lock:
-      with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
-        hdf5_arrayset = slycat.hdf5.ArraySet(file)
-        for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
-          hdf5_array = hdf5_arrayset[array.index]
+    if update_cache:
+      with slycat.web.server.hdf5.lock:
+        with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+          hdf5_arrayset = slycat.hdf5.ArraySet(file)
+          for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+            hdf5_array = hdf5_arrayset[array.index]
 
-          if array.index not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
-            server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]={}
+            if array.index not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
+              server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]={}
 
-          if array.order is not None:
-            order = evaluate(hdf5_array, array.order, "order")
+            if array.order is not None:
+              order = evaluate(hdf5_array, array.order, "order")
 
-          for attribute in array.attributes(len(hdf5_array.attributes)):
-            if slycat.hyperchunks.tostring(attribute.expression) not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]:
-              server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)] = evaluate(hdf5_array, attribute.expression, "attribute")
+            for attribute in array.attributes(len(hdf5_array.attributes)):
+              if slycat.hyperchunks.tostring(attribute.expression) not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]:
+                server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)] = evaluate(hdf5_array, attribute.expression, "attribute")
 
-            for hyperslice in attribute.hyperslices():
-              if array.order is not None:
-                value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
-                server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)].append(value)
-                yield value
-              else:
-                value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
-                server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)].append(value)
-                yield value
+              for hyperslice in attribute.hyperslices():
+                if array.order is not None:
+                  value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
+                  server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)].append(value)
+                  yield value
+                else:
+                  value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
+                  server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)].append(value)
+                  yield value
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
