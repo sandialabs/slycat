@@ -187,7 +187,6 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
   if arrays is None and statistics is None and unique is None:
     with server_cache.lock:
       mydict_as_string = cPickle.dumps(server_cache.cache)
-      server_cache.clean()
       cherrypy.log.error("\n\n in metadata call server cache size %s %s\n" % (sys.getsizeof(mydict_as_string),model["_id"]))
       if "artifact:%s%s" % (aid,model["_id"]) in server_cache.cache:
         cherrypy.log.error("\n\n found artifact\n")
