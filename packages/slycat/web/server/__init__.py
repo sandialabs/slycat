@@ -265,22 +265,21 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
   #slycat.hyperchunks.tostring(expression)
-  run = False
+
+  update_cache = False
   if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
-    cherrypy.log.error("\n\n janga just saw %s\n" % slycat.hyperchunks.tostring(hyperchunks))
     if slycat.hyperchunks.tostring(hyperchunks) in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
       for value in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)]:
         yield value
-      cherrypy.log.error("\n\n found :: %s :: in cache\n" % slycat.hyperchunks.tostring(hyperchunks))
     else:
-      run = True
+      update_cache = True
       server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
   else:
-    run = True
+    update_cache = True
     server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
     server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
-    # cherrypy.log.error("server cache: %s" % server_cache_new.cache.keys())
-  if run:
+
+  if update_cache:
     with slycat.web.server.hdf5.lock:
       with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
         hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -288,24 +287,15 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
           hdf5_array = hdf5_arrayset[array.index]
 
           if array.index not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
-            # cherrypy.log.error("\n\n%s array key not in cache" %(array.index))
             server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]={}
-          else:
-            pass
-            # cherrypy.log.error("\n\n%s array key in cache" %(array.index))
 
           if array.order is not None:
             order = evaluate(hdf5_array, array.order, "order")
 
           for attribute in array.attributes(len(hdf5_array.attributes)):
-
             if slycat.hyperchunks.tostring(attribute.expression) not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]:
-              # cherrypy.log.error("key not in cache %s" % server_cache["artifact:%s" % aid][array.index].keys())
               server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)] = evaluate(hdf5_array, attribute.expression, "attribute")
-            else:
-              pass
-              # cherrypy.log.error("key in cache %s" % server_cache_new.cache["artifact:%s" % aid][array.index].keys())
-            #values = evaluate(hdf5_array, attribute.expression, "attribute")
+
             for hyperslice in attribute.hyperslices():
               if array.order is not None:
                 value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
