@@ -262,10 +262,17 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
   #slycat.hyperchunks.tostring(expression)
   if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
-    pass
-    # cherrypy.log.error("\n\n janga %s\n" % server_cache_new.cache.keys())
+    cherrypy.log.error("\n\n janga just saw %s\n" % slycat.hyperchunks.tostring(hyperchunks))
+    if slycat.hyperchunks.tostring(hyperchunks) in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
+      for value in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)]:
+        yield value
+        return
+      cherrypy.log.error("\n\n found :: %s :: in cache\n" % slycat.hyperchunks.tostring(hyperchunks))
+    else:
+      server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
   else:
     server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
+    server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)] = []
     # cherrypy.log.error("server cache: %s" % server_cache_new.cache.keys())
 
   with slycat.web.server.hdf5.lock:
@@ -295,9 +302,13 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
           #values = evaluate(hdf5_array, attribute.expression, "attribute")
           for hyperslice in attribute.hyperslices():
             if array.order is not None:
-              yield server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
+              value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
+              server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)].append(value)
+              yield value
             else:
-              yield server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
+              value = server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
+              server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)].append(value)
+              yield value
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
