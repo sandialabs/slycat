@@ -23,38 +23,60 @@ config = {}
 
 
 class ServeCache(object):
-    __cache = {}
-    __queue = Queue.Queue()
-    __lock = threading.Lock()
+  """
+  class used to cache HQL and metadata queries
+   usage example:
+      server_cache = ServeCache()
+      with server_cache.lock:
+        apply: crud operation to
+          server_cache.cache["artifact:aid:mid"]
+            \
+             server_cache.cache["artifact:aid:mid"]["artifact:data"]
+             eg: server_cache.cache["artifact:aid:mid"]["metadata"], server_cache.cache["artifact:aid:mid"]["hql-result"]
 
-    def __init__(self):
-        pass
+   NOTE: a parse tree is also generated in order to speed up future unseen calls
+  """
+  __cache = {}
+  __queue = Queue.Queue()
+  __lock = threading.Lock()
 
-    @property
-    def cache(self):
-      return self.__cache
-    @cache.deleter
-    def cache(self):
-      self.__cache = {}
-
-    @property
-    def queue(self):
-      return self.__queue
-    @property
-    def lock(self):
-      return self.__lock
-
-    def clean(self):
-      """Request a cleanup pass for unused arrays."""
-      cherrypy.log.error("updating queue")
-      self.__queue.put("cleanup")
-
-
-
-server_cache = ServeCache()
-
-
-
+  def __init__(self):
+    pass
+  @property
+  def cache(self):
+    """
+    :return: dict() cache tree see class details
+    """
+    return self.__cache
+  @cache.deleter
+  def cache(self):
+    """
+    resets the cash to an empty dict {}
+    :return:
+    """
+    self.__cache = {}
+  @property
+  def queue(self):
+    """
+    blocking queue that is read by the slycat.web.server.cleanup.py to force a cache cleanup
+    by the cache cleanup thread.
+    :return:
+    """
+    return self.__queue
+  @property
+  def lock(self):
+    """
+    threading.Lock() used to control crud operations to the cache.
+    :return:
+    """
+    return self.__lock
+  def clean(self):
+    """
+    Request a cleanup pass for the cache.
+    """
+    cherrypy.log.error("updating server cache force cleanup queue")
+    self.__queue.put("cleanup")
+server_cache = ServeCache()# instantiate our server cache for use here and in slycat.web.server.cleanup.py
 
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
