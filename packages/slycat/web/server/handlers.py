@@ -1651,7 +1651,7 @@ def get_model_statistics(mid):
           total_hdf5_server_size += os.path.getsize(fp)
 
   return {
-    "server_cache_size": sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache_new.cache)),
+    "server_cache_size": sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache)),
     "mid":mid,
     "hdf5_file_size":hdf5_file_size,
     "total_server_data_size": total_server_data_size,
