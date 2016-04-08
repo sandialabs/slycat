@@ -48,7 +48,6 @@ class ServeCache(object):
 
 
 server_cache_new = ServeCache()
-server_cache = server_cache_new.cache
 
 
 
@@ -158,18 +157,18 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
   if isinstance(unique, basestring):
     unique = slycat.hyperchunks.parse(unique)
 
-  # Handle legacy behavior.
+  # Handle legacy behavior
   if arrays is None and statistics is None and unique is None:
     mydict_as_string = cPickle.dumps(server_cache_new.cache)
     server_cache_new.clean()
-    cherrypy.log.error("\n\n in metadata call server cache size %s\n" % sys.getsizeof(mydict_as_string))
-    if "artifact:%s" % aid in server_cache_new.cache:
+    cherrypy.log.error("\n\n in metadata call server cache size %s %s\n" % (sys.getsizeof(mydict_as_string),model["_id"]))
+    if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
       cherrypy.log.error("\n\n found artifact\n")
-      if "metadata" in server_cache_new.cache["artifact:%s" % aid]:
+      if "metadata" in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
         cherrypy.log.error("metadata janga %s\n" % server_cache_new.cache.keys())
-        return server_cache_new.cache["artifact:%s" % aid]["metadata"]
+        return server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]["metadata"]
     else:
-      server_cache_new.cache["artifact:%s" % aid] = {}
+      server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
       cherrypy.log.error("metadata server cache: %s" % server_cache_new.cache.keys())
 
     with slycat.web.server.hdf5.lock:
@@ -185,7 +184,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
             "attributes" : hdf5_array.attributes,
             "shape": tuple([dimension["end"] - dimension["begin"] for dimension in hdf5_array.dimensions]),
             })
-        server_cache_new.cache["artifact:%s" % aid]["metadata"] = results
+        server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]["metadata"] = results
         return results
 
   with slycat.web.server.hdf5.lock:
@@ -262,11 +261,11 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
   #slycat.hyperchunks.tostring(expression)
-  if "artifact:%s" % aid in server_cache_new.cache:
+  if "artifact:%s%s" % (aid,model["_id"]) in server_cache_new.cache:
     pass
     # cherrypy.log.error("\n\n janga %s\n" % server_cache_new.cache.keys())
   else:
-    server_cache_new.cache["artifact:%s" % aid] = {}
+    server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])] = {}
     # cherrypy.log.error("server cache: %s" % server_cache_new.cache.keys())
 
   with slycat.web.server.hdf5.lock:
@@ -275,9 +274,9 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
 
-        if array.index not in server_cache_new.cache["artifact:%s" % aid]:
+        if array.index not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])]:
           # cherrypy.log.error("\n\n%s array key not in cache" %(array.index))
-          server_cache_new.cache["artifact:%s" % aid][array.index]={}
+          server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]={}
         else:
           pass
           # cherrypy.log.error("\n\n%s array key in cache" %(array.index))
@@ -287,18 +286,18 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
 
         for attribute in array.attributes(len(hdf5_array.attributes)):
 
-          if slycat.hyperchunks.tostring(attribute.expression) not in server_cache_new.cache["artifact:%s" % aid][array.index]:
+          if slycat.hyperchunks.tostring(attribute.expression) not in server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index]:
             # cherrypy.log.error("key not in cache %s" % server_cache["artifact:%s" % aid][array.index].keys())
-            server_cache_new.cache["artifact:%s" % aid][array.index][slycat.hyperchunks.tostring(attribute.expression)] = evaluate(hdf5_array, attribute.expression, "attribute")
+            server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)] = evaluate(hdf5_array, attribute.expression, "attribute")
           else:
             pass
             # cherrypy.log.error("key in cache %s" % server_cache_new.cache["artifact:%s" % aid][array.index].keys())
           #values = evaluate(hdf5_array, attribute.expression, "attribute")
           for hyperslice in attribute.hyperslices():
             if array.order is not None:
-              yield server_cache_new.cache["artifact:%s" % aid][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
+              yield server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][order][hyperslice]
             else:
-              yield server_cache_new.cache["artifact:%s" % aid][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
+              yield server_cache_new.cache["artifact:%s%s" % (aid,model["_id"])][array.index][slycat.hyperchunks.tostring(attribute.expression)][hyperslice]
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
