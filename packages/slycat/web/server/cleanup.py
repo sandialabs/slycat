@@ -10,6 +10,8 @@ import slycat.web.server.hdf5
 import slycat.web.server
 import threading
 import time
+import sys
+import cPickle
 
 def _array_cleanup_worker():
   cherrypy.log.error("Started array cleanup worker.")
@@ -50,21 +52,38 @@ def _login_session_cleanup_worker():
 _login_session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=_login_session_cleanup_worker)
 _login_session_cleanup_worker.thread.daemon = True
 
+server_cache = slycat.web.server.server_cache_new
 def _cache_cleanup_worker():
       import cherrypy
       cherrypy.log.error("Started server cache cleanup worker.")
       while True:
-        msg = server_cache.queue.get()
-        cherrypy.log.error("running server cache clean thread with: %s" % msg)
+        time.sleep(datetime.timedelta(minutes=1).total_seconds())
+        with server_cache.lock:
+          cherrypy.log.error("running server cache-cleanup thread cache size = %s mbs" % (sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache_new.cache))/1024/1024))
+
 _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
 _cache_cleanup_worker.thread.daemon = True
-server_cache = slycat.web.server.server_cache_new
+
+def _forced_cache_cleanup_worker():
+      import cherrypy
+      cherrypy.log.error("Started server forced cache cleanup worker.")
+      while True:
+        msg = server_cache.queue.get()
+        with server_cache.lock:
+          cherrypy.log.error("running server forced-cache-cleanup thread with: %s" % msg)
+
+_forced_cache_cleanup_worker.thread = threading.Thread(name="forced-cache-cleanup", target=_forced_cache_cleanup_worker)
+_forced_cache_cleanup_worker.thread.daemon = True
+
+def _cache_cleanup():
+  pass
 
 def start():
   """Called to start all of the cleanup worker threads."""
   _array_cleanup_worker.thread.start()
   _login_session_cleanup_worker.thread.start()
   _cache_cleanup_worker.thread.start()
+  _forced_cache_cleanup_worker.thread.start()
 
 def arrays():
   """Request a cleanup pass for unused arrays."""
