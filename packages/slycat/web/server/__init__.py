@@ -35,7 +35,7 @@ class ServeCache(object):
       return self.__cache
     @cache.deleter
     def cache(self):
-      __cache = {}
+      self.__cache = {}
 
     @property
     def queue(self):
