@@ -130,9 +130,8 @@ def get_job_output(command):
   sys.stdout.flush()
 
 
-def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, filename):
-  name = os.path.expanduser('~') + ("/%s" % filename)
-  f = open(name, 'w')
+def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file):
+  f = tmp_file 
 
   f.write("#!/bin/bash\n\n")
   f.write("#SBATCH --account=%s\n" % wckey)
@@ -141,7 +140,7 @@ def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_m
   f.write("#SBATCH --nodes=%s\n" % nnodes)
   f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
   f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-
+  
   for c in fn:
     f.write("%s\n" % c)
 
@@ -163,9 +162,9 @@ def run_function(command):
   fn = command["command"]["fn"]
   uid = command["command"]["uid"]
 
-  filename = "batch.slycat-%s.bash" % uid
-  generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, filename)
-  results["output"], results["errors"] = run_remote_command("sbatch %s" % filename)
+  tmp_file = tempfile.NamedTemporaryFile(delete=False)
+  generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file)
+  results["output"], results["errors"] = run_remote_command("sbatch %s" % tmp_file.name)
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
@@ -238,10 +237,10 @@ def get_file(command):
   path = command["path"]
   if not os.path.isabs(path):
     raise Exception("Path must be absolute.")
-  if not os.access(path, os.F_OK):
-    raise Exception("Path not found.")
   if not os.access(path, os.R_OK):
     raise Exception("No read permission.")
+  if not os.path.exists(path):
+    raise Exception("Path not found.")
   if os.path.isdir(path):
     raise Exception("Directory unreadable.")
 
