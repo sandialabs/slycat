@@ -14,6 +14,7 @@ import numpy
 import os
 import time
 import Queue
+import cPickle
 import re
 import slycat.email
 import slycat.hdf5
@@ -1091,6 +1092,7 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
 
 @cherrypy.tools.json_out(on = True)
 def get_model_arrayset_metadata(mid, aid, **kwargs):
+  cherrypy.log.error("GET arrayset metadata mid:%s aid:%s kwargs:%s" %(mid, aid, kwargs.keys()))
   database = slycat.web.server.database.couchdb.connect()
   model = database.get("model", mid)
   project = database.get("project", model["project"])
@@ -1122,7 +1124,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
   except:
     slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
-
+  cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" %(arrays, statistics, unique))
   results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
   if "unique" in results:
     for unique in results["unique"]:
@@ -1649,6 +1651,7 @@ def get_model_statistics(mid):
           total_hdf5_server_size += os.path.getsize(fp)
 
   return {
+    "server_cache_size": sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache)),
     "mid":mid,
     "hdf5_file_size":hdf5_file_size,
     "total_server_data_size": total_server_data_size,
