@@ -1651,14 +1651,15 @@ def get_model_statistics(mid):
           total_hdf5_server_size += os.path.getsize(fp)
 
   return {
-    "server_cache_size": sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache)),
+    "server_cache_size": float(sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache)))/1024.0/1024.0,
     "mid":mid,
-    "hdf5_file_size":hdf5_file_size,
-    "total_server_data_size": total_server_data_size,
-    "hdf5_store_size":total_hdf5_server_size,
+    "hdf5_file_size":float(hdf5_file_size)/1024.0/1024.0,
+    "total_server_data_size": float(total_server_data_size)/1024.0/1024.0,
+    "hdf5_store_size":float(total_hdf5_server_size)/1024.0/1024.0,
     "model":model,
-    "delta_creation_time":delta_creation_time,
-    "couchdb_doc_size": sys.getsizeof(model)
+    "delta_creation_time":float(delta_creation_time)/60,
+    "couchdb_doc_size": sys.getsizeof(model)/1024.0/1024.0,
+    "hdf5_footprint": 100.0*(float(hdf5_file_size)/float(total_hdf5_server_size))
   }
 
 @cherrypy.tools.json_in(on = True)
