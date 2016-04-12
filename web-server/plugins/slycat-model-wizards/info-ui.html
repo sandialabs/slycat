@@ -27,7 +27,7 @@
         <strong>Delta Creation Time</strong>
       </div>
       <div class="panel-body">
-        <span data-bind="text:details.delta_creation_time"></span> seconds
+        <span data-bind="text:details.delta_creation_time"></span> minutes
       </div>
     </div>
     <div class="panel panel-default">
@@ -35,7 +35,7 @@
         <strong>CouchDB Doc Size</strong>
       </div>
       <div class="panel-body">
-        <span data-bind="text:details.couchdb_doc_size"></span> bytes
+        <span data-bind="text:details.couchdb_doc_size"></span> mb
       </div>
     </div>
     <div class="panel panel-default">
@@ -43,7 +43,7 @@
         <strong>Model HDF5 File Size</strong>
       </div>
       <div class="panel-body">
-        <span data-bind="text:details.hdf5_file_size"></span> bytes
+        <span data-bind="text:details.hdf5_file_size"></span> mb
       </div>
     </div>
     <div class="panel panel-default">
@@ -51,15 +51,23 @@
         <strong>Total Model Data Size</strong>
       </div>
       <div class="panel-body">
-        <span data-bind="text:details.total_server_data_size"></span> bytes
+        <span data-bind="text:details.total_server_data_size"></span> mb
       </div>
     </div>
     <div class="panel panel-default">
       <div class="panel-heading">
-        <strong>Server HDF5 File Store Size</strong>
+        <strong>Total Server HDF5 File Store Size</strong>
       </div>
       <div class="panel-body">
-        <span data-bind="text:details.hdf5_store_size"></span> bytes
+        <span data-bind="text:details.hdf5_store_size"></span> mb
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <strong>% of total server HDF5 file store</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:details.hdf5_footprint"></span> %
       </div>
     </div>
     <div class="panel panel-default">
