@@ -17,6 +17,8 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
+    component.wckey = ko.observable('');
+    component.partition = ko.observable('');
 
     component.create_model = function() {
       client.post_project_models({
@@ -54,7 +56,25 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         success: function(sid) {
           $('.modal-dialog').addClass('modal-lg');
           component.remote.sid(sid);
-          component.tab(1);
+
+          client.get_user_config({
+            sid: component.remote.sid(),
+            success: function(response) {
+              if (response.errors.length > 0)
+                return void 0;
+
+              if (response.config['timeseries-wizard']) {
+                response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+              }
+
+              if (response.config.slurm) {
+                response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
+                response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
+              }
+
+              component.tab(1);
+            }
+          });
         },
         error: function(request, status, reason_phrase) {
           component.remote.status_type('danger');
@@ -129,6 +149,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.to_compute = function() {
       component.put_model_parameters();
       component.tab(4);
+
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      vm.wckey(component.wckey());
+      vm.partition(component.partition());
     };
 
     component.compute = function() {

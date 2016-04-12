@@ -29,6 +29,7 @@ import threading
 import uuid
 import multiprocessing
 import time
+import ConfigParser
 
 session_cache = {}
 
@@ -129,6 +130,24 @@ def get_job_output(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+def get_user_config():
+  results = {
+    "ok": True
+  }
+  
+  rc = os.path.expanduser('~') + ("/.slycatrc")
+  if os.path.isfile(rc):
+    parser = ConfigParser.SafeConfigParser()
+    parser.read(rc)
+    configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
+    results["config"] = configuration
+    results["errors"] = ""
+  else:
+    results["config"] = "see errors"
+    results["errors"] = "the user does not have a .slycatrc file under their home directory"
+
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
 
 def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file):
   f = tmp_file 
@@ -447,6 +466,8 @@ def main():
         run_function(command)
       elif action == "cancel-job":
         cancel_job(command)
+      elif action == "get-user-config":
+        get_user_config()
       else:
         raise Exception("Unknown command.")
     except Exception as e:
