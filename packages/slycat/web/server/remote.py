@@ -277,6 +277,32 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py get_job_output", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+  def get_user_config(self):
+    """Submits a command to the slycat-agent to fetch the content of a user's .slycatrc file in their home directory.
+
+    Returns
+    -------
+    response : dict
+      A dictionary with the configuration values
+    """
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      payload = { "action": "get-user-config" }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        slycat.email.send_error("slycat.web.server.remote.py get_user_config", "cherrypy.HTTPError 400 %s" % response["message"])
+        raise cherrypy.HTTPError(400)
+      return { "config": response["config"], "errors": response["errors"] }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      slycat.email.send_error("slycat.web.server.remote.py get_user_config", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
+      raise cherrypy.HTTPError(500)
+
   def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, fn_params, uid):
     """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 

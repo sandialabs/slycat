@@ -835,6 +835,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  module.get_user_config = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({
+        sid: params.sid
+      }),
+      type: 'POST',
+      url: server_root + 'remotes/get-user-config',
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.post_agent_function = function(params) {
     $.ajax({
       contentType: 'application/json',
