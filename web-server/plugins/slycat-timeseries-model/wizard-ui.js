@@ -60,8 +60,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
           client.get_user_config({
             sid: component.remote.sid(),
             success: function(response) {
-              if (response.errors.length > 0)
+              if (response.errors.length > 0) {
+                component.tab(1);
                 return void 0;
+              }
 
               if (response.config['timeseries-wizard']) {
                 response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
