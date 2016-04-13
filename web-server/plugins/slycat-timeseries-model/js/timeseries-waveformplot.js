@@ -84,6 +84,25 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       this.x_axis_layer = this.container.append("g").attr("class", "x-axis");
       this.y_axis_layer = this.container.append("g").attr("class", "y-axis");
 
+      this.canvas_datum = d3.select(self.element.parent().get(0)).append("canvas")
+        .style({
+          'position':'absolute',
+          'left':this.padding_left + 'px',
+          'top':this.padding_top + 'px'
+        })
+        .node()
+        ;
+      this.canvas_datum_layer = this.canvas_datum.getContext("2d");
+      this.canvas_selected = d3.select(self.element.parent().get(0)).append("canvas")
+        .style({
+          'position':'absolute',
+          'left':this.padding_left + 'px',
+          'top':this.padding_top + 'px'
+        })
+        .node()
+        ;
+      this.canvas_selected_layer = this.canvas_selected.getContext("2d");
+
       // Set all waveforms to visible if this options has not been set
       var visible = this.options.selection;
       if(visible === undefined) {
@@ -133,6 +152,15 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           .attr("transform", "translate(" + (this.padding_left - 1) + "," + (this.padding_top + 1) + ")")
           .call(this.y_axis)
           ;
+
+      d3.select(self.canvas_datum)
+        .attr("width", this.diagram_width)
+        .attr("height", this.diagram_height)
+        ;
+      d3.select(self.canvas_selected)
+        .attr("width", this.diagram_width)
+        .attr("height", this.diagram_height)
+        ;
 
       var waveform_subset = [];
       if(visible !== undefined) {
