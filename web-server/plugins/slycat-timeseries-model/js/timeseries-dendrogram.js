@@ -319,8 +319,19 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         // Compute the new layout.
         var nodes = layout.nodes(root).reverse();
 
-        // Normalize for fixed-depth.
-        nodes.forEach(function(d) { if(d.children || d._children) d.y = d.depth * (diagram_width / max_depth); });
+        // Compute the currend dendrogram depth
+        var current_depth = -1;
+        nodes.forEach(function(d) { 
+          current_depth = Math.max(current_depth, d.children ? d.depth : -1); 
+        });
+
+        // Normalize for current depth.
+        nodes.forEach(function(d) { 
+          if(d.children || d._children)
+          {
+            d.y = d.depth * (diagram_width / (current_depth+1)); 
+          }
+        });
 
         // Update the nodes.
         var node = vis.selectAll("g.node")
