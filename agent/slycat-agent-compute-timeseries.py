@@ -37,6 +37,7 @@ parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Samp
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
 parser.add_argument("--cluster-metric", default="euclidean", choices=["euclidean"], help="Hierarchical clustering distance metric.  Default: %(default)s")
+parser.add_argument("--workdir", default=None, help="Working directory to store data to be processed during model creation")
 parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
 parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
 arguments = parser.parse_args()
@@ -95,7 +96,7 @@ try:
   #connection.update_model(mid, message="Storing clustering parameters.")
   print("Storing clustering parameters.")
 
-  dirname = os.path.expanduser('~') + ("/slycat_timeseries_%s" % arguments.hash)
+  dirname = "%s/slycat_timeseries_%s" % (arguments.workdir, arguments.hash)
   if not os.path.exists(dirname):
     os.makedirs(dirname)
 
