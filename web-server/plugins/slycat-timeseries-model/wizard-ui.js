@@ -19,6 +19,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.cluster_metric = ko.observableArray(['euclidean']);
     component.wckey = ko.observable('');
     component.partition = ko.observable('');
+    component.workdir = ko.observable('');
 
     component.create_model = function() {
       client.post_project_models({
@@ -67,11 +68,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
               if (response.config['timeseries-wizard']) {
                 response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+                response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
               }
 
               if (response.config.slurm) {
                 response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                 response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
+                response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
               }
 
               component.tab(1);
@@ -155,6 +158,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
       vm.wckey(component.wckey());
       vm.partition(component.partition());
+      vm.workdir(component.workdir());
     };
 
     component.compute = function() {
