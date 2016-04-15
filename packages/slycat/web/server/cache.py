@@ -1,6 +1,24 @@
 # Copyright 2013, Sandia Corporation. Under the terms of Contract
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
+import os
+import hashlib
+import cPickle
+import time
+import base64
+import inspect
+
+__all__ = ["CacheError"]
+
+class CacheError(Exception):
+  pass
+
+class TimeError(CacheError):
+  pass
+
+class LifetimeError(CacheError):
+  pass
+
 class ServeCache(object):
   """
   class used to cache HQL and metadata queries
