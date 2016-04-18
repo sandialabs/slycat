@@ -8,6 +8,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return true;}), focus: false, sid: null});
     component.remote.focus.extend({notify: 'always'});
     component.browser = mapping.fromJS({path:null, selection: []});
+    component.to_hdf5 = ko.observable(true);
     component.inputs_file = ko.observable('');
     component.output_directory = ko.observable('');
     component.id_column = ko.observable('%eval_id');
