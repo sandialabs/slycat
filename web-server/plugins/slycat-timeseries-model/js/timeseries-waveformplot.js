@@ -249,24 +249,20 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           isPointInStrokeVisible = self.canvas_datum_layer.isPointInStroke(path, x, y);
           isPointInStrokePick = self.canvas_picker_layer.isPointInStroke(path, x, y);
 
-          // console.log("isPointInStroke visible:" + isPointInStrokeVisible + ", pick: " + isPointInStrokePick);
-
           if(isPointInStrokePick)
           {
             self.options.highlight = [id];
             self._select();
           }
-          
         }
         else
         {
-          // console.log("point is not in stroke.");
+          // Only clear highlight if there is something highlighted
           if(self.options.highlight.length > 0)
           {
             self.options.highlight = [];
             self._select();
           }
-          
         }
 
       }
