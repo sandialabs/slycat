@@ -107,11 +107,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         ;
       this.canvas_selection_layer = this.canvas_selection.getContext("2d", {alpha:true});
 
-      // this.canvas_datum_layer.mozImageSmoothingEnabled = false;
-      // this.canvas_datum_layer.webkitImageSmoothingEnabled = false;
-      // this.canvas_datum_layer.msImageSmoothingEnabled = false;
-      // this.canvas_datum_layer.imageSmoothingEnabled = false;
-
       this.canvas_offscreen = document.createElement('canvas');
       this.canvas_offscreen_layer = this.canvas_offscreen.getContext('2d', {alpha:true});
 
@@ -189,10 +184,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
       this.canvas_picker.width = this.diagram_width;
       this.canvas_picker.height = this.diagram_height;
-      // d3.select(self.canvas_selected)
-      //   .attr("width", this.diagram_width)
-      //   .attr("height", this.diagram_height)
-      //   ;
 
       var waveform_subset = [];
       if(visible !== undefined) {
@@ -230,7 +221,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         var data = pixel.data;
         var rgba = 'rgba(' + data[0] + ',' + data[1] +
                    ',' + data[2] + ',' + data[3] + ')';
-        console.log("visible layer: " + rgba);
+        // console.log("visible layer: " + rgba);
 
         // console.time('searching through canvases');
         // var canvas, canvas_pixel;
@@ -245,20 +236,20 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         var dataPick = pixelPick.data;
         var rgbaPick = 'rgba(' + dataPick[0] + ',' + dataPick[1] +
                    ',' + dataPick[2] + ',' + dataPick[3] + ')';
-        console.log("pick layer: " + rgbaPick);
+        // console.log("pick layer: " + rgbaPick);
 
         var id, isPointInStrokeVisible, isPointInStrokePick, path;
         if(dataPick[3]==255)
         {
           id = RGBtoInt(dataPick[0], dataPick[1], dataPick[2]);
-          console.log('you are hovering over waveform with id ' + id);
+          // console.log('you are hovering over waveform with id ' + id);
 
           path = paths[id];
 
           isPointInStrokeVisible = self.canvas_datum_layer.isPointInStroke(path, x, y);
           isPointInStrokePick = self.canvas_picker_layer.isPointInStroke(path, x, y);
 
-          console.log("isPointInStroke visible:" + isPointInStrokeVisible + ", pick: " + isPointInStrokePick);
+          // console.log("isPointInStroke visible:" + isPointInStrokeVisible + ", pick: " + isPointInStrokePick);
 
           if(isPointInStrokePick)
           {
@@ -278,66 +269,21 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           
         }
 
-        // var isPointInStroke = false;
-        // var path;
-        // console.time('isPointInStroke');
-        // for(var i=paths.length-1; i > -1; i--)
-        // {
-        //   path = paths[i];
-
-        //   if(!isPointInStroke)
-        //   {
-        //     isPointInStroke = self.canvas_datum_layer.isPointInStroke(path, x, y) ? i : false;
-        //   }
-
-        //   if(isPointInStroke===i)
-        //   {
-        //     // console.log("isPointInStroke: " + waveform_subset[i]["input-index"]);
-        //     self.options.highlight = [i];
-        //     self._select();
-        //     break
-        //   }
-        //   else
-        //   {
-        //     // console.log("point is not in stroke.");
-        //     if(self.options.highlight.length > 0)
-        //     {
-        //       self.options.highlight = [];
-        //       self._select();
-        //     }
-            
-        //   }
-        // }
-        // console.timeEnd('isPointInStroke');
       }
       //this.canvas_datum.addEventListener('mousemove', mouseStopped);
       this.canvas_selection.addEventListener('mousemove', pick);
-
-      // console.log("waveform_subset");
-      // this.canvas_datum_layer.moveTo(0,0);
-      // this.canvas_datum_layer.lineTo(21,21);
-      // this.canvas_datum_layer.moveTo(0,21);
-      // this.canvas_datum_layer.lineTo(21,0);
-      // this.canvas_datum_layer.stroke();
-
-      // this.canvas_offscreen_layer.moveTo(21,21);
-      // this.canvas_offscreen_layer.lineTo(820,820);
-      // this.canvas_offscreen_layer.moveTo(21,42);
-      // this.canvas_offscreen_layer.lineTo(42,21);
-      // this.canvas_offscreen_layer.stroke();
 
       this.canvas_datum_layer.lineWidth = 1;
       this.canvas_offscreen_layer.lineWidth = 1;
       this.canvas_picker_layer.lineWidth = 3;
 
-      var result, current_waveform, p, strokeStyle, paths=[], canvas, canvas_context, canvases=[];
+      var result, current_waveform, p, strokeStyle, paths=[];
 
       var multiplier = 1;
       console.log('rendering ' + waveform_subset.length * multiplier + ' waveforms');
       console.log('each one has ' + waveform_subset[0]["time"].length + ' samples');
 
       console.time('canvas render');
-      // this.canvas_datum.style.display = "none";
       for(var k=0; k < multiplier; k++)
       {
       var waveform_subset_length = waveform_subset.length;
@@ -384,11 +330,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         }
         paths.push(p);
 
-        // this.canvas_offscreen_layer.moveTo(21,21);
-        // this.canvas_offscreen_layer.lineTo(820,820);
-        // this.canvas_offscreen_layer.moveTo(21,42);
-        // this.canvas_offscreen_layer.lineTo(42,21);
-
         if (color_scale_and_color_array && self.options.color_array[ current_waveform["input-index"] ] !== null)
           strokeStyle = self.options.color_scale( self.options.color_array[ current_waveform["input-index"] ] );
         else
@@ -396,16 +337,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         this.canvas_offscreen_layer.strokeStyle = strokeStyle;
 
         this.canvas_offscreen_layer.stroke(p);
-
-        // canvas = document.createElement('canvas');
-        // canvas.width = this.diagram_width;
-        // canvas.height = this.diagram_height;
-        // canvas_context = canvas.getContext('2d');
-        // canvas_context.stroke(p);
-
-        // canvases.push( canvas_context );
-
-
 
         this.canvas_picker_layer.strokeStyle = intToRGB(current_waveform["input-index"]);
         this.canvas_picker_layer.stroke(p);
@@ -415,7 +346,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       // this.canvas_offscreen_layer.stroke();
       }
       // this.canvas_offscreen_layer.stroke();
-      // this.canvas_datum.style.display = "block";
       console.time('canvas drawImage');
       this.canvas_datum_layer.drawImage(this.canvas_offscreen, 0, 0);
       console.timeEnd('canvas drawImage');
