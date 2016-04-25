@@ -54,7 +54,7 @@ def register_slycat_plugin(context):
     for attribute in range(len(attributes)):
       data = inputs_attributes_data["%s" % attribute]
       slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [data])
-      time.sleep(1)
+      time.sleep(2)
 
     clusters = json.loads(slycat.web.server.get_remote_file(sid, "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
     clusters_file = json.JSONDecoder().decode(clusters["file"])
@@ -84,7 +84,7 @@ def register_slycat_plugin(context):
         waveform_attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
         slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes, waveform_dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
-        time.sleep(1)
+        time.sleep(2)
 
 
   def fail_model(mid, message):
