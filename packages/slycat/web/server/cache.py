@@ -68,10 +68,10 @@ class CachedObjectWrapper(object):
     :return: boolean
     """
     if self.expiration is None:
-      r = False
+      expired = False
     else:
-      r = (self.expiration < time.time())
-    return r
+      expired = (self.expiration < time.time())
+    return expired
 
 class Cache(object):
   """
