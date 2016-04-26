@@ -126,7 +126,7 @@ class Cache(object):
   def weeks_to_seconds(weeks):
     """
     Converts weeks to seconds.
-    :return:
+    :return: float
     """
     return 604800.0 * weeks
 
@@ -142,7 +142,7 @@ class Cache(object):
   def hours_to_seconds(hours):
     """
     Converts hours to seconds.
-    :return:
+    :return: float
     """
     return 3600.0 * hours
 
@@ -150,7 +150,7 @@ class Cache(object):
   def minutes_to_seconds(minutes):
     """
     Converts minutes to seconds.
-    :return:
+    :return: float
     """
     return 60.0 * minutes
 
@@ -158,7 +158,7 @@ class Cache(object):
   def seconds_to_seconds(seconds):
     """
     Converts seconds to seconds as a float.
-    :return:
+    :return: float
     """
     return float(seconds)
 
