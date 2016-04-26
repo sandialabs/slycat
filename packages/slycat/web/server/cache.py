@@ -61,6 +61,18 @@ class CachedObjectWrapper(object):
     """
     return self._expiration
 
+  def expired(self):
+    """
+    return true or false as to weather the object is expired or not
+    returns false if none
+    :return: boolean
+    """
+    if self.expiration is None:
+      r = False
+    else:
+      r = (self.expiration < time.time())
+    return r
+
 class ServeCache(object):
   """
   class used to cache HQL and metadata queries
