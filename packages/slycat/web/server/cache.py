@@ -30,7 +30,16 @@ class CachedObjectWrapper(object):
     :param expiration: time until the item is expire
     :return: not used
     """
-    pass
+    self._value = value
+    self._expiration = expiration
+
+  @property
+  def value(self):
+    return self._value
+
+  @property
+  def expiration(self):
+    return slef._expiration
 
 class ServeCache(object):
   """
