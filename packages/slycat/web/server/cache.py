@@ -19,6 +19,19 @@ class TimeError(CacheError):
 class LifetimeError(CacheError):
   pass
 
+class CachedObjectWrapper(object):
+  """
+  class used to wrap any object placed in the cache
+  """
+  def __init__(self, value, expiration=None):
+    """
+    creates a cached object with a cached items and an expiration
+    :param value: item being wrapped
+    :param expiration: time until the item is expire
+    :return: not used
+    """
+    pass
+
 class ServeCache(object):
   """
   class used to cache HQL and metadata queries
