@@ -73,7 +73,7 @@ class CachedObjectWrapper(object):
       r = (self.expiration < time.time())
     return r
 
-class ServeCache(object):
+class Cache(object):
   """
   class used to cache HQL and metadata queries
    usage example:
@@ -87,44 +87,27 @@ class ServeCache(object):
 
    NOTE: a parse tree is also generated in order to speed up future unseen calls
   """
-  __cache = {}
-  __queue = Queue.Queue()
-  __lock = threading.Lock()
 
-  def __init__(self):
+  def __init__(self, path, **kwargs):
     pass
-  @property
-  def cache(self):
-    """
-    :return: dict() cache tree see class details
-    """
-    return self.__cache
-  @cache.deleter
-  def cache(self):
-    """
-    resets the cash to an empty dict {}
-    :return:
-    """
-    self.__cache = {}
-  @property
-  def queue(self):
-    """
-    blocking queue that is read by the slycat.web.server.cleanup.py to force a cache cleanup
-    by the cache cleanup thread.
-    :return:
-    """
-    return self.__queue
-  @property
-  def lock(self):
-    """
-    threading.Lock() used to control crud operations to the cache.
-    :return:
-    """
-    return self.__lock
-  def clean(self):
-    """
-    Request a cleanup pass for the cache.
-    """
-    cherrypy.log.error("updating server cache force cleanup queue")
-    self.__queue.put("cleanup")
-server_cache = ServeCache()# instantiate our server cache for use here and in slycat.web.server.cleanup.py
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
