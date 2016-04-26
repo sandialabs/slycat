@@ -7,16 +7,27 @@ import cPickle
 import time
 import base64
 import inspect
+import Queue
+import threading
 
 __all__ = ["CacheError"]
 
 class CacheError(Exception):
+  """
+  generic cached objecte error
+  """
   pass
 
 class TimeError(CacheError):
+  """
+  time error used for when the time is in the wrong format
+  """
   pass
 
 class LifetimeError(CacheError):
+  """
+  extention of the cached error where the lifetime of the cache object has expired
+  """
   pass
 
 class CachedObjectWrapper(object):
@@ -35,11 +46,20 @@ class CachedObjectWrapper(object):
 
   @property
   def value(self):
+    """
+    returns the object that is being wraped by the cache
+    :return: object
+    """
     return self._value
 
   @property
   def expiration(self):
-    return slef._expiration
+    """
+    return the expiration time for the cached object, could return none
+    if there is no expiration
+    :return: experation object
+    """
+    return self._expiration
 
 class ServeCache(object):
   """
