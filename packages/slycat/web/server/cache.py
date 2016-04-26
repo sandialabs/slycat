@@ -106,6 +106,21 @@ class Cache(object):
     if not os.path.exists(self._path):
       os.makedirs(self._path)
 
+  def __getitem__(self, item):
+    pass
+
+  def __setitem__(self, key, value):
+    pass
+
+  def __delitem__(self, key):
+    pass
+
+  def __contains__(self, item):
+    pass
+
+  def __call__(self, *args, **kwargs):
+    pass
+
   @staticmethod
   def years_to_seconds(years):
     """
