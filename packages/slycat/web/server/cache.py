@@ -88,23 +88,23 @@ class Cache(object):
    NOTE: a parse tree is also generated in order to speed up future unseen calls
   """
 
-  def __init__(self, path, **kwargs):
+  def __init__(self, fs_cache_path, **kwargs):
     """
 
     :param path:
     :param kwargs:
     """
     if kwargs:
-      self._lifetime = self.to_seconds(**kwargs)
-      if self._lifetime <= 0:
-        msg = "Lifetime (%s seconds) is 0 or less." % self._lifetime
+      self._init_expire_time = self.to_seconds(**kwargs)
+      if self._init_expire_time <= 0:
+        msg = "Lifetime (%s seconds) is 0 or less." % self._init_expire_time
         raise LifetimeError, msg
     else:
-      self._lifetime = None
+      self._init_expire_time = None
     self._loaded = {}
-    self._path = os.path.abspath(path)
-    if not os.path.exists(self._path):
-      os.makedirs(self._path)
+    self._fs_cache_path = os.path.abspath(fs_cache_path)
+    if not os.path.exists(self._fs_cache_path):
+      os.makedirs(self._fs_cache_path)
 
   def __getitem__(self, item):
     pass
