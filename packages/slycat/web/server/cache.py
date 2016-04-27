@@ -118,16 +118,17 @@ class Cache(object):
       digest = self.digest_hash(key)
       value = self._loaded[digest].value
     else:
-      msg = "No such key in cache: '%s'" % key
+      msg = "key not found in cache: '%s'" % key
       raise KeyError(msg)
     return value
 
   def __setitem__(self, key, value):
     """
-
-    :param key:
-    :param value:
-    :return:
+    set the key:value in the cache. checks if it already in
+    the cache and throws CacheError if found
+    :param key: hashed representation of the function
+    :param value: stored result from the function
+    :return: not used
     """
     digest = self.digest_hash(key)
     path = os.path.join(self._fs_cache_path, digest)
