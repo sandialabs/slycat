@@ -80,27 +80,39 @@ class Cache(object):
 
   def __init__(self, fs_cache_path, **kwargs):
     """
-
-    :param path:
-    :param kwargs:
+    takes a filepath and and the following time stamps
+       - years (31,556,900 seconds per year)
+       - months (2,629,740 seconds per month)
+       - weeks (604,800 seconds per week)
+       - days (86,400 seconds per day)
+       - hours (3600 seconds per hour)
+       - minutes (60 seconds per minute)
+       - seconds
+       - None
+    :param path: path as a string to the
+    :param kwargs: time stamp
     """
     if kwargs:
       self._init_expire_time = self.to_seconds(**kwargs)
+      # we need a time greater than 0
       if self._init_expire_time <= 0:
         msg = "Lifetime (%s seconds) is 0 or less." % self._init_expire_time
         raise LifetimeError, msg
     else:
+      # no expiration time
       self._init_expire_time = None
+    # set up an in memory cache
     self._loaded = {}
+    # set path for file system
     self._fs_cache_path = os.path.abspath(fs_cache_path)
     if not os.path.exists(self._fs_cache_path):
       os.makedirs(self._fs_cache_path)
 
   def __getitem__(self, key):
     """
-
-    :param key:
-    :return:
+    get the item from the cache
+    :param key: hashed key for item in cache
+    :return: value associate with key
     """
     if key in self:
       digest = self.digest_hash(key)
