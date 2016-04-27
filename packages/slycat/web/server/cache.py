@@ -128,12 +128,22 @@ class Cache(object):
       expiry = self.cached_item_expire_time()
       contents = CachedObjectWrapper(value, expiration=expiry)
       Cache.write(contents, path)
-      print "digest", digest
+      print "\nset item digest", digest
       self._loaded[digest] = contents
 
   def __delitem__(self, key):
-    print "help"
-    pass
+    """
+    Removes the object keyed by `k` from memory
+    but not from the filesystem. To remove it from both the memory,
+    and the filesystem, use `expire`.
+    Synonymous with :func:`FSCache.unload`.
+    """
+    digest = self.digest_hash(key)
+    if digest in self._loaded:
+      del(self._loaded[digest])
+    else:
+      msg = "Object for key `%s` has not been loaded" % str(key)
+      raise CacheError, msg
 
   def __contains__(self, item):
     """
@@ -141,10 +151,7 @@ class Cache(object):
     :param item:
     :return:
     """
-    digest = Cache.digest_hash(self, item)
-    print digest
-    print
-    print self._loaded
+    digest = self.digest_hash(item)
     if digest in self._loaded:
       contents = self._loaded[digest]
       isin = True
@@ -154,13 +161,10 @@ class Cache(object):
         isin = True
       except CacheError:
         isin = False
-        # print isin
     if isin:
       if contents.expired():
-        # self.expire(k)
+        self.expire(item)
         isin = False
-        print contents.expired()
-    print isin
     return isin
 
   def __call__(self, f):
@@ -180,13 +184,32 @@ class Cache(object):
       return result
     return _f
 
-  def load(self, k):
+  def expire(self, key):
+    """
+    Permanently removes the, both in the memory and in the filesystem.
+    """
+    self._remove(key)
+    del self[key]
+
+  def _remove(self, key):
+    """
+    Removes the cache item keyed by `key` from the file system.
+    """
+    digest = self.digest_hash(key)
+    path = os.path.join(self._fs_cache_path, digest)
+    if os.path.exists(path):
+      os.remove(path)
+    else:
+      msg = "No object for key `%s` stored." % str(key)
+      raise CacheError, msg
+
+  def load(self, key):
     """
     Causes the object keyed by `k` to be loaded from the
     file system and returned. It therefore causes this object
     to reside in memory.
     """
-    return self[k]
+    return self[key]
 
   @staticmethod
   def read(filename):
@@ -207,6 +230,7 @@ class Cache(object):
     so don't use it as part of the API.
     """
     path = os.path.join(self._fs_cache_path , digest)
+    print path
     if os.path.exists(path):
       contents = Cache.read(path)
     else:
@@ -231,7 +255,7 @@ class Cache(object):
       x = self._init_expire_time + time.time()
     return x
 
-  def digest_hash(self,k):
+  def digest_hash(self, k):
     """
     Creates a digest suitable for use within an :class:`phyles.FSCache`
     object from the key object `k`.
@@ -357,7 +381,7 @@ if __name__ == "__main__":
     return "hello"
 
   print hello()
-  print cache[hello()]
+  # print cache[hello()]
 
 
 
