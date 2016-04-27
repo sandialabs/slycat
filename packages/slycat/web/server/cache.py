@@ -134,10 +134,11 @@ class Cache(object):
     path = os.path.join(self._fs_cache_path, digest_hash)
     #check if item exist
     if (digest_hash in self._loaded) or os.path.exists(path):
-      tmplt = ("Object for key `%s` exists\n." +
-               "Remove the old one before setting the new object.")
-      msg = tmplt % str(key)
-      raise CacheError, msg
+      self.expire(key)
+      # tmplt = ("Object for key `%s` exists\n." +
+      #          "Remove the old one before setting the new object.")
+      # msg = tmplt % str(key)
+      # raise CacheError, msg
     # item does not exist so lets create one
     cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
     Cache.write(cached_contents, path)
@@ -202,7 +203,10 @@ class Cache(object):
     Permanently removes the, both in the memory and in the filesystem.
     """
     self._remove(key)
-    del self[key]
+    try:
+      del self[key]
+    except CacheError as e:
+      print e.message
 
   def _remove(self, key):
     """
@@ -401,7 +405,11 @@ if __name__ == "__main__":
   print
   print hello()
   print hello(seed=2)
-  print hello(seed=1)
+  cache["meow"] = "xyz"
+  print cache["meow"]
+
+  cache["meow"] = "rgb"
+  print cache["meow"]
   # print cache[hello()]
 
 
