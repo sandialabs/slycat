@@ -161,25 +161,28 @@ class Cache(object):
 
   def __contains__(self, item):
     """
-
-    :param item:
-    :return:
+    check if item is in the cache, true if in the cache
+    false otherwise
+    :param item: item to search for in cache
+    :return: boolean
     """
     digest = self.digest_hash(item)
+    # get the item from the cache
     if digest in self._loaded:
-      contents = self._loaded[digest]
-      isin = True
+      value = self._loaded[digest]
+    #item was not in cache check file system
     else:
       try:
-        contents = self._load(digest, item)
-        isin = True
+        value = self._load(digest, item)
       except CacheError:
-        isin = False
-    if isin:
-      if contents.expired():
-        self.expire(item)
-        isin = False
-    return isin
+        # item was not in the cache or the file system
+        return False
+    # check if it has expired
+    if value.expired():
+      #contents were expired so we should delete them and return false
+      self.expire(item)
+      return False
+    return True
 
   def __call__(self, f):
     m = inspect.getmembers(f)
@@ -391,7 +394,7 @@ if __name__ == "__main__":
     Cache.to_seconds(not_a_key=1, minutes=1)
   except TimeError as e:
     assert e.message == 'invalid time argument: not_a_key', "did not catch bac key"
-  cache = Cache("cache/dir", seconds=60)
+  cache = Cache("cache/dir", seconds=20)
 
   @cache
   def hello(seed=1):
