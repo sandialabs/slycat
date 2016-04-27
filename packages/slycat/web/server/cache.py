@@ -75,17 +75,7 @@ class CachedObjectWrapper(object):
 
 class Cache(object):
   """
-  class used to cache HQL and metadata queries
-   usage example:
-      server_cache = ServeCache()
-      with server_cache.lock:
-        apply: crud operation to
-          server_cache.cache["artifact:aid:mid"]
-            \
-             server_cache.cache["artifact:aid:mid"]["artifact:data"]
-             eg: server_cache.cache["artifact:aid:mid"]["metadata"], server_cache.cache["artifact:aid:mid"]["hql-result"]
-
-   NOTE: a parse tree is also generated in order to speed up future unseen calls
+  class used to cache
   """
 
   def __init__(self, fs_cache_path, **kwargs):
@@ -106,20 +96,161 @@ class Cache(object):
     if not os.path.exists(self._fs_cache_path):
       os.makedirs(self._fs_cache_path)
 
-  def __getitem__(self, item):
-    pass
+  def __getitem__(self, key):
+    """
+
+    :param key:
+    :return:
+    """
+    if key in self:
+      digest = self.digest_hash(key)
+      value = self._loaded[digest].value
+    else:
+      msg = "No such key in cache: '%s'" % key
+      raise KeyError(msg)
+    return value
 
   def __setitem__(self, key, value):
-    pass
+    """
+
+    :param key:
+    :param value:
+    :return:
+    """
+    digest = self.digest_hash(key)
+    path = os.path.join(self._fs_cache_path, digest)
+    if (digest in self._loaded) or os.path.exists(path):
+      tmplt = ("Object for key `%s` exists\n." +
+               "Remove the old one before setting the new object.")
+      msg = tmplt % str(key)
+      raise CacheError, msg
+    else:
+      expiry = self.cached_item_expire_time()
+      contents = CachedObjectWrapper(value, expiration=expiry)
+      Cache.write(contents, path)
+      print "digest", digest
+      self._loaded[digest] = contents
 
   def __delitem__(self, key):
+    print "help"
     pass
 
   def __contains__(self, item):
-    pass
+    """
 
-  def __call__(self, *args, **kwargs):
-    pass
+    :param item:
+    :return:
+    """
+    digest = Cache.digest_hash(self, item)
+    print digest
+    print
+    print self._loaded
+    if digest in self._loaded:
+      contents = self._loaded[digest]
+      isin = True
+    else:
+      try:
+        contents = self._load(digest, item)
+        isin = True
+      except CacheError:
+        isin = False
+        # print isin
+    if isin:
+      if contents.expired():
+        # self.expire(k)
+        isin = False
+        print contents.expired()
+    print isin
+    return isin
+
+  def __call__(self, f):
+    m = inspect.getmembers(f)
+    try:
+      fid = (m.func_name, inspect.getargspec(f))
+    except (AttributeError, TypeError):
+      fid = (f.__name__, repr(type(f)))
+
+    def _f(*args, **kwargs):
+      k = (fid, args, kwargs)
+      if k in self:
+        result = self[k]
+      else:
+        result = f(*args, **kwargs)
+        self[k] = result
+      return result
+    return _f
+
+  def load(self, k):
+    """
+    Causes the object keyed by `k` to be loaded from the
+    file system and returned. It therefore causes this object
+    to reside in memory.
+    """
+    return self[k]
+
+  @staticmethod
+  def read(filename):
+    """
+    Helper function that simply pickle loads the first object
+    from the file named by `filename`.
+    """
+    with open(filename, 'rb') as loaded_file:
+      loaded_obj = cPickle.load(loaded_file)
+    return loaded_obj
+
+  def _load(self, digest, k):
+    """
+    Loads the :class:`CacheObject` keyed by `k` from the
+    file system (residing in a file named by `digest`)
+    and returns the object.
+    This method is part of the implementation of :class:`FSCache`,
+    so don't use it as part of the API.
+    """
+    path = os.path.join(self._fs_cache_path , digest)
+    if os.path.exists(path):
+      contents = Cache.read(path)
+    else:
+      msg = "Object for key `%s` does not exist." % (k,)
+      raise CacheError, msg
+    self._loaded[digest] = contents
+    return contents
+
+  def cached_item_expire_time(self):
+    """
+    Returns an expiry for the cache in seconds as if the start
+    of the expiration period were the moment at which this
+    the method is called.
+    >>> import time
+    >>> c = Cache('cache/dir', seconds=60)
+    >>> round(c.cached_item_expire_time() - time.time(), 3)
+    60.0
+    """
+    if self._init_expire_time is None:
+      x = None
+    else:
+      x = self._init_expire_time + time.time()
+    return x
+
+  def digest_hash(self,k):
+    """
+    Creates a digest suitable for use within an :class:`phyles.FSCache`
+    object from the key object `k`.
+    >>> adict = {'a' : {'b':1}, 'f': []}
+    >>> digest_hash(adict)
+    'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
+    """
+    s = cPickle.dumps(k)
+    h = hashlib.sha256(s).digest()
+    b64 = base64.urlsafe_b64encode(h)[:-2]
+    return b64.replace('-', '=')
+
+  @staticmethod
+  def write(obj, filename):
+    """
+    writes and object to the selected file path
+    """
+    with open(filename, 'wb') as cache_file:
+      cPickle.dump(obj, cache_file, cPickle.HIGHEST_PROTOCOL)
 
   @staticmethod
   def years_to_seconds(years):
@@ -219,8 +350,14 @@ if __name__ == "__main__":
     Cache.to_seconds(not_a_key=1, minutes=1)
   except TimeError as e:
     assert e.message == 'invalid time argument: not_a_key', "did not catch bac key"
+  cache = Cache("cache/dir", seconds=60)
 
+  @cache
+  def hello():
+    return "hello"
 
+  print hello()
+  print cache[hello()]
 
 
 
