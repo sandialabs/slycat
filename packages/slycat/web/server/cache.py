@@ -145,16 +145,17 @@ class Cache(object):
 
   def __delitem__(self, key):
     """
-    Removes the object keyed by `k` from memory
-    but not from the filesystem. To remove it from both the memory,
-    and the filesystem, use `expire`.
-    Synonymous with :func:`FSCache.unload`.
+    Removes the key object from memory
+    but not from the filesystem.
+    see function expire to remove from booth
+    :param key: item to be removed from memory
+    :return: not used
     """
-    digest = self.digest_hash(key)
-    if digest in self._loaded:
-      del(self._loaded[digest])
+    digest_hash = self.digest_hash(key)
+    if digest_hash in self._loaded:
+      del self._loaded[digest_hash]
     else:
-      msg = "Object for key `%s` has not been loaded" % str(key)
+      msg = "cannot delete object at %s not loaded in memory" % str(key)
       raise CacheError, msg
 
   def __contains__(self, item):
@@ -223,16 +224,6 @@ class Cache(object):
     """
     return self[key]
 
-  @staticmethod
-  def read(filename):
-    """
-    Helper function that simply pickle loads the first object
-    from the file named by `filename`.
-    """
-    with open(filename, 'rb') as loaded_file:
-      loaded_obj = cPickle.load(loaded_file)
-    return loaded_obj
-
   def _load(self, digest, k):
     """
     Loads the :class:`CacheObject` keyed by `k` from the
@@ -279,6 +270,16 @@ class Cache(object):
     h = hashlib.sha256(s).digest()
     b64 = base64.urlsafe_b64encode(h)[:-2]
     return b64.replace('-', '=')
+
+  @staticmethod
+  def read(filename):
+    """
+    Helper function that simply pickle loads the first object
+    from the file named by `filename`.
+    """
+    with open(filename, 'rb') as loaded_file:
+      loaded_obj = cPickle.load(loaded_file)
+    return loaded_obj
 
   @staticmethod
   def write(obj, filename):
@@ -389,12 +390,18 @@ if __name__ == "__main__":
   cache = Cache("cache/dir", seconds=60)
 
   @cache
-  def hello():
+  def hello(seed=1):
     import random
     print "\nnot cached"
-    return "hello"+ str(random.random())
+    return str(seed)+"hello"+ str(random.random())
 
   print hello()
+  print hello(seed=2)
+  print hello(seed=1)
+  print
+  print hello()
+  print hello(seed=2)
+  print hello(seed=1)
   # print cache[hello()]
 
 
