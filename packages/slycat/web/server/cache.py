@@ -130,19 +130,18 @@ class Cache(object):
     :param value: stored result from the function
     :return: not used
     """
-    digest = self.digest_hash(key)
-    path = os.path.join(self._fs_cache_path, digest)
-    if (digest in self._loaded) or os.path.exists(path):
+    digest_hash = self.digest_hash(key)
+    path = os.path.join(self._fs_cache_path, digest_hash)
+    #check if item exist
+    if (digest_hash in self._loaded) or os.path.exists(path):
       tmplt = ("Object for key `%s` exists\n." +
                "Remove the old one before setting the new object.")
       msg = tmplt % str(key)
       raise CacheError, msg
-    else:
-      expiry = self.cached_item_expire_time()
-      contents = CachedObjectWrapper(value, expiration=expiry)
-      Cache.write(contents, path)
-      print "\nset item digest", digest
-      self._loaded[digest] = contents
+    # item does not exist so lets create one
+    cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
+    Cache.write(cached_contents, path)
+    self._loaded[digest_hash] = cached_contents
 
   def __delitem__(self, key):
     """
