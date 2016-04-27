@@ -10,7 +10,7 @@ import inspect
 import Queue
 import threading
 
-__all__ = ["CacheError"]
+__all__ = ["CacheError", "Cache"]
 
 class CacheError(Exception):
   """
@@ -75,7 +75,7 @@ class CachedObjectWrapper(object):
 
 class Cache(object):
   """
-  class used to cache
+  decorator class used to cache
   """
 
   def __init__(self, fs_cache_path, **kwargs):
@@ -378,7 +378,9 @@ if __name__ == "__main__":
 
   @cache
   def hello():
-    return "hello"
+    import random
+    print "\nnot cached"
+    return "hello"+ str(random.random())
 
   print hello()
   # print cache[hello()]
