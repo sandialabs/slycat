@@ -449,38 +449,38 @@ class Cache(object):
         raise TimeError(msg)
     return sum(seconds)
 
-if __name__ == "__main__":
-  assert Cache.to_seconds(seconds=1, minutes=1) == 61, "time is not calculated correctly should be 61"
-  assert Cache.to_seconds(seconds=1, minutes=1, hours=1, days=1, weeks=1, months=1, years=1) == 34881501.0, "time is not calculated correctly should be 34881501.0"
-  try:
-    Cache.to_seconds(not_a_key=1, minutes=1)
-  except TimeError as e:
-    assert e.message == 'invalid time argument: not_a_key', "did not catch bac key"
-  cache = Cache("cache/dir", seconds=20)
+# if __name__ == "__main__":
+#   assert Cache.to_seconds(seconds=1, minutes=1) == 61, "time is not calculated correctly should be 61"
+#   assert Cache.to_seconds(seconds=1, minutes=1, hours=1, days=1, weeks=1, months=1, years=1) == 34881501.0, "time is not calculated correctly should be 34881501.0"
+#   try:
+#     Cache.to_seconds(not_a_key=1, minutes=1)
+#   except TimeError as e:
+#     assert e.message == 'invalid time argument: not_a_key', "did not catch bac key"
+#   cache = Cache("cache/dir", seconds=20)
 
-  @cache
-  def hello(seed=1):
-    """
-    test function
-    :param seed: some garbage number
-    :return: seed+hello+rand and a string
-    """
-    import random
-    print "\nnot cached"
-    return str(seed)+"hello"+ str(random.random())
+  # @cache
+  # def hello(seed=1):
+  #   """
+  #   test function
+  #   :param seed: some garbage number
+  #   :return: seed+hello+rand and a string
+  #   """
+  #   import random
+  #   print "\nnot cached"
+  #   return str(seed)+"hello"+ str(random.random())
 
-  print hello()
-  print hello(seed=2)
-  print hello(seed=1)
-  print
-  print hello()
-  print hello(seed=2)
-  cache["meow"] = "xyz"
-  print cache["meow"]
-
-  cache["meow"] = "rgb"
-  print cache["meow"]
-  # print cache[hello()]
+  # print hello()
+  # print hello(seed=2)
+  # print hello(seed=1)
+  # print
+  # print hello()
+  # print hello(seed=2)
+  # cache["meow"] = "xyz"
+  # print cache["meow"]
+  #
+  # cache["meow"] = "rgb"
+  # print cache["meow"]
+#   # print cache[hello()]
 
 
 
