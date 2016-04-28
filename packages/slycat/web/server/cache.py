@@ -47,7 +47,7 @@ class CachedObjectWrapper(object):
   @property
   def value(self):
     """
-    returns the object that is being wraped by the cache
+    returns the object that is being wrapped by the cache
     :return: object
     """
     return self._value
@@ -57,7 +57,7 @@ class CachedObjectWrapper(object):
     """
     return the expiration time for the cached object, could return none
     if there is no expiration
-    :return: experation object
+    :return: expiration object
     """
     return self._expiration
 
@@ -185,19 +185,28 @@ class Cache(object):
     return True
 
   def __call__(self, f):
-    m = inspect.getmembers(f)
+    """
+    This is the decorator cache call
+    :param f: function to be wrapped
+    :return: results of the function either from
+    the cache or the function itself
+    """
+    function_meta_data = inspect.getmembers(f)
     try:
-      fid = (m.func_name, inspect.getargspec(f))
+      fid = (function_meta_data.func_name, inspect.getargspec(f))
     except (AttributeError, TypeError):
       fid = (f.__name__, repr(type(f)))
 
     def _f(*args, **kwargs):
-      k = (fid, args, kwargs)
-      if k in self:
-        result = self[k]
+      key = (fid, args, kwargs)
+      print key
+      #check if we have cached the result
+      if key in self:
+        result = self[key]
+      #we have not cached the result so lets get it
       else:
         result = f(*args, **kwargs)
-        self[k] = result
+        self[key] = result
       return result
     return _f
 
