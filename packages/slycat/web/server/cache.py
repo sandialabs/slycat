@@ -232,6 +232,17 @@ class Cache(object):
       msg = "No object for key `%s` stored." % str(key)
       raise CacheError, msg
 
+  def unload(self, k):
+    """
+    Removes the object keyed by k
+    from virtual memory only.
+    :param k:
+    :return:
+    """
+    digest = self.digest_hash(k)
+    if digest in self._loaded:
+      del(self._loaded[digest])
+
   def load(self, key):
     """
     Causes the object keyed by `k` to be loaded from the
@@ -278,8 +289,9 @@ class Cache(object):
     """
     Creates a digest suitable for use within an :class:`phyles.FSCache`
     object from the key object `k`.
+    >>> cache = Cache(".")
     >>> adict = {'a' : {'b':1}, 'f': []}
-    >>> digest_hash(adict)
+    >>> cache.digest_hash(adict)
     'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
     """
     s = cPickle.dumps(k)
@@ -287,6 +299,37 @@ class Cache(object):
     b64 = base64.urlsafe_b64encode(h)[:-2]
     return b64.replace('-', '=')
 
+  def v_keys(self):
+    """
+    Returns a list of virtual memory keys.
+    :return: keys for virtual cache
+    """
+    return self._loaded.keys()
+
+  def fs_keys(self):
+    """
+    Returns the names of the files
+    in the cache on the filesystem.
+    :return: list of names of cached files
+    """
+    return os.listdir(self._fs_cache_path)
+
+  def clear(self):
+    """
+    clear cache items from virtual memory.
+    :return: not used
+    """
+    self._loaded.clear()
+
+  def purge(self):
+    """
+    empties the cache from fs and v memory
+    :return: not used
+    """
+    for f in os.listdir(self._fs_cache_path):
+      path = os.path.join(self._fs_cache_path, f)
+      os.remove(path)
+    self.clear()
   @staticmethod
   def read(filename):
     """
