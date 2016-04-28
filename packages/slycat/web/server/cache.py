@@ -285,20 +285,6 @@ class Cache(object):
       x = self._init_expire_time + time.time()
     return x
 
-  def digest_hash(self, k):
-    """
-    Creates a digest suitable for use within an :class:`phyles.FSCache`
-    object from the key object `k`.
-    >>> cache = Cache(".")
-    >>> adict = {'a' : {'b':1}, 'f': []}
-    >>> cache.digest_hash(adict)
-    'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
-    """
-    s = cPickle.dumps(k)
-    h = hashlib.sha256(s).digest()
-    b64 = base64.urlsafe_b64encode(h)[:-2]
-    return b64.replace('-', '=')
-
   def v_keys(self):
     """
     Returns a list of virtual memory keys.
@@ -330,6 +316,22 @@ class Cache(object):
       path = os.path.join(self._fs_cache_path, f)
       os.remove(path)
     self.clear()
+
+  @staticmethod
+  def digest_hash(key):
+    """
+    Creates a digest hash
+    >>> adict = {'a' : {'b':1}, 'f': []}
+    >>> Cache.digest_hash(adict)
+    'a2VKynHgDrUIm17r6BQ5QcA5XVmqpNBmiKbZ9kTu0A'
+    :param key: key to hash
+    :return: digest hash of key
+    """
+    string_rep = cPickle.dumps(key)
+    digest_hash = hashlib.sha256(string_rep).digest()
+    b64_digest_hash = base64.urlsafe_b64encode(digest_hash)[:-2]
+    return b64_digest_hash.replace('-', '=')
+
   @staticmethod
   def read(filename):
     """
