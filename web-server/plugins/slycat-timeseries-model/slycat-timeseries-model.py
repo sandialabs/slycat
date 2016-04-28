@@ -20,7 +20,6 @@ def register_slycat_plugin(context):
 
   def page_html(database, model):
     """Add the HTML representation of the model to the context object."""
-    import json
     import pystache
 
     context = dict()
@@ -82,8 +81,7 @@ def register_slycat_plugin(context):
         waveform_times = pickle.loads(waveform_times)
         sid, waveform_values = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_values.pickle" % (workdir, uid, f, index))
         waveform_values = pickle.loads(waveform_values)
-        slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
-
+        slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
 
   def fail_model(mid, message):
     database = slycat.web.server.database.couchdb.connect()
