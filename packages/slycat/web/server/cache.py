@@ -77,7 +77,7 @@ class Cache(object):
   """
   decorator class used to cache
   """
-
+  _lock = threading.Lock()
   def __init__(self, fs_cache_path, **kwargs):
     """
     takes a filepath and and the following time stamps
@@ -316,6 +316,14 @@ class Cache(object):
       path = os.path.join(self._fs_cache_path, f)
       os.remove(path)
     self.clear()
+
+  @property
+  def lock(self):
+    """
+    threading.Lock() used to control crud operations to the cache.
+    :return:
+    """
+    return self._lock
 
   @staticmethod
   def digest_hash(key):
