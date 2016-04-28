@@ -372,7 +372,9 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
   storage = model["artifact:%s" % aid]
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(storage, "r+") as file:
+      cherrypy.log.error("about to write put_model_array for: {}".format(aid))
       slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
+      cherrypy.log.error("wrote put_model_array for: {}".format(aid))
 
 def put_model_arrayset_data(database, model, aid, hyperchunks, data):
   """Write data to an arrayset artifact.
@@ -393,6 +395,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
   --------
   :http:put:`/models/(mid)/arraysets/(aid)/data`
   """
+  cherrypy.log.error("put_model_arrayset_data called with: {}".format(aid))
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
@@ -402,6 +405,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
+      cherrypy.log.error("file opened for put_model_arrayset_data: {}".format(aid))
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
         hdf5_array = hdf5_arrayset[array.index]
@@ -416,7 +420,9 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
             data_hyperslice = next(data)
             if isinstance(data_hyperslice, list):
               data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
+            cherrypy.log.error("about to write data for: {}".format(aid))
             hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
+            cherrypy.log.error("wrote data for: {}".format(aid))
 
 def put_model_file(database, model, aid, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
