@@ -460,6 +460,11 @@ if __name__ == "__main__":
 
   @cache
   def hello(seed=1):
+    """
+    test function
+    :param seed: some garbage number
+    :return: seed+hello+rand and a string
+    """
     import random
     print "\nnot cached"
     return str(seed)+"hello"+ str(random.random())
