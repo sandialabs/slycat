@@ -4,6 +4,7 @@ import numpy
 import os
 import slycat.darray
 import slycat.email
+import cherrypy
 
 class DArray(slycat.darray.Prototype):
   """Slycat darray implementation that stores data in an HDF5 file."""
@@ -238,10 +239,12 @@ class ArraySet(object):
     -------
     array : :class:`slycat.hdf5.DArray`
     """
+    cherrypy.log.error("building start_array for put_model_array")
     stub = slycat.darray.Stub(dimensions, attributes)
     shape = [dimension["end"] - dimension["begin"] for dimension in stub.dimensions]
     stored_types = [dtype(attribute["type"]) for attribute in stub.attributes]
 
+    cherrypy.log.error("allocating space for start_array for put_model_array")
     # Allocate space for the coming data ...
     array_key = "array/%s" % array_index
     if array_key in self._storage:
@@ -249,6 +252,7 @@ class ArraySet(object):
     for attribute_index, stored_type in enumerate(stored_types):
       self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
 
+    cherrypy.log.error("storing metadata for start_array for put_model_array")
     # Store array metadata ...
     array_metadata = self._storage[array_key].create_group("metadata")
     array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
@@ -258,6 +262,7 @@ class ArraySet(object):
     array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in stub.dimensions], dtype="int64")
     array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in stub.dimensions], dtype="int64")
 
+    cherrypy.log.error("returning Darray for start_array for put_model_array")
     return DArray(self._storage[array_key])
 
   def store_array(self, array_index, array):
