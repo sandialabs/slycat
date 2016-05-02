@@ -37,6 +37,7 @@ parser.add_argument("--cluster-sample-count", type=int, default=1000, help="Samp
 parser.add_argument("--cluster-sample-type", default="uniform-paa", choices=["uniform-pla", "uniform-paa"], help="Resampling algorithm type.  Default: %(default)s")
 parser.add_argument("--cluster-type", default="average", choices=["single", "complete", "average", "weighted"], help="Hierarchical clustering method.  Default: %(default)s")
 parser.add_argument("--cluster-metric", default="euclidean", choices=["euclidean"], help="Hierarchical clustering distance metric.  Default: %(default)s")
+parser.add_argument("--workdir", default=None, help="Working directory to store data to be processed during model creation")
 parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
 parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
 arguments = parser.parse_args()
@@ -95,7 +96,7 @@ try:
   #connection.update_model(mid, message="Storing clustering parameters.")
   print("Storing clustering parameters.")
 
-  dirname = os.path.expanduser('~') + ("/slycat_timeseries_%s" % arguments.hash)
+  dirname = "%s/slycat_timeseries_%s" % (arguments.workdir, arguments.hash)
   if not os.path.exists(dirname):
     os.makedirs(dirname)
 
@@ -128,14 +129,14 @@ try:
     arrayset_inputs = dict(aid="inputs", array=0, dimensions=dimensions, attributes=attributes)
     with open(os.path.join(dirname, "arrayset_inputs.pickle"), "wb") as arrayset_inputs_pickle:
       pickle.dump(arrayset_inputs, arrayset_inputs_pickle)
-    with open(os.path.join(dirname, "inputs_attributes_data.pickle"), "wb") as inputs_attributes_data:
-      pickle.dump(attributes_data, inputs_attributes_data)
 
     #connection.put_model_arrayset(mid, "inputs")
     #connection.put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
-    #for attribute in range(len(attributes)):
-      #print("Storing input table attribute %s", attribute)
-      #data = array.get_data(attribute)[...]
+    for attribute in range(len(attributes)):
+      print("Storing input table attribute %s", attribute)
+      data = array.get_data(attribute)[...]
+      with open(os.path.join(dirname, "inputs_attributes_data_%s.pickle" % attribute), "wb") as attributes_file:
+        pickle.dump(data, attributes_file)
       #connection.put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
 
   # Create a mapping from unique cluster names to timeseries attributes.
@@ -335,12 +336,19 @@ try:
     arrayset_name = "preview-%s" % name
     #connection.put_model_arrayset(mid, arrayset_name)
     for index, waveform in enumerate(waveforms):
-      print("Uploading preview timeseries %s" % index)
       dimensions = [dict(name="sample", end=len(waveform["times"]))]
       attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
       print("Creating array %s %s" % (attributes, dimensions))
+      with open(os.path.join(dirname, "waveform_%s_%s_dimensions.pickle" % (name, index)), "wb") as dimensions_file:
+        pickle.dump(dimensions, dimensions_file)
+      with open(os.path.join(dirname, "waveform_%s_%s_attributes.pickle" % (name, index)), "wb") as attributes_file:
+        pickle.dump(attributes, attributes_file)
       #connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
-      print("Uploading %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
+      print("Creating %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
+      with open(os.path.join(dirname, "waveform_%s_%s_times.pickle" % (name, index)), "wb") as times_file:
+        pickle.dump(waveform["times"], times_file)
+      with open(os.path.join(dirname, "waveform_%s_%s_values.pickle" % (name, index)), "wb") as values_file:
+        pickle.dump(waveform["values"], values_file)
       #connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
 
 except:
