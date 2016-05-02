@@ -422,6 +422,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
             cherrypy.log.error("about to write data for: {}".format(aid))
             hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
             cherrypy.log.error("wrote data for: {}".format(aid))
+      file.close()
 
 def put_model_file(database, model, aid, value, content_type, input=False):
   fid = database.write_file(model, content=value, content_type=content_type)
