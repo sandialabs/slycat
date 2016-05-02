@@ -18,9 +18,8 @@ import sys
 import cPickle
 import Queue
 import threading
-
+import slycat.web.server.cache
 config = {}
-
 
 class ServeCache(object):
   """
