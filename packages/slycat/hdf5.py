@@ -248,8 +248,10 @@ class ArraySet(object):
     # Allocate space for the coming data ...
     array_key = "array/%s" % array_index
     if array_key in self._storage:
+      cherrypy.log.error("delete array_key from self._storage")
       del self._storage[array_key]
     for attribute_index, stored_type in enumerate(stored_types):
+      cherrypy.log.error("creating dataset: array/%s/attribute/%s with shape=%s and type=%" % (array_index, attribute_index, shape, stored_type))
       self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
 
     cherrypy.log.error("storing metadata for start_array for put_model_array")
