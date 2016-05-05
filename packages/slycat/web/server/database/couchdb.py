@@ -67,6 +67,13 @@ class Database:
     self.put_attachment(document, content, filename=fid, content_type=content_type)
     return fid
 
+  def __repr__(self):
+    """
+    adding this so we can use the cache decorator
+    :return:
+    """
+    return "<slycat.web.server.database.couchdb.Database instance>"
+
 def connect():
   """Connect to a CouchDB database.
 
