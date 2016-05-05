@@ -217,6 +217,7 @@ $.widget("parameter_image.controls",
     var numRows = self.options.metadata['row-count'];
     var numCols = self.options.metadata['column-count'];
     var rowRequest = "";
+    var rowPOSTRequest = "";
 
     if (selectionList.length > 0) {
       selectionList.sort(function(x,y) {return x-y});
@@ -225,11 +226,19 @@ $.widget("parameter_image.controls",
       rowRequest = "rows=0-" + numRows;
     }
 
+    if (selectionList.length == 0)
+    {
+      selectionList = Array.apply(null, {length: numRows}).map(Number.call, Number)
+    }
+    selectionList.sort(function(x,y) {return x-y});
+    rowPOSTRequest = selectionList.join("|");
+
     $.ajax(
     {
-      type : "GET",
-      url : server_root + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?" + rowRequest + "&columns=0-" + numCols + "&index=Index",
-      //url : self.options['server-root'] + "models/" + self.options.mid + "/tables/" + self.options.aid + "/arrays/0/chunk?rows=0-" + numRows + "&columns=0-" + numCols + "&index=Index",
+      type : "POST",
+      url : server_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
+      data: JSON.stringify({"hyperchunks": "0/0:" + numCols + "/" + rowPOSTRequest}),
+      contentType: "application/json",
       success : function(result)
       {
         self._write_csv( self._convert_to_csv(result), self.options.model_name + "_data_table.csv" );
@@ -288,22 +297,22 @@ $.widget("parameter_image.controls",
 
   _convert_to_csv: function(array)
   {
+    var self = this;
     // Note that array.data is column-major:  array.data[0][*] is the first column
-    var numRows = array.rows.length;
-    var numCols = array.columns.length;
+    var numCols = self.options.metadata['column-count']-1;
+    var numRows = array.length/numCols;
     var rowMajorOutput = "";
-    numCols = numCols - 1;  // skip last column which is slycat index
     var r, c;
     // add the headers
     for(c=0; c<numCols; c++) {
-      rowMajorOutput += array["column-names"][c] + ",";
+      rowMajorOutput += self.options.metadata["column-names"][c] + ",";
     }
     rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
     rowMajorOutput += "\n";
     // add the data
     for(r=0; r<numRows; r++) {
       for(c=0; c<numCols; c++) {
-        rowMajorOutput += array.data[c][r] + ",";
+        rowMajorOutput += array[r + (c * numRows)] + ",";
       }
       rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
       rowMajorOutput += "\n";
