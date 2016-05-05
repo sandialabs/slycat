@@ -18,7 +18,7 @@ import sys
 import cPickle
 import Queue
 import threading
-import slycat.web.server.cache
+from slycat.web.server.cache import Cache
 config = {}
 
 class ServeCache(object):
@@ -76,6 +76,8 @@ class ServeCache(object):
     cherrypy.log.error("updating server cache force cleanup queue")
     self.__queue.put("cleanup")
 server_cache = ServeCache()# instantiate our server cache for use here and in slycat.web.server.cleanup.py
+
+cache_it = Cache("/tmp/cache/dir", seconds=2000)
 
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -148,6 +150,7 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
+@cache_it
 def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
   """Retrieve metadata describing an arrayset artifact.
 
@@ -291,6 +294,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     if "artifact:%s%s" % (aid,model["_id"]) in server_cache.cache:
       if slycat.hyperchunks.tostring(hyperchunks) in server_cache.cache["artifact:%s%s" % (aid,model["_id"])]:
         for value in server_cache.cache["artifact:%s%s" % (aid,model["_id"])][slycat.hyperchunks.tostring(hyperchunks)]:
+          # cherrypy.log.error("\n\nvalue yeild str: %s" % str(value))
           yield value
       else:
         update_cache = True
