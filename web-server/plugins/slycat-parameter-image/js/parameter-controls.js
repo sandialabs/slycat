@@ -217,27 +217,19 @@ $.widget("parameter_image.controls",
     var numRows = self.options.metadata['row-count'];
     var numCols = self.options.metadata['column-count'];
     var rowRequest = "";
-    var rowPOSTRequest = "";
-
-    if (selectionList.length > 0) {
-      selectionList.sort(function(x,y) {return x-y});
-      rowRequest = "rows=" + selectionList.toString();
-    } else {
-      rowRequest = "rows=0-" + numRows;
-    }
 
     if (selectionList.length == 0)
     {
       selectionList = Array.apply(null, {length: numRows}).map(Number.call, Number)
     }
     selectionList.sort(function(x,y) {return x-y});
-    rowPOSTRequest = selectionList.join("|");
+    rowRequest = selectionList.join("|");
 
     $.ajax(
     {
       type : "POST",
       url : server_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
-      data: JSON.stringify({"hyperchunks": "0/0:" + numCols + "/" + rowPOSTRequest}),
+      data: JSON.stringify({"hyperchunks": "0/0:" + numCols + "/" + rowRequest}),
       contentType: "application/json",
       success : function(result)
       {
