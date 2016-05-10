@@ -18,7 +18,7 @@ import sys
 import cPickle
 import Queue
 import threading
-from slycat.web.server.cache import Cache
+# from slycat.web.server.cache import Cache
 config = {}
 
 class ServeCache(object):
@@ -77,7 +77,7 @@ class ServeCache(object):
     self.__queue.put("cleanup")
 server_cache = ServeCache()# instantiate our server cache for use here and in slycat.web.server.cleanup.py
 
-cache_it = Cache("/tmp/cache/dir", seconds=2000)
+# cache_it = Cache("/tmp/cache/dir", seconds=2000)
 
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -150,7 +150,7 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
-@cache_it
+# @cache_it
 def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
   """Retrieve metadata describing an arrayset artifact.
 
