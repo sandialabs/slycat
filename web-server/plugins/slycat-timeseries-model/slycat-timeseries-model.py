@@ -38,7 +38,7 @@ def register_slycat_plugin(context):
     return sid, data
 
   def compute(database, model, sid, uid, workdir, hostname, username, password):
-    sid, inputs = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/arrayset_inputs.pickle")
+    sid, inputs = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
     inputs = pickle.loads(inputs)
 
     database = slycat.web.server.database.couchdb.connect()
@@ -48,22 +48,22 @@ def register_slycat_plugin(context):
     slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
 
     for attribute in range(len(attributes)):
-      sid, data = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/inputs_attributes_data_%s.pickle" % (attribute))
+      sid, data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/inputs_attributes_data_%s.pickle" % (workdir, uid, attribute))
       data = pickle.loads(data)
       slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [data])
 
-    clusters = json.loads(slycat.web.server.get_remote_file(sid, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/file_clusters.json"))
+    clusters = json.loads(slycat.web.server.get_remote_file(sid, "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
     clusters_file = json.JSONDecoder().decode(clusters["file"])
 
-    slycat.web.server.post_model_file(model["_id"], True, sid, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/file_clusters.out", clusters["aid"], clusters["parser"])
+    slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_clusters.out" % (workdir, uid), clusters["aid"], clusters["parser"])
 
     for f in clusters_file:
       cherrypy.log.error("Processing file cluster %s" % f)
-      sid, file_cluster_data = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/file_cluster_%s.json" % (f))
+      sid, file_cluster_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/file_cluster_%s.json" % (workdir, uid, f))
       file_cluster_attr = json.loads(file_cluster_data)
-      slycat.web.server.post_model_file(model["_id"], True, sid, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/file_cluster_%s.out" % (f), file_cluster_attr["aid"], file_cluster_attr["parser"])
+      slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, f), file_cluster_attr["aid"], file_cluster_attr["parser"])
 
-      sid, waveforms = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/waveforms_%s.pickle" % (f))
+      sid, waveforms = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveforms_%s.pickle" % (workdir, uid, f))
       waveforms = pickle.loads(waveforms)
 
       database = slycat.web.server.database.couchdb.connect()
@@ -71,15 +71,15 @@ def register_slycat_plugin(context):
       slycat.web.server.put_model_arrayset(database, model, "preview-%s" % f)
       for index, waveform in enumerate(waveforms):
         cherrypy.log.error("Processing waveform %s - %s" % (f, index))
-        sid, waveform_dimensions = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/waveform_%s_%s_dimensions.pickle" % (f, index))
+        sid, waveform_dimensions = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_dimensions.pickle" % (workdir, uid, f, index))
         waveform_dimensions = pickle.loads(waveform_dimensions)
-        sid, waveform_attributes = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/waveform_%s_%s_attributes.pickle" % (f, index))
+        sid, waveform_attributes = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_attributes.pickle" % (workdir, uid, f, index))
         waveform_attributes = pickle.loads(waveform_attributes)
         slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes, waveform_dimensions)
 
-        sid, waveform_times = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/waveform_%s_%s_times.pickle" % (f, index))
+        sid, waveform_times = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_times.pickle" % (workdir, uid, f, index))
         waveform_times = pickle.loads(waveform_times)
-        sid, waveform_values = get_remote_file(sid, hostname, username, password, "/gscratch/srberna/slycat-workdir/slycat_timeseries_c9b1168a/waveform_%s_%s_values.pickle" % (f, index))
+        sid, waveform_values = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_values.pickle" % (workdir, uid, f, index))
         waveform_values = pickle.loads(waveform_values)
         slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
 
