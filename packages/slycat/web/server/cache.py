@@ -9,6 +9,7 @@ import base64
 import inspect
 import Queue
 import threading
+import cherrypy
 
 __all__ = ["CacheError", "Cache"]
 
@@ -198,13 +199,15 @@ class Cache(object):
       fid = (f.__name__, repr(type(f)))
 
     def _f(*args, **kwargs):
+      cherrypy.log.error("\nargs: %s    \nkwargs %s" % (str(args),kwargs))
       key = (fid, args, kwargs)
-      print key
       #check if we have cached the result
       if key in self:
+        cherrypy.log.error("found in cache")
         result = self[key]
       #we have not cached the result so lets get it
       else:
+        cherrypy.log.error("NOT found in cache")
         result = f(*args, **kwargs)
         self[key] = result
       return result
@@ -335,8 +338,12 @@ class Cache(object):
     :param key: key to hash
     :return: digest hash of key
     """
-    string_rep = cPickle.dumps(key)
-    digest_hash = hashlib.sha256(string_rep).digest()
+    # try:
+    #   string_rep = cPickle.dumps(key)
+    # except Exception as e:
+    #   cherrypy.log.error("PICKLE error: %s  %s" % (e.message,key))
+    #   raise Exception
+    digest_hash = hashlib.sha256(str(key)).digest()
     b64_digest_hash = base64.urlsafe_b64encode(digest_hash)[:-2]
     return b64_digest_hash.replace('-', '=')
 
@@ -356,7 +363,7 @@ class Cache(object):
     writes and object to the selected file path
     """
     with open(filename, 'wb') as cache_file:
-      cPickle.dump(obj, cache_file, cPickle.HIGHEST_PROTOCOL)
+      cPickle.dump(obj, cache_file, protocol=cPickle.HIGHEST_PROTOCOL)
 
   @staticmethod
   def years_to_seconds(years):

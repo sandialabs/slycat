@@ -47,7 +47,7 @@ def _login_session_cleanup_worker():
       cherrypy.log.error("Login session cleanup worker finished.")
       time.sleep(datetime.timedelta(minutes=15).total_seconds())
     except Exception as e:
-      cherrypy.log.error("Login session cleanup worker waiting for couchdb.")
+      cherrypy.log.error("Login session cleanup worker waiting for couchdb. %s" % e.message)
       time.sleep(2)
 _login_session_cleanup_worker.thread = threading.Thread(name="session-cleanup", target=_login_session_cleanup_worker)
 _login_session_cleanup_worker.thread.daemon = True
