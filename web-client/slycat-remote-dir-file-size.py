@@ -89,5 +89,4 @@ except KeyboardInterrupt as e:
         temp_dict["file_size_map"] = file_size_map
         pickle.dump(temp_dict, fp)
 
-    pass
-print size
+print size, " bytes"
