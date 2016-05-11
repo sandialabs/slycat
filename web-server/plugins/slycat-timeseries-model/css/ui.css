@@ -169,6 +169,22 @@ a
     margin: -100px 0 0 -100px;
     display: none;
 }
+#waveform-selector-progress {
+  background-color: transparent;
+  position: absolute;
+  left: 0px;
+  top: 3px;
+  width: 100%;
+  height: 15px;
+  text-align: center;
+  display: none;
+}
+#waveform-selector-progress-wrapper {
+  display: none;
+}
+#waveform-pane:hover #waveform-selector-progress-wrapper {
+  display: block;
+}
 /* Use these colors for the dark night mode */
 #waveform-viewer.nightMode,
 .nightMode rect.selectionMask
