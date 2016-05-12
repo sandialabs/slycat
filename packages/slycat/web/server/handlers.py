@@ -1215,6 +1215,7 @@ def post_model_arrayset_data(mid, aid):
   except:
     slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
     raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
+  cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks calculated" % (aid))
 
   #
   if byteorder is not None:
@@ -1256,6 +1257,8 @@ def post_model_arrayset_data(mid, aid):
           yield hyperslice.byteswap().tostring(order="C")
         else:
           yield hyperslice.tostring(order="C")
+
+  cherrypy.log.error("GET Model Arrayset Data: arrayset %s starting to get content" % (aid))
   return content()
 # TODO: streaming was turned off because this is now a post, in the future we may wan to turn this back on to increase speed
 # post_model_arrayset_data._cp_config = {"response.stream" : True}
