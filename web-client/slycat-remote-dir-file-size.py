@@ -66,7 +66,7 @@ try:
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(arguments.host, username=arguments.user, password=arguments.password, port=int(arguments.port))
-    not_in_count = 0
+    not_in_count = 1
     in_count = 0
     for path in temp_dict["file_list"]:
         if path not in file_size_map:
@@ -82,6 +82,12 @@ try:
             in_count += 1
         if ((in_count + not_in_count) % 100) == 0:
             print "in count:%s not in count: %s" %(in_count, not_in_count)
+
+        if ((not_in_count) % 100) == 0:
+            print "writing out temp_dict"
+            with open(arguments.temp_file, 'wb') as fp:
+                temp_dict["file_size_map"] = file_size_map
+                pickle.dump(temp_dict, fp)
 
 except KeyboardInterrupt as e:
     print "writing out temp_dict"
