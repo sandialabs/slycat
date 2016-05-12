@@ -223,28 +223,16 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         return r<<16 | g<<8 | b;
       }
 
-      var mouseStoppedTimer = null;
-      function mouseStopped(event) {
-        clearTimeout(mouseStoppedTimer);
-        mouseStoppedTimer=setTimeout(pick, 500, event);
-      }
       function pick(event) {
         var x = event.layerX;
         var y = event.layerY;
-
-        var pixel = self.canvas_datum_ctx.getImageData(x, y, 1, 1);
-        var data = pixel.data;
-        var rgba = 'rgba(' + data[0] + ',' + data[1] +
-                   ',' + data[2] + ',' + data[3] + ')';
-        // console.log("visible layer: " + rgba);
 
         var pixelPick = self.canvas_picker_ctx.getImageData(x, y, 1, 1);
         var dataPick = pixelPick.data;
         var rgbaPick = 'rgba(' + dataPick[0] + ',' + dataPick[1] +
                    ',' + dataPick[2] + ',' + dataPick[3] + ')';
-        // console.log("pick layer: " + rgbaPick);
 
-        var id, isPointInStrokeVisible, isPointInStrokePick, path;
+        var id, isPointInStrokePick, path;
         if(dataPick[3]==255)
         {
           id = RGBtoInt(dataPick[0], dataPick[1], dataPick[2]);
@@ -252,7 +240,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
           path = paths[id];
 
-          isPointInStrokeVisible = self.canvas_datum_ctx.isPointInStroke(path, x, y);
           isPointInStrokePick = self.canvas_picker_ctx.isPointInStroke(path, x, y);
 
           if(isPointInStrokePick)
@@ -272,10 +259,8 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         }
 
       }
-      //this.canvas_datum.addEventListener('mousemove', mouseStopped);
       this.canvas_selection.addEventListener('mousemove', pick);
 
-      this.canvas_datum_ctx.lineWidth = 1;
       this.canvas_offscreen_ctx.lineWidth = 1;
       this.canvas_picker_ctx.lineWidth = 3;
 
