@@ -309,6 +309,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
         with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
           hdf5_arrayset = slycat.hdf5.ArraySet(file)
           for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
+            cherrypy.log.error("GET Model Arrayset Data: arrayset %s retrieving content" % (aid))
             hdf5_array = hdf5_arrayset[array.index]
 
             if array.index not in server_cache.cache["artifact:%s%s" % (aid,model["_id"])]:
