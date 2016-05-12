@@ -248,31 +248,22 @@ class ArraySet(object):
     # Allocate space for the coming data ...
     array_key = "array/%s" % array_index
     if array_key in self._storage:
-      cherrypy.log.error("delete array_key from self._storage")
       del self._storage[array_key]
     for attribute_index, stored_type in enumerate(stored_types):
-      cherrypy.log.error("creating dataset: array/%s/attribute/%s with shape=%s and type=%s" % (array_index, attribute_index, shape, stored_type))
       try:
         self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
       except Exception as e:
         cherrypy.log.error("%s" % e)
 
     cherrypy.log.error("storing metadata for start_array for put_model_array")
-    # Store array metadata...
+    # Store array metadata ...
     array_metadata = self._storage[array_key].create_group("metadata")
-    cherrypy.log.error("created array_metadata storage")
     array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
-    cherrypy.log.error("stored attribute-names")
     array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
-    cherrypy.log.error("stored attribute-types")
     array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    cherrypy.log.error("stored dimension-names")
     array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    cherrypy.log.error("stored dimension-types")
     array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in stub.dimensions], dtype="int64")
-    cherrypy.log.error("stored dimension-begin")
     array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in stub.dimensions], dtype="int64")
-    cherrypy.log.error("stored dimension-end")
 
     cherrypy.log.error("returning Darray for start_array for put_model_array")
     return DArray(self._storage[array_key])
