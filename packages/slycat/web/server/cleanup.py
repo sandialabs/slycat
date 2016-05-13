@@ -57,35 +57,21 @@ def _cache_cleanup_worker():
       cherrypy.log.error("Started server cache cleanup worker.")
       while True:
         time.sleep(datetime.timedelta(minutes=30).total_seconds())
-        with slycat.web.server.server_cache.lock:
-          cherrypy.log.error("running server cache-cleanup thread cache size = %s mbs" % (sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache))/1024/1024))
-          _cache_cleanup()
+        # with slycat.web.server.server_cache.lock:
+        cherrypy.log.error("running server cache-cleanup thread cache size = %s mbs")
+        _cache_cleanup()
 
 _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
 _cache_cleanup_worker.thread.daemon = True
 
-def _forced_cache_cleanup_worker():
-      import cherrypy
-      cherrypy.log.error("Started server forced cache cleanup worker.")
-      while True:
-        msg = slycat.web.server.server_cache.queue.get()
-        with slycat.web.server.server_cache.lock:
-          cherrypy.log.error("running server forced-cache-cleanup thread with: %s" % msg)
-          _cache_cleanup()
-
-_forced_cache_cleanup_worker.thread = threading.Thread(name="forced-cache-cleanup", target=_forced_cache_cleanup_worker)
-_forced_cache_cleanup_worker.thread.daemon = True
-
 def _cache_cleanup():
-  del slycat.web.server.server_cache.cache
-  cherrypy.log.error("cache size now = %s mbs" % (sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache))/1024/1024))
+  pass
 
 def start():
   """Called to start all of the cleanup worker threads."""
   _array_cleanup_worker.thread.start()
   _login_session_cleanup_worker.thread.start()
   _cache_cleanup_worker.thread.start()
-  _forced_cache_cleanup_worker.thread.start()
 
 def arrays():
   """Request a cleanup pass for unused arrays."""
