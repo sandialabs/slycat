@@ -87,7 +87,7 @@ class Cache(object):
   decorator class used to cache
   """
   _lock = threading.Lock()
-  def __init__(self, fs_cache_path, **kwargs):
+  def __init__(self, fs_cache_path=None, **kwargs):
     """
     takes a filepath and and the following time stamps
        - years (31,556,900 seconds per year)
@@ -112,10 +112,27 @@ class Cache(object):
       self._init_expire_time = None
     # set up an in memory cache
     self._loaded = {}
+
     # set path for file system
-    self._fs_cache_path = os.path.abspath(fs_cache_path)
-    if not os.path.exists(self._fs_cache_path):
-      os.makedirs(self._fs_cache_path)
+    if fs_cache_path:
+      self._fs_cache_path = os.path.abspath(fs_cache_path)
+      if not os.path.exists(self._fs_cache_path):
+        os.makedirs(self._fs_cache_path)
+    else:
+      self._fs_cache_path = None
+
+  def check_fs_path(self):
+    """
+    This function is used to set the file path as it does
+    not exist when the cache is created in the server/__init__.py
+    :return:
+    """
+    if not self._fs_cache_path:
+      import slycat.web.server
+      cherrypy.log.error("%s is the cache location" % (slycat.web.server.config["slycat-web-server"]["cache-store"]))
+      self._fs_cache_path = os.path.abspath(slycat.web.server.config["slycat-web-server"]["cache-store"])
+      if not os.path.exists(self._fs_cache_path):
+        os.makedirs(self._fs_cache_path)
 
   def __getitem__(self, key):
     """
@@ -123,6 +140,8 @@ class Cache(object):
     :param key: hashed key for item in cache
     :return: value associate with key
     """
+    self.check_fs_path()
+
     if key in self:
       digest = self.digest_hash(key)
       value = self._loaded[digest].value
@@ -139,6 +158,8 @@ class Cache(object):
     :param value: stored result from the function
     :return: not used
     """
+    self.check_fs_path()
+
     digest_hash = self.digest_hash(key)
     path = os.path.join(self._fs_cache_path, digest_hash)
     #check if item exist
@@ -161,6 +182,8 @@ class Cache(object):
     :param key: item to be removed from memory
     :return: not used
     """
+    self.check_fs_path()
+
     digest_hash = self.digest_hash(key)
     if digest_hash in self._loaded:
       del self._loaded[digest_hash]
@@ -175,6 +198,8 @@ class Cache(object):
     :param item: item to search for in cache
     :return: boolean
     """
+    self.check_fs_path()
+
     digest = self.digest_hash(item)
     # get the item from the cache
     if digest in self._loaded:
@@ -200,6 +225,7 @@ class Cache(object):
     :return: results of the function either from
     the cache or the function itself
     """
+
     function_meta_data = inspect.getmembers(f)
     try:
       fid = (function_meta_data.func_name, inspect.getargspec(f))
@@ -207,11 +233,12 @@ class Cache(object):
       fid = (f.__name__, repr(type(f)))
 
     def _f(*args, **kwargs):
-      cherrypy.log.error("\nargs: %s    \nkwargs %s" % (str(args),kwargs))
       key = (fid, args, kwargs)
+
+      # cherrypy.log.error("\nargs: %s    \nkwargs %s  \n%s \n%s" % (str(args),kwargs,fid,self.digest_hash(key)))
       #check if we have cached the result
       if key in self:
-        cherrypy.log.error("found in cache")
+        cherrypy.log.error("Found in cache")
         result = self[key]
       #we have not cached the result so lets get it
       else:

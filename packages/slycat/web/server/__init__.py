@@ -19,66 +19,9 @@ import cPickle
 import Queue
 import threading
 import time
-# from slycat.web.server.cache import Cache
+from slycat.web.server.cache import Cache
 config = {}
-
-class ServeCache(object):
-  """
-  class used to cache HQL and metadata queries
-   usage example:
-      server_cache = ServeCache()
-      with server_cache.lock:
-        apply: crud operation to
-          server_cache.cache["artifact:aid:mid"]
-            \
-             server_cache.cache["artifact:aid:mid"]["artifact:data"]
-             eg: server_cache.cache["artifact:aid:mid"]["metadata"], server_cache.cache["artifact:aid:mid"]["hql-result"]
-
-   NOTE: a parse tree is also generated in order to speed up future unseen calls
-  """
-  __cache = {}
-  __queue = Queue.Queue()
-  __lock = threading.Lock()
-
-  def __init__(self):
-    pass
-  @property
-  def cache(self):
-    """
-    :return: dict() cache tree see class details
-    """
-    return self.__cache
-  @cache.deleter
-  def cache(self):
-    """
-    resets the cash to an empty dict {}
-    :return:
-    """
-    self.__cache = {}
-  @property
-  def queue(self):
-    """
-    blocking queue that is read by the slycat.web.server.cleanup.py to force a cache cleanup
-    by the cache cleanup thread.
-    :return:
-    """
-    return self.__queue
-  @property
-  def lock(self):
-    """
-    threading.Lock() used to control crud operations to the cache.
-    :return:
-    """
-    return self.__lock
-  def clean(self):
-    """
-    Request a cleanup pass for the cache.
-    """
-    cherrypy.log.error("updating server cache force cleanup queue")
-    self.__queue.put("cleanup")
-server_cache = ServeCache()# instantiate our server cache for use here and in slycat.web.server.cleanup.py
-
-# cache_it = Cache("/tmp/cache/dir", seconds=2000)
+cache_it = Cache(seconds=1000000) # 277.777778 hours
 
 def mix(a, b, amount):
   """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -152,7 +95,7 @@ def update_model(database, model, **kwargs):
       model[name] = value
   database.save(model)
 
-# @cache_it
+@cache_it
 def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
   """Retrieve metadata describing an arrayset artifact.
   Parameters
@@ -252,6 +195,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 
       return results
 
+@cache_it
 def get_model_arrayset_data(database, model, aid, hyperchunks):
   """
   Read data from an arrayset artifact.
@@ -272,7 +216,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
   """
   if isinstance(hyperchunks, basestring):
     hyperchunks = slycat.hyperchunks.parse(hyperchunks)
-
+  return_list = []
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
@@ -286,9 +230,10 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
           values = evaluate(hdf5_array, attribute.expression, "attribute")
           for hyperslice in attribute.hyperslices():
             if array.order is not None:
-              yield values[order][hyperslice]
+              return_list.append(values[order][hyperslice])
             else:
-              yield values[hyperslice]
+              return_list.append(values[hyperslice])
+  return return_list
 
 def get_model_parameter(database, model, aid):
   key = "artifact:%s" % aid
