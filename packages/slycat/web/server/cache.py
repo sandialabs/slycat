@@ -35,6 +35,7 @@ class CachedObjectWrapper(object):
   """
   class used to wrap any object placed in the cache
   """
+  __lock = threading.Lock()
   def __init__(self, value, expiration=None):
     """
     creates a cached object with a cached items and an expiration
@@ -45,6 +46,13 @@ class CachedObjectWrapper(object):
     self._value = value
     self._expiration = expiration
 
+  @property
+  def lock(self):
+    """
+    threading.Lock() used to control crud operations to the cache.
+    :return:
+    """
+    return self.__lock
   @property
   def value(self):
     """
