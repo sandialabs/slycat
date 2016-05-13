@@ -58,6 +58,7 @@ def _cache_cleanup_worker():
       while True:
         time.sleep(datetime.timedelta(minutes=30).total_seconds())
         # with slycat.web.server.server_cache.lock:
+        # TODO: add fs_cache cleanup and cleanup for the media cache
         cherrypy.log.error("running server cache-cleanup thread cache size = %s mbs")
         _cache_cleanup()
 
