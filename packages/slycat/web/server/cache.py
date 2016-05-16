@@ -298,8 +298,9 @@ class Cache(object):
     so don't use it as part of the API.
     """
     path = os.path.join(self._fs_cache_path , digest)
-    print path
+    # print path
     if os.path.exists(path):
+      cherrypy.log.error("%s fs path cache found" % (path))
       contents = Cache.read(path)
     else:
       msg = "Object for key `%s` does not exist." % (k,)
