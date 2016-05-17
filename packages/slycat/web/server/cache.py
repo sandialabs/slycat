@@ -70,6 +70,15 @@ class CachedObjectWrapper(object):
     """
     return self._expiration
 
+  @expiration.setter
+  def expiration(self,expiration):
+    """
+    set the expiration time for the cached object, could return none
+    if there is no expiration
+    :return: expiration object
+    """
+    self._expiration = expiration
+
   def expired(self):
     """
     return true or false as to weather the object is expired or not
@@ -145,6 +154,16 @@ class Cache(object):
     if key in self:
       digest = self.digest_hash(key)
       value = self._loaded[digest].value
+
+      path = os.path.join(self._fs_cache_path, digest)
+      # check if item exist
+      if (digest in self._loaded) or os.path.exists(path):
+        self.expire(key)
+      cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
+      Cache.write(cached_contents, path)
+      self._loaded[digest] = cached_contents
+
+
     else:
       msg = "key not found in cache: '%s'" % key
       raise KeyError(msg)
@@ -165,11 +184,6 @@ class Cache(object):
     #check if item exist
     if (digest_hash in self._loaded) or os.path.exists(path):
       self.expire(key)
-      # tmplt = ("Object for key `%s` exists\n." +
-      #          "Remove the old one before setting the new object.")
-      # msg = tmplt % str(key)
-      # raise CacheError, msg
-    # item does not exist so lets create one
     cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
     Cache.write(cached_contents, path)
     self._loaded[digest_hash] = cached_contents
@@ -348,8 +362,11 @@ class Cache(object):
     """
     for f in os.listdir(self._fs_cache_path):
       path = os.path.join(self._fs_cache_path, f)
-      os.remove(path)
-          
+      contents = Cache.read(path)
+      if contents.expired():
+        # contents were expired so we should delete them and return false
+        self.expire(f)
+
   def clear(self):
     """
     clear cache items from virtual memory.
