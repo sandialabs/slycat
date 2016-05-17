@@ -330,6 +330,7 @@ class Cache(object):
     """
     return self._loaded.keys()
 
+
   def fs_keys(self):
     """
     Returns the names of the files
@@ -338,6 +339,17 @@ class Cache(object):
     """
     return os.listdir(self._fs_cache_path)
 
+  def clean(self):
+    """
+    clean the in memory and fs cache
+    recomended to call this by some thread under a
+    certain time interval
+    :return: not used
+    """
+    for f in os.listdir(self._fs_cache_path):
+      path = os.path.join(self._fs_cache_path, f)
+      os.remove(path)
+          
   def clear(self):
     """
     clear cache items from virtual memory.
