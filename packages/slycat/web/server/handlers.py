@@ -1635,6 +1635,21 @@ def get_model_statistics(mid):
   # amount of time it took to make the model
   delta_creation_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["created"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
 
+  if "job_running_time" in model and "job_submit_time" in model:
+    delta_queue_time = (datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+  else:
+    delta_queue_time = 0
+
+  if "job_completed_time" in model and "job_running_time":
+    delta_running_time = (datetime.datetime.strptime(model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    delta_model_compute_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+  elif "job_completed_time" in model:
+    delta_running_time = (datetime.datetime.strptime(model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    delta_model_compute_time = 0
+  else:
+    delta_running_time = 0
+    delta_model_compute_time = 0
+
   #get hdf5 root dir
   hdf5_root_directory = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
 
@@ -1665,7 +1680,10 @@ def get_model_statistics(mid):
     "model":model,
     "delta_creation_time":float(delta_creation_time)/60,
     "couchdb_doc_size": sys.getsizeof(model)/1024.0/1024.0,
-    "hdf5_footprint": 100.0*(float(hdf5_file_size)/float(total_hdf5_server_size))
+    "hdf5_footprint": 100.0*(float(hdf5_file_size)/float(total_hdf5_server_size)),
+    "job_pending_time": float(delta_queue_time)/60,
+    "job_running_time": float(delta_running_time)/60,
+    "model_compute_time": float(delta_model_compute_time)/60
   }
 
 @cherrypy.tools.json_in(on = True)
