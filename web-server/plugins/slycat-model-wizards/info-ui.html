@@ -32,6 +32,30 @@
     </div>
     <div class="panel panel-default">
       <div class="panel-heading">
+        <strong>Job Queue Time</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:details.job_pending_time"></span> minutes
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <strong>Job Running Time</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:details.job_running_time"></span> minutes
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <strong>Model Computation Time</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:details.model_compute_time"></span> minutes
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
         <strong>CouchDB Doc Size</strong>
       </div>
       <div class="panel-body">
@@ -86,7 +110,7 @@
         <pre><code data-bind="text:JSON.stringify(ko.toJS(details.model()), null, 2)"></code></pre>
       </div>
     </div>
-    
+
   </form>
 </div>
 <div class="modal-footer">
