@@ -189,9 +189,9 @@ class Cache(object):
     Cache.write(cached_contents, path)
     self._loaded[digest_hash] = cached_contents
 
-  def __delitem__(self, key):
+  def __delitem__(self, digest_hash):
     """
-    Removes the key object from memory
+    Removes the hash keyed object from memory
     but not from the filesystem.
     see function expire to remove from booth
     :param key: item to be removed from memory
@@ -199,11 +199,11 @@ class Cache(object):
     """
     self.check_fs_path()
 
-    digest_hash = self.digest_hash(key)
+    # digest_hash = self.digest_hash(key)
     if digest_hash in self._loaded:
       del self._loaded[digest_hash]
     else:
-      msg = "cannot delete object at %s not loaded in memory" % str(key)
+      msg = "[CACHE] Cannot delete object at %s not loaded in memory" % str(key)
       raise CacheError, msg
 
   def __contains__(self, item):
@@ -264,25 +264,27 @@ class Cache(object):
       return result
     return _f
 
-  def expire(self, key):
+  def expire(self, digest_hash):
     """
     Permanently removes the, both in the memory and in the filesystem.
     """
-    self._remove(key)
-    try:
-      del self[key]
-    except CacheError as e:
-      print cherrypy.log.error("[CACHE] error deleteing item %s"%e.message)
+    if digest_hash in self.fs_keys:
+      self._remove(digest_hash)
+    if digest_hash in self.v_keys:
+      try:
+        del self[digest_hash]
+      except CacheError as e:
+        print cherrypy.log.error("[CACHE] error deleteing item %s"%e.message)
 
   def _remove(self, digest):
     """
     Removes the cache item keyed by `key` from the file system.
     """
-    cherrypy.log.error("[CACHE] trying to remove %s from file system cache" % digest)
+    # cherrypy.log.error("[CACHE] trying to remove %s from file system cache" % digest)
     # digest = self.digest_hash(key)
     path = os.path.join(self._fs_cache_path, digest)
     if os.path.exists(path):
-      cherrypy.log.error("[CACHE] removing %s from file system cache" % path)
+      # cherrypy.log.error("[CACHE] removing %s from file system cache" % path)
       os.remove(path)
     else:
       msg = "[CACHE] No object for key `%s` stored." % str(digest)
@@ -318,7 +320,7 @@ class Cache(object):
     """
     path = os.path.join(self._fs_cache_path , digest)
     if os.path.exists(path):
-      cherrypy.log.error("[CACHE] %s fs path cache found" % (path))
+      # cherrypy.log.error("[CACHE] %s fs path cache found" % (path))
       contents = Cache.read(path)
     else:
       msg = "[CACHE] Object for key `%s` does not exist." % (k,)
