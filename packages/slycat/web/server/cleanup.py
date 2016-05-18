@@ -54,19 +54,15 @@ _login_session_cleanup_worker.thread.daemon = True
 
 def _cache_cleanup_worker():
       import cherrypy
+      from slycat.web.server import cache_it
       cherrypy.log.error("Started server cache cleanup worker.")
       while True:
-        time.sleep(datetime.timedelta(minutes=30).total_seconds())
-        # with slycat.web.server.server_cache.lock:
-        # TODO: add fs_cache cleanup and cleanup for the media cache
-        cherrypy.log.error("running server cache-cleanup thread cache size = %s mbs")
-        _cache_cleanup()
+        time.sleep(datetime.timedelta(minutes=15).total_seconds())
+        cherrypy.log.error("[CACHE] running server cache-cleanup thread")
+        cache_it.clean()
 
 _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
 _cache_cleanup_worker.thread.daemon = True
-
-def _cache_cleanup():
-  pass
 
 def start():
   """Called to start all of the cleanup worker threads."""
