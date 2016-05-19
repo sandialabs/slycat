@@ -1671,8 +1671,13 @@ def get_model_statistics(mid):
           fp = os.path.join(dirpath, f)
           total_hdf5_server_size += os.path.getsize(fp)
 
+  try:
+    server_cache_size = float(sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache)))/1024.0/1024.0
+  except:
+    server_cache_size = 0
+
   return {
-    "server_cache_size": float(sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache)))/1024.0/1024.0,
+    "server_cache_size": server_cache_size,
     "mid":mid,
     "hdf5_file_size":float(hdf5_file_size)/1024.0/1024.0,
     "total_server_data_size": float(total_server_data_size)/1024.0/1024.0,
