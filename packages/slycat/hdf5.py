@@ -257,7 +257,7 @@ class ArraySet(object):
         cherrypy.log.error("creating dataset for array_index %s and attribute_index %" % (array_index, attribute_index))
         self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
     except Exception as e:
-      cherrypy.log.error("%s" % e)
+      cherrypy.log.error("start_array exception caught: %s" % e)
 
     cherrypy.log.error("storing metadata for start_array for put_model_array")
     # Store array metadata ...
