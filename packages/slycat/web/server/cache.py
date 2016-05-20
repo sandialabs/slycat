@@ -287,7 +287,7 @@ class Cache(object):
       # cherrypy.log.error("[CACHE] removing %s from file system cache" % path)
       os.remove(path)
     else:
-      msg = "[CACHE] No object for key `%s` stored." % str(digest)
+      msg = "[CACHE] No object for key `%s` stored." % str(path)
       cherrypy.log.error(msg)
       raise CacheError, msg
 
