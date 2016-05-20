@@ -25,6 +25,6 @@ with open(arguments.file) as csvfile:
             rows.append(row)
         random.shuffle(rows)
         print "writing out to output csv file"
-        for x in range(arguments.random_sample_size):
+        for x in range(int(arguments.random_sample_size)):
             writer.writerow(rows[x])
 print "output file was named %s" % (str(arguments.random_sample_size)+arguments.output_file_name)
