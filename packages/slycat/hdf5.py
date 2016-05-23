@@ -254,7 +254,7 @@ class ArraySet(object):
         del self._storage[array_key]
       cherrypy.log.error("starting loop...")
       for attribute_index, stored_type in enumerate(stored_types):
-        cherrypy.log.error("creating dataset for array_index %s and attribute_index %" % (array_index, attribute_index))
+        cherrypy.log.error("creating dataset for array_index %s and attribute_index %s" % (array_index, attribute_index))
         self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
     except Exception as e:
       cherrypy.log.error("start_array exception caught: %s" % e)
