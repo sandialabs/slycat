@@ -38,11 +38,14 @@ def register_slycat_plugin(context):
     return sid, data
 
   def compute(database, model, sid, uid, workdir, hostname, username, password):
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", model["_id"])
+    model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
+    slycat.web.server.update_model(database, model)
+
     sid, inputs = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
     inputs = pickle.loads(inputs)
 
-    database = slycat.web.server.database.couchdb.connect()
-    model = database.get("model", model["_id"])
     slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
     attributes = inputs["attributes"]
     slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
@@ -60,28 +63,48 @@ def register_slycat_plugin(context):
     for f in clusters_file:
       cherrypy.log.error("Processing file cluster %s" % f)
       sid, file_cluster_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/file_cluster_%s.json" % (workdir, uid, f))
+      cherrypy.log.error("Got remote file cluster %s JSON file" % f)
       file_cluster_attr = json.loads(file_cluster_data)
+      cherrypy.log.error("Loaded cluster data JSON file")
       slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, f), file_cluster_attr["aid"], file_cluster_attr["parser"])
+      cherrypy.log.error("Posted cluster %s OUT file to model" % f)
 
       sid, waveforms = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveforms_%s.pickle" % (workdir, uid, f))
-      waveforms = pickle.loads(waveforms)
+      cherrypy.log.error("Got remote file waveforms_%s.pickle" % f)
+      try:
+        waveforms = pickle.loads(waveforms)
+      except Exception as e:
+        cherrypy.log.error("Loading waveforms exception caught: %s" % e)
+      cherrypy.log.error("Loaded waveforms from pickle file")
 
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", model["_id"])
+      cherrypy.log.error("Putting model arrayset for cluster %s" % f)
       slycat.web.server.put_model_arrayset(database, model, "preview-%s" % f)
+      cherrypy.log.error("Starting to enumerate waveforms for %s" % f)
       for index, waveform in enumerate(waveforms):
         cherrypy.log.error("Processing waveform %s - %s" % (f, index))
         sid, waveform_dimensions = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_dimensions.pickle" % (workdir, uid, f, index))
+        cherrypy.log.error("Got remote pickle dimensions file %s - %s" % (f, index))
         waveform_dimensions = pickle.loads(waveform_dimensions)
+        cherrypy.log.error("Loaded pickle dimensions file %s - %s" % (f, index))
         sid, waveform_attributes = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_attributes.pickle" % (workdir, uid, f, index))
+        cherrypy.log.error("Got remote pickle attributes file %s - %s" % (f, index))
         waveform_attributes = pickle.loads(waveform_attributes)
+        cherrypy.log.error("Loaded pickle attributes file %s - %s" % (f, index))
         slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes, waveform_dimensions)
+        cherrypy.log.error("Put model array for preview-%s" % f)
 
         sid, waveform_times = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_times.pickle" % (workdir, uid, f, index))
+        cherrypy.log.error("Got remote pickle times file %s - %s" % (f, index))
         waveform_times = pickle.loads(waveform_times)
+        cherrypy.log.error("Loaded pickle times file %s - %s" % (f, index))
         sid, waveform_values = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_values.pickle" % (workdir, uid, f, index))
+        cherrypy.log.error("Got remote pickle values file %s - %s" % (f, index))
         waveform_values = pickle.loads(waveform_values)
+        cherrypy.log.error("Loaded pickle values file %s - %s" % (f, index))
         slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
+        cherrypy.log.error("Put model arrayset data for preview-%s" % f)
 
   def fail_model(mid, message):
     database = slycat.web.server.database.couchdb.connect()
@@ -103,6 +126,13 @@ def register_slycat_plugin(context):
       state = response["status"]["state"]
       cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
 
+      if state == "RUNNING":
+        database = slycat.web.server.database.couchdb.connect()
+        model = database.get("model", mid)
+        if "job_running_time" not in model:
+          model["job_running_time"] = datetime.datetime.utcnow().isoformat()
+          slycat.web.server.update_model(database, model)
+
       if state == "CANCELLED":
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
@@ -114,6 +144,12 @@ def register_slycat_plugin(context):
         break
 
       if state == "COMPLETED":
+        database = slycat.web.server.database.couchdb.connect()
+        model = database.get("model", mid)
+        if "job_completed_time" not in model:
+          model["job_completed_time"] = datetime.datetime.utcnow().isoformat()
+          slycat.web.server.update_model(database, model)
+
         callback()
         stop_event.set()
         break
@@ -132,6 +168,13 @@ def register_slycat_plugin(context):
       compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"], kwargs["password"])
       finish(database, model)
       pass
+
+    time.sleep(30)
+
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", model["_id"])
+    model["job_submit_time"] = datetime.datetime.utcnow().isoformat()
+    slycat.web.server.update_model(database, model)
 
     stop_event = threading.Event()
     t = threading.Thread(target=checkjob_thread, args=(model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))

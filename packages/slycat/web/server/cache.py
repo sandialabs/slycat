@@ -35,6 +35,7 @@ class CachedObjectWrapper(object):
   """
   class used to wrap any object placed in the cache
   """
+  __lock = threading.Lock()
   def __init__(self, value, expiration=None):
     """
     creates a cached object with a cached items and an expiration
@@ -45,6 +46,13 @@ class CachedObjectWrapper(object):
     self._value = value
     self._expiration = expiration
 
+  @property
+  def lock(self):
+    """
+    threading.Lock() used to control crud operations to the cache.
+    :return:
+    """
+    return self.__lock
   @property
   def value(self):
     """
@@ -61,6 +69,15 @@ class CachedObjectWrapper(object):
     :return: expiration object
     """
     return self._expiration
+
+  @expiration.setter
+  def expiration(self,expiration):
+    """
+    set the expiration time for the cached object, could return none
+    if there is no expiration
+    :return: expiration object
+    """
+    self._expiration = expiration
 
   def expired(self):
     """
@@ -79,7 +96,7 @@ class Cache(object):
   decorator class used to cache
   """
   _lock = threading.Lock()
-  def __init__(self, fs_cache_path, **kwargs):
+  def __init__(self, fs_cache_path=None, **kwargs):
     """
     takes a filepath and and the following time stamps
        - years (31,556,900 seconds per year)
@@ -97,17 +114,35 @@ class Cache(object):
       self._init_expire_time = self.to_seconds(**kwargs)
       # we need a time greater than 0
       if self._init_expire_time <= 0:
-        msg = "Lifetime (%s seconds) is 0 or less." % self._init_expire_time
+        msg = "[CACHE] Lifetime (%s seconds) is 0 or less." % self._init_expire_time
+        cherrypy.log.error(msg)
         raise LifetimeError, msg
     else:
       # no expiration time
       self._init_expire_time = None
     # set up an in memory cache
     self._loaded = {}
+
     # set path for file system
-    self._fs_cache_path = os.path.abspath(fs_cache_path)
-    if not os.path.exists(self._fs_cache_path):
-      os.makedirs(self._fs_cache_path)
+    if fs_cache_path:
+      self._fs_cache_path = os.path.abspath(fs_cache_path)
+      if not os.path.exists(self._fs_cache_path):
+        os.makedirs(self._fs_cache_path)
+    else:
+      self._fs_cache_path = None
+
+  def check_fs_path(self):
+    """
+    This function is used to set the file path as it does
+    not exist when the cache is created in the server/__init__.py
+    :return:
+    """
+    if not self._fs_cache_path:
+      import slycat.web.server
+      cherrypy.log.error("[CACHE] %s is the cache location" % (slycat.web.server.config["slycat-web-server"]["cache-store"]))
+      self._fs_cache_path = os.path.abspath(slycat.web.server.config["slycat-web-server"]["cache-store"])
+      if not os.path.exists(self._fs_cache_path):
+        os.makedirs(self._fs_cache_path)
 
   def __getitem__(self, key):
     """
@@ -115,9 +150,21 @@ class Cache(object):
     :param key: hashed key for item in cache
     :return: value associate with key
     """
+    self.check_fs_path()
+
     if key in self:
       digest = self.digest_hash(key)
       value = self._loaded[digest].value
+
+      path = os.path.join(self._fs_cache_path, digest)
+      # check if item exist
+      if (digest in self._loaded) or os.path.exists(path):
+        self.expire(digest)
+      cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
+      Cache.write(cached_contents, path)
+      self._loaded[digest] = cached_contents
+
+
     else:
       msg = "key not found in cache: '%s'" % key
       raise KeyError(msg)
@@ -131,33 +178,32 @@ class Cache(object):
     :param value: stored result from the function
     :return: not used
     """
+    self.check_fs_path()
+
     digest_hash = self.digest_hash(key)
     path = os.path.join(self._fs_cache_path, digest_hash)
     #check if item exist
     if (digest_hash in self._loaded) or os.path.exists(path):
-      self.expire(key)
-      # tmplt = ("Object for key `%s` exists\n." +
-      #          "Remove the old one before setting the new object.")
-      # msg = tmplt % str(key)
-      # raise CacheError, msg
-    # item does not exist so lets create one
+      self.expire(digest_hash)
     cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
     Cache.write(cached_contents, path)
     self._loaded[digest_hash] = cached_contents
 
-  def __delitem__(self, key):
+  def __delitem__(self, digest_hash):
     """
-    Removes the key object from memory
+    Removes the hash keyed object from memory
     but not from the filesystem.
     see function expire to remove from booth
     :param key: item to be removed from memory
     :return: not used
     """
-    digest_hash = self.digest_hash(key)
+    self.check_fs_path()
+
+    # digest_hash = self.digest_hash(key)
     if digest_hash in self._loaded:
       del self._loaded[digest_hash]
     else:
-      msg = "cannot delete object at %s not loaded in memory" % str(key)
+      msg = "[CACHE] Cannot delete object at %s not loaded in memory" % str(key)
       raise CacheError, msg
 
   def __contains__(self, item):
@@ -167,6 +213,8 @@ class Cache(object):
     :param item: item to search for in cache
     :return: boolean
     """
+    self.check_fs_path()
+
     digest = self.digest_hash(item)
     # get the item from the cache
     if digest in self._loaded:
@@ -180,8 +228,9 @@ class Cache(object):
         return False
     # check if it has expired
     if value.expired():
+      cherrypy.log.error("[CACHE] value is expired")
       #contents were expired so we should delete them and return false
-      self.expire(item)
+      self.expire(digest)
       return False
     return True
 
@@ -192,6 +241,7 @@ class Cache(object):
     :return: results of the function either from
     the cache or the function itself
     """
+
     function_meta_data = inspect.getmembers(f)
     try:
       fid = (function_meta_data.func_name, inspect.getargspec(f))
@@ -199,40 +249,46 @@ class Cache(object):
       fid = (f.__name__, repr(type(f)))
 
     def _f(*args, **kwargs):
-      cherrypy.log.error("\nargs: %s    \nkwargs %s" % (str(args),kwargs))
       key = (fid, args, kwargs)
+
+      # cherrypy.log.error("\nargs: %s    \nkwargs %s  \n%s \n%s" % (str(args),kwargs,fid,self.digest_hash(key)))
       #check if we have cached the result
       if key in self:
-        cherrypy.log.error("found in cache")
+        cherrypy.log.error("[CACHE] Found in cache")
         result = self[key]
       #we have not cached the result so lets get it
       else:
-        cherrypy.log.error("NOT found in cache")
+        cherrypy.log.error("[CACHE] NOT found in cache")
         result = f(*args, **kwargs)
         self[key] = result
       return result
     return _f
 
-  def expire(self, key):
+  def expire(self, digest_hash):
     """
     Permanently removes the, both in the memory and in the filesystem.
     """
-    self._remove(key)
-    try:
-      del self[key]
-    except CacheError as e:
-      print e.message
+    if digest_hash in self.fs_keys:
+      self._remove(digest_hash)
+    if digest_hash in self.v_keys:
+      try:
+        del self[digest_hash]
+      except CacheError as e:
+        print cherrypy.log.error("[CACHE] error deleteing item %s"%e.message)
 
-  def _remove(self, key):
+  def _remove(self, digest):
     """
     Removes the cache item keyed by `key` from the file system.
     """
-    digest = self.digest_hash(key)
+    # cherrypy.log.error("[CACHE] trying to remove %s from file system cache" % digest)
+    # digest = self.digest_hash(key)
     path = os.path.join(self._fs_cache_path, digest)
     if os.path.exists(path):
+      # cherrypy.log.error("[CACHE] removing %s from file system cache" % path)
       os.remove(path)
     else:
-      msg = "No object for key `%s` stored." % str(key)
+      msg = "[CACHE] No object for key `%s` stored." % str(path)
+      cherrypy.log.error(msg)
       raise CacheError, msg
 
   def unload(self, k):
@@ -263,11 +319,11 @@ class Cache(object):
     so don't use it as part of the API.
     """
     path = os.path.join(self._fs_cache_path , digest)
-    print path
     if os.path.exists(path):
+      # cherrypy.log.error("[CACHE] %s fs path cache found" % (path))
       contents = Cache.read(path)
     else:
-      msg = "Object for key `%s` does not exist." % (k,)
+      msg = "[CACHE] Object for key `%s` does not exist." % (k,)
       raise CacheError, msg
     self._loaded[digest] = contents
     return contents
@@ -288,6 +344,7 @@ class Cache(object):
       x = self._init_expire_time + time.time()
     return x
 
+  @property
   def v_keys(self):
     """
     Returns a list of virtual memory keys.
@@ -295,6 +352,7 @@ class Cache(object):
     """
     return self._loaded.keys()
 
+  @property
   def fs_keys(self):
     """
     Returns the names of the files
@@ -302,6 +360,26 @@ class Cache(object):
     :return: list of names of cached files
     """
     return os.listdir(self._fs_cache_path)
+
+  def clean(self):
+    """
+    clean the in memory and fs cache
+    recommended to call this by some thread under a
+    certain time interval
+    :return: not used
+    """
+    cherrypy.log.error("[CACHE] starting the cleaning session for the file system cache")
+    self.check_fs_path()
+
+    for f in os.listdir(self._fs_cache_path):
+      path = os.path.join(self._fs_cache_path, f)
+      contents = Cache.read(path)
+      if contents.expired():
+        cherrypy.log.error("[CACHE] expired content found for %s deleting it" % f)
+        self.expire(f)
+    # for key in self.v_keys:
+    #   # TODO: add logic to keep v_cache_dict clean: if self._loaded[f].epiration - :
+    #     pass
 
   def clear(self):
     """

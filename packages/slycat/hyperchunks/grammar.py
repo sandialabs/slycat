@@ -32,6 +32,10 @@ class Hyperchunk(object):
     self.attributes = Attributes(tokens["attributes"].asList()) if "attributes" in tokens else None
     self.order = tokens.get("order", None)
     self.hyperslices = Hyperslices(tokens["hyperslices"].asList()) if "hyperslices" in tokens else None
+  def __repr__(self):
+    import slycat.hyperchunks
+    ret_string = slycat.hyperchunks.tostring(self)
+    return ret_string
 
 class Hyperchunks(list):
   pass
