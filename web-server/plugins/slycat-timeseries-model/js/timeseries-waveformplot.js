@@ -210,6 +210,10 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       this.canvas_picker.width = this.diagram_width;
       this.canvas_picker.height = this.diagram_height;
 
+      var fillStyle = $("#color-switcher").colorswitcher("get_background");
+      var opacity = $("#color-switcher").colorswitcher("get_opacity");
+      this.canvas_hover_ctx.fillStyle = "rgba(" + fillStyle.r + ", " + fillStyle.g + ", " + fillStyle.b + ", " + opacity + ")";
+
       var waveform_subset = [];
       if(visible !== undefined) {
         for(var i=0; i<visible.length; i++)
@@ -450,6 +454,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
     _hover: function(waveforms)
     {
       var self = this;
+      var fillStyle;
 
       // Only highlight a waveform if it's part of the current selection
       var selection = self.options.selection;
@@ -472,6 +477,11 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
       // Clear the canvas
       self.canvas_hover_ctx.clearRect(0, 0, self.canvas_hover.width, self.canvas_hover.height);
+      // Apply semi transparent background if we are displaying any waveforms
+      if(waveform_subset.length > 0)
+      {
+        self.canvas_hover_ctx.fillRect(0, 0, self.canvas_hover.width, self.canvas_hover.height);
+      }
 
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
       var input_index, strokeStyle;
