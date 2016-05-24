@@ -123,6 +123,16 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         ;
       this.canvas_selection_ctx = this.canvas_selection.getContext("2d", {alpha:true});
 
+      this.canvas_hover = d3.select(self.element.parent().get(0)).append("canvas")
+        .style({
+          'position':'absolute',
+          'left':this.padding_left + 'px',
+          'top':this.padding_top + 'px'
+        })
+        .node()
+        ;
+      this.canvas_hover_ctx = this.canvas_hover.getContext("2d", {alpha:true});
+
       this.canvas_offscreen = document.createElement('canvas');
       this.canvas_offscreen_ctx = this.canvas_offscreen.getContext('2d', {alpha:true});
 
@@ -267,6 +277,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       var result, current_waveform, p, strokeStyle, paths=[];
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
 
+      /* BEGIN svg only, remove when cleaning up */
       waveformsContainer = this.visualization;
 
       var waveforms_update = waveformsContainer.selectAll("g.waveform")
@@ -278,6 +289,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         .append("svg:g")
         .attr("class", "waveform")
         ;
+      /* END svg only, remove when cleaning up */
 
       var waveformsLength = waveforms_enter.size();
       if(waveformsLength > 0){
@@ -429,6 +441,24 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           return result;
         }
       }
+    },
+
+    /* Hover effect for waveforms */
+    _hover: function(waveforms)
+    {
+
+    },
+
+    /* Highlights waveforms */
+    _selection: function(waveforms)
+    {
+
+    },
+
+    /* Renders waveforms onto a canvas */
+    _render: function(waveforms, canvas)
+    {
+
     },
 
     /* Highlights waveforms */
