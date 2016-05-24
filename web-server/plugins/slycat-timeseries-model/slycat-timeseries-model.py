@@ -71,7 +71,10 @@ def register_slycat_plugin(context):
 
       sid, waveforms = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveforms_%s.pickle" % (workdir, uid, f))
       cherrypy.log.error("Got remote file waveforms_%s.pickle" % f)
-      waveforms = pickle.loads(waveforms)
+      try:
+        waveforms = pickle.loads(waveforms)
+      except Exception as e:
+        cherrypy.log.error("Loading waveforms exception caught: %s" % e)
       cherrypy.log.error("Loaded waveforms from pickle file")
 
       database = slycat.web.server.database.couchdb.connect()
