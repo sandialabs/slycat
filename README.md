@@ -1,4 +1,7 @@
 # Slycat
+[![TravisCI](https://travis-ci.org/sandialabs/slycat.svg?branch=master)](https://travis-ci.org/sandialabs/slycat)
+[![Coverage Status](https://coveralls.io/repos/github/sandialabs/slycat/badge.svg?branch=master)](https://coveralls.io/github/sandialabs/slycat?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/slycat/badge/?version=latest)](http://slycat.readthedocs.org/en/latest/)
 
 This is Slycat - a web-based ensemble analysis and visualization platform, created at [Sandia National Laboratories](http://www.sandia.gov).
 
