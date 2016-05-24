@@ -248,14 +248,14 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           id = RGBtoInt(dataPick[0], dataPick[1], dataPick[2]);
           // console.log('you are hovering over waveform with id ' + id);
 
-          path = paths[id];
+          path = self.paths[id];
 
           isPointInStrokePick = self.canvas_picker_ctx.isPointInStroke(path, x, y);
 
           if(isPointInStrokePick)
           {
             self.options.highlight = [id];
-            self._select();
+            self._hover();
           }
         }
         else
@@ -264,17 +264,19 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           if(self.options.highlight.length > 0)
           {
             self.options.highlight = [];
-            self._select();
+            self._hover();
           }
         }
 
       }
-      this.canvas_selection.addEventListener('mousemove', pick);
+      this.canvas_hover.addEventListener('mousemove', pick);
 
       this.canvas_offscreen_ctx.lineWidth = 1;
       this.canvas_picker_ctx.lineWidth = 3;
+      this.canvas_hover_ctx.lineWidth = 3;
+      this.canvas_selection_ctx.lineWidth = 3;
 
-      var result, current_waveform, p, strokeStyle, paths=[];
+      var result, current_waveform, p, strokeStyle;
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
 
       /* BEGIN svg only, remove when cleaning up */
@@ -340,7 +342,8 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         }, timeout);
       }
 
-      var current_waveform_length, p, paths=[];
+      var current_waveform_length, p;
+      self.paths=[];
       function processWaveform(waveform){
         current_waveform_length = waveform["time"].length;
         p = new Path2D();
@@ -353,7 +356,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         {
           p.lineTo( self.x(waveform["time"][i]), self.y(waveform["value"][i]) );
         }
-        paths[waveform["input-index"]] = p;
+        self.paths[waveform["input-index"]] = p;
         if (color_scale_and_color_array && self.options.color_array[ waveform["input-index"] ] !== null)
           strokeStyle = self.options.color_scale( self.options.color_array[ waveform["input-index"] ] );
         else
@@ -365,7 +368,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
       function processWaveformLookup(waveform){
         self.canvas_picker_ctx.strokeStyle = intToRGB(waveform["input-index"]);
-        self.canvas_picker_ctx.stroke(paths[waveform["input-index"]]);
+        self.canvas_picker_ctx.stroke(self.paths[waveform["input-index"]]);
         // console.log('just stroked lookup: ' + waveform["input-index"]);
       }
 
@@ -446,7 +449,44 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
     /* Hover effect for waveforms */
     _hover: function(waveforms)
     {
+      var self = this;
 
+      // Only highlight a waveform if it's part of the current selection
+      var selection = self.options.selection;
+      var highlight = self.options.highlight;
+      var inCurrentSelection = [];
+      for(var i=0; i<highlight.length; i++){
+        if( selection.indexOf(highlight[i]) > -1 ){
+          inCurrentSelection.push(highlight[i]);
+        }
+      }
+      highlight = inCurrentSelection;
+
+      var waveform_subset = [];
+      for(var i=0; i<highlight.length; i++)
+      {
+        var node_index = highlight[i];
+        if(node_index < self.waveforms.length)
+          waveform_subset.push(self.waveforms[node_index]);
+      }
+
+      // Clear the canvas
+      self.canvas_hover_ctx.clearRect(0, 0, self.canvas_hover.width, self.canvas_hover.height);
+
+      var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
+      var input_index, strokeStyle;
+      for(var i = 0; i < waveform_subset.length; i++)
+      {
+        input_index = waveform_subset[i]["input-index"];
+
+        if (color_scale_and_color_array && self.options.color_array[ input_index ] !== null)
+          strokeStyle = self.options.color_scale( self.options.color_array[ input_index ] );
+        else
+          strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+
+        self.canvas_hover_ctx.strokeStyle = strokeStyle;
+        self.canvas_hover_ctx.stroke(self.paths[input_index]);
+      }
     },
 
     /* Highlights waveforms */
