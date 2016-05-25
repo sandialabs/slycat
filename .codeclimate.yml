@@ -37,6 +37,13 @@ exclude_paths:
 - open-source-docker/**/*
 - travis-ci/**/*
 - ubuntu/**/*
+- web-server/css/**/*
+- web-server/fonts/**/*
+- web-server/js/**/*
 - "**.md"
 - "**.yml"
 - "**.csv"
+- "**.jpg"
+- "**.hdf5"
+- "**.stl"
+- "**.js"
