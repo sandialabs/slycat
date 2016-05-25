@@ -313,21 +313,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       var result, current_waveform, p, strokeStyle;
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
 
-      /* BEGIN svg only, remove when cleaning up */
-      waveformsContainer = this.visualization;
-
-      var waveforms_update = waveformsContainer.selectAll("g.waveform")
-        .data(waveform_subset, function(d){ return d["input-index"]; });
-
-      var waveforms_exit = waveforms_update.exit().remove();
-
-      var waveforms_enter = waveforms_update.enter()
-        .append("svg:g")
-        .attr("class", "waveform")
-        ;
-      /* END svg only, remove when cleaning up */
-
-      var waveformsLength = waveforms_enter.size();
+      var waveformsLength = waveform_subset.length;
       if(waveformsLength > 0){
         self.waveformPie.trigger(
           'configure',
