@@ -160,7 +160,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       }
 
       this._set_visible();
-      this._select();
+      this._selection();
     },
 
     // Renders waveforms
@@ -502,6 +502,45 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
     /* Highlights waveforms */
     _selection: function(waveforms)
     {
+      var self = this;
+
+      // Only highlight a waveform if it's part of the current selection
+      var selection = self.options.selection;
+      var highlight = self.options.highlight;
+      var inCurrentSelection = [];
+      for(var i=0; i<highlight.length; i++){
+        if( selection.indexOf(highlight[i]) > -1 ){
+          inCurrentSelection.push(highlight[i]);
+        }
+      }
+      highlight = inCurrentSelection;
+
+      var waveform_subset = [];
+      for(var i=0; i<highlight.length; i++)
+      {
+        var node_index = highlight[i];
+        if(node_index < self.waveforms.length)
+          waveform_subset.push(self.waveforms[node_index]);
+      }
+
+      // Clear the canvas
+      self.canvas_selection_ctx.clearRect(0, 0, self.canvas_selection.width, self.canvas_selection.height);
+
+      var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
+      var input_index, strokeStyle;
+      for(var i = 0; i < waveform_subset.length; i++)
+      {
+        input_index = waveform_subset[i]["input-index"];
+
+        if (color_scale_and_color_array && self.options.color_array[ input_index ] !== null)
+          strokeStyle = self.options.color_scale( self.options.color_array[ input_index ] );
+        else
+          strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+
+        self.canvas_selection_ctx.strokeStyle = strokeStyle;
+        self.canvas_selection_ctx.stroke(self.paths[input_index]);
+      }
+
 
     },
 
@@ -661,7 +700,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       this.diagram_height = this.height - this.padding_top - this.padding_bottom;
       this.rect.attr({width: this.diagram_width, height: this.diagram_height});
       this._set_visible();
-      this._select();
+      this._selection();
     },
 
     _setOption: function(key, value)
@@ -675,7 +714,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       }
       else if(key == "highlight")
       {
-        this._select();
+        this._selection();
       }
       else if(key == "color-options")
       {
@@ -710,7 +749,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           this.options.highlight = value.highlight;
 
         this._set_visible();
-        this._select();
+        this._selection();
       }
     },
   });
