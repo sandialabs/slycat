@@ -1,4 +1,32 @@
+engines:
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - ruby
+      - javascript
+      - python
+      - php
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+  radon:
+    enabled: true
+ratings:
+  paths:
+  - "**.css"
+  - "**.inc"
+  - "**.js"
+  - "**.jsx"
+  - "**.module"
+  - "**.php"
+  - "**.py"
+  - "**.rb"
 exclude_paths:
+- features/
 - Sample-Images/**/*
 - artwork/**/*
 - data/**/*
@@ -9,6 +37,13 @@ exclude_paths:
 - open-source-docker/**/*
 - travis-ci/**/*
 - ubuntu/**/*
+- web-server/css/**/*
+- web-server/fonts/**/*
+- web-server/js/**/*
 - "**.md"
 - "**.yml"
 - "**.csv"
+- "**.jpg"
+- "**.hdf5"
+- "**.stl"
+- "**.js"
