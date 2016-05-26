@@ -3,6 +3,7 @@ import numpy
 import slycat.web.server
 import slycat.email
 import StringIO
+import time
 
 def parse_file(file):
   """
@@ -67,6 +68,7 @@ def parse(database, model, input, files, aids, **kwargs):
   :param aids: artifact ID
   :param kwargs:
   """
+  start = time.time()
   if len(files) != len(aids):
     slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
     raise Exception("Number of files and artifact ids must match.")
@@ -78,6 +80,9 @@ def parse(database, model, input, files, aids, **kwargs):
     slycat.web.server.put_model_arrayset(database, model, aid, input)
     slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
     slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, data)
+  end = time.time()
+  model["db_creation_time"] = (end - start)
+  database.save(model)
 
 def register_slycat_plugin(context):
   context.register_parser("slycat-csv-parser", "Comma separated values (CSV)", ["table"], parse)
