@@ -22,6 +22,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       color_scale : null,
       nullWaveformColor: "gray",
       nullWaveformDasharray: "5,5",
+      hover : []
     },
 
     _create: function()
@@ -267,7 +268,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         return r<<16 | g<<8 | b;
       }
 
-      function pick(event) {
+      function hover(event) {
         var x = event.layerX;
         var y = event.layerY;
 
@@ -288,22 +289,44 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
           if(isPointInStrokePick)
           {
-            self.options.highlight = [id];
+            self.options.hover = [id];
             self._hover();
           }
         }
         else
         {
-          // Only clear highlight if there is something highlighted
-          if(self.options.highlight.length > 0)
+          // Only clear hover if there is something hovered
+          if(self.options.hover.length > 0)
           {
-            self.options.highlight = [];
+            self.options.hover = [];
             self._hover();
           }
         }
 
       }
-      this.canvas_hover.addEventListener('mousemove', pick);
+      this.canvas_hover.addEventListener('mousemove', hover);
+
+      function click(event) {
+        // Do nothing if clicked waveform is already selected
+        if(self.options.hover.length != 0 && self.options.highlight.indexOf(self.options.hover[0]) > -1)
+        {
+          return;
+        }
+        // Add waveform to highlights if ctrl clicked
+        if(event.ctrlKey || event.metaKey) 
+        {
+          self.options.highlight.push(self.options.hover[0])
+        }
+        // Select only clicked waveform
+        else
+        {
+          self.options.highlight = self.options.hover.slice();
+        }
+        self._selection();
+        self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+        event.stopPropagation();
+      }
+      this.canvas_hover.addEventListener('click', click);
 
       this.canvas_offscreen_ctx.lineWidth = 1;
       this.canvas_picker_ctx.lineWidth = 3;
@@ -457,21 +480,21 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       var self = this;
       var fillStyle;
 
-      // Only highlight a waveform if it's part of the current selection
+      // Only hover a waveform if it's part of the current selection
       var selection = self.options.selection;
-      var highlight = self.options.highlight;
+      var hover = self.options.hover;
       var inCurrentSelection = [];
-      for(var i=0; i<highlight.length; i++){
-        if( selection.indexOf(highlight[i]) > -1 ){
-          inCurrentSelection.push(highlight[i]);
+      for(var i=0; i<hover.length; i++){
+        if( selection.indexOf(hover[i]) > -1 ){
+          inCurrentSelection.push(hover[i]);
         }
       }
-      highlight = inCurrentSelection;
+      hover = inCurrentSelection;
 
       var waveform_subset = [];
-      for(var i=0; i<highlight.length; i++)
+      for(var i=0; i<hover.length; i++)
       {
-        var node_index = highlight[i];
+        var node_index = hover[i];
         if(node_index < self.waveforms.length)
           waveform_subset.push(self.waveforms[node_index]);
       }
