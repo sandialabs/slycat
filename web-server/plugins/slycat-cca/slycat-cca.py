@@ -10,12 +10,13 @@ def register_slycat_plugin(context):
   import slycat.email
   import threading
   import traceback
+  import time
 
   def compute(mid):
     try:
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", mid)
-
+      start = time.time()
       # Get required inputs ...
       metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table")
       input_columns = slycat.web.server.get_model_parameter(database, model, "input-columns")
@@ -84,7 +85,9 @@ def register_slycat_plugin(context):
       slycat.web.server.put_model_arrayset_data(database, model, "cca-statistics", "0/0/...;0/1/...", [r, wilks])
 
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
-
+      end  = time.time()
+      model["analysis_computation_time"] = (end - start)
+      database.save(model)
     except:
       cherrypy.log.error("%s" % traceback.format_exc())
 
