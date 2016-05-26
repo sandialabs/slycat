@@ -371,12 +371,23 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       }
 
       function processWaveform(waveform){
-        if (color_scale_and_color_array && self.options.color_array[ waveform["input-index"] ] !== null)
+        var coloredLine = color_scale_and_color_array && self.options.color_array[ waveform["input-index"] ] !== null;
+        if(coloredLine)
+        {
           strokeStyle = self.options.color_scale( self.options.color_array[ waveform["input-index"] ] );
+        }
         else
+        {
           strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+          self.canvas_offscreen_ctx.setLineDash([8, 4]);
+        }
         self.canvas_offscreen_ctx.strokeStyle = strokeStyle;
         self.canvas_offscreen_ctx.stroke(self.paths[ waveform["input-index"] ]);
+
+        if(!coloredLine)
+        {
+          self.canvas_offscreen_ctx.setLineDash([]);
+        }
       }
 
       function processWaveformLookup(waveform){
@@ -460,18 +471,28 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       }
 
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
-      var input_index, strokeStyle;
+      var input_index, strokeStyle, coloredLine;
       for(var i = 0; i < waveform_subset.length; i++)
       {
         input_index = waveform_subset[i]["input-index"];
+        coloredLine = color_scale_and_color_array && self.options.color_array[ input_index ] !== null;
 
-        if (color_scale_and_color_array && self.options.color_array[ input_index ] !== null)
+        if (coloredLine)
+        {
           strokeStyle = self.options.color_scale( self.options.color_array[ input_index ] );
+        }
         else
+        {
           strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+          self.canvas_hover_ctx.setLineDash([8, 4]);
+        }
 
         self.canvas_hover_ctx.strokeStyle = strokeStyle;
         self.canvas_hover_ctx.stroke(self.paths[input_index]);
+        if(!coloredLine)
+        {
+          self.canvas_hover_ctx.setLineDash([]);
+        }
       }
     },
 
@@ -508,18 +529,28 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       }
 
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
-      var input_index, strokeStyle;
+      var input_index, strokeStyle, coloredLine;
       for(var i = 0; i < waveform_subset.length; i++)
       {
         input_index = waveform_subset[i]["input-index"];
+        coloredLine = color_scale_and_color_array && self.options.color_array[ input_index ] !== null;
 
-        if (color_scale_and_color_array && self.options.color_array[ input_index ] !== null)
+        if(coloredLine)
+        {
           strokeStyle = self.options.color_scale( self.options.color_array[ input_index ] );
+        }
         else
+        {
           strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
+          self.canvas_selection_ctx.setLineDash([8, 4]);
+        }
 
         self.canvas_selection_ctx.strokeStyle = strokeStyle;
         self.canvas_selection_ctx.stroke(self.paths[input_index]);
+        if(!coloredLine)
+        {
+          self.canvas_selection_ctx.setLineDash([]);
+        }
       }
     },
 
