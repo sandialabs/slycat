@@ -290,15 +290,21 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       this.canvas_hover.addEventListener('mousemove', hover);
 
       function click(event) {
-        // Do nothing if clicked waveform is already selected
-        if(self.options.hover.length != 0 && self.options.highlight.indexOf(self.options.hover[0]) > -1)
-        {
-          return;
-        }
-        // Add waveform to highlights if ctrl clicked
+        // Add or remove waveform to highlights if ctrl clicked
         if(event.ctrlKey || event.metaKey) 
         {
-          self.options.highlight.push(self.options.hover[0])
+          var index = self.options.highlight.indexOf(self.options.hover[0]);
+          if(index < 0)
+          {
+            self.options.highlight.push(self.options.hover[0])
+          }
+          else
+          {
+            self.options.highlight.splice(index, 1);
+            // Clear hover effect to provide feedback that waveform was removed from highlight
+            self.options.hover = [];
+            self._hover();
+          }
         }
         // Select only clicked waveform
         else
