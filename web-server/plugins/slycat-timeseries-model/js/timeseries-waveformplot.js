@@ -75,28 +75,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       this.color_array = this.options.color_array;
       this.color_scale = this.options.color_scale;
 
-      this.container.selectAll("g").remove();
-
-      this.visualization = this.container.append("svg:g")
-        .attr("transform", "translate(" + this.padding_left + "," + this.padding_top + ")")
-        ;
-
-      this.rect = this.visualization.append("svg:rect")
-        .attr("width", this.diagram_width)
-        .attr("height", this.diagram_height)
-        .attr("pointer-events", "all")
-        .style("fill", "transparent")
-        .on("click", function(d){
-          // unselect all the waveforms when someone clicks in the panel but not on a waveform. 
-          // But only if they are regular clicking. Ctrl+click probably means they're trying to select another waveform.
-          if(!d3.event.ctrlKey && !d3.event.metaKey) {
-            self.options.highlight = [];
-            self._select();
-            self.element.trigger("waveform-selection-changed", [self.options.highlight]);
-          }
-        }) 
-  //            .call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", redraw_waveforms));
-        ;
+      this.container.selectAll("canvas").remove();
 
       this.x_axis_layer = this.container.append("g").attr("class", "x-axis");
       this.y_axis_layer = this.container.append("g").attr("class", "y-axis");
@@ -150,8 +129,14 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         this.options.selection = visible;
       }
 
-      // Calculate paths
-      console.time("calculating paths");
+      this._set_visible();
+      this._selection();
+    },
+
+    // Calculate paths
+    _calculate_paths: function()
+    {
+      var self = this;
       var x_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["time"]); });
       var x_max = d3.max(this.waveforms, function(waveform) { return d3.max(waveform["time"]); });
       var y_min = d3.min(this.waveforms, function(waveform) { return d3.min(waveform["value"]); });
@@ -187,14 +172,11 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
         this.paths[waveform["input-index"]] = p;
       }
-      console.timeEnd("calculating paths");
-
-      this._set_visible();
-      this._selection();
     },
 
     // Renders waveforms
-    _set_visible: function(){
+    _set_visible: function()
+    {
       var self = this;
       var visible = this.options.selection;
       this.waveforms = this.options.waveforms;
@@ -263,6 +245,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         var b = int & 0xff;
         return d3.rgb(r, g, b);
       }
+
       function RGBtoInt(r, g, b)
       {
         return r<<16 | g<<8 | b;
@@ -356,6 +339,8 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           self.waveformPieContainer.show(0);
         }, 1000);
 
+        this._calculate_paths();
+
         timedProcessArray(
           waveform_subset,
           processWaveform, 
@@ -438,39 +423,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
             self.previewWaveformsTimeout = setTimeout(arguments.callee, timeout);
           }
         }, timeout );
-      }
-
-      this.make_sax_line = function()
-      {
-        var self = this;
-        return function(d)
-        {
-
-          result = "";
-
-          // Commenting out decimation while we wait to find a better approach to this 
-          var multiplier = 1;
-        	// // Adding downsampling decimation based on panel width
-        	// var samples = d["time"].length;
-        	// var panelWidth = $("#waveform-viewer")[0].getBoundingClientRect().width;
-        	// var multiplier = Math.ceil( (samples / panelWidth) * 4 );
-        	// if(multiplier < 1)
-          //   multiplier = 1;
-          
-        	//console.log("multiplier: " + multiplier);
-          for(var i = 0; i != d["time"].length; ++i)
-          {
-            result += "M" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
-            break;
-          }
-          //for(var i = 1; i < d["time"].length; ++i)
-          for(var i = 1; i < d["time"].length; i+=multiplier)
-          {
-            result += "L" + self.x(d["time"][i]) + "," + self.y(d["value"][i]);
-          }
-
-          return result;
-        }
       }
     },
 
@@ -571,86 +523,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       }
     },
 
-    /* Renders waveforms onto a canvas */
-    _render: function(waveforms, canvas)
-    {
-
-    },
-
-    /* Highlights waveforms */
-    _select: function()
-    {
-      var self = this;
-
-      // Only highlight a waveform if it's part of the current selection
-      var selection = self.options.selection;
-      var highlight = self.options.highlight;
-      var inCurrentSelection = [];
-      for(var i=0; i<highlight.length; i++){
-        if( selection.indexOf(highlight[i]) > -1 ){
-          inCurrentSelection.push(highlight[i]);
-        }
-      }
-      highlight = inCurrentSelection;
-
-      var waveform_subset = [];
-      for(var i=0; i<highlight.length; i++)
-      {
-        var node_index = highlight[i];
-        if(node_index < self.waveforms.length)
-          waveform_subset.push(self.waveforms[node_index]);
-      }
-
-      this.container.selectAll("g.selection").remove();
-      this.container.selectAll("rect.selectionMask").remove();
-
-      if(highlight.length > 0) {
-        this.visualization.append("svg:rect")
-          .attr("width", this.diagram_width)
-          .attr("height", this.diagram_height)
-          .attr("pointer-events", "none")
-          .style("fill", $("#color-switcher").colorswitcher("get_background").toString() )
-          .style("fill-opacity", $("#color-switcher").colorswitcher("get_opacity") )
-          .attr("class", "selectionMask")
-          ;
-      }
-
-      var waveforms = this.visualization.selectAll("g.selection")
-        .data(waveform_subset, function(d){ return d["input-index"]; })
-      .enter().append("svg:g")
-        .attr("class", "selection");
-
-      waveforms.append("svg:path")
-        .attr("d", this.make_sax_line())
-        .style("stroke", function(d, i) { 
-          if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
-            return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
-          else
-            return $("#color-switcher").colorswitcher("get_null_color");
-        })
-        .style("stroke-dasharray", function(d,i){
-          if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
-            return null;
-          else
-            return self.options.nullWaveformDasharray;
-        })
-        .attr("class", "highlight")
-        .on("click", function(d){
-          if(d3.event.ctrlKey || d3.event.metaKey) {
-            var index = self.options.highlight.indexOf(d['input-index']);
-            if (index > -1) {
-              self.options.highlight.splice(index, 1);
-            }
-          } else {
-            self.options.highlight = [d['input-index']];
-          }
-          self._select();
-          self.element.trigger("waveform-selection-changed", [self.options.highlight]);
-          d3.event.stopPropagation();
-        })
-        ;
-    },
-
     _stopProcessingWaveforms: function()
     {
       var self = this;
@@ -717,15 +589,10 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
     resize_canvas: function()
     {
-      this.container.selectAll("g.waveform").remove();
-      this.container.selectAll("g.selection").remove();
-      this.container.selectAll("rect.selectionMask").remove();
-        
       this.width = $("#waveform-pane").width();
       this.height = $("#waveform-pane").height();
       this.diagram_width = this.width - this.padding_left - this.padding_right;
       this.diagram_height = this.height - this.padding_top - this.padding_bottom;
-      this.rect.attr({width: this.diagram_width, height: this.diagram_height});
       this._set_visible();
       this._selection();
     },
@@ -748,10 +615,16 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         this.options.color_array = value.color_array;
         this.options.color_scale = value.color_scale;
         this._set_color();
+
+        this._set_visible();
+        this._selection();
       }
       else if(key == "color_scale")
       {
         this._set_color();
+
+        this._set_visible();
+        this._selection();
       }
       else if(key == "waveforms")
       {
