@@ -119,6 +119,77 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       this.canvas_picker = document.createElement('canvas');
       this.canvas_picker_ctx = this.canvas_picker.getContext('2d', {alpha:true});
 
+      function RGBtoInt(r, g, b)
+      {
+        return r<<16 | g<<8 | b;
+      }
+
+      function hover(event) {
+        var x = event.layerX;
+        var y = event.layerY;
+
+        var pixelPick = self.canvas_picker_ctx.getImageData(x, y, 1, 1);
+        var dataPick = pixelPick.data;
+        var rgbaPick = 'rgba(' + dataPick[0] + ',' + dataPick[1] +
+                   ',' + dataPick[2] + ',' + dataPick[3] + ')';
+
+        var id, isPointInStrokePick, path;
+        if(dataPick[3]==255)
+        {
+          id = RGBtoInt(dataPick[0], dataPick[1], dataPick[2]);
+          // console.log('you are hovering over waveform with id ' + id);
+
+          path = self.paths[id];
+
+          isPointInStrokePick = self.canvas_picker_ctx.isPointInStroke(path, x, y);
+
+          if(isPointInStrokePick)
+          {
+            self.options.hover = [id];
+            self._hover();
+          }
+        }
+        else
+        {
+          // Only clear hover if there is something hovered
+          if(self.options.hover.length > 0)
+          {
+            self.options.hover = [];
+            self._hover();
+          }
+        }
+
+      }
+      this.canvas_hover.addEventListener('mousemove', hover);
+
+      function click(event) {
+        // Add or remove waveform to highlights if ctrl clicked
+        if(event.ctrlKey || event.metaKey) 
+        {
+          var index = self.options.highlight.indexOf(self.options.hover[0]);
+          if(index < 0)
+          {
+            self.options.highlight.push(self.options.hover[0])
+          }
+          else
+          {
+            self.options.highlight.splice(index, 1);
+            // Clear hover effect to provide feedback that waveform was removed from highlight
+            self.options.hover = [];
+            self._hover();
+          }
+        }
+        // Select only clicked waveform
+        else
+        {
+          self.options.highlight = self.options.hover.slice();
+        }
+        self._selection();
+        self.element.trigger("waveform-selection-changed", [self.options.highlight]);
+        event.stopPropagation();
+      }
+      this.canvas_hover.addEventListener('click', click);
+
       // Set all waveforms to visible if this options has not been set
       var visible = this.options.selection;
       if(visible === undefined) {
@@ -245,77 +316,6 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         var b = int & 0xff;
         return d3.rgb(r, g, b);
       }
-
-      function RGBtoInt(r, g, b)
-      {
-        return r<<16 | g<<8 | b;
-      }
-
-      function hover(event) {
-        var x = event.layerX;
-        var y = event.layerY;
-
-        var pixelPick = self.canvas_picker_ctx.getImageData(x, y, 1, 1);
-        var dataPick = pixelPick.data;
-        var rgbaPick = 'rgba(' + dataPick[0] + ',' + dataPick[1] +
-                   ',' + dataPick[2] + ',' + dataPick[3] + ')';
-
-        var id, isPointInStrokePick, path;
-        if(dataPick[3]==255)
-        {
-          id = RGBtoInt(dataPick[0], dataPick[1], dataPick[2]);
-          // console.log('you are hovering over waveform with id ' + id);
-
-          path = self.paths[id];
-
-          isPointInStrokePick = self.canvas_picker_ctx.isPointInStroke(path, x, y);
-
-          if(isPointInStrokePick)
-          {
-            self.options.hover = [id];
-            self._hover();
-          }
-        }
-        else
-        {
-          // Only clear hover if there is something hovered
-          if(self.options.hover.length > 0)
-          {
-            self.options.hover = [];
-            self._hover();
-          }
-        }
-
-      }
-      this.canvas_hover.addEventListener('mousemove', hover);
-
-      function click(event) {
-        // Add or remove waveform to highlights if ctrl clicked
-        if(event.ctrlKey || event.metaKey) 
-        {
-          var index = self.options.highlight.indexOf(self.options.hover[0]);
-          if(index < 0)
-          {
-            self.options.highlight.push(self.options.hover[0])
-          }
-          else
-          {
-            self.options.highlight.splice(index, 1);
-            // Clear hover effect to provide feedback that waveform was removed from highlight
-            self.options.hover = [];
-            self._hover();
-          }
-        }
-        // Select only clicked waveform
-        else
-        {
-          self.options.highlight = self.options.hover.slice();
-        }
-        self._selection();
-        self.element.trigger("waveform-selection-changed", [self.options.highlight]);
-        event.stopPropagation();
-      }
-      this.canvas_hover.addEventListener('click', click);
 
       this.canvas_offscreen_ctx.lineWidth = 1;
       this.canvas_picker_ctx.lineWidth = 3;
