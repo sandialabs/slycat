@@ -172,7 +172,7 @@ def register_slycat_plugin(context):
       finish(database, model)
       pass
 
-    time.sleep(30)
+    time.sleep(5)
 
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", model["_id"])
