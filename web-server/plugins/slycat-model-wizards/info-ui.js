@@ -15,6 +15,8 @@ define(["slycat-server-root", "slycat-web-client", "knockout", "URI", "knockout-
       model_compute_time: 0,
       hdf5_footprint: 0,
       server_cache_size: 0,
+      analysis_computation_time:0,
+      db_creation_time: 0,
       model: null
     });
 
