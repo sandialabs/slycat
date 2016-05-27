@@ -325,18 +325,18 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       var result, current_waveform, p, strokeStyle;
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
 
-      var waveformsLength = waveform_subset.length;
-      if(waveformsLength > 0){
+      this.waveformsLength = waveform_subset.length;
+      if(this.waveformsLength > 0){
         self.waveformPie.trigger(
           'configure',
           {
-            "max":waveformsLength,
+            "max":this.waveformsLength,
           }
         );
         self.waveformSelectorPie.trigger(
           'configure',
           {
-            "max":waveformsLength,
+            "max":this.waveformsLength,
           }
         );
 
@@ -347,33 +347,13 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
         this._calculate_paths();
 
-        timedProcessArray(
+        self._timedProcessArray(
           waveform_subset,
           processWaveform, 
           finishedProcessingWaveforms,
           self.waveformPie
         );
-        previewWaveforms();
-      }
-
-      function timedProcessArray(items, process, callback, progressControl){
-        var timeout = 100; //how long to yield control to UI thread
-        var todo = items.concat(); //create a clone of the original
-
-        self.waveformProcessingTimeout = setTimeout(function(){
-          var start = +new Date();
-          do {
-            process(todo.shift());
-          } while (todo.length > 0 && (+new Date() - start < 50));
-
-          if (todo.length > 0){
-            self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
-          } else {
-            callback(items);
-          }
-
-          progressControl.val(waveformsLength - todo.length).trigger('change');
-        }, timeout);
+        previewWaveforms(self.canvas_offscreen, self.canvas_datum_ctx);
       }
 
       function processWaveform(waveform){
@@ -420,7 +400,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           self.waveformSelectorPieContainer.show(0);
         }, 1000);
 
-        timedProcessArray(
+        self._timedProcessArray(
           waveform_subset,
           processWaveformLookup, 
           finishedProcessingWaveformsLookup,
@@ -428,13 +408,12 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
         );
       }
 
-      function previewWaveforms(timeout, maxIterations){
+      function previewWaveforms(sourceCanvas, destinationContext, timeout){
         if (timeout == null)
           timeout = 500
 
         self.previewWaveformsTimeout = setTimeout( function(){
-          console.log("inside previewWaveforms deeper timeout");
-          self.canvas_datum_ctx.drawImage(self.canvas_offscreen, 0, 0);
+          destinationContext.drawImage(sourceCanvas, 0, 0);
           if(self.previewWaveformsTimeout)
           {
             self.previewWaveformsTimeout = setTimeout(arguments.callee, timeout);
@@ -569,6 +548,28 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       self.previewWaveformsTimeout = undefined;
       clearTimeout(self.showWaveformPieContainerTimeout);
       self.waveformPieContainer.hide();
+    },
+
+    _timedProcessArray: function(items, process, callback, progressControl)
+    {
+      var self = this;
+      var timeout = 100; //how long to yield control to UI thread
+      var todo = items.concat(); //create a clone of the original
+
+      self.waveformProcessingTimeout = setTimeout(function(){
+        var start = +new Date();
+        do {
+          process(todo.shift());
+        } while (todo.length > 0 && (+new Date() - start < 50));
+
+        if (todo.length > 0){
+          self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
+        } else {
+          callback(items);
+        }
+
+        progressControl.val(self.waveformsLength - todo.length).trigger('change');
+      }, timeout);
     },
 
     _set_color: function()
