@@ -1640,7 +1640,7 @@ def get_model_statistics(mid):
   else:
     delta_queue_time = 0
 
-  if "job_completed_time" in model and "job_running_time":
+  if "job_completed_time" in model and "job_running_time" in model:
     delta_running_time = (datetime.datetime.strptime(model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     delta_model_compute_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
   elif "job_completed_time" in model:
