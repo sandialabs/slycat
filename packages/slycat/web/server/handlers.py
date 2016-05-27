@@ -1688,7 +1688,9 @@ def get_model_statistics(mid):
     "hdf5_footprint": 100.0*(float(hdf5_file_size)/float(total_hdf5_server_size)),
     "job_pending_time": float(delta_queue_time)/60,
     "job_running_time": float(delta_running_time)/60,
-    "model_compute_time": float(delta_model_compute_time)/60
+    "model_compute_time": float(delta_model_compute_time)/60,
+    "analysis_computation_time": 0.0 if "analysis_computation_time" not in model else float(model["analysis_computation_time"]),
+    "db_creation_time": 0.0 if "db_creation_time" not in model else float(model["db_creation_time"])
   }
 
 @cherrypy.tools.json_in(on = True)
