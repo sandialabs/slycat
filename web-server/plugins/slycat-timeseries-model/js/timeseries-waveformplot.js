@@ -54,6 +54,20 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
                     'step':1,
                   });
 
+      this.waveformSelectionPieContainer = $("#waveform-selection-progress");
+      this.waveformSelectionPie = $("#waveform-selection-progress .waveformPie")
+      this.waveformSelectionPie.knob({
+                    'min':0,
+                    'readOnly':true,
+                    'displayInput':false,
+                    'fgColor':'#7767B0',
+                    'bgColor':'#DBD9EB',
+                    'width':200,
+                    'height':200,
+                    'thickness':0.35,
+                    'step':1,
+                  });
+
       this.waveformSelectorPieContainer = $("#waveform-selector-progress");
       this.waveformSelectorPie = $("#waveform-selector-progress .waveformPie")
       this.waveformSelectorPie.knob({
@@ -68,9 +82,11 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
                     'step':1,
                   });
 
-      this.waveformProcessingTimeout = null;
+      this.waveformProcessingTimeout = { timeoutID: null };
+      this.waveformSelectionProcessingTimeout = { timeoutID: null };
       this.previewWaveformsTimeout = null;
       this.showWaveformPieContainerTimeout = null;
+      this.showWaveformSelectionPieContainerTimeout = null;
       this.showWaveformSelectorPieContainerTimeout = null;
       this.color_array = this.options.color_array;
       this.color_scale = this.options.color_scale;
@@ -351,7 +367,8 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           waveform_subset,
           processWaveform, 
           finishedProcessingWaveforms,
-          self.waveformPie
+          self.waveformPie,
+          self.waveformProcessingTimeout
         );
         previewWaveforms(self.canvas_offscreen, self.canvas_datum_ctx);
       }
@@ -404,7 +421,8 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
           waveform_subset,
           processWaveformLookup, 
           finishedProcessingWaveformsLookup,
-          self.waveformSelectorPie
+          self.waveformSelectorPie,
+          self.waveformProcessingTimeout
         );
       }
 
@@ -486,6 +504,9 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
     {
       var self = this;
 
+      // Cancel any previously started work
+      self._stopProcessingWaveformsSelection();
+
       // Only highlight a waveform if it's part of the current selection
       var selection = self.options.selection;
       var highlight = self.options.highlight;
@@ -507,35 +528,64 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
       // Clear the canvas
       self.canvas_selection_ctx.clearRect(0, 0, self.canvas_selection.width, self.canvas_selection.height);
-      // Apply semi transparent background if we are displaying any waveforms
+      // If we are displaying any waveforms...
       if(waveform_subset.length > 0)
       {
+        // Apply semi transparent background if we are displaying any waveforms
         self.canvas_selection_ctx.fillRect(0, 0, self.canvas_hover.width, self.canvas_hover.height);
+        // Configure progress indicator max value
+        self.waveformSelectionPie.trigger(
+          'configure',
+          {
+            "max":waveform_subset.length,
+          }
+        );
       }
 
-      var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
-      var input_index, strokeStyle, coloredLine;
-      for(var i = 0; i < waveform_subset.length; i++)
-      {
-        input_index = waveform_subset[i]["input-index"];
-        coloredLine = color_scale_and_color_array && self.options.color_array[ input_index ] !== null;
+      // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
+        self.showWaveformSelectionPieContainerTimeout = setTimeout(function(){
+          self.waveformSelectionPieContainer.show(0);
+        }, 1000);
 
+      self._timedProcessArray(
+        waveform_subset,
+        processWaveformSelection, 
+        finishedProcessingWaveformsSelection,
+        self.waveformSelectionPie,
+        self.waveformSelectionProcessingTimeout
+      );
+      //previewWaveforms(self.canvas_offscreen, self.canvas_datum_ctx);
+
+      var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
+      function processWaveformSelection(waveform){
+        var coloredLine = color_scale_and_color_array && self.options.color_array[ waveform["input-index"] ] !== null;
         if(coloredLine)
         {
-          strokeStyle = self.options.color_scale( self.options.color_array[ input_index ] );
+          strokeStyle = self.options.color_scale( self.options.color_array[ waveform["input-index"] ] );
         }
         else
         {
           strokeStyle = $("#color-switcher").colorswitcher("get_null_color");
           self.canvas_selection_ctx.setLineDash([8, 4]);
         }
-
         self.canvas_selection_ctx.strokeStyle = strokeStyle;
-        self.canvas_selection_ctx.stroke(self.paths[input_index]);
+        self.canvas_selection_ctx.stroke(self.paths[ waveform["input-index"] ]);
+
         if(!coloredLine)
         {
           self.canvas_selection_ctx.setLineDash([]);
         }
+      }
+
+      function finishedProcessingWaveformsSelection(){
+        // Cancelling the timeout that was set to delay progress indicator display
+        clearTimeout(self.showWaveformSelectionPieContainerTimeout);
+        self.waveformSelectionPieContainer.hide();
+
+        // Commenting out intially to see if we can get away without previewing
+        // clearTimeout(self.previewWaveformsSelectionTimeout);
+        // self.previewSelectionWaveformsTimeout = undefined;
+        // self.canvas_datum_ctx.drawImage(self.canvas_offscreen, 0, 0);
       }
     },
 
@@ -543,86 +593,45 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
     {
       var self = this;
       // Cancel any previously started work
-      clearTimeout(self.waveformProcessingTimeout);
+      clearTimeout(self.waveformProcessingTimeout.timeoutID);
       clearTimeout(self.previewWaveformsTimeout);
       self.previewWaveformsTimeout = undefined;
       clearTimeout(self.showWaveformPieContainerTimeout);
       self.waveformPieContainer.hide();
     },
 
-    _timedProcessArray: function(items, process, callback, progressControl)
+    _stopProcessingWaveformsSelection: function()
+    {
+      var self = this;
+      // Cancel any previously started work
+      clearTimeout(self.waveformSelectionProcessingTimeout.timeoutID);
+      // Commenting out intially to see if we can get away without previewing
+      // clearTimeout(self.previewWaveformsSelectionTimeout);
+      // self.previewWaveformsSelectionTimeout = undefined;
+      clearTimeout(self.showWaveformSelectionPieContainerTimeout);
+      self.waveformSelectionPieContainer.hide();
+    },
+
+    _timedProcessArray: function(items, process, callback, progressControl, windowTimer)
     {
       var self = this;
       var timeout = 100; //how long to yield control to UI thread
       var todo = items.concat(); //create a clone of the original
 
-      self.waveformProcessingTimeout = setTimeout(function(){
+      windowTimer.timeoutID = setTimeout(function(){
         var start = +new Date();
         do {
           process(todo.shift());
         } while (todo.length > 0 && (+new Date() - start < 50));
 
         if (todo.length > 0){
-          self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
+          windowTimer.timeoutID = setTimeout(arguments.callee, timeout);
         } else {
           callback(items);
         }
 
-        progressControl.val(self.waveformsLength - todo.length).trigger('change');
+        progressControl.val(items.length - todo.length).trigger('change');
       }, timeout);
-    },
-
-    _set_color: function()
-    {
-      var self = this;
-
-      // No use coloring waveforms if none exist, for example, during initial creation of waveform plot
-      if(this.container.selectAll("g.waveform path, g.selection path.highlight").pop().length > 0){
-        this.container.style("display", "none");
-        // Coloring both the standard waveforms (g.waveform path) and the ones used to show selected simulations (g.selection path.highlight)
-        timedColorWaveforms(this.container.selectAll("g.waveform path, g.selection path.highlight").pop(), colorWaveform, finishedColoringWaveforms);
-      }
-
-      function timedColorWaveforms(items, process, callback){
-        var timeout = 100; //how long to yield control to UI thread
-        var todo = items.concat(); //create a clone of the original
-
-        self.waveformProcessingTimeout = setTimeout(function(){
-          var start = +new Date();
-          do {
-            process(todo.shift());
-          } while (todo.length > 0 && (+new Date() - start < 50));
-
-          if (todo.length > 0){
-            self.waveformProcessingTimeout = setTimeout(arguments.callee, timeout);
-          } else if (callback != null) {
-            callback(items);
-          }
-        }, timeout);
-      }
-
-      function colorWaveform(waveform){
-        d3.select(waveform)
-          .style("stroke", function(d, i) { 
-            if (self.options.color_scale != null && self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
-              return self.options.color_scale( self.options.color_array[ d["input-index"] ] );
-            else
-              return $("#color-switcher").colorswitcher("get_null_color");
-          })
-          .style("stroke-dasharray", function(d,i){
-            if (self.options.color_array != null && self.options.color_array[ d["input-index"] ] !== null)
-              return null;
-            else
-              return self.options.nullWaveformDasharray;
-          })
-        ;
-      }
-
-      function finishedColoringWaveforms(){
-
-        self.container.style("display", "block");
-        
-      }
     },
 
     resize_canvas: function()
@@ -652,15 +661,12 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
       {
         this.options.color_array = value.color_array;
         this.options.color_scale = value.color_scale;
-        this._set_color();
 
         this._set_visible();
         this._selection();
       }
       else if(key == "color_scale")
       {
-        this._set_color();
-
         this._set_visible();
         this._selection();
       }

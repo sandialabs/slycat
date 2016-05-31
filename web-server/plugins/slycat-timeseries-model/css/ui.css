@@ -159,7 +159,9 @@ a
 }
 
 /* Waveform Progress Indicator */
-#waveform-progress {
+#waveform-progress,
+#waveform-selection-progress
+{
     background-color: transparent;
     position: absolute;
     left: 50%;
@@ -168,6 +170,10 @@ a
     height: 200px;
     margin: -100px 0 0 -100px;
     display: none;
+}
+#waveform-selection-progress
+{
+  z-index: 1;
 }
 #waveform-selector-progress {
   background-color: transparent;
