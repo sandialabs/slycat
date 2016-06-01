@@ -32,6 +32,22 @@
     </div>
     <div class="panel panel-default">
       <div class="panel-heading">
+        <strong>Analysis Computation Time</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:details.analysis_computation_time"></span> seconds
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <strong>Database Creation Time</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:details.db_creation_time"></span> seconds
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
         <strong>Job Queue Time</strong>
       </div>
       <div class="panel-body">
@@ -80,18 +96,10 @@
     </div>
     <div class="panel panel-default">
       <div class="panel-heading">
-        <strong>Total Server HDF5 File Store Size</strong>
-      </div>
-      <div class="panel-body">
-        <span data-bind="text:details.hdf5_store_size"></span> mb
-      </div>
-    </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
         <strong>% of total server HDF5 file store</strong>
       </div>
       <div class="panel-body">
-        <span data-bind="text:details.hdf5_footprint"></span> %
+        <span data-bind="text:details.hdf5_footprint"></span> % of <span data-bind="text:details.hdf5_store_size"></span> mb
       </div>
     </div>
     <div class="panel panel-default">
