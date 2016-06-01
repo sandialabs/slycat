@@ -1640,7 +1640,7 @@ def get_model_statistics(mid):
   else:
     delta_queue_time = 0
 
-  if "job_completed_time" in model and "job_running_time":
+  if "job_completed_time" in model and "job_running_time" in model:
     delta_running_time = (datetime.datetime.strptime(model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     delta_model_compute_time = (datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
   elif "job_completed_time" in model:
@@ -1688,7 +1688,9 @@ def get_model_statistics(mid):
     "hdf5_footprint": 100.0*(float(hdf5_file_size)/float(total_hdf5_server_size)),
     "job_pending_time": float(delta_queue_time)/60,
     "job_running_time": float(delta_running_time)/60,
-    "model_compute_time": float(delta_model_compute_time)/60
+    "model_compute_time": float(delta_model_compute_time)/60,
+    "analysis_computation_time": 0.0 if "analysis_computation_time" not in model else float(model["analysis_computation_time"]),
+    "db_creation_time": 0.0 if "db_creation_time" not in model else float(model["db_creation_time"])
   }
 
 @cherrypy.tools.json_in(on = True)
