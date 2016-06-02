@@ -108,6 +108,8 @@ def register_slycat_plugin(context):
           cherrypy.log.error("Put model arrayset data for preview-%s" % f)
     except Exception as e:
       cherrypy.log.error("Timeseries model compute exception: %s" % e)
+      fail_model(model["_id"], "Timeseries model compute exception: %s" % e)
+
 
   def fail_model(mid, message):
     database = slycat.web.server.database.couchdb.connect()
@@ -141,14 +143,12 @@ def register_slycat_plugin(context):
         stop_event.set()
         break
 
-      if state == "FAILED":
-        fail_model(mid, "Job %s has failed." % jid)
-        stop_event.set()
-        break
-
-      if state == "COMPLETED":
+      if state == "COMPLETED" or state == "FAILED":
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
+        if "job_running_time" not in model:
+          model["job_running_time"] = datetime.datetime.utcnow().isoformat()
+          slycat.web.server.update_model(database, model)
         if "job_completed_time" not in model:
           model["job_completed_time"] = datetime.datetime.utcnow().isoformat()
           slycat.web.server.update_model(database, model)
