@@ -30,7 +30,7 @@ start()
   [ $retval -eq 0 ] && echo -n "  already running" && warning && echo && exit 1
 
   # launch the program in the background, redirect all out to file
-  runuser -s /bin/bash $_user -c "$_env $_prog $_args > $_outfile 2>&1 &"
+  runuser -s /bin/bash $_user -c "$_env $_prog $_args >> $_outfile 2>&1 &"
 
   # get the pid 
   sleep 1
