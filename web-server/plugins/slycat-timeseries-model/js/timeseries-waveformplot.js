@@ -540,21 +540,21 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
             "max":waveform_subset.length,
           }
         );
-      }
 
-      // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
+        // Don't want the progress indicator showing up every time. Only if the delay is longer than 1 second.
         self.showWaveformSelectionPieContainerTimeout = setTimeout(function(){
           self.waveformSelectionPieContainer.show(0);
         }, 1000);
 
-      self._timedProcessArray(
-        waveform_subset,
-        processWaveformSelection, 
-        finishedProcessingWaveformsSelection,
-        self.waveformSelectionPie,
-        self.waveformSelectionProcessingTimeout
-      );
-      //previewWaveforms(self.canvas_offscreen, self.canvas_datum_ctx);
+        self._timedProcessArray(
+          waveform_subset,
+          processWaveformSelection, 
+          finishedProcessingWaveformsSelection,
+          self.waveformSelectionPie,
+          self.waveformSelectionProcessingTimeout
+        );
+        //previewWaveforms(self.canvas_offscreen, self.canvas_datum_ctx);
+      } 
 
       var color_scale_and_color_array = self.options.color_scale != null && self.options.color_array != null;
       function processWaveformSelection(waveform){
