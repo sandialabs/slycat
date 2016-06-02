@@ -279,9 +279,7 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
   storage = model["artifact:%s" % aid]
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(storage, "r+") as file:
-      cherrypy.log.error("about to write put_model_array for: {}".format(aid))
       slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
-      cherrypy.log.error("wrote put_model_array for: {}".format(aid))
 
 def put_model_arrayset_data(database, model, aid, hyperchunks, data):
   """Write data to an arrayset artifact.
@@ -312,30 +310,20 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
   with slycat.web.server.hdf5.lock:
     with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
-      cherrypy.log.error("file opened for put_model_arrayset_data: {}".format(aid))
       hdf5_arrayset = slycat.hdf5.ArraySet(file)
-      cherrypy.log.error("created hdf5_arrayset and starting loop...")
       for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
-        cherrypy.log.error("fetching hdf5_array at index %s" % array.index)
         hdf5_array = hdf5_arrayset[array.index]
-        cherrypy.log.error("fetched hdf5_array and starting loop on attributes...")
         for attribute in array.attributes(len(hdf5_array.attributes)):
           if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
             slycat.email.send_error("slycat.web.server.__init__.py put_model_arrayset_data", "Cannot write to computed attribute.")
             raise ValueError("Cannot write to computed attribute.")
 
-          cherrypy.log.error("fetching stored_type")
           stored_type = slycat.hdf5.dtype(hdf5_array.attributes[attribute.expression.index]["type"])
-          cherrypy.log.error("fetched stored_type")
           for hyperslice in attribute.hyperslices():
-            cherrypy.log.error("Writing to %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
-
             data_hyperslice = next(data)
             if isinstance(data_hyperslice, list):
               data_hyperslice = numpy.array(data_hyperslice, dtype=stored_type)
-            cherrypy.log.error("about to write data for: {}".format(aid))
             hdf5_array.set_data(attribute.expression.index, hyperslice, data_hyperslice)
-            cherrypy.log.error("wrote data for: {}".format(aid))
       file.close()
 
 def put_model_file(database, model, aid, value, content_type, input=False):
