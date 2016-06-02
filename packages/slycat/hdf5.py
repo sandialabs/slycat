@@ -248,16 +248,11 @@ class ArraySet(object):
     try:
       # Allocate space for the coming data ...
       array_key = "array/%s" % array_index
-      cherrypy.log.error("checking if array_key %s is in storage" % array_key)
       if array_key in self._storage:
-        cherrypy.log.error("deleting array from storage")
         del self._storage[array_key]
-      cherrypy.log.error("starting loop...")
       for attribute_index, stored_type in enumerate(stored_types):
-        cherrypy.log.error("creating dataset for array_index %s and attribute_index %s" % (array_index, attribute_index))
         self._storage.create_dataset("array/%s/attribute/%s" % (array_index, attribute_index), shape, dtype=stored_type)
     except Exception as e:
-      cherrypy.log.error("start_array exception caught: %s" % e)
       pass
 
     cherrypy.log.error("storing metadata for start_array for put_model_array")
@@ -325,7 +320,7 @@ def start_arrayset(file):
   file.create_group("array")
   return ArraySet(file)
 
-###############################################################################################################################################3
+################################################################################################################################################
 # Legacy functionality - don't use these in new code.
 
 def dtype(type):
