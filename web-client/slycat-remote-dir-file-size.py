@@ -34,20 +34,20 @@ print "user: ",arguments.user
 
 # print "password: ", arguments.password
 expression = re.compile("file://")
-if "file_list" not in temp_dict:
-    print "file_list not in pickle file"
-    file_list=[]
-    with open(arguments.file) as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            for item in row:
-                if bool(expression.search(row[item])):
-                    file_list.append(re.sub(r'file:\/\/[a-zA-Z]*\/', "/", row[item]))
+# if "file_list" not in temp_dict:
+print "file_list not in pickle file"
+file_list=[]
+with open(arguments.file) as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        for item in row:
+            if bool(expression.search(row[item])):
+                file_list.append(re.sub(r'file:\/\/[a-zA-Z]*\/', "/", row[item]))
 
-    with open(arguments.temp_file, 'wb') as fp:
-        print "writing out file list"
-        temp_dict["file_list"]=file_list
-        pickle.dump(temp_dict, fp)
+with open(arguments.temp_file, 'wb') as fp:
+    print "writing out file list"
+    temp_dict["file_list"]=file_list
+    pickle.dump(temp_dict, fp)
 
 print "number of files ", len(temp_dict["file_list"])
 # see if we have a file size map
@@ -94,5 +94,10 @@ except KeyboardInterrupt as e:
     with open(arguments.temp_file, 'wb') as fp:
         temp_dict["file_size_map"] = file_size_map
         pickle.dump(temp_dict, fp)
+
+print "writing out temp_dict"
+with open(arguments.temp_file, 'wb') as fp:
+    temp_dict["file_size_map"] = file_size_map
+    pickle.dump(temp_dict, fp)
 
 print size, " bytes"
