@@ -102,6 +102,7 @@ def register_slycat_plugin(context):
 
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
     cherrypy.request.headers["x-forwarded-for"] = request_from
+    retry_counter = 5
 
     while True:
       try:
@@ -116,6 +117,7 @@ def register_slycat_plugin(context):
       cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
 
       if state == "RUNNING":
+        retry_counter = 5
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
         if "job_running_time" not in model:
@@ -123,11 +125,13 @@ def register_slycat_plugin(context):
           slycat.web.server.update_model(database, model)
 
       if state == "CANCELLED":
+        retry_counter = 5
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
         break
 
-      if state == "COMPLETED" or state == "FAILED":
+      if state == "COMPLETED":
+        retry_counter = 5
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
         if "job_running_time" not in model:
@@ -140,6 +144,18 @@ def register_slycat_plugin(context):
         callback()
         stop_event.set()
         break
+
+      if state == "FAILED":
+        cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
+        retry_counter = retry_counter - 1
+
+        if retry_counter == 0:
+          cherrypy.log.error("Job %s has failed" % jid)
+          fail_model(mid, "Job %s has failed." % jid)
+          break
+
+        # pausing for a little longer this time...
+        time.sleep(30)
 
       time.sleep(5)
 
