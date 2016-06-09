@@ -13,6 +13,7 @@ import cherrypy
 
 __all__ = ["CacheError", "Cache"]
 
+
 class CacheError(Exception):
   """
   generic cached object error
@@ -161,7 +162,7 @@ class Cache(object):
       if (digest in self._loaded) or os.path.exists(path):
         self.expire(digest)
       cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
-      Cache.write(cached_contents, path)
+      self.write(cached_contents, path)
       self._loaded[digest] = cached_contents
 
 
@@ -186,7 +187,7 @@ class Cache(object):
     if (digest_hash in self._loaded) or os.path.exists(path):
       self.expire(digest_hash)
     cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
-    Cache.write(cached_contents, path)
+    self.write(cached_contents, path)
     self._loaded[digest_hash] = cached_contents
 
   def __delitem__(self, digest_hash):
@@ -203,7 +204,7 @@ class Cache(object):
     if digest_hash in self._loaded:
       del self._loaded[digest_hash]
     else:
-      msg = "[CACHE] Cannot delete object at %s not loaded in memory" % str(key)
+      msg = "[CACHE] Cannot delete object at %s not loaded in memory" % str(digest_hash)
       raise CacheError, msg
 
   def __contains__(self, item):
@@ -321,7 +322,7 @@ class Cache(object):
     path = os.path.join(self._fs_cache_path , digest)
     if os.path.exists(path):
       # cherrypy.log.error("[CACHE] %s fs path cache found" % (path))
-      contents = Cache.read(path)
+      contents = self.read(path)
     else:
       msg = "[CACHE] Object for key `%s` does not exist." % (k,)
       raise CacheError, msg
@@ -373,7 +374,7 @@ class Cache(object):
 
     for f in os.listdir(self._fs_cache_path):
       path = os.path.join(self._fs_cache_path, f)
-      contents = Cache.read(path)
+      contents = self.read(path)
       if contents.expired():
         cherrypy.log.error("[CACHE] expired content found for %s deleting it" % f)
         self.expire(f)
@@ -425,23 +426,23 @@ class Cache(object):
     b64_digest_hash = base64.urlsafe_b64encode(digest_hash)[:-2]
     return b64_digest_hash.replace('-', '=')
 
-  @staticmethod
-  def read(filename):
+  def read(self, filename):
     """
     Helper function that simply pickle loads the first object
     from the file named by `filename`.
     """
-    with open(filename, 'rb') as loaded_file:
-      loaded_obj = cPickle.load(loaded_file)
+    with self.lock:
+      with open(filename, 'rb') as loaded_file:
+        loaded_obj = cPickle.load(loaded_file)
     return loaded_obj
 
-  @staticmethod
-  def write(obj, filename):
+  def write(self, obj, filename):
     """
     writes and object to the selected file path
     """
-    with open(filename, 'wb') as cache_file:
-      cPickle.dump(obj, cache_file, protocol=cPickle.HIGHEST_PROTOCOL)
+    with self.lock:
+      with open(filename, 'wb') as cache_file:
+        cPickle.dump(obj, cache_file, protocol=cPickle.HIGHEST_PROTOCOL)
 
   @staticmethod
   def years_to_seconds(years):
