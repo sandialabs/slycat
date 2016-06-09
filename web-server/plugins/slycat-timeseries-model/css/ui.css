@@ -275,3 +275,7 @@ a
 {
   background-color: #337AB7;
 }
+#controls  ul.dropdown-menu  {
+  max-height: 300px;
+  overflow-y: auto;
+}
