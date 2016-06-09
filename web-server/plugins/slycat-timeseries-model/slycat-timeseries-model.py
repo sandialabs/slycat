@@ -7,6 +7,7 @@ def register_slycat_plugin(context):
   import json
   import slycat.web.server
   import threading
+  import sys
   try:
     import cpickle as pickle
   except:
@@ -87,9 +88,11 @@ def register_slycat_plugin(context):
           sid, waveform_values = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_values.pickle" % (workdir, uid, f, index))
           waveform_values = pickle.loads(waveform_values)
           slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
-    except Exception as e:
-      cherrypy.log.error("Timeseries model compute exception: %s" % e)
-      fail_model(model["_id"], "Timeseries model compute exception: %s" % e)
+    except:
+      cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
+      cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
+      cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
+      fail_model(model["_id"], "Timeseries model compute exception: %s" % sys.exc_info()[0])
 
 
   def fail_model(mid, message):
