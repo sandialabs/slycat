@@ -114,7 +114,7 @@
     <div data-bind="visible:tab() == 5">
       <div class="compute-interface">
         <form class="compute form-horizontal" role="form">
-          <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, password: remote.password, on_submit_callback: to_last_step"></slycat-remote-interface>
+          <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, on_submit_callback: to_last_step"></slycat-remote-interface>
         </form>
       </div>
     </div>

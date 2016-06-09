@@ -14,6 +14,8 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.nnodes_disabled = params.disabled === undefined ? false : params.disabled;
       vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null });
       vm.remote.sid = params.sid;
+      vm.remote.hostname = params.hostname;
+      vm.remote.username = params.username;
       vm.remote.password = params.password;
       vm.remote.focus.extend({ notify: 'always' });
       vm.radio = ko.observable('batch-file');
