@@ -108,10 +108,19 @@ def register_slycat_plugin(context):
       try:
         response = slycat.web.server.checkjob(sid, jid)
       except Exception as e:
-        fail_model(mid, "Something went wrong while checking on job %s status: check for the generated files when the job completes." % jid)
-        slycat.email.send_error("slycat-timeseries-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
-        raise Exception("An error occurred while checking on a remote job: %s" % e.message)
-        stop_event.set()
+        cherrypy.log.error("Something went wrong while checking on job %s status, trying again..." % jid)
+        retry_counter = retry_counter - 1
+
+        if retry_counter == 0:
+          fail_model(mid, "Something went wrong while checking on job %s status: check for the generated files when the job completes." % jid)
+          slycat.email.send_error("slycat-timeseries-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
+          raise Exception("An error occurred while checking on a remote job: %s" % e.message)
+          stop_event.set()
+          break
+
+        response = { "status": { "state": "ERROR" } }
+        time.sleep(60)
+        pass
 
       state = response["status"]["state"]
       cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
@@ -154,7 +163,6 @@ def register_slycat_plugin(context):
           fail_model(mid, "Job %s has failed." % jid)
           break
 
-        # pausing for a little longer this time...
         time.sleep(30)
 
       time.sleep(5)
