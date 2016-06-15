@@ -352,7 +352,6 @@ class Session(object):
           module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
       else:
         module_name = "slycat"
-      module_name = "compton-dev"
 
       # setup necessary for using IPython parallel with the agent function
       ipython_parallel_setup_arr = [
