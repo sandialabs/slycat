@@ -286,7 +286,11 @@ class Cache(object):
     path = os.path.join(self._fs_cache_path, digest)
     if os.path.exists(path):
       # cherrypy.log.error("[CACHE] removing %s from file system cache" % path)
-      os.remove(path)
+      try:
+        os.remove(path)
+      except:
+        msg = "[CACHE] No object for key `%s` stored." % str(path)
+        cherrypy.log.error(msg)
     else:
       msg = "[CACHE] No object for key `%s` stored." % str(path)
       cherrypy.log.error(msg)
