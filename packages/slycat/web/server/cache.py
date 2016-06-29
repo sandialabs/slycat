@@ -290,7 +290,6 @@ class Cache(object):
     else:
       msg = "[CACHE] No object for key `%s` stored." % str(path)
       cherrypy.log.error(msg)
-      raise CacheError, msg
 
   def unload(self, k):
     """
