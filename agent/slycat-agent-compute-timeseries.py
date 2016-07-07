@@ -5,7 +5,8 @@
 # or on behalf of the U.S. Government. Export of this program may require a
 # license from the United States Government.
 
-"""Compute a timeseries model locally from hdf5 data, uploading the results to Slycat Web Server.
+"""
+Compute a timeseries model locally from hdf5 data, uploading the results to Slycat Web Server.
 
 This script loads data from a directory containing:
 
@@ -108,7 +109,6 @@ try:
   #connection.put_model_parameter(mid, "cluster-bin-type", arguments.cluster_sample_type)
   #connection.put_model_parameter(mid, "cluster-type", arguments.cluster_type)
   #connection.put_model_parameter(mid, "cluster-metric", arguments.cluster_metric)
-
   #connection.update_model(mid, message="Storing input table.")
 
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
@@ -142,6 +142,9 @@ try:
   # Create a mapping from unique cluster names to timeseries attributes.
   #connection.update_model(mid, state="running", started = datetime.datetime.utcnow().isoformat(), progress = 0.0, message="Mapping cluster names.")
 
+  """
+  this function does x by
+  """
   clusters = collections.defaultdict(list)
   timeseries_samples = numpy.zeros(shape=(timeseries_count))
   for timeseries_index in range(timeseries_count):

@@ -14,13 +14,25 @@ def register_slycat_plugin(context):
     import pickle
 
   def finish(database, model):
+    """
+
+    :param database:
+    :param model:
+    :return:
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", model["_id"])
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   def page_html(database, model):
-    """Add the HTML representation of the model to the context object."""
+    """
+    Add the HTML representation of the model to the context object.
+
+    :param database:
+    :param model:
+    :return:
+    """
     import pystache
 
     context = dict()
@@ -31,6 +43,15 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   def get_remote_file(sid, hostname, username, password, filename):
+    """
+
+    :param sid:
+    :param hostname:
+    :param username:
+    :param password:
+    :param filename:
+    :return:
+    """
     try:
       data = slycat.web.server.get_remote_file(sid, filename)
     except:
@@ -39,6 +60,18 @@ def register_slycat_plugin(context):
     return sid, data
 
   def compute(database, model, sid, uid, workdir, hostname, username, password):
+    """
+
+    :param database:
+    :param model:
+    :param sid:
+    :param uid:
+    :param workdir:
+    :param hostname:
+    :param username:
+    :param password:
+    :return:
+    """
     try:
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", model["_id"])
@@ -90,7 +123,8 @@ def register_slycat_plugin(context):
             waveform_values = pickle.loads(waveform_values)
             slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
           except:
-            break
+            cherrypy.log.error("failed on index: %s" % index)
+            pass
 
     except:
       cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
@@ -100,11 +134,27 @@ def register_slycat_plugin(context):
 
 
   def fail_model(mid, message):
+    """
+
+    :param mid:
+    :param message:
+    :return:
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
 
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
+    """
+
+    :param mid:
+    :param sid:
+    :param jid:
+    :param request_from:
+    :param stop_event:
+    :param callback:
+    :return:
+    """
     cherrypy.request.headers["x-forwarded-for"] = request_from
     retry_counter = 5
 
@@ -173,6 +223,16 @@ def register_slycat_plugin(context):
 
 
   def checkjob(database, model, verb, type, command, **kwargs):
+    """
+
+    :param database:
+    :param model:
+    :param verb:
+    :param type:
+    :param command:
+    :param kwargs:
+    :return:
+    """
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
