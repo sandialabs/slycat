@@ -129,6 +129,13 @@ has the following hierarchy:
         |_ 1, dataset
         ...
         |_ number_of_columns, dataset
+     |_ metadata
+        |_ attribute-names, dataset: column names
+        |_ attribute-types, dataset: data types for each of the columns
+        |_ dimension-begin, dataset
+        |_ dimension-end, dataset
+        |_ dimension-names, dataset
+        |_ dimension-types, dataset
 
 Note: the datasets are 1 dimensional arrays (lenght of the dataset size) and
 represent the data for each of the columns.
