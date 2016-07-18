@@ -206,23 +206,38 @@ try:
     time_max = max(zip(*ranges)[1])
 
     if arguments.cluster_sample_type == "uniform-pla":
+
       def uniform_pla(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
+        """
+        Create waveforms using a piecewise linear approximation.
+
+        :param directory: working directory for the timeseries
+        :param min_time:
+        :param max_time:
+        :param bin_count:
+        :param timeseries_index:
+        :param attribute_index:
+        :return: computed time series
+        """
         import h5py
         import numpy
         import os
         import slycat.hdf5
 
+        # generate evenly spaced times
         bin_edges = numpy.linspace(min_time, max_time, bin_count + 1)
         bin_times = (bin_edges[:-1] + bin_edges[1:]) / 2
         with h5py.File(os.path.join(directory, "timeseries-%s.hdf5" % timeseries_index), "r") as file:
           original_times = slycat.hdf5.ArraySet(file)[0].get_data(0)[:]
           original_values = slycat.hdf5.ArraySet(file)[0].get_data(attribute_index + 1)[:]
+        # interpolate original data with binned times
         bin_values = numpy.interp(bin_times, original_times, original_values)
         return {
           "input-index" : timeseries_index,
           "times" : bin_times,
           "values" : bin_values,
         }
+
       directories = list(itertools.repeat(directory_full_path, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
@@ -230,8 +245,21 @@ try:
       timeseries_indices = [timeseries for timeseries, attribute in storage]
       attribute_indices = [attribute for timeseries, attribute in storage]
       waveforms = pool.map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices, attribute_indices)
+
     elif arguments.cluster_sample_type == "uniform-paa":
+
       def uniform_paa(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
+        """
+        Create waveforms using a piecewise aggregate approximation.
+
+        :param directory: working directory for the timeseries
+        :param min_time:
+        :param max_time:
+        :param bin_count:
+        :param timeseries_index:
+        :param attribute_index:
+        :return: computed time series
+        """
         import h5py
         import numpy
         import os
@@ -254,6 +282,7 @@ try:
           "times" : bin_times,
           "values" : bin_values,
         }
+
       directories = list(itertools.repeat(directory_full_path, len(storage)))
       min_times = list(itertools.repeat(time_min, len(storage)))
       max_times = list(itertools.repeat(time_max, len(storage)))
@@ -294,7 +323,6 @@ try:
       cluster2 = int(f_cluster2)
       # Housekeeping: assemble the membership of the new cluster
       cluster_membership.append(cluster_membership[cluster1].union(cluster_membership[cluster2]))
-      #cherrypy.log.error("Finding exemplar for cluster %s containing %s members from %s and %s." % (cluster_id, len(cluster_membership[-1]), cluster1, cluster2))
 
       # We need to update the distance from each member of the new
       # cluster to all the other members of the cluster.  That means
@@ -340,7 +368,6 @@ try:
       pickle.dump(waveforms, waveforms_file)
 
     arrayset_name = "preview-%s" % name
-    #connection.put_model_arrayset(mid, arrayset_name)
     for index, waveform in enumerate(waveforms):
       dimensions = [dict(name="sample", end=len(waveform["times"]))]
       attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
@@ -349,13 +376,11 @@ try:
         pickle.dump(dimensions, dimensions_file)
       with open(os.path.join(dirname, "waveform_%s_%s_attributes.pickle" % (name, index)), "wb") as attributes_file:
         pickle.dump(attributes, attributes_file)
-      #connection.put_model_arrayset_array(mid, arrayset_name, index, dimensions, attributes)
       print("Creating %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
       with open(os.path.join(dirname, "waveform_%s_%s_times.pickle" % (name, index)), "wb") as times_file:
         pickle.dump(waveform["times"], times_file)
       with open(os.path.join(dirname, "waveform_%s_%s_values.pickle" % (name, index)), "wb") as values_file:
         pickle.dump(waveform["values"], values_file)
-      #connection.put_model_arrayset_data(mid, arrayset_name, "%s/0/...;%s/1/..." % (index, index), [waveform["times"], waveform["values"]])
 
 except:
   import traceback
