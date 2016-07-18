@@ -15,10 +15,10 @@ def register_slycat_plugin(context):
 
   def finish(database, model):
     """
+    Update the model in the databse as successfully completed.
 
     :param database:
     :param model:
-    :return:
     """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", model["_id"])
@@ -31,7 +31,7 @@ def register_slycat_plugin(context):
 
     :param database:
     :param model:
-    :return:
+    :return: HTML render for the model
     """
     import pystache
 
@@ -44,13 +44,14 @@ def register_slycat_plugin(context):
 
   def get_remote_file(sid, hostname, username, password, filename):
     """
+    Utility function to fetch remote files.
 
-    :param sid:
+    :param sid:      session ID
     :param hostname:
     :param username:
     :param password:
-    :param filename:
-    :return:
+    :param filename: Full path for the requested file
+    :return: tuple with session ID and file content
     """
     try:
       data = slycat.web.server.get_remote_file(sid, filename)
@@ -61,16 +62,18 @@ def register_slycat_plugin(context):
 
   def compute(database, model, sid, uid, workdir, hostname, username, password):
     """
+    Computes the Time Series model. It fetches the necessary files from a
+    remote server that were computed by the slycat-agent-compute-timeseries.py
+    script.
 
     :param database:
     :param model:
-    :param sid:
-    :param uid:
+    :param sid:      session ID
+    :param uid:      user ID
     :param workdir:
     :param hostname:
     :param username:
     :param password:
-    :return:
     """
     try:
       database = slycat.web.server.database.couchdb.connect()
@@ -135,10 +138,10 @@ def register_slycat_plugin(context):
 
   def fail_model(mid, message):
     """
+    Update the model as failed.
 
-    :param mid:
-    :param message:
-    :return:
+    :param mid:     model ID
+    :param message: reason for the model failure
     """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -146,14 +149,15 @@ def register_slycat_plugin(context):
 
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
     """
+    Routine running on a separate thread which checks on the status of remote
+    jobs running on a SLURM infrastructure.
 
-    :param mid:
-    :param sid:
-    :param jid:
+    :param mid:          model ID
+    :param sid:          session ID
+    :param jid:          job ID
     :param request_from:
-    :param stop_event:
-    :param callback:
-    :return:
+    :param stop_event:   event stopping the thread when the job completes
+    :param callback:     callback methods when the job successfully completes
     """
     cherrypy.request.headers["x-forwarded-for"] = request_from
     retry_counter = 5
@@ -217,21 +221,23 @@ def register_slycat_plugin(context):
           fail_model(mid, "Job %s has failed." % jid)
           break
 
+        # in case something went wrong and still willing to try, wait for 30
+        # seconds and try another check
         time.sleep(30)
 
+      # waits 5 seconds in between each status check
       time.sleep(5)
 
 
+  # TODO verb, type and command might be obsolete
   def checkjob(database, model, verb, type, command, **kwargs):
     """
+    Starts a routine to continuously check the status of a remote job.
 
     :param database:
     :param model:
-    :param verb:
-    :param type:
-    :param command:
-    :param kwargs:
-    :return:
+    :param kwargs: arguments contain hostname, username, password, jid,
+                   function name and parameters, UID
     """
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
@@ -240,10 +246,16 @@ def register_slycat_plugin(context):
     uid = kwargs["uid"]
 
     def callback():
+      """
+      Callback for a successful remote job completion. It computes the model
+      and successfully completes it.
+      """
       compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"], kwargs["password"])
       finish(database, model)
       pass
 
+    # give some time for the job to be remotely started before starting its
+    # checks.
     time.sleep(5)
 
     database = slycat.web.server.database.couchdb.connect()
