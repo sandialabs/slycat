@@ -25,6 +25,17 @@ def register_slycat_plugin(context):
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
+  def fail_model(mid, message):
+    """
+    Update the model as failed.
+
+    :param mid:     model ID
+    :param message: reason for the model failure
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
+
   def page_html(database, model):
     """
     Add the HTML representation of the model to the context object.
@@ -88,10 +99,10 @@ def register_slycat_plugin(context):
       attributes = inputs["attributes"]
       slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
 
+      sid, data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (workdir, uid))
+      attributes_data = pickle.loads(data)
       for attribute in range(len(attributes)):
-        sid, data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/inputs_attributes_data_%s.pickle" % (workdir, uid, attribute))
-        data = pickle.loads(data)
-        slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [data])
+        slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [attributes_data[attribute]])
 
       clusters = json.loads(slycat.web.server.get_remote_file(sid, "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
       clusters_file = json.JSONDecoder().decode(clusters["file"])
@@ -135,17 +146,6 @@ def register_slycat_plugin(context):
       cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
       fail_model(model["_id"], "Timeseries model compute exception: %s" % sys.exc_info()[0])
 
-
-  def fail_model(mid, message):
-    """
-    Update the model as failed.
-
-    :param mid:     model ID
-    :param message: reason for the model failure
-    """
-    database = slycat.web.server.database.couchdb.connect()
-    model = database.get("model", mid)
-    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
 
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
     """

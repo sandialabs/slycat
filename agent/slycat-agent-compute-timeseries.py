@@ -119,11 +119,6 @@ try:
       raise Exception("Inputs table must have exactly one dimension.")
     timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
-    attributes_data = {}
-    for attribute in range(len(attributes)):
-      data = array.get_data(attribute)[...]
-      attributes_data["%s" % attribute] = data
-
     """
     Save data to dictionary to be pickled. Slycat server will later un-pickle
     the file and use the data for the following commands:
@@ -141,12 +136,12 @@ try:
 
     put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
     """
-    # TODO see if can be optimized, i.e. pickle to one file at the end...
+    attributes_array = numpy.empty(shape=(len(attributes),), dtype=object)
     for attribute in range(len(attributes)):
       print("Storing input table attribute %s", attribute)
-      data = array.get_data(attribute)[...]
-      with open(os.path.join(dirname, "inputs_attributes_data_%s.pickle" % attribute), "wb") as attributes_file:
-        pickle.dump(data, attributes_file)
+      attributes_array[attribute] = array.get_data(attribute)[...]
+    with open(os.path.join(dirname, "inputs_attributes_data.pickle"), "wb") as attributes_file:
+      pickle.dump(attributes_array, attributes_file)
 
 
   # Create a mapping from unique cluster names to timeseries attributes.
