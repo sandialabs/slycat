@@ -60,16 +60,6 @@ try:
 except:
   raise Exception("A running IPython parallel cluster is required to run this script.")
 
-def mix(a, b, amount):
-  """
-  :param a:
-  :param b:
-  :param amount:
-  :return:
-  """
-  return ((1.0 - amount) * a) + (amount * b)
-
-
 # Compute the model.
 try:
   print("Examining and verifying data.")
@@ -108,7 +98,6 @@ try:
   with open(os.path.join(dirname, "model_parameters.json"), "w") as model_parameters_json:
     json.dump(model_parameters, model_parameters_json)
 
-  # TODO duplicate code with line 32
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
     array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
@@ -363,19 +352,26 @@ try:
       pickle.dump(waveforms, waveforms_file)
 
     arrayset_name = "preview-%s" % name
+    dimensions_array = numpy.empty(shape=(len(waveforms),), dtype=object)
+    attributes_array = numpy.empty(shape=(len(waveforms),), dtype=object)
+    waveform_times_array = numpy.empty(shape=(len(waveforms),), dtype=object)
+    waveform_values_array = numpy.empty(shape=(len(waveforms),), dtype=object)
+    
     for index, waveform in enumerate(waveforms):
-      dimensions = [dict(name="sample", end=len(waveform["times"]))]
-      attributes = [dict(name="time", type="float64"), dict(name="value", type="float64")]
-      print("Creating array %s %s" % (attributes, dimensions))
-      with open(os.path.join(dirname, "waveform_%s_%s_dimensions.pickle" % (name, index)), "wb") as dimensions_file:
-        pickle.dump(dimensions, dimensions_file)
-      with open(os.path.join(dirname, "waveform_%s_%s_attributes.pickle" % (name, index)), "wb") as attributes_file:
-        pickle.dump(attributes, attributes_file)
-      print("Creating %s times, %s values" % (waveform["times"].shape, waveform["values"].shape))
-      with open(os.path.join(dirname, "waveform_%s_%s_times.pickle" % (name, index)), "wb") as times_file:
-        pickle.dump(waveform["times"], times_file)
-      with open(os.path.join(dirname, "waveform_%s_%s_values.pickle" % (name, index)), "wb") as values_file:
-        pickle.dump(waveform["values"], values_file)
+      dimensions_array[index] = [dict(name="sample", end=len(waveform["times"]))]
+      attributes_array[index] = [dict(name="time", type="float64"), dict(name="value", type="float64")]
+      waveform_times_array[index] = waveform["times"]
+      waveform_values_array[index] = waveform["values"]
+
+    print("Creating array %s %s" % (attributes, dimensions))
+    with open(os.path.join(dirname, "waveform_%s_dimensions.pickle" % name), "wb") as dimensions_file:
+      pickle.dump(dimensions_array, dimensions_file)
+    with open(os.path.join(dirname, "waveform_%s_attributes.pickle" % name), "wb") as attributes_file:
+      pickle.dump(attributes_array, attributes_file)
+    with open(os.path.join(dirname, "waveform_%s_times.pickle" % name), "wb") as times_file:
+      pickle.dump(waveform_times_array, times_file)
+    with open(os.path.join(dirname, "waveform_%s_values.pickle" % name), "wb") as values_file:
+      pickle.dump(waveform_values_array, values_file)
 
 except:
   import traceback

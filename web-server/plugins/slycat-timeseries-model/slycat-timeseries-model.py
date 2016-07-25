@@ -123,19 +123,20 @@ def register_slycat_plugin(context):
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model["_id"])
         slycat.web.server.put_model_arrayset(database, model, "preview-%s" % f)
+
+        sid, waveform_dimensions_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_dimensions.pickle" % (workdir, uid, f))
+        waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
+        sid, waveform_attributes_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_attributes.pickle" % (workdir, uid, f))
+        waveform_attributes_array = pickle.loads(waveform_attributes_data)
+        sid, waveform_times_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_times.pickle" % (workdir, uid, f))
+        waveform_times_array = pickle.loads(waveform_times_data)
+        sid, waveform_values_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_values.pickle" % (workdir, uid, f))
+        waveform_values_array = pickle.loads(waveform_values_data)
+
         for index, waveform in enumerate(waveforms):
           try:
-            sid, waveform_dimensions = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_dimensions.pickle" % (workdir, uid, f, index))
-            waveform_dimensions = pickle.loads(waveform_dimensions)
-            sid, waveform_attributes = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_attributes.pickle" % (workdir, uid, f, index))
-            waveform_attributes = pickle.loads(waveform_attributes)
-            slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes, waveform_dimensions)
-
-            sid, waveform_times = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_times.pickle" % (workdir, uid, f, index))
-            waveform_times = pickle.loads(waveform_times)
-            sid, waveform_values = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_values.pickle" % (workdir, uid, f, index))
-            waveform_values = pickle.loads(waveform_values)
-            slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
+            slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes_array[index], waveform_dimensions_array[index])
+            slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times_array[index], waveform_values_array[index]])
           except:
             cherrypy.log.error("failed on index: %s" % index)
             pass
