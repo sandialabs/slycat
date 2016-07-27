@@ -706,6 +706,7 @@ def login():
   :return: authentication status
   """
   cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
+  #try and delete any outdated sessions for the user if they have the cookie for it
   if "slycatauth" in cherrypy.request.cookie:
     try:
       cherrypy.log.error("found old session trying to delete it ")
@@ -715,6 +716,7 @@ def login():
       if session is not None:
         couchdb.delete(session)
     except:
+      #if an exception was throw there is nothing to be done
       pass
 
   # try and decode the username and password
@@ -722,6 +724,8 @@ def login():
     cherrypy.log.error("decoding username and password")
     user_name = base64_decode(cherrypy.request.json["user_name"])
     password = base64_decode(cherrypy.request.json["password"])
+
+    #try and get the redirect path for after successful login
     try:
       location = cherrypy.request.json["location"]
     except Exception as e:
@@ -767,9 +771,9 @@ def login():
 
   if success:
     cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
-
     # Successful authentication, now check access rules.
     authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
+    # for rules see slycat config file
     rules = []
     if "rules" in authentication_kwargs:
       rules = authentication_kwargs["rules"]
@@ -778,7 +782,7 @@ def login():
     cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)) )
 
     if rules:
-      #found rules now time to apply them
+      # found rules now time to apply them
       cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
       deny = True
       for operation, category, members in rules:
@@ -817,7 +821,6 @@ def login():
     cherrypy.response.cookie["slycatauth"]["httponly"] = 1
     timeout = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
     cherrypy.response.cookie["slycatauth"]["Max-Age"] = timeout
-
     cherrypy.response.cookie["slycattimeout"] = "timeout"
     cherrypy.response.cookie["slycattimeout"]["path"] = "/"
     cherrypy.response.cookie["slycattimeout"]["Max-Age"] = timeout
