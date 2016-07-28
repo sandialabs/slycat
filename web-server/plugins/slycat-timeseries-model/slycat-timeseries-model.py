@@ -119,6 +119,8 @@ def register_slycat_plugin(context):
           waveforms = pickle.loads(waveforms)
         except Exception as e:
           cherrypy.log.error("Loading waveforms exception caught: %s" % e)
+          fail_model(model["_id"], "Timeseries model compute exception: loading waveforms exception caught: %s" % e)
+          return None
 
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model["_id"])
