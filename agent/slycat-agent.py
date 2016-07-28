@@ -97,7 +97,7 @@ def checkjob(command):
     "jid": command["command"]
   }
 
-  results["output"], results["errors"] = run_remote_command("scontrol show jobid=%s" % results["jid"])
+  results["output"], results["errors"] = run_remote_command("checkjob %s" % results["jid"])
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()

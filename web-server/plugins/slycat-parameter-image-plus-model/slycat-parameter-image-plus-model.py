@@ -358,7 +358,7 @@ def register_slycat_plugin(context):
       state = response["status"]["state"]
       cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
 
-      if state == "CANCELLED":
+      if state == "CANCELLED" or state == "REMOVED":
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
         break

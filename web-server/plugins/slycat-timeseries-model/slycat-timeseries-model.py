@@ -194,7 +194,7 @@ def register_slycat_plugin(context):
           model["job_running_time"] = datetime.datetime.utcnow().isoformat()
           slycat.web.server.update_model(database, model)
 
-      if state == "CANCELLED":
+      if state == "CANCELLED" or state == "REMOVED":
         retry_counter = 5
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()

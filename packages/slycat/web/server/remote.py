@@ -194,13 +194,11 @@ class Session(object):
 
       # parses the useful information from job status
       out = response["output"]
-      # arranges items from scontrol show into a flat list
-      # items are formatted as: item_name=value
-      out = sum([s.strip().split() for s in out.splitlines()], [])
-      try:
-        js = [s.split('=')[1] for s in out if s.split('=')[0] == 'JobState'][0]
-      except:
-        js = "FAILED"
+      js = "FAILED"
+
+      for line in out.splitlines():
+        if "State" in line:
+          js = line.split(':')[1].strip().upper()
 
       status = {
         "state": js
@@ -393,10 +391,11 @@ class Session(object):
         # uncomment this line for production
         if params["to_hdf5"] is True:
           arr.append("python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
+          # uncomment this line for local development
+          # arr.append("python slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
 
         arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
         # uncomment this line for local development
-        # arr.append("python slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
         # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
 
         return arr
