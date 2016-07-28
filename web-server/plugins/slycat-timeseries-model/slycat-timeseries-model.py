@@ -106,6 +106,7 @@ def register_slycat_plugin(context):
 
       clusters = json.loads(slycat.web.server.get_remote_file(sid, "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
       clusters_file = json.JSONDecoder().decode(clusters["file"])
+      timeseries_count = json.JSONDecoder().decode(clusters["timeseries_count"])
 
       slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_clusters.out" % (workdir, uid), clusters["aid"], clusters["parser"])
 
@@ -113,14 +114,6 @@ def register_slycat_plugin(context):
         sid, file_cluster_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/file_cluster_%s.json" % (workdir, uid, f))
         file_cluster_attr = json.loads(file_cluster_data)
         slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, f), file_cluster_attr["aid"], file_cluster_attr["parser"])
-
-        sid, waveforms = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveforms_%s.pickle" % (workdir, uid, f))
-        try:
-          waveforms = pickle.loads(waveforms)
-        except Exception as e:
-          cherrypy.log.error("Loading waveforms exception caught: %s" % e)
-          fail_model(model["_id"], "Timeseries model compute exception: loading waveforms exception caught: %s" % e)
-          return None
 
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model["_id"])
@@ -135,7 +128,8 @@ def register_slycat_plugin(context):
         sid, waveform_values_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_values.pickle" % (workdir, uid, f))
         waveform_values_array = pickle.loads(waveform_values_data)
 
-        for index, waveform in enumerate(waveforms):
+        cherrypy.log.error("timeseries_count=%s" % timeseries_count)
+        for index in range(int(timeseries_count)):
           try:
             slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes_array[index], waveform_dimensions_array[index])
             slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times_array[index], waveform_values_array[index]])
@@ -144,10 +138,10 @@ def register_slycat_plugin(context):
             pass
 
     except:
+      fail_model(model["_id"], "Timeseries model compute exception: %s" % sys.exc_info()[0])
       cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
       cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
       cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
-      fail_model(model["_id"], "Timeseries model compute exception: %s" % sys.exc_info()[0])
 
 
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
