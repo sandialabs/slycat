@@ -93,11 +93,6 @@ try:
   if not os.path.exists(dirname):
     os.makedirs(dirname)
 
-  # store directory path to model_parameters.json file under working directory
-  model_parameters = dict(directory=arguments.directory)
-  with open(os.path.join(dirname, "model_parameters.json"), "w") as model_parameters_json:
-    json.dump(model_parameters, model_parameters_json)
-
   with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
     array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
@@ -148,7 +143,7 @@ try:
       clusters[attribute["name"]].append((timeseries_index, attribute_index))
 
   # Store an alphabetized collection of cluster names in a JSON file
-  file_clusters = dict(aid="clusters", file=json.dumps(sorted(clusters.keys())), parser="slycat-blob-parser")
+  file_clusters = dict(aid="clusters", file=json.dumps(sorted(clusters.keys())), parser="slycat-blob-parser", timeseries_count=str(timeseries_count))
   with open(os.path.join(dirname, "file_clusters.json"), "w") as file_clusters_json:
     json.dump(file_clusters, file_clusters_json)
   with open(os.path.join(dirname, "file_clusters.out"), "wb") as file_clusters_out:
@@ -347,9 +342,6 @@ try:
         "exemplars": exemplars,
         "input-indices": [waveform["input-index"] for waveform in waveforms]
         }, file_cluster_n_out)
-
-    with open(os.path.join(dirname, "waveforms_%s.pickle" % name), "wb") as waveforms_file:
-      pickle.dump(waveforms, waveforms_file)
 
     arrayset_name = "preview-%s" % name
     dimensions_array = numpy.empty(shape=(len(waveforms),), dtype=object)
