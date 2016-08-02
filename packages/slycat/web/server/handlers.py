@@ -811,7 +811,7 @@ def login():
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": user_name}
     database = slycat.web.server.database.couchdb.connect()
-    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"], 'groups': groups, 'ip': remote_ip})
+    database.save({"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"], 'groups': groups, 'ip': remote_ip, "sessions":[]})
 
     login.sessions[sid] = session
 
@@ -1703,7 +1703,16 @@ def post_remotes():
   hostname = cherrypy.request.json["hostname"]
   password = cherrypy.request.json["password"]
   agent = cherrypy.request.json.get("agent", None)
-  return {"sid": slycat.web.server.remote.create_session(hostname, username, password, agent)}
+  sid = slycat.web.server.remote.create_session(hostname, username, password, agent)
+  # save sid to user session
+  try:
+    database = slycat.web.server.database.couchdb.connect()
+    session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+    session["sessions"].append({"sid": sid,"hostname": hostname, "username": username})
+    database.save(session)
+  except Exception as e:
+    cherrypy.log.error("could not save session for remotes %s" % e)
+  return {"sid": sid}
 
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
