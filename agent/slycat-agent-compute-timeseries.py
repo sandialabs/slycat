@@ -44,9 +44,10 @@ parser.add_argument("--profile", default=None, help="Name of the IPython profile
 arguments = parser.parse_args()
 
 if arguments.timeseries_name is None:
-  raise Exception("A timeseries name, i.e. sub-directory must be specified.")
+  directory_full_path = arguments.directory
+else:
+  directory_full_path = os.path.join(arguments.directory, arguments.timeseries_name)
 
-directory_full_path = os.path.join(arguments.directory, arguments.timeseries_name)
 if not os.path.exists(directory_full_path):
   raise Exception("Directory %s does not exists." % directory_full_path)
 

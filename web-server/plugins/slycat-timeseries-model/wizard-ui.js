@@ -5,14 +5,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
+    component.timeseries_type = ko.observable('csv');
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return true;}), focus: false, sid: null});
     component.remote.focus.extend({notify: 'always'});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.to_hdf5 = ko.observable(true);
     component.inputs_file = ko.observable('');
+    component.input_directory = ko.observable('');
     component.output_directory = ko.observable('');
     component.id_column = ko.observable('%eval_id');
     component.inputs_file_delimiter = ko.observable(',');
+    component.xyce_timeseries_file = ko.observable('');
     component.timeseries_name = ko.observable('');
 		component.cluster_sample_count = ko.observable(500);
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
@@ -48,6 +51,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         client.delete_model({ mid: component.model._id() });
     };
 
+    component.to_remote = function() {
+      component.tab(1);
+    };
+
     component.connect = function() {
       component.remote.status_type('info');
       component.remote.status('Connecting...');
@@ -63,13 +70,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
             sid: component.remote.sid(),
             success: function(response) {
               if (response.errors.length > 0) {
-                component.tab(1);
+                component.tab(2);
                 return void 0;
               }
 
               if (response.config['timeseries-wizard']) {
                 response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                 response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
+                response.config['timeseries-wizard']['xyce-timeseries-file'] ? component.xyce_timeseries_file(response.config['timeseries-wizard']['xyce-timeseries-file']) : null;
               }
 
               if (response.config.slurm) {
@@ -78,7 +86,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                 response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
               }
 
-              component.tab(1);
+              component.tab(2);
             }
           });
         },
@@ -91,8 +99,15 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_input_file = function() {
-      component.inputs_file(component.browser.selection()[0]);
-      component.tab(2);
+      var file_path = component.browser.selection()[0];
+      component.inputs_file(file_path);
+
+      if (component.timeseries_type() === 'xyce') {
+        var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
+        component.input_directory(in_dir);
+      }
+
+      component.tab(3);
     };
 
     component.name_model = function() {
@@ -149,12 +164,12 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.to_timeseries_parameters = function() {
-      component.tab(3);
+      component.tab(4);
     };
 
     component.to_compute = function() {
       component.put_model_parameters();
-      component.tab(4);
+      component.tab(5);
 
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
       vm.wckey(component.wckey());
@@ -168,7 +183,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.to_compute_next_step = function() {
-      component.tab(5);
+      component.tab(6);
     };
 
     return component;
