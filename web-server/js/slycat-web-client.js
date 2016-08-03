@@ -65,7 +65,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   /**
    * delete a reference in Slycat
    * @param params: object{
-   * pid: project id of project that is to be deleted from the Slycat
+   * pid: project id of project that is to be deleted from Slycat
    * success(): function called upon success
    * error(request, status, reason_phrase): function called upon error
    * }
@@ -89,6 +89,14 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  /**
+   * delete a remote ssh session from the slycat server
+   * @param params: object{
+   * sid: session id of open session that is to be deleted from Slycat
+   * success(): function called upon success
+   * error(request, status, reason_phrase): function called upon error
+   * }
+   */
   module.delete_remote = function(params)
   {
     $.ajax(
@@ -104,10 +112,22 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
         if(params.error)
           params.error(request, status, reason_phrase);
-      },
+      }
     });
-  }
+  };
 
+  /**
+   * delete a temp upload file from the slycat server
+   * generally you would call this if there was an error in the upload or
+   * if the file was successfully uploaded for cleanup purposes. note that
+   * Uploads are considered temporary and only should be used as a mean to
+   * transport files to the server
+   * @param params: object{
+   * uid: upload id of the partial or fully uploaded file to be deleted from Slycat
+   * success(): function called upon success
+   * error(request, status, reason_phrase): function called upon error
+   * }
+   */
   module.delete_upload = function(params)
   {
     $.ajax(
@@ -123,9 +143,9 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
         if(params.error)
           params.error(request, status, reason_phrase);
-      },
+      }
     });
-  }
+  };
 
   module.get_configuration_markings = function(params)
   {
