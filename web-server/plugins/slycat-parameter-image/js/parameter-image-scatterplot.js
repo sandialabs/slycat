@@ -186,7 +186,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       if(self.start_drag === null)
       {
         // Only schedule a hover if user is hovering over svg, not over images, video, etc.
-        if(e.target.nodeName === "svg")
+        // and we have images to open
+        if(e.target.nodeName === "svg" && self.options.images.length > 0)
         {
           self._schedule_hover_canvas(e);
         }
