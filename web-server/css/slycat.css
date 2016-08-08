@@ -419,7 +419,7 @@ slycat-navbar .alert pre
 
 .slycat-range-slider .thumb
 {
-  background: #bbb;
+  background: #aabbff;
   border-radius: 6px;
   transition: background .25s ease-in-out;
   -moz-transition: background .25s ease-in-out;
@@ -428,7 +428,7 @@ slycat-navbar .alert pre
 
 .slycat-range-slider .thumb:hover, .slycat-range-slider.dragging .thumb, .slycat-range-slider:hover .thumb
 {
-  background: #888;
+  background: #7788ff;
 }
 
 .slycat-clickable
