@@ -368,28 +368,37 @@ $.widget("parameter_image.controls",
     if(this.options.image_variables != null && this.options.image_variables.length > 0)
     {
       this.image_items.empty();
+      appendImageVariable(-1, 'None');
       for(var i = 0; i < this.options.image_variables.length; i++) {
-        $("<li role='presentation'>")
-          .toggleClass("active", self.options["image-variable"] == self.options.image_variables[i])
-          .attr("data-imagevariable", this.options.image_variables[i])
-          .appendTo(self.image_items)
-          .append(
-            $('<a role="menuitem" tabindex="-1">')
-              .html(this.options.metadata['column-names'][this.options.image_variables[i]])
-              .click(function()
-              {
-                var menu_item = $(this).parent();
-                if(menu_item.hasClass("active"))
-                  return false;
-
-                self.image_items.find("li").removeClass("active");
-                menu_item.addClass("active");
-
-                self.element.trigger("images-selection-changed", menu_item.attr("data-imagevariable"));
-              })
-          )
-          ;
+        appendImageVariable(self.options.image_variables[i], self.options.metadata['column-names'][self.options.image_variables[i]]);
       }
+    }
+
+    function appendImageVariable(index, label){
+      $("<li role='presentation'>")
+        .toggleClass("active", self.options["image-variable"] == index)
+        .attr("data-imagevariable", index)
+        .appendTo(self.image_items)
+        .append(
+          $('<a role="menuitem" tabindex="-1">')
+            .html(label)
+            .click(function()
+            {
+              var menu_item = $(this).parent();
+              if(menu_item.hasClass("active"))
+                return false;
+
+              self.options["image-variable"] = menu_item.attr("data-imagevariable")
+
+              self.image_items.find("li").removeClass("active");
+              menu_item.addClass("active");
+
+              self.pin_item.toggleClass("disabled", self.options["image-variable"] == -1 || self.options["image-variable"] == null);
+
+              self.element.trigger("images-selection-changed", menu_item.attr("data-imagevariable"));
+            })
+        )
+        ;
     }
 
   },
@@ -533,6 +542,7 @@ $.widget("parameter_image.controls",
       ;
     self.pin_item = $("<li role='presentation'>")
       .appendTo(self.selection_items)
+      .toggleClass("disabled", self.options["image-variable"] == -1 || self.options["image-variable"] == null)
       .append(
         $('<a role="menuitem" tabindex="-1">')
           .html("Pin")
@@ -618,6 +628,7 @@ $.widget("parameter_image.controls",
       self.image_items.find("li").removeClass("active");
       self.image_items.find('li[data-imagevariable="' + self.options["image-variable"] + '"]').addClass("active");
     }
+    self.pin_item.toggleClass("disabled", this.options["image-variable"] == -1 || this.options["image-variable"] == null);
   },
 
   _set_selected_color: function()
