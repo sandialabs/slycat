@@ -419,6 +419,17 @@ rights in this software.
   top: 0px;
   left: 0px;
 }
+#scatterplot .media-layer .download-button {
+  top: 3px;
+  left: 20px;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  display: block;
+  font-size: 12px;
+  color: black;
+  text-decoration: none !important;
+}
 #scatterplot .media-layer .reload-button {
   position: absolute;
   left: 1px;
@@ -902,4 +913,5 @@ a {
   margin: 20px;
   display: block;
   text-align: center;
+  word-break: break-all;
 }
