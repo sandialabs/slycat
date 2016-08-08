@@ -1419,6 +1419,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .attr("data-uri", image.uri)
           .attr("src", image_url)
           .attr("controls", true)
+          .attr("loop", true)
           .style({
             "display": "none",
           })
