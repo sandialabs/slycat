@@ -232,47 +232,17 @@ $.widget("parameter_image.controls",
 
   _write_csv: function(csvData, defaultFilename)
   {
-    var self = this;
-    var D = document;
-    var a = D.createElement("a");
-    var strMimeType = "text/plain";
-    var defaultFilename = defaultFilename || "slycatDataTable.csv";
-
-    //build download link:
-    a.href = "data:" + strMimeType + ";charset=utf-8," + encodeURIComponent(csvData);  //encodeURIComponent() handles all special chars
-
-    if ('download' in a) { //FF20, CH19
-      a.setAttribute("download", defaultFilename);
-      a.innerHTML = "downloading...";
-      D.body.appendChild(a);
-      setTimeout(function() {
-        var e = D.createEvent("MouseEvent");
-	e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-	a.dispatchEvent(e);
-	D.body.removeChild(a);
-      }, 66);
-      return true;
-    } else {   // end if('download' in a)
-      console.log("++ firefox/chrome detect failed");
-    }
-/*
-    if (window.MSBlobBuilder) { // IE10
-      console.log( "doing the IE10 stuff" );
-      var bb = new MSBlobBuilder();
-      bb.append(strData);
-      return navigator.msSaveBlob(bb, strFileName);
-    }
-
-    //do iframe dataURL download: (older W3)
-    console.log( "doing the older W3 stuff" );
-    var f = D.createElement("iframe");
-    D.body.appendChild(f);
-    f.src = "data:" + (A[2] ? A[2] : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(strData);
-    setTimeout(function() {
-      D.body.removeChild(f);
-    }, 333);
-    return true;
-*/
+    var blob = new Blob([ csvData ], {
+      type : "application/csv;charset=utf-8;"
+    });
+    var csvUrl = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = csvUrl;
+    link.style = "visibility:hidden";
+    link.download = defaultFilename || "slycatDataTable.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   },
 
   _convert_to_csv: function(array, sl)
