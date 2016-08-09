@@ -47,8 +47,8 @@ $.widget("timeseries.controls",
       .appendTo(general_controls)
       ;
     this.color_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Waveform Color"> \
-        Waveform Color \
+      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Line Color"> \
+        Line Color \
         <span class="caret"></span> \
       </button> \
       ')
