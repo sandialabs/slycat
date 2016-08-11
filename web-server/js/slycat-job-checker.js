@@ -83,7 +83,7 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
               previous_state = '';
             }
 
-            if (s === 'CANCELLED') {
+            if (s === 'CANCELLED' || s === 'REMOVED') {
               clearInterval(iid);
               previous_state = '';
             }

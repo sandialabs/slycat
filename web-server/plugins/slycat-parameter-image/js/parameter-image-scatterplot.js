@@ -186,7 +186,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       if(self.start_drag === null)
       {
         // Only schedule a hover if user is hovering over svg, not over images, video, etc.
-        if(e.target.nodeName === "svg")
+        // and we have images to open
+        if(e.target.nodeName === "svg" && self.options.images.length > 0)
         {
           self._schedule_hover_canvas(e);
         }
@@ -1072,9 +1073,21 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var add_pin_button = function(fh) {
       fh.append("span")
         .attr('class', 'pin-button frame-icon')
+        .attr('title', 'Pin')
         .on("mousedown", handlers["stop_event"])
         .on("mouseup", handlers["stop_event"])
         .on("click", handlers["pin"]);
+    };
+
+    var add_download_button = function(fh, uri, filename) {
+      fh.append("a")
+        .attr('href', uri)
+        .attr('class', 'fa fa-download download-button')
+        .attr('title', 'Download media file')
+        .attr('download', filename)
+        .on("mousedown", handlers["stop_event"])
+        .on("mouseup", handlers["stop_event"])
+        ;
     };
 
     var build_frame_html = function(img) {
@@ -1406,6 +1419,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .attr("data-uri", image.uri)
           .attr("src", image_url)
           .attr("controls", true)
+          .attr("loop", true)
           .style({
             "display": "none",
           })
@@ -1465,6 +1479,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Create a pin button ...
       add_pin_button(frame_html);
 
+      // Create a download button ...
+      add_download_button(frame_html, image_url, image.uri.split('/').pop());
+
       if(!image.no_sync)
         self._sync_open_images();
 
@@ -1487,7 +1504,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var viewer = document.createElement('slycat-3d-viewer');
 
       var ps = document.createAttribute('params')
-      ps.value = "backgroundColor: '#FFFFFF', uri: '" + server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()) + "', container: $element";
+      var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
+      ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
       var s = document.createAttribute('style');
       s.value = 'width: 100%; height: 100%;';
       viewer.setAttributeNode(ps);
@@ -1498,6 +1516,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       add_resize_handle(frame_html);
       add_pin_button(frame_html);
+      add_download_button(frame_html, stl_uri, image.uri.split('/').pop());
 
       self._open_images(images.slice(1), true);
 

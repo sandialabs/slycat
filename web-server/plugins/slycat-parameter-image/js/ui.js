@@ -394,11 +394,11 @@ function metadata_loaded()
       });
     }
 
-    images_index = image_columns[0];
+    images_index = -1;
     if("images-selection" in bookmark)
       images_index = bookmark["images-selection"];
     setup_table();
-    if(image_columns.length > 0)
+    if(image_columns.length > 0 && images_index > -1)
     {
       $.ajax(
       {
@@ -936,21 +936,29 @@ function handle_color_variable_change(variable)
 function handle_image_variable_change(variable)
 {
   images_index = Number(variable);
+  images = [];
 
-
-  // Get entire data column for current image variable and pass it to scatterplot and dendrogram
-  $.ajax(
+  if(images_index > -1)
   {
-    type : "GET",
-    url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
-    success : function(result)
+    // Get entire data column for current image variable and pass it to scatterplot and dendrogram
+    $.ajax(
     {
-      images = result[0];
-      // Passing new images to both scatterplot and dendrogram
-      $("#scatterplot").scatterplot("option", "images", images);
-    },
-    error: artifact_missing
-  });
+      type : "GET",
+      url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
+      success : function(result)
+      {
+        images = result[0];
+        // Passing new images to scatterplot
+        $("#scatterplot").scatterplot("option", "images", images);
+      },
+      error: artifact_missing
+    });
+  }
+  else
+  {
+    // Passing new images to scatterplot
+    $("#scatterplot").scatterplot("option", "images", images);
+  }
 
   // Log changes to and bookmark the images variable ...
   images_selection_changed(images_index);

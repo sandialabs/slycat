@@ -5,7 +5,8 @@
 # or on behalf of the U.S. Government. Export of this program may require a
 # license from the United States Government.
 
-"""Stage data to hdf5 format for Slycat computation.
+"""
+Stage data to hdf5 format for Slycat computation.
 """
 import argparse
 import concurrent.futures
@@ -22,6 +23,12 @@ import csv
 from urlparse import urlparse
 
 def _isNumeric(j):
+  """
+  Check if the input object is a numerical value, i.e. a float
+
+  :param j: object
+  :return: boolean
+  """
   try:
     x = float(j)
   except ValueError:
@@ -54,7 +61,19 @@ if arguments.inputs_file is None:
 if not os.path.isfile(arguments.inputs_file):
   raise Exception("Inputs file could not be found. Check its path and verify permissions.")
 
-# Convert inputs file
+"""
+Ingest the input file and reorganizes the data into objects:
+
+  - rows is a 2-dimensional array representation of the input file. The header
+  (column names) is eventually removed from the array.
+  - column_names is an array with the column names.
+  - column_types is an array with the type of data for each of the columns.
+  - row_count is self-explanatory
+  - columns is a list of tuples for each of the columns (minus the header row).
+  Each tuple is the data for each of the columns.
+
+Then repack each of the data columns as numpy arrays.
+"""
 log.info("Converting %s", arguments.inputs_file)
 with open(arguments.inputs_file, "r") as stream:
   rows = [row.split(arguments.inputs_file_delimiter) for row in stream]
@@ -89,17 +108,72 @@ for index in range(1, len(columns)):  # repack data cols as numpy arrays
   except:
     pass
 
+"""
+dimensions is a list with one dictionary with the following keys/value pair: name="row"
+and end=the numberof rows from the input file.
+
+attributes is a list of dictionaries representing the column names and their
+types. Each dictionary has the following format: { name: column name, type: column type }.
+"""
 dimensions = [dict(name="row", end=row_count)]
 attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
 
-# write the inputs file data out to "inputs.hdf5" file
+"""
+Write the inputs files data out to "inputs.hdf5" file. The generated HDF5 file
+has the following hierarchy:
+
+  array
+  |_ 0
+     |_ attribute
+        |_ 0, dataset
+        |_ 1, dataset
+        ...
+        |_ number_of_columns, dataset
+     |_ metadata
+        |_ attribute-names, dataset: column names
+        |_ attribute-types, dataset: data types for each of the columns
+        |_ dimension-begin, dataset
+        |_ dimension-end, dataset
+        |_ dimension-names, dataset
+        |_ dimension-types, dataset
+
+Note: the datasets are 1 dimensional arrays (lenght of the dataset size) and
+represent the data for each of the columns.
+"""
 with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5"), "w") as file:
   arrayset = slycat.hdf5.start_arrayset(file)
   array = arrayset.start_array(0, dimensions, attributes)
   for attribute, column in enumerate(columns):
     array.set_data(attribute, slice(0, column.shape[0]), column)
 
+
 def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_id):
+  """
+  Read in the input file from a timeseries run and process the data into a HDF5
+  file for the given timeseries name and index. The generated file structure is
+  as follows:
+
+  array
+  |_ 0
+     |_ attribute
+        |_ 0, dataset
+        ...
+        |_ number_of_columns, dataset
+     |_ metadata
+        |_ attribute-names, dataset: column names
+        |_ attribute-types, dataset: data types for each of the columns
+        |_ dimension-begin, dataset
+        |_ dimension-end, dataset
+        |_ dimension-names, dataset
+        |_ dimension-types, dataset
+     |_ unique
+        |_ 0, dataset
+
+  :param timeseries_path:
+  :param timeseries_name:
+  :param timeseries_index:
+  :param eval_id:
+  """
   t_add_index_column = None
   t_column_names = None
   t_column_types = None
@@ -114,7 +188,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
 
     with open("%s" % path, "r") as stream:
       line = stream.readline()
-      # detects delimiter
+      # detect delimiter
       sniffer = csv.Sniffer()
       dialect = sniffer.sniff(line)
       t_delimiter = dialect.delimiter
@@ -122,6 +196,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
       t_column_names = [name.strip() for name in line.split(t_delimiter)]
       t_first_row = [val.strip() for val in stream.readline().split(t_delimiter)]
 
+      # check if an index column is present or flag it otherwise
       if isinstance(t_first_row[0], int):
         t_add_index_column = True
         t_column_names = ["Index"] + t_column_names
@@ -131,6 +206,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
       t_column_types = ["float64" for name in t_column_names]
       t_column_names[1] = "TIME"
 
+    # pull data from file and add an index column if flagged earlier...
     data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
     if t_add_index_column is True:
       data = numpy.insert(data, 0, range(len(data)), axis=1)
@@ -155,6 +231,14 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
     log.error("Unexpected error reading %s", path)
 
 def convert_timeseries(timeseries_index, eval_id, row):
+  """
+  Iterate over the data for the input row and checks for file paths. If file
+  extension is valid, run process_timeseries method.
+
+  :param timeseries_index: 0-based index
+  :param eval_id: ID from ID column
+  :param row: row data
+  """
   for i, val in enumerate(row):
     if column_types[i] is "string":
       file_ext = val[len(val) - 3:]
