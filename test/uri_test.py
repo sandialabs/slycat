@@ -31,6 +31,11 @@ def test_hostname_parsed():
 def test_port_parsed():
   assert auth_uri.port() == '8080'
 
+def test_fragment_parsed():
+  # Not sure if this is a good uri w/ both query and fragment...
+  fragment_uri = URI('http://example.com/foo?bar=baz#anchor')
+  assert fragment_uri._fragment == 'anchor'
+
 def test_removing_search_value_from_uri():
   uri = URI('http://example.com/foo?bar=baz')
   assert uri.removeSearch(['bar']).toString() == 'http://example.com/foo'
