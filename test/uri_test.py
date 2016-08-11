@@ -31,6 +31,9 @@ def test_hostname_parsed():
 def test_port_parsed():
   assert auth_uri.port() == '8080'
 
+def test_str_representation():
+  assert str(auth_uri) == 'http://some_user:some_password@example.com:8080/foo?bar=baz'
+
 def test_fragment_parsed():
   # Not sure if this is a good uri w/ both query and fragment...
   fragment_uri = URI('http://example.com/foo?bar=baz#anchor')
@@ -48,4 +51,24 @@ def test_removing_search_value_with_key_from_uri():
 def test_removeQuery_is_same_as_removeSearch():
   uri = URI('http://example.com/foo?bar=baz')
   assert uri.removeQuery(['bar']).toString() == uri.removeSearch(['bar']).toString()
+
+## Setter tests
+class TestUriSetters:
+  def setup(self):
+    self.uri = URI('http://some_user:some_password@example.com:8080/foo?bar=baz#anchor')
+
+  def test_set_protocol(self):
+    assert str(self.uri.protocol(value='https')) == 'https://some_user:some_password@example.com:8080/foo?bar=baz#anchor'
+
+  def test_set_username(self):
+    assert str(self.uri.username(value='eggsample')) == 'http://eggsample:some_password@example.com:8080/foo?bar=baz#anchor'
+
+  def test_set_password(self):
+    assert str(self.uri.password(value='secret')) == 'http://some_user:secret@example.com:8080/foo?bar=baz#anchor'
+
+  def test_set_hostname(self):
+    assert str(self.uri.hostname(value='example.net')) == 'http://some_user:some_password@example.net:8080/foo?bar=baz#anchor'
+
+  def test_set_port(self):
+    assert str(self.uri.port(value='7070')) == 'http://some_user:some_password@example.com:7070/foo?bar=baz#anchor'
 
