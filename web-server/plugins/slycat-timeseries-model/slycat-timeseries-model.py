@@ -14,13 +14,36 @@ def register_slycat_plugin(context):
     import pickle
 
   def finish(database, model):
+    """
+    Update the model in the databse as successfully completed.
+
+    :param database:
+    :param model:
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", model["_id"])
     """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
+  def fail_model(mid, message):
+    """
+    Update the model as failed.
+
+    :param mid:     model ID
+    :param message: reason for the model failure
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
+
   def page_html(database, model):
-    """Add the HTML representation of the model to the context object."""
+    """
+    Add the HTML representation of the model to the context object.
+
+    :param database:
+    :param model:
+    :return: HTML render for the model
+    """
     import pystache
 
     context = dict()
@@ -31,6 +54,16 @@ def register_slycat_plugin(context):
     return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
 
   def get_remote_file(sid, hostname, username, password, filename):
+    """
+    Utility function to fetch remote files.
+
+    :param sid:      session ID
+    :param hostname:
+    :param username:
+    :param password:
+    :param filename: Full path for the requested file
+    :return: tuple with session ID and file content
+    """
     try:
       data = slycat.web.server.get_remote_file(sid, filename)
     except:
@@ -39,6 +72,20 @@ def register_slycat_plugin(context):
     return sid, data
 
   def compute(database, model, sid, uid, workdir, hostname, username, password):
+    """
+    Computes the Time Series model. It fetches the necessary files from a
+    remote server that were computed by the slycat-agent-compute-timeseries.py
+    script.
+
+    :param database:
+    :param model:
+    :param sid:      session ID
+    :param uid:      user ID
+    :param workdir:
+    :param hostname:
+    :param username:
+    :param password:
+    """
     try:
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", model["_id"])
@@ -52,13 +99,14 @@ def register_slycat_plugin(context):
       attributes = inputs["attributes"]
       slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
 
+      sid, data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (workdir, uid))
+      attributes_data = pickle.loads(data)
       for attribute in range(len(attributes)):
-        sid, data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/inputs_attributes_data_%s.pickle" % (workdir, uid, attribute))
-        data = pickle.loads(data)
-        slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [data])
+        slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute, [attributes_data[attribute]])
 
       clusters = json.loads(slycat.web.server.get_remote_file(sid, "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
       clusters_file = json.JSONDecoder().decode(clusters["file"])
+      timeseries_count = json.JSONDecoder().decode(clusters["timeseries_count"])
 
       slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_clusters.out" % (workdir, uid), clusters["aid"], clusters["parser"])
 
@@ -67,44 +115,47 @@ def register_slycat_plugin(context):
         file_cluster_attr = json.loads(file_cluster_data)
         slycat.web.server.post_model_file(model["_id"], True, sid, "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, f), file_cluster_attr["aid"], file_cluster_attr["parser"])
 
-        sid, waveforms = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveforms_%s.pickle" % (workdir, uid, f))
-        try:
-          waveforms = pickle.loads(waveforms)
-        except Exception as e:
-          cherrypy.log.error("Loading waveforms exception caught: %s" % e)
-
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model["_id"])
         slycat.web.server.put_model_arrayset(database, model, "preview-%s" % f)
-        for index, waveform in enumerate(waveforms):
-          try:
-            sid, waveform_dimensions = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_dimensions.pickle" % (workdir, uid, f, index))
-            waveform_dimensions = pickle.loads(waveform_dimensions)
-            sid, waveform_attributes = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_attributes.pickle" % (workdir, uid, f, index))
-            waveform_attributes = pickle.loads(waveform_attributes)
-            slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes, waveform_dimensions)
 
-            sid, waveform_times = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_times.pickle" % (workdir, uid, f, index))
-            waveform_times = pickle.loads(waveform_times)
-            sid, waveform_values = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_%s_values.pickle" % (workdir, uid, f, index))
-            waveform_values = pickle.loads(waveform_values)
-            slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times, waveform_values])
+        sid, waveform_dimensions_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_dimensions.pickle" % (workdir, uid, f))
+        waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
+        sid, waveform_attributes_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_attributes.pickle" % (workdir, uid, f))
+        waveform_attributes_array = pickle.loads(waveform_attributes_data)
+        sid, waveform_times_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_times.pickle" % (workdir, uid, f))
+        waveform_times_array = pickle.loads(waveform_times_data)
+        sid, waveform_values_data = get_remote_file(sid, hostname, username, password, "%s/slycat_timeseries_%s/waveform_%s_values.pickle" % (workdir, uid, f))
+        waveform_values_array = pickle.loads(waveform_values_data)
+
+        cherrypy.log.error("timeseries_count=%s" % timeseries_count)
+        for index in range(int(timeseries_count)):
+          try:
+            slycat.web.server.put_model_array(database, model, "preview-%s" % f, index, waveform_attributes_array[index], waveform_dimensions_array[index])
+            slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f, "%s/0/...;%s/1/..." % (index, index), [waveform_times_array[index], waveform_values_array[index]])
           except:
-            break
+            cherrypy.log.error("failed on index: %s" % index)
+            pass
 
     except:
+      fail_model(model["_id"], "Timeseries model compute exception: %s" % sys.exc_info()[0])
       cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
       cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
       cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
-      fail_model(model["_id"], "Timeseries model compute exception: %s" % sys.exc_info()[0])
 
-
-  def fail_model(mid, message):
-    database = slycat.web.server.database.couchdb.connect()
-    model = database.get("model", mid)
-    slycat.web.server.update_model(database, model, state="finished", result="failed", finished=datetime.datetime.utcnow().isoformat(), message=message)
 
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
+    """
+    Routine running on a separate thread which checks on the status of remote
+    jobs running on a SLURM infrastructure.
+
+    :param mid:          model ID
+    :param sid:          session ID
+    :param jid:          job ID
+    :param request_from:
+    :param stop_event:   event stopping the thread when the job completes
+    :param callback:     callback methods when the job successfully completes
+    """
     cherrypy.request.headers["x-forwarded-for"] = request_from
     retry_counter = 5
 
@@ -137,7 +188,7 @@ def register_slycat_plugin(context):
           model["job_running_time"] = datetime.datetime.utcnow().isoformat()
           slycat.web.server.update_model(database, model)
 
-      if state == "CANCELLED":
+      if state == "CANCELLED" or state == "REMOVED":
         retry_counter = 5
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
@@ -167,12 +218,24 @@ def register_slycat_plugin(context):
           fail_model(mid, "Job %s has failed." % jid)
           break
 
+        # in case something went wrong and still willing to try, wait for 30
+        # seconds and try another check
         time.sleep(30)
 
+      # waits 5 seconds in between each status check
       time.sleep(5)
 
 
+  # TODO verb, type and command might be obsolete
   def checkjob(database, model, verb, type, command, **kwargs):
+    """
+    Starts a routine to continuously check the status of a remote job.
+
+    :param database:
+    :param model:
+    :param kwargs: arguments contain hostname, username, password, jid,
+                   function name and parameters, UID
+    """
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
     fn = kwargs["fn"]
@@ -180,10 +243,16 @@ def register_slycat_plugin(context):
     uid = kwargs["uid"]
 
     def callback():
+      """
+      Callback for a successful remote job completion. It computes the model
+      and successfully completes it.
+      """
       compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"], kwargs["password"])
       finish(database, model)
       pass
 
+    # give some time for the job to be remotely started before starting its
+    # checks.
     time.sleep(5)
 
     database = slycat.web.server.database.couchdb.connect()
