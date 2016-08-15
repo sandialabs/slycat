@@ -189,13 +189,21 @@ def register_slycat_plugin(context):
           slycat.web.server.update_model(database, model)
 
       if state == "CANCELLED" or state == "REMOVED":
-        retry_counter = 5
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
         break
 
+      if state == "VACATED":
+        fail_model(mid, "Job %s was vacated due to system failure." % jid)
+        stop_event.set()
+        break
+
+      if state == "REMOVED":
+        fail_model(mid, "Job %s was removed by the scheduler due to exceeding walltime or violating another policy." % jid)
+        stop_event.set()
+        break
+
       if state == "COMPLETED":
-        retry_counter = 5
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
         if "job_running_time" not in model:
@@ -209,7 +217,7 @@ def register_slycat_plugin(context):
         stop_event.set()
         break
 
-      if state == "FAILED":
+      if state == "FAILED" or state == "UNKNOWN" or state == "NOTQUEUED":
         cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
         retry_counter = retry_counter - 1
 
