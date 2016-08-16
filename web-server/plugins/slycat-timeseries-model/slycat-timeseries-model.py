@@ -188,22 +188,22 @@ def register_slycat_plugin(context):
           model["job_running_time"] = datetime.datetime.utcnow().isoformat()
           slycat.web.server.update_model(database, model)
 
-      if state == "CANCELLED" or state == "REMOVED":
+      elif state == "CANCELLED" or state == "REMOVED":
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
         break
 
-      if state == "VACATED":
+      elif state == "VACATED":
         fail_model(mid, "Job %s was vacated due to system failure." % jid)
         stop_event.set()
         break
 
-      if state == "REMOVED":
+      elif state == "REMOVED":
         fail_model(mid, "Job %s was removed by the scheduler due to exceeding walltime or violating another policy." % jid)
         stop_event.set()
         break
 
-      if state == "COMPLETED":
+      elif state == "COMPLETED":
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
         if "job_running_time" not in model:
@@ -217,7 +217,7 @@ def register_slycat_plugin(context):
         stop_event.set()
         break
 
-      if state == "FAILED" or state == "UNKNOWN" or state == "NOTQUEUED":
+      elif state == "FAILED" or state == "UNKNOWN" or state == "NOTQUEUED":
         cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
         retry_counter = retry_counter - 1
 
@@ -229,6 +229,11 @@ def register_slycat_plugin(context):
         # in case something went wrong and still willing to try, wait for 30
         # seconds and try another check
         time.sleep(30)
+
+      else:
+        cherrypy.log.error("Job %s reported unknown status %s" % (jid, state))
+        fail_model(mid, "Job %s has failed because of unknown job state %s" % (jid, state))
+        break
 
       # waits 5 seconds in between each status check
       time.sleep(5)
