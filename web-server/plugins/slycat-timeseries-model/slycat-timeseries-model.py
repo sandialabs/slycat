@@ -12,7 +12,7 @@ def register_slycat_plugin(context):
     import cpickle as pickle
   except:
     import pickle
-  
+
   def media_columns(database, model, verb, type, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video).
     :param kwargs:
@@ -251,6 +251,7 @@ def register_slycat_plugin(context):
         if retry_counter == 0:
           cherrypy.log.error("Job %s has failed" % jid)
           fail_model(mid, "Job %s has failed." % jid)
+          stop_event.set()
           break
 
         # in case something went wrong and still willing to try, wait for 30
@@ -260,6 +261,7 @@ def register_slycat_plugin(context):
       else:
         cherrypy.log.error("Job %s reported unknown status %s" % (jid, state))
         fail_model(mid, "Job %s has failed because of unknown job state %s" % (jid, state))
+        stop_event.set()
         break
 
       # waits 5 seconds in between each status check
