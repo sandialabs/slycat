@@ -202,6 +202,7 @@ class Session(object):
             js = line.split(':')[1].strip().upper()
           except Exception as e:
             js = "UNKNOWN"
+          break
 
       status = {
         "state": js
