@@ -44,8 +44,13 @@ def test_removing_search_value_from_uri():
   assert uri.removeSearch(['bar']).toString() == 'http://example.com/foo'
 
 # Why does this sitll have the '?' and the previous test doesn't?
+# Matt agrees to get rid of ? for both.
 def test_removing_search_value_with_key_from_uri():
   uri = URI('http://example.com/foo?bar=baz')
+  assert uri.removeSearch(['bar'], 'baz').toString() == 'http://example.com/foo'
+
+def test_removing_multiple_search_values_with_keys_from_uri():
+  uri = URI('http://example.com/foo?bar=baz?sam=sue')
   assert uri.removeSearch(['bar'], 'baz').toString() == 'http://example.com/foo'
 
 def test_removeQuery_is_same_as_removeSearch():
