@@ -13,6 +13,33 @@ def register_slycat_plugin(context):
   except:
     import pickle
 
+  def media_columns(database, model, verb, type, command, **kwargs):
+    """Identify columns in the input data that contain media URIs (image or video).
+    :param kwargs:
+    :param command:
+    :param type:
+    :param verb:
+    :param model:
+      model ID in the data base
+    :param database:
+      our connection to couch db
+    """
+    expression = re.compile("file://")
+    search = numpy.vectorize(lambda x:bool(expression.search(x)))
+
+    columns = []
+    metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", "0")["arrays"][0]
+    for index, attribute in enumerate(metadata["attributes"]):
+      if attribute["type"] != "string":
+        continue
+      column = slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index)
+      if not numpy.any(search(column)):
+        continue
+      columns.append(index)
+
+    cherrypy.response.headers["content-type"] = "application/json"
+    return json.dumps(columns)
+
   def finish(database, model):
     """
     Update the model in the databse as successfully completed.
@@ -189,13 +216,21 @@ def register_slycat_plugin(context):
           slycat.web.server.update_model(database, model)
 
       if state == "CANCELLED" or state == "REMOVED":
-        retry_counter = 5
         fail_model(mid, "Job %s was cancelled." % jid)
         stop_event.set()
         break
 
+      if state == "VACATED":
+        fail_model(mid, "Job %s was vacated due to system failure." % jid)
+        stop_event.set()
+        break
+
+      if state == "REMOVED":
+        fail_model(mid, "Job %s was removed by the scheduler due to exceeding walltime or violating another policy." % jid)
+        stop_event.set()
+        break
+
       if state == "COMPLETED":
-        retry_counter = 5
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
         if "job_running_time" not in model:
@@ -209,13 +244,14 @@ def register_slycat_plugin(context):
         stop_event.set()
         break
 
-      if state == "FAILED":
+      if state == "FAILED" or state == "UNKNOWN" or state == "NOTQUEUED":
         cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
         retry_counter = retry_counter - 1
 
         if retry_counter == 0:
           cherrypy.log.error("Job %s has failed" % jid)
           fail_model(mid, "Job %s has failed." % jid)
+          stop_event.set()
           break
 
         # in case something went wrong and still willing to try, wait for 30
@@ -310,6 +346,7 @@ def register_slycat_plugin(context):
 
   # Register custom commands for use by wizards
   context.register_model_command("POST", "timeseries", "checkjob", checkjob)
+  context.register_model_command("GET", "timeseries", "media-columns", media_columns)
 
   # Register a wizard for creating instances of the new model
   context.register_wizard("timeseries", "New Timeseries Model", require={"action":"create", "context":"project"})
