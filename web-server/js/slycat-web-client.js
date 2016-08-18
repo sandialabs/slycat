@@ -65,7 +65,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   /**
    * delete a reference in Slycat
    * @param params: object{
-   * pid: project id of project that is to be deleted from Slycat
+   * rid: reference id of reference that is to be deleted from Slycat
    * success(): function called upon success
    * error(request, status, reason_phrase): function called upon error
    * }
@@ -723,6 +723,41 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
         if(params.success)
           params.success(result.id);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  /**
+   * put a reference in Slycat
+   * @param params: object{
+   * rid: reference id of reference that is to be updated
+   * success(): function called upon success
+   * error(request, status, reason_phrase): function called upon error
+   * }
+   */
+  module.put_reference = function(params)
+  {
+    var data = {};
+    if("name" in params)
+      data["name"] = params["name"];
+    if("bid" in params)
+      data["bid"] = params["bid"];
+
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(data),
+      type: "PUT",
+      url: server_root + "references/" + params.rid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
       },
       error: function(request, status, reason_phrase)
       {
