@@ -194,11 +194,15 @@ class Session(object):
 
       # parses the useful information from job status
       out = response["output"]
-      js = "FAILED"
+      js = "UNKNOWN"
 
       for line in out.splitlines():
         if "State" in line:
-          js = line.split(':')[1].strip().upper()
+          try:
+            js = line.split(':')[1].strip().upper()
+          except Exception as e:
+            js = "UNKNOWN"
+          break
 
       status = {
         "state": js
