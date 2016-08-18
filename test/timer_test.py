@@ -1,12 +1,16 @@
-import unittest
+import pytest
 import timer
 
-class TestSlycatTimer(unittest.TestCase):
-#  def test_wall_time_looks_human(self):
-#    self.assertEqual(timer.wallclock().clock(), 5)
+# For sleep()
+import time
 
-  def test_reset_timer_goes_to_zero(self):
-    wc = timer.wallclock()
-    reset_time = wc.reset()
-    self.assertEqual(0, reset_time)
+def test_reset_timer_goes_to_zero():
+  wc = timer.wallclock()
+  wc.reset()
+  assert wc.elapsed() < 1
 
+def test_elapsed():
+  wc = timer.wallclock()
+  time.sleep(0.1)
+  elapsed = wc.elapsed()
+  assert elapsed >= 0.1 and elapsed < 1
