@@ -209,7 +209,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         validated = false;
       }
 
-      if (!component.cluster_sample_count().length) {
+      if (typeof component.cluster_sample_count() !== 'number' && !component.cluster_sample_count().length) {
         $('#form-cluster-sample-count').addClass('has-error');
         validated = false;
       }
@@ -232,6 +232,20 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.to_compute_next_step = function() {
       component.tab(6);
+    };
+
+    component.back = function() {
+      var target = component.tab();
+      console.log(target);
+
+      if (component.tab() == 7) {
+        target = 2;
+      } else if (component.tab() == 3 && component.timeseries_type() === 'xyce') {
+        target = 7;
+      } else
+        target--;
+
+      component.tab(target);
     };
 
     return component;
