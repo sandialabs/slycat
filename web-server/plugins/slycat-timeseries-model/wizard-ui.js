@@ -25,6 +25,11 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.partition = ko.observable('');
     component.workdir = ko.observable('');
 
+
+    var removeErrors = function() {
+      $('.form-group').removeClass('has-error');
+    };
+
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
@@ -77,7 +82,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
               if (response.config['timeseries-wizard']) {
                 response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                 response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
-                response.config['timeseries-wizard']['xyce-timeseries-file'] ? component.xyce_timeseries_file(response.config['timeseries-wizard']['xyce-timeseries-file']) : null;
               }
 
               if (response.config.slurm) {
@@ -105,7 +109,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       if (component.timeseries_type() === 'xyce') {
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
-      }
+
+        component.tab(7);
+      } else
+        component.tab(3);
+    };
+
+    component.select_xyce_timeseries_file = function() {
+      var filepath = component.browser.selection()[0];
+      var filename = filepath.split('/');
+      filename = filename[filename.length - 1];
+      component.xyce_timeseries_file(filename);
 
       component.tab(3);
     };
@@ -164,17 +178,51 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.to_timeseries_parameters = function() {
-      component.tab(4);
+      var validated = true;
+      removeErrors();
+
+      if (!component.output_directory().length) {
+        $('#form-output-directory').addClass('has-error');
+        validated = false;
+      }
+
+      if (!component.id_column().length) {
+        $('#form-id-column-name').addClass('has-error');
+        validated = false;
+      }
+
+      if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().length) {
+        $('#form-inputs-file-delimiter').addClass('has-error');
+        validated = false;
+      }
+
+      if (validated)
+        component.tab(4);
     };
 
     component.to_compute = function() {
-      component.put_model_parameters();
-      component.tab(5);
+      var validated = true;
+      removeErrors();
 
-      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
-      vm.wckey(component.wckey());
-      vm.partition(component.partition());
-      vm.workdir(component.workdir());
+      if (component.timeseries_type() === 'csv' && !component.timeseries_name().length) {
+        $('#form-timeseries-name').addClass('has-error');
+        validated = false;
+      }
+
+      if (!component.cluster_sample_count().length) {
+        $('#form-cluster-sample-count').addClass('has-error');
+        validated = false;
+      }
+
+      if (validated) {
+        component.put_model_parameters();
+        component.tab(5);
+
+        var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+        vm.wckey(component.wckey());
+        vm.partition(component.partition());
+        vm.workdir(component.workdir());
+      }
     };
 
     component.compute = function() {
