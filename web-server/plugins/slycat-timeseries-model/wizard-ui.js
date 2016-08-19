@@ -236,7 +236,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.back = function() {
       var target = component.tab();
-      console.log(target);
 
       if (component.tab() == 7) {
         target = 2;
