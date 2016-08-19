@@ -7,8 +7,9 @@
 <div class="modal-body">
   <ul class="nav nav-pills">
     <li data-bind="css:{active:tab() == 0}"><a>Choose Timeseries format</a></li>
-    <li data-bind="css:{active:tab() == 1}"><a>Select Input Data File</a></li>
+    <li data-bind="css:{active:tab() == 1}"><a>Connect To Remote Server</a></li>
     <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Input Data File</a></li>
+    <li data-bind="css:{active:tab() == 7}" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
     <li data-bind="css:{active:tab() == 3}"><a>Input Data Parameters</a></li>
     <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
     <li data-bind="css:{active:tab() == 5}"><a>Compute Model</a></li>
@@ -41,6 +42,10 @@
       <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_input_file"></slycat-remote-browser>
     </div>
 
+    <div data-bind="visible:tab() == 7" style="height: 400px">
+      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_xyce_timeseries_file"></slycat-remote-browser>
+    </div>
+
     <div data-bind="visible:tab() == 3" class="form-horizontal">
       <div class="form-group">
         <label class="col-sm-4"></label>
@@ -48,31 +53,23 @@
           <input type="checkbox" data-bind="checked: to_hdf5"> Convert data set to .hdf5 files
         </div>
       </div>
-      <div class="form-group">
+      <div id="form-output-directory" class="form-group">
         <label class="col-sm-4">Output Directory</label>
         <div class="col-sm-8">
           <input class="form-control" type="text" data-bind="value: output_directory">
         </div>
       </div>
-      <div class="form-group">
+      <div id="form-id-column-name" class="form-group">
         <label class="col-sm-4">ID Column Name</label>
         <div class="col-sm-8">
           <input class="form-control" type="text" data-bind="value: id_column">
         </div>
       </div>
       <!-- ko if: timeseries_type() == 'csv' -->
-        <div class="form-group">
+        <div id="form-inputs-file-delimiter" class="form-group">
           <label class="col-sm-4">Inputs File Delimiter</label>
           <div class="col-sm-8">
             <input class="form-control" type="text" data-bind="value: inputs_file_delimiter">
-          </div>
-        </div>
-      <!-- /ko -->
-      <!-- ko if: timeseries_type() == 'xyce' -->
-        <div class="form-group">
-          <label class="col-sm-4">Timeseries File</label>
-          <div class="col-sm-8">
-            <input class="form-control" type="text" data-bind="value: xyce_timeseries_file">
           </div>
         </div>
       <!-- /ko -->
@@ -80,14 +77,14 @@
 
     <div data-bind="visible:tab() == 4" class="form-horizontal">
       <!-- ko if: timeseries_type() == 'csv' -->
-        <div class="form-group">
+        <div id="form-timeseries-name" class="form-group">
           <label class="col-sm-4">Timeseries Name</label>
           <div class="col-sm-8">
             <input class="form-control" type="text" data-bind="value: timeseries_name">
           </div>
         </div>
       <!-- /ko -->
-    	<div class="form-group">
+    	<div id="form-cluster-sample-count" class="form-group">
         <label class="col-sm-4">Cluster Sample Count</label>
         <div class="col-sm-8">
           <input class="form-control" type="number" data-bind="value: cluster_sample_count">
@@ -130,6 +127,7 @@
   <button class="btn btn-default" data-bind="visible:tab() == 0,click:to_remote">Continue</button>
   <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 1,click:connect"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 2,click:select_input_file"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 7,click:select_xyce_timeseries_file"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 3,click:to_timeseries_parameters">Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 4,click:to_compute">Continue</button>
   <button class="btn btn-default" data-bind="visible:tab() == 5,click:compute">Continue</button>
