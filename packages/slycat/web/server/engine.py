@@ -127,7 +127,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-remote-browse", "/remotes/:sid/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remote-videos", "/remotes/:sid/videos", slycat.web.server.handlers.post_remote_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
-  # dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
 
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
