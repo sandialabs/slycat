@@ -21,9 +21,38 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
+    // SLURM parameters
     component.wckey = ko.observable('');
     component.partition = ko.observable('');
     component.workdir = ko.observable('');
+    component.nnodes = ko.observable('');
+    component.ntasks_per_node = ko.observable('');
+    component.time_hours = ko.observable('');
+    component.time_minutes = ko.observable('');
+    component.time_seconds = ko.observable('');
+
+    component.user_config = {};
+
+    var removeErrors = function() {
+      $('.form-group').removeClass('has-error');
+    };
+
+    var updateUserConfig = function() {
+      component.user_config['timeseries-wizard'] = component.user_config['timeseries-wizard'] || {};
+      component.user_config['timeseries-wizard']['persistent-output'] = component.output_directory();
+      component.user_config['timeseries-wizard']['id-column'] = component.id_column();
+      component.user_config['timeseries-wizard']['inputs-file-delimiter'] = component.inputs_file_delimiter();
+      component.user_config['timeseries-wizard']['timeseries-name'] = component.timeseries_name();
+
+      client.set_user_config({
+        sid: component.remote.sid(),
+        config: component.user_config,
+        success: function(response) { },
+        error: function(request, status, reason_phrase) {
+          console.log(reason_phrase);
+        }
+      });
+    };
 
     component.create_model = function() {
       client.post_project_models({
@@ -77,15 +106,22 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
               if (response.config['timeseries-wizard']) {
                 response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                 response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
-                response.config['timeseries-wizard']['xyce-timeseries-file'] ? component.xyce_timeseries_file(response.config['timeseries-wizard']['xyce-timeseries-file']) : null;
+                response.config['timeseries-wizard']['id-column'] ? component.id_column(response.config['timeseries-wizard']['id-column']) : null;
+                response.config['timeseries-wizard']['inputs-file-delimiter'] ? component.inputs_file_delimiter(response.config['timeseries-wizard']['inputs-file-delimiter']) : null;
               }
 
               if (response.config.slurm) {
                 response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                 response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                 response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
+                response.config.slurm.nnodes ? component.nnodes(response.config.slurm.nnodes) : null;
+                response.config.slurm['ntasks-per-node'] ? component.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
+                response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
+                response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
+                response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
               }
 
+              component.user_config = response.config;
               component.tab(2);
             }
           });
@@ -105,7 +141,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       if (component.timeseries_type() === 'xyce') {
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
-      }
+
+        component.tab(7);
+      } else
+        component.tab(3);
+    };
+
+    component.select_xyce_timeseries_file = function() {
+      var filepath = component.browser.selection()[0];
+      var filename = filepath.split('/');
+      filename = filename[filename.length - 1];
+      component.xyce_timeseries_file(filename);
 
       component.tab(3);
     };
@@ -164,26 +210,89 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.to_timeseries_parameters = function() {
-      component.tab(4);
+      var validated = true;
+      removeErrors();
+
+      if (!component.output_directory().length) {
+        $('#form-output-directory').addClass('has-error');
+        validated = false;
+      }
+
+      if (!component.id_column().length) {
+        $('#form-id-column-name').addClass('has-error');
+        validated = false;
+      }
+
+      if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().length) {
+        $('#form-inputs-file-delimiter').addClass('has-error');
+        validated = false;
+      }
+
+      if (validated)
+        component.tab(4);
     };
 
     component.to_compute = function() {
-      component.put_model_parameters();
-      component.tab(5);
+      var validated = true;
+      removeErrors();
 
-      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
-      vm.wckey(component.wckey());
-      vm.partition(component.partition());
-      vm.workdir(component.workdir());
+      if (component.timeseries_type() === 'csv' && !component.timeseries_name().length) {
+        $('#form-timeseries-name').addClass('has-error');
+        validated = false;
+      }
+
+      if (typeof component.cluster_sample_count() !== 'number' && !component.cluster_sample_count().length) {
+        $('#form-cluster-sample-count').addClass('has-error');
+        validated = false;
+      }
+
+      if (validated) {
+        component.put_model_parameters();
+        component.tab(5);
+
+        var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+        vm.wckey(component.wckey());
+        vm.partition(component.partition());
+        vm.workdir(component.workdir());
+        vm.nnodes(component.nnodes());
+        vm.ntasks_per_node(component.ntasks_per_node());
+        vm.time_hours(component.time_hours());
+        vm.time_minutes(component.time_minutes());
+        vm.time_seconds(component.time_seconds());
+      }
     };
 
     component.compute = function() {
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
       vm.submit_job();
+
+      component.user_config['slurm'] = component.user_config['slurm'] || {};
+      component.user_config['slurm']['wcid'] = vm.wckey();
+      component.user_config['slurm']['partition'] = vm.partition();
+      component.user_config['slurm']['workdir'] = vm.workdir();
+      component.user_config['slurm']['time-hours'] = vm.time_hours();
+      component.user_config['slurm']['time-minutes'] = vm.time_minutes();
+      component.user_config['slurm']['time-seconds'] = vm.time_seconds();
+      component.user_config['slurm']['nnodes'] = vm.nnodes();
+      component.user_config['slurm']['ntasks-per-node'] = vm.ntasks_per_node();
     };
 
     component.to_compute_next_step = function() {
+      updateUserConfig();
       component.tab(6);
+    };
+
+    component.back = function() {
+      var target = component.tab();
+
+      if (component.tab() == 7) {
+        target = 2;
+      } else if (component.tab() == 3 && component.timeseries_type() === 'xyce') {
+        target = 7;
+      } else
+        target--;
+
+      component.tab(target);
     };
 
     return component;
