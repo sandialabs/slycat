@@ -62,31 +62,61 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
 
     var pool = {};
 
+    pool.check_remote = function(params)
+    {
+      client.get_remotes({
+        hostname: params.hostname,
+        success: function(result)
+        {
+          if(params.success)
+            params.success(result);
+        },
+        error: function(request, status, reason_phrase)
+        {
+          if(params.error)
+            params.error(request, status, reason_phrase);
+        }
+      });
+    }
+
     pool.get_remote = function(params)
     {
-      if(params.hostname in remotes)
-      {
-        if(params.success)
-          params.success(params.hostname);
-        return;
-      }
-
-      module.login(
-      {
+      pool.check_remote({
         hostname: params.hostname,
-        title: params.title,
-        message: params.message,
-        success: function(sid)
+        get_remote_params: params,
+        success: function(result)
         {
-          remotes[params.hostname] = sid;
-          if(params.success)
-            params.success(params.hostname);
+          if(result.status)
+          {
+            if(params.success)
+              params.success(params.hostname);
+            return;
+          }
+          else
+          {
+            module.login(
+            {
+              hostname: params.hostname,
+              title: params.title,
+              message: params.message,
+              success: function(sid)
+              {
+                if(params.success)
+                  params.success(params.hostname);
+              },
+              cancel: function()
+              {
+                if(params.cancel)
+                  params.cancel();
+              },
+            });
+          }
         },
-        cancel: function()
+        error: function(request, status, reason_phrase)
         {
-          if(params.cancel)
-            params.cancel();
-        },
+          console.log("Unable to check status of remote session.");
+          return;
+        }
       });
     }
 
