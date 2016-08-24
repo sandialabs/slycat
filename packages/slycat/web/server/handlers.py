@@ -1826,7 +1826,20 @@ def get_remote_file(sid, path, **kwargs):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_file(path, **kwargs)
 
-def get_remote_image(sid, path, **kwargs):
+def get_remote_image(hostname, path, **kwargs):
+  sid = None
+  try:
+    database = slycat.web.server.database.couchdb.connect()
+    session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+    for host_session in session["sessions"]:
+      if host_session["hostname"] == hostname:
+        sid = host_session["sid"]
+        break
+  except Exception as e:
+    cherrypy.log.error("could retrieve host session for remotes %s" % e)
+    raise cherrypy.HTTPError("404")
+  if sid is None:
+    raise cherrypy.HTTPError("400 session is None value")
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_image(path, **kwargs)
 
