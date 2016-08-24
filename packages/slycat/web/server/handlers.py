@@ -1845,15 +1845,24 @@ def post_remote_browse(sid, path):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.browse(path, file_reject, file_allow, directory_reject, directory_allow)
 
-def get_remote_file(sid, path, **kwargs):
+def get_remote_file(hostname, path, **kwargs):
+  """
+  Given a hostname and file path returns the file given
+  by the path
+  :param hostname: connection host name
+  :param path: path to file
+  :param kwargs:
+  :return:
+  """
+  sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_file(path, **kwargs)
 
 def get_remote_image(hostname, path, **kwargs):
   """
-  given a hostanme and image path returns the image given
+  Given a hostname and image path returns the image given
   by the path
-  :param hostname: connection name
+  :param hostname: connection host name
   :param path: path to image
   :param kwargs:
   :return:
