@@ -67,7 +67,7 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
       if(params.hostname in remotes)
       {
         if(params.success)
-          params.success(remotes[params.hostname]);
+          params.success(params.hostname);
         return;
       }
 
@@ -80,7 +80,7 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
         {
           remotes[params.hostname] = sid;
           if(params.success)
-            params.success(sid);
+            params.success(params.hostname);
         },
         cancel: function()
         {

@@ -125,7 +125,7 @@ def get_sid(hostname):
         sid = host_session["sid"]
         break
   except Exception as e:
-    cherrypy.log.error("could retrieve host session for remotes %s" % e)
+    cherrypy.log.error("could not retrieve host session for remotes %s" % e)
     raise cherrypy.HTTPError("404")
   if sid is None:
     raise cherrypy.HTTPError("400 session is None value")
