@@ -1885,7 +1885,15 @@ def post_remote_videos(sid):
     return session.post_video(cherrypy.request.json["content-type"], cherrypy.request.json["images"])
 
 @cherrypy.tools.json_out(on = True)
-def get_remote_video_status(sid, vsid):
+def get_remote_video_status(hostname, vsid):
+  """
+  Given a hostname and vsid returns the video status given
+  by the vsid
+  :param hostname: connection host name
+  :param vsid: video uuid
+  :return: json
+  """
+  sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_video_status(vsid)
 
