@@ -1852,7 +1852,7 @@ def get_remote_file(hostname, path, **kwargs):
   :param hostname: connection host name
   :param path: path to file
   :param kwargs:
-  :return:
+  :return: file
   """
   sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
@@ -1865,7 +1865,7 @@ def get_remote_image(hostname, path, **kwargs):
   :param hostname: connection host name
   :param path: path to image
   :param kwargs:
-  :return:
+  :return: image
   """
   sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
@@ -1889,7 +1889,15 @@ def get_remote_video_status(sid, vsid):
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_video_status(vsid)
 
-def get_remote_video(sid, vsid):
+def get_remote_video(hostname, vsid):
+  """
+  Given a hostname and vsid returns the video given
+  by the vsid
+  :param hostname: connection host name
+  :param vsid: video uuid
+  :return: video
+  """
+  sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_video(vsid)
 
