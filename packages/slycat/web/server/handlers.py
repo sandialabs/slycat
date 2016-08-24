@@ -1752,12 +1752,28 @@ def post_remotes():
     database.save(session)
   except Exception as e:
     cherrypy.log.error("could not save session for remotes %s" % e)
-  #
   return {"sid": sid}
 
 @cherrypy.tools.json_out(on = True)
 def get_remotes(hostname):
-  return {"status":True, "msg":""}
+  """
+  Returns {status: True} if the hostname was found in the user's
+  session
+  :param hostname: connection host name
+  :return: {"status":status, "msg":msg}
+  """
+  status = False
+  msg = "hostname session not found"
+  try:
+    database = slycat.web.server.database.couchdb.connect()
+    session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+    for session in session["sessions"]:
+      if session["hostname"] == hostname:
+        status = True
+        msg = "hostname session was found"
+  except Exception as e:
+    cherrypy.log.error("could not save session for remotes %s" % e)
+  return {"status":status, "msg":msg}
 
 def delete_remote(sid):
   slycat.web.server.remote.delete_session(sid)
