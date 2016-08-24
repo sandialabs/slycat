@@ -1699,12 +1699,22 @@ def get_model_statistics(mid):
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
 def post_remotes():
+  """
+  Given username, hostname, password as a json payload
+  establishes a session with the remote host and attaches
+  it to the users session
+  :return: {"success":boolean, msg:""}
+  """
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
   password = cherrypy.request.json["password"]
   agent = cherrypy.request.json.get("agent", None)
   sid = slycat.web.server.remote.create_session(hostname, username, password, agent)
-  # save sid to user session
+  '''
+    save sid to user session
+    the session will be stored as follows in the users session
+    {sessions:[{{"sid": sid,"hostname": hostname, "username": username}},...]}
+  '''
   try:
     database = slycat.web.server.database.couchdb.connect()
     session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
@@ -1712,6 +1722,7 @@ def post_remotes():
     database.save(session)
   except Exception as e:
     cherrypy.log.error("could not save session for remotes %s" % e)
+  #
   return {"sid": sid}
 
 def delete_remote(sid):
