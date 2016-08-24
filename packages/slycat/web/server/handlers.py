@@ -108,6 +108,29 @@ def js_bundle():
 js_bundle._lock = threading.Lock()
 js_bundle._bundle = None
 
+def get_sid(hostname):
+  """
+  Takes a hostname address and returns the established sid value
+  base on what is found in the users session
+  raises 400 and 404
+  :param hostname: name of the host we are trying to connect to
+  :return: sid : uuid for the session name
+  """
+  sid = None
+  try:
+    database = slycat.web.server.database.couchdb.connect()
+    session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+    for host_session in session["sessions"]:
+      if host_session["hostname"] == hostname:
+        sid = host_session["sid"]
+        break
+  except Exception as e:
+    cherrypy.log.error("could retrieve host session for remotes %s" % e)
+    raise cherrypy.HTTPError("404")
+  if sid is None:
+    raise cherrypy.HTTPError("400 session is None value")
+  return sid
+
 def require_json_parameter(name):
   """
   checks to see if the parameter is in the cherrypy.request.json
@@ -1827,19 +1850,15 @@ def get_remote_file(sid, path, **kwargs):
     return session.get_file(path, **kwargs)
 
 def get_remote_image(hostname, path, **kwargs):
-  sid = None
-  try:
-    database = slycat.web.server.database.couchdb.connect()
-    session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-    for host_session in session["sessions"]:
-      if host_session["hostname"] == hostname:
-        sid = host_session["sid"]
-        break
-  except Exception as e:
-    cherrypy.log.error("could retrieve host session for remotes %s" % e)
-    raise cherrypy.HTTPError("404")
-  if sid is None:
-    raise cherrypy.HTTPError("400 session is None value")
+  """
+  given a hostanme and image path returns the image given
+  by the path
+  :param hostname: connection name
+  :param path: path to image
+  :param kwargs:
+  :return:
+  """
+  sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_image(path, **kwargs)
 
