@@ -123,7 +123,9 @@
               <!-- ko foreach: model_bookmark_wizards -->
                 <li class="slycat-clickable">
                   <a class="bookmark-new" data-bind="click: $parent.run_wizard">
-                    <span class="fa fa-floppy-o"></span>
+                    <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
+                    <!-- <span class="fa fa-floppy-o"></span> -->
+                    <span class="fa fa-plus"></span>
                     <span data-bind="text: label"></span></a>
                 </li>
               <!-- /ko -->
