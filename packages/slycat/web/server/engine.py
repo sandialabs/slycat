@@ -74,7 +74,10 @@ def start(root_path, config_file):
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.delete_project_cache_object, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-reference", "/references/:rid", slycat.web.server.handlers.delete_reference, conditions={"method" : ["DELETE"]})
+
+  #TODO: scrub sid
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
+
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-parsers", "/configuration/parsers", slycat.web.server.handlers.get_configuration_parsers, conditions={"method" : ["GET"]})
@@ -110,6 +113,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-remote-image", "/remotes/:hostname/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video", "/remotes/:hostname/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video-status", "/remotes/:hostname/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
 
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
@@ -127,7 +131,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-remote-browse", "/remotes/:sid/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remote-videos", "/remotes/:sid/videos", slycat.web.server.handlers.post_remote_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
-  dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
+
 
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})

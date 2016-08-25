@@ -1774,6 +1774,7 @@ def get_remotes(hostname):
           msg = "hostname session was found"
         else:
           session["sessions"][:] = [tup for tup in session["sessions"] if tup["hostname"] != hostname]
+          database.save(session)
   except Exception as e:
     cherrypy.log.error("could not save session for remotes %s" % e)
   return {"status":status, "msg":msg}
