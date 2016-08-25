@@ -104,14 +104,15 @@ def start(root_path, config_file):
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.get_project_cache_object, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
+
+  #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:sid/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-image", "/remotes/:sid/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video", "/remotes/:sid/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video-status", "/remotes/:sid/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})
+
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
-
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
-
   dispatcher.connect("model-command", "/models/:mid/commands/:type/:command", slycat.web.server.handlers.model_command, conditions={"method" : ["GET", "POST", "PUT"]})
   dispatcher.connect("model-sensitive-command", "/models/:mid/sensitive/:type/:command", slycat.web.server.handlers.model_sensitive_command, conditions={"method" : ["POST"]})
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
@@ -121,9 +122,12 @@ def start(root_path, config_file):
   dispatcher.connect("post-project-references", "/projects/:pid/references", slycat.web.server.handlers.post_project_references, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
+
+  #TODO: scrub sid
   dispatcher.connect("post-remote-browse", "/remotes/:sid/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remote-videos", "/remotes/:sid/videos", slycat.web.server.handlers.post_remote_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
+
   dispatcher.connect("put-model-arrayset-array", "/models/:mid/arraysets/:aid/arrays/:array", slycat.web.server.handlers.put_model_arrayset_array, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.put_model_arrayset_data, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-model-arrayset", "/models/:mid/arraysets/:aid", slycat.web.server.handlers.put_model_arrayset, conditions={"method" : ["PUT"]})
@@ -132,6 +136,8 @@ def start(root_path, config_file):
   dispatcher.connect("put-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.put_model_parameter, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-reference", "/references/:rid", slycat.web.server.handlers.put_reference, conditions={"method" : ["PUT"]})
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
+
+  #TODO: scrub sid
   dispatcher.connect("post-checksid", "/remotes/checksid", slycat.web.server.handlers.post_checksid, conditions={ "method": ["POST"] })
   dispatcher.connect("post-remote-launch", "/remotes/launch", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
   dispatcher.connect("post-submit-batch", "/remotes/submit-batch", slycat.web.server.handlers.post_submit_batch, conditions={ "method": ["POST"] })
@@ -140,6 +146,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-job-output", "/remotes/get-job-output", slycat.web.server.handlers.get_job_output, conditions={ "method": ["POST"] })
   dispatcher.connect("post-agent-function", "/remotes/run-agent-function", slycat.web.server.handlers.run_agent_function, conditions={ "method": ["POST"] })
   dispatcher.connect("get-user-config", "/remotes/get-user-config", slycat.web.server.handlers.get_user_config, conditions={ "method": ["POST"] })
+  dispatcher.connect("set-user-config", "/remotes/set-user-config", slycat.web.server.handlers.set_user_config, conditions={ "method": ["POST"] })
 
   dispatcher.connect("post-uploads", "/uploads", slycat.web.server.handlers.post_uploads, conditions={"method" : ["POST"]})
   dispatcher.connect("put-upload-file-part", "/uploads/:uid/files/:fid/parts/:pid", slycat.web.server.handlers.put_upload_file_part, conditions={"method" : ["PUT"]})

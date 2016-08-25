@@ -1792,6 +1792,14 @@ def get_user_config():
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
+def set_user_config():
+  sid = cherrypy.request.json["sid"]
+  config = cherrypy.request.json["config"]
+  with slycat.web.server.remote.get_session(sid) as session:
+    return session.set_user_config(config)
+
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
 def run_agent_function():
   sid = cherrypy.request.json["sid"]
   wckey = cherrypy.request.json["wckey"]

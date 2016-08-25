@@ -9,7 +9,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   var module = {};
 
   /**
-   * delete a model for a slycat project
+   * delete a model for a Slycat project
    * @param params: object{
    * mid: model id that is to be deleted from the Slycat project
    * success(): function called upon success
@@ -90,7 +90,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   };
 
   /**
-   * delete a remote ssh session from the slycat server
+   * delete a remote ssh session from the Slycat server
    * @param params: object{
    * sid: session id of open session that is to be deleted from Slycat
    * success(): function called upon success
@@ -147,6 +147,13 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  /**
+   *
+   * @param params: object{
+   * success(result): function called upon success
+   * error(request, status, reason_phrase): function called upon error
+   * }
+   */
   module.get_configuration_markings = function(params)
   {
     $.ajax(
@@ -163,9 +170,9 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
         if(params.error)
           params.error(request, status, reason_phrase);
-      },
+      }
     });
-  }
+  };
 
   module.get_configuration_parsers = function(params)
   {
@@ -922,6 +929,26 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       }),
       type: 'POST',
       url: server_root + 'remotes/get-user-config',
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  module.set_user_config = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      data: JSON.stringify({
+        sid: params.sid,
+        config: params.config
+      }),
+      type: 'POST',
+      url: server_root + 'remotes/set-user-config',
       success: function(result) {
         if (params.success)
           params.success(result);
