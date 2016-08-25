@@ -23,7 +23,9 @@ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/s
 * for logging into this quick container the only requirement is username = pasword
 * root user:pass is slycat:slycat for the container
 
-## Build slycat image from scratch command line
+# Slower Start
+
+## Build/Run slycat image from scratch command line
 * install [Docker](http://www.docker.com) 
 * clone the slycat repo 
 ```bash
