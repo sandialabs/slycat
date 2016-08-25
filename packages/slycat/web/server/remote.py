@@ -305,6 +305,31 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py get_user_config", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+  def set_user_config(self, config):
+    """Submits a command to the slycat-agent to set the content of a user's .slycatrc file in their home directory.
+
+    Returns
+    -------
+    response : dict
+    """
+    if self._agent is not None:
+      stdin, stdout, stderr = self._agent
+      payload = { "action": "set-user-config", "command": { "config": config } }
+
+      stdin.write("%s\n" % json.dumps(payload))
+      stdin.flush()
+
+      response = json.loads(stdout.readline())
+      if not response["ok"]:
+        cherrypy.response.headers["x-slycat-message"] = response["message"]
+        slycat.email.send_error("slycat.web.server.remote.py set_user_config", "cherrypy.HTTPError 400 %s" % response["message"])
+        raise cherrypy.HTTPError(400)
+      return { "errors": response["errors"] }
+    else:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      slycat.email.send_error("slycat.web.server.remote.py set_user_config", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
+      raise cherrypy.HTTPError(500)
+
   def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, fn_params, uid):
     """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 
@@ -392,22 +417,25 @@ class Session(object):
       def compute_timeseries(fn_id, params):
         arr = list(ipython_parallel_setup_arr)
 
-        # uncomment this line for production
         if params["to_hdf5"] is True:
           if params["timeseries_type"] == "csv":
+            # uncomment this line for production
             arr.append("python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
             # uncomment this line for local development
             # arr.append("python slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
           if params["timeseries_type"] == "xyce":
+            # uncomment this line for production
             arr.append("python $SLYCAT_HOME/agent/slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
             # uncomment this line for locat development
             # arr.append("python slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
 
         if params["timeseries_type"] == "csv":
+          # uncomment this line for production
           arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
           # uncomment this line for local development
           # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
         if params["timeseries_type"] == "xyce":
+          # uncomment this line for production
           arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
           # uncomment this line for local development
           # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
