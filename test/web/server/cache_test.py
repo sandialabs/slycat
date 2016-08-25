@@ -1,1 +1,2 @@
-import cache
+import pytest
+import slycat.web.server.cache

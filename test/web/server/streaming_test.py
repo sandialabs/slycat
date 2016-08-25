@@ -1,1 +1,2 @@
-import streaming
+import pytest
+import slycat.web.server.streaming

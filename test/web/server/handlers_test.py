@@ -1,1 +1,2 @@
-import handlers
+import pytest
+import slycat.web.server.handlers

@@ -1,5 +1,5 @@
 import pytest
-import timer
+from slycat import timer
 
 # For sleep()
 import time

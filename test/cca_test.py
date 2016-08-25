@@ -1,1 +1,2 @@
-import cca
+import pytest
+import slycat.cca
