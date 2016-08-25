@@ -1,1 +1,2 @@
-import remote
+import pytest
+import slycat.web.server.remote

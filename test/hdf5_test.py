@@ -1,5 +1,5 @@
 import pytest
-import hdf5
+import slycat.hdf5
 
 ## DArray tests
 #class TestDarrayProperties:

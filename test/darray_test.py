@@ -1,3 +1,2 @@
 import pytest
-import pytest
-import darray
+import slycat.darray
