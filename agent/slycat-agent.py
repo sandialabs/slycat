@@ -137,15 +137,43 @@ def get_user_config():
   
   rc = os.path.expanduser('~') + ("/.slycatrc")
   if os.path.isfile(rc):
-    parser = ConfigParser.SafeConfigParser()
-    parser.read(rc)
-    configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
-    results["config"] = configuration
-    results["errors"] = ""
+    try:
+      parser = ConfigParser.RawConfigParser()
+      parser.read(rc)
+      configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
+      results["config"] = configuration
+      results["errors"] = ""
+    except Exception as e:
+      results["config"] = {} 
+      results["errors"] = "%s" % e
   else:
     results["config"] = "see errors"
     results["errors"] = "the user does not have a .slycatrc file under their home directory"
 
+  sys.stdout.write("%s\n" % json.dumps(results))
+  sys.stdout.flush()
+
+def set_user_config(command):
+  results = {
+    "ok": True,
+    "errors": ""
+  }
+  config = command["command"]["config"]
+
+  rc = os.path.expanduser('~') + ("/.slycatrc")
+  rc_file = open(rc, "w+")
+  parser = ConfigParser.RawConfigParser()
+
+  for section_key in config:
+    if not parser.has_section(section_key):
+      parser.add_section(section_key)
+    section = config[section_key]
+    for option_key in section:
+      if not str(section[option_key]) == "":
+        parser.set(section_key, option_key, "\"%s\"" % section[option_key])
+
+  parser.write(rc_file)
+  rc_file.close()
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
@@ -468,6 +496,8 @@ def main():
         cancel_job(command)
       elif action == "get-user-config":
         get_user_config()
+      elif action == "set-user-config":
+        set_user_config(command)
       else:
         raise Exception("Unknown command.")
     except Exception as e:
