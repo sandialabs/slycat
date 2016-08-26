@@ -386,6 +386,32 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
         };
       });
 
+      component.edit_saved_bookmark = function(reference)
+      {
+        var name = ko.observable(reference.name())
+        dialog.prompt(
+        {
+          title: "Edit Bookmark",
+          value: name,
+          buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+          callback: function(button)
+          {
+            if(button.label != "OK")
+              return;
+            client.put_reference(
+            {
+              rid: reference._id(),
+              name: name(),
+              success: function()
+              {
+                component.update_references();
+              },
+              error: dialog.ajax_error("Couldn't edit bookmark."),
+            });
+          },
+        });
+      }
+
       component.delete_saved_bookmark = function(reference)
       {
         dialog.dialog(
