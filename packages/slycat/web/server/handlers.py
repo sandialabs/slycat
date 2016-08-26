@@ -1726,7 +1726,7 @@ def post_remotes():
   Given username, hostname, password as a json payload
   establishes a session with the remote host and attaches
   it to the users session
-  :return: {"success":boolean, msg:""}
+  :return: {"sid":sid, "status":boolean, msg:""}
   """
   username = cherrypy.request.json["username"]
   hostname = cherrypy.request.json["hostname"]
@@ -1752,7 +1752,7 @@ def post_remotes():
     database.save(session)
   except Exception as e:
     cherrypy.log.error("could not save session for remotes %s" % e)
-  return {"sid": sid}
+  return {"sid":sid, "status":True, "msg":""}
 
 @cherrypy.tools.json_out(on = True)
 def get_remotes(hostname):
