@@ -1,5 +1,5 @@
 import pytest
-from uri import URI
+from slycat.uri import URI
 
 auth_uri = URI('http://some_user:some_password@example.com:8080/foo?bar=baz')
 

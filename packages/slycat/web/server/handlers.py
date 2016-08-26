@@ -426,6 +426,23 @@ def post_project_references(pid):
   cherrypy.response.status = "201 Reference created."
   return {"id" : rid}
 
+@cherrypy.tools.json_in(on = True)
+@cherrypy.tools.json_out(on = True)
+def put_reference(rid):
+  couchdb = slycat.web.server.database.couchdb.connect()
+  reference = couchdb.get("reference", rid)
+  project = couchdb.get("project", reference["project"])
+  slycat.web.server.authentication.require_project_writer(project)
+
+  if cherrypy.request.json.get("name", None):
+    reference["name"] = cherrypy.request.json.get("name", None)
+  if cherrypy.request.json.get("bid", None):
+    reference["bid"] = cherrypy.request.json.get("bid", None)
+
+  couchdb.save(reference)
+
+  cherrypy.response.status = "201 Reference updated."
+
 def get_page(ptype):
   database = slycat.web.server.database.couchdb.connect()
 
