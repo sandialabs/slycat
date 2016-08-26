@@ -1759,16 +1759,16 @@ def post_remotes():
     database = slycat.web.server.database.couchdb.connect()
     session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
     hostname_not_found = True
-    for session in session["sessions"]:
-      if session["hostname"] == hostname:
-        session["sid"] = sid
-        session["username"] = username
+    for i in xrange(len(session["sessions"])):
+      if session["sessions"][i]["hostname"] == hostname:
+        session["sessions"][i]["sid"] = sid
+        session["sessions"][i]["username"] = username
         hostname_not_found = False
     if hostname_not_found:
       session["sessions"].append({"sid": sid,"hostname": hostname, "username": username})
     database.save(session)
   except Exception as e:
-    cherrypy.log.error("could not save session for remotes %s" % e)
+    cherrypy.log.error("login could not save session for remotes %s" % e)
   return {"sid":sid, "status":True, "msg":""}
 
 @cherrypy.tools.json_out(on = True)
@@ -1784,16 +1784,16 @@ def get_remotes(hostname):
   try:
     database = slycat.web.server.database.couchdb.connect()
     session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-    for session in session["sessions"]:
-      if session["hostname"] == hostname:
-        if slycat.web.server.remote.check_session(session["sid"]):
+    for h_session in session["sessions"]:
+      if h_session["hostname"] == hostname:
+        if slycat.web.server.remote.check_session(h_session["sid"]):
           status = True
           msg = "hostname session was found"
         else:
           session["sessions"][:] = [tup for tup in session["sessions"] if tup["hostname"] != hostname]
           database.save(session)
   except Exception as e:
-    cherrypy.log.error("could not save session for remotes %s" % e)
+    cherrypy.log.error("status could not save session for remotes %s" % e)
   return {"status":status, "msg":msg}
 
 def delete_remote(sid):
