@@ -85,15 +85,19 @@ body
   font-weight: bold !important;
 }
 .nav-bookmarks .bookmark-new .fa {
-
+  margin-right: 3px;
 }
 .nav-bookmarks .bookmark-link {
   position: relative;
-  padding-right: 65px !important;
+  padding-right: 95px !important;
 }
 .nav-bookmarks .bookmark-delete {
   position: absolute;
   right: 20px;
+}
+.nav-bookmarks .bookmark-edit {
+  position: absolute;
+  right: 43px;
 }
 
 .bootstrap-styles .modal .jumbotron

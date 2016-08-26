@@ -123,10 +123,9 @@
               <!-- ko foreach: model_bookmark_wizards -->
                 <li class="slycat-clickable">
                   <a class="bookmark-new" data-bind="click: $parent.run_wizard">
-                     <span class="fa fa-plus"></span>
-                     <!-- <span class="fa fa-plus-circle"></span>
-                     <span class="fa fa-plus-square"></span>
-                     <span class="fa fa-plus-square-o"></span> -->
+                    <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
+                    <!-- <span class="fa fa-floppy-o"></span> -->
+                    <span class="fa fa-plus"></span>
                     <span data-bind="text: label"></span></a>
                 </li>
               <!-- /ko -->
@@ -135,7 +134,10 @@
                 <li class="slycat-clickable">
                   <a class="bookmark-link" data-bind="attr: {href:uri}">
                     <span>
-                      <!-- <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="fa fa-pencil"></span></button> -->
+                      <button type="button" class="btn btn-xs btn-warning bookmark-edit" 
+                        data-bind="click: $parent.edit_saved_bookmark">
+                        <span class="fa fa-pencil"></span>
+                      </button>
                       <button type="button" class="btn btn-xs btn-danger bookmark-delete" title="Delete bookmark"
                         data-bind="click: $parent.delete_saved_bookmark">
                         <span class="fa fa-trash-o"></span>

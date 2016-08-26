@@ -16,7 +16,7 @@ define("slycat-dialog", ["slycat-server-root", "slycat-web-client", "knockout", 
       component.message = ko.observable(params.message || "");
       component.input = ko.observable(params.input || false);
       component.placeholder = ko.observable(params.placeholder || "");
-      component.value = ko.observable(params.value || "");
+      component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
       component.alert = ko.observable(params.alert || "");
       component.buttons = params.buttons || [{className: "btn-default", label:"OK"}];
       component.container = $($.parseHTML(template)).appendTo($("body"));
