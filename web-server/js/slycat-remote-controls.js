@@ -21,6 +21,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         component.status = params.status || ko.observable(null);
         component.status_type = params.status_type || ko.observable(null);
         component.remote_hosts = mapping.fromJS([]);
+        component.session_exists = ko.observable(false);
 
         component.status_classes = ko.pureComputed(function()
         {
@@ -46,6 +47,25 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         {
           localStorage.setItem("slycat-remote-controls-hostname", value);
           component.status(null);
+
+          client.get_remotes({
+            hostname: value,
+            success: function(result)
+            {
+              if(component.hostname() == value)
+              {
+                if(result.status)
+                  component.session_exists(true);
+                else
+                  component.session_exists(false);
+              }
+            },
+            error: function(request, status, reason_phrase)
+            {
+              if(component.hostname() == value)
+                component.session_exists(false);
+            }
+          });
         });
 
         component.username.subscribe(function(value)
