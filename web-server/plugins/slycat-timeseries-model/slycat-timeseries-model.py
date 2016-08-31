@@ -170,7 +170,7 @@ def register_slycat_plugin(context):
       cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
       cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
 
-
+  # TODO this function needs to be migrated to the implementation of the computation interface
   def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
     """
     Routine running on a separate thread which checks on the status of remote
@@ -263,6 +263,7 @@ def register_slycat_plugin(context):
 
 
   # TODO verb, type and command might be obsolete
+  # TODO this function needs to be migrated to the implementation of the computation interface
   def checkjob(database, model, verb, type, command, **kwargs):
     """
     Starts a routine to continuously check the status of a remote job.
