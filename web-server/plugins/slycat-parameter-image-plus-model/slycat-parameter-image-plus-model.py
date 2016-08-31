@@ -375,6 +375,8 @@ def register_slycat_plugin(context):
 
       time.sleep(5)
 
+
+  # TODO this function needs to be migrated to the implementation of the computation interface
   def checkjob(database, model, verb, type, command, **kwargs):
     sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
     jid = kwargs["jid"]
