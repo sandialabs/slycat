@@ -24,12 +24,25 @@ class RemoteComputationInterface(metaclass=ABCMeta):
   @abstractmethod
   def disconnect(sid):
     """
-    Disconnect and destroys the connection between Slycat and the remote system
+    Disconnect and destroy the connection between Slycat and the remote system
     for the input session ID. The function return True if the disconnect was
     successful, False otherwise.
 
     :param sid: session ID
     :return: boolean
+    """
+    pass
+
+  @abstractmethod
+  def run_command(sid, command):
+    """
+    Run a command to the remote system for the input session ID. The function
+    returns the output, i.e. stdout, of the command if it was succesafull, the
+    error ouput otherwize, i.e. stderr.
+
+    :param sid: session ID
+    :param command: command (in array or string format)
+    :return: string
     """
     pass
 
@@ -118,5 +131,17 @@ class RemoteComputationInterface(metaclass=ABCMeta):
     :param sid: session ID
     :param jid: job ID
     :return: boolean
+    """
+    pass
+
+  @abstractmethod
+  def get_job_output(sid, jid):
+    """
+    Fetch and return the content of the job output file for the input session ID
+    and job ID.
+
+    :param sid: session ID
+    :param jid: job ID
+    :return: string
     """
     pass
