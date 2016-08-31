@@ -63,11 +63,13 @@ class VideoSession(threading.Thread):
       self.exception = e
     self.finished = True
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def run_remote_command(command):
   command = command.split(' ')
   p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   return p.communicate()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def launch(command):
   results = {
     "ok": True,
@@ -79,6 +81,7 @@ def launch(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def submit_batch(command):
   results = {
     "ok": True,
@@ -91,6 +94,7 @@ def submit_batch(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def checkjob(command):
   results = {
     "ok": True,
@@ -102,6 +106,7 @@ def checkjob(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def cancel_job(command):
   results = {
     "ok": True,
@@ -113,6 +118,7 @@ def cancel_job(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def get_job_output(command):
   results = {
     "ok": True,
@@ -177,6 +183,7 @@ def set_user_config(command):
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file):
   f = tmp_file 
 
@@ -193,6 +200,7 @@ def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_m
 
   f.close()
 
+# TODO this function needs to be migrated to the implementation of the computation interface
 def run_function(command):
   results = {
     "ok": True,

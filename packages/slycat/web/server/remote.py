@@ -131,6 +131,7 @@ class Session(object):
     self._sftp.close()
     self._ssh.close()
 
+  # TODO modify to follow new remote computation interface
   def submit_batch(self, filename):
     """Submits a command to the slycat-agent to start an input batch file on a cluster running SLURM.
 
@@ -166,6 +167,7 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py submit_batch", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+  # TODO modify to follow new remote computation interface
   def checkjob(self, jid):
     """Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.
 
@@ -214,6 +216,7 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py checkjob", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+  # TODO modify to follow new remote computation interface
   def cancel_job(self, jid):
     """Submits a command to the slycat-agent to cancel a running job on a cluster running SLURM.
 
@@ -246,6 +249,7 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py cancel_job", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+  # TODO modify to follow new remote computation interface
   def get_job_output(self, jid, path):
     """Submits a command to the slycat-agent to fetch the content of the a job's output file from a cluster running SLURM.
 
@@ -330,6 +334,10 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py set_user_config", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+
+  # TODO remote jobs commands and parameters are generated here for the
+  # parameter space and timeseries models. The call to the agent and its
+  # parameters will have to be modified to work with the new format.
   def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, fn_params, uid):
     """Submits a command to the slycat-agent to run a predefined function on a cluster running SLURM.
 
@@ -495,6 +503,7 @@ class Session(object):
       slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
       raise cherrypy.HTTPError(500)
 
+  # TODO modify to follow new remote computation interface
   def launch(self, command):
     """Submits a single command to a remote location via the slycat-agent or SSH.
 
