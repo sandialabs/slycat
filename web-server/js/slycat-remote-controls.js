@@ -21,7 +21,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         component.status = params.status || ko.observable(null);
         component.status_type = params.status_type || ko.observable(null);
         component.remote_hosts = mapping.fromJS([]);
-        component.session_exists = ko.observable(false);
+        component.session_exists = params.session_exists;
 
         component.status_classes = ko.pureComputed(function()
         {

@@ -1021,7 +1021,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
       }),
       type: "POST",
-      url: server_root + "remotes/" + params.sid + "/browse" + params.path,
+      url: server_root + "remotes/" + params.hostname + "/browse" + params.path,
       success: function(result)
       {
         if(params.success)
