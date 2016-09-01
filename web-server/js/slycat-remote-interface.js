@@ -12,11 +12,12 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       var vm = this;
       vm.disabled = params.disabled === undefined ? false : params.disabled;
       vm.nnodes_disabled = params.disabled === undefined ? false : params.disabled;
-      vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null });
+      vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false });
       vm.remote.sid = params.sid;
       vm.remote.hostname = params.hostname;
       vm.remote.username = params.username;
       vm.remote.password = params.password;
+      vm.remote.session_exists = params.session_exists;
       vm.remote.focus.extend({ notify: 'always' });
       vm.radio = ko.observable('batch-file');
       vm.command = ko.observable('');
@@ -66,22 +67,31 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         vm.remote.status_type('info');
         vm.remote.status('Connecting...');
 
-        client.post_remotes({
-          hostname: vm.remote.hostname(),
-          username: vm.remote.username(),
-          password: vm.remote.password(),
-          success: function(sid) {
-            vm.remote.sid(sid);
-            $('#' + modal_id).modal('hide');
-            callback_map[vm.radio()]();
-          },
-          error: function(request, status, reason_phrase) {
-            vm.remote.enable(true);
-            vm.remote.status_type('danger');
-            vm.remote.status(reason_phrase);
-            vm.remote.focus('password');
-          }
-        });
+        if(component.remote.session_exists())
+        {
+          $('#' + modal_id).modal('hide');
+          callback_map[vm.radio()]();
+        }
+        else
+        {
+          client.post_remotes({
+            hostname: vm.remote.hostname(),
+            username: vm.remote.username(),
+            password: vm.remote.password(),
+            success: function(sid) {
+              vm.remote.session_exists(true);
+              vm.remote.sid(sid);
+              $('#' + modal_id).modal('hide');
+              callback_map[vm.radio()]();
+            },
+            error: function(request, status, reason_phrase) {
+              vm.remote.enable(true);
+              vm.remote.status_type('danger');
+              vm.remote.status(reason_phrase);
+              vm.remote.focus('password');
+            }
+          });
+        }
       };
 
       vm.cancel = function() {

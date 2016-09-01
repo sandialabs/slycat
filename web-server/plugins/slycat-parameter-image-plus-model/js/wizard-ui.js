@@ -11,9 +11,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.ps_type = ko.observable("remote"); // local is selected by default...
     component.matrix_type = ko.observable("remote"); // remote is selected by default...
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: "always"});
-    component.remote_matrix = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.matrix_type() == 'remote' ? true : false;}), focus: false, sid: null});
+    component.remote_matrix = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.matrix_type() == 'remote' ? true : false;}), focus: false, sid: null, session_exists: false});
     component.remote_matrix.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
@@ -64,9 +64,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.create_model();
 
     component.cancel = function() {
-      if(component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
-
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
     };
@@ -246,47 +243,71 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.connect = function() {
       component.remote.status_type("info");
       component.remote.status("Connecting ...");
-      client.post_remotes({
-        hostname: component.remote.hostname(),
-        username: component.remote.username(),
-        password: component.remote.password(),
-        success: function(sid) {
-          component.remote.sid(sid);
-          component.tab(1);
-          $('.browser-continue').toggleClass("disabled", false);
-          component.remote.status_type(null);
-          component.remote.status(null);
-        },
-        error: function(request, status, reason_phrase) {
-          component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
-          component.remote.focus("password");
-          $('.browser-continue').toggleClass("disabled", false);
-        }
-      });
+
+      if(component.remote.session_exists())
+      {
+        component.tab(1);
+        $('.browser-continue').toggleClass("disabled", false);
+        component.remote.status_type(null);
+        component.remote.status(null);
+      }
+      else
+      {
+        client.post_remotes({
+          hostname: component.remote.hostname(),
+          username: component.remote.username(),
+          password: component.remote.password(),
+          success: function(sid) {
+            component.remote.session_exists(true);
+            component.remote.sid(sid);
+            component.tab(1);
+            $('.browser-continue').toggleClass("disabled", false);
+            component.remote.status_type(null);
+            component.remote.status(null);
+          },
+          error: function(request, status, reason_phrase) {
+            component.remote.status_type("danger");
+            component.remote.status(reason_phrase);
+            component.remote.focus("password");
+            $('.browser-continue').toggleClass("disabled", false);
+          }
+        });
+      }
     };
 
     component.connect_matrix = function() {
       component.remote_matrix.status_type("info");
       component.remote_matrix.status("Connecting ...");
-      client.post_remotes({
-        hostname: component.remote_matrix.hostname(),
-        username: component.remote_matrix.username(),
-        password: component.remote_matrix.password(),
-        success: function(sid) {
-          component.remote_matrix.sid(sid);
-          component.tab(6);
-          $('.browser-continue').toggleClass("disabled", false);
-          component.remote_matrix.status_type(null);
-          component.remote_matrix.status(null);
-        },
-        error: function(request, status, reason_phrase) {
-          component.remote_matrix.status_type("danger");
-          component.remote_matrix.status(reason_phrase);
-          component.remote_matrix.focus("password");
-          $('.browser-continue').toggleClass("disabled", false);
-        }
-      });
+
+      if(component.remote.session_exists())
+      {
+        component.tab(6);
+        $('.browser-continue').toggleClass("disabled", false);
+        component.remote_matrix.status_type(null);
+        component.remote_matrix.status(null);
+      }
+      else
+      {
+        client.post_remotes({
+          hostname: component.remote_matrix.hostname(),
+          username: component.remote_matrix.username(),
+          password: component.remote_matrix.password(),
+          success: function(sid) {
+            component.remote_matrix.session_exists(true);
+            component.remote_matrix.sid(sid);
+            component.tab(6);
+            $('.browser-continue').toggleClass("disabled", false);
+            component.remote_matrix.status_type(null);
+            component.remote_matrix.status(null);
+          },
+          error: function(request, status, reason_phrase) {
+            component.remote_matrix.status_type("danger");
+            component.remote_matrix.status(reason_phrase);
+            component.remote_matrix.focus("password");
+            $('.browser-continue').toggleClass("disabled", false);
+          }
+        });
+      }
     };
 
     component.load_table = function() {
