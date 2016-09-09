@@ -110,7 +110,21 @@ class RemoteComputationInterface(metaclass=ABCMeta):
     pass
 
   @abstractmethod
-  def check_job_loop:
+  """
+  Starts a loop to check for a job's status until it successfully completes. The
+  callback and method signatures are as follow:
+
+      success()
+      fail( error_msg )
+      logger( msg )
+
+  :param interval: loop interval (in seconds)
+  :param jid: job unique identifier
+  :param success: success callback if job completes successfully
+  :param fail: failure callback if job fails
+  :param logger: print/log method
+  """
+  def check_job_loop(interval, jid, success, fail, logger):
     pass
 
   @abstractmethod
