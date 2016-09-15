@@ -6,7 +6,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
@@ -44,9 +44,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.create_model();
 
     component.cancel = function() {
-      if(component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
-
       if(component.model._id())
         client.delete_model({ mid: component.model._id() });
     };
@@ -124,31 +121,43 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       component.remote.enable(false);
       component.remote.status_type("info");
       component.remote.status("Connecting ...");
-      client.post_remotes({
-        hostname: component.remote.hostname(),
-        username: component.remote.username(),
-        password: component.remote.password(),
-        success: function(sid) {
-          component.remote.sid(sid);
-          component.tab(3);
-          component.remote.enable(true);
-          component.remote.status_type(null);
-          component.remote.status(null);
-        },
-        error: function(request, status, reason_phrase) {
-          component.remote.enable(true);
-          component.remote.status_type("danger");
-          component.remote.status(reason_phrase);
-          component.remote.focus("password");
-        }
-      });
+
+      if(component.remote.session_exists())
+      {
+        component.tab(3);
+        component.remote.enable(true);
+        component.remote.status_type(null);
+        component.remote.status(null);
+      }
+      else
+      {
+        client.post_remotes({
+          hostname: component.remote.hostname(),
+          username: component.remote.username(),
+          password: component.remote.password(),
+          success: function(sid) {
+            component.remote.session_exists(true);
+            component.remote.sid(sid);
+            component.tab(3);
+            component.remote.enable(true);
+            component.remote.status_type(null);
+            component.remote.status(null);
+          },
+          error: function(request, status, reason_phrase) {
+            component.remote.enable(true);
+            component.remote.status_type("danger");
+            component.remote.status(reason_phrase);
+            component.remote.focus("password");
+          }
+        });
+      }
     };
 
     component.load_table = function() {
       $('.remote-browser-continue').toggleClass("disabled", true);
       var fileObject ={
        pid: component.project._id(),
-       sids: [component.remote.sid()],
+       hostname: [component.remote.hostname()],
        mid: component.model._id(),
        paths: [component.browser.selection()],
        aids: ["data-table"],

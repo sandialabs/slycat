@@ -27,7 +27,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    */
   module.uploadFile = function (fileObject)
   {
-    if(fileObject.sids && fileObject.paths){
+    if(fileObject.hostname && fileObject.paths){
       console.log("creating remote file upload session");
       client.post_uploads({
         mid: fileObject.mid,
@@ -36,7 +36,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         aids: fileObject.aids,
         success: function (uid) {
           console.log("Upload session created.");
-          uploadRemoteFile(fileObject.pid, fileObject.mid, uid, fileObject.sids, fileObject.paths, fileObject);
+          uploadRemoteFile(fileObject.pid, fileObject.mid, uid, fileObject.hostname, fileObject.paths, fileObject);
         }
       });
     }else {
@@ -69,7 +69,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    * @param fileObject
    *  object that contains all info about the file we wish to upload to couch
    */
-  function uploadRemoteFile(pid, mid, uid, sid, path, fileObject){
+  function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject){
     // Upload the whole file since it is over ssh.
     console.log("Uploading part whole file");
     client.put_upload_file_part({
@@ -77,7 +77,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       fid: 0,
       pid: 0,
       path: path,
-      sid: sid,
+      hostname: hostname,
       success: function()
       {
         console.log("File uploaded.");
