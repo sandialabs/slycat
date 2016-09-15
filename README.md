@@ -101,6 +101,27 @@ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat-develope
 
 ## Tests
 
+If you use the development container, shell into it and run the tests as
+described in the below sections.
+
+If you aren't using the development container, here are some tips on getting
+your environment set up for testing.
+
+Make sure your PYTHONPATH is set correctly. I needed to add the slycat packages
+directory for the unit tests to work:
+
+```bash
+PYTHONPATH=(path to slycat src)/packages
+```
+
+Also, you should install the same modules as slycat uses (e.g. CherryPy, pillow,
+etc). For some tests, you'll also need testing modules imported by the current
+tests in the codebase. At present these are:
+- nose
+- selenium
+- pyvirtualdisplay (also install xvfb in the OS if needed)
+
+
 ### Unit Tests
 Unit tests are mostly using py.test. If you have coverage, you can run them from
 the root slycat folder with
