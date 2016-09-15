@@ -22,6 +22,16 @@ class RemoteComputationInterface(metaclass=ABCMeta):
     pass
 
   @abstractmethod
+  def get_session(sid):
+    """
+    Retrieves a session for the input session ID.
+
+    :param sid: session ID
+    :return: session
+    """
+    pass
+
+  @abstractmethod
   def disconnect(sid):
     """
     Disconnect and destroy the connection between Slycat and the remote system
@@ -34,20 +44,24 @@ class RemoteComputationInterface(metaclass=ABCMeta):
     pass
 
   @abstractmethod
-  def run_command(sid, command):
+  def run_command(command):
     """
-    Run a command to the remote system for the input session ID. The function
-    returns the output, i.e. stdout, of the command if it was succesafull, the
-    error ouput otherwize, i.e. stderr.
+    Run a command to the remote system. The function returns the output, i.e.
+    stdout, of the command if it was succesafull, the error ouput otherwize,
+    i.e. stderr. The object returned is formatted as follow:
 
-    :param sid: session ID
+        {
+            output: stdout,
+            errors: stderr
+        }
+
     :param command: command (in array or string format)
-    :return: string
+    :return: object
     """
     pass
 
   @abstractmethod
-  def generate_job_file(sid, params):
+  def generate_job_file(params):
     """
     Generate a job fie, i.e. a batch file for a SLURM system. The function expects
     the input parameters to have the following format:
@@ -69,79 +83,126 @@ class RemoteComputationInterface(metaclass=ABCMeta):
                                       line in the file.
         }
 
-    :param sid: session ID
     :param params: parameters for the file generation
     """
     pass
 
   @abstractmethod
-  def submit_job(sid, job_file_path):
+  def submit_job(job_file_path):
     """
     Submit a job to the remote system and return the job unique identifier. The
     function uses the path of the job file, i.e. batch file for SLURM, and
     executes it.
 
-    :param sid: session ID
     :param job_file_path: path to the job file
     :return: job ID
     """
     pass
 
   @abstractmethod
-  def check_job(sid, jid):
+  def check_job(jid):
     """
     Check on the status of the job with the input job ID.
 
-    :param sid: session ID
     :param jid: job ID
     :return: job status
     """
     pass
 
   @abstractmethod
-  def cancel_job(sid, jid):
+  """
+  Starts a loop to check for a job's status until it successfully completes. The
+  callback and method signatures are as follow:
+
+      success()
+      fail( error_msg )
+      logger( msg )
+
+  :param interval: loop interval (in seconds)
+  :param jid: job unique identifier
+  :param success: success callback if job completes successfully
+  :param fail: failure callback if job fails
+  :param logger: print/log method
+  """
+  def check_job_loop(interval, jid, success, fail, logger):
+    pass
+
+  @abstractmethod
+  def cancel_job(jid):
     """
     Cancel a running job with the input job ID. The function returns True if the
     job was cancelled successfully, False otherwise.
 
-    :param sid: session ID
     :param jid: job ID
     :return: boolean
     """
     pass
 
   @abstractmethod
-  def pause_job(sid, jid):
+  def pause_job(jid):
     """
     Pause a running job with the input job ID. The function returns True if the
     job was paused successfully, False otherwise.
 
-    :param sid: session ID
     :param jid: job ID
     :return: boolean
     """
     pass
 
   @abstractmethod
-  def resume_job(sid, jid):
+  def resume_job(jid):
     """
     Resume a paused job with the input job ID. The function returns True if the
     job was resumed succesfully, False otherwise.
 
-    :param sid: session ID
     :param jid: job ID
     :return: boolean
     """
     pass
 
   @abstractmethod
-  def get_job_output(sid, jid):
+  def get_job_output(path, jid):
     """
-    Fetch and return the content of the job output file for the input session ID
-    and job ID.
+    Fetch and return the content of the job output file for the input path or
+    job ID.
 
-    :param sid: session ID
+    :param path: job output file path
     :param jid: job ID
     :return: string
+    """
+    pass
+
+  @abstractmethod
+  def set_slycatrc(config):
+    """
+    Sets a .slycatrc file under a user's home directory. The input object
+    config's first level is the name for the different sections of the config
+    file, i.e.
+
+        {
+            "section_one" : {
+                "option_one": value_one
+            }
+        }
+
+    The method returns True if the .slycatrc file was set properly, False
+    otherwise.
+
+    :param config: config values
+    :return: boolean
+    """
+    pass
+
+  def get_slycat():
+    """
+    Fetch the content of the .slycatrc file and returns the following object:
+
+        {
+            "ok": boolean,
+            "config": config object if "ok" is True,
+            "errors": error message is "ok" is False
+        }
+
+    :return: config
     """
     pass
