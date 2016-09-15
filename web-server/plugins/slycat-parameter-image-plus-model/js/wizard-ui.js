@@ -314,7 +314,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       $('.remote-browser-continue-data').toggleClass("disabled", true);
       var fileObject ={
        pid: component.project._id(),
-       sids: [component.remote.sid()],
+       hostname: [component.remote.hostname()],
        mid: component.model._id(),
        paths: [component.browser.selection()],
        aids: ["data-table"],
@@ -334,7 +334,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       $('.remote-browser-continue-matrix').toggleClass("disabled", true);
       var fileObject ={
        pid: component.project._id(),
-       sids: [component.remote_matrix.sid()],
+       hostname: [component.remote.hostname()],
        mid: component.model._id(),
        paths: [component.browser.selection()],
        aids: ["distance-matrix"],

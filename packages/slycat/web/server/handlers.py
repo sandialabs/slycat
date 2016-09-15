@@ -700,13 +700,14 @@ def post_uploads():
   cherrypy.response.status = "201 Upload started."
   return {"id" : uid}
 
-def put_upload_file_part(uid, fid, pid, file=None, sid=None, path=None):
+def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
   fid = require_integer_parameter(fid, "fid")
   pid = require_integer_parameter(pid, "pid")
 
-  if file is not None and sid is None and path is None:
+  if file is not None and hostname is None and path is None:
     data = file.file.read()
-  elif file is None and sid is not None and path is not None:
+  elif file is None and hostname is not None and path is not None:
+    sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
       filename = "%s@%s:%s" % (session.username, session.hostname, path)
       if stat.S_ISDIR(session.sftp.stat(path).st_mode):
