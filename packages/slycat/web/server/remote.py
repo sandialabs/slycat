@@ -958,7 +958,7 @@ def get_session(sid):
         raise cherrypy.HTTPError("404")
 
     if sid not in session_cache:
-      raise cherrypy.HTTPError("404")
+      raise cherrypy.HTTPError("404 not a session")
 
     session = session_cache[sid]
     session._accessed = datetime.datetime.utcnow()
