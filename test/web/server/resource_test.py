@@ -26,3 +26,6 @@ def test_add_bundle_using_absolute_path():
         abs_path_prefix + "web-server/css/slycat.css",
       ]) == '0e54b9f330e868393ac40aa84ee9b8d2'
 
+# def test_add_directory_to_manager
+
+# def tetst_add_file_to_manager
