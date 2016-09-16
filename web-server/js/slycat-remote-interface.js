@@ -219,6 +219,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         var fn = vm.agent_function()
         var uid = generateUniqueId();
 
+        var fn_params = vm.agent_function_params();
+        fn_params.workdir = vm.workdir();
+
         client.post_agent_function({
           sid: vm.remote.sid(),
           wckey: vm.wckey(),
@@ -229,7 +232,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           time_minutes: vm.time_minutes() === undefined ? 0 : vm.time_minutes(),
           time_seconds: vm.time_seconds() === undefined ? 0 : vm.time_seconds(),
           fn: fn,
-          fn_params: vm.agent_function_params(),
+          fn_params: fn_params,
           uid: uid,
           success: function(results) {
             if (results.errors) {
