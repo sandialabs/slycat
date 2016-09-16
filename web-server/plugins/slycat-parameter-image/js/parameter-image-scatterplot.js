@@ -1572,7 +1572,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                   }})(image, frame));
               self.login_open = false;
             },
-            success: function(sid) {
+            success: function(hostname) {
               var xhr = new XMLHttpRequest();
               var api = "/file";
               if(self.options.video_file_extensions.indexOf(uri.suffix()) > -1) {
@@ -1581,7 +1581,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
               xhr.image = image;
               //Double encode to avoid cherrypy's auto unencode in the controller
-              xhr.open("GET", server_root + "remotes/" + sid + api + uri.pathname() + "?cache=project&project=" + model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
+              xhr.open("GET", server_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
               xhr.responseType = "arraybuffer";
               xhr.onload = function(e) {
                 // If we get 404, the remote session no longer exists because it timed-out.

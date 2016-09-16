@@ -543,6 +543,26 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   }
 
+  module.get_remotes = function(params)
+  {
+    $.ajax(
+    {
+      dataType: "json",
+      type: "GET",
+      url: server_root + "remotes/" + params.hostname,
+      success: function(result)
+      {
+        if(params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.get_remote_video_status = function(params)
   {
     $.ajax(
@@ -1001,7 +1021,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       {
       }),
       type: "POST",
-      url: server_root + "remotes/" + params.sid + "/browse" + params.path,
+      url: server_root + "remotes/" + params.hostname + "/browse" + params.path,
       success: function(result)
       {
         if(params.success)
@@ -1204,14 +1224,17 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
 
   module.put_upload_file_part = function(params)
   {
+
     var data = new FormData();
-    if(params.sid && params.path)
+    if(params.hostname && params.path)
     {
-      data.append("sid", params.sid);
+//      console.log("if? sid "+params.sid+"path "+params.path+"file "+params.file);
+      data.append("hostname", params.hostname);
       data.append("path", params.path);
     }
     else if(params.file)
     {
+//      console.log("if else? sid "+params.sid+"path "+params.path+"file "+params.file);
       data.append("file", params.file);
     }
 

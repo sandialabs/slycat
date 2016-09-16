@@ -38,13 +38,13 @@
       </div>
       <div class="remote-controls">
         <form class="form-horizontal" role="form">
-          <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect"></slycat-remote-controls>
+          <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
         </form>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 1" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_table"></slycat-remote-browser>
+      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_table,session_exists:remote.session_exists"></slycat-remote-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
     </div>
 
@@ -95,7 +95,7 @@
       </div>
       <div class="remote-controls">
         <form class="form-horizontal" role="form">
-          <slycat-remote-controls params="hostname:remote_matrix.hostname,username:remote_matrix.username,password:remote_matrix.password,status:remote_matrix.status,status_type:remote_matrix.status_type,enable:remote_matrix.enable,focus:remote_matrix.focus,activate:connect_matrix"></slycat-remote-controls>
+          <slycat-remote-controls params="hostname:remote_matrix.hostname,username:remote_matrix.username,password:remote_matrix.password,status:remote_matrix.status,status_type:remote_matrix.status_type,enable:remote_matrix.enable,focus:remote_matrix.focus,activate:connect_matrix,session_exists:remote_matrix.session_exists"></slycat-remote-controls>
         </form>
       </div>
     </div>
@@ -114,13 +114,13 @@
     <div data-bind="visible:tab() == 5">
       <div class="compute-interface">
         <form class="compute form-horizontal" role="form">
-          <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, on_submit_callback: to_last_step"></slycat-remote-interface>
+          <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, session_exists: remote.session_exists, on_submit_callback: to_last_step"></slycat-remote-interface>
         </form>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 6" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote_matrix.sid,hostname:remote_matrix.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_distance_matrix"></slycat-remote-browser>
+      <slycat-remote-browser params="type:'remote',sid:remote_matrix.sid,hostname:remote_matrix.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_distance_matrix,session_exists:remote_matrix.session_exists"></slycat-remote-browser>
     </div>
 
     <div data-bind="visible:tab() == 7">

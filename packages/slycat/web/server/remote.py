@@ -958,11 +958,43 @@ def get_session(sid):
         raise cherrypy.HTTPError("404")
 
     if sid not in session_cache:
-      raise cherrypy.HTTPError("404")
+      raise cherrypy.HTTPError("404 not a session")
 
     session = session_cache[sid]
     session._accessed = datetime.datetime.utcnow()
     return session
+
+def check_session(sid):
+  """Return a true if session is active
+
+  If the session has timed-out or doesn't exist, returns false
+
+  Parameters
+  ----------
+  sid : string
+    Unique session identifier returned by :func:`slycat.web.server.remote.create_session`.
+
+  Returns
+  -------
+  boolean :
+  """
+  client = cherrypy.request.headers.get("x-forwarded-for")
+
+  with session_cache_lock:
+    _expire_session(sid)
+    response = True
+    if sid in session_cache:
+      session = session_cache[sid]
+      # Only the originating client can access a session.
+      if client != session.client:
+        response = False
+
+    if sid not in session_cache:
+      response = False
+    if response:
+      session = session_cache[sid]
+      session._accessed = datetime.datetime.utcnow()
+    return response
 
 def delete_session(sid):
   """Delete a cached remote session.
