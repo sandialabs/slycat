@@ -18,6 +18,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.selection = params.selection;
       component.open_file_callback = params.open_file_callback;
       component.raw_files = mapping.fromJS([]);
+      component.session_exists = params.session_exists;
 
       component.icon_map = {
         "application/x-directory" : "<span class='fa fa-folder-o'></span>",
@@ -125,7 +126,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         client.post_remote_browse(
         {
-          sid : component.sid(),
+          hostname : component.hostname(),
           path : path,
           success : function(results)
           {
@@ -161,9 +162,9 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
         component.browse(component.path());
       }
 
-      component.sid.subscribe(function(new_sid)
+      component.session_exists.subscribe(function(new_session_exists)
       {
-        if(new_sid)
+        if(new_session_exists)
         {
           if(!component.path())
             component.path(localStorage.getItem("slycat-remote-browser-path-" + component.hostname()) || "/");

@@ -6,7 +6,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.project = params.projects()[0];
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
     component.timeseries_type = ko.observable('csv');
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return true;}), focus: false, sid: null});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return true;}), focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: 'always'});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.to_hdf5 = ko.observable(true);

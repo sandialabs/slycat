@@ -6,7 +6,7 @@ rights in this software.
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM dendrogram control, for use with the parameter-image model.
-define("slycat-parameter-image-dendrogram", ["d3"], function(d3)
+define("slycat-parameter-image-dendrogram", ["d3", "URI", "slycat-remotes"], function(d3, URI, remotes)
 {
 $.widget("parameter_image.dendrogram",
 {
@@ -30,10 +30,9 @@ $.widget("parameter_image.dendrogram",
     selected_square_size : 16,
     selected_square_border_size : 2,
     hover_timeout : 1000,
-    session_cache : {},
     image_cache : {},
-    cache_references : [ {}, {} ],
-    // session_cache and image_cache need to be shared between dendrogram and scatterplot, thus they are passed inside an array to keep them in sync.
+    cache_references : [ {} ],
+    // image_cache needs to be shared between dendrogram and scatterplot, thus it is passed inside an array to keep it in sync.
     // http://api.jqueryui.com/jquery.widget/
     // All options passed on init are deep-copied to ensure the objects can be modified later without affecting the widget. 
     // Arrays are the only exception, they are referenced as-is. 
@@ -45,8 +44,10 @@ $.widget("parameter_image.dendrogram",
   {
     var self = this;
 
-    self.options.session_cache = self.options.cache_references[0];
-    self.options.image_cache = self.options.cache_references[1];
+    this.remotes = remotes.create_pool();
+    self.login_open = false;
+
+    self.options.image_cache = self.options.cache_references[0];
 
     self.preview = $("<div id='image-preview'>")
       .on("mouseover", function(){
@@ -679,69 +680,71 @@ $.widget("parameter_image.dendrogram",
       return;
     }
 
-    // If we don't have a session for the image hostname, create one.
-    var parser = document.createElement("a");
-    parser.href = image_uri.substr(0, 5) == "file:" ? image_uri.substr(5) : image_uri;
-    if(!(parser.hostname in self.options.session_cache))
+    if(!self.login_open)
     {
-      self._open_session_callback( parser, function(){ self._display_image(image_uri); } );
-      return;
+      self.login_open = true;
+      var uri = URI(image_uri);
+      self.remotes.get_remote({
+        hostname: uri.hostname(),
+        title: "Login to " + uri.hostname(),
+        message: "Loading " + uri.pathname(),
+        cancel: function() {
+          self.login_open = false;
+        },
+        success: function(hostname) {
+          var xhr = new XMLHttpRequest();
+          var api = "/file";
+
+          // xhr.image = image;
+          //Double encode to avoid cherrypy's auto unencode in the controller
+          xhr.open("GET", server_root + "remotes/" + hostname + api + uri.pathname(), true);
+          xhr.responseType = "arraybuffer";
+          xhr.onload = function(e) {
+            // If we get 404, the remote session no longer exists because it timed-out.
+            // If we get 500, there was an internal error communicating to the remote host.
+            // Either way, delete the cached session and create a new one.
+            if(this.status == 404 || this.status == 500) {
+              self.remotes.delete_remote(uri.hostname());
+              self._open_images(images);
+              return;
+            }
+            // If we get 400, it means that the session is good and we're
+            // communicating with the remote host, but something else went wrong
+            // (probably file permissions issues).
+            if(this.status == 400) {
+              console.log(this);
+              console.log(this.getAllResponseHeaders());
+              var message = this.getResponseHeader("slycat-message");
+              var hint = this.getResponseHeader("slycat-hint");
+
+              if(message && hint)
+              {
+                window.alert(message + "\n\n" + hint);
+              }
+              else if(message)
+              {
+                window.alert(message);
+              }
+              else
+              {
+                window.alert("Error loading image " + this.image_uri + ": " + this.statusText);
+              }
+              return;
+            } else {
+              // We received the image, so put it in the cache and start-over.
+              var array_buffer_view = new Uint8Array(this.response);
+              var blob = new Blob([array_buffer_view], {type:this.getResponseHeader('content-type')});
+              self.options.image_cache[image_uri] = blob;
+              self._display_image(image_uri);
+              return;
+            }
+          }
+
+          xhr.send();
+          self.login_open = false;
+        },
+      })
     }
-
-    // Retrieve the image.
-    //console.log("Loading image " + image.uri + " from server");
-    var xhr = new XMLHttpRequest();
-    xhr.image_uri = image_uri;
-    xhr.open("GET", server_root + "remotes/" + self.options.session_cache[parser.hostname] + "/file" + parser.pathname, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = function(e)
-    {
-      // If we get 404, the remote session no longer exists because it timed-out.
-      // If we get 500, there was an internal error communicating to the remote host.
-      // Either way, delete the cached session and create a new one.
-      if(this.status == 404 || this.status == 500)
-      {
-        delete self.options.session_cache[parser.hostname];
-        self._open_session_callback( parser, function(){ self._display_image(image_uri); } );
-        return;
-      }
-      // If we get 400, it means that the session is good and we're
-      // communicating with the remote host, but something else went wrong
-      // (probably file permissions issues).
-      if(this.status == 400)
-      {
-        console.log(this);
-        console.log(this.getAllResponseHeaders());
-        var message = this.getResponseHeader("slycat-message");
-        var hint = this.getResponseHeader("slycat-hint");
-
-        if(message && hint)
-        {
-          window.alert(message + "\n\n" + hint);
-        }
-        else if(message)
-        {
-          window.alert(message);
-        }
-        else
-        {
-          window.alert("Error loading image " + this.image_uri + ": " + this.statusText);
-        }
-        return;
-      }
-
-      // We received the image, so put it in the cache and start-over.
-      var array_buffer_view = new Uint8Array(this.response);
-      var blob = new Blob([array_buffer_view], {type:"image/jpeg"});
-      self.options.image_cache[image_uri] = blob;
-      // Adding lag for testing purposed. This should not exist in production.
-      // setTimeout(function(){
-      self._display_image(image_uri);
-      return;
-      // }, 5000);
-    }
-    xhr.send();
-
   },
 
   _close_preview: function(immediate)
@@ -768,49 +771,6 @@ $.widget("parameter_image.dendrogram",
       self.preview_image.hide();
     }
 
-  },
-
-  _open_session_callback: function(parser, callback)
-  {
-    var self = this;
-
-    $("#remote-hostname", self.options.login_dialog).text("Login to retrieve " + parser.pathname + " from " + parser.hostname);
-    $("#remote-error", self.options.login_dialog).text(parser.last_error).css("display", parser.last_error ? "block" : "none");
-    self.options.login_dialog.dialog(
-    {
-      buttons:
-      {
-        "Login": function()
-        {
-          $.ajax(
-          {
-            async : true,
-            type : "POST",
-            url : server_root + "remotes",
-            contentType : "application/json",
-            data : JSON.stringify({"hostname":parser.hostname, "username":$("#remote-username", self.options.login_dialog).val(), "password":$("#remote-password", self.options.login_dialog).val()}),
-            processData : false,
-            success : function(result)
-            {
-              self.options.session_cache[parser.hostname] = result.sid;
-              self.options.login_dialog.dialog("close");
-              callback();
-            },
-            error : function(request, status, reason_phrase)
-            {
-              parser.last_error = "Error opening remote session: " + reason_phrase;
-              self.options.login_dialog.dialog("close");
-              self._open_session_callback(parser, callback);
-            }
-          });
-        },
-        Cancel: function()
-        {
-          $(this).dialog("close");
-        }
-      },
-    });
-    self.options.login_dialog.dialog("open");
   },
 
   _set_color: function()
