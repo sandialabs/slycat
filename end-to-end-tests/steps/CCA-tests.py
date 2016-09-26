@@ -51,7 +51,7 @@ def are_images_equal(img_actual, img_expected, result):
 def impl(context):
   # create project
   context.browser.get(context.server_url + "/projects")
-  context.browser.implicitly_wait(30)
+  context.browser.implicitly_wait(300)
   context.browser.find_element(By.CSS_SELECTOR, "#slycat-projects > div > div > div > a:nth-child(2)").click()
   context.browser.find_element(By.CSS_SELECTOR,
                                "#slycat-project > div:nth-child(1) > div > div > a:nth-child(1)").click()

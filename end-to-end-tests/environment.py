@@ -2,7 +2,10 @@
 This file is used for the setup and breakdown of out testing environment
 """
 
+import os
+
 __author__ = 'mletter'
+__server__ = os.environ['SLYCAT_TEST_SERVER']
 
 from selenium import webdriver
 import time
@@ -20,7 +23,7 @@ def before_all(context):
   # Move the window to position x/y
   context.browser.set_window_position(200, 200)
   context.browser.implicitly_wait(2)
-  context.server_url = '***REMOVED***'
+  context.server_url = __server__
 
 def after_all(context):
   """

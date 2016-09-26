@@ -1,5 +1,4 @@
 import pytest
-import pytest
 import slycat.web.server.handlers as handler
 
 ## It seems like testing most of the handler will require integration testing by

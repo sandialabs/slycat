@@ -107,8 +107,8 @@ described in the below sections.
 If you aren't using the development container, here are some tips on getting
 your environment set up for testing.
 
-Make sure your PYTHONPATH is set correctly. I needed to add the slycat packages
-directory for the unit tests to work:
+Make sure your PYTHONPATH is set correctly. You may need to add the slycat
+packages directory for the unit tests to work:
 
 ```bash
 PYTHONPATH=(path to slycat src)/packages
@@ -148,8 +148,9 @@ name, _features_.
 
 ### End-to-end Tests
 
-Install and run the slycat-developer image as described above. Then from the
-host (not inside the container), run
+Install and run the slycat-developer image as described above. Set the
+SLYCAT_TEST_SERVER environment variable to the uri of your test server being
+used for these tests. Then from the host (not inside the container), run
 
 ```bash
 behave end-to-end-tests
