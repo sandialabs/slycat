@@ -2034,11 +2034,9 @@ def get_checkjob(hostname, jid):
         return session.checkjob(jid)
 
 
-@cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def post_cancel_job():
-    sid = cherrypy.request.json["sid"]
-    jid = cherrypy.request.json["jid"]
+def delete_job(hostname, jid):
+    sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.cancel_job(jid)
 
@@ -2046,7 +2044,6 @@ def post_cancel_job():
 @cherrypy.tools.json_out(on=True)
 def get_job_output(hostname, jid, path):
     sid = get_sid(hostname)
-    cherrypy.log.error("get_output"+hostname+jid+"/path/"+path)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_job_output(jid, path)
 

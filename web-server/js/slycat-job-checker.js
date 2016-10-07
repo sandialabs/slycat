@@ -126,7 +126,7 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         $('#slycat-job-checker-connect-modal').modal();
       });
 
-			$('#slycat-job-checker-clear').on('click', function(e) {
+	  $('#slycat-job-checker-clear').on('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -137,8 +137,8 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         e.preventDefault();
         e.stopPropagation();
 
-        client.post_cancel_job({
-          sid: vm.remote.sid(),
+        client.delete_job({
+          hostname: vm.remote.hostname(),
           jid: vm.jid()
         });
       });

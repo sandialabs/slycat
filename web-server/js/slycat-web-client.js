@@ -896,15 +896,11 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
-  module.post_cancel_job = function(params) {
+  module.delete_job = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({
-        sid: params.sid,
-        jid: params.jid
-      }),
-      type: 'POST',
-      url: server_root + 'remotes/cancel-job',
+      type: 'DELETE',
+      url: server_root + 'remotes/delete-job/'+params.hostname+'/'+params.jid,
       success: function(result) {
         if (params.success)
           params.success(result);
