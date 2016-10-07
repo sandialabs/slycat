@@ -880,15 +880,11 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
-  module.post_checkjob = function(params) {
+  module.get_checkjob = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({
-        sid: params.sid,
-        jid: params.jid
-      }),
-      type: 'POST',
-      url: server_root + 'remotes/checkjob',
+      type: 'GET',
+      url: server_root + 'remotes/checkjob/'+params.hostname+"/"+params.jid,
       success: function(result) {
         if (params.success)
           params.success(result);
@@ -923,13 +919,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   module.get_job_output = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({
-        sid: params.sid,
-        jid: params.jid,
-        path: params.path
-      }),
-      type: 'POST',
-      url: server_root + 'remotes/get-job-output',
+      type: 'GET',
+      url: server_root + 'remotes/get-job-output/'+params.hostname+"/"+params.jid+"/path"+params.path,
       success: function(result) {
         if (params.success)
           params.success(result);

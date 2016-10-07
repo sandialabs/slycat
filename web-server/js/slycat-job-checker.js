@@ -56,7 +56,7 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
 
       var get_job_output = function() {
         client.get_job_output({
-          sid: vm.remote.sid(),
+          hostname: vm.remote.hostname(),
           jid: vm.jid(),
           path: '',
           success: function(results) {
@@ -75,8 +75,8 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
       };
 
       var routine = function(jid) {
-		client.post_checkjob({
-          sid: vm.remote.sid(),
+		client.get_checkjob({
+          hostname: vm.remote.hostname(),
           jid: vm.jid(),
           success: function(results) {
             if (results.errors) {
