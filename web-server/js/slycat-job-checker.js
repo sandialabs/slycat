@@ -2,7 +2,7 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
   ko.components.register('slycat-job-checker', {
     viewModel: function(params) {
       var vm = this;
-      vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null  });
+      vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false });
       vm.remote.focus.extend({ notify: 'always'  });
       vm.jid = ko.observable(-1);
       vm.output = ko.observable('Output for the current job will be posted here...');
@@ -13,25 +13,39 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         vm.remote.enable(false);
         vm.remote.status_type('info');
         vm.remote.status('Connecting...');
-
-        client.post_remotes({
-          hostname: vm.remote.hostname(),
-          username: vm.remote.username(),
-          password: vm.remote.password(),
-          success: function(sid) {
-            vm.remote.sid(sid);
-            $('#slycat-job-checker-connect-modal').modal('hide');
-            $('#slycat-job-checker-cancel').removeAttr('disabled');
-            vm.checkjob();
-          },
-          error: function(request, status, reason_phrase) {
-            $('#slycat-job-checker-cancel').attr('disabled');
-            vm.remote.enable(true);
-            vm.remote.status_type('danger');
-            vm.remote.status(reason_phrase);
-            vm.remote.focus('password');
-          }
-        });
+        if(vm.remote.session_exists())
+        {
+          vm.remote.enable(true);
+          vm.remote.status_type(null);
+          vm.remote.status(null);
+          $('#slycat-job-checker-connect-modal').modal('hide');
+          $('#slycat-job-checker-cancel').removeAttr('disabled');
+          vm.checkjob();
+        }
+        else{
+            client.post_remotes({
+              hostname: vm.remote.hostname(),
+              username: vm.remote.username(),
+              password: vm.remote.password(),
+              success: function(sid) {
+                vm.remote.session_exists(true);
+                vm.remote.sid(sid);
+                vm.remote.enable(true);
+                vm.remote.status_type(null);
+                vm.remote.status(null);
+                $('#slycat-job-checker-connect-modal').modal('hide');
+                $('#slycat-job-checker-cancel').removeAttr('disabled');
+                vm.checkjob();
+              },
+              error: function(request, status, reason_phrase) {
+                $('#slycat-job-checker-cancel').attr('disabled');
+                vm.remote.enable(true);
+                vm.remote.status_type('danger');
+                vm.remote.status(reason_phrase);
+                vm.remote.focus('password');
+              }
+            });
+        }
       };
 
       vm.cancel = function() {
@@ -61,7 +75,7 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
       };
 
       var routine = function(jid) {
-				client.post_checkjob({
+		client.post_checkjob({
           sid: vm.remote.sid(),
           jid: vm.jid(),
           success: function(results) {

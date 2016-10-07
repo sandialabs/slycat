@@ -6,7 +6,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.project = params.projects()[0];
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
     component.timeseries_type = ko.observable('csv');
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return true;}), focus: false, sid: null, session_exists: false});
+    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: 'always'});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.to_hdf5 = ko.observable(true);
@@ -17,7 +17,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.inputs_file_delimiter = ko.observable(',');
     component.xyce_timeseries_file = ko.observable('');
     component.timeseries_name = ko.observable('');
-		component.cluster_sample_count = ko.observable(500);
+	component.cluster_sample_count = ko.observable(500);
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
@@ -73,9 +73,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.create_model();
 
     component.cancel = function() {
-      if (component.remote.sid())
-        client.delete_remote({ sid: component.remote.sid() });
-
       if (component.model._id())
         client.delete_model({ mid: component.model._id() });
     };
@@ -87,16 +84,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.connect = function() {
       component.remote.status_type('info');
       component.remote.status('Connecting...');
-      client.post_remotes({
-        hostname: component.remote.hostname(),
-        username: component.remote.username(),
-        password: component.remote.password(),
-        success: function(sid) {
-          $('.modal-dialog').addClass('modal-lg');
-          component.remote.sid(sid);
-
-          client.get_user_config({
-            sid: component.remote.sid(),
+      if(component.remote.session_exists())
+      {
+        component.remote.enable(true);
+        component.remote.status_type(null);
+        component.remote.status(null);
+        client.get_user_config({
+            hostname: component.remote.hostname(),
             success: function(response) {
               if (response.errors.length > 0) {
                 component.tab(2);
@@ -125,13 +119,57 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
               component.tab(2);
             }
           });
-        },
-        error: function(request, status, reason_phrase) {
-          component.remote.status_type('danger');
-          component.remote.status(reason_phrase);
-          component.remote.focus('password');
-        }
-      });
+      }else{
+          client.post_remotes({
+            hostname: component.remote.hostname(),
+            username: component.remote.username(),
+            password: component.remote.password(),
+            success: function(sid) {
+              $('.modal-dialog').addClass('modal-lg');
+              component.remote.session_exists(true);
+              component.remote.sid(sid);
+              component.remote.enable(true);
+              component.remote.status_type(null);
+              component.remote.status(null);
+              client.get_user_config({
+                hostname: component.remote.hostname(),
+                success: function(response) {
+                  if (response.errors.length > 0) {
+                    component.tab(2);
+                    return void 0;
+                  }
+
+                  if (response.config['timeseries-wizard']) {
+                    response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+                    response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
+                    response.config['timeseries-wizard']['id-column'] ? component.id_column(response.config['timeseries-wizard']['id-column']) : null;
+                    response.config['timeseries-wizard']['inputs-file-delimiter'] ? component.inputs_file_delimiter(response.config['timeseries-wizard']['inputs-file-delimiter']) : null;
+                  }
+
+                  if (response.config.slurm) {
+                    response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
+                    response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
+                    response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
+                    response.config.slurm.nnodes ? component.nnodes(response.config.slurm.nnodes) : null;
+                    response.config.slurm['ntasks-per-node'] ? component.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
+                    response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
+                    response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
+                    response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+                  }
+
+                  component.user_config = response.config;
+                  component.tab(2);
+                }
+              });
+            },
+            error: function(request, status, reason_phrase) {
+              component.remote.enable(true);
+              component.remote.status_type('danger');
+              component.remote.status(reason_phrase);
+              component.remote.focus('password');
+            }
+          })
+      };
     };
 
     component.select_input_file = function() {

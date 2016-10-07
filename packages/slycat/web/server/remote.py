@@ -480,15 +480,17 @@ class Session(object):
             "uid": uid
           }
         }
-
+        cherrypy.log.error("writing msg: %s" % json.dumps(payload))
         stdin.write("%s\n" % json.dumps(payload))
         stdin.flush()
 
         response = json.loads(stdout.readline())
+        cherrypy.log.error("response msg: %s" % response)
         if not response["ok"]:
           cherrypy.response.headers["x-slycat-message"] = response["message"]
+          cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
           slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 400 %s" % response["message"])
-          raise cherrypy.HTTPError(400)
+          raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
 
         # parses out the job ID
         arr = [int(s) for s in response["output"].split() if s.isdigit()]
@@ -898,14 +900,17 @@ def create_session(hostname, username, password, agent):
 
       cherrypy.log.error("Starting agent executable for %s@%s with command: %s" % (username, hostname, remote_hosts[hostname]["agent"]["command"]))
       stdin, stdout, stderr = ssh.exec_command(remote_hosts[hostname]["agent"]["command"])
+      cherrypy.log.error("Started agent")
       # Handle catastrophic startup failures (the agent process failed to start).
       try:
         startup = json.loads(stdout.readline())
       except Exception as e:
+        cherrypy.log.error("500 agent startup failed for host %s: %s." % (hostname, str(e)))
         slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 agent startup failed for host %s: %s." % (hostname, str(e)))
         raise cherrypy.HTTPError("500 Agent startup failed: %s" % str(e))
       # Handle clean startup failures (the agent process started, but reported an error).
       if not startup["ok"]:
+        cherrypy.log.error("500 agent startup failed for host %s: %s." % (hostname, startup["message"]))
         slycat.email.send_error("slycat.web.server.remote.py create_session", "cherrypy.HTTPError 500 agent startup failed for host %s: %s." % (hostname, startup["message"]))
         raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
       agent = (stdin, stdout, stderr)

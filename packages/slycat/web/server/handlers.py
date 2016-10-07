@@ -1849,17 +1849,16 @@ def get_job_output():
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_job_output(jid, path)
 
-@cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def get_user_config():
-  sid = cherrypy.request.json["sid"]
+def get_user_config(hostname):
+  sid = get_sid(hostname)
   with slycat.web.server.remote.get_session(sid) as session:
     return session.get_user_config()
 
 @cherrypy.tools.json_in(on = True)
 @cherrypy.tools.json_out(on = True)
-def set_user_config():
-  sid = cherrypy.request.json["sid"]
+def set_user_config(hostname):
+  sid = get_sid(hostname)
   config = cherrypy.request.json["config"]
   with slycat.web.server.remote.get_session(sid) as session:
     return session.set_user_config(config)

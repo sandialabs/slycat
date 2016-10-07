@@ -944,11 +944,8 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
   module.get_user_config = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({
-        sid: params.sid
-      }),
-      type: 'POST',
-      url: server_root + 'remotes/get-user-config',
+      type: 'GET',
+      url: server_root + 'remotes/'+params.hostname+'/get-user-config',
       success: function(result) {
         if (params.success)
           params.success(result);

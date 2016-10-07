@@ -150,8 +150,10 @@ def start(root_path, config_file):
   dispatcher.connect("post-cancel-job", "/remotes/cancel-job", slycat.web.server.handlers.post_cancel_job, conditions={ "method": ["POST"] })
   dispatcher.connect("get-job-output", "/remotes/get-job-output", slycat.web.server.handlers.get_job_output, conditions={ "method": ["POST"] })
   dispatcher.connect("post-agent-function", "/remotes/run-agent-function", slycat.web.server.handlers.run_agent_function, conditions={ "method": ["POST"] })
-  dispatcher.connect("get-user-config", "/remotes/get-user-config", slycat.web.server.handlers.get_user_config, conditions={ "method": ["POST"] })
-  dispatcher.connect("set-user-config", "/remotes/set-user-config", slycat.web.server.handlers.set_user_config, conditions={ "method": ["POST"] })
+
+  dispatcher.connect("get-user-config", "/remotes/:hostname/get-user-config", slycat.web.server.handlers.get_user_config, conditions={ "method": ["GET"] })
+
+  dispatcher.connect("set-user-config", "/remotes/:hostname/set-user-config", slycat.web.server.handlers.set_user_config, conditions={ "method": ["POST"] })
 
   dispatcher.connect("post-uploads", "/uploads", slycat.web.server.handlers.post_uploads, conditions={"method" : ["POST"]})
   dispatcher.connect("put-upload-file-part", "/uploads/:uid/files/:fid/parts/:pid", slycat.web.server.handlers.put_upload_file_part, conditions={"method" : ["PUT"]})
