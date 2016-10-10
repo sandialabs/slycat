@@ -67,7 +67,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         vm.remote.status_type('info');
         vm.remote.status('Connecting...');
 
-        if(component.remote.session_exists())
+        if(vm.remote.session_exists())
         {
           $('#' + modal_id).modal('hide');
           callback_map[vm.radio()]();

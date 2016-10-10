@@ -45,7 +45,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       component.user_config['timeseries-wizard']['timeseries-name'] = component.timeseries_name();
 
       client.set_user_config({
-        sid: component.remote.sid(),
+        hostname: component.remote.hostname(),
         config: component.user_config,
         success: function(response) { },
         error: function(request, status, reason_phrase) {

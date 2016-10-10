@@ -142,11 +142,11 @@ def get_sid(hostname):
 
 def require_json_parameter(name):
     """
-  checks to see if the parameter is in the cherrypy.request.json
-  and errors gracefully if it is not there
-  :param name: name of json param
-  :return: value of the json param
-  """
+      checks to see if the parameter is in the cherrypy.request.json
+      and errors gracefully if it is not there
+      :param name: name of json param
+      :return: value of the json param
+    """
     if name not in cherrypy.request.json:
         slycat.email.send_error("slycat.web.server.handlers.py require_json_parameter",
                                 "cherrypy.HTTPError 404 missing '%s' parameter." % name)
@@ -156,7 +156,7 @@ def require_json_parameter(name):
 
 def require_boolean_json_parameter(name):
     value = require_json_parameter(name)
-    if value != True and value != False:
+    if value is not True and value is not False:
         slycat.email.send_error("slycat.web.server.handlers.py require_boolean_json_parameter",
                                 "cherrypy.HTTPError 400 '%s' parameter must be true or false." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be true or false." % name)
@@ -962,7 +962,7 @@ def login():
         cherrypy.response.status = "200 OK"
         cherrypy.request.login = user_name
         cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (
-        cherrypy.response.cookie["slycatauth"], success, response_url))
+            cherrypy.response.cookie["slycatauth"], success, response_url))
     else:
         cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
         cherrypy.response.status = "404 no auth found!!!"
@@ -1863,27 +1863,30 @@ def get_model_statistics(mid):
 
     # amount of time it took to make the model
     delta_creation_time = (
-    datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(model["created"],
-                                                                                                       "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+        datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+            model["created"],
+            "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
 
     if "job_running_time" in model and "job_submit_time" in model:
         delta_queue_time = (
-        datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+            datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     else:
         delta_queue_time = 0
 
     if "job_completed_time" in model and "job_running_time" in model:
         delta_running_time = (
-        datetime.datetime.strptime(model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+            datetime.datetime.strptime(model["job_completed_time"],
+                                       "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
         delta_model_compute_time = (
-        datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["model_compute_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     elif "job_completed_time" in model:
         delta_running_time = (
-        datetime.datetime.strptime(model["job_completed_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["finished"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+            datetime.datetime.strptime(model["job_completed_time"],
+                                       "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["finished"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
         delta_model_compute_time = 0
     else:
         delta_running_time = 0
@@ -1938,11 +1941,11 @@ def get_model_statistics(mid):
 @cherrypy.tools.json_out(on=True)
 def post_remotes():
     """
-  Given username, hostname, password as a json payload
-  establishes a session with the remote host and attaches
-  it to the users session
-  :return: {"sid":sid, "status":boolean, msg:""}
-  """
+      Given username, hostname, password as a json payload
+      establishes a session with the remote host and attaches
+      it to the users session
+      :return: {"sid":sid, "status":boolean, msg:""}
+    """
     username = cherrypy.request.json["username"]
     hostname = cherrypy.request.json["hostname"]
     password = cherrypy.request.json["password"]
@@ -1952,7 +1955,7 @@ def post_remotes():
     save sid to user session
     the session will be stored as follows in the users session
     {sessions:[{{"sid": sid,"hostname": hostname, "username": username}},...]}
-  '''
+    '''
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
@@ -2211,8 +2214,8 @@ def get_configuration_version():
             get_configuration_version.initialized = True
             try:
                 get_configuration_version.commit = \
-                subprocess.Popen(["git", "rev-parse", "HEAD"], cwd=os.path.dirname(__file__),
-                                 stdout=subprocess.PIPE).communicate()[0].strip()
+                    subprocess.Popen(["git", "rev-parse", "HEAD"], cwd=os.path.dirname(__file__),
+                                     stdout=subprocess.PIPE).communicate()[0].strip()
             except:
                 pass
     return {"version": slycat.__version__, "commit": get_configuration_version.commit}
