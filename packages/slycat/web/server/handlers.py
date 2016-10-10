@@ -2023,8 +2023,8 @@ def post_remote_launch():
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def post_submit_batch():
-    sid = cherrypy.request.json["sid"]
+def post_submit_batch(hostname):
+    sid = get_sid(hostname)
     filename = cherrypy.request.json["filename"]
     with slycat.web.server.remote.get_session(sid) as session:
         return session.submit_batch(filename)

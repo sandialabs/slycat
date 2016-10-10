@@ -206,7 +206,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         var uid = generateUniqueId();
 
         client.post_submit_batch({
-          sid: vm.remote.sid(),
+          hostname: vm.remote.hostname(),
           filename: vm.batch(),
           success: function(results) {
             if (results.errors) {

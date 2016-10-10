@@ -864,11 +864,10 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax({
       contentType: 'application/json',
       data: JSON.stringify({
-        sid: params.sid,
         filename: params.filename
       }),
       type: 'POST',
-      url: server_root + 'remotes/submit-batch',
+      url: server_root + 'remotes/'+params.hostname+'submit-batch',
       success: function(result) {
         if (params.success)
           params.success(result);
