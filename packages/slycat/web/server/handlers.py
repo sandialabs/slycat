@@ -2014,8 +2014,8 @@ def post_checksid():
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def post_remote_launch():
-    sid = cherrypy.request.json["sid"]
+def post_remote_launch(hostname):
+    sid = get_sid(hostname)
     command = cherrypy.request.json["command"]
     with slycat.web.server.remote.get_session(sid) as session:
         return session.launch(command)

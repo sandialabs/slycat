@@ -844,11 +844,10 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax({
       contentType: 'application/json',
       data: JSON.stringify({
-        sid: params.sid,
         command: params.command
       }),
       type: 'POST',
-      url: server_root + 'remotes/launch',
+      url: server_root + 'remotes/'+params.hostname+'/launch',
       success: function(result) {
         if (params.success)
           params.success(result);

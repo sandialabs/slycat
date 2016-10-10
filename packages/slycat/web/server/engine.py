@@ -144,7 +144,7 @@ def start(root_path, config_file):
 
   #TODO: scrub sid
   dispatcher.connect("post-checksid", "/remotes/checksid", slycat.web.server.handlers.post_checksid, conditions={ "method": ["POST"] })
-  dispatcher.connect("post-remote-launch", "/remotes/launch", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
+  dispatcher.connect("post-remote-launch", "/remotes/:hostname/launch", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
   dispatcher.connect("post-submit-batch", "/remotes/:hostname/submit-batch", slycat.web.server.handlers.post_submit_batch, conditions={ "method": ["POST"] })
   dispatcher.connect("get-checkjob", "/remotes/checkjob/:hostname/:jid", slycat.web.server.handlers.get_checkjob, conditions={ "method": ["GET"] })
   dispatcher.connect("delete-job", "/remotes/delete-job/:hostname/:jid", slycat.web.server.handlers.delete_job, conditions={ "method": ["DELETE"] })
