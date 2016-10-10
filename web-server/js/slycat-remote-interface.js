@@ -233,7 +233,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         fn_params.workdir = vm.workdir();
 
         client.post_agent_function({
-          sid: vm.remote.sid(),
+          hostname: vm.remote.hostname(),
           wckey: vm.wckey(),
           nnodes: vm.nnodes(),
           partition: vm.partition(),

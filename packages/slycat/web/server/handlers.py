@@ -2069,8 +2069,8 @@ def set_user_config(hostname):
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def run_agent_function():
-    sid = cherrypy.request.json["sid"]
+def run_agent_function(hostname):
+    sid = get_sid(hostname)
     wckey = cherrypy.request.json["wckey"]
     nnodes = cherrypy.request.json["nnodes"]
     partition = cherrypy.request.json["partition"]

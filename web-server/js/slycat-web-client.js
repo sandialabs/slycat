@@ -967,7 +967,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax({
       contentType: 'application/json',
       data: JSON.stringify({
-        sid: params.sid,
         wckey: params.wckey,
         nnodes: params.nnodes,
         partition: params.partition,
@@ -982,7 +981,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         uid: params.uid
       }),
       type: 'POST',
-      url: server_root + 'remotes/run-agent-function',
+      url: server_root + 'remotes/'+params.hostname+'/run-agent-function',
       success: function(response) {
         if (params.success)
           params.success(response);
