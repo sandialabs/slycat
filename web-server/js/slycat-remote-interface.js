@@ -272,7 +272,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         if (invalid_form())
           return void 0;
 
-        if (!vm.remote.sid()) {
+        if (!vm.remote.hostname()) {
           $('#' + modal_id).modal('show');
           return void 0;
         }
