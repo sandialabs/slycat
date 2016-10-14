@@ -143,7 +143,7 @@ def start(root_path, config_file):
   dispatcher.connect("put-project", "/projects/:pid", slycat.web.server.handlers.put_project, conditions={"method" : ["PUT"]})
 
   #TODO: scrub sid
-  dispatcher.connect("get-session-status", "/remotes/:hostname/session-status", slycat.web.server.handlers.get_session_status, conditions={ "method": ["POST"] })
+  dispatcher.connect("get-session-status", "/remotes/:hostname/session-status", slycat.web.server.handlers.get_session_status, conditions={ "method": ["GET"] })
   dispatcher.connect("post-remote-launch", "/remotes/:hostname/launch", slycat.web.server.handlers.post_remote_launch, conditions={ "method": ["POST"] })
   dispatcher.connect("post-submit-batch", "/remotes/:hostname/submit-batch", slycat.web.server.handlers.post_submit_batch, conditions={ "method": ["POST"] })
   dispatcher.connect("get-checkjob", "/remotes/checkjob/:hostname/:jid", slycat.web.server.handlers.get_checkjob, conditions={ "method": ["GET"] })
