@@ -2004,10 +2004,9 @@ def delete_remote(sid):
     cherrypy.response.status = "204 Remote deleted."
 
 
-@cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def post_checksid():
-    sid = cherrypy.request.json["sid"]
+def get_session_status(hostname):
+    sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return "success"
 

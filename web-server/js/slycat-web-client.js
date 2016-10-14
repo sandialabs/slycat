@@ -821,14 +821,11 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
-  module.post_checksid = function(params) {
+  module.get_session_status = function(params) {
     $.ajax({
       contentType: 'application/json',
-      data: JSON.stringify({
-        sid: params.sid
-      }),
-      type: 'POST',
-      url: server_root + 'remotes/checksid',
+      type: 'GET',
+      url: server_root + 'remotes/'+params.hostname+'/session-status',
       success: function(result) {
         if (params.success)
           params.success(result);

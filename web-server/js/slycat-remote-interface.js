@@ -277,8 +277,8 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           return void 0;
         }
 
-        client.post_checksid({
-          sid: vm.remote.sid(),
+        client.get_session_status({
+          hostname: vm.remote.hostname(),
           success: function(results) {
             if (results.errors)
               return void 0
