@@ -5,9 +5,21 @@
         data-bind="text: hostname()"
       ></label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="slycat-remote-browser-path" 
-          data-bind="value: path"
-        >
+        <div class="input-group">
+          <input type="text" class="form-control" id="slycat-remote-browser-path" 
+            data-bind="value: path"
+          >
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="button"
+              data-bind="
+              click:up,
+              disable:path()=='/'
+            ">
+              <i class="fa fa-level-up" aria-hidden="true"></i>
+            </button>
+            <button class="btn btn-default" type="submit">Go</button>
+          </span>
+        </div>
       </div>
     </div>
   </form>

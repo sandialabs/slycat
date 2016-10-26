@@ -122,6 +122,10 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
         }
       }
 
+      component.up = function() {
+        component.open({name: function(){return '..';}});
+      }
+
       component.browse = function(path)
       {
         client.post_remote_browse(
