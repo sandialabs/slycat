@@ -30,6 +30,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 class Driver():
   d = DesiredCapabilities.FIREFOX
+  d['marionette'] = True
   d['loggingPrefs'] = { 'browser':'ALL' }
 
   display = Display(size=(800,600))

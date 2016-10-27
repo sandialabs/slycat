@@ -54,7 +54,7 @@ web-server/config.ini
 ## File-based project format:
 *.ipr
 *.iws
-
+*.log
 ## Plugin-specific files:
 
 # IntelliJ
