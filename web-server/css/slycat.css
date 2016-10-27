@@ -105,14 +105,19 @@ body
   padding: 48px;
 }
 
-slycat-navbar .alert
+slycat-navbar nav .alert
 {
   margin: 0 !important;
 }
 
-slycat-navbar .alert pre
+slycat-navbar nav .alert pre
 {
   margin: 12px 0 0 0;
+}
+#slycat-wizard .slycat-remote-browser .path .alert {
+  margin-top: 10px;
+  margin-bottom: 0;
+  display: none;
 }
 #slycat-wizard .nav-pills a
 {

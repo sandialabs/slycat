@@ -15,6 +15,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.sid = params.sid;
       component.hostname = params.hostname;
       component.path = params.path;
+      component.path_input = ko.observable(component.path());
       component.selection = params.selection;
       component.open_file_callback = params.open_file_callback;
       component.raw_files = mapping.fromJS([]);
@@ -67,7 +68,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
 
       function path_dirname(path)
       {
-        var new_path = path.replace(/\/\.?(\w|\-)*\/?$/, "");
+        var new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
         if(new_path == "")
           new_path = "/";
         return new_path;
@@ -134,9 +135,15 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
           path : path,
           success : function(results)
           {
+            $('.slycat-remote-browser .path .alert').fadeOut(400);
+            $('.slycat-remote-browser .form-group.path').removeClass('has-error');
+            $('.slycat-remote-browser-files').fadeOut(0);
+
             localStorage.setItem("slycat-remote-browser-path-" + component.hostname(), path);
 
             component.path(path);
+            component.path_input(path);
+
             var files = []
             if(path != "/")
               files.push({type: "", name: "..", size: "", mtime: "", mime_type:"application/x-directory"});
@@ -144,26 +151,23 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
               files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mime_type:results["mime-types"][i]});
             mapping.fromJS(files, component.raw_files);
             $('.slycat-remote-browser-files').scrollTop(0);
+            $('.slycat-remote-browser-files').fadeIn(400);
           },
           error : function(results)
           {
-            var key = "slycat-remote-browser-path-" + component.hostname();
-            var current_path = localStorage.getItem(key);
+            if(component.path() != component.path_input())
+            {
+              $('.slycat-remote-browser .form-group.path').addClass('has-error');
+            }
 
-            if(current_path == "/")
-              return;
-
-            current_path = current_path || "/"
-
-            localStorage.setItem(key, "/");
-            component.browse(current_path);
+            $('.slycat-remote-browser .path .alert').fadeIn(400);
           }
         });
       }
 
       component.browse_path = function(formElement)
       {
-        component.browse(component.path());
+        component.browse(component.path_input());
       }
 
       component.session_exists.subscribe(function(new_session_exists)
