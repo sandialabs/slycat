@@ -87,3 +87,4 @@ RUN cd /home/slycat; wget https://github.com/mozilla/geckodriver/releases/downlo
 
 USER root
 RUN mv /home/slycat/geckodriver /usr/bin/wires
+RUN export PATH=/usr/bin:$PATH
