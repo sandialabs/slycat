@@ -23,7 +23,7 @@ before_install:
   - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
   - wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
   - tar xf geckodriver-v0.11.1-linux64.tar.gz
-  - sudo mv /home/slycat/geckodriver /usr/bin/wires
+  - sudo mv $TRAVIS_BUILD_DIR/geckodriver /usr/bin/wires
   - export PATH=$TRAVIS_BUILD_DIR/ffmpeg:$PATH
   # Point Python to the Slycat packages.
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/packages:$PYTHONPATH
