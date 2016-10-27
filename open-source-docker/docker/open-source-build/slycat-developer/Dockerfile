@@ -84,5 +84,6 @@ RUN echo "export PATH=$HOME/ffmpeg:/home/slycat/install/conda/bin:$PATH" >> /hom
 RUN echo "alias testslycat=\"behave -i \\\"(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)\\\" /home/slycat/src/slycat/features/\"" >> /home/slycat/.bashrc
 RUN cd /home/slycat; wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz; tar xf geckodriver-v0.11.1-linux64.tar.gz
 
+
 USER root
 RUN mv /home/slycat/geckodriver /usr/bin/wires
