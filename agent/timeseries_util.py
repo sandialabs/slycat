@@ -128,7 +128,6 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
     except:
         log.error("Unexpected error reading %s", path)
 
-
 def convert_timeseries(timeseries_index, eval_id, row):
     """
     Iterate over the data for the input row and checks for file paths. If file
@@ -144,7 +143,6 @@ def convert_timeseries(timeseries_index, eval_id, row):
             if file_ext == "csv" or file_ext == "dat" or file_ext == "txt":
                 process_timeseries(val, column_names[i], timeseries_index, eval_id)
 
-
 def check_and_build_input_and_output_directories(output_directory, inputs_file, force):
     if force:
         shutil.rmtree(output_directory, ignore_errors=True)
@@ -157,13 +155,66 @@ def check_and_build_input_and_output_directories(output_directory, inputs_file, 
     if not os.path.isfile(inputs_file):
         raise Exception("Inputs file could not be found. Check its path and verify permissions.")
 
+def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
+    """
+        Ingest the input file and reorganizes the data into objects:
+
+          - rows is a 2-dimensional array representation of the input file. The header
+          (column names) is eventually removed from the array.
+          - column_names is an array with the column names.
+          - column_types is an array with the type of data for each of the columns.
+          - row_count is self-explanatory
+          - columns is a list of tuples for each of the columns (minus the header row).
+          Each tuple is the data for each of the columns.
+
+        Then repack each of the data columns as numpy arrays.
+    """
+    log.info("Converting %s", inputs_file)
+    with open(inputs_file, "r") as stream:
+        rows = [row.split(inputs_file_delimiter) for row in stream]
+
+    column_names = [name.strip() for name in rows[0]]
+    column_types = ["string" for name in column_names]
+    rows = rows[1:]  # removes first row (header)
+    row_count = len(rows)
+
+    columns = zip(
+        *rows)  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
+
+    if arguments.id_column is not None:
+        if column_names[0] != id_column:
+            raise Exception("The first column in %s must be %s, got %s instead." % (
+                inputs_file, id_column, column_names[0]))
+        columns[0] = numpy.array(columns[0], dtype="int64")  # repack the index col as numpy array
+    else:
+        # if the ID column isn't specified, creates one and prepend it to the columns
+        column_names = ["%eval_id"] + column_names
+        columns = [numpy.array(range(0, row_count), dtype="int64")] + columns
+
+    column_types[0] = "int64"
+
+    for index in range(1, len(columns)):  # repack data cols as numpy arrays
+        try:
+            if _isNumeric(columns[index][0]):
+                columns[index] = numpy.array(columns[index], dtype="float64")
+                column_types[index] = "float64"
+            else:
+                stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
+                columns[index] = numpy.array(columns[index], dtype=stringType)
+                column_types[index] = "string"
+        except:
+            pass
+
 
 def timeseries_to_hdf5(output_directory, inputs_file, force=False):
     dir_error_msg = None
     try:
         check_and_build_input_and_output_directories(output_directory, inputs_file, force)
     except Exception as e:
-      dir_error_msg = e.message
+        dir_error_msg = e.message
+    if dir_error_msg is not None:
+        log.info("error with input output directories error: %s", dir_error_msg)
+        return False
 
 
 parser = argparse.ArgumentParser()
