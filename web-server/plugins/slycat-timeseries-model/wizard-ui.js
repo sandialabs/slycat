@@ -77,10 +77,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         client.delete_model({ mid: component.model._id() });
     };
 
-    component.to_remote = function() {
-      component.tab(1);
-    };
-
     component.connect = function() {
       component.remote.status_type('info');
       component.remote.status('Connecting...');
@@ -327,6 +323,8 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         target = 2;
       } else if (component.tab() == 3 && component.timeseries_type() === 'xyce') {
         target = 7;
+      } else if (component.tab() == 2) { 
+        target = 0;
       } else
         target--;
 
