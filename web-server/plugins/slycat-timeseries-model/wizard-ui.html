@@ -6,11 +6,10 @@
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Choose Timeseries format</a></li>
-    <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Input Data File</a></li>
-    <li data-bind="css:{active:tab() == 7}" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
-    <li data-bind="css:{active:tab() == 3}"><a>Input Data Parameters</a></li>
+    <li data-bind="css:{active:tab() == 0}"><a>Find Data</a></li>
+    <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Input File</a></li>
     <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
+    <li data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
     <li data-bind="css:{active:tab() == 5}"><a>Compute Model</a></li>
     <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
   </ul>
@@ -22,14 +21,20 @@
         <label for="timeseries-type-radios">What type of data will you be using?</label>
         <div class="radio" style="margin-left: 15px;">
           <label>
-            <input type="radio" name="timeseries-type-radios" id="csv-radio" value="csv" data-bind="checked: timeseries_type">
-            CSV file format
+            <input type="radio" name="timeseries-type-radios" id="xyce-radio" value="xyce" checked="checked" data-bind="checked: timeseries_type">
+            Xyce
           </label>
         </div>
         <div class="radio" style="margin-left: 15px;">
           <label>
-            <input type="radio" name="timeseries-type-radios" id="xyce-radio" value="xyce" checked="checked" data-bind="checked: timeseries_type">
-            Xyce format
+            <input type="radio" name="timeseries-type-radios" id="csv-radio" value="csv" data-bind="checked: timeseries_type">
+            CSV
+          </label>
+        </div>
+        <div class="radio" style="margin-left: 15px;">
+          <label>
+            <input type="radio" name="timeseries-type-radios" id="hdf5-radio" value="hdf5" data-bind="checked: timeseries_type">
+            HDF5
           </label>
         </div>
       </div>
@@ -46,23 +51,7 @@
       <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_input_file,session_exists:remote.session_exists"></slycat-remote-browser>
     </div>
 
-    <div data-bind="visible:tab() == 7" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_xyce_timeseries_file,session_exists:remote.session_exists"></slycat-remote-browser>
-    </div>
-
-    <div data-bind="visible:tab() == 3" class="form-horizontal">
-      <div class="form-group">
-        <label class="col-sm-4"></label>
-        <div class="col-sm-8">
-          <input type="checkbox" data-bind="checked: to_hdf5"> Convert data set to .hdf5 files
-        </div>
-      </div>
-      <div id="form-output-directory" class="form-group">
-        <label class="col-sm-4">Output Directory</label>
-        <div class="col-sm-8">
-          <input class="form-control" type="text" data-bind="value: output_directory">
-        </div>
-      </div>
+    <div data-bind="visible:tab() == 4" class="form-horizontal">
       <div id="form-id-column-name" class="form-group">
         <label class="col-sm-4">ID Column Name</label>
         <div class="col-sm-8">
@@ -77,9 +66,6 @@
           </div>
         </div>
       <!-- /ko -->
-    </div>
-
-    <div data-bind="visible:tab() == 4" class="form-horizontal">
       <!-- ko if: timeseries_type() == 'csv' -->
         <div id="form-timeseries-name" class="form-group">
           <label class="col-sm-4">Timeseries Name</label>
@@ -114,9 +100,13 @@
       </div>
     </div>
 
+    <div data-bind="visible:tab() == 7" style="height: 400px">
+      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_xyce_timeseries_file,session_exists:remote.session_exists"></slycat-remote-browser>
+    </div>
+
     <div data-bind="visible:tab() == 5">
       <form class="compute form-horizontal" role="form">
-      <slycat-remote-interface params="agent_function: 'timeseries-model', agent_function_params: { 'timeseries_type': timeseries_type(), 'inputs_file': inputs_file(), 'to_hdf5': to_hdf5(), 'input_directory': input_directory(),'output_directory': output_directory(), 'id_column': id_column(), 'inputs_file_delimiter': inputs_file_delimiter(), 'xyce_timeseries_file': xyce_timeseries_file(), 'timeseries_name': timeseries_name(), 'cluster_sample_count': cluster_sample_count(), 'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 'cluster_type': $('#timeseries-wizard-cluster-type').val(), 'cluster_metric': $('#timeseries-wizard-cluster-metric').val(), 'workdir': workdir() }, model_type: 'timeseries', mid: model._id(), suggestions: [{'ntasks_per_node': 8}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, on_submit_callback: to_compute_next_step,session_exists:remote.session_exists"></slycat-remote-interface>
+        <slycat-remote-interface params="agent_function: 'timeseries-model', agent_function_params: { 'timeseries_type': timeseries_type(), 'inputs_file': inputs_file(), 'input_directory': input_directory(),'id_column': id_column(), 'inputs_file_delimiter': inputs_file_delimiter(), 'xyce_timeseries_file': xyce_timeseries_file(), 'timeseries_name': timeseries_name(), 'cluster_sample_count': cluster_sample_count(), 'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 'cluster_type': $('#timeseries-wizard-cluster-type').val(), 'cluster_metric': $('#timeseries-wizard-cluster-metric').val(), 'workdir': workdir() }, model_type: 'timeseries', mid: model._id(), suggestions: [{'ntasks_per_node': 8}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, on_submit_callback: to_compute_next_step,session_exists:remote.session_exists"></slycat-remote-interface>
       </form>
     </div>
 
@@ -128,12 +118,20 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 0,click:connect">Continue</button>
-  <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 2,click:select_input_file"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 7,click:select_xyce_timeseries_file"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 3,click:to_timeseries_parameters">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 4,click:to_compute">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 5,click:compute">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 6,click:name_model">Finish & Go To Model</button>
+  <button data-bind="visible: [0].indexOf(tab()) == -1, click: back" 
+    class="btn btn-default pull-left">Back</button>
+
+  <button data-bind="visible:tab() == 0,click:connect" 
+    class="btn btn-default">Continue</button>
+  <button data-bind="visible:tab() == 2,click:select_input_file" 
+    class="btn btn-default remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button data-bind="visible:tab() == 4,click:params_continue" 
+    class="btn btn-default">Continue</button>
+  <button data-bind="visible:tab() == 7,click:select_xyce_timeseries_file" 
+    class="btn btn-default remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button data-bind="visible:tab() == 5,click:compute" 
+    class="btn btn-default">Continue</button>
+  <button data-bind="visible:tab() == 6,click:name_model" 
+    class="btn btn-default">Finish & Go To Model</button>
+
 </div>

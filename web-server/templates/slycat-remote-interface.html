@@ -36,7 +36,7 @@
     </div>
     <div class="form-group">
       <label class="col-sm-4 control-label"></label>
-      <div class="col-sm-8">
+      <div class="col-sm-8 help-block">
         Note: increasing the number of tasks per node will increase the memory usage for the node.
       </div>
     </div>
@@ -53,21 +53,37 @@
       </div>
     </div>
     <div id="form-group-time" class="form-group">
-      <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Time</label>
-      <div class="col-sm-2">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" placeholder="hours" data-bind="value: time_hours, attr: {'disabled' : disabled}">
-      </div>
-      <div class="col-sm-2">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" placeholder="minutes" data-bind="value: time_minutes, attr: {'disabled' : disabled}">
-      </div>
-      <div class="col-sm-2">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" placeholder="seconds" data-bind="value: time_seconds, attr: {'disabled' : disabled}">
+      <fieldset data-bind="disable: time_recommended">
+        <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Time</label>
+        <div class="col-sm-2">
+          <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" placeholder="hours" data-bind="value: time_hours, disable: time_recommended">
+        </div>
+        <div class="col-sm-2">
+          <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" max="59" placeholder="minutes" data-bind="value: time_minutes, disable: time_recommended">
+        </div>
+        <div class="col-sm-2">
+          <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" max="59" placeholder="seconds" data-bind="value: time_seconds, disable: time_recommended">
+        </div>
+      </fieldset>
+      <div class="col-sm-offset-4 col-sm-8">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" data-bind="checked: time_recommended"> Use recommended values
+          </label>
+        </div>
       </div>
     </div>
     <div id="form-group-workdir" class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Working Directory</label>
       <div class="col-sm-8">
         <input class="form-control slycat-remote-interface-prebuilt-field" type="text" placeholder="enter path for working directory" data-bind="value: workdir, attr: {'disabled' : disabled}">
+      </div>
+      <div class="col-sm-offset-4 col-sm-8">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" data-bind="checked: retain_hdf5"> Retain HDF5 files
+          </label>
+        </div>
       </div>
     </div>
   </form>

@@ -30,7 +30,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.time_hours = ko.observable();
       vm.time_minutes = ko.observable(5);
       vm.time_seconds = ko.observable();
+      vm.time_recommended = ko.observable(true);
       vm.workdir = ko.observable('');
+      vm.retain_hdf5 = ko.observable(false);
 
       vm.jid = ko.observable(-1);
       vm.agent_function = ko.observable(params.agent_function === undefined ? '' : params.agent_function);
