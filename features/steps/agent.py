@@ -80,8 +80,9 @@ def step_impl(context):
 
 @then(u'the agent should return a path not found error')
 def step_impl(context):
-  nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"ok": False, "message": "Path not found."})
-
+  message = json.loads(context.agent.stdout.readline())
+  nose.tools.assert_equal(message["message"], u"Path not found.")
+  nose.tools.assert_equal(message["ok"], False)
 @when(u'browsing a directory')
 def step_impl(context):
   context.agent.stdin.write("%s\n" % json.dumps({"action":"browse", "path":data_dir}))
