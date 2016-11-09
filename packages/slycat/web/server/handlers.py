@@ -2057,6 +2057,18 @@ def get_user_config(hostname):
         return session.get_user_config()
 
 
+@cherrypy.tools.json_out(on=True)
+def job_time(nodes, tasks, size):
+    """
+    gives the time in seconds recommended given job meta data
+    :param nodes: number of hpc nodes for job
+    :param tasks: number of tasks per node for job
+    :param size: size of data file used in the job
+    :return: time in seconds as an integer
+    """
+    return {'time': 1800}  # return 30 min for now
+
+
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def set_user_config(hostname):
