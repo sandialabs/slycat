@@ -1254,5 +1254,22 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  module.job_time = function(params)
+  {
+    $.ajax({
+      contentType: 'application/json',
+      type: 'GET',
+      url: server_root + 'remotes/'+params.nodes+"/"+params.tasks+"/"+params.size+"/job_time",
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   return module;
 });

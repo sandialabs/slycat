@@ -43,13 +43,13 @@
     <div id="form-group-nnodes" class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Number of nodes</label>
       <div class="col-sm-4">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" data-bind="value: nnodes, attr: {'disabled' : nnodes_disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="1" data-bind="value: nnodes, attr: {'disabled' : nnodes_disabled}">
       </div>
     </div>
     <div id="form-group-tasks-per-node" class="form-group">
       <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Task(s) / node</label>
       <div class="col-sm-4">
-        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" data-bind="value: ntasks_per_node, attr: {'disabled' : disabled}">
+        <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="1" data-bind="value: ntasks_per_node, attr: {'disabled' : disabled}">
       </div>
     </div>
     <div id="form-group-time" class="form-group">

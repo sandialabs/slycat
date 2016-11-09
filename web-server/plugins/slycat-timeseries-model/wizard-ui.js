@@ -24,13 +24,19 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.wckey = ko.observable('');
     component.partition = ko.observable('');
     component.workdir = ko.observable('');
-    component.nnodes = ko.observable('');
-    component.ntasks_per_node = ko.observable('');
+    component.nnodes = ko.observable('1');
+    component.ntasks_per_node = ko.observable('1');
+    component.time_seconds_total = ko.observable(1000);
     component.time_hours = ko.observable('');
     component.time_minutes = ko.observable('');
     component.time_seconds = ko.observable('');
 
     component.user_config = {};
+
+    // Process suggestions if any
+    (function() {
+      console.log("tesssssst");
+    })();
 
     var removeErrors = function() {
       $('.form-group').removeClass('has-error');
