@@ -2066,7 +2066,11 @@ def job_time(nodes, tasks, size):
     :param size: size of data file used in the job
     :return: json time in seconds as an integer {'time-seconds': 1800}
     """
-    return {'time-seconds': 1800}  # return 30 min for now
+    return {
+            'time-seconds': 1800,
+            'nodes': nodes,
+            'tasks': tasks,
+            'size': size}  # return 30 min for now
 
 
 @cherrypy.tools.json_in(on=True)
