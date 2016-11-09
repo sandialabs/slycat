@@ -152,6 +152,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-agent-function", "/remotes/:hostname/run-agent-function", slycat.web.server.handlers.run_agent_function, conditions={ "method": ["POST"] })
 
   dispatcher.connect("get-user-config", "/remotes/:hostname/get-user-config", slycat.web.server.handlers.get_user_config, conditions={ "method": ["GET"] })
+  dispatcher.connect("get-runtime", "/remotes/:nodes/:tasks/:size/job-time", slycat.web.server.handlers.job_time, conditions={ "method": ["GET"] })
 
   dispatcher.connect("set-user-config", "/remotes/:hostname/set-user-config", slycat.web.server.handlers.set_user_config, conditions={ "method": ["POST"] })
 
