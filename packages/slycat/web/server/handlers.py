@@ -833,11 +833,11 @@ def login():
   and determins with the user can be authenticated with slycat
   :return: authentication status
   """
-    cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
+    #cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
     # try and delete any outdated sessions for the user if they have the cookie for it
     if "slycatauth" in cherrypy.request.cookie:
         try:
-            cherrypy.log.error("found old session trying to delete it ")
+            #cherrypy.log.error("found old session trying to delete it ")
             sid = cherrypy.request.cookie["slycatauth"].value
             couchdb = slycat.web.server.database.couchdb.connect()
             session = couchdb.get("session", sid)
@@ -849,7 +849,7 @@ def login():
 
     # try and decode the username and password
     try:
-        cherrypy.log.error("decoding username and password")
+        #cherrypy.log.error("decoding username and password")
         user_name = base64_decode(cherrypy.request.json["user_name"])
         password = base64_decode(cherrypy.request.json["password"])
 
@@ -858,9 +858,9 @@ def login():
             location = cherrypy.request.json["location"]
         except Exception as e:
             location = None
-            cherrypy.log.error("no location provided moving on")
+            #cherrypy.log.error("no location provided moving on")
     except Exception as e:
-        cherrypy.log.error("username and password could not be decoded")
+        #cherrypy.log.error("username and password could not be decoded")
         slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
         raise cherrypy.HTTPError(400)
     realm = None
@@ -877,7 +877,7 @@ def login():
         else:
             response_url = "https://" + current_url.netloc + "/projects"
     except Exception as e:
-        cherrypy.log.error("no location provided setting target to /projects")
+        #cherrypy.log.error("no location provided setting target to /projects")
         response_url = "https://" + current_url.netloc + "/projects"
 
     # Get the client ip, which might be forwarded by a proxy.
@@ -902,7 +902,7 @@ def login():
     success, groups = login.password_check(realm, user_name, password)
 
     if success:
-        cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
+        #cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
         # Successful authentication, now check access rules.
         authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
         # for rules see slycat config file
@@ -911,11 +911,11 @@ def login():
             rules = authentication_kwargs["rules"]
         if "realm" in authentication_kwargs:
             realm = authentication_kwargs["realm"]
-        cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)))
+        #cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)))
 
         if rules:
             # found rules now time to apply them
-            cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
+            #cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
             deny = True
             for operation, category, members in rules:
                 if operation not in ["allow"]:
@@ -934,11 +934,11 @@ def login():
                         if lookupResult != {}:
                             deny = False
                     except:
-                        cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
+                        #cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
                 if deny:
                     raise cherrypy.HTTPError("403 User denied by authentication rules.")
         else:
-            cherrypy.log.error("no rules were found")
+            #cherrypy.log.error("no rules were found")
         # Successful authentication and access verification, create a session and return.
         sid = uuid.uuid4().hex
         session = {"created": datetime.datetime.utcnow(), "creator": user_name}
@@ -961,10 +961,10 @@ def login():
 
         cherrypy.response.status = "200 OK"
         cherrypy.request.login = user_name
-        cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (
-            cherrypy.response.cookie["slycatauth"], success, response_url))
+        #cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (
+        #    cherrypy.response.cookie["slycatauth"], success, response_url))
     else:
-        cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
+        #cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
         cherrypy.response.status = "404 no auth found!!!"
 
     return {'success': success, 'target': response_url}
