@@ -2068,7 +2068,7 @@ def job_time(nodes, tasks, size):
     :param size: size of data file used in the job
     :return: json time in seconds as an integer {'time-seconds': 1800}
     """
-    time = (18 * float(size)) / (float(nodes) * float(tasks))
+    time = (1.8 * float(size)) / (float(nodes) * float(tasks))
     return {
             'time-seconds': int(time),
             'nodes': nodes,
