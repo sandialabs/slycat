@@ -24,15 +24,16 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.batch = ko.observable('');
 
       vm.wckey = ko.observable('');
-      vm.nnodes = ko.observable(4);
+      vm.nnodes = ko.observable(5);
       vm.partition = ko.observable('');
-      vm.ntasks_per_node = ko.observable(1);
-      vm.time_hours = ko.observable();
-      vm.time_minutes = ko.observable(5);
-      vm.time_seconds = ko.observable();
+      vm.ntasks_per_node = ko.observable(1); // This is preset in wizard-ui.html with: suggestions: [{'ntasks_per_node': 8}]
+      vm.time_hours = ko.observable(11);
+      vm.time_minutes = ko.observable(6);
+      vm.time_seconds = ko.observable(3);
       vm.time_recommended = ko.observable(true);
       vm.workdir = ko.observable('');
       vm.retain_hdf5 = ko.observable(false);
+      vm.job_size = ko.observable(1000);
 
       vm.jid = ko.observable(-1);
       vm.agent_function = ko.observable(params.agent_function === undefined ? '' : params.agent_function);
@@ -44,6 +45,39 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
       var modal_id = 'slycat-remote-interface-connect-modal';
       var select_id = 'slycat-remote-interface-agent-functions';
+
+      var set_job_time = function() {
+        client.job_time({
+          nodes: vm.nnodes(),
+          tasks: vm.ntasks_per_node(),
+          size: vm.job_size(),
+          success: function(result) {
+            console.log(result);
+            var nodes = parseInt(result.nodes);
+            var tasks = parseInt(result.tasks);
+            var size = parseInt(result.size);
+            if(nodes == vm.nnodes() && tasks == vm.ntasks_per_node && size = vm.job_size())
+            {
+              var total_seconds = parseInt(result['time-seconds']);
+              var hours = Math.floor(total_seconds / 3600);
+              var minutes = Math.floor((total_seconds - (hours * 3600)) / 60);
+              var seconds = total_seconds - (hours * 3600) - (minutes * 60);
+              vm.time_hours(hours);
+              vm.time_minutes(minutes);
+              vm.time_seconds(seconds);
+            }
+          },
+          error: function(request, status, reason_phrase) {
+            // On error we should uncheck and disable the "Use recommended values" checkbox
+          }
+        });
+      };
+
+      // Set initial job time
+      (function() {
+        console.log("tesssssst");
+        set_job_time();
+      })();
 
       // Process suggestions if any
       (function() {

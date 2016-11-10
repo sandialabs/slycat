@@ -16,7 +16,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.inputs_file_delimiter = ko.observable(',');
     component.xyce_timeseries_file = ko.observable('');
     component.timeseries_name = ko.observable('');
-	component.cluster_sample_count = ko.observable(500);
+    component.cluster_sample_count = ko.observable(500);
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
@@ -24,19 +24,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.wckey = ko.observable('');
     component.partition = ko.observable('');
     component.workdir = ko.observable('');
-    component.nnodes = ko.observable('1');
-    component.ntasks_per_node = ko.observable('1');
-    component.time_seconds_total = ko.observable(1000);
-    component.time_hours = ko.observable('');
-    component.time_minutes = ko.observable('');
-    component.time_seconds = ko.observable('');
+    // component.nnodes = ko.observable('1');
+    // component.ntasks_per_node = ko.observable('1');
+    // component.time_hours = ko.observable('');
+    // component.time_minutes = ko.observable('');
+    // component.time_seconds = ko.observable('');
 
     component.user_config = {};
-
-    // Process suggestions if any
-    (function() {
-      console.log("tesssssst");
-    })();
 
     var removeErrors = function() {
       $('.form-group').removeClass('has-error');
@@ -83,6 +77,8 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.connect = function() {
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      
       component.remote.status_type('info');
       component.remote.status('Connecting...');
       if(component.remote.session_exists())
@@ -109,11 +105,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                 response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                 response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                 response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
-                response.config.slurm.nnodes ? component.nnodes(response.config.slurm.nnodes) : null;
-                response.config.slurm['ntasks-per-node'] ? component.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
-                response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
-                response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
-                response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+
+                response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
+                response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
+
+                // response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
+                // response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
+                // response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
               }
 
               component.user_config = response.config;
@@ -151,11 +149,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                     response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                     response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                     response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
-                    response.config.slurm.nnodes ? component.nnodes(response.config.slurm.nnodes) : null;
-                    response.config.slurm['ntasks-per-node'] ? component.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
-                    response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
-                    response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
-                    response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+
+                    response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
+                    response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
+
+                    // response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
+                    // response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
+                    // response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
                   }
 
                   component.user_config = response.config;
@@ -216,11 +216,11 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         vm.wckey(component.wckey());
         vm.partition(component.partition());
         vm.workdir(component.workdir());
-        vm.nnodes(component.nnodes());
-        vm.ntasks_per_node(component.ntasks_per_node());
-        vm.time_hours(component.time_hours());
-        vm.time_minutes(component.time_minutes());
-        vm.time_seconds(component.time_seconds());
+        // vm.nnodes(component.nnodes());
+        // vm.ntasks_per_node(component.ntasks_per_node());
+        // vm.time_hours(component.time_hours());
+        // vm.time_minutes(component.time_minutes());
+        // vm.time_seconds(component.time_seconds());
 
         if(component.timeseries_type() === 'xyce') {
           component.tab(7);
@@ -301,9 +301,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       component.user_config['slurm']['wcid'] = vm.wckey();
       component.user_config['slurm']['partition'] = vm.partition();
       component.user_config['slurm']['workdir'] = vm.workdir();
-      component.user_config['slurm']['time-hours'] = vm.time_hours();
-      component.user_config['slurm']['time-minutes'] = vm.time_minutes();
-      component.user_config['slurm']['time-seconds'] = vm.time_seconds();
+      // component.user_config['slurm']['time-hours'] = vm.time_hours();
+      // component.user_config['slurm']['time-minutes'] = vm.time_minutes();
+      // component.user_config['slurm']['time-seconds'] = vm.time_seconds();
       component.user_config['slurm']['nnodes'] = vm.nnodes();
       component.user_config['slurm']['ntasks-per-node'] = vm.ntasks_per_node();
     };

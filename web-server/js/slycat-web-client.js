@@ -1259,7 +1259,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax({
       contentType: 'application/json',
       type: 'GET',
-      url: server_root + 'remotes/'+params.nodes+"/"+params.tasks+"/"+params.size+"/job_time",
+      url: server_root + 'remotes/'+params.nodes+"/"+params.tasks+"/"+params.size+"/job-time",
       success: function(result) {
         if (params.success)
           params.success(result);
