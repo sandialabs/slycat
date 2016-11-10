@@ -935,10 +935,12 @@ def login():
                             deny = False
                     except:
                         #cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
+                        pass
                 if deny:
                     raise cherrypy.HTTPError("403 User denied by authentication rules.")
         else:
             #cherrypy.log.error("no rules were found")
+            pass
         # Successful authentication and access verification, create a session and return.
         sid = uuid.uuid4().hex
         session = {"created": datetime.datetime.utcnow(), "creator": user_name}
