@@ -332,7 +332,9 @@ def step_impl(context, type):
     if metadata["message"] == "Not ready.":
       time.sleep(0.1)
       continue
-    print metadata
+    print(metadata["message"])
+    print(metadata["ok"])
+    print(metadata["ready"])
     nose.tools.assert_equal(metadata, {"ready": True, "ok": True, "message":"Video ready."})
     break
 
