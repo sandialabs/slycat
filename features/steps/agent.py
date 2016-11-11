@@ -334,7 +334,6 @@ def step_impl(context, type):
       continue
     print(metadata["message"])
     print(metadata["ok"])
-    print(metadata["ready"])
     nose.tools.assert_equal(metadata, {"ready": True, "ok": True, "message":"Video ready."})
     break
 
