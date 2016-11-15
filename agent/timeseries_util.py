@@ -24,6 +24,7 @@ from urlparse import urlparse
 import traceback
 import paramiko
 import functools
+
 # set up the logger
 log_lock = threading.Lock()
 log = logging.getLogger()
@@ -46,7 +47,7 @@ def _isNumeric(j):
     return True
 
 
-def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_id):
+def process_timeseries(timeseries_path, timeseries_name, output_directory, timeseries_index, eval_id):
     """
     Read in the input file from a timeseries run and process the data into a HDF5
     file for the given timeseries name and index. The generated file structure is
@@ -115,7 +116,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
         if t_add_index_column is True:
             data = numpy.insert(data, 0, range(len(data)), axis=1)
         print "writing"
-        timeseries_dir = os.path.join(arguments.output_directory, timeseries_name)
+        timeseries_dir = os.path.join(output_directory, timeseries_name)
         if not os.path.exists(timeseries_dir):
             os.makedirs(timeseries_dir)
 
@@ -136,7 +137,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
         log.error("Unexpected error reading %s", path)
 
 
-def convert_timeseries(results, timeseries_index, eval_id, row):# range(row_count), columns[0], rows)
+def convert_timeseries(results, timeseries_index, eval_id, row):  # range(row_count), columns[0], rows)
     """
     Iterate over the data for the input row and checks for file paths. If file
     extension is valid, run process_timeseries method.
@@ -151,11 +152,18 @@ def convert_timeseries(results, timeseries_index, eval_id, row):# range(row_coun
             file_ext = val[len(val) - 3:]
             if file_ext == "csv" or file_ext == "dat" or file_ext == "txt":
                 print "processing"
-                process_timeseries(val, results['column_names'][i], timeseries_index, eval_id)
+                process_timeseries(val, results['column_names'][i], results['output_directory'], timeseries_index,
+                                   eval_id)
 
-    # print results['column_names'][0], timeseries_index, eval_id, row
 
 def check_and_build_input_and_output_directories(output_directory, inputs_file, force):
+    """
+
+    :param output_directory:
+    :param inputs_file:
+    :param force:
+    :return:
+    """
     if force:
         shutil.rmtree(output_directory, ignore_errors=True)
     if os.path.exists(output_directory):
@@ -187,14 +195,14 @@ def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
     with open(inputs_file, "r") as stream:
         results['rows'] = [row.split(inputs_file_delimiter) for row in stream]
 
-
     results['column_names'] = [name.strip() for name in results['rows'][0]]
     results['column_types'] = ["string" for name in results['column_names']]
     results['rows'] = results['rows'][1:]  # removes first row (header)
     results['row_count'] = len(results['rows'])
 
     results['columns'] = zip(
-        *results['rows'])  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
+        *results[
+            'rows'])  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
 
     if id_column is not None:
         if results['column_names'][0] != id_column:
@@ -214,14 +222,17 @@ def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
                 results['columns'][index] = numpy.array(results['columns'][index], dtype="float64")
                 results['column_types'][index] = "float64"
             else:
-                stringType = "S" + str(len(results['columns'][index][0]))  # using length of first string for whole column
+                stringType = "S" + str(
+                    len(results['columns'][index][0]))  # using length of first string for whole column
                 results['columns'][index] = numpy.array(results['columns'][index], dtype=stringType)
                 results['column_types'][index] = "string"
         except:
             pass
     log.info("Converted %s", results['columns'])
     return results
-def does_something(results, parallel_jobs):# range(row_count), columns[0], rows)
+
+
+def does_something(results, parallel_jobs):  # range(row_count), columns[0], rows)
     """
     dimensions is a list with one dictionary with the following keys/value pair: name="row"
     and end=the numberof rows from the input file.
@@ -260,9 +271,11 @@ def does_something(results, parallel_jobs):# range(row_count), columns[0], rows)
         for attribute, column in enumerate(results['columns']):
             array.set_data(attribute, slice(0, column.shape[0]), column)
     with concurrent.futures.ProcessPoolExecutor(parallel_jobs) as pool:
-        output = list(pool.map(functools.partial(convert_timeseries, results), range(results['row_count']), results['columns'][0], results['rows']))
-        # range(row_count), columns[0], rows)
+        output = list(
+            pool.map(functools.partial(convert_timeseries, results), range(results['row_count']), results['columns'][0],
+                     results['rows']))
     return output
+
 
 def timeseries_to_hdf5(output_directory, inputs_file, id_column, inputs_file_delimiter=",", force=False):
     dir_error_msg = None
@@ -276,118 +289,7 @@ def timeseries_to_hdf5(output_directory, inputs_file, id_column, inputs_file_del
     results = convert_inputs_file(inputs_file, inputs_file_delimiter, id_column)
     results['output_directory'] = output_directory
     print does_something(results, multiprocessing.cpu_count())
-#
-# parser = argparse.ArgumentParser()
-# parser.add_argument("--output-directory", help="Output directory containing hdf5 files.")
-# parser.add_argument("--id-column", default=None, help="Inputs file id column name.")
-# parser.add_argument("--inputs-file", default=None, help="The name of the delimited text file containing input data.")
-# parser.add_argument("--inputs-file-delimiter", default=None,
-#                     help="Field delimiter.  By default, fields will be delimited with any whitespace except a newline.")
-# parser.add_argument("--parallel-jobs", "-j", default=multiprocessing.cpu_count(), type=int,
-#                     help="Number of parallel jobs to run.  Default: %(default)s")
-# parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
-# arguments = parser.parse_args()
-#
-# if arguments.force:
-#     shutil.rmtree(arguments.output_directory, ignore_errors=True)
-# if os.path.exists(arguments.output_directory):
-#     raise Exception("Destination directory %s already exists.  Use --force to overwrite." % arguments.output_directory)
-# os.makedirs(arguments.output_directory)
-#
-# if arguments.inputs_file is None:
-#     raise Exception("Inputs file is a required argument. Use --inputs-file to include inputs file.")
-# if not os.path.isfile(arguments.inputs_file):
-#     raise Exception("Inputs file could not be found. Check its path and verify permissions.")
-#
-# """
-# Ingest the input file and reorganizes the data into objects:
-#
-#   - rows is a 2-dimensional array representation of the input file. The header
-#   (column names) is eventually removed from the array.
-#   - column_names is an array with the column names.
-#   - column_types is an array with the type of data for each of the columns.
-#   - row_count is self-explanatory
-#   - columns is a list of tuples for each of the columns (minus the header row).
-#   Each tuple is the data for each of the columns.
-#
-# Then repack each of the data columns as numpy arrays.
-# """
-# log.info("Converting %s", arguments.inputs_file)
-# with open(arguments.inputs_file, "r") as stream:
-#     rows = [row.split(arguments.inputs_file_delimiter) for row in stream]
-#
-# column_names = [name.strip() for name in rows[0]]
-# column_types = ["string" for name in column_names]
-# rows = rows[1:]  # removes first row (header)
-# row_count = len(rows)
-#
-# columns = zip(
-#     *rows)  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
-#
-# if arguments.id_column is not None:
-#     if column_names[0] != arguments.id_column:
-#         raise Exception("The first column in %s must be %s, got %s instead." % (
-#             arguments.inputs_file, arguments.id_column, column_names[0]))
-#     columns[0] = numpy.array(columns[0], dtype="int64")  # repack the index col as numpy array
-# else:
-#     # if the ID column isn't specified, creates one and prepend it to the columns
-#     column_names = ["%eval_id"] + column_names
-#     columns = [numpy.array(range(0, row_count), dtype="int64")] + columns
-#
-# column_types[0] = "int64"
-#
-# for index in range(1, len(columns)):  # repack data cols as numpy arrays
-#     try:
-#         if _isNumeric(columns[index][0]):
-#             columns[index] = numpy.array(columns[index], dtype="float64")
-#             column_types[index] = "float64"
-#         else:
-#             stringType = "S" + str(len(columns[index][0]))  # using length of first string for whole column
-#             columns[index] = numpy.array(columns[index], dtype=stringType)
-#             column_types[index] = "string"
-#     except:
-#         pass
-#
 
-# """
-# dimensions is a list with one dictionary with the following keys/value pair: name="row"
-# and end=the numberof rows from the input file.
-#
-# attributes is a list of dictionaries representing the column names and their
-# types. Each dictionary has the following format: { name: column name, type: column type }.
-# """
-# dimensions = [dict(name="row", end=row_count)]
-# attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)]
-#
-# """
-# Write the inputs files data out to "inputs.hdf5" file. The generated HDF5 file
-# has the following hierarchy:
-#
-#   array
-#   |_ 0
-#      |_ attribute
-#         |_ 0, dataset
-#         |_ 1, dataset
-#         ...
-#         |_ number_of_columns, dataset
-#      |_ metadata
-#         |_ attribute-names, dataset: column names
-#         |_ attribute-types, dataset: data types for each of the columns
-#         |_ dimension-begin, dataset
-#         |_ dimension-end, dataset
-#         |_ dimension-names, dataset
-#         |_ dimension-types, dataset
-#
-# Note: the datasets are 1 dimensional arrays (lenght of the dataset size) and
-# represent the data for each of the columns.
-# """
-# with h5py.File(os.path.join(arguments.output_directory, "inputs.hdf5"), "w") as file:
-#     arrayset = slycat.hdf5.start_arrayset(file)
-#     array = arrayset.start_array(0, dimensions, attributes)
-#     for attribute, column in enumerate(columns):
-#         array.set_data(attribute, slice(0, column.shape[0]), column)
-#
-# with concurrent.futures.ProcessPoolExecutor(arguments.parallel_jobs) as pool:
-#     results = list(pool.map(convert_timeseries, range(row_count), columns[0], rows))
+
 if __name__ == "__main__":
-  timeseries_to_hdf5("out", "master.csv", "%eval_id", inputs_file_delimiter=",", force=True)
+    timeseries_to_hdf5("out", "master.csv", "%eval_id", inputs_file_delimiter=",", force=True)
