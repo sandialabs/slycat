@@ -74,7 +74,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             var nodes = parseInt(result.nodes);
             var tasks = parseInt(result.tasks);
             var size = parseInt(result.size);
-            if(nodes == vm.nnodes() && tasks == vm.ntasks_per_node() && size == vm.job_size())
+            if(nodes == vm.nnodes() && tasks == vm.ntasks_per_node() && size == vm.job_size() && vm.time_recommended())
             {
               var total_seconds = parseInt(result['time-seconds']);
               var hours = Math.floor(total_seconds / 3600);
@@ -109,7 +109,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
       // Set initial job time
       (function() {
-        vm.set_job_time();
+        vm.conditionally_set_job_time();
       })();
 
       vm.connect = function() {

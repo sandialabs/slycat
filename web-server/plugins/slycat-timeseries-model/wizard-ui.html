@@ -40,7 +40,7 @@
       </div>
 
       <div class="form-group" style="margin-top: 40px;">
-        <label for="timeseries-type-radios">Where is your data located?</label>
+        <label class="bottom-margin">Where is your data located?</label>
         <form class="form-horizontal" role="form">
           <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
         </form>
@@ -48,19 +48,20 @@
     </div>
 
     <div data-bind="visible:tab() == 2" style="height: 400px">
+      <label class="bottom-margin">Please select your input file</label>
       <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_input_file,session_exists:remote.session_exists"></slycat-remote-browser>
     </div>
 
     <div data-bind="visible:tab() == 4" class="form-horizontal">
       <div id="form-id-column-name" class="form-group">
-        <label class="col-sm-4">ID Column Name</label>
+        <label class="col-sm-4 control-label">ID Column Name</label>
         <div class="col-sm-8">
           <input class="form-control" type="text" data-bind="value: id_column">
         </div>
       </div>
       <!-- ko if: timeseries_type() == 'csv' -->
         <div id="form-inputs-file-delimiter" class="form-group">
-          <label class="col-sm-4">Inputs File Delimiter</label>
+          <label class="col-sm-4 control-label">Inputs File Delimiter</label>
           <div class="col-sm-8">
             <input class="form-control" type="text" data-bind="value: inputs_file_delimiter">
           </div>
@@ -68,32 +69,32 @@
       <!-- /ko -->
       <!-- ko if: timeseries_type() == 'csv' -->
         <div id="form-timeseries-name" class="form-group">
-          <label class="col-sm-4">Timeseries Name</label>
+          <label class="col-sm-4 control-label">Timeseries Name</label>
           <div class="col-sm-8">
             <input class="form-control" type="text" data-bind="value: timeseries_name">
           </div>
         </div>
       <!-- /ko -->
     	<div id="form-cluster-sample-count" class="form-group">
-        <label class="col-sm-4">Cluster Sample Count</label>
+        <label class="col-sm-4 control-label">Cluster Sample Count</label>
         <div class="col-sm-8">
           <input class="form-control" type="number" data-bind="value: cluster_sample_count">
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4">Cluster Sample Type</label>
+        <label class="col-sm-4 control-label">Cluster Sample Type</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-sample-type" class="form-control" data-bind="options: cluster_sample_type"></select>
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4">Cluster Type</label>
+        <label class="col-sm-4 control-label">Cluster Type</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-type" class="form-control" data-bind="options: cluster_type"></select>
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4">Cluster Metric</label>
+        <label class="col-sm-4 control-label">Cluster Metric</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric"></select>
         </div>

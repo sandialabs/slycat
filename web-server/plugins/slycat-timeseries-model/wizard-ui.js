@@ -38,7 +38,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     var updateUserConfig = function() {
       component.user_config['timeseries-wizard'] = component.user_config['timeseries-wizard'] || {};
-      component.user_config['timeseries-wizard']['persistent-output'] = component.output_directory();
+      // component.user_config['timeseries-wizard']['persistent-output'] = component.output_directory();
       component.user_config['timeseries-wizard']['id-column'] = component.id_column();
       component.user_config['timeseries-wizard']['inputs-file-delimiter'] = component.inputs_file_delimiter();
       component.user_config['timeseries-wizard']['timeseries-name'] = component.timeseries_name();
@@ -95,7 +95,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
               }
 
               if (response.config['timeseries-wizard']) {
-                response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+                // response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                 response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
                 response.config['timeseries-wizard']['id-column'] ? component.id_column(response.config['timeseries-wizard']['id-column']) : null;
                 response.config['timeseries-wizard']['inputs-file-delimiter'] ? component.inputs_file_delimiter(response.config['timeseries-wizard']['inputs-file-delimiter']) : null;
@@ -109,9 +109,15 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                 response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
                 response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
 
-                // response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
-                // response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
-                // response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+                // Restore state of time controls if user unchecked "Use recommended values" checkbox last
+                var time_recommended = !(response.config.slurm['time_recommended'] == 'False');
+                if(!time_recommended)
+                {
+                  vm.time_recommended(time_recommended);
+                  response.config.slurm['time-hours'] ? vm.time_hours(response.config.slurm['time-hours']) : null;
+                  response.config.slurm['time-minutes'] ? vm.time_minutes(response.config.slurm['time-minutes']) : null;
+                  response.config.slurm['time-seconds'] ? vm.time_seconds(response.config.slurm['time-seconds']) : null;
+                }
               }
 
               component.user_config = response.config;
@@ -139,7 +145,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                   }
 
                   if (response.config['timeseries-wizard']) {
-                    response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+                    // response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                     response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
                     response.config['timeseries-wizard']['id-column'] ? component.id_column(response.config['timeseries-wizard']['id-column']) : null;
                     response.config['timeseries-wizard']['inputs-file-delimiter'] ? component.inputs_file_delimiter(response.config['timeseries-wizard']['inputs-file-delimiter']) : null;
@@ -153,9 +159,15 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                     response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
                     response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
 
-                    // response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
-                    // response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
-                    // response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+                    // Restore state of time controls if user unchecked "Use recommended values" checkbox last
+                    var time_recommended = !(response.config.slurm['time_recommended'] == 'False');
+                    if(!time_recommended)
+                    {
+                      vm.time_recommended(time_recommended);
+                      response.config.slurm['time-hours'] ? vm.time_hours(response.config.slurm['time-hours']) : null;
+                      response.config.slurm['time-minutes'] ? vm.time_minutes(response.config.slurm['time-minutes']) : null;
+                      response.config.slurm['time-seconds'] ? vm.time_seconds(response.config.slurm['time-seconds']) : null;
+                    }
                   }
 
                   component.user_config = response.config;
@@ -295,22 +307,27 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.compute = function() {
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
-      vm.submit_job();
-
+      
       component.user_config['slurm'] = component.user_config['slurm'] || {};
       component.user_config['slurm']['wcid'] = vm.wckey();
       component.user_config['slurm']['partition'] = vm.partition();
       component.user_config['slurm']['workdir'] = vm.workdir();
-      // component.user_config['slurm']['time-hours'] = vm.time_hours();
-      // component.user_config['slurm']['time-minutes'] = vm.time_minutes();
-      // component.user_config['slurm']['time-seconds'] = vm.time_seconds();
+      component.user_config['slurm']['time-hours'] = vm.time_hours();
+      component.user_config['slurm']['time-minutes'] = vm.time_minutes();
+      component.user_config['slurm']['time-seconds'] = vm.time_seconds();
       component.user_config['slurm']['nnodes'] = vm.nnodes();
       component.user_config['slurm']['ntasks-per-node'] = vm.ntasks_per_node();
+      component.user_config['slurm']['time_recommended'] = vm.time_recommended();
+
+      updateUserConfig();
+
+      vm.submit_job();
+
     };
 
     // A callback that is fired on submit?
     component.to_compute_next_step = function() {
-      updateUserConfig();
+      // updateUserConfig();
       component.tab(6);
     };
 
