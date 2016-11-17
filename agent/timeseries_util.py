@@ -36,7 +36,6 @@ log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 def _isNumeric(j):
     """
     Check if the input object is a numerical value, i.e. a float
-
     :param j: object
     :return: boolean
     """
@@ -156,22 +155,18 @@ def convert_timeseries(results, timeseries_index, eval_id, row):  # range(row_co
                                    eval_id)
 
 
-def check_and_build_input_and_output_directories(output_directory, inputs_file, force):
+def check_and_build_input_and_output_directories(output_directory, inputs_file):
     """
-
+    builds input and output directories if they do not already exist
     :param output_directory:
     :param inputs_file:
     :param force:
     :return:
     """
-    if force:
-        shutil.rmtree(output_directory, ignore_errors=True)
-    if os.path.exists(output_directory):
-        raise Exception("Destination directory %s already exists.  set force to True to overwrite." % output_directory)
-    os.makedirs(output_directory)
-
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
     if inputs_file is None:
-        raise Exception("Inputs file is a required argument. Use --inputs-file to include inputs file.")
+        raise Exception("Inputs file is a required")
     if not os.path.isfile(inputs_file):
         raise Exception("Inputs file could not be found. Check its path and verify permissions.")
 
@@ -277,10 +272,21 @@ def does_something(results, parallel_jobs):  # range(row_count), columns[0], row
     return output
 
 
-def timeseries_to_hdf5(output_directory, inputs_file, id_column, inputs_file_delimiter=",", force=False):
+def timeseries_csv_to_hdf5(output_directory, inputs_file, id_column, inputs_file_delimiter=","):
+    """
+
+    :param output_directory:
+    :param inputs_file:
+    :param id_column:
+    :param inputs_file_delimiter:
+    :return:
+    """
     dir_error_msg = None
+    # output_dir = s
+    # output_dir = output_dir +"/slycat-temp+"-"+input_file_name +"-"+ timestamp/"
+    # should we wrtie to scratch drive without username b4 it
     try:
-        check_and_build_input_and_output_directories(output_directory, inputs_file, force)
+        check_and_build_input_and_output_directories(output_directory, inputs_file)
     except Exception as e:
         dir_error_msg = e.message
     if dir_error_msg is not None:
@@ -292,4 +298,4 @@ def timeseries_to_hdf5(output_directory, inputs_file, id_column, inputs_file_del
 
 
 if __name__ == "__main__":
-    timeseries_to_hdf5("out", "master.csv", "%eval_id", inputs_file_delimiter=",", force=True)
+    timeseries_csv_to_hdf5("out", "master.csv", "%eval_id", inputs_file_delimiter=",", force=True)
