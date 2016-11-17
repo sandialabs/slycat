@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <button type="button" class="close" data-bind="click: tab() != 5 ? cancel : false" data-dismiss="modal" aria-label="Close">
+  <button type="button" class="close" data-bind="click: cancel, visible: tab() != 6" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
   <h3 class="modal-title">New Timeseries Model</h3>
@@ -168,7 +168,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button data-bind="visible: [0].indexOf(tab()) == -1, click: back" 
+  <button data-bind="visible: [0,6].indexOf(tab()) == -1, click: back" 
     class="btn btn-default pull-left">Back</button>
 
   <button data-bind="visible:tab() == 0,click:connect" 
