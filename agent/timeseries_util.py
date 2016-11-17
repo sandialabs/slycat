@@ -171,9 +171,9 @@ def check_and_build_input_and_output_directories(output_directory, inputs_file):
         raise Exception("Inputs file could not be found. Check its path and verify permissions.")
 
 
-def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
+def convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_column):
     """
-        Ingest the input file and reorganizes the data into objects:
+    Ingest the input file and reorganizes the data into objects:
 
           - rows is a 2-dimensional array representation of the input file. The header
           (column names) is eventually removed from the array.
@@ -184,17 +184,19 @@ def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
           Each tuple is the data for each of the columns.
 
         Then repack each of the data columns as numpy arrays.
+    :param inputs_file: path to inputs file
+    :param inputs_file_delimiter:
+    :param id_column:
+    :return: a dictionary
     """
     log.info("Converting %s", inputs_file)
     results = {}
     with open(inputs_file, "r") as stream:
         results['rows'] = [row.split(inputs_file_delimiter) for row in stream]
-
     results['column_names'] = [name.strip() for name in results['rows'][0]]
     results['column_types'] = ["string" for name in results['column_names']]
     results['rows'] = results['rows'][1:]  # removes first row (header)
     results['row_count'] = len(results['rows'])
-
     results['columns'] = zip(
         *results[
             'rows'])  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
@@ -208,7 +210,6 @@ def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
         # if the ID column isn't specified, creates one and prepend it to the columns
         results['column_names'] = ["%eval_id"] + results['column_names']
         results['columns'] = [numpy.array(range(0, results['row_count']), dtype="int64")] + results['columns']
-
     results['column_types'][0] = "int64"
 
     for index in range(1, len(results['columns'])):  # repack data cols as numpy arrays
@@ -217,11 +218,11 @@ def convert_inputs_file(inputs_file, inputs_file_delimiter, id_column):
                 results['columns'][index] = numpy.array(results['columns'][index], dtype="float64")
                 results['column_types'][index] = "float64"
             else:
-                stringType = "S" + str(
+                string_type = "S" + str(
                     len(results['columns'][index][0]))  # using length of first string for whole column
-                results['columns'][index] = numpy.array(results['columns'][index], dtype=stringType)
+                results['columns'][index] = numpy.array(results['columns'][index], dtype=string_type)
                 results['column_types'][index] = "string"
-        except:
+        except: # TODO: build exception logic
             pass
     log.info("Converted %s", results['columns'])
     return results
@@ -274,7 +275,7 @@ def does_something(results, parallel_jobs):  # range(row_count), columns[0], row
 
 def timeseries_csv_to_hdf5(output_directory, inputs_file, id_column, inputs_file_delimiter=","):
     """
-
+    converts a csv based timeseries to hdf5 files for faster computation later on
     :param output_directory:
     :param inputs_file:
     :param id_column:
@@ -290,12 +291,13 @@ def timeseries_csv_to_hdf5(output_directory, inputs_file, id_column, inputs_file
     except Exception as e:
         dir_error_msg = e.message
     if dir_error_msg is not None:
-        log.info("error with input output directories error: %s", dir_error_msg)
+        log.info("error with input output directories error msg: %s", dir_error_msg)
         return False
-    results = convert_inputs_file(inputs_file, inputs_file_delimiter, id_column)
+    # create an object list of the inputs file
+    results = convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_column)
     results['output_directory'] = output_directory
     print does_something(results, multiprocessing.cpu_count())
 
 
 if __name__ == "__main__":
-    timeseries_csv_to_hdf5("out", "master.csv", "%eval_id", inputs_file_delimiter=",", force=True)
+    timeseries_csv_to_hdf5("out", "master.csv", "%eval_id", inputs_file_delimiter=",")
