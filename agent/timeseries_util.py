@@ -228,17 +228,7 @@ def convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_col
     return results
 
 
-def does_something(results, parallel_jobs):  # range(row_count), columns[0], rows)
-    """
-    dimensions is a list with one dictionary with the following keys/value pair: name="row"
-    and end=the numberof rows from the input file.
-
-    attributes is a list of dictionaries representing the column names and their
-    types. Each dictionary has the following format: { name: column name, type: column type }.
-    """
-    dimensions = [dict(name="row", end=results['row_count'])]
-    attributes = [dict(name=name, type=type) for name, type in zip(results['column_names'], results['column_types'])]
-
+def write_out_hdf5_files(results, cpu_count=1):
     """
     Write the inputs files data out to "inputs.hdf5" file. The generated HDF5 file
     has the following hierarchy:
@@ -260,13 +250,23 @@ def does_something(results, parallel_jobs):  # range(row_count), columns[0], row
 
     Note: the datasets are 1 dimensional arrays (lenght of the dataset size) and
     represent the data for each of the columns.
+    :param results: dictionary of metadata
+    :param cpu_count: number of cpu's for parallel jobs
+    :return: status msg
     """
+    # dimensions: is a list with one dictionary with the following keys/value pair: name="row"
+    # and end=the numberof rows from the input file.
+    dimensions = [dict(name="row", end=results['row_count'])]
+    # attributes: is a list of dictionaries representing the column names and their
+    # types. Each dictionary has the following format: { name: column name, type: column type }.
+    attributes = [dict(name=name, type=type) for name, type in zip(results['column_names'], results['column_types'])]
+
     with h5py.File(os.path.join(results['output_directory'], "inputs.hdf5"), "w") as file:
         arrayset = slycat.hdf5.start_arrayset(file)
         array = arrayset.start_array(0, dimensions, attributes)
         for attribute, column in enumerate(results['columns']):
             array.set_data(attribute, slice(0, column.shape[0]), column)
-    with concurrent.futures.ProcessPoolExecutor(parallel_jobs) as pool:
+    with concurrent.futures.ProcessPoolExecutor(cpu_count) as pool:
         output = list(
             pool.map(functools.partial(convert_timeseries, results), range(results['row_count']), results['columns'][0],
                      results['rows']))
@@ -296,7 +296,7 @@ def timeseries_csv_to_hdf5(output_directory, inputs_file, id_column, inputs_file
     # create an object list of the inputs file
     results = convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_column)
     results['output_directory'] = output_directory
-    print does_something(results, multiprocessing.cpu_count())
+    print write_out_hdf5_files(results, cpu_count=multiprocessing.cpu_count())
 
 
 if __name__ == "__main__":
