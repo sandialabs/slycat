@@ -77,14 +77,12 @@ def process_timeseries(timeseries_path, timeseries_name, output_directory, times
     t_column_names = None
     t_column_types = None
     t_delimiter = None
-
     url = urlparse(timeseries_path)
     path = url.path  # strips scheme and network location from timeseries_path
 
     try:
         with log_lock:
             log.info("Reading %s", path)
-
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname="", username="", password="")
@@ -96,7 +94,6 @@ def process_timeseries(timeseries_path, timeseries_name, output_directory, times
             sniffer = csv.Sniffer()
             dialect = sniffer.sniff(line)
             t_delimiter = dialect.delimiter
-
             t_column_names = [name.strip() for name in line.split(t_delimiter)]
             t_first_row = [val.strip() for val in stream.readline().split(t_delimiter)]
 
@@ -106,7 +103,6 @@ def process_timeseries(timeseries_path, timeseries_name, output_directory, times
                 t_column_names = ["Index"] + t_column_names
             else:
                 t_column_names[0] = "Index"
-
             t_column_types = ["float64" for name in t_column_names]
             t_column_names[1] = "TIME"
 
@@ -114,14 +110,15 @@ def process_timeseries(timeseries_path, timeseries_name, output_directory, times
         data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
         if t_add_index_column is True:
             data = numpy.insert(data, 0, range(len(data)), axis=1)
-        print "writing"
+        # TODO: make sure we still need to create this dir with the next path settup
         timeseries_dir = os.path.join(output_directory, timeseries_name)
         if not os.path.exists(timeseries_dir):
             os.makedirs(timeseries_dir)
-
         hdf5_path = os.path.join(timeseries_dir, "timeseries-%s.hdf5" % timeseries_index)
+
         with log_lock:
             log.info("Writing %s", hdf5_path)
+
         with h5py.File(hdf5_path, "w") as file:
             arrayset = slycat.hdf5.start_arrayset(file)
             dimensions = [dict(name="row", end=data.shape[0])]
