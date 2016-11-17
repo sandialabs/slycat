@@ -11,7 +11,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
     viewModel: function(params)
     {
       var component = this;
-      component.type = ko.utils.unwrapObservable(params.type);
+      component.type = ko.utils.unwrapObservable(params.type); // Specify 'remote' for file picker, 'remote-directory' for directory picker
       component.sid = params.sid;
       component.hostname = params.hostname;
       component.path = params.path;
@@ -92,7 +92,8 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         var selection = [path_join(component.path(), file.name())];
         component.selection(selection);
-        if(file.type() == "f")
+        // Only allow file selection when directory selection is not specified
+        if(file.type() == "f" && component.type != 'remote-directory')
         {
           // Clear current selection
           for(var i=0; i < component.files().length; i++)

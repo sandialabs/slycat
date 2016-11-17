@@ -8,10 +8,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.timeseries_type = ko.observable('xyce');
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: 'always'});
-    component.browser = mapping.fromJS({path:null, selection: []});
+    component.browser_input = mapping.fromJS({path:null, selection: []});
+    component.browser_timeseries = mapping.fromJS({path:null, selection: []});
+    component.browser_hdf5 = mapping.fromJS({path:null, selection: []});
     component.to_hdf5 = ko.observable(true);
     component.inputs_file = ko.observable('');
     component.input_directory = ko.observable('');
+    component.hdf5_directory = ko.observable('');
     component.id_column = ko.observable('%eval_id');
     component.inputs_file_delimiter = ko.observable(',');
     component.xyce_timeseries_file = ko.observable('');
@@ -186,7 +189,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_input_file = function() {
-      var file_path = component.browser.selection()[0];
+      var file_path = component.browser_input.selection()[0];
       component.inputs_file(file_path);
 
       if (component.timeseries_type() === 'xyce') {
@@ -234,9 +237,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         // vm.time_minutes(component.time_minutes());
         // vm.time_seconds(component.time_seconds());
 
-        if(component.timeseries_type() === 'xyce') {
+        if(component.timeseries_type() === 'xyce') 
+        {
           component.tab(7);
         } 
+        else if(component.timeseries_type() == 'hdf5')
+        {
+          component.tab(3);
+        }
         else {
           component.tab(5);
         }
@@ -244,10 +252,16 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_xyce_timeseries_file = function() {
-      var filepath = component.browser.selection()[0];
+      var filepath = component.browser_timeseries.selection()[0];
       var filename = filepath.split('/');
       filename = filename[filename.length - 1];
       component.xyce_timeseries_file(filename);
+
+      component.tab(5);
+    };
+
+    component.select_hdf5_directory = function() {
+      component.hdf5_directory( component.browser_hdf5.path() );
 
       component.tab(5);
     };
@@ -342,8 +356,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       else if (component.tab() == 7) {
         target = 4;
       } 
+      else if (component.tab() == 3) {
+        target = 4;
+      } 
       else if (component.tab() == 5 && component.timeseries_type() === 'xyce') {
         target = 7;
+      }
+      else if (component.tab() == 5 && component.timeseries_type() === 'hdf5') {
+        target = 3;
       } 
       else
         target--;

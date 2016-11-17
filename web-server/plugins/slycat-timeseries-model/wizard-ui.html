@@ -10,6 +10,7 @@
     <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Input File</a></li>
     <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
     <li data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
+    <li data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a>Select HDF5 Directory</a></li>
     <li data-bind="css:{active:tab() == 5}"><a>Compute Model</a></li>
     <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
   </ul>
@@ -62,8 +63,8 @@
         type:'remote',
         sid:remote.sid,
         hostname:remote.hostname,
-        selection:browser.selection,
-        path:browser.path,
+        selection:browser_input.selection,
+        path:browser_input.path,
         open_file_callback:select_input_file,
         session_exists:remote.session_exists"></slycat-remote-browser>
     </div>
@@ -122,9 +123,19 @@
         type:'remote',
         sid:remote.sid,
         hostname:remote.hostname,
-        selection:browser.selection,
-        path:browser.path,
+        selection:browser_timeseries.selection,
+        path:browser_timeseries.path,
         open_file_callback:select_xyce_timeseries_file,
+        session_exists:remote.session_exists"></slycat-remote-browser>
+    </div>
+
+    <div data-bind="visible:tab() == 3" style="height: 400px">
+      <slycat-remote-browser params="
+        type:'remote-directory',
+        sid:remote.sid,
+        hostname:remote.hostname,
+        selection:browser_hdf5.selection,
+        path:browser_hdf5.path,
         session_exists:remote.session_exists"></slycat-remote-browser>
     </div>
 
@@ -172,16 +183,18 @@
     class="btn btn-default pull-left">Back</button>
 
   <button data-bind="visible:tab() == 0,click:connect" 
-    class="btn btn-default">Continue</button>
+    class="btn btn-primary">Continue</button>
   <button data-bind="visible:tab() == 2,click:select_input_file" 
-    class="btn btn-default remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button data-bind="visible:tab() == 4,click:params_continue" 
-    class="btn btn-default">Continue</button>
+    class="btn btn-primary">Continue</button>
   <button data-bind="visible:tab() == 7,click:select_xyce_timeseries_file" 
-    class="btn btn-default remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button data-bind="visible:tab() == 3,click:select_hdf5_directory" 
+    class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button data-bind="visible:tab() == 5,click:compute" 
-    class="btn btn-default">Continue</button>
+    class="btn btn-primary">Continue</button>
   <button data-bind="visible:tab() == 6,click:name_model" 
-    class="btn btn-default">Finish & Go To Model</button>
+    class="btn btn-primary">Finish & Go To Model</button>
 
 </div>
