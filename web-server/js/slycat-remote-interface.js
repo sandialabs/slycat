@@ -1,8 +1,7 @@
 define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-server-root', 'URI', 'slycat-web-client', 'slycat-dialog'], function(ko, mapping, server_root, URI, client, dialog) {
 
   /**
-   * A Knockout component to interact with remote hosts. Currently, for the
-   * batch files and Slycat prebuilt functions option, the remote cluster
+   * A Knockout component to interact with remote hosts. Currently the remote cluster
    * should have SLURM (Simple Linux Utility for Resource Management) installed
    * and configured.
    */
@@ -19,9 +18,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.remote.password = params.password;
       vm.remote.session_exists = params.session_exists;
       vm.remote.focus.extend({ notify: 'always' });
-      vm.radio = ko.observable('batch-file');
       vm.command = ko.observable('');
-      vm.batch = ko.observable('');
 
       vm.wckey = ko.observable('');
       vm.nnodes = ko.observable(1);
@@ -120,7 +117,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         if(vm.remote.session_exists())
         {
           $('#' + modal_id).modal('hide');
-          callback_map[vm.radio()]();
+          on_slycat_fn();
         }
         else
         {
@@ -132,7 +129,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
               vm.remote.session_exists(true);
               vm.remote.sid(sid);
               $('#' + modal_id).modal('hide');
-              callback_map[vm.radio()]();
+              on_slycat_fn();
             },
             error: function(request, status, reason_phrase) {
               vm.remote.enable(true);
@@ -150,67 +147,55 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       };
 
       var invalid_form = function() {
-        var type = vm.radio();
-
         $('.form-group').removeClass('has-error');
 
-        if (!vm.batch().length && type === 'batch-file') {
-          alert('A valid file name needs to be entered...');
-          $('#form-group-batch-file').addClass('has-error');
-          return true;
+        var invalid = false;
+        var out = '';
+
+        if (vm.wckey() === '') {
+          out += '\n' + 'A valid WCID needs to be entered...';
+          $('#form-group-wcid').addClass('has-error');
+          invalid = true;
         }
 
-        if (type === 'slycat-function') {
-          var invalid = false;
-          var out = '';
-
-          if (vm.wckey() === '') {
-            out += '\n' + 'A valid WCID needs to be entered...';
-            $('#form-group-wcid').addClass('has-error');
-            invalid = true;
-          }
-
-          if (vm.nnodes() === undefined || vm.nnodes() === "" || parseInt(vm.nnodes(), 10) < 1) {
-            out += '\n' + 'Invalid input for the number of nodes: ' + vm.nnodes() + '.';
-            $('#form-group-nnodes').addClass('has-error');
-            invalid = true;
-          }
-
-          if (vm.partition() === '') {
-            out += '\n' + 'A partition needs to be entered...';
-            $('#form-group-partition').addClass('has-error');
-            invalid = true;
-          }
-
-          if (vm.ntasks_per_node() === undefined || vm.ntasks_per_node() === "" || parseInt(vm.ntasks_per_node(), 10) < 1) {
-            out += '\n' + 'Invalid input for the number of task(s) per node: ' + vm.ntasks_per_node() + '.';
-            $('#form-group-tasks-per-node').addClass('has-error');
-            invalid = true;
-          }
-
-          var hr = vm.time_hours() === undefined || vm.time_hours() === "" ? 0 : parseInt(vm.time_hours(), 10);
-          var min = vm.time_minutes() === undefined || vm.time_minutes() === "" ? 0 : parseInt(vm.time_minutes(), 10);
-          var sec = vm.time_seconds() === undefined || vm.time_seconds() === "" ? 0 : parseInt(vm.time_seconds(), 10);
-
-          if (hr < 0 || min < 0 || sec < 0) {
-            out += '\n' + 'Negative time is invalid: ' + hr + ':' + min + ':' + sec + '.';
-            $('#form-group-time').addClass('has-error');
-            invalid = true;
-          }
-
-          if ((hr + min + sec) < 1) {
-            out += '\n' + 'Zero time is invalid.';
-            $('#form-group-time').addClass('has-error');
-            invalid = true;
-          }
-
-          if (invalid)
-            alert(out);
-
-          return invalid;
+        if (vm.nnodes() === undefined || vm.nnodes() === "" || parseInt(vm.nnodes(), 10) < 1) {
+          out += '\n' + 'Invalid input for the number of nodes: ' + vm.nnodes() + '.';
+          $('#form-group-nnodes').addClass('has-error');
+          invalid = true;
         }
 
-        return false;
+        if (vm.partition() === '') {
+          out += '\n' + 'A partition needs to be entered...';
+          $('#form-group-partition').addClass('has-error');
+          invalid = true;
+        }
+
+        if (vm.ntasks_per_node() === undefined || vm.ntasks_per_node() === "" || parseInt(vm.ntasks_per_node(), 10) < 1) {
+          out += '\n' + 'Invalid input for the number of task(s) per node: ' + vm.ntasks_per_node() + '.';
+          $('#form-group-tasks-per-node').addClass('has-error');
+          invalid = true;
+        }
+
+        var hr = vm.time_hours() === undefined || vm.time_hours() === "" ? 0 : parseInt(vm.time_hours(), 10);
+        var min = vm.time_minutes() === undefined || vm.time_minutes() === "" ? 0 : parseInt(vm.time_minutes(), 10);
+        var sec = vm.time_seconds() === undefined || vm.time_seconds() === "" ? 0 : parseInt(vm.time_seconds(), 10);
+
+        if (hr < 0 || min < 0 || sec < 0) {
+          out += '\n' + 'Negative time is invalid: ' + hr + ':' + min + ':' + sec + '.';
+          $('#form-group-time').addClass('has-error');
+          invalid = true;
+        }
+
+        if ((hr + min + sec) < 1) {
+          out += '\n' + 'Zero time is invalid.';
+          $('#form-group-time').addClass('has-error');
+          invalid = true;
+        }
+
+        if (invalid)
+          alert(out);
+
+        return invalid;
       };
 
       var server_checkjob = function(uid) {
@@ -252,29 +237,6 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         return uid;
       };
 
-      var on_batch_file = function() {
-        var uid = generateUniqueId();
-
-        client.post_submit_batch({
-          hostname: vm.remote.hostname(),
-          filename: vm.batch(),
-          success: function(results) {
-            if (results.errors) {
-              return void 0;
-            }
-
-            if (vm.on_submit_callback)
-              vm.on_submit_callback();
-
-            vm.jid(results.jid);
-            server_checkjob(uid);
-          },
-          error: function(request, status, reason_phrase) {
-            alertt('[Error] Could not start batch file ' + vm.batch() + ': ' + reason_phrase);
-          }
-        });
-      };
-
       var on_slycat_fn = function() {
         var fn = vm.agent_function()
         var uid = generateUniqueId();
@@ -312,12 +274,6 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         });
       };
 
-      /** maps the callback functions for the different options/radio buttons  */
-      var callback_map = {
-        'batch-file': on_batch_file,
-        'slycat-function': on_slycat_fn
-      };
-
       vm.submit_job = function() {
         if (invalid_form())
           return void 0;
@@ -333,7 +289,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             if (results.errors)
               return void 0
 
-            callback_map[vm.radio()]();
+            on_slycat_fn();
           },
           error: function(request, status, reason_phrase) {
             vm.remote.password('');
@@ -344,17 +300,6 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         return void 0;
       };
 
-      $('.slycat-remote-interface-custom-field').on('focus', function(e) {
-        $('#slycat-remote-interface-prebuilt').prop('checked', false);
-        $('#slycat-remote-interface-custom').prop('checked', true);
-        vm.radio('batch-file');
-      });
-
-      $('.slycat-remote-interface-prebuilt-field').on('focus', function(e) {
-        $('#slycat-remote-interface-custom').prop('checked', false);
-        $('#slycat-remote-interface-prebuilt').prop('checked', true);
-        vm.radio('slycat-function');
-      });
     },
 
     template: { require: 'text!' + server_root + 'templates/slycat-remote-interface.html' }
