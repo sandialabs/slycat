@@ -204,22 +204,22 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       var validated = true;
       removeErrors();
 
-      if (!component.id_column().length) {
+      if (!component.id_column().trim().length) {
         $('#form-id-column-name').addClass('has-error');
         validated = false;
       }
 
-      if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().length) {
+      if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().trim().length) {
         $('#form-inputs-file-delimiter').addClass('has-error');
         validated = false;
       }
 
-      if (component.timeseries_type() === 'csv' && !component.timeseries_name().length) {
+      if (component.timeseries_type() === 'csv' && !component.timeseries_name().trim().length) {
         $('#form-timeseries-name').addClass('has-error');
         validated = false;
       }
 
-      if (typeof component.cluster_sample_count() !== 'number' && !component.cluster_sample_count().length) {
+      if (Number(component.cluster_sample_count()) > 0) {
         $('#form-cluster-sample-count').addClass('has-error');
         validated = false;
       }
