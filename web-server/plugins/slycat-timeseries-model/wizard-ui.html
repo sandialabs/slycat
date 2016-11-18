@@ -95,7 +95,7 @@
     	<div id="form-cluster-sample-count" class="form-group">
         <label class="col-sm-4 control-label">Cluster Sample Count</label>
         <div class="col-sm-8">
-          <input class="form-control" type="number" data-bind="value: cluster_sample_count">
+          <input class="form-control" type="number" min="1" data-bind="value: cluster_sample_count">
         </div>
       </div>
     	<div class="form-group">
@@ -113,7 +113,7 @@
     	<div class="form-group">
         <label class="col-sm-4 control-label">Cluster Metric</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric"></select>
+          <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric, enable: cluster_metric().length > 1"></select>
         </div>
       </div>
     </div>

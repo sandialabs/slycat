@@ -152,43 +152,50 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         var invalid = false;
         var out = '';
 
-        if (vm.wckey() === '') {
-          out += '\n' + 'A valid WCID needs to be entered...';
+        if (vm.wckey().trim() === '') {
+          out += '\n' + 'Please enter a valid WCID.';
           $('#form-group-wcid').addClass('has-error');
           invalid = true;
         }
 
-        if (vm.nnodes() === undefined || vm.nnodes() === "" || parseInt(vm.nnodes(), 10) < 1) {
-          out += '\n' + 'Invalid input for the number of nodes: ' + vm.nnodes() + '.';
-          $('#form-group-nnodes').addClass('has-error');
-          invalid = true;
-        }
-
-        if (vm.partition() === '') {
-          out += '\n' + 'A partition needs to be entered...';
+        if (vm.partition().trim() === '') {
+          out += '\n' + 'Please enter a partition.';
           $('#form-group-partition').addClass('has-error');
           invalid = true;
         }
 
-        if (vm.ntasks_per_node() === undefined || vm.ntasks_per_node() === "" || parseInt(vm.ntasks_per_node(), 10) < 1) {
-          out += '\n' + 'Invalid input for the number of task(s) per node: ' + vm.ntasks_per_node() + '.';
+        if (vm.nnodes() === undefined || vm.nnodes() === "" || !Number.isInteger(Number(vm.nnodes())) || parseInt(vm.nnodes(), 10) < 1) {
+          out += '\n' + 'Number of nodes must be an integer of 1 or greater.';
+          $('#form-group-nnodes').addClass('has-error');
+          invalid = true;
+        }
+
+        if (vm.ntasks_per_node() === undefined || vm.ntasks_per_node() === "" || !Number.isInteger(Number(vm.ntasks_per_node())) || parseInt(vm.ntasks_per_node(), 10) < 1) {
+          out += '\n' + 'Number of tasks / node(s) must be an integer of 1 or greater.';
           $('#form-group-tasks-per-node').addClass('has-error');
           invalid = true;
         }
 
-        var hr = vm.time_hours() === undefined || vm.time_hours() === "" ? 0 : parseInt(vm.time_hours(), 10);
-        var min = vm.time_minutes() === undefined || vm.time_minutes() === "" ? 0 : parseInt(vm.time_minutes(), 10);
-        var sec = vm.time_seconds() === undefined || vm.time_seconds() === "" ? 0 : parseInt(vm.time_seconds(), 10);
-
-        if (hr < 0 || min < 0 || sec < 0) {
-          out += '\n' + 'Negative time is invalid: ' + hr + ':' + min + ':' + sec + '.';
+        if( !Number.isInteger(Number(  vm.time_hours())) || !Number.isInteger(Number(vm.time_minutes())) || !Number.isInteger(Number(vm.time_seconds())) )
+        {
+          out += '\n' + 'Please enter a valid time.';
           $('#form-group-time').addClass('has-error');
           invalid = true;
         }
 
-        if ((hr + min + sec) < 1) {
-          out += '\n' + 'Zero time is invalid.';
+        var hr  = vm.time_hours()   === undefined || vm.time_hours().trim()   === "" ? null : parseInt(vm.time_hours(),   10);
+        var min = vm.time_minutes() === undefined || vm.time_minutes().trim() === "" ? null : parseInt(vm.time_minutes(), 10);
+        var sec = vm.time_seconds() === undefined || vm.time_seconds().trim() === "" ? null : parseInt(vm.time_seconds(), 10);
+
+        if (hr == null || min == null || sec == null || hr < 0 || min < 0 || sec < 0 || ((hr + min + sec) < 1)) {
+          out += '\n' + 'Please enter a valid time.';
           $('#form-group-time').addClass('has-error');
+          invalid = true;
+        }
+
+        if (vm.workdir().trim() === '') {
+          out += '\n' + 'Please enter a working directory.';
+          $('#form-group-partition').addClass('has-error');
           invalid = true;
         }
 
