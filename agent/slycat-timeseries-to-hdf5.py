@@ -242,7 +242,7 @@ def convert_timeseries(timeseries_index, eval_id, row):
   for i, val in enumerate(row):
     if column_types[i] is "string":
       file_ext = val[len(val) - 3:]
-      if file_ext == "csv" or file_ext == "dat" or file_ext == "txt":
+      if file_ext == "csv" or file_ext == "dat" or file_ext == "txt":# TODO add or file_ext == "prn"
         process_timeseries(val, column_names[i], timeseries_index, eval_id)
 
 with concurrent.futures.ProcessPoolExecutor(arguments.parallel_jobs) as pool:
