@@ -219,7 +219,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         validated = false;
       }
 
-      if (Number(component.cluster_sample_count()) > 0) {
+      if (Number(component.cluster_sample_count()) < 2) {
         $('#form-cluster-sample-count').addClass('has-error');
         validated = false;
       }
