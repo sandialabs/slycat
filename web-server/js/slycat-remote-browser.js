@@ -20,6 +20,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.open_file_callback = params.open_file_callback;
       component.raw_files = mapping.fromJS([]);
       component.session_exists = params.session_exists;
+      component.persistence_id = params.persistence_id === undefined ? '' : params.persistence_id; // If you specify a persistence_id, it will be used as a key in localStorage so that path is restored only on remote browsers matching this id 
 
       component.icon_map = {
         "application/x-directory" : "<span class='fa fa-folder-o'></span>",
@@ -140,7 +141,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             $('.slycat-remote-browser .form-group.path').removeClass('has-error');
             $('.slycat-remote-browser-files').fadeOut(0);
 
-            localStorage.setItem("slycat-remote-browser-path-" + component.hostname(), path);
+            localStorage.setItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname(), path);
 
             component.path(path);
             component.path_input(path);
@@ -176,7 +177,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
         if(new_session_exists)
         {
           if(!component.path())
-            component.path(localStorage.getItem("slycat-remote-browser-path-" + component.hostname()) || "/");
+            component.path(localStorage.getItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname()) || "/");
           component.browse(component.path());
         }
       });

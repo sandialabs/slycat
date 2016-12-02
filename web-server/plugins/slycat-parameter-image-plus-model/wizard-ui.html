@@ -44,7 +44,15 @@
     </div>
 
     <div data-bind="visible:tab() == 1" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_table,session_exists:remote.session_exists"></slycat-remote-browser>
+      <slycat-remote-browser params="
+        type:'remote',
+        sid:remote.sid,
+        hostname:remote.hostname,
+        selection:browser.selection,
+        path:browser.path,
+        open_file_callback:load_table,
+        session_exists:remote.session_exists,
+        persistence_id:'pip-table-file'"></slycat-remote-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
     </div>
 
@@ -120,7 +128,15 @@
     </div>
 
     <div data-bind="visible:tab() == 6" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote_matrix.sid,hostname:remote_matrix.hostname,selection:browser.selection,path:browser.path,open_file_callback:load_distance_matrix,session_exists:remote_matrix.session_exists"></slycat-remote-browser>
+      <slycat-remote-browser params="
+        type:'remote',
+        sid:remote_matrix.sid,
+        hostname:remote_matrix.hostname,
+        selection:browser.selection,
+        path:browser.path,
+        open_file_callback:load_distance_matrix,
+        session_exists:remote_matrix.session_exists,
+        persistence_id:'pip-distances-file'"></slycat-remote-browser>
     </div>
 
     <div data-bind="visible:tab() == 7">

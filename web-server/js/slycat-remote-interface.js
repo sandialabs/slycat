@@ -183,9 +183,9 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           invalid = true;
         }
 
-        var hr  = vm.time_hours()   === undefined || vm.time_hours().trim()   === "" ? null : parseInt(vm.time_hours(),   10);
-        var min = vm.time_minutes() === undefined || vm.time_minutes().trim() === "" ? null : parseInt(vm.time_minutes(), 10);
-        var sec = vm.time_seconds() === undefined || vm.time_seconds().trim() === "" ? null : parseInt(vm.time_seconds(), 10);
+        var hr  = vm.time_hours()   === undefined || vm.time_hours()   === "" ? null : parseInt(vm.time_hours(),   10);
+        var min = vm.time_minutes() === undefined || vm.time_minutes() === "" ? null : parseInt(vm.time_minutes(), 10);
+        var sec = vm.time_seconds() === undefined || vm.time_seconds() === "" ? null : parseInt(vm.time_seconds(), 10);
 
         if (hr == null || min == null || sec == null || hr < 0 || min < 0 || sec < 0 || ((hr + min + sec) < 1)) {
           out += '\n' + 'Please enter a valid time.';
@@ -195,7 +195,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
         if (vm.workdir().trim() === '') {
           out += '\n' + 'Please enter a working directory.';
-          $('#form-group-partition').addClass('has-error');
+          $('#form-group-workdir').addClass('has-error');
           invalid = true;
         }
 
