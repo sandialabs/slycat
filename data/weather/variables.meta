@@ -1,0 +1,21 @@
+Name	Time Units	Units	Plot Type
+Max Temperature	Day	F	Curve
+Mean Temperature	Day	F	Curve
+Min Temperature	Day	F	Curve
+Max Dew Point	Day	F	Curve
+Mean Dew Point	Day	F	Curve
+Min Dew Point	Day	F	Curve
+Max Humidity	Day	%	Curve
+Mean Humidity	Day	%	Curve
+Min Humidity	Day	%	Curve
+Max Sea Level Pressure	Day	In	Curve
+Mean Sea Level Pressure	Day	In	Curve
+Min Sea Level Pressure	Day	In	Curve
+Max Visibility	Day	Miles	Curve
+Mean Visibility	Day	Miles	Curve
+Min Visibility	Day	Miles	Curve
+Max Wind Speed	Day	MPH	Curve
+Mean Wind Speed	Day	MPH	Curve
+Precipitation	Day	In	Curve
+Cloud Cover	Day	Okta	Curve
+Wind Dir	Day	Degrees	Curve

@@ -1,0 +1,21 @@
+This directory contains code for the dial-a-cluster plug-in within the
+Slycat framework.  Put this code in a directory “dial-a-cluster” under
+the “src” directory, which should also contain the “slycat” directory.
+
+To set-up the plug-in, you must first connect the dial-a-cluster code to
+Slycat server.  To do this, you have to point the server to the
+"plugin" directory via the /etc/slycat/slycat-web-server-config.ini file.
+Once you do that, the model is "registered" with the Slycat server and it knows
+where to find the other code (all stored within this directory).  To start a new
+dial-a-cluster model, you next need to load data, for example
+
+$ python create-dac-model.py --model-name “Weather” ../../data/weather —-no-verify
+
+loads the weather data onto the web server (run this from the plugin/py directory).
+
+To load the data onto the actual slycat server (not one running in docker), you 
+have to run something like:
+
+$ python create-dac-model.py --host https://slycat.sandia.gov --no-verify
+    --user smartin --marking uur model-name “Weather” --project-name “Weather-DAC”
+    ../../data/weather

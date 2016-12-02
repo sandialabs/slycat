@@ -1,0 +1,102 @@
+<!-- 
+Dial-A-Cluster
+
+S. Martin
+4/16/2015
+-->
+
+<div id="dac-model" style="-webkit-flex:1; flex:1;">
+
+	<div class="ui-layout-center">
+		
+		<div class="ui-layout-center">
+
+			<div class="ui-layout-north" id="dac-mds-buttons">
+		
+				<!-- MDS Scatter Plot Buttons -->
+				<div class="bootstrap-styles">
+			
+					<div class="btn-group" data-toggle="buttons" 
+						id="dac-scatter-select-buttons">
+						<label class="btn btn-default btn-sm active"
+							id="dac-scatter-button-sel-1">
+							<input type="radio" name="options" autocomplete="off" 
+								value="selection_1">Selection 1</input>
+						</label>
+						<label class="btn btn-default btn-sm"
+							id="dac-scatter-button-sel-2">
+							<input type="radio" name="options" autocomplete="off"
+								value="selection_2">Selection 2</input>
+						</label>
+						<label class="btn btn-default btn-sm"
+							id="dac-scatter-button-zoom">
+							<input type="radio" name="options" autocomplete="off"
+								value="zoom">Zoom</input>
+						</label>
+        			</div>
+        			
+        			<button id="dac-scatter-diff-button"
+	        			type="button" class="btn btn-default btn-sm">Difference
+        			</button>
+        			
+        			<select class="dac-select" id="dac-scatter-select"></select> 
+        					
+				</div>
+			
+			</div>
+				
+			<div class="ui-layout-center" id="dac-mds-pane">
+					
+				<!-- MDS Scatter Plot -->
+				<svg id="dac-mds-scatterplot"></svg>
+			
+			</div>
+			
+		</div>
+		
+		<div class="ui-layout-south" id="dac-datapoints-pane"
+		
+			<!-- MetaData Table --->
+			<div id="dac-datapoints-table"></div>
+			
+		</div>
+		
+		<div class="ui-layout-west">
+		
+			<!-- Alpha Sliders --->
+			<div class="ui-layout-center">
+				<ul id="dac-alpha-sliders"></ul>
+			</div>
+			
+			<div class="ui-layout-south">
+		
+				<!-- Alpha Buttons --->			
+				<div class="bootstrap-styles" id="dac-alpha-buttons">
+					<button type="button" class="btn btn-default"
+						    id="dac-alpha-zero-button">0</button>
+					<button type="button" class="btn btn-default"
+						    id="dac-alpha-one-button">1</button>
+					<button type="button" class="btn btn-default"
+							id="dac-alpha-cluster-button">Cluster</button>
+				</div>
+			</div>
+			
+		</div>
+		
+	</div>
+	
+	<div class="ui-layout-east" id="dac-plots">
+	
+		<!-- Times Series Plots --->
+		<svg class="dac-plot" id="dac-plot-1"></svg>
+		<select class="dac-select" id="dac-select-plot-1"></select>
+		
+		<svg class="dac-plot" id="dac-plot-2"></svg>
+		<select class="dac-select" id="dac-select-plot-2"></select>
+		
+		<svg class="dac-plot" id="dac-plot-3"></svg>
+		<select class="dac-select" id="dac-select-plot-3"></select>
+		
+	</div>
+	
+</div>
