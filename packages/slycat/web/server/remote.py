@@ -371,11 +371,6 @@ class Session(object):
     response : dict
       A dictionary with the following keys: jid, errors
     """
-    if self._agent is not None:
-      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-      slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
-                              "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
-      raise cherrypy.HTTPError(500)
     # verifies the fn is allowed to be run...
     restricted_fns = {
       "jaccard-distance": "jaccard",
@@ -386,15 +381,27 @@ class Session(object):
       "hamming-distance": "hamming",
       "timeseries-model": "timeseries-model"
     }
+    # check for an agent in none available die
+    if self._agent is None:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+                              "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
+      raise cherrypy.HTTPError(500)
 
+    # check if we can run the function
+    if fn not in restricted_fns:
+      cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
+      slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 500 function %s is not available for the agent." % fn)
+      raise cherrypy.HTTPError(500)
+
+    #get the name of our slycat module on the hpc
     if "module-name" in slycat.web.server.config["slycat-web-server"]:
         module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
     else:
       module_name = "slycat"
 
     # setup necessary for using IPython parallel with the agent function
-    ipython_parallel_setup_arr = [
-    ]
+    ipython_parallel_setup_arr = []
 
     def create_distance_matrix(fn_id, params):
       function_id = restricted_fns[fn_id]
@@ -436,7 +443,6 @@ class Session(object):
         # uncomment this line for local development
         # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
 
-
       return arr
 
     def agent_functions(fn_id, params):
@@ -448,47 +454,42 @@ class Session(object):
       else:
         return create_distance_matrix(fn_id, params)
 
-    if fn not in restricted_fns:
-      cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
-      slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 500 function %s is not available for the agent." % fn)
-      raise cherrypy.HTTPError(500)
-    else:
-      stdin, stdout, stderr = self._agent
-      payload = {
-        "action": "run-function",
-        "command": {
-          "module_name": module_name,
-          "wckey": wckey,
-          "nnodes": nnodes,
-          "partition": partition,
-          "ntasks_per_node": ntasks_per_node,
-          "time_hours": time_hours,
-          "time_minutes": time_minutes,
-          "time_seconds": time_seconds,
-          "fn": agent_functions(fn, fn_params),
-          "uid": uid
-        }
+    stdin, stdout, stderr = self._agent
+    payload = {
+      "action": "run-function",
+      "command": {
+        "module_name": module_name,
+        "wckey": wckey,
+        "nnodes": nnodes,
+        "partition": partition,
+        "ntasks_per_node": ntasks_per_node,
+        "time_hours": time_hours,
+        "time_minutes": time_minutes,
+        "time_seconds": time_seconds,
+        "fn": agent_functions(fn, fn_params),
+        "uid": uid
       }
-      cherrypy.log.error("writing msg: %s" % json.dumps(payload))
-      stdin.write("%s\n" % json.dumps(payload))
-      stdin.flush()
+    }
+    cherrypy.log.error("writing msg: %s" % json.dumps(payload))
+    stdin.write("%s\n" % json.dumps(payload))
+    stdin.flush()
 
-      response = json.loads(stdout.readline())
-      cherrypy.log.error("response msg: %s" % response)
-      if not response["ok"]:
-        cherrypy.response.headers["x-slycat-message"] = response["message"]
-        cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
-        slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 400 %s" % response["message"])
-        raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
+    response = json.loads(stdout.readline())
+    cherrypy.log.error("response msg: %s" % response)
+    if not response["ok"]:
+      cherrypy.response.headers["x-slycat-message"] = response["message"]
+      cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
+      slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 400 %s" % response["message"])
+      raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
 
-      # parses out the job ID
-      arr = [int(s) for s in response["output"].split() if s.isdigit()]
-      if len(arr) > 0:
-        jid = arr[0]
-      else:
-        jid = -1
+    # parses out the job ID
+    arr = [int(s) for s in response["output"].split() if s.isdigit()]
+    if len(arr) > 0:
+      jid = arr[0]
+    else:
+      jid = -1
 
-      return { "jid": jid, "errors": response["errors"] }
+    return { "jid": jid, "errors": response["errors"] }
 
   # TODO modify to follow new remote computation interface
   def launch(self, command):
