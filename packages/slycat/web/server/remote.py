@@ -420,7 +420,7 @@ class Session(object):
     def compute_timeseries(fn_id, params):
       arr = list(ipython_parallel_setup_arr)
 
-      if params["to_hdf5"] is True:
+      if "retain_hdf5" not in params:
         if params["timeseries_type"] == "csv":
           # uncomment this line for production
           arr.append("python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
