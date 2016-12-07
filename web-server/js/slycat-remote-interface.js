@@ -250,6 +250,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
         var fn_params = vm.agent_function_params();
         fn_params.workdir = vm.workdir();
+        fn_params.retain_hdf5 = vm.retain_hdf5();
 
         client.post_agent_function({
           hostname: vm.remote.hostname(),

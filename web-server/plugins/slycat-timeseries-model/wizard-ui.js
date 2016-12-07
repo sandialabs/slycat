@@ -11,7 +11,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.browser_input = mapping.fromJS({path:null, selection: []});
     component.browser_timeseries = mapping.fromJS({path:null, selection: []});
     component.browser_hdf5 = mapping.fromJS({path:null, selection: []});
-    component.to_hdf5 = ko.observable(true);
     component.inputs_file = ko.observable('');
     component.input_directory = ko.observable('');
     component.hdf5_directory = ko.observable('');

@@ -176,6 +176,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         if(new_session_exists)
         {
+          // Alex: this should be the other way - always overwrite from local storage because that's been customized by the user.
           if(!component.path())
             component.path(localStorage.getItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname()) || "/");
           component.browse(component.path());
