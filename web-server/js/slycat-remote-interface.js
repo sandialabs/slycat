@@ -24,13 +24,13 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.nnodes = ko.observable(1);
       vm.partition = ko.observable('');
       vm.ntasks_per_node = ko.observable(1); // This is preset in wizard-ui.html with: suggestions: [{'ntasks_per_node': 8}]
+      vm.job_size = ko.observable(1000);
       vm.time_hours = ko.observable(0);
       vm.time_minutes = ko.observable(20);
       vm.time_seconds = ko.observable(0);
       vm.time_recommended = ko.observable(true);
       vm.workdir = ko.observable('');
       vm.retain_hdf5 = ko.observable(false);
-      vm.job_size = ko.observable(1000);
 
       vm.jid = ko.observable(-1);
       vm.agent_function = ko.observable(params.agent_function === undefined ? '' : params.agent_function);

@@ -32,6 +32,11 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     // component.time_minutes = ko.observable('');
     // component.time_seconds = ko.observable('');
 
+    component.timeseries_type.subscribe(function(newValue){
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      vm.retain_hdf5(newValue == 'hdf5');
+    });
+
     component.user_config = {};
 
     var removeErrors = function() {
