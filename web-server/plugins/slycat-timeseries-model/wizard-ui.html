@@ -1,136 +1,208 @@
 <div class="modal-header">
-  <button type="button" class="close" data-bind="click: tab() != 5 ? cancel : false" data-dismiss="modal" aria-label="Close">
+  <button type="button" class="close" data-bind="click: cancel, visible: tab() != 6" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
   <h3 class="modal-title">New Timeseries Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Choose Timeseries format</a></li>
-    <li data-bind="css:{active:tab() == 1}"><a>Connect To Remote Server</a></li>
-    <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Input Data File</a></li>
-    <li data-bind="css:{active:tab() == 7}" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
-    <li data-bind="css:{active:tab() == 3}"><a>Input Data Parameters</a></li>
+    <li data-bind="css:{active:tab() == 0}"><a>Find Data</a></li>
+    <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Table File</a></li>
     <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
-    <li data-bind="css:{active:tab() == 5}"><a>Compute Model</a></li>
+    <li data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
+    <li data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a>Select HDF5 Directory</a></li>
+    <li data-bind="css:{active:tab() == 5}"><a>HPC Parameters</a></li>
     <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
   </ul>
 
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
-      <div class="radio" style="margin-left: 15px;">
-        <label>
-          <input type="radio" name="timeseries-type-radios" id="csv-radio" value="csv" data-bind="checked: timeseries_type">
-          CSV file format
-        </label>
-      </div>
-      <div class="radio" style="margin-left: 15px;">
-        <label>
-          <input type="radio" name="timeseries-type-radios" id="xyce-radio" value="xyce" checked="checked" data-bind="checked: timeseries_type">
-          Xyce format
-        </label>
-      </div>
-    </div>
 
-    <div data-bind="visible:tab() == 1">
-      <form class="form-horizontal" role="form">
-        <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
-      </form>
+      <div class="form-group">
+        <label for="timeseries-type-radios">What type of data will you be using?</label>
+        <div class="radio" style="margin-left: 15px;">
+          <label>
+            <input type="radio" name="timeseries-type-radios" id="xyce-radio" value="xyce" checked="checked" data-bind="checked: timeseries_type">
+            Xyce
+          </label>
+        </div>
+        <div class="radio" style="margin-left: 15px;">
+          <label>
+            <input type="radio" name="timeseries-type-radios" id="csv-radio" value="csv" data-bind="checked: timeseries_type">
+            CSV
+          </label>
+        </div>
+        <div class="radio" style="margin-left: 15px;">
+          <label>
+            <input type="radio" name="timeseries-type-radios" id="hdf5-radio" value="hdf5" data-bind="checked: timeseries_type">
+            HDF5
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 40px;">
+        <label class="bottom-margin">Where is your data located?</label>
+        <form class="form-horizontal" role="form">
+          <slycat-remote-controls params="
+            hostname:remote.hostname,
+            username:remote.username,
+            password:remote.password,
+            status:remote.status,
+            status_type:remote.status_type,
+            enable:remote.enable,
+            focus:remote.focus,
+            activate:connect,
+            session_exists:remote.session_exists"></slycat-remote-controls>
+        </form>
+      </div>
     </div>
 
     <div data-bind="visible:tab() == 2" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_input_file,session_exists:remote.session_exists"></slycat-remote-browser>
+      <label class="bottom-margin">Please select your table file</label>
+      <slycat-remote-browser params="
+        type:'remote',
+        sid:remote.sid,
+        hostname:remote.hostname,
+        selection:browser_input.selection,
+        path:browser_input.path,
+        open_file_callback:select_input_file,
+        session_exists:remote.session_exists,
+        persistence_id:'timeseries-table-file'"></slycat-remote-browser>
     </div>
 
-    <div data-bind="visible:tab() == 7" style="height: 400px">
-      <slycat-remote-browser params="type:'remote',sid:remote.sid,hostname:remote.hostname,selection:browser.selection,path:browser.path,open_file_callback:select_xyce_timeseries_file,session_exists:remote.session_exists"></slycat-remote-browser>
-    </div>
-
-    <div data-bind="visible:tab() == 3" class="form-horizontal">
-      <div class="form-group">
-        <label class="col-sm-4"></label>
-        <div class="col-sm-8">
-          <input type="checkbox" data-bind="checked: to_hdf5"> Convert data set to .hdf5 files
-        </div>
-      </div>
-      <div id="form-output-directory" class="form-group">
-        <label class="col-sm-4">Output Directory</label>
-        <div class="col-sm-8">
-          <input class="form-control" type="text" data-bind="value: output_directory">
-        </div>
-      </div>
+    <div data-bind="visible:tab() == 4" class="form-horizontal">
       <div id="form-id-column-name" class="form-group">
-        <label class="col-sm-4">ID Column Name</label>
+        <label class="col-sm-4 control-label">ID Column Name</label>
         <div class="col-sm-8">
           <input class="form-control" type="text" data-bind="value: id_column">
         </div>
       </div>
       <!-- ko if: timeseries_type() == 'csv' -->
         <div id="form-inputs-file-delimiter" class="form-group">
-          <label class="col-sm-4">Inputs File Delimiter</label>
+          <label class="col-sm-4 control-label">Table File Delimiter</label>
           <div class="col-sm-8">
             <input class="form-control" type="text" data-bind="value: inputs_file_delimiter">
           </div>
         </div>
       <!-- /ko -->
-    </div>
-
-    <div data-bind="visible:tab() == 4" class="form-horizontal">
       <!-- ko if: timeseries_type() == 'csv' -->
-        <div id="form-timeseries-name" class="form-group">
-          <label class="col-sm-4">Timeseries Name</label>
+        <div id="form-timeseries-name" class="form-group"
+          title="Label of column in the table file containing full paths to timeseries files.">
+          <label class="col-sm-4 control-label">Timeseries Column Name</label>
           <div class="col-sm-8">
-            <input class="form-control" type="text" data-bind="value: timeseries_name">
+            <input class="form-control" type="text" 
+              data-bind="value: timeseries_name">
           </div>
         </div>
       <!-- /ko -->
-    	<div id="form-cluster-sample-count" class="form-group">
-        <label class="col-sm-4">Cluster Sample Count</label>
+    	<div id="form-cluster-sample-count" class="form-group" 
+      title="Each timeseries will be uniformly divided into this number of bins and all points in a bin will be averaged to produce the display value and the value used in the distance calculations.">
+        <label class="col-sm-4 control-label">Timeseries Bin Count</label>
         <div class="col-sm-8">
-          <input class="form-control" type="number" data-bind="value: cluster_sample_count">
+          <input class="form-control" type="number" min="2" data-bind="value: cluster_sample_count">
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4">Cluster Sample Type</label>
+        <label class="col-sm-4 control-label">Cluster Sample Type</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-sample-type" class="form-control" data-bind="options: cluster_sample_type"></select>
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4">Cluster Type</label>
+        <label class="col-sm-4 control-label">Cluster Type</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-type" class="form-control" data-bind="options: cluster_type"></select>
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4">Cluster Metric</label>
+        <label class="col-sm-4 control-label">Cluster Metric</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric"></select>
+          <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric, enable: cluster_metric().length > 1"></select>
         </div>
       </div>
     </div>
 
+    <div data-bind="visible:tab() == 7" style="height: 400px">
+      <label class="bottom-margin">Please select an example timeseries file</label>
+      <slycat-remote-browser params="
+        type:'remote',
+        sid:remote.sid,
+        hostname:remote.hostname,
+        selection:browser_timeseries.selection,
+        path:browser_timeseries.path,
+        open_file_callback:select_xyce_timeseries_file,
+        session_exists:remote.session_exists,
+        persistence_id:'timeseries-example-timeseries-file'"></slycat-remote-browser>
+    </div>
+
+    <div data-bind="visible:tab() == 3" style="height: 400px">
+      <label class="bottom-margin">Please select the directory containing your HDF5 files</label>
+      <slycat-remote-browser params="
+        type:'remote-directory',
+        sid:remote.sid,
+        hostname:remote.hostname,
+        selection:browser_hdf5.selection,
+        path:browser_hdf5.path,
+        session_exists:remote.session_exists,
+        persistence_id:'timeseries-hdf5-directory'"></slycat-remote-browser>
+    </div>
+
     <div data-bind="visible:tab() == 5">
       <form class="compute form-horizontal" role="form">
-      <slycat-remote-interface params="agent_function: 'timeseries-model', agent_function_params: { 'timeseries_type': timeseries_type(), 'inputs_file': inputs_file(), 'to_hdf5': to_hdf5(), 'input_directory': input_directory(),'output_directory': output_directory(), 'id_column': id_column(), 'inputs_file_delimiter': inputs_file_delimiter(), 'xyce_timeseries_file': xyce_timeseries_file(), 'timeseries_name': timeseries_name(), 'cluster_sample_count': cluster_sample_count(), 'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 'cluster_type': $('#timeseries-wizard-cluster-type').val(), 'cluster_metric': $('#timeseries-wizard-cluster-metric').val(), 'workdir': workdir() }, model_type: 'timeseries', mid: model._id(), suggestions: [{'ntasks_per_node': 8}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, on_submit_callback: to_compute_next_step,session_exists:remote.session_exists"></slycat-remote-interface>
+        <slycat-remote-interface params="
+          agent_function: 'timeseries-model', 
+          agent_function_params: { 
+            'timeseries_type': timeseries_type(), 
+            'inputs_file': inputs_file(), 
+            'input_directory': input_directory(),
+            'id_column': id_column(), 
+            'inputs_file_delimiter': inputs_file_delimiter(), 
+            'xyce_timeseries_file': xyce_timeseries_file(), 
+            'timeseries_name': timeseries_name(), 
+            'cluster_sample_count': cluster_sample_count(), 
+            'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 
+            'cluster_type': $('#timeseries-wizard-cluster-type').val(), 
+            'cluster_metric': $('#timeseries-wizard-cluster-metric').val(), 
+            'workdir': workdir() }, 
+          model_type: 'timeseries', 
+          mid: model._id(), 
+          suggestions: [{'ntasks_per_node': 8}], 
+          sid: remote.sid, 
+          hostname: remote.hostname, 
+          username: remote.username, 
+          password: remote.password, 
+          on_submit_callback: to_compute_next_step,
+          session_exists:remote.session_exists"></slycat-remote-interface>
       </form>
     </div>
 
     <div data-bind="visible:tab() == 6">
       <form class="form-horizontal" onsubmit="return false">
-        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+        <slycat-model-controls params="
+          name:model.name,
+          description:model.description,
+          marking:model.marking"></slycat-model-controls>
       </form>
     </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 0,click:to_remote">Continue</button>
-  <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 1,click:connect"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 2,click:select_input_file"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-default remote-browser-continue-data browser-continue" data-bind="visible:tab() == 7,click:select_xyce_timeseries_file"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 3,click:to_timeseries_parameters">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 4,click:to_compute">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 5,click:compute">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 6,click:name_model">Finish & Go To Model</button>
+  <button data-bind="visible: [0,6].indexOf(tab()) == -1, click: back" 
+    class="btn btn-default pull-left">Back</button>
+
+  <button data-bind="visible:tab() == 0,click:connect" 
+    class="btn btn-primary">Continue</button>
+  <button data-bind="visible:tab() == 2,click:select_input_file" 
+    class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button data-bind="visible:tab() == 4,click:params_continue" 
+    class="btn btn-primary">Continue</button>
+  <button data-bind="visible:tab() == 7,click:select_xyce_timeseries_file" 
+    class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button data-bind="visible:tab() == 3,click:select_hdf5_directory" 
+    class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button data-bind="visible:tab() == 5,click:compute" 
+    class="btn btn-primary">Continue</button>
+  <button data-bind="visible:tab() == 6,click:name_model" 
+    class="btn btn-primary">Finish & Go To Model</button>
+
 </div>

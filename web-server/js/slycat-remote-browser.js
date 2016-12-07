@@ -11,7 +11,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
     viewModel: function(params)
     {
       var component = this;
-      component.type = ko.utils.unwrapObservable(params.type);
+      component.type = ko.utils.unwrapObservable(params.type); // Specify 'remote' for file picker, 'remote-directory' for directory picker
       component.sid = params.sid;
       component.hostname = params.hostname;
       component.path = params.path;
@@ -20,6 +20,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.open_file_callback = params.open_file_callback;
       component.raw_files = mapping.fromJS([]);
       component.session_exists = params.session_exists;
+      component.persistence_id = params.persistence_id === undefined ? '' : params.persistence_id; // If you specify a persistence_id, it will be used as a key in localStorage so that path is restored only on remote browsers matching this id 
 
       component.icon_map = {
         "application/x-directory" : "<span class='fa fa-folder-o'></span>",
@@ -92,7 +93,8 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         var selection = [path_join(component.path(), file.name())];
         component.selection(selection);
-        if(file.type() == "f")
+        // Only allow file selection when directory selection is not specified
+        if(file.type() == "f" && component.type != 'remote-directory')
         {
           // Clear current selection
           for(var i=0; i < component.files().length; i++)
@@ -139,7 +141,7 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             $('.slycat-remote-browser .form-group.path').removeClass('has-error');
             $('.slycat-remote-browser-files').fadeOut(0);
 
-            localStorage.setItem("slycat-remote-browser-path-" + component.hostname(), path);
+            localStorage.setItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname(), path);
 
             component.path(path);
             component.path_input(path);
@@ -174,8 +176,9 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         if(new_session_exists)
         {
+          // Alex: this should be the other way - always overwrite from local storage because that's been customized by the user.
           if(!component.path())
-            component.path(localStorage.getItem("slycat-remote-browser-path-" + component.hostname()) || "/");
+            component.path(localStorage.getItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname()) || "/");
           component.browse(component.path());
         }
       });

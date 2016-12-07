@@ -2068,11 +2068,16 @@ def job_time(nodes, tasks, size):
     :param size: size of data file used in the job
     :return: json time in seconds as an integer {'time-seconds': 1800}
     """
+    if int(nodes) < 0 or int(tasks) < 0 or int(size) < 0:
+      time = None
+    else:
+      time = int(1.8 * float(size)) / (float(nodes) * float(tasks)) + 900
     return {
-            'time-seconds': 1800,
+            'time-seconds': time,
             'nodes': nodes,
             'tasks': tasks,
-            'size': size}  # return 30 min for now
+            'size': size}  # return an approximation based on size, nodes, and tasks for now
+
 
 
 @cherrypy.tools.json_in(on=True)

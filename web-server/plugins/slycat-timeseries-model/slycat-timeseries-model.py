@@ -16,16 +16,17 @@ def register_slycat_plugin(context):
         import pickle
 
     def media_columns(database, model, verb, type, command, **kwargs):
-        """Identify columns in the input data that contain media URIs (image or video).
-    :param kwargs:
-    :param command:
-    :param type:
-    :param verb:
-    :param model:
-      model ID in the data base
-    :param database:
-      our connection to couch db
-    """
+        """
+        Identify columns in the input data that contain media URIs (image or video).
+        :param kwargs:
+        :param command:
+        :param type:
+        :param verb:
+        :param model:
+          model ID in the data base
+        :param database:
+          our connection to couch db
+        """
         expression = re.compile("file://")
         search = numpy.vectorize(lambda x: bool(expression.search(x)))
 
@@ -44,11 +45,11 @@ def register_slycat_plugin(context):
 
     def finish(database, model):
         """
-    Update the model in the databse as successfully completed.
+        Update the model in the databse as successfully completed.
 
-    :param database:
-    :param model:
-    """
+        :param database:
+        :param model:
+        """
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model["_id"])
         """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
@@ -202,16 +203,16 @@ def register_slycat_plugin(context):
     # TODO this function needs to be migrated to the implementation of the computation interface
     def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
         """
-    Routine running on a separate thread which checks on the status of remote
-    jobs running on a SLURM infrastructure.
+        Routine running on a separate thread which checks on the status of remote
+        jobs running on a SLURM infrastructure.
 
-    :param mid:          model ID
-    :param sid:          session ID
-    :param jid:          job ID
-    :param request_from:
-    :param stop_event:   event stopping the thread when the job completes
-    :param callback:     callback methods when the job successfully completes
-    """
+        :param mid:          model ID
+        :param sid:          session ID
+        :param jid:          job ID
+        :param request_from:
+        :param stop_event:   event stopping the thread when the job completes
+        :param callback:     callback methods when the job successfully completes
+        """
         cherrypy.request.headers["x-forwarded-for"] = request_from
         retry_counter = 5
 
@@ -297,13 +298,13 @@ def register_slycat_plugin(context):
     # TODO this function needs to be migrated to the implementation of the computation interface
     def checkjob(database, model, verb, type, command, **kwargs):
         """
-    Starts a routine to continuously check the status of a remote job.
+        Starts a routine to continuously check the status of a remote job.
 
-    :param database:
-    :param model:
-    :param kwargs: arguments contain hostname, username, password, jid,
-                   function name and parameters, UID
-    """
+        :param database:
+        :param model:
+        :param kwargs: arguments contain hostname, username, password, jid,
+                       function name and parameters, UID
+        """
         sid = None
         try:
             database = slycat.web.server.database.couchdb.connect()
@@ -323,9 +324,9 @@ def register_slycat_plugin(context):
 
         def callback():
             """
-      Callback for a successful remote job completion. It computes the model
-      and successfully completes it.
-      """
+            Callback for a successful remote job completion. It computes the model
+            and successfully completes it.
+            """
             compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
                     kwargs["password"])
             finish(database, model)

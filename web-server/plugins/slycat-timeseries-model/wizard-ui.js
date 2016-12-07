@@ -8,16 +8,17 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.timeseries_type = ko.observable('xyce');
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: 'always'});
-    component.browser = mapping.fromJS({path:null, selection: []});
-    component.to_hdf5 = ko.observable(true);
+    component.browser_input = mapping.fromJS({path:null, selection: []});
+    component.browser_timeseries = mapping.fromJS({path:null, selection: []});
+    component.browser_hdf5 = mapping.fromJS({path:null, selection: []});
     component.inputs_file = ko.observable('');
     component.input_directory = ko.observable('');
-    component.output_directory = ko.observable('');
+    component.hdf5_directory = ko.observable('');
     component.id_column = ko.observable('%eval_id');
     component.inputs_file_delimiter = ko.observable(',');
     component.xyce_timeseries_file = ko.observable('');
     component.timeseries_name = ko.observable('');
-	component.cluster_sample_count = ko.observable(500);
+    component.cluster_sample_count = ko.observable(500);
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
@@ -25,11 +26,16 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.wckey = ko.observable('');
     component.partition = ko.observable('');
     component.workdir = ko.observable('');
-    component.nnodes = ko.observable('');
-    component.ntasks_per_node = ko.observable('');
-    component.time_hours = ko.observable('');
-    component.time_minutes = ko.observable('');
-    component.time_seconds = ko.observable('');
+    // component.nnodes = ko.observable('1');
+    // component.ntasks_per_node = ko.observable('1');
+    // component.time_hours = ko.observable('');
+    // component.time_minutes = ko.observable('');
+    // component.time_seconds = ko.observable('');
+
+    component.timeseries_type.subscribe(function(newValue){
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      vm.retain_hdf5(newValue == 'hdf5');
+    });
 
     component.user_config = {};
 
@@ -39,7 +45,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     var updateUserConfig = function() {
       component.user_config['timeseries-wizard'] = component.user_config['timeseries-wizard'] || {};
-      component.user_config['timeseries-wizard']['persistent-output'] = component.output_directory();
+      // component.user_config['timeseries-wizard']['persistent-output'] = component.output_directory();
       component.user_config['timeseries-wizard']['id-column'] = component.id_column();
       component.user_config['timeseries-wizard']['inputs-file-delimiter'] = component.inputs_file_delimiter();
       component.user_config['timeseries-wizard']['timeseries-name'] = component.timeseries_name();
@@ -77,11 +83,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         client.delete_model({ mid: component.model._id() });
     };
 
-    component.to_remote = function() {
-      component.tab(1);
-    };
-
     component.connect = function() {
+      var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+      
       component.remote.status_type('info');
       component.remote.status('Connecting...');
       if(component.remote.session_exists())
@@ -98,7 +102,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
               }
 
               if (response.config['timeseries-wizard']) {
-                response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+                // response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                 response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
                 response.config['timeseries-wizard']['id-column'] ? component.id_column(response.config['timeseries-wizard']['id-column']) : null;
                 response.config['timeseries-wizard']['inputs-file-delimiter'] ? component.inputs_file_delimiter(response.config['timeseries-wizard']['inputs-file-delimiter']) : null;
@@ -108,11 +112,19 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                 response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                 response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                 response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
-                response.config.slurm.nnodes ? component.nnodes(response.config.slurm.nnodes) : null;
-                response.config.slurm['ntasks-per-node'] ? component.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
-                response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
-                response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
-                response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+
+                response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
+                response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
+
+                // Restore state of time controls if user unchecked "Use recommended values" checkbox last
+                var time_recommended = !(response.config.slurm['time_recommended'] == 'False');
+                if(!time_recommended)
+                {
+                  vm.time_recommended(time_recommended);
+                  response.config.slurm['time-hours'] ? vm.time_hours(response.config.slurm['time-hours']) : null;
+                  response.config.slurm['time-minutes'] ? vm.time_minutes(response.config.slurm['time-minutes']) : null;
+                  response.config.slurm['time-seconds'] ? vm.time_seconds(response.config.slurm['time-seconds']) : null;
+                }
               }
 
               component.user_config = response.config;
@@ -140,7 +152,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                   }
 
                   if (response.config['timeseries-wizard']) {
-                    response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
+                    // response.config['timeseries-wizard']['persistent-output'] ? component.output_directory(response.config['timeseries-wizard']['persistent-output']) : null;
                     response.config['timeseries-wizard']['timeseries-name'] ? component.timeseries_name(response.config['timeseries-wizard']['timeseries-name']) : null;
                     response.config['timeseries-wizard']['id-column'] ? component.id_column(response.config['timeseries-wizard']['id-column']) : null;
                     response.config['timeseries-wizard']['inputs-file-delimiter'] ? component.inputs_file_delimiter(response.config['timeseries-wizard']['inputs-file-delimiter']) : null;
@@ -150,11 +162,19 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                     response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                     response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                     response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
-                    response.config.slurm.nnodes ? component.nnodes(response.config.slurm.nnodes) : null;
-                    response.config.slurm['ntasks-per-node'] ? component.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
-                    response.config.slurm['time-hours'] ? component.time_hours(response.config.slurm['time-hours']) : null;
-                    response.config.slurm['time-minutes'] ? component.time_minutes(response.config.slurm['time-minutes']) : null;
-                    response.config.slurm['time-seconds'] ? component.time_seconds(response.config.slurm['time-seconds']) : null;
+
+                    response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
+                    response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
+
+                    // Restore state of time controls if user unchecked "Use recommended values" checkbox last
+                    var time_recommended = !(response.config.slurm['time_recommended'] == 'False');
+                    if(!time_recommended)
+                    {
+                      vm.time_recommended(time_recommended);
+                      response.config.slurm['time-hours'] ? vm.time_hours(response.config.slurm['time-hours']) : null;
+                      response.config.slurm['time-minutes'] ? vm.time_minutes(response.config.slurm['time-minutes']) : null;
+                      response.config.slurm['time-seconds'] ? vm.time_seconds(response.config.slurm['time-seconds']) : null;
+                    }
                   }
 
                   component.user_config = response.config;
@@ -173,25 +193,81 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_input_file = function() {
-      var file_path = component.browser.selection()[0];
+      var file_path = component.browser_input.selection()[0];
       component.inputs_file(file_path);
 
       if (component.timeseries_type() === 'xyce') {
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
+      }
 
-        component.tab(7);
-      } else
-        component.tab(3);
+      component.tab(4);
+    };
+
+    component.params_continue = function() {
+      var validated = true;
+      removeErrors();
+
+      if (!component.id_column().trim().length) {
+        $('#form-id-column-name').addClass('has-error');
+        validated = false;
+      }
+
+      if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().trim().length) {
+        $('#form-inputs-file-delimiter').addClass('has-error');
+        validated = false;
+      }
+
+      if (component.timeseries_type() === 'csv' && !component.timeseries_name().trim().length) {
+        $('#form-timeseries-name').addClass('has-error');
+        validated = false;
+      }
+
+      if (Number(component.cluster_sample_count()) < 2) {
+        $('#form-cluster-sample-count').addClass('has-error');
+        validated = false;
+      }
+
+      if (validated) {
+        component.put_model_parameters();
+
+        var vm = ko.dataFor($('.slycat-remote-interface')[0]);
+        vm.wckey(component.wckey());
+        vm.partition(component.partition());
+        vm.workdir(component.workdir());
+        // vm.nnodes(component.nnodes());
+        // vm.ntasks_per_node(component.ntasks_per_node());
+        // vm.time_hours(component.time_hours());
+        // vm.time_minutes(component.time_minutes());
+        // vm.time_seconds(component.time_seconds());
+
+        if(component.timeseries_type() === 'xyce') 
+        {
+          component.tab(7);
+        } 
+        else if(component.timeseries_type() == 'hdf5')
+        {
+          component.tab(3);
+        }
+        else {
+          component.tab(5);
+        }
+      }
     };
 
     component.select_xyce_timeseries_file = function() {
-      var filepath = component.browser.selection()[0];
+      var filepath = component.browser_timeseries.selection()[0];
       var filename = filepath.split('/');
       filename = filename[filename.length - 1];
       component.xyce_timeseries_file(filename);
 
-      component.tab(3);
+      component.tab(5);
+    };
+
+    component.select_hdf5_directory = function() {
+      component.hdf5_directory( component.browser_hdf5.path() );
+
+      component.tab(5);
     };
 
     component.name_model = function() {
@@ -247,63 +323,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       });
     };
 
-    component.to_timeseries_parameters = function() {
-      var validated = true;
-      removeErrors();
-
-      if (!component.output_directory().length) {
-        $('#form-output-directory').addClass('has-error');
-        validated = false;
-      }
-
-      if (!component.id_column().length) {
-        $('#form-id-column-name').addClass('has-error');
-        validated = false;
-      }
-
-      if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().length) {
-        $('#form-inputs-file-delimiter').addClass('has-error');
-        validated = false;
-      }
-
-      if (validated)
-        component.tab(4);
-    };
-
-    component.to_compute = function() {
-      var validated = true;
-      removeErrors();
-
-      if (component.timeseries_type() === 'csv' && !component.timeseries_name().length) {
-        $('#form-timeseries-name').addClass('has-error');
-        validated = false;
-      }
-
-      if (typeof component.cluster_sample_count() !== 'number' && !component.cluster_sample_count().length) {
-        $('#form-cluster-sample-count').addClass('has-error');
-        validated = false;
-      }
-
-      if (validated) {
-        component.put_model_parameters();
-        component.tab(5);
-
-        var vm = ko.dataFor($('.slycat-remote-interface')[0]);
-        vm.wckey(component.wckey());
-        vm.partition(component.partition());
-        vm.workdir(component.workdir());
-        vm.nnodes(component.nnodes());
-        vm.ntasks_per_node(component.ntasks_per_node());
-        vm.time_hours(component.time_hours());
-        vm.time_minutes(component.time_minutes());
-        vm.time_seconds(component.time_seconds());
-      }
-    };
-
     component.compute = function() {
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
-      vm.submit_job();
-
+      
       component.user_config['slurm'] = component.user_config['slurm'] || {};
       component.user_config['slurm']['wcid'] = vm.wckey();
       component.user_config['slurm']['partition'] = vm.partition();
@@ -313,21 +335,41 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       component.user_config['slurm']['time-seconds'] = vm.time_seconds();
       component.user_config['slurm']['nnodes'] = vm.nnodes();
       component.user_config['slurm']['ntasks-per-node'] = vm.ntasks_per_node();
+      component.user_config['slurm']['time_recommended'] = vm.time_recommended();
+
+      updateUserConfig();
+
+      vm.submit_job();
+
     };
 
+    // A callback that is fired on submit?
     component.to_compute_next_step = function() {
-      updateUserConfig();
+      // updateUserConfig();
       component.tab(6);
     };
 
     component.back = function() {
       var target = component.tab();
-
-      if (component.tab() == 7) {
+      if (component.tab() == 2) {
+        target = 0;
+      }
+      else if (component.tab() == 4) {
         target = 2;
-      } else if (component.tab() == 3 && component.timeseries_type() === 'xyce') {
+      }
+      else if (component.tab() == 7) {
+        target = 4;
+      } 
+      else if (component.tab() == 3) {
+        target = 4;
+      } 
+      else if (component.tab() == 5 && component.timeseries_type() === 'xyce') {
         target = 7;
-      } else
+      }
+      else if (component.tab() == 5 && component.timeseries_type() === 'hdf5') {
+        target = 3;
+      } 
+      else
         target--;
 
       component.tab(target);
