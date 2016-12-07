@@ -2071,7 +2071,7 @@ def job_time(nodes, tasks, size):
     if int(nodes) < 0 or int(tasks) < 0 or int(size) < 0:
       time = None
     else:
-      time = int(1.8 * float(size)) / (float(nodes) * float(tasks))
+      time = int(1.8 * float(size)) / (float(nodes) * float(tasks)) + 900
     return {
             'time-seconds': time,
             'nodes': nodes,

@@ -371,139 +371,125 @@ class Session(object):
     response : dict
       A dictionary with the following keys: jid, errors
     """
-    if self._agent is not None:
-      # verifies the fn is allowed to be run...
-      restricted_fns = {
-        "jaccard-distance": "jaccard",
-        "jaccard2-distance": "jaccard2",
-        "one-norm-distance": "one-norm",
-        "correlation-distance": "correlation",
-        "cosine-distance": "cosine",
-        "hamming-distance": "hamming",
-        "timeseries-model": "timeseries-model"
-      }
+    # verifies the fn is allowed to be run...
+    restricted_fns = {
+      "jaccard-distance": "jaccard",
+      "jaccard2-distance": "jaccard2",
+      "one-norm-distance": "one-norm",
+      "correlation-distance": "correlation",
+      "cosine-distance": "cosine",
+      "hamming-distance": "hamming",
+      "timeseries-model": "timeseries-model"
+    }
+    # check for an agent in none available die
+    if self._agent is None:
+      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+      slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+                              "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
+      raise cherrypy.HTTPError(500)
 
-      if "module-name" in slycat.web.server.config["slycat-web-server"]:
-          module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
-      else:
-        module_name = "slycat"
+    # check if we can run the function
+    if fn not in restricted_fns:
+      cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
+      slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 500 function %s is not available for the agent." % fn)
+      raise cherrypy.HTTPError(500)
 
-      # setup necessary for using IPython parallel with the agent function
-      ipython_parallel_setup_arr = [
-        "source /etc/profile.d/modules.sh",
-        "module load %s" % module_name,
+    #get the name of our slycat module on the hpc
+    if "module-name" in slycat.web.server.config["slycat-web-server"]:
+        module_name = slycat.web.server.config["slycat-web-server"]["module-name"]
+    else:
+      module_name = "slycat"
 
-        "profile=slurm_${SLURM_JOB_ID}_$(hostname)",
-        "echo \"Creating profile ${profile}\"",
-        "ipython profile create --parallel --profile=${profile}",
+    # setup necessary for using IPython parallel with the agent function
+    ipython_parallel_setup_arr = []
 
-        "echo \"Launching controller\"",
-        "ipcontroller --ip='*' --profile=${profile} &",
-        "sleep 1m",
+    def create_distance_matrix(fn_id, params):
+      function_id = restricted_fns[fn_id]
+      path = "/".join(params["input"].split("/")[:-1])
 
-        "echo \"Launching engines\"",
-        "srun ipengine --profile=${profile} --location=$(hostname) &",
-        "sleep 1m",
+      arr = list(ipython_parallel_setup_arr)
 
-        "echo \"Launching job\""
-      ]
+      for image_columns_name in params["image_columns_names"]:
+        # uncomment this line for production
+        arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (function_id, image_columns_name, params["input"], image_columns_name, uid, function_id))
+        # uncomment this line for local development
+        # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
 
-      def create_distance_matrix(fn_id, params):
-        f = restricted_fns[fn_id]
-        path = "/".join(params["input"].split("/")[:-1])
+      return arr
 
-        arr = list(ipython_parallel_setup_arr)
+    def compute_timeseries(fn_id, params):
+      arr = list(ipython_parallel_setup_arr)
 
-        for c in params["image_columns_names"]:
-          # uncomment this line for production
-          arr.append("python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (f, c, params["input"], c, uid, f))
-          # uncomment this line for local development
-          # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
-
-        return arr
-
-      def compute_timeseries(fn_id, params):
-        arr = list(ipython_parallel_setup_arr)
-
-        if params["to_hdf5"] is True:
-          if params["timeseries_type"] == "csv":
-            # uncomment this line for production
-            arr.append("python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
-            # uncomment this line for local development
-            # arr.append("python slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
-          if params["timeseries_type"] == "xyce":
-            # uncomment this line for production
-            arr.append("python $SLYCAT_HOME/agent/slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
-            # uncomment this line for locat development
-            # arr.append("python slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
-
+      if "retain_hdf5" not in params:
         if params["timeseries_type"] == "csv":
           # uncomment this line for production
-          arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+          arr.append("python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
           # uncomment this line for local development
-          # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+          # arr.append("python slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
         if params["timeseries_type"] == "xyce":
           # uncomment this line for production
-          arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
-          # uncomment this line for local development
-          # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+          arr.append("python $SLYCAT_HOME/agent/slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
+          # uncomment this line for locat development
+          # arr.append("python slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
 
+      if params["timeseries_type"] == "csv":
+        # uncomment this line for production
+        arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+        # uncomment this line for local development
+        # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+      if params["timeseries_type"] == "xyce":
+        # uncomment this line for production
+        arr.append("python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+        # uncomment this line for local development
+        # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
 
-        return arr
+      return arr
 
-      def agent_functions(fn_id, params):
-        # agent_function is a placeholder for the future:
-        # it will contain the logic for different type of agent functions
-        # depending on the function identifier.
-        if fn_id == "timeseries-model":
-          return compute_timeseries(fn_id, params)
-        else:
-          return create_distance_matrix(fn_id, params)
-
-      if fn not in restricted_fns:
-        cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
-        slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 500 function %s is not available for the agent." % fn)
-        raise cherrypy.HTTPError(500)
+    def agent_functions(fn_id, params):
+      # agent_function is a placeholder for the future:
+      # it will contain the logic for different type of agent functions
+      # depending on the function identifier.
+      if fn_id == "timeseries-model":
+        return compute_timeseries(fn_id, params)
       else:
-        stdin, stdout, stderr = self._agent
-        payload = {
-          "action": "run-function",
-          "command": {
-            "wckey": wckey,
-            "nnodes": nnodes,
-            "partition": partition,
-            "ntasks_per_node": ntasks_per_node,
-            "time_hours": time_hours,
-            "time_minutes": time_minutes,
-            "time_seconds": time_seconds,
-            "fn": agent_functions(fn, fn_params),
-            "uid": uid
-          }
-        }
-        cherrypy.log.error("writing msg: %s" % json.dumps(payload))
-        stdin.write("%s\n" % json.dumps(payload))
-        stdin.flush()
+        return create_distance_matrix(fn_id, params)
 
-        response = json.loads(stdout.readline())
-        cherrypy.log.error("response msg: %s" % response)
-        if not response["ok"]:
-          cherrypy.response.headers["x-slycat-message"] = response["message"]
-          cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
-          slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 400 %s" % response["message"])
-          raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
+    stdin, stdout, stderr = self._agent
+    payload = {
+      "action": "run-function",
+      "command": {
+        "module_name": module_name,
+        "wckey": wckey,
+        "nnodes": nnodes,
+        "partition": partition,
+        "ntasks_per_node": ntasks_per_node,
+        "time_hours": time_hours,
+        "time_minutes": time_minutes,
+        "time_seconds": time_seconds,
+        "fn": agent_functions(fn, fn_params),
+        "uid": uid
+      }
+    }
+    cherrypy.log.error("writing msg: %s" % json.dumps(payload))
+    stdin.write("%s\n" % json.dumps(payload))
+    stdin.flush()
 
-        # parses out the job ID
-        arr = [int(s) for s in response["output"].split() if s.isdigit()]
-        if len(arr) > 0:
-          jid = arr[0]
-        else:
-          jid = -1
+    response = json.loads(stdout.readline())
+    cherrypy.log.error("response msg: %s" % response)
+    if not response["ok"]:
+      cherrypy.response.headers["x-slycat-message"] = response["message"]
+      cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
+      slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 400 %s" % response["message"])
+      raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
 
-        return { "jid": jid, "errors": response["errors"] }
+    # parses out the job ID
+    arr = [int(s) for s in response["output"].split() if s.isdigit()]
+    if len(arr) > 0:
+      jid = arr[0]
     else:
-      cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-      slycat.email.send_error("slycat.web.server.remote.py run_agent_function", "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
-      raise cherrypy.HTTPError(500)
+      jid = -1
+
+    return { "jid": jid, "errors": response["errors"] }
 
   # TODO modify to follow new remote computation interface
   def launch(self, command):

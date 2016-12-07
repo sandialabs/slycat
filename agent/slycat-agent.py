@@ -184,7 +184,7 @@ def set_user_config(command):
   sys.stdout.flush()
 
 # TODO this function needs to be migrated to the implementation of the computation interface
-def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file):
+def generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file):
   f = tmp_file 
 
   f.write("#!/bin/bash\n\n")
@@ -194,6 +194,19 @@ def generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_m
   f.write("#SBATCH --nodes=%s\n" % nnodes)
   f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
   f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+  f.write("source /etc/profile.d/modules.sh")
+  f.write("module load %s" % module_name)
+  f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)")
+  f.write("echo \"Creating profile ${profile}\"")
+  f.write("ipython profile create --parallel --profile=${profile}")
+  f.write("echo \"Launching controller\"")
+  f.write("ipcontroller --ip='*' --profile=${profile} &")
+  f.write("sleep 1m")
+  f.write("echo \"Launching engines\"")
+  f.write("srun ipengine --profile=${profile} --location=$(hostname) &")
+  f.write("sleep 1m")
+  f.write("echo \"Launching job\"")
+
   
   for c in fn:
     f.write("%s\n" % c)
@@ -206,7 +219,7 @@ def run_function(command):
     "ok": True,
     "output": -1
   }
-
+  module_name = command["command"]["module_name"]
   wckey = command["command"]["wckey"]
   nnodes = command["command"]["nnodes"]
   partition = command["command"]["partition"]
@@ -218,7 +231,7 @@ def run_function(command):
   uid = command["command"]["uid"]
 
   tmp_file = tempfile.NamedTemporaryFile(delete=False)
-  generate_batch(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file)
+  generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file)
   results["output"], results["errors"] = run_remote_command("sbatch %s" % tmp_file.name)
 
   sys.stdout.write("%s\n" % json.dumps(results))
