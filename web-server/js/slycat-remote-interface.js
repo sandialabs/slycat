@@ -40,6 +40,24 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.model_type = params.model_type;
       vm.mid = params.mid;
 
+      vm.retain_hdf5.subscribe(function(newValue){
+        console.log('you are changing hdf5');
+        if(newValue == false && vm.agent_function_params().timeseries_type == 'hdf5')
+        {
+          // alert('Unchecking this will delete your input hdf5 files once the model completes.');
+          dialog.confirm({
+            title: 'Delete HDF5 Input Files?',
+            message: 'Unchecking this will delete your hdf5 input files once the model completes. Are you sure you want to continue?',
+            ok: function(){
+
+            },
+            cancel: function(){
+              vm.retain_hdf5(true);
+            }
+          });
+        }
+      });
+
       var modal_id = 'slycat-remote-interface-connect-modal';
       var select_id = 'slycat-remote-interface-agent-functions';
 
