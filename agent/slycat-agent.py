@@ -76,7 +76,7 @@ def launch(command):
     "command": command["command"]
   }
 
-  results["output"], results["errors"] = run_remote_command(command["command"]);
+  results["output"], results["errors"] = run_remote_command(command["command"])
 
   sys.stdout.write("%s\n" % json.dumps(results))
   sys.stdout.flush()
@@ -210,14 +210,15 @@ def generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_
   
   for c in fn:
     f.write("%s\n" % c)
-  print f
+
   f.close()
 
 # TODO this function needs to be migrated to the implementation of the computation interface
 def run_function(command):
   results = {
     "ok": True,
-    "output": -1
+    "output": -1,
+    "temp_file":""
   }
   module_name = command["command"]["module_name"]
   wckey = command["command"]["wckey"]
@@ -232,6 +233,7 @@ def run_function(command):
 
   tmp_file = tempfile.NamedTemporaryFile(delete=False)
   generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn, tmp_file)
+  results["temp_file"] = tmp_file
   results["output"], results["errors"] = run_remote_command("sbatch %s" % tmp_file.name)
 
   sys.stdout.write("%s\n" % json.dumps(results))
