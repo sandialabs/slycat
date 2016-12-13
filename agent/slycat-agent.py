@@ -210,7 +210,7 @@ def generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_
   
   for c in fn:
     f.write("%s\n" % c)
-
+  print f
   f.close()
 
 # TODO this function needs to be migrated to the implementation of the computation interface
