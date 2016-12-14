@@ -247,7 +247,7 @@ def run_function(command):
     tmp_file = tempfile.NamedTemporaryFile(delete=False)
     generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn,
                    tmp_file)
-    # results["temp_file"] = tmp_file
+    results["temp_file"] = tmp_file.file.read()
     results["output"], results["errors"] = run_remote_command("sbatch %s" % tmp_file.name)
 
     sys.stdout.write("%s\n" % json.dumps(results))
