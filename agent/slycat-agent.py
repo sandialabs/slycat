@@ -12,7 +12,7 @@ import argparse
 
 try:
     import cStringIO as StringIO
-except:
+except ImportError:
     import StringIO
 
 import datetime
@@ -27,8 +27,8 @@ import sys
 import tempfile
 import threading
 import uuid
-import multiprocessing
-import time
+# import multiprocessing
+# import time
 import ConfigParser
 
 session_cache = {}
@@ -120,7 +120,7 @@ def cancel_job(command):
         "jid": command["command"]
     }
 
-    results["output"], results["errors"] = run_remote_command("scancel %s" % results["jid"])
+    results["output"], results["errors"] = run_remote_command("scancel %s" % results["jid"])# TODO: this is wrong needs to be results["jid"]["jid"]
 
     sys.stdout.write("%s\n" % json.dumps(results))
     sys.stdout.flush()
@@ -150,7 +150,7 @@ def get_user_config():
         "ok": True
     }
 
-    rc = os.path.expanduser('~') + ("/.slycatrc")
+    rc = os.path.expanduser('~') + "/.slycatrc"
     if os.path.isfile(rc):
         try:
             parser = ConfigParser.RawConfigParser()
@@ -177,7 +177,7 @@ def set_user_config(command):
     }
     config = command["command"]["config"]
 
-    rc = os.path.expanduser('~') + ("/.slycatrc")
+    rc = os.path.expanduser('~') + "/.slycatrc"
     rc_file = open(rc, "w+")
     parser = ConfigParser.RawConfigParser()
 
@@ -242,7 +242,7 @@ def run_function(command):
     time_minutes = command["command"]["time_minutes"]
     time_seconds = command["command"]["time_seconds"]
     fn = command["command"]["fn"]
-    uid = command["command"]["uid"]
+    # uid = command["command"]["uid"]
 
     tmp_file = tempfile.NamedTemporaryFile(delete=False)
     generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn,
@@ -334,9 +334,9 @@ def get_file(command):
     except IOError as e:
         if e.errno == errno.EACCES:
             raise Exception("Access denied.")
-        raise Exception(e.strerror + ".")
+        raise Exception(e.strerror)
     except Exception as e:
-        raise Exception(e.strerror + ".")
+        raise Exception(e.message)
 
     content_type, encoding = slycat.mime_type.guess_type(path)
     sys.stdout.write("%s\n%s" % (json.dumps(
@@ -367,9 +367,9 @@ def get_image(command):
         except IOError as e:
             if e.errno == errno.EACCES:
                 raise Exception("Access denied.")
-            raise Exception(e.strerror + ".")
+            raise Exception(e.strerror)
         except Exception as e:
-            raise Exception(e.strerror + ".")
+            raise Exception(e.message)
 
         content_type, encoding = slycat.mime_type.guess_type(path)
         sys.stdout.write("%s\n%s" % (json.dumps(
@@ -385,7 +385,7 @@ def get_image(command):
     try:
         image = PIL.Image.open(path)
     except IOError as e:
-        raise Exception(e.strerror + ".")
+        raise Exception(e.strerror)
 
     # Optionally downsample the image.
     size = image.size
@@ -431,7 +431,7 @@ def create_video(command, arguments):
     sys.stdout.flush()
 
 
-def video_status(command, arguments):
+def video_status(command):
     if "sid" not in command:
         raise Exception("Missing session id.")
     if command["sid"] not in session_cache:
@@ -455,7 +455,7 @@ def video_status(command, arguments):
     sys.stdout.flush()
 
 
-def get_video(command, arguments):
+def get_video(command):
     if "sid" not in command:
         raise Exception("Missing session id.")
     if command["sid"] not in session_cache:
@@ -471,8 +471,9 @@ def get_video(command, arguments):
         raise Exception("Video creation failed.")
     content = open(session.output, "rb").read()
     sys.stdout.write("%s\n%s" % (
-    json.dumps({"ok": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}),
-    content))
+        json.dumps(
+            {"ok": True, "message": "Video retrieved.", "content-type": session.content_type, "size": len(content)}),
+        content))
     sys.stdout.flush()
 
 
@@ -518,7 +519,7 @@ def main():
                 raise Exception("Not a JSON object.")
             if not isinstance(command, dict):
                 raise Exception("Not a JSON object.")
-            if not "action" in command:
+            if "action" not in command:
                 raise Exception("Missing action.")
 
             action = command["action"]
@@ -534,9 +535,9 @@ def main():
             elif action == "create-video":
                 create_video(command, arguments)
             elif action == "video-status":
-                video_status(command, arguments)
+                video_status(command)
             elif action == "get-video":
-                get_video(command, arguments)
+                get_video(command)
             elif action == "launch":
                 launch(command)
             elif action == "submit-batch":
