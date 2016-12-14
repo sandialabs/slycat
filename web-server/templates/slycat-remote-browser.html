@@ -1,6 +1,6 @@
-<div class="slycat-remote-browser">
+<div class="slycat-remote-browser" data-bind="css: persistence_id">
   <form class="form-horizontal" data-bind="submit: browse_path">
-    <div class="form-group path">
+    <div class="form-group path" data-bind="css: {'has-error': path_error}">
       <label class="col-sm-2 control-label" for="slycat-remote-browser-path"
         data-bind="text: hostname()"
       ></label>
@@ -20,11 +20,13 @@
             <button class="btn btn-default" type="submit">Go</button>
           </span>
         </div>
-        <div class="alert alert-danger" role="alert">Oops, that path is not accessible. Please try again.</div>
+        <div class="alert alert-danger" role="alert" data-bind="fadeError: browse_error">
+          Oops, that path is not accessible. Please try again.
+        </div>
       </div>
     </div>
   </form>
-  <div class="slycat-remote-browser-files">
+  <div class="slycat-remote-browser-files" data-bind="updateFeedback: browser_updating">
     <table class="table table-hover table-condensed">
       <thead>
         <tr>

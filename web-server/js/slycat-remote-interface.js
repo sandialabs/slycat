@@ -41,7 +41,6 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.mid = params.mid;
 
       vm.retain_hdf5.subscribe(function(newValue){
-        console.log('you are changing hdf5');
         if(newValue == false && vm.agent_function_params().timeseries_type == 'hdf5')
         {
           // alert('Unchecking this will delete your input hdf5 files once the model completes.');

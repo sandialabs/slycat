@@ -60,6 +60,16 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       });
     };
 
+    var conditionallySetHdf5Path = function() {
+      if(component.workdir() != '') {
+        var hdf5_directory_browser = ko.dataFor($('.slycat-remote-browser.timeseries-hdf5-directory')[0]);
+        if(hdf5_directory_browser.path() == null || hdf5_directory_browser.path() == '/') {
+          hdf5_directory_browser.path_input(component.workdir());
+          hdf5_directory_browser.browse(component.workdir());
+        }
+      }
+    };
+
     component.create_model = function() {
       client.post_project_models({
         pid: component.project._id(),
@@ -112,6 +122,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                 response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                 response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                 response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
+                conditionallySetHdf5Path();
 
                 response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
                 response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
@@ -162,6 +173,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                     response.config.slurm.wcid ? component.wckey(response.config.slurm.wcid) : null;
                     response.config.slurm.partition ? component.partition(response.config.slurm.partition) : null;
                     response.config.slurm.workdir ? component.workdir(response.config.slurm.workdir) : null;
+                    conditionallySetHdf5Path();
 
                     response.config.slurm.nnodes ? vm.nnodes(response.config.slurm.nnodes) : null;
                     response.config.slurm['ntasks-per-node'] ? vm.ntasks_per_node(response.config.slurm['ntasks-per-node']) : null;
@@ -235,6 +247,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         vm.wckey(component.wckey());
         vm.partition(component.partition());
         vm.workdir(component.workdir());
+
         // vm.nnodes(component.nnodes());
         // vm.ntasks_per_node(component.ntasks_per_node());
         // vm.time_hours(component.time_hours());

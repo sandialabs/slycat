@@ -21,6 +21,9 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.raw_files = mapping.fromJS([]);
       component.session_exists = params.session_exists;
       component.persistence_id = params.persistence_id === undefined ? '' : params.persistence_id; // If you specify a persistence_id, it will be used as a key in localStorage so that path is restored only on remote browsers matching this id 
+      component.browse_error = ko.observable(false);
+      component.path_error = ko.observable(true);
+      component.browser_updating = ko.observable(false);
 
       component.icon_map = {
         "application/x-directory" : "<span class='fa fa-folder-o'></span>",
@@ -137,9 +140,9 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
           path : path,
           success : function(results)
           {
-            $('.slycat-remote-browser .path .alert').fadeOut(400);
-            $('.slycat-remote-browser .form-group.path').removeClass('has-error');
-            $('.slycat-remote-browser-files').fadeOut(0);
+            component.browse_error(false);
+            component.path_error(false);
+            component.browser_updating(true);
 
             localStorage.setItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname(), path);
 
@@ -152,17 +155,15 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
             for(var i = 0; i != results.names.length; ++i)
               files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mime_type:results["mime-types"][i]});
             mapping.fromJS(files, component.raw_files);
-            $('.slycat-remote-browser-files').scrollTop(0);
-            $('.slycat-remote-browser-files').fadeIn(400);
+            component.browser_updating(false);
           },
           error : function(results)
           {
             if(component.path() != component.path_input())
             {
-              $('.slycat-remote-browser .form-group.path').addClass('has-error');
+              component.path_error(true);
             }
-
-            $('.slycat-remote-browser .path .alert').fadeIn(400);
+            component.browse_error(true);
           }
         });
       }
@@ -176,12 +177,49 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       {
         if(new_session_exists)
         {
-          // Alex: this should be the other way - always overwrite from local storage because that's been customized by the user.
           if(!component.path())
+          {
             component.path(localStorage.getItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname()) || "/");
+          }
           component.browse(component.path());
         }
       });
+
+      ko.bindingHandlers.fadeError = {
+          init: function(element, valueAccessor) {
+            var value = ko.unwrap(valueAccessor()); // Get the current value of the current property we're bound to
+            $(element).toggle(value); // jQuery will hide/show the element depending on whether "value" or true or false
+          },
+          update: function(element, valueAccessor, allBindings) {
+            var value = ko.unwrap(valueAccessor());
+            if(value)
+            {
+              $(element).fadeIn(400);
+            }
+            else
+            {                
+              $(element).fadeOut(400);
+            }
+          }
+      };
+
+      ko.bindingHandlers.updateFeedback = {
+        update: function(element, valueAccessor, allBindings) {
+          var value = ko.unwrap(valueAccessor());
+          if(value)
+          {
+            $(element).fadeOut(0);
+          }
+          else
+          {                
+            $(element).scrollTop(0);
+            $(element).fadeIn(400);
+            // Some browsers don't seem to scroll to top when the element is still hidden, so calling this again after making it visible
+            $(element).scrollTop(0);
+          }
+        }
+      };
+
     },
     template: { require: "text!" + server_root + "templates/slycat-remote-browser.html" }
   });
