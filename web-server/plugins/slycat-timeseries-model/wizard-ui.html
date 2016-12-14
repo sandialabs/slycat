@@ -163,7 +163,9 @@
             'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 
             'cluster_type': $('#timeseries-wizard-cluster-type').val(), 
             'cluster_metric': $('#timeseries-wizard-cluster-metric').val(), 
-            'workdir': workdir() }, 
+            'workdir': workdir(),
+            'hdf5_directory': hdf5_directory()
+          }, 
           model_type: 'timeseries', 
           mid: model._id(), 
           suggestions: [{'ntasks_per_node': 8}], 
