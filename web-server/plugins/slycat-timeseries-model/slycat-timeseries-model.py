@@ -327,10 +327,13 @@ def register_slycat_plugin(context):
             Callback for a successful remote job completion. It computes the model
             and successfully completes it.
             """
+            cherrypy.log.error("calling comput with the following%s %s %s %s %s %s" % (sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
+                    kwargs["password"]))
             compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
                     kwargs["password"])
+            cherrypy.log.error("compute done")
             finish(database, model)
-            pass
+            cherrypy.log.error("finished")
 
         # give some time for the job to be remotely started before starting its
         # checks.
