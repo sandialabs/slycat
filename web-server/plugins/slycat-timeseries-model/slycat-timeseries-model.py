@@ -120,6 +120,7 @@ def register_slycat_plugin(context):
     :param username:
     :param password:
     """
+        workdir += "/slycat/pickle"  # route to the slycat directory
         try:
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", model["_id"])
@@ -153,7 +154,7 @@ def register_slycat_plugin(context):
             for f in clusters_file:
                 sid, file_cluster_data = get_remote_file(sid, hostname, username, password,
                                                          "%s/slycat_timeseries_%s/file_cluster_%s.json" % (
-                                                         workdir, uid, f))
+                                                             workdir, uid, f))
                 file_cluster_attr = json.loads(file_cluster_data)
                 slycat.web.server.post_model_file(model["_id"], True, sid,
                                                   "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, f),
@@ -165,19 +166,19 @@ def register_slycat_plugin(context):
 
                 sid, waveform_dimensions_data = get_remote_file(sid, hostname, username, password,
                                                                 "%s/slycat_timeseries_%s/waveform_%s_dimensions.pickle" % (
-                                                                workdir, uid, f))
+                                                                    workdir, uid, f))
                 waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
                 sid, waveform_attributes_data = get_remote_file(sid, hostname, username, password,
                                                                 "%s/slycat_timeseries_%s/waveform_%s_attributes.pickle" % (
-                                                                workdir, uid, f))
+                                                                    workdir, uid, f))
                 waveform_attributes_array = pickle.loads(waveform_attributes_data)
                 sid, waveform_times_data = get_remote_file(sid, hostname, username, password,
                                                            "%s/slycat_timeseries_%s/waveform_%s_times.pickle" % (
-                                                           workdir, uid, f))
+                                                               workdir, uid, f))
                 waveform_times_array = pickle.loads(waveform_times_data)
                 sid, waveform_values_data = get_remote_file(sid, hostname, username, password,
                                                             "%s/slycat_timeseries_%s/waveform_%s_values.pickle" % (
-                                                            workdir, uid, f))
+                                                                workdir, uid, f))
                 waveform_values_array = pickle.loads(waveform_values_data)
 
                 cherrypy.log.error("timeseries_count=%s" % timeseries_count)
@@ -327,13 +328,9 @@ def register_slycat_plugin(context):
             Callback for a successful remote job completion. It computes the model
             and successfully completes it.
             """
-            cherrypy.log.error("calling comput with the following%s %s %s %s %s %s" % (sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
-                    kwargs["password"]))
             compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
                     kwargs["password"])
-            cherrypy.log.error("compute done")
             finish(database, model)
-            cherrypy.log.error("finished")
 
         # give some time for the job to be remotely started before starting its
         # checks.
@@ -346,7 +343,7 @@ def register_slycat_plugin(context):
 
         stop_event = threading.Event()
         t = threading.Thread(target=checkjob_thread, args=(
-        model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
+            model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
         t.start()
 
     # Register our new model type
