@@ -138,6 +138,8 @@ def register_slycat_plugin(context):
             sid, data = get_remote_file(sid, hostname, username, password,
                                         "%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (workdir, uid))
             attributes_data = pickle.loads(data)
+
+            # TODO this can become multi processored
             for attribute in range(len(attributes)):
                 slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute,
                                                           [attributes_data[attribute]])
@@ -150,44 +152,46 @@ def register_slycat_plugin(context):
             slycat.web.server.post_model_file(model["_id"], True, sid,
                                               "%s/slycat_timeseries_%s/file_clusters.out" % (workdir, uid),
                                               clusters["aid"], clusters["parser"])
-
-            for f in clusters_file:
+            # TODO this can become multi processored
+            for file_name in clusters_file:
                 sid, file_cluster_data = get_remote_file(sid, hostname, username, password,
                                                          "%s/slycat_timeseries_%s/file_cluster_%s.json" % (
-                                                             workdir, uid, f))
+                                                             workdir, uid, file_name))
                 file_cluster_attr = json.loads(file_cluster_data)
                 slycat.web.server.post_model_file(model["_id"], True, sid,
-                                                  "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, f),
+                                                  "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, file_name),
                                                   file_cluster_attr["aid"], file_cluster_attr["parser"])
 
                 database = slycat.web.server.database.couchdb.connect()
                 model = database.get("model", model["_id"])
-                slycat.web.server.put_model_arrayset(database, model, "preview-%s" % f)
+                slycat.web.server.put_model_arrayset(database, model, "preview-%s" % file_name)
 
                 sid, waveform_dimensions_data = get_remote_file(sid, hostname, username, password,
                                                                 "%s/slycat_timeseries_%s/waveform_%s_dimensions.pickle" % (
-                                                                    workdir, uid, f))
+                                                                    workdir, uid, file_name))
                 waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
                 sid, waveform_attributes_data = get_remote_file(sid, hostname, username, password,
                                                                 "%s/slycat_timeseries_%s/waveform_%s_attributes.pickle" % (
-                                                                    workdir, uid, f))
+                                                                    workdir, uid, file_name))
                 waveform_attributes_array = pickle.loads(waveform_attributes_data)
                 sid, waveform_times_data = get_remote_file(sid, hostname, username, password,
                                                            "%s/slycat_timeseries_%s/waveform_%s_times.pickle" % (
-                                                               workdir, uid, f))
+                                                               workdir, uid, file_name))
                 waveform_times_array = pickle.loads(waveform_times_data)
                 sid, waveform_values_data = get_remote_file(sid, hostname, username, password,
                                                             "%s/slycat_timeseries_%s/waveform_%s_values.pickle" % (
-                                                                workdir, uid, f))
+                                                                workdir, uid, file_name))
                 waveform_values_array = pickle.loads(waveform_values_data)
 
                 cherrypy.log.error("timeseries_count=%s" % timeseries_count)
+
+                # TODO this can become multi processored
                 for index in range(int(timeseries_count)):
                     try:
-                        slycat.web.server.put_model_array(database, model, "preview-%s" % f, index,
+                        slycat.web.server.put_model_array(database, model, "preview-%s" % file_name, index,
                                                           waveform_attributes_array[index],
                                                           waveform_dimensions_array[index])
-                        slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % f,
+                        slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % file_name,
                                                                   "%s/0/...;%s/1/..." % (index, index),
                                                                   [waveform_times_array[index],
                                                                    waveform_values_array[index]])
