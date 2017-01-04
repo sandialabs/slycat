@@ -48,7 +48,12 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       // component.user_config['timeseries-wizard']['persistent-output'] = component.output_directory();
       component.user_config['timeseries-wizard']['id-column'] = component.id_column();
       component.user_config['timeseries-wizard']['inputs-file-delimiter'] = component.inputs_file_delimiter();
-      component.user_config['timeseries-wizard']['timeseries-name'] = component.timeseries_name();
+      if(component.timeseries_type === "csv"){
+        component.user_config['timeseries-wizard']['timeseries-name'] = component.timeseries_name();
+      }
+      else{
+        component.user_config['timeseries-wizard']['timeseries-name'] = "";
+      }
 
       client.set_user_config({
         hostname: component.remote.hostname(),
