@@ -436,7 +436,7 @@ class Session(object):
         # arr.append("python slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
 
       # check if we have a pre-set hdf5 directory
-      if "hdf5_directory" in params:
+      if "hdf5_directory" in params and params["hdf5_directory"] != "":
         hdf5_dir = params["hdf5_directory"]
 
       if params["timeseries_name"] != "":
