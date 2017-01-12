@@ -36,6 +36,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.agent_function = ko.observable(params.agent_function === undefined ? '' : params.agent_function);
       vm.agent_function_params = params.agent_function_params === undefined ? {} :  params.agent_function_params;
       vm.on_submit_callback = params.on_submit_callback;
+      vm.on_error_callback = params.on_error_callback;
 
       vm.model_type = params.model_type;
       vm.mid = params.mid;
@@ -284,6 +285,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           success: function(results) {
             if (results.errors) {
               alert('[Error] Could not start batch file for Slycat pre-built function ' + fn + ': ' + results.errors);
+              vm.on_error_callback();
               return void 0;
             }
 
@@ -295,16 +297,21 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           },
           error: function(request, status, reason_phrase) {
             alert('[Error] Could not start batch file: ' + reason_phrase);
+            vm.on_error_callback();
           }
         });
       };
 
       vm.submit_job = function() {
         if (invalid_form())
+        {
+          vm.on_error_callback();
           return void 0;
+        }
 
         if (!vm.remote.hostname()) {
           $('#' + modal_id).modal('show');
+          vm.on_error_callback();
           return void 0;
         }
 
@@ -312,13 +319,17 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           hostname: vm.remote.hostname(),
           success: function(results) {
             if (results.errors)
-              return void 0
+            {
+              vm.on_error_callback();
+              return void 0;
+            }
 
             on_slycat_fn();
           },
           error: function(request, status, reason_phrase) {
             vm.remote.password('');
             $('#' + modal_id).modal('show');
+            vm.on_error_callback();
           }
         });
 

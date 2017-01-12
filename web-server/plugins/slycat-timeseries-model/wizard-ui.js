@@ -31,6 +31,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     // component.time_hours = ko.observable('');
     // component.time_minutes = ko.observable('');
     // component.time_seconds = ko.observable('');
+    component.submit_job_continue_button = null;
 
     component.timeseries_type.subscribe(function(newValue){
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
@@ -368,7 +369,10 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
       });
     };
 
-    component.compute = function() {
+    component.compute = function(data, event) {
+      component.submit_job_continue_button = $(event.target);
+      component.submit_job_continue_button.toggleClass("disabled", true);
+
       var vm = ko.dataFor($('.slycat-remote-interface')[0]);
       
       component.user_config['slurm'] = component.user_config['slurm'] || {};
@@ -388,11 +392,21 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     };
 
-    // A callback that is fired on submit?
+    // A callback that is fired on submit of job
     component.to_compute_next_step = function() {
       // updateUserConfig();
       component.tab(6);
+      component.submit_job_continue_button.toggleClass("disabled", false);
     };
+
+    // A callback fired when job submission has an error
+    component.submit_job_error = function() {
+      // Enable Continue button
+      if(component.submit_job_continue_button != null)
+      {
+        component.submit_job_continue_button.toggleClass("disabled", false);
+      }
+    }
 
     component.back = function() {
       var target = component.tab();
