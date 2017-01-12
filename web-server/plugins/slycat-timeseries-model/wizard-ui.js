@@ -144,7 +144,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
               }
 
               component.user_config = response.config;
-              component.tab(2);
+              if(component.timeseries_type() == 'hdf5')
+              {
+                component.tab(4);
+              }
+              else
+              {
+                component.tab(2);
+              }
             }
           });
       }else{
@@ -195,8 +202,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
                   }
 
                   component.user_config = response.config;
-                  component.tab(2);
-                }
+              if(component.timeseries_type() == 'hdf5')
+              {
+                component.tab(4);
+              }
+              else
+              {
+                component.tab(2);
+              }                }
               });
             },
             error: function(request, status, reason_phrase) {
@@ -370,6 +383,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.back = function() {
       var target = component.tab();
       if (component.tab() == 2) {
+        target = 0;
+      }
+      else if (component.tab() == 4 && component.timeseries_type() === 'hdf5') {
         target = 0;
       }
       else if (component.tab() == 4) {

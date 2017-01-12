@@ -7,7 +7,7 @@
 <div class="modal-body">
   <ul class="nav nav-pills">
     <li data-bind="css:{active:tab() == 0}"><a>Find Data</a></li>
-    <li data-bind="css:{active:tab() == 2}" class="ps-tab-remote-data"><a>Select Table File</a></li>
+    <li data-bind="css:{active:tab() == 2}, visible: timeseries_type() != 'hdf5'" class="ps-tab-remote-data"><a>Select Table File</a></li>
     <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
     <li data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
     <li data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a>Select HDF5 Directory</a></li>
