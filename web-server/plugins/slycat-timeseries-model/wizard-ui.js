@@ -224,6 +224,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.select_input_file = function() {
       var file_path = component.browser_input.selection()[0];
+
+      if(file_path == undefined)
+      {
+        dialog.dialog({message: "Please select your table file."})();
+        return;
+      }
+
       component.inputs_file(file_path);
 
       if (component.timeseries_type() === 'xyce') {
@@ -288,6 +295,13 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.select_xyce_timeseries_file = function() {
       var filepath = component.browser_timeseries.selection()[0];
+
+      if(filepath == undefined)
+      {
+        dialog.dialog({message: "Please select an example timeseries file."})();
+        return;
+      }
+
       var filename = filepath.split('/');
       filename = filename[filename.length - 1];
       component.xyce_timeseries_file(filename);
