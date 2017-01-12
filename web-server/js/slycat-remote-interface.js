@@ -42,9 +42,10 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.mid = params.mid;
 
       vm.retain_hdf5.subscribe(function(newValue){
-        if(newValue == false && vm.agent_function_params().timeseries_type == 'hdf5')
+        var timeseries_wizard = ko.dataFor($('.slycat-timeseries-wizard')[0]);
+
+        if(newValue == false && vm.agent_function_params().timeseries_type == 'hdf5' && timeseries_wizard.tab() == 5)
         {
-          // alert('Unchecking this will delete your input hdf5 files once the model completes.');
           dialog.confirm({
             title: 'Delete HDF5 Input Files?',
             message: 'Unchecking this will delete your hdf5 input files once the model completes. Are you sure you want to continue?',
