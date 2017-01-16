@@ -271,6 +271,15 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
         fn_params.workdir = vm.workdir();
         fn_params.retain_hdf5 = vm.retain_hdf5();
 
+        var fn_params_copy = $.extend(true, {}, fn_params);
+
+        if(fn_params.timeseries_type !== 'csv' && fn_params.timeseries_name != "")
+        {
+          // Blank out timeseries_name
+          fn_params_copy.timeseries_name = "";
+
+        }
+
         client.post_agent_function({
           hostname: vm.remote.hostname(),
           wckey: vm.wckey(),
@@ -281,7 +290,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           time_minutes: vm.time_minutes() === undefined ? 0 : vm.time_minutes(),
           time_seconds: vm.time_seconds() === undefined ? 0 : vm.time_seconds(),
           fn: fn,
-          fn_params: fn_params,
+          fn_params: fn_params_copy,
           uid: uid,
           success: function(results) {
             if (results.errors) {
