@@ -67,7 +67,12 @@ try:
   """
   Find number of timeseries and accurate cluster sample count before starting model
   """
-  with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
+  if os.path.isfile(os.path.join(arguments.directory, "inputs.hdf5")):
+    inputs_path = os.path.join(arguments.directory, "inputs.hdf5")
+  else:
+    inputs_path = os.path.join(os.path.dirname(arguments.directory), "inputs.hdf5")
+
+  with h5py.File(inputs_path, "r") as file:
     array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
     if len(dimensions) != 1:
