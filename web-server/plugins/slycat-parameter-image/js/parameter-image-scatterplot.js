@@ -893,6 +893,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             height : image.height,
             target_x : self.x_scale(self.options.x[image.index]),
             target_y : self.y_scale(self.options.y[image.index]),
+            video : image.video,
+            currentTime : image.currentTime
             });
         }
       });
@@ -1021,14 +1023,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     $(".open-image").each(function(index, frame)
     {
       var frame = $(frame);
-      self.options.open_images.push({
+      var open_element = {
         index : Number(frame.attr("data-index")),
         uri : frame.attr("data-uri"),
         relx : Number(frame.attr("data-transx")) / width,
         rely : Number(frame.attr("data-transy")) / height,
         width : frame.outerWidth(),
         height : frame.outerHeight(),
-        });
+      };
+      var video = frame.find('video')[0];
+      if(video != undefined)
+      {
+        var currentTime = video.currentTime;
+        open_element["currentTime"] = currentTime;
+        open_element["video"] = true;
+      }
+      self.options.open_images.push(open_element);
     });
 
     self.element.trigger("open-images-changed", [self.options.open_images]);
@@ -1325,6 +1335,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
         $(window).trigger('resize');
         return false;
+      }),
+      pause_video: (function(){
+        self._sync_open_images();
+      }),
+      seeked_video: (function(){
+        self._sync_open_images();
       })
     }
 
@@ -1447,7 +1463,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 "display": "block",
               });
             self._adjust_leader_line(frame_html);
-          });
+          })
+          .on("pause", handlers["pause_video"])
+          .on("seeked", handlers["seeked_video"])
+          ;
+        if(image.currentTime != undefined && image.currentTime > 0)
+        {
+          video.property("currentTime", image.currentTime);
+        }
+
       }
       else {
         // We don't support this file type, so just create a download link
