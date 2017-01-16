@@ -99,7 +99,7 @@ try:
   if not os.path.exists(dirname):
     os.makedirs(dirname)
 
-  with h5py.File(os.path.join(arguments.directory, "inputs.hdf5"), "r") as file:
+  with h5py.File(inputs_path, "r") as file:
     array = slycat.hdf5.ArraySet(file)[0]
     dimensions = array.dimensions
     attributes = array.attributes
