@@ -37,6 +37,7 @@ $.widget("parameter_image.controls",
     var self = this;
     var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
+    var video_controls = $("#video-controls", this.element);
 
     this.x_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -155,6 +156,17 @@ $.widget("parameter_image.controls",
         }
       })
       .appendTo(selection_controls)
+      ;
+
+    this.video_sync_button = $("\
+      <button class='btn btn-default' data-toggle='button' title='Sync Videos'> \
+        <span class='fa fa-video-camera' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("video-sync", !$(this).hasClass('active'));
+      })
+      .appendTo(video_controls)
       ;
 
     function openCSVSaveChoiceDialog(){
