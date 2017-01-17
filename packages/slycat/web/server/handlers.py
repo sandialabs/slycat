@@ -1191,6 +1191,23 @@ def delete_project_cache_object(pid, key):
     raise cherrypy.HTTPError(404)
 
 
+def delete_project_cache(pid):
+    """
+    clears all the cached images and videos for a project
+    given a project ID
+    :param pid: Project ID
+    :return: status
+    """
+    couchdb = slycat.web.server.database.couchdb.connect()
+    project = couchdb.get("project", pid)
+    slycat.web.server.authentication.require_project_administrator(project)
+
+    for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
+        couchdb.delete(cache_object)
+
+    cherrypy.response.status = "204 Cache objects deleted."
+
+
 def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
     try:
         attribute = int(attribute)
