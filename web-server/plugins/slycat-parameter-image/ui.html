@@ -35,34 +35,38 @@ rights in this software.
 
 	<div id="controls-pane" class="ui-layout-north">
     <div class="center bootstrap-styles" id="controls">
+      <div class="form-inline">
+        <div class="form-group">
 
-      <div id="filter-controls" class="btn-group btn-group-xs">
-        <!-- ko if: allFilters().length > 0 -->
-          <button id="filter-dropdown" class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true" title="Select Filter Variables"
-            data-bind="css: { disabled: allFilters().length == activeFilters().length }">
-            Filter
-            <span class="caret"></span>
-          </button>
-          <ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="filter-dropdown">
-            <!-- ko foreach: availableFilters -->
-              <li role="presentation" data-bind="visible: !active()">
-                <a role="menuitem" tabindex="-1" href="#" data-bind="text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
-              </li>
+          <div id="filter-controls" class="btn-group btn-group-xs">
+            <!-- ko if: allFilters().length > 0 -->
+              <button id="filter-dropdown" class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true" title="Select Filter Variables"
+                data-bind="css: { disabled: allFilters().length == activeFilters().length }">
+                Filter
+                <span class="caret"></span>
+              </button>
+              <ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="filter-dropdown">
+                <!-- ko foreach: availableFilters -->
+                  <li role="presentation" data-bind="visible: !active()">
+                    <a role="menuitem" tabindex="-1" href="#" data-bind="text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
+                  </li>
+                <!-- /ko -->
+              </ul>
             <!-- /ko -->
-          </ul>
-        <!-- /ko -->
+          </div>
+
+          <div id="scatterplot-controls" class="btn-group btn-group-xs"></div>
+
+          <div id="selection-controls" class="btn-group btn-group-xs"></div>
+
+          <div id="video-controls" class="input-group input-group-xs"></div>
+            
+          <div id="color-switcher" class="btn-group btn-group-xs"></div>
+
+          <div id="add-note" class="btn-group btn-group-xs"></div>
+
+        </div>
       </div>
-
-      <div id="scatterplot-controls" class="btn-group btn-group-xs"></div>
-
-      <div id="selection-controls" class="btn-group btn-group-xs"></div>
-
-      <div id="video-controls" class="btn-group btn-group-xs"></div>
-
-      <div id="color-switcher" class="btn-group btn-group-xs"></div>
-
-      <div id="add-note" class="btn-group btn-group-xs"></div>
-
     </div>
 	</div>
 

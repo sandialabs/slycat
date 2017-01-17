@@ -30,6 +30,8 @@ $.widget("parameter_image.controls",
     indices : [],
     disable_hide_show : false,
     open_images : [],
+    "video-sync" : false,
+    "video-sync-time" : 0,
   },
 
   _create: function()
@@ -159,12 +161,23 @@ $.widget("parameter_image.controls",
       ;
 
     this.video_sync_button = $("\
-      <button class='btn btn-default' data-toggle='button' title='Sync Videos'> \
-        <span class='fa fa-video-camera' aria-hidden='true'></span> \
-      </button> \
+      <span class='input-group-btn'> \
+        <button class='btn btn-default btn-xs' data-toggle='button' title='Sync Videos'> \
+          <span class='fa fa-video-camera' aria-hidden='true'></span> \
+        </button> \
+      </span> \
       ")
       .click(function(){
-        self.element.trigger("video-sync", !$(this).hasClass('active'));
+        self.element.trigger("video-sync", !$('button', this).hasClass('active'));
+      })
+      .appendTo(video_controls)
+      ;
+
+    this.video_sync_time = $("\
+      <input type='text' class='form-control input-xs video-sync-time' placeholder='Time'> \
+      ")
+      .focusout(function(){
+        self.element.trigger("video-sync-time", $(this).val());
       })
       .appendTo(video_controls)
       ;
@@ -219,6 +232,8 @@ $.widget("parameter_image.controls",
     self._set_selection_control();
     self._set_show_all();
     self._set_close_all();
+    self._set_video_sync();
+    self._set_video_sync_time();
   },
 
 
@@ -418,6 +433,19 @@ $.widget("parameter_image.controls",
     var self = this;
     this.auto_scale_button.toggleClass("active", self.options["auto-scale"]);
     this.auto_scale_button.attr("aria-pressed", self.options["auto-scale"]);
+  },
+
+  _set_video_sync: function()
+  {
+    var self = this;
+    this.video_sync_button.toggleClass("active", self.options["video-sync"]);
+    this.video_sync_button.attr("aria-pressed", self.options["video-sync"]);
+  },
+
+  _set_video_sync_time: function()
+  {
+    var self = this;
+    this.video_sync_time.val(self.options["video-sync-time"]);
   },
 
   _set_selection_control: function()
