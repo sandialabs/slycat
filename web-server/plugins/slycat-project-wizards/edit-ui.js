@@ -138,6 +138,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         error: dialog.ajax_error("Error updating project."),
       });
     }
+
+    component.delete_project_cache = function()
+    {
+      client.delete_project_cache(
+      {
+        pid: component.project._id(),
+        success: function()
+        {
+        },
+        error: dialog.ajax_error("Error updating project."),
+      });
+      console.log("!!");
+    }
     return component;
   }
 
