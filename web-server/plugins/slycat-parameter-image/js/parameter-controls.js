@@ -160,17 +160,19 @@ $.widget("parameter_image.controls",
       .appendTo(selection_controls)
       ;
 
+    this.video_sync_button_wrapper = $("<span class='input-group-btn'></span>")
+      .appendTo(video_controls)
+      ;
+
     this.video_sync_button = $("\
-      <span class='input-group-btn'> \
         <button class='btn btn-default btn-xs' data-toggle='button' title='Sync Videos'> \
           <span class='fa fa-video-camera' aria-hidden='true'></span> \
         </button> \
-      </span> \
       ")
       .click(function(){
-        self.element.trigger("video-sync", !$('button', this).hasClass('active'));
+        self.element.trigger("video-sync", !$(this).hasClass('active'));
       })
-      .appendTo(video_controls)
+      .appendTo(self.video_sync_button_wrapper)
       ;
 
     this.video_sync_time = $("\
@@ -178,6 +180,12 @@ $.widget("parameter_image.controls",
       ")
       .focusout(function(){
         self.element.trigger("video-sync-time", $(this).val());
+      })
+      .keypress(function(e){
+        if(e.which == 13)
+        {
+          self.element.trigger("video-sync-time", $(this).val());
+        }
       })
       .appendTo(video_controls)
       ;

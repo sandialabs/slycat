@@ -63,6 +63,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         'uvs','uvvs','uvv','uvvv','dvb','fvt','mxu','m4u','pyv','uvu','uvvu','viv','webm','f4v','fli','flv','m4v','mkv','mk3d','mks','mng','asf','asx','vob','wm','wmv','wmx','wvx','avi',
         'movie','smv','ice',
       ],
+      "video-sync" : false,
+      "video-sync-time" : 0,
     },
 
   _create: function()
@@ -599,6 +601,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
       self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
     }
+    else if(key == "video-sync")
+    {
+      if(self.options["video-sync"])
+      {
+        self._schedule_update({update_video_sync_time:true,});
+      }
+    }
+    else if(key == "video-sync-time")
+    {
+      if(self.options["video-sync"])
+      {
+        self._schedule_update({update_video_sync_time:true,});
+      }
+    }
   },
 
   update_color_scale_and_v: function(data)
@@ -1008,6 +1024,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
+    if(self.updates["update_video_sync_time"])
+    {
+      $(".open-image video").each(function(index, video)
+      {
+        video.currentTime = self.options["video-sync-time"];
+      });
+    }
+
     self.updates = {}
   },
 
@@ -1337,11 +1361,26 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         return false;
       }),
       pause_video: (function(){
-        self._sync_open_images();
+        // self._sync_open_images();
+        video_sync_time_changed();
       }),
       seeked_video: (function(){
-        self._sync_open_images();
+        // self._sync_open_images();
+        video_sync_time_changed();
       })
+    }
+
+    function video_sync_time_changed(self_passed)
+    {
+      var self = self_passed;
+
+      if(self.options["video-sync"])
+      {
+        // Sync all videos to current video-sync-time
+        self._schedule_update({update_video_sync_time:true,});
+      }
+
+      self._sync_open_images;
     }
 
     // Don't open images for hidden simulations
@@ -1464,8 +1503,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               });
             self._adjust_leader_line(frame_html);
           })
-          .on("pause", handlers["pause_video"])
-          .on("seeked", handlers["seeked_video"])
+          .on("pause", function(){
+            self.options["video-sync-time"] = this.currentTime;
+            handlers["pause_video"]();
+          })
+          .on("seeked", function(){
+            self.options["video-sync-time"] = this.currentTime;
+            handlers["seeked_video"]();
+          })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
         {
