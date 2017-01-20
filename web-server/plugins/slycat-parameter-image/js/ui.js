@@ -837,6 +837,12 @@ function setup_controls()
       video_sync_time_changed(video_sync_time);
     });
 
+    // Clicking jump-to-start updates the scatterplot and logs it ...
+    $("#controls").bind("jump-to-start", function(event)
+    {
+      $("#scatterplot").scatterplot("jump_to_start");
+    });
+
     // Clicking play updates the scatterplot and logs it ...
     $("#controls").bind("play", function(event)
     {

@@ -1029,26 +1029,33 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     if(self.updates["update_video_sync_time"])
     {
-      // Updating videos' sync time should not fire off additional seeked events
-      $(".open-image video").each(function(index, video)
-      {
-        console.log("video " + index + ", it's currentTime is: " + video.currentTime + ", target video-sync-time is: " + self.options["video-sync-time"]);
-        // Only update currentTime if it's different than target value, because setting
-        // currentTime dispatches a seeked event, which then tries to update currentTime
-        // on all open videos, thus infinite loop.
-        // Also, only update currentTime if the video is not playing
-        var videoSyncTime = self.options["video-sync-time"];
-        var playing = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
-        if( (video.currentTime != videoSyncTime) && !playing)
-        {
-          console.log("video " + index + " was different, we are syncing it");
-          self.syncing_videos.push(index);
-          video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
-        }
-      });
+      self._update_video_sync_time();
     }
 
     self.updates = {}
+  },
+
+  _update_video_sync_time: function()
+  {
+    var self = this;
+    // Updating videos' sync time should not fire off additional seeked events
+    $(".open-image video").each(function(index, video)
+    {
+      console.log("video " + index + ", it's currentTime is: " + video.currentTime + ", target video-sync-time is: " + self.options["video-sync-time"]);
+      // Only update currentTime if it's different than target value, because setting
+      // currentTime dispatches a seeked event, which then tries to update currentTime
+      // on all open videos, thus infinite loop.
+      // Also, only update currentTime if the video is not playing
+      var videoSyncTime = self.options["video-sync-time"];
+      var playing = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
+      if( (video.currentTime != videoSyncTime) && !playing)
+      {
+        console.log("video " + index + " was different, we are syncing it");
+        self.syncing_videos.push(index);
+        video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
+      }
+    });
+    self._sync_open_images();
   },
 
   _sync_open_images: function()
@@ -1393,7 +1400,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._schedule_update({update_video_sync_time:true,});
       }
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-      self._sync_open_images();
     }
 
     // Don't open images for hidden simulations
@@ -2033,6 +2039,25 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     self._open_images(images);
   },
 
+  jump_to_start: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      // Pause all videos
+      $(".open-image video").each(function(index, video)
+      {
+        self.pausing_videos.push(index);
+        video.pause();
+      });
+      // Set sync time to 0
+      self.options["video-sync-time"] = 0;
+
+      // Update and bookmark
+      self._schedule_update({update_video_sync_time:true,});
+    }
+  },
+
   play: function()
   {
     var self = this;
@@ -2065,7 +2090,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       });
 
       self._schedule_update({update_video_sync_time:true,});
-      self._sync_open_images();
     }
   },
 
