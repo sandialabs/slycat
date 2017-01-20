@@ -837,6 +837,18 @@ function setup_controls()
       video_sync_time_changed(video_sync_time);
     });
 
+    // Clicking play updates the scatterplot and logs it ...
+    $("#controls").bind("play", function(event)
+    {
+      $("#scatterplot").scatterplot("play");
+    });
+
+    // Clicking pause updates the scatterplot and logs it ...
+    $("#controls").bind("pause", function(event)
+    {
+      $("#scatterplot").scatterplot("pause");
+    });
+
     // Log changes to hidden selection ...
     $("#controls").bind("hide-selection", function(event, selection)
     {

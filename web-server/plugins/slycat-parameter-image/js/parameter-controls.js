@@ -40,6 +40,7 @@ $.widget("parameter_image.controls",
     var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
     var video_controls = $("#video-controls", this.element);
+    var playback_controls = $("#playback-controls", this.element);
 
     this.x_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -190,16 +191,82 @@ $.widget("parameter_image.controls",
       .appendTo(video_controls)
       ;
 
-      function handleVideoSyncTimeChange(element)
+    this.jump_to_start_button = $("\
+      <button class='btn btn-default' title='Jump to beginning'> \
+        <span class='fa fa-fast-backward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("jump-to-start");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.frame_back_button = $("\
+      <button class='btn btn-default' title='Skip one frame back'> \
+        <span class='fa fa-backward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("frame-back");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.play_button = $("\
+      <button class='btn btn-default' title='Play'> \
+        <span class='fa fa-play' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("play");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.pause_button = $("\
+      <button class='btn btn-default' title='Pause'> \
+        <span class='fa fa-pause' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("pause");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.frame_forward = $("\
+      <button class='btn btn-default' title='Skip one frame forward'> \
+        <span class='fa fa-forward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("frame-forward");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.jump_to_end_button = $("\
+      <button class='btn btn-default' title='Jump to end'> \
+        <span class='fa fa-fast-forward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("jump-to-end");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    function handleVideoSyncTimeChange(element)
+    {
+      var val = parseFloat($(element).val());
+      if(isNaN(val))
       {
-        var val = parseFloat($(element).val());
-        if(isNaN(val))
-        {
-          val = 0;
-        }
-        $(element).val(val);
-        self.element.trigger("video-sync-time", val);
+        val = 0;
       }
+      $(element).val(val);
+      self.element.trigger("video-sync-time", val);
+    }
 
     function openCSVSaveChoiceDialog(){
       var txt = "";

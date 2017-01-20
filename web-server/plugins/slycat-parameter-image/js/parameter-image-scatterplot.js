@@ -68,6 +68,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     },
 
   syncing_videos : [],
+  pausing_videos : [],
 
   _create: function()
   {
@@ -1034,9 +1035,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         console.log("video " + index + ", it's currentTime is: " + video.currentTime + ", target video-sync-time is: " + self.options["video-sync-time"]);
         // Only update currentTime if it's different than target value, because setting
         // currentTime dispatches a seeked event, which then tries to update currentTime
-        // on all open videos, thus infinite loop
+        // on all open videos, thus infinite loop.
+        // Also, only update currentTime if the video is not playing
         var videoSyncTime = self.options["video-sync-time"];
-        if(video.currentTime != videoSyncTime)
+        var playing = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
+        if( (video.currentTime != videoSyncTime) && !playing)
         {
           console.log("video " + index + " was different, we are syncing it");
           self.syncing_videos.push(index);
@@ -1514,8 +1517,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             self._adjust_leader_line(frame_html);
           })
           .on("pause", function(){
-            self.options["video-sync-time"] = this.currentTime;
-            handlers["pause_video"]();
+            var index = self.pausing_videos.indexOf(image.index);
+            // If video was directly paused by user, set a new video-sync-time and sync all other videos
+            if(index < 0)
+            {
+              self.options["video-sync-time"] = this.currentTime;
+              handlers["pause_video"]();
+            }
+            // Do nothing if video was paused by system, just remove it from the paused videos list
+            else
+            {
+              self.pausing_videos.splice(index, 1);
+            }
           })
           .on("seeked", function(){
             var index = self.syncing_videos.indexOf(image.index);
@@ -1528,7 +1541,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             {
               self.syncing_videos.splice(index, 1);
             }
-
           })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
@@ -2020,5 +2032,44 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     });
     self._open_images(images);
   },
+
+  play: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      $(".open-image video").each(function(index, video)
+      {
+        video.play();
+      });
+    }
+  },
+
+  pause: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var videos = $(".open-image video");
+      var firstVideo = videos.get(0);
+      if(firstVideo != undefined)
+      {
+        self.options["video-sync-time"] = firstVideo.currentTime;
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
+
+      videos.each(function(index, video)
+      {
+        self.pausing_videos.push(index);
+        video.pause();
+      });
+
+      self._schedule_update({update_video_sync_time:true,});
+      self._sync_open_images();
+    }
+  },
+
+
+
   });
 });
