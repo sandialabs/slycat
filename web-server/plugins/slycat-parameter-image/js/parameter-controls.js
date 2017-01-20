@@ -179,16 +179,27 @@ $.widget("parameter_image.controls",
       <input type='text' class='form-control input-xs video-sync-time' placeholder='Time'> \
       ")
       .focusout(function(){
-        self.element.trigger("video-sync-time", $(this).val());
+        handleVideoSyncTimeChange(this);
       })
       .keypress(function(e){
         if(e.which == 13)
         {
-          self.element.trigger("video-sync-time", $(this).val());
+          handleVideoSyncTimeChange(this);
         }
       })
       .appendTo(video_controls)
       ;
+
+      function handleVideoSyncTimeChange(element)
+      {
+        var val = parseFloat($(element).val());
+        if(isNaN(val))
+        {
+          val = 0;
+        }
+        $(element).val(val);
+        self.element.trigger("video-sync-time", val);
+      }
 
     function openCSVSaveChoiceDialog(){
       var txt = "";
@@ -786,6 +797,10 @@ $.widget("parameter_image.controls",
     {
       self._set_show_all();
       self._set_hide_show_selection_status();
+    }
+    else if(key == 'video-sync-time')
+    {
+      self._set_video_sync_time();
     }
   },
 });

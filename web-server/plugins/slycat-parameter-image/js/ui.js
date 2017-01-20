@@ -653,6 +653,13 @@ function setup_scatterplot()
     {
       open_images_changed(selection);
     });
+
+    // Changing the video sync time updates the controls and logs it ...
+    $("#scatterplot").bind("video-sync-time", function(event, video_sync_time)
+    {
+      $("#controls").controls("option", "video-sync-time", video_sync_time);
+      video_sync_time_changed(video_sync_time);
+    });
   }
 }
 
@@ -826,6 +833,7 @@ function setup_controls()
     // Changing the video sync time updates the scatterplot and logs it ...
     $("#controls").bind("video-sync-time", function(event, video_sync_time)
     {
+      $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time);
       video_sync_time_changed(video_sync_time);
     });
 
@@ -1190,7 +1198,6 @@ function video_sync_option_changed(video_sync_value)
 function video_sync_time_changed(video_sync_time_value)
 {
   video_sync_time = video_sync_time_value;
-  $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time);
   $.ajax(
   {
     type : "POST",

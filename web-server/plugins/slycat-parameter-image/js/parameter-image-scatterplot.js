@@ -67,6 +67,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       "video-sync-time" : 0,
     },
 
+  syncing_videos : [],
+
   _create: function()
   {
     var self = this;
@@ -1026,9 +1028,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     if(self.updates["update_video_sync_time"])
     {
+      // Updating videos' sync time should not fire off additional seeked events
       $(".open-image video").each(function(index, video)
       {
-        video.currentTime = self.options["video-sync-time"];
+        console.log("video " + index + ", it's currentTime is: " + video.currentTime + ", target video-sync-time is: " + self.options["video-sync-time"]);
+        // Only update currentTime if it's different than target value, because setting
+        // currentTime dispatches a seeked event, which then tries to update currentTime
+        // on all open videos, thus infinite loop
+        var videoSyncTime = self.options["video-sync-time"];
+        if(video.currentTime != videoSyncTime)
+        {
+          console.log("video " + index + " was different, we are syncing it");
+          self.syncing_videos.push(index);
+          video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
+        }
       });
     }
 
@@ -1361,26 +1374,23 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         return false;
       }),
       pause_video: (function(){
-        // self._sync_open_images();
-        video_sync_time_changed();
+        video_sync_time_changed(self);
       }),
       seeked_video: (function(){
-        // self._sync_open_images();
-        video_sync_time_changed();
+        video_sync_time_changed(self);
       })
     }
 
     function video_sync_time_changed(self_passed)
     {
       var self = self_passed;
-
       if(self.options["video-sync"])
       {
         // Sync all videos to current video-sync-time
         self._schedule_update({update_video_sync_time:true,});
       }
-
-      self._sync_open_images;
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      self._sync_open_images();
     }
 
     // Don't open images for hidden simulations
@@ -1508,8 +1518,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             handlers["pause_video"]();
           })
           .on("seeked", function(){
-            self.options["video-sync-time"] = this.currentTime;
-            handlers["seeked_video"]();
+            var index = self.syncing_videos.indexOf(image.index);
+            if(index < 0)
+            {
+              self.options["video-sync-time"] = this.currentTime;
+              handlers["seeked_video"]();
+            }
+            else
+            {
+              self.syncing_videos.splice(index, 1);
+            }
+
           })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
