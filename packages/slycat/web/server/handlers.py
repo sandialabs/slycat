@@ -225,7 +225,7 @@ def post_projects():
     database = slycat.web.server.database.couchdb.connect()
     pid, rev = database.save({
         "type": "project",
-        "acl": {"administrators": [{"user": cherrypy.request.login}], "readers": [], "writers": []},
+        "acl": {"administrators": [{"user": cherrypy.request.login}], "readers": [], "writers": [], "groups": []},
         "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
         "description": cherrypy.request.json.get("description", ""),
