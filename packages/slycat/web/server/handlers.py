@@ -283,7 +283,6 @@ def get_remote_host_dict():
 
 
 @cherrypy.tools.json_in(on=True)
-@cherrypy.tools.json_out(on=True)
 def put_project(pid):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
@@ -313,6 +312,7 @@ def put_project(pid):
         project["description"] = cherrypy.request.json["description"]
 
     database.save(project)
+    cherrypy.response.status = "200 Project updated."
 
 
 def delete_project(pid):
