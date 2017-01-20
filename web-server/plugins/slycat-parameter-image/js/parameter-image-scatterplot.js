@@ -2058,6 +2058,28 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
   },
 
+  jump_to_end: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var maxLength = 0;
+      // Pause all videos and log highest length
+      $(".open-image video").each(function(index, video)
+      {
+        self.pausing_videos.push(index);
+        video.pause();
+        maxLength = Math.max(video.duration, maxLength);
+      });
+
+      // Set sync time to max video length
+      self.options["video-sync-time"] = maxLength;
+
+      // Update and bookmark
+      self._schedule_update({update_video_sync_time:true,});
+    }
+  },
+
   play: function()
   {
     var self = this;

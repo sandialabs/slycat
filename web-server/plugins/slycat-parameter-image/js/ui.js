@@ -855,6 +855,12 @@ function setup_controls()
       $("#scatterplot").scatterplot("pause");
     });
 
+    // Clicking jump-to-end updates the scatterplot and logs it ...
+    $("#controls").bind("jump-to-end", function(event)
+    {
+      $("#scatterplot").scatterplot("jump_to_end");
+    });
+
     // Log changes to hidden selection ...
     $("#controls").bind("hide-selection", function(event, selection)
     {
