@@ -65,6 +65,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       ],
       "video-sync" : false,
       "video-sync-time" : 0,
+      frameLength : 1/25,
     },
 
   syncing_videos : [],
@@ -2055,6 +2056,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       // Update and bookmark
       self._schedule_update({update_video_sync_time:true,});
+
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
     }
   },
 
@@ -2063,20 +2066,75 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var self = this;
     if(self.options["video-sync"])
     {
-      var maxLength = 0;
+      var minLength = Infinity;
       // Pause all videos and log highest length
       $(".open-image video").each(function(index, video)
       {
         self.pausing_videos.push(index);
         video.pause();
-        maxLength = Math.max(video.duration, maxLength);
+        minLength = Math.min(video.duration, minLength);
       });
 
       // Set sync time to max video length
-      self.options["video-sync-time"] = maxLength;
+      self.options["video-sync-time"] = minLength;
 
       // Update and bookmark
       self._schedule_update({update_video_sync_time:true,});
+
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+    }
+  },
+
+  frame_back: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var videos = $(".open-image video");
+      var firstVideo = videos.get(0);
+      if(firstVideo != undefined)
+      {
+        self.options["video-sync-time"] = Math.max(firstVideo.currentTime - self.options.frameLength, 0);
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
+
+      // Pause all videos
+      videos.each(function(index, video)
+      {
+        self.pausing_videos.push(index);
+        video.pause();
+      });
+
+      // Update and bookmark
+      self._schedule_update({update_video_sync_time:true,});
+    }
+  },
+
+  frame_forward: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var videos = $(".open-image video");
+      var minLength = Infinity;
+      var firstVideoDuration;
+
+      // Pause all videos and log lowest length
+      videos.each(function(index, video)
+      {
+        self.pausing_videos.push(index);
+        video.pause();
+        minLength = Math.min(video.duration, minLength);
+      });
+
+      var firstVideo = videos.get(0);
+      if(firstVideo != undefined)
+      {
+        self.options["video-sync-time"] = Math.min((firstVideo.currentTime + self.options.frameLength), (minLength - self.options.frameLength));
+        // Update and bookmark
+        self._schedule_update({update_video_sync_time:true,});
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
     }
   },
 

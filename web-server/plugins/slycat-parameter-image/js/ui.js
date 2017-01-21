@@ -843,6 +843,12 @@ function setup_controls()
       $("#scatterplot").scatterplot("jump_to_start");
     });
 
+    // Clicking frame-forward updates the scatterplot and logs it ...
+    $("#controls").bind("frame-forward", function(event)
+    {
+      $("#scatterplot").scatterplot("frame_forward");
+    });
+
     // Clicking play updates the scatterplot and logs it ...
     $("#controls").bind("play", function(event)
     {
@@ -853,6 +859,12 @@ function setup_controls()
     $("#controls").bind("pause", function(event)
     {
       $("#scatterplot").scatterplot("pause");
+    });
+
+    // Clicking frame-back updates the scatterplot and logs it ...
+    $("#controls").bind("frame-back", function(event)
+    {
+      $("#scatterplot").scatterplot("frame_back");
     });
 
     // Clicking jump-to-end updates the scatterplot and logs it ...
