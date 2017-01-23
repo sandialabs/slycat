@@ -918,3 +918,8 @@ a {
 #video-controls .video-sync-time {
   width: 75px;
 }
+#playback-controls .play-button,
+#playback-controls .pause-button
+{
+  width: 22px;
+}

@@ -214,24 +214,29 @@ $.widget("parameter_image.controls",
       ;
 
     this.play_button = $("\
-      <button class='btn btn-default' title='Play'> \
+      <button class='btn btn-default play-button' title='Play'> \
         <span class='fa fa-play' aria-hidden='true'></span> \
       </button> \
       ")
       .click(function(){
         self.element.trigger("play");
+        $(this).hide();
+        self.pause_button.show();
       })
       .appendTo(playback_controls)
       ;
 
     this.pause_button = $("\
-      <button class='btn btn-default' title='Pause'> \
+      <button class='btn btn-default pause-button' title='Pause'> \
         <span class='fa fa-pause' aria-hidden='true'></span> \
       </button> \
       ")
       .click(function(){
         self.element.trigger("pause");
+        $(this).hide();
+        self.play_button.show();
       })
+      .hide()
       .appendTo(playback_controls)
       ;
 
