@@ -1543,11 +1543,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             {
               self.options["video-sync-time"] = this.currentTime;
               handlers["seeked_video"]();
+              pinVideo(self, this, image);
             }
             else
             {
               self.syncing_videos.splice(index, 1);
             }
+          })
+          .on("play", function(){
+            pinVideo(self, this, image);
           })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
@@ -1572,6 +1576,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .attr("download", "download")
           .text("Download " + image.uri)
           ;
+      }
+
+      function pinVideo(self, video)
+      {
+        var frame = d3.select(video.parentElement);
+
+        if (frame.classed("hover-image")) {
+          self.opening_image = null;
+          clear_hover_timer(self);
+          frame.classed("hover-image", false).classed("open-image", true);
+          image.image_class = "open-image";
+        }
       }
 
       // Remove loading indicator image
