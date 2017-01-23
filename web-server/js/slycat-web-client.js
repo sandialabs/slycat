@@ -1167,6 +1167,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  module.delete_project_cache = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "projects/" + params.pid + "/delete-cache",
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.put_model = function(params)
   {
     var model = {};

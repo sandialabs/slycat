@@ -225,7 +225,7 @@ def post_projects():
     database = slycat.web.server.database.couchdb.connect()
     pid, rev = database.save({
         "type": "project",
-        "acl": {"administrators": [{"user": cherrypy.request.login}], "readers": [], "writers": []},
+        "acl": {"administrators": [{"user": cherrypy.request.login}], "readers": [], "writers": [], "groups": []},
         "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
         "description": cherrypy.request.json.get("description", ""),
@@ -283,7 +283,6 @@ def get_remote_host_dict():
 
 
 @cherrypy.tools.json_in(on=True)
-@cherrypy.tools.json_out(on=True)
 def put_project(pid):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
@@ -313,6 +312,7 @@ def put_project(pid):
         project["description"] = cherrypy.request.json["description"]
 
     database.save(project)
+    cherrypy.response.status = "200 Project updated."
 
 
 def delete_project(pid):
@@ -1189,6 +1189,23 @@ def delete_project_cache_object(pid, key):
 
     slycat.email.send_error("slycat.web.server.handlers.py delete_project_cache_object", "cherrypy.HTTPError 404")
     raise cherrypy.HTTPError(404)
+
+
+def delete_project_cache(pid):
+    """
+    clears all the cached images and videos for a project
+    given a project ID
+    :param pid: Project ID
+    :return: status
+    """
+    couchdb = slycat.web.server.database.couchdb.connect()
+    project = couchdb.get("project", pid)
+    slycat.web.server.authentication.require_project_administrator(project)
+
+    for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
+        couchdb.delete(cache_object)
+
+    cherrypy.response.status = "204 Cache objects deleted."
 
 
 def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
