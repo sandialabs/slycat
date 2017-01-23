@@ -1522,6 +1522,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 "display": "block",
               });
             self._adjust_leader_line(frame_html);
+            if(self.options["video-sync"] && this.currentTime != self.options["video-sync-time"])
+            {
+              self.syncing_videos.push(image.index);
+              this.currentTime = self.options["video-sync-time"];
+            }
           })
           .on("pause", function(){
             var index = self.pausing_videos.indexOf(image.index);
