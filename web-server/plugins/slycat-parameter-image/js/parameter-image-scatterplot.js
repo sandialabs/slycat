@@ -1280,6 +1280,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .on('.drag', null)
             .call(nodrag);
         }
+        $(".open-image").removeClass("selected");
+        d3.select(d3.event.currentTarget).classed("selected", true);
       },
       hover: (function() {
         clear_hover_timer(self);
