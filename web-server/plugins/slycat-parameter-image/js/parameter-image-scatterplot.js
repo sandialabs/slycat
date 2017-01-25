@@ -915,7 +915,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             target_x : self.x_scale(self.options.x[image.index]),
             target_y : self.y_scale(self.options.y[image.index]),
             video : image.video,
-            currentTime : image.currentTime
+            currentTime : image.currentTime,
+            current_frame : image.current_frame,
             });
         }
       });
@@ -1079,6 +1080,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         rely : Number(frame.attr("data-transy")) / height,
         width : frame.outerWidth(),
         height : frame.outerHeight(),
+        current_frame : frame.hasClass("selected"),
       };
       var video = frame.find('video')[0];
       if(video != undefined)
@@ -1177,7 +1179,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           "height": img.height + "px",
           "z-index": 1,
         })
-        .attr("class", img.image_class + " image-frame scaffolding html")
+        .attr("class", img.image_class + " image-frame scaffolding html ")
+        .classed("selected", img.current_frame)
         .attr("data-index", img.index)
         .attr("data-uri", img.uri)
         .call(
@@ -1285,6 +1288,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         $(".open-image").removeClass("selected");
         d3.select(d3.event.currentTarget).classed("selected", true);
         self.current_frame = Number(d3.select(d3.event.currentTarget).attr("data-index"));
+        self._sync_open_images();
       },
       hover: (function() {
         clear_hover_timer(self);
@@ -2139,13 +2143,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
       if(video != null)
       {
-        video.pause();
-        var newTime = Math.max(video.currentTime - self.options.frameLength, 0);
-        self.pausing_videos.push($(video.parentElement).data('index'));
-        video.currentTime = newTime;
-        self.options["video-sync-time"] = newTime;
-        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-        self._sync_open_images();
+        var time = Math.max(video.currentTime - self.options.frameLength, 0);
+        self._set_single_video_time(video, time);
       }
     }
   },
@@ -2181,13 +2180,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
       if(video != null)
       {
-        video.pause();
-        var newTime = Math.min(video.currentTime + self.options.frameLength, video.duration - self.options.frameLength);
-        self.pausing_videos.push($(video.parentElement).data('index'));
-        video.currentTime = newTime;
-        self.options["video-sync-time"] = newTime;
-        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-        self._sync_open_images();
+        var time = Math.min(video.currentTime + self.options.frameLength, video.duration - self.options.frameLength);
+        self._set_single_video_time(video, time);
       }
     }
   },
@@ -2232,6 +2226,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       });
 
       self._schedule_update({update_video_sync_time:true,});
+    }
+  },
+
+  _set_single_video_time: function(video, time)
+  {
+    var self = this;
+    if(video != null)
+    {
+      video.pause();
+      self.pausing_videos.push($(video.parentElement).data('index'));
+      video.currentTime = time;
+      self.options["video-sync-time"] = time;
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      self._sync_open_images();
     }
   },
 
