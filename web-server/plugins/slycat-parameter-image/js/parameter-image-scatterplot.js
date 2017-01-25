@@ -70,6 +70,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
   syncing_videos : [],
   pausing_videos : [],
+  current_frame : null,
 
   _create: function()
   {
@@ -1052,7 +1053,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       if( (video.currentTime != videoSyncTime) && !playing)
       {
         console.log("video " + index + " was different, we are syncing it");
-        self.syncing_videos.push(index);
+        self.syncing_videos.push($(video.parentElement).data('index'));
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
       }
     });
@@ -1280,8 +1281,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .on('.drag', null)
             .call(nodrag);
         }
+        self.current_frame = null;
         $(".open-image").removeClass("selected");
         d3.select(d3.event.currentTarget).classed("selected", true);
+        self.current_frame = Number(d3.select(d3.event.currentTarget).attr("data-index"));
       },
       hover: (function() {
         clear_hover_timer(self);
@@ -2071,7 +2074,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Pause all videos
       $(".open-image video").each(function(index, video)
       {
-        self.pausing_videos.push(index);
+        self.pausing_videos.push($(video.parentElement).data('index'));
         video.pause();
       });
       // Set sync time to 0
@@ -2093,7 +2096,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Pause all videos and log highest length
       $(".open-image video").each(function(index, video)
       {
-        self.pausing_videos.push(index);
+        self.pausing_videos.push($(video.parentElement).data('index'));
         video.pause();
         minLength = Math.min(video.duration, minLength);
       });
@@ -2124,7 +2127,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Pause all videos
       videos.each(function(index, video)
       {
-        self.pausing_videos.push(index);
+        self.pausing_videos.push($(video.parentElement).data('index'));
         video.pause();
       });
 
@@ -2145,7 +2148,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Pause all videos and log lowest length
       videos.each(function(index, video)
       {
-        self.pausing_videos.push(index);
+        self.pausing_videos.push($(video.parentElement).data('index'));
         video.pause();
         minLength = Math.min(video.duration, minLength);
       });
@@ -2156,6 +2159,19 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self.options["video-sync-time"] = Math.min((firstVideo.currentTime + self.options.frameLength), (minLength - self.options.frameLength));
         // Update and bookmark
         self._schedule_update({update_video_sync_time:true,});
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        video.pause();
+        var newTime = Math.min(video.currentTime + self.options.frameLength, video.duration - self.options.frameLength);
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.currentTime = newTime;
+        self.options["video-sync-time"] = newTime;
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
       }
     }
@@ -2170,6 +2186,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       {
         video.play();
       });
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        video.play();
+      }
     }
   },
 
@@ -2188,7 +2212,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       videos.each(function(index, video)
       {
-        self.pausing_videos.push(index);
+        self.pausing_videos.push($(video.parentElement).data('index'));
         video.pause();
       });
 
