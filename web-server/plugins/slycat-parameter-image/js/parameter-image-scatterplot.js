@@ -2134,6 +2134,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Update and bookmark
       self._schedule_update({update_video_sync_time:true,});
     }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        video.pause();
+        var newTime = Math.max(video.currentTime - self.options.frameLength, 0);
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.currentTime = newTime;
+        self.options["video-sync-time"] = newTime;
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        self._sync_open_images();
+      }
+    }
   },
 
   frame_forward: function()
@@ -2173,6 +2187,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         video.currentTime = newTime;
         self.options["video-sync-time"] = newTime;
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        self._sync_open_images();
       }
     }
   },
