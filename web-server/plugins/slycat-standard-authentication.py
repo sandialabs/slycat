@@ -2,6 +2,7 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+# changes for wsgi implementation
 #
 def register_slycat_plugin(context):
   from cherrypy._cpcompat import base64_decode
