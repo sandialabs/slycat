@@ -40,7 +40,9 @@ $.widget("parameter_image.controls",
     var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
     var video_controls = $("#video-controls", this.element);
+    this.video_controls = video_controls;
     var playback_controls = $("#playback-controls", this.element);
+    this.playback_controls = playback_controls;
 
     this.x_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -171,6 +173,8 @@ $.widget("parameter_image.controls",
         </button> \
       ")
       .click(function(){
+        self.options["video-sync"] = !$(this).hasClass('active');
+        self._respond_open_images_changed();
         self.element.trigger("video-sync", !$(this).hasClass('active'));
       })
       .appendTo(self.video_sync_button_wrapper)
@@ -270,6 +274,7 @@ $.widget("parameter_image.controls",
         val = 0;
       }
       $(element).val(val);
+      self.options["video-sync-time"] = val;
       self.element.trigger("video-sync-time", val);
     }
 
@@ -322,9 +327,9 @@ $.widget("parameter_image.controls",
     self._set_auto_scale();
     self._set_selection_control();
     self._set_show_all();
-    self._set_close_all();
     self._set_video_sync();
     self._set_video_sync_time();
+    self._respond_open_images_changed();
   },
 
 
@@ -757,9 +762,33 @@ $.widget("parameter_image.controls",
     this.show_all_button.attr("title", titleText);
   },
 
-  _set_close_all: function()
+  _respond_open_images_changed: function()
   {
     var self = this;
+    var frame;
+    var any_video_open = false;
+    var current_frame_video = false;
+    for(var i=0; i < self.options.open_images.length; i++)
+    {
+      frame = self.options.open_images[i];
+      if(frame.video){
+        any_video_open = true;
+        if(frame.current_frame)
+        {
+          current_frame_video = true;
+        }
+      }
+      // No need to keep searching if we found a video and the current frame is also a video
+      if(any_video_open && current_frame_video)
+      {
+        break;
+      }
+    }
+    // Hide / show video controls based on whether any videos are open
+    this.video_controls.add(this.playback_controls).toggle(any_video_open);
+    // Disable playback controls when the current frame is no a video and sync videos is not toggled
+    $('button', this.playback_controls).prop("disabled", !(self.options["video-sync"] || current_frame_video));
+    // Disable close all button when there are no open frames
     this.close_all_button.prop("disabled", self.options.open_images.length == 0);
   },
 
@@ -863,7 +892,7 @@ $.widget("parameter_image.controls",
     }
     else if(key == 'open_images')
     {
-      self._set_close_all();
+      self._respond_open_images_changed();
     }
     else if(key == 'disable_hide_show')
     {

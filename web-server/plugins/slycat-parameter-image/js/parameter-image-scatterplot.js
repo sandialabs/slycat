@@ -919,6 +919,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             current_frame : image.current_frame,
             });
         }
+        if(image.current_frame)
+        {
+          self.current_frame = image.index;
+        }
       });
       self._open_images(images);
     }
@@ -1044,7 +1048,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     // Updating videos' sync time should not fire off additional seeked events
     $(".open-image video").each(function(index, video)
     {
-      console.log("video " + index + ", it's currentTime is: " + video.currentTime + ", target video-sync-time is: " + self.options["video-sync-time"]);
       // Only update currentTime if it's different than target value, because setting
       // currentTime dispatches a seeked event, which then tries to update currentTime
       // on all open videos, thus infinite loop.
@@ -1053,7 +1056,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var playing = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
       if( (video.currentTime != videoSyncTime) && !playing)
       {
-        console.log("video " + index + " was different, we are syncing it");
         self.syncing_videos.push($(video.parentElement).data('index'));
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
       }
@@ -2003,9 +2005,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   {
     var self = this;
     var uri = frame_html.attr("data-uri");
+    var index = frame_html.attr("data-index");
     var line = self.line_layer.select("line[data-uri='" + uri + "']");
     frame_html.remove();
     line.remove();
+    // Remove this frame's index from current_frame if it was selected
+    if(self.current_frame == index)
+    {
+      self.current_frame = null;
+    }
   },
 
   _scale_width: function(ratio, target_width, target_height)
@@ -2089,6 +2097,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
     }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        self._set_single_video_time(video, 0);
+      }
+    }
   },
 
   jump_to_end: function()
@@ -2112,6 +2128,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._schedule_update({update_video_sync_time:true,});
 
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        self._set_single_video_time(video, video.duration - self.options.frameLength);
+      }
     }
   },
 
@@ -2227,6 +2251,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       self._schedule_update({update_video_sync_time:true,});
     }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+        self.options["video-sync-time"] = video.currentTime;
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        self._sync_open_images();
+      }
+    }
   },
 
   _set_single_video_time: function(video, time)
@@ -2234,16 +2270,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var self = this;
     if(video != null)
     {
-      video.pause();
       self.pausing_videos.push($(video.parentElement).data('index'));
+      video.pause();
       video.currentTime = time;
       self.options["video-sync-time"] = time;
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
       self._sync_open_images();
     }
   },
-
-
-
   });
 });
