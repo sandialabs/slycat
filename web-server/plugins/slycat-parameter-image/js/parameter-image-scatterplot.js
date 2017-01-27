@@ -1090,6 +1090,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var currentTime = video.currentTime;
         open_element["currentTime"] = currentTime;
         open_element["video"] = true;
+        open_element["playing"] = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
       }
       self.options.open_images.push(open_element);
     });
@@ -1539,10 +1540,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               this.currentTime = self.options["video-sync-time"];
             }
           })
+          .on("playing", function(){
+            self._sync_open_images();
+          })
           .on("pause", function(){
-            var index = self.pausing_videos.indexOf(image.index);
+            var pausing_index = self.pausing_videos.indexOf(image.index);
             // If video was directly paused by user, set a new video-sync-time and sync all other videos
-            if(index < 0)
+            if(pausing_index < 0)
             {
               self.options["video-sync-time"] = this.currentTime;
               handlers["pause_video"]();
@@ -1550,7 +1554,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             // Do nothing if video was paused by system, just remove it from the paused videos list
             else
             {
-              self.pausing_videos.splice(index, 1);
+              self.pausing_videos.splice(pausing_index, 1);
             }
           })
           .on("seeked", function(){

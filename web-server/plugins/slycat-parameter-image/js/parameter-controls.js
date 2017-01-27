@@ -767,7 +767,9 @@ $.widget("parameter_image.controls",
     var self = this;
     var frame;
     var any_video_open = false;
+    var any_video_playing = false;
     var current_frame_video = false;
+    var current_frame_video_playing = false;
     for(var i=0; i < self.options.open_images.length; i++)
     {
       frame = self.options.open_images[i];
@@ -776,10 +778,20 @@ $.widget("parameter_image.controls",
         if(frame.current_frame)
         {
           current_frame_video = true;
+          if(frame.playing)
+          {
+            current_frame_video_playing = true;
+            any_video_playing = true;
+            break;
+          }
+        }
+        if(frame.playing)
+        {
+          any_video_playing = true;
         }
       }
       // No need to keep searching if we found a video and the current frame is also a video
-      if(any_video_open && current_frame_video)
+      if(any_video_open && current_frame_video && any_video_playing && current_frame_video_playing)
       {
         break;
       }
@@ -790,6 +802,17 @@ $.widget("parameter_image.controls",
     $('button', this.playback_controls).prop("disabled", !(self.options["video-sync"] || current_frame_video));
     // Disable close all button when there are no open frames
     this.close_all_button.prop("disabled", self.options.open_images.length == 0);
+    // Enable play or pause based on what's playing
+    if( (self.options["video-sync"] && any_video_playing) || (!self.options["video-sync"] && current_frame_video_playing) )
+    {
+      self.pause_button.show();
+      self.play_button.hide();
+    }
+    else
+    {
+      self.pause_button.hide();
+      self.play_button.show();
+    }
   },
 
   _set_hide_show_selection_status: function()
