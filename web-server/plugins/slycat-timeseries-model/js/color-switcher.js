@@ -108,10 +108,25 @@ define("slycat-color-switcher", ["d3"], function(d3)
         },
       "rainbow":
         {
-          "label": "Rainbow",
+          "label": "Rainbow Night",
           "background": d3.rgb(128, 128, 128),
           "null_color": "rgb(75,75,75)",
           "opacity": "0.6",
+          "colors":
+          [
+            d3.rgb(0, 0, 255),
+            d3.rgb(0, 255, 0),
+            d3.rgb(0, 255, 255),
+            d3.rgb(255, 255, 0),
+            d3.rgb(255, 0, 0),
+          ]
+        },
+      "rainbow_day":
+        {
+          "label": "Rainbow Day",
+          "background": d3.rgb(255, 255, 255),
+          "null_color": "gray",
+          "opacity": "0.7",
           "colors":
           [
             d3.rgb(0, 0, 255),
@@ -166,6 +181,7 @@ define("slycat-color-switcher", ["d3"], function(d3)
                 "background-size" : "5px 75%, 50px 100%",
                 "background-position" : "right 10px center, right 5px center",
                 "background-repeat" : "no-repeat, no-repeat",
+                "padding-right" : "70px",
               })
           )
           ;
