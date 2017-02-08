@@ -1053,7 +1053,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // on all open videos, thus infinite loop.
       // Also, only update currentTime if the video is not playing
       var videoSyncTime = self.options["video-sync-time"];
-      var playing = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
+      var playing = self._is_video_playing(video);
       if( (video.currentTime != videoSyncTime) && !playing)
       {
         self.syncing_videos.push($(video.parentElement).data('index'));
@@ -1090,12 +1090,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var currentTime = video.currentTime;
         open_element["currentTime"] = currentTime;
         open_element["video"] = true;
-        open_element["playing"] = !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
+        open_element["playing"] = self._is_video_playing(video);
       }
       self.options.open_images.push(open_element);
     });
 
     self.element.trigger("open-images-changed", [self.options.open_images]);
+  },
+
+  _is_video_playing: function(video)
+  {
+    var playing = !!(/*video.currentTime > 0 &&*/ !video.paused && !video.ended && video.readyState > 2);
+    // console.log("****************" + playing + ": video is playing? " + playing);
+    // console.log("currentTime: " + video.currentTime + ", paused: " + video.paused + ", ended: " + video.ended + ", readyState: " + video.readyState);
+    return playing;
   },
 
   _open_images: function(images, is_stl_return)

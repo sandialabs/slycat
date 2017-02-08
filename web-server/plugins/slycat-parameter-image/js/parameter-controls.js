@@ -796,6 +796,7 @@ $.widget("parameter_image.controls",
         break;
       }
     }
+    // console.log("any_video_open: " + any_video_open + ", any_video_playing: " + any_video_playing + ", current_frame_video: " + current_frame_video + ", current_frame_video_playing: " + current_frame_video_playing);
     // Hide / show video controls based on whether any videos are open
     this.video_controls.add(this.playback_controls).toggle(any_video_open);
     // Disable playback controls when the current frame is no a video and sync videos is not toggled
