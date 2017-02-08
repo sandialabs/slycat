@@ -32,53 +32,55 @@ rights in this software.
 
 <div id="timeseries-model" style="-webkit-flex:1; flex:1;">
   <slycat-job-checker></slycat-job-checker>
-  <div id="content-pane" class="ui-layout-center">
-	  <div id="cluster-pane" class="ui-layout-north">
-	  	<div class="center bootstrap-styles" id="controls">
-	  		<div id="general-controls" class="btn-group btn-group-xs"></div>
-	  		<div id="color-switcher" class="btn-group btn-group-xs"></div>
-	  	</div>
-	    <div class="load-status"></div>
+
+  <div id="cluster-pane" class="ui-layout-north">
+  	<div class="center bootstrap-styles" id="controls">
+  		<div id="general-controls" class="btn-group btn-group-xs"></div>
+  		<div id="color-switcher" class="btn-group btn-group-xs"></div>
+  	</div>
+    <div class="load-status"></div>
+  </div>
+
+	<div id="dendrogram-pane" class="ui-layout-west">
+    <div id="dendrogram-sparkline-backdrop"></div>
+    <div class="load-status"></div>
+    <svg id="dendrogram-viewer" width="100%" height="100%">
+      <defs>
+        <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7767b0" stop-opacity="1" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div id="waveform-pane" class="ui-layout-center">
+    <div class="load-status"></div>
+    <svg id="waveform-viewer" width="100%" height="100%" style="position: absolute;">
+    </svg>
+    <div id="waveform-progress">
+      <input class="waveformPie" value="1" />
+    </div>
+    <div id="waveform-selection-progress">
+      <input class="waveformPie" value="1" />
+    </div>
+    <div id="waveform-selector-progress-wrapper">
+    	<div id="waveform-selector-progress">
+      	<input class="waveformPie" value="1" />
+        Please wait while we prepare the ability to select waveforms...
+      </div>
 	  </div>
-	  <div id="model-pane" class="ui-layout-center">
-	    <div id="dendrogram-pane" class="ui-layout-west">
-	      <div id="dendrogram-sparkline-backdrop"></div>
-	      <div class="load-status"></div>
-	      <svg id="dendrogram-viewer" width="100%" height="100%">
-	        <defs>
-	          <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-	            <stop offset="0%" stop-color="#7767b0" stop-opacity="1" />
-	            <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
-	          </linearGradient>
-	        </defs>
-	      </svg>
-	    </div>
-	    <div id="waveform-pane" class="ui-layout-center">
-	      <div class="load-status"></div>
-	      <svg id="waveform-viewer" width="100%" height="100%" style="position: absolute;">
-	      </svg>
-	      <div id="waveform-progress">
-	        <input class="waveformPie" value="1" />
-	      </div>
-        <div id="waveform-selection-progress">
-          <input class="waveformPie" value="1" />
-        </div>
-	      <div id="waveform-selector-progress-wrapper">
-	      	<div id="waveform-selector-progress">
-	        	<input class="waveformPie" value="1" />
-            Please wait while we prepare the ability to select waveforms...
-          </div>
-  		  </div>
-	    </div>
-	    <div id="legend-pane" class="ui-layout-east">
-	      <div class="load-status"></div>
-	      <div id="legend"></div>
-	    </div>
-	  </div>
-	</div>
-	<div id="table-pane" class="ui-layout-south" style="overflow: auto">
+  </div>
+
+  <div id="legend-pane" class="ui-layout-east">
+    <div class="load-status"></div>
+    <div id="legend"></div>
+  </div>
+
+  <div id="table-pane" class="ui-layout-south" style="overflow: auto">
 	  <div class="load-status"></div>
 	  <div id="table">
 	  </div>
 	</div>
+
 </div>

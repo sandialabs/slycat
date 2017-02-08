@@ -15,60 +15,14 @@ define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manage
 // Setup the resizing layout ...
 var bodyLayout = $("#timeseries-model").layout({
   applyDefaultStyles: false,
-  north:
-  {
-    initClosed : true,
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized bodyLayout north');
-    // },
-  },
-  center:
-  {
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized bodyLayout center');
-    // },
-  },
-  south:
-  {
-    size: $(window).height() / 3,
-    //size: $("body").height() / 3,
-    resizeWhileDragging : false,
-    onresize: function()
-    {
-      $("#table").table("resize_canvas");
-      //console.log('resized bodyLayout south');
-    },
-  },
-});
-
-var contentPaneLayout = $("#content-pane").layout({
   north :
   {
     size: 28,
     resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized contentPaneLayout north');
-    // },
   },
-  center :
-  {
-    resizeWhileDragging : false,
-    // onresize: function()
-    // {
-    //   console.log('resized contentPaneLayout center');
-    // },
-  },
-});
-
-var modelPaneLayout = $("#model-pane").layout({
   west :
   {
-    size : $("#model-pane").width() / 2,
+    size : $("#timeseries-model").width() / 2,
     resizeWhileDragging : false,
     onresize: function()
     {
@@ -88,6 +42,15 @@ var modelPaneLayout = $("#model-pane").layout({
     size: 130,
     resizeWhileDragging: false,
     onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+  },
+  south:
+  {
+    size: $("#timeseries-model").height() / 3,
+    resizeWhileDragging : false,
+    onresize: function()
+    {
+      $("#table").table("resize_canvas");
+    },
   },
 });
 
