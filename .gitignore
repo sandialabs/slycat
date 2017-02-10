@@ -73,3 +73,5 @@ crashlytics-build.properties
 
 # coverage html rports
 htmlcov/*
+
+data/master_test.csv

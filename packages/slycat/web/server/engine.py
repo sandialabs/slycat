@@ -70,6 +70,8 @@ def start(root_path, config_file):
 
   dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
+  dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
+
   dispatcher.connect("delete-model", "/models/:mid", slycat.web.server.handlers.delete_model, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-cache", "/projects/:pid/delete-cache", slycat.web.server.handlers.delete_project_cache, conditions={"method" : ["DELETE"]})
@@ -111,6 +113,7 @@ def start(root_path, config_file):
 
   #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
+
   dispatcher.connect("get-remote-image", "/remotes/:hostname/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video", "/remotes/:hostname/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video-status", "/remotes/:hostname/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})

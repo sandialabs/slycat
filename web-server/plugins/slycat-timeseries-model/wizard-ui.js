@@ -19,6 +19,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.xyce_timeseries_file = ko.observable('');
     component.timeseries_name = ko.observable('');
     component.cluster_sample_count = ko.observable(500);
+    component.timeseries_names = ko.observableArray([]);
     component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
     component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
     component.cluster_metric = ko.observableArray(['euclidean']);
@@ -220,6 +221,19 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.select_input_file = function() {
       var file_path = component.browser_input.selection()[0];
+      console.log("calling time series name");
+      client.dummy();
+      component.timeseries_names(client.get_time_series_names({
+        hostname: component.remote.hostname(),
+        path: file_path,
+        success: function(response) {
+            component.timeseries_names(JSON.parse(response))
+            console.log(component.timeseries_names());
+        },
+        error: function(request, status, reason_phrase) {
+          console.log(reason_phrase);
+        }
+      }));
 
       if(file_path == undefined)
       {
@@ -233,7 +247,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
       }
-
       component.tab(4);
     };
 

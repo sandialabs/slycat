@@ -833,11 +833,11 @@ def login():
   and determins with the user can be authenticated with slycat
   :return: authentication status
   """
-    #cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
+    # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
     # try and delete any outdated sessions for the user if they have the cookie for it
     if "slycatauth" in cherrypy.request.cookie:
         try:
-            #cherrypy.log.error("found old session trying to delete it ")
+            # cherrypy.log.error("found old session trying to delete it ")
             sid = cherrypy.request.cookie["slycatauth"].value
             couchdb = slycat.web.server.database.couchdb.connect()
             session = couchdb.get("session", sid)
@@ -849,7 +849,7 @@ def login():
 
     # try and decode the username and password
     try:
-        #cherrypy.log.error("decoding username and password")
+        # cherrypy.log.error("decoding username and password")
         user_name = base64_decode(cherrypy.request.json["user_name"])
         password = base64_decode(cherrypy.request.json["password"])
 
@@ -858,9 +858,9 @@ def login():
             location = cherrypy.request.json["location"]
         except Exception as e:
             location = None
-            #cherrypy.log.error("no location provided moving on")
+            # cherrypy.log.error("no location provided moving on")
     except Exception as e:
-        #cherrypy.log.error("username and password could not be decoded")
+        # cherrypy.log.error("username and password could not be decoded")
         slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
         raise cherrypy.HTTPError(400)
     realm = None
@@ -877,7 +877,7 @@ def login():
         else:
             response_url = "https://" + current_url.netloc + "/projects"
     except Exception as e:
-        #cherrypy.log.error("no location provided setting target to /projects")
+        # cherrypy.log.error("no location provided setting target to /projects")
         response_url = "https://" + current_url.netloc + "/projects"
 
     # Get the client ip, which might be forwarded by a proxy.
@@ -902,7 +902,7 @@ def login():
     success, groups = login.password_check(realm, user_name, password)
 
     if success:
-        #cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
+        # cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
         # Successful authentication, now check access rules.
         authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
         # for rules see slycat config file
@@ -911,11 +911,11 @@ def login():
             rules = authentication_kwargs["rules"]
         if "realm" in authentication_kwargs:
             realm = authentication_kwargs["realm"]
-        #cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)))
+        # cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)))
 
         if rules:
             # found rules now time to apply them
-            #cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
+            # cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
             deny = True
             for operation, category, members in rules:
                 if operation not in ["allow"]:
@@ -934,12 +934,12 @@ def login():
                         if lookupResult != {}:
                             deny = False
                     except:
-                        #cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
+                        # cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
                         pass
                 if deny:
                     raise cherrypy.HTTPError("403 User denied by authentication rules.")
         else:
-            #cherrypy.log.error("no rules were found")
+            # cherrypy.log.error("no rules were found")
             pass
         # Successful authentication and access verification, create a session and return.
         sid = uuid.uuid4().hex
@@ -963,10 +963,10 @@ def login():
 
         cherrypy.response.status = "200 OK"
         cherrypy.request.login = user_name
-        #cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (
+        # cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (
         #    cherrypy.response.cookie["slycatauth"], success, response_url))
     else:
-        #cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
+        # cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
         cherrypy.response.status = "404 no auth found!!!"
 
     return {'success': success, 'target': response_url}
@@ -2093,8 +2093,8 @@ def job_time(nodes, tasks, size):
             'time-seconds': time,
             'nodes': nodes,
             'tasks': tasks,
-            'size': size}  # return an approximation based on size, nodes, and tasks for now
-
+            'size': size
+           }  # return an approximation based on size, nodes, and tasks for now
 
 
 @cherrypy.tools.json_in(on=True)
@@ -2169,6 +2169,60 @@ def get_remote_image(hostname, path, **kwargs):
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_image(path, **kwargs)
+
+#TODO: clean up everything
+@cherrypy.tools.json_out(on=True)
+def get_time_series_names(hostname, path, **kwargs):
+    """
+            Parse a time series csv for all column names
+            :param hostname: connection host name
+            :param path: path to csv file
+            :param kwargs:
+            :return: json object of column names
+            """
+    cherrypy.log.error("webservice was hit with %s : %s" % (hostname, path))
+
+    sid = get_sid(hostname)
+    cherrypy.log.error("host aquired")
+    with slycat.web.server.remote.get_session(sid) as session:
+        csv = session.get_file(path, **kwargs)
+    cherrypy.log.error("rows: %s %s" % (csv, str(type(csv))))
+    rows = [row.split(",") for row in str(csv).splitlines()]
+    cherrypy.log.error("rows: %s" % rows)
+
+    column_names = [name.strip() for name in rows[0]]
+
+    def _isNumeric(j):
+        """"
+                Check if the input object is a numerical value, i.e. a float
+                :param j: input object to check
+                :return: boolean
+        """
+        try:
+            x = float(j)
+        except ValueError:
+            return False
+        return True
+
+    # TODO: check type
+    column_types = []
+    for item in rows[1]:
+        if _isNumeric(item):
+            column_types.append("numeric")
+        else:
+            column_types.append("string")
+
+    cherrypy.log.error("name : types: %s : %s" % (column_names, column_types))
+
+    rows = rows[1:]  # removes first row (header)
+
+    response_time_series_names = []
+    for i, val in enumerate(rows[0]):
+        if column_types[i] is "string":
+            file_ext = val[len(rows[1][i]) - 3:]
+            if file_ext == "csv" or file_ext == "dat" or file_ext == "txt":
+                response_time_series_names.append(column_names[i])
+    return response_time_series_names
 
 
 @cherrypy.tools.json_in(on=True)
