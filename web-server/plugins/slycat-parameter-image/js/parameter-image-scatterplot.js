@@ -63,7 +63,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         'uvs','uvvs','uvv','uvvv','dvb','fvt','mxu','m4u','pyv','uvu','uvvu','viv','webm','f4v','fli','flv','m4v','mkv','mk3d','mks','mng','asf','asx','vob','wm','wmv','wmx','wvx','avi',
         'movie','smv','ice',
       ],
+      "video-sync" : false,
+      "video-sync-time" : 0,
+      frameLength : 1/25,
     },
+
+  syncing_videos : [],
+  pausing_videos : [],
+  current_frame : null,
 
   _create: function()
   {
@@ -599,6 +606,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
       self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
     }
+    else if(key == "video-sync")
+    {
+      if(self.options["video-sync"])
+      {
+        self._schedule_update({update_video_sync_time:true,});
+      }
+    }
+    else if(key == "video-sync-time")
+    {
+      if(self.options["video-sync"])
+      {
+        self._schedule_update({update_video_sync_time:true,});
+      }
+    }
   },
 
   update_color_scale_and_v: function(data)
@@ -894,8 +915,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             target_x : self.x_scale(self.options.x[image.index]),
             target_y : self.y_scale(self.options.y[image.index]),
             video : image.video,
-            currentTime : image.currentTime
+            currentTime : image.currentTime,
+            current_frame : image.current_frame,
             });
+        }
+        if(image.current_frame)
+        {
+          self.current_frame = image.index;
         }
       });
       self._open_images(images);
@@ -1008,7 +1034,33 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     }
 
+    if(self.updates["update_video_sync_time"])
+    {
+      self._update_video_sync_time();
+    }
+
     self.updates = {}
+  },
+
+  _update_video_sync_time: function()
+  {
+    var self = this;
+    // Updating videos' sync time should not fire off additional seeked events
+    $(".open-image video").each(function(index, video)
+    {
+      // Only update currentTime if it's different than target value, because setting
+      // currentTime dispatches a seeked event, which then tries to update currentTime
+      // on all open videos, thus infinite loop.
+      // Also, only update currentTime if the video is not playing
+      var videoSyncTime = self.options["video-sync-time"];
+      var playing = self._is_video_playing(video);
+      if( (video.currentTime != videoSyncTime) && !playing)
+      {
+        self.syncing_videos.push($(video.parentElement).data('index'));
+        video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
+      }
+    });
+    self._sync_open_images();
   },
 
   _sync_open_images: function()
@@ -1030,6 +1082,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         rely : Number(frame.attr("data-transy")) / height,
         width : frame.outerWidth(),
         height : frame.outerHeight(),
+        current_frame : frame.hasClass("selected"),
       };
       var video = frame.find('video')[0];
       if(video != undefined)
@@ -1037,11 +1090,20 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var currentTime = video.currentTime;
         open_element["currentTime"] = currentTime;
         open_element["video"] = true;
+        open_element["playing"] = self._is_video_playing(video);
       }
       self.options.open_images.push(open_element);
     });
 
     self.element.trigger("open-images-changed", [self.options.open_images]);
+  },
+
+  _is_video_playing: function(video)
+  {
+    var playing = !!(/*video.currentTime > 0 &&*/ !video.paused && !video.ended && video.readyState > 2);
+    // console.log("****************" + playing + ": video is playing? " + playing);
+    // console.log("currentTime: " + video.currentTime + ", paused: " + video.paused + ", ended: " + video.ended + ", readyState: " + video.readyState);
+    return playing;
   },
 
   _open_images: function(images, is_stl_return)
@@ -1128,7 +1190,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           "height": img.height + "px",
           "z-index": 1,
         })
-        .attr("class", img.image_class + " image-frame scaffolding html")
+        .attr("class", img.image_class + " image-frame scaffolding html ")
+        .classed("selected", img.current_frame)
         .attr("data-index", img.index)
         .attr("data-uri", img.uri)
         .call(
@@ -1232,6 +1295,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .on('.drag', null)
             .call(nodrag);
         }
+        self.current_frame = null;
+        $(".open-image").removeClass("selected");
+        d3.select(d3.event.currentTarget).classed("selected", true);
+        self.current_frame = Number(d3.select(d3.event.currentTarget).attr("data-index"));
+        self._sync_open_images();
       },
       hover: (function() {
         clear_hover_timer(self);
@@ -1337,11 +1405,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         return false;
       }),
       pause_video: (function(){
-        self._sync_open_images();
+        video_sync_time_changed(self);
       }),
       seeked_video: (function(){
-        self._sync_open_images();
+        video_sync_time_changed(self);
       })
+    }
+
+    function video_sync_time_changed(self_passed)
+    {
+      var self = self_passed;
+      if(self.options["video-sync"])
+      {
+        // Sync all videos to current video-sync-time
+        self._schedule_update({update_video_sync_time:true,});
+      }
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
     }
 
     // Don't open images for hidden simulations
@@ -1463,9 +1542,45 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 "display": "block",
               });
             self._adjust_leader_line(frame_html);
+            if(self.options["video-sync"] && this.currentTime != self.options["video-sync-time"])
+            {
+              self.syncing_videos.push(image.index);
+              this.currentTime = self.options["video-sync-time"];
+            }
           })
-          .on("pause", handlers["pause_video"])
-          .on("seeked", handlers["seeked_video"])
+          .on("playing", function(){
+            self._sync_open_images();
+          })
+          .on("pause", function(){
+            var pausing_index = self.pausing_videos.indexOf(image.index);
+            // If video was directly paused by user, set a new video-sync-time and sync all other videos
+            if(pausing_index < 0)
+            {
+              self.options["video-sync-time"] = this.currentTime;
+              handlers["pause_video"]();
+            }
+            // Do nothing if video was paused by system, just remove it from the paused videos list
+            else
+            {
+              self.pausing_videos.splice(pausing_index, 1);
+            }
+          })
+          .on("seeked", function(){
+            var index = self.syncing_videos.indexOf(image.index);
+            if(index < 0)
+            {
+              self.options["video-sync-time"] = this.currentTime;
+              handlers["seeked_video"]();
+              pinVideo(self, this, image);
+            }
+            else
+            {
+              self.syncing_videos.splice(index, 1);
+            }
+          })
+          .on("play", function(){
+            pinVideo(self, this, image);
+          })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
         {
@@ -1489,6 +1604,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .attr("download", "download")
           .text("Download " + image.uri)
           ;
+      }
+
+      function pinVideo(self, video)
+      {
+        var frame = d3.select(video.parentElement);
+
+        if (frame.classed("hover-image")) {
+          self.opening_image = null;
+          clear_hover_timer(self);
+          frame.classed("hover-image", false).classed("open-image", true);
+          image.image_class = "open-image";
+        }
       }
 
       // Remove loading indicator image
@@ -1890,9 +2017,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
   {
     var self = this;
     var uri = frame_html.attr("data-uri");
+    var index = frame_html.attr("data-index");
     var line = self.line_layer.select("line[data-uri='" + uri + "']");
     frame_html.remove();
     line.remove();
+    // Remove this frame's index from current_frame if it was selected
+    if(self.current_frame == index)
+    {
+      self.current_frame = null;
+    }
   },
 
   _scale_width: function(ratio, target_width, target_height)
@@ -1955,6 +2088,207 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         });
     });
     self._open_images(images);
+  },
+
+  jump_to_start: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      // Pause all videos
+      $(".open-image video").each(function(index, video)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+      });
+      // Set sync time to 0
+      self.options["video-sync-time"] = 0;
+
+      // Update and bookmark
+      self._schedule_update({update_video_sync_time:true,});
+
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        self._set_single_video_time(video, 0);
+      }
+    }
+  },
+
+  jump_to_end: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var minLength = Infinity;
+      // Pause all videos and log highest length
+      $(".open-image video").each(function(index, video)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+        minLength = Math.min(video.duration, minLength);
+      });
+
+      // Set sync time to max video length
+      self.options["video-sync-time"] = minLength;
+
+      // Update and bookmark
+      self._schedule_update({update_video_sync_time:true,});
+
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        self._set_single_video_time(video, video.duration - self.options.frameLength);
+      }
+    }
+  },
+
+  frame_back: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var videos = $(".open-image video");
+      var firstVideo = videos.get(0);
+      if(firstVideo != undefined)
+      {
+        self.options["video-sync-time"] = Math.max(firstVideo.currentTime - self.options.frameLength, 0);
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
+
+      // Pause all videos
+      videos.each(function(index, video)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+      });
+
+      // Update and bookmark
+      self._schedule_update({update_video_sync_time:true,});
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        var time = Math.max(video.currentTime - self.options.frameLength, 0);
+        self._set_single_video_time(video, time);
+      }
+    }
+  },
+
+  frame_forward: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var videos = $(".open-image video");
+      var minLength = Infinity;
+      var firstVideoDuration;
+
+      // Pause all videos and log lowest length
+      videos.each(function(index, video)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+        minLength = Math.min(video.duration, minLength);
+      });
+
+      var firstVideo = videos.get(0);
+      if(firstVideo != undefined)
+      {
+        self.options["video-sync-time"] = Math.min((firstVideo.currentTime + self.options.frameLength), (minLength - self.options.frameLength));
+        // Update and bookmark
+        self._schedule_update({update_video_sync_time:true,});
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        var time = Math.min(video.currentTime + self.options.frameLength, video.duration - self.options.frameLength);
+        self._set_single_video_time(video, time);
+      }
+    }
+  },
+
+  play: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      $(".open-image video").each(function(index, video)
+      {
+        video.play();
+      });
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        video.play();
+      }
+    }
+  },
+
+  pause: function()
+  {
+    var self = this;
+    if(self.options["video-sync"])
+    {
+      var videos = $(".open-image video");
+      var firstVideo = videos.get(0);
+      if(firstVideo != undefined)
+      {
+        self.options["video-sync-time"] = firstVideo.currentTime;
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      }
+
+      videos.each(function(index, video)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+      });
+
+      self._schedule_update({update_video_sync_time:true,});
+    }
+    else
+    {
+      var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      if(video != null)
+      {
+        self.pausing_videos.push($(video.parentElement).data('index'));
+        video.pause();
+        self.options["video-sync-time"] = video.currentTime;
+        self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+        self._sync_open_images();
+      }
+    }
+  },
+
+  _set_single_video_time: function(video, time)
+  {
+    var self = this;
+    if(video != null)
+    {
+      self.pausing_videos.push($(video.parentElement).data('index'));
+      video.pause();
+      video.currentTime = time;
+      self.options["video-sync-time"] = time;
+      self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      self._sync_open_images();
+    }
   },
   });
 });

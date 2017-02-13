@@ -38,6 +38,8 @@ var colorscale = null;
 var auto_scale = null;
 var filtered_v = null;
 var open_images = null;
+var video_sync = null;
+var video_sync_time = null;
 
 var table_ready = false;
 var scatterplot_ready = false;
@@ -307,6 +309,16 @@ function metadata_loaded()
     {
       auto_scale = bookmark["auto-scale"];
     }
+    video_sync = false;
+    if("video-sync" in bookmark)
+    {
+      video_sync = bookmark["video-sync"];
+    }
+    video_sync_time = 0;
+    if("video-sync-time" in bookmark)
+    {
+      video_sync_time = bookmark["video-sync-time"];
+    }
 
     // Set state of selected and hidden simulations
     selected_simulations = [];
@@ -566,7 +578,7 @@ function setup_scatterplot()
   // Setup the scatterplot ...
   if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
     && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
-    && (open_images !== null)
+    && (open_images !== null) && (video_sync !== null) && (video_sync_time !== null)
     )
   {
     scatterplot_ready = true;
@@ -597,6 +609,8 @@ function setup_scatterplot()
       gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
       hidden_simulations: hidden_simulations,
       "auto-scale" : auto_scale,
+      "video-sync" : video_sync,
+      "video-sync-time" : video_sync_time,
       });
 
     $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -639,6 +653,13 @@ function setup_scatterplot()
     {
       open_images_changed(selection);
     });
+
+    // Changing the video sync time updates the controls and logs it ...
+    $("#scatterplot").bind("video-sync-time", function(event, video_sync_time)
+    {
+      $("#controls").controls("option", "video-sync-time", video_sync_time);
+      video_sync_time_changed(video_sync_time);
+    });
   }
 }
 
@@ -648,7 +669,7 @@ function setup_controls()
     !controls_ready && bookmark && table_metadata && (image_columns !== null) && (rating_columns != null)
     && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
     && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
-    && indices && (open_images !== null)
+    && indices && (open_images !== null) & (video_sync !== null) && (video_sync_time !== null)
     )
   {
     controls_ready = true;
@@ -701,6 +722,8 @@ function setup_controls()
       hidden_simulations : hidden_simulations,
       indices : indices,
       open_images : open_images,
+      "video-sync" : video_sync,
+      "video-sync-time" : video_sync_time,
     });
 
     // Changing the x variable updates the controls ...
@@ -799,6 +822,55 @@ function setup_controls()
     $("#controls").bind("auto-scale", function(event, auto_scale)
     {
       auto_scale_option_changed(auto_scale);
+    });
+
+    // Changing the video sync option updates the scatterplot and logs it ...
+    $("#controls").bind("video-sync", function(event, video_sync)
+    {
+      video_sync_option_changed(video_sync);
+    });
+
+    // Changing the video sync time updates the scatterplot and logs it ...
+    $("#controls").bind("video-sync-time", function(event, video_sync_time)
+    {
+      $("#scatterplot").scatterplot("option", "video-sync-time", video_sync_time);
+      video_sync_time_changed(video_sync_time);
+    });
+
+    // Clicking jump-to-start updates the scatterplot and logs it ...
+    $("#controls").bind("jump-to-start", function(event)
+    {
+      $("#scatterplot").scatterplot("jump_to_start");
+    });
+
+    // Clicking frame-forward updates the scatterplot and logs it ...
+    $("#controls").bind("frame-forward", function(event)
+    {
+      $("#scatterplot").scatterplot("frame_forward");
+    });
+
+    // Clicking play updates the scatterplot and logs it ...
+    $("#controls").bind("play", function(event)
+    {
+      $("#scatterplot").scatterplot("play");
+    });
+
+    // Clicking pause updates the scatterplot and logs it ...
+    $("#controls").bind("pause", function(event)
+    {
+      $("#scatterplot").scatterplot("pause");
+    });
+
+    // Clicking frame-back updates the scatterplot and logs it ...
+    $("#controls").bind("frame-back", function(event)
+    {
+      $("#scatterplot").scatterplot("frame_back");
+    });
+
+    // Clicking jump-to-end updates the scatterplot and logs it ...
+    $("#controls").bind("jump-to-end", function(event)
+    {
+      $("#scatterplot").scatterplot("jump_to_end");
     });
 
     // Log changes to hidden selection ...
@@ -1145,6 +1217,29 @@ function auto_scale_option_changed(auto_scale_value)
     url : server_root + "events/models/" + model_id + "/auto-scale/" + auto_scale
   });
   bookmarker.updateState( {"auto-scale" : auto_scale} );
+}
+
+function video_sync_option_changed(video_sync_value)
+{
+  video_sync = video_sync_value;
+  $("#scatterplot").scatterplot("option", "video-sync", video_sync);
+  $.ajax(
+  {
+    type : "POST",
+    url : server_root + "events/models/" + model_id + "/video-sync/" + video_sync
+  });
+  bookmarker.updateState( {"video-sync" : video_sync} );
+}
+
+function video_sync_time_changed(video_sync_time_value)
+{
+  video_sync_time = video_sync_time_value;
+  $.ajax(
+  {
+    type : "POST",
+    url : server_root + "events/models/" + model_id + "/video-sync-time/" + video_sync_time
+  });
+  bookmarker.updateState( {"video-sync-time" : video_sync_time} );
 }
 
 function open_images_changed(selection)

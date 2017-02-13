@@ -585,6 +585,9 @@ rights in this software.
   background-repeat: no-repeat;
   background-position: 50% 50%;
 }
+#scatterplot .image-frame.selected {
+  box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.8);
+}
 
 /* Sliders */
 #sliders-pane {
@@ -914,4 +917,12 @@ a {
   display: block;
   text-align: center;
   word-break: break-all;
+}
+#video-controls .video-sync-time {
+  width: 75px;
+}
+#playback-controls .play-button,
+#playback-controls .pause-button
+{
+  width: 22px;
 }

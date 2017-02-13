@@ -1289,6 +1289,25 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       }
     });
   };
+  module.dummy = function()
+  {console.log("dummy server root " + server_root)}
 
+  module.get_time_series_names = function(params)
+  {
+    $.ajax({
+      contentType: 'application/json',
+      type: 'GET',
+      url: server_root + "remotes/" + params.hostname + "/time_series_names/file" + params.path,
+      success: function(result) {
+        //console.log("result "+JSON.stringify(result))
+        if (params.success)
+          return params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
   return module;
 });

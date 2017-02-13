@@ -30,6 +30,8 @@ $.widget("parameter_image.controls",
     indices : [],
     disable_hide_show : false,
     open_images : [],
+    "video-sync" : false,
+    "video-sync-time" : 0,
   },
 
   _create: function()
@@ -37,6 +39,10 @@ $.widget("parameter_image.controls",
     var self = this;
     var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
+    var video_controls = $("#video-controls", this.element);
+    this.video_controls = video_controls;
+    var playback_controls = $("#playback-controls", this.element);
+    this.playback_controls = playback_controls;
 
     this.x_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -157,6 +163,121 @@ $.widget("parameter_image.controls",
       .appendTo(selection_controls)
       ;
 
+    this.video_sync_button_wrapper = $("<span class='input-group-btn'></span>")
+      .appendTo(video_controls)
+      ;
+
+    this.video_sync_button = $("\
+        <button class='btn btn-default btn-xs' data-toggle='button' title='Sync Videos'> \
+          <span class='fa fa-video-camera' aria-hidden='true'></span> \
+        </button> \
+      ")
+      .click(function(){
+        self.options["video-sync"] = !$(this).hasClass('active');
+        self._respond_open_images_changed();
+        self.element.trigger("video-sync", !$(this).hasClass('active'));
+      })
+      .appendTo(self.video_sync_button_wrapper)
+      ;
+
+    this.video_sync_time = $("\
+      <input type='text' class='form-control input-xs video-sync-time' placeholder='Time'> \
+      ")
+      .focusout(function(){
+        handleVideoSyncTimeChange(this);
+      })
+      .keypress(function(e){
+        if(e.which == 13)
+        {
+          handleVideoSyncTimeChange(this);
+        }
+      })
+      .appendTo(video_controls)
+      ;
+
+    this.jump_to_start_button = $("\
+      <button class='btn btn-default' title='Jump to beginning'> \
+        <span class='fa fa-fast-backward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("jump-to-start");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.frame_back_button = $("\
+      <button class='btn btn-default' title='Skip one frame back'> \
+        <span class='fa fa-backward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("frame-back");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.play_button = $("\
+      <button class='btn btn-default play-button' title='Play'> \
+        <span class='fa fa-play' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("play");
+        $(this).hide();
+        self.pause_button.show();
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.pause_button = $("\
+      <button class='btn btn-default pause-button' title='Pause'> \
+        <span class='fa fa-pause' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("pause");
+        $(this).hide();
+        self.play_button.show();
+      })
+      .hide()
+      .appendTo(playback_controls)
+      ;
+
+    this.frame_forward = $("\
+      <button class='btn btn-default' title='Skip one frame forward'> \
+        <span class='fa fa-forward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("frame-forward");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    this.jump_to_end_button = $("\
+      <button class='btn btn-default' title='Jump to end'> \
+        <span class='fa fa-fast-forward' aria-hidden='true'></span> \
+      </button> \
+      ")
+      .click(function(){
+        self.element.trigger("jump-to-end");
+      })
+      .appendTo(playback_controls)
+      ;
+
+    function handleVideoSyncTimeChange(element)
+    {
+      var val = parseFloat($(element).val());
+      if(isNaN(val))
+      {
+        val = 0;
+      }
+      $(element).val(val);
+      self.options["video-sync-time"] = val;
+      self.element.trigger("video-sync-time", val);
+    }
+
     function openCSVSaveChoiceDialog(){
       var txt = "";
       var buttons_save = [
@@ -206,7 +327,9 @@ $.widget("parameter_image.controls",
     self._set_auto_scale();
     self._set_selection_control();
     self._set_show_all();
-    self._set_close_all();
+    self._set_video_sync();
+    self._set_video_sync_time();
+    self._respond_open_images_changed();
   },
 
 
@@ -406,6 +529,19 @@ $.widget("parameter_image.controls",
     var self = this;
     this.auto_scale_button.toggleClass("active", self.options["auto-scale"]);
     this.auto_scale_button.attr("aria-pressed", self.options["auto-scale"]);
+  },
+
+  _set_video_sync: function()
+  {
+    var self = this;
+    this.video_sync_button.toggleClass("active", self.options["video-sync"]);
+    this.video_sync_button.attr("aria-pressed", self.options["video-sync"]);
+  },
+
+  _set_video_sync_time: function()
+  {
+    var self = this;
+    this.video_sync_time.val(self.options["video-sync-time"]);
   },
 
   _set_selection_control: function()
@@ -626,10 +762,58 @@ $.widget("parameter_image.controls",
     this.show_all_button.attr("title", titleText);
   },
 
-  _set_close_all: function()
+  _respond_open_images_changed: function()
   {
     var self = this;
+    var frame;
+    var any_video_open = false;
+    var any_video_playing = false;
+    var current_frame_video = false;
+    var current_frame_video_playing = false;
+    for(var i=0; i < self.options.open_images.length; i++)
+    {
+      frame = self.options.open_images[i];
+      if(frame.video){
+        any_video_open = true;
+        if(frame.current_frame)
+        {
+          current_frame_video = true;
+          if(frame.playing)
+          {
+            current_frame_video_playing = true;
+            any_video_playing = true;
+            break;
+          }
+        }
+        if(frame.playing)
+        {
+          any_video_playing = true;
+        }
+      }
+      // No need to keep searching if we found a video and the current frame is also a video
+      if(any_video_open && current_frame_video && any_video_playing && current_frame_video_playing)
+      {
+        break;
+      }
+    }
+    // console.log("any_video_open: " + any_video_open + ", any_video_playing: " + any_video_playing + ", current_frame_video: " + current_frame_video + ", current_frame_video_playing: " + current_frame_video_playing);
+    // Hide / show video controls based on whether any videos are open
+    this.video_controls.add(this.playback_controls).toggle(any_video_open);
+    // Disable playback controls when the current frame is no a video and sync videos is not toggled
+    $('button', this.playback_controls).prop("disabled", !(self.options["video-sync"] || current_frame_video));
+    // Disable close all button when there are no open frames
     this.close_all_button.prop("disabled", self.options.open_images.length == 0);
+    // Enable play or pause based on what's playing
+    if( (self.options["video-sync"] && any_video_playing) || (!self.options["video-sync"] && current_frame_video_playing) )
+    {
+      self.pause_button.show();
+      self.play_button.hide();
+    }
+    else
+    {
+      self.pause_button.hide();
+      self.play_button.show();
+    }
   },
 
   _set_hide_show_selection_status: function()
@@ -732,12 +916,16 @@ $.widget("parameter_image.controls",
     }
     else if(key == 'open_images')
     {
-      self._set_close_all();
+      self._respond_open_images_changed();
     }
     else if(key == 'disable_hide_show')
     {
       self._set_show_all();
       self._set_hide_show_selection_status();
+    }
+    else if(key == 'video-sync-time')
+    {
+      self._set_video_sync_time();
     }
   },
 });
