@@ -15,4 +15,5 @@ root_path = os.path.dirname(os.path.abspath(__file__))
 #slycat.web.server.engine.start(root_path, arguments.config)
 server_config = slycat.web.server.engine.start(root_path, arguments.config)
 
-application = cherrypy.Application(None, None, server_config)
+# TODO: should the 2nd "script_name" arg be ""? or None? 
+application = cherrypy.Application(None, "", server_config)
