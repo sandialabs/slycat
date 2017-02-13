@@ -19,6 +19,10 @@ import slycat.web.server.handlers
 import slycat.web.server.plugin
 import slycat.email
 
+# fix below
+sys.stdout = sys.stderr
+print "++ engine starting"
+
 class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
   def __init__(self):
@@ -29,6 +33,8 @@ class SessionIdFilter(logging.Filter):
     return True
 
 def start(root_path, config_file):
+
+  print "++ start() is running"
 
   def abspath(path):
     if os.path.isabs(path):
@@ -42,6 +48,7 @@ def start(root_path, config_file):
     slycat.email.send_error("slycat.web.server.engine.py start", "Configuration file %s does not exist." % config_file)
     raise Exception("Configuration file %s does not exist." % config_file)
 
+  # below, simply tell engine to watch config file for potential reload, reloading may be ON or OFF
   cherrypy.engine.autoreload.files.add(config_file)
   parser = ConfigParser.SafeConfigParser()
   parser.read(config_file)
@@ -175,11 +182,12 @@ def start(root_path, config_file):
   log_configuration(configuration)
 
   # Setup global server parameters.
+  # wsgi: server configs come out
   configuration["global"] = {
     "engine.autoreload.on": configuration["slycat-web-server"]["autoreload"],
     "request.show_tracebacks": configuration["slycat-web-server"]["show-tracebacks"],
-    "server.socket_host": configuration["slycat-web-server"]["socket-host"],
-    "server.socket_port": configuration["slycat-web-server"]["socket-port"],
+#    "server.socket_host": configuration["slycat-web-server"]["socket-host"],
+#    "server.socket_port": configuration["slycat-web-server"]["socket-port"],
     "server.thread_pool": configuration["slycat-web-server"]["thread-pool"],
     }
 
@@ -189,6 +197,7 @@ def start(root_path, config_file):
   configuration["/"]["tools.caching.on"] = True
   configuration["/"]["tools.caching.delay"] = 3600
 
+  # wsgi: auth below comes out
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
   # configuration["/logout"]["tools.%s.on" % authentication] = False
@@ -262,6 +271,7 @@ def start(root_path, config_file):
       raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Setup the requested directory plugin.
+  # wsgi: this is the ldap fn to lookup a username and rtn/cache uid, name, email
   directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
   if directory_type not in manager.directories.keys():
     slycat.email.send_error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory.type)
@@ -274,6 +284,7 @@ def start(root_path, config_file):
   # Expand remote host aliases.
   configuration["slycat-web-server"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat-web-server"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
+  # wsgi: this just saves this dict in the slycat obj, no cherrypy stuff here
   slycat.web.server.config = configuration
 
   # Start all of our cleanup workers.
@@ -284,5 +295,19 @@ def start(root_path, config_file):
   cherrypy.config.update({ 'error_page.401': os.path.join(root_path, "templates/slycat-404.html") })
 
   # Start the web server.
-  cherrypy.quickstart(None, "", configuration)
+  # wsgi: no more server
+  #cherrypy.quickstart(None, "", configuration)
 
+  return configuration
+
+  # wsgi:
+#  cherrypy.config.update(configuration)
+#  cherrypy.config.update({'engine.autoreload.on':False}) #dis-allow for wsgi
+#  cherrypy.server.unsubscribe()
+#  app = cherrypy.tree.mount(None, "", configuration)
+  # potentially disable cherrypy signal handling here ?
+#  cherrypy.engine.signals.subscribe()
+#  cherrypy.engine.start()
+
+# Notes, Questions, TODO
+# -are the tools.stuff actually used by cherrypy? what abt tools.authentication ?
