@@ -168,6 +168,8 @@ def start(root_path, config_file):
 
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
+  dispatcher.connect("get-root", "/", slycat.web.server.handlers.get_root, conditions={"method" : ["GET"]})
+
 
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):

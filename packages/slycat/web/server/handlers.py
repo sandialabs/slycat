@@ -1056,6 +1056,15 @@ login.sessions = {}
 login.session_cleanup = None
 
 
+def get_root():
+    """
+  Redirect all requests to "/" to "/projects"
+  """
+    current_url = urlparse.urlparse(cherrypy.url())
+    proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
+    raise cherrypy.HTTPRedirect(proj_url, 303)
+
+
 def logout():
     """
   See if the client has a valid session.
