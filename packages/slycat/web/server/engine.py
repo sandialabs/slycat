@@ -19,10 +19,6 @@ import slycat.web.server.handlers
 import slycat.web.server.plugin
 import slycat.email
 
-# fix below
-sys.stdout = sys.stderr
-print "++ engine starting"
-
 class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
   def __init__(self):
@@ -33,8 +29,6 @@ class SessionIdFilter(logging.Filter):
     return True
 
 def start(root_path, config_file):
-
-  print "++ start() is running"
 
   def abspath(path):
     if os.path.isabs(path):
@@ -185,12 +179,11 @@ def start(root_path, config_file):
   log_configuration(configuration)
 
   # Setup global server parameters.
-  # wsgi: server configs come out
   configuration["global"] = {
     "engine.autoreload.on": configuration["slycat-web-server"]["autoreload"],
     "request.show_tracebacks": configuration["slycat-web-server"]["show-tracebacks"],
-#    "server.socket_host": configuration["slycat-web-server"]["socket-host"],
-#    "server.socket_port": configuration["slycat-web-server"]["socket-port"],
+    "server.socket_host": configuration["slycat-web-server"]["socket-host"],
+    "server.socket_port": configuration["slycat-web-server"]["socket-port"],
     "server.thread_pool": configuration["slycat-web-server"]["thread-pool"],
     }
 
@@ -200,7 +193,7 @@ def start(root_path, config_file):
   configuration["/"]["tools.caching.on"] = True
   configuration["/"]["tools.caching.delay"] = 3600
 
-  # wsgi: auth below comes out
+  # wsgi: look at the auth below
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
   # configuration["/logout"]["tools.%s.on" % authentication] = False
@@ -298,19 +291,6 @@ def start(root_path, config_file):
   cherrypy.config.update({ 'error_page.401': os.path.join(root_path, "templates/slycat-404.html") })
 
   # Start the web server.
-  # wsgi: no more server
-  #cherrypy.quickstart(None, "", configuration)
-
-  return configuration
-
-  # wsgi:
-#  cherrypy.config.update(configuration)
-#  cherrypy.config.update({'engine.autoreload.on':False}) #dis-allow for wsgi
-#  cherrypy.server.unsubscribe()
-#  app = cherrypy.tree.mount(None, "", configuration)
-  # potentially disable cherrypy signal handling here ?
-#  cherrypy.engine.signals.subscribe()
-#  cherrypy.engine.start()
-
-# Notes, Questions, TODO
-# -are the tools.stuff actually used by cherrypy? what abt tools.authentication ?
+  cherrypy.quickstart(None, "", configuration)
+  # wsgi: for actual wsgi - don't call quickstart just rtn config below
+  #return configuration
