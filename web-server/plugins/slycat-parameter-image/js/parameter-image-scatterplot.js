@@ -1482,7 +1482,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .style({
             "display": "none",
           })
-          .on("load", function(){
+          ;
+        // Due to a Firefox bug where the load event handler is fired more than once, resulting in the image sometimes
+        // growing in size when clicked (github issue #698 https://github.com/sandialabs/slycat/issues/698),
+        // Alex is ensuring that it will only be executed once with the jQuery one() function.
+        $(htmlImage.node()).one("load", function(){
             // Get the actual image dimensions
             // console.log("about to get actual image dimensions");
             var width = this.naturalWidth;
@@ -1504,7 +1508,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 "display": "block",
               });
             self._adjust_leader_line(frame_html);
-          });
+        });
       } else if(blob.type.indexOf('video/') == 0) {
         // Create the video ...
         var video = frame_html
