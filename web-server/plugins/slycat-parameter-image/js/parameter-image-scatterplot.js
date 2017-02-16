@@ -1048,13 +1048,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     // Updating videos' sync time should not fire off additional seeked events
     $(".open-image video").each(function(index, video)
     {
-      // Only update currentTime if it's different than target value, because setting
-      // currentTime dispatches a seeked event, which then tries to update currentTime
-      // on all open videos, thus infinite loop.
-      // Also, only update currentTime if the video is not playing
+      // Only update currentTime if the video is not playing
       var videoSyncTime = self.options["video-sync-time"];
       var playing = self._is_video_playing(video);
-      if( (video.currentTime != videoSyncTime) && !playing)
+      if(!playing)
       {
         self.syncing_videos.push($(video.parentElement).data('index'));
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
@@ -1421,6 +1418,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._schedule_update({update_video_sync_time:true,});
       }
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
+      self._sync_open_images();
     }
 
     // Don't open images for hidden simulations
@@ -1484,7 +1482,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .style({
             "display": "none",
           })
-          .on("load", function(){
+          ;
+        // Due to a Firefox bug where the load event handler is fired more than once, resulting in the image sometimes
+        // growing in size when clicked (github issue #698 https://github.com/sandialabs/slycat/issues/698),
+        // Alex is ensuring that it will only be executed once with the jQuery one() function.
+        $(htmlImage.node()).one("load", function(){
             // Get the actual image dimensions
             // console.log("about to get actual image dimensions");
             var width = this.naturalWidth;
@@ -1506,7 +1508,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 "display": "block",
               });
             self._adjust_leader_line(frame_html);
-          });
+        });
       } else if(blob.type.indexOf('video/') == 0) {
         // Create the video ...
         var video = frame_html
@@ -1557,6 +1559,14 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             if(pausing_index < 0)
             {
               self.options["video-sync-time"] = this.currentTime;
+              // Due to a Firefox bug, I need to set the paused video's time to it's currentTime because
+              // Firefox pauses it a frame or two past where it claims the video is. Only need to do this
+              // when video sync is off because when it's on, all videos, including current one, have their
+              // currentTime updated.
+              if(!self.options["video-sync"])
+              {
+                this.currentTime = self.options["video-sync-time"];
+              }
               handlers["pause_video"]();
             }
             // Do nothing if video was paused by system, just remove it from the paused videos list
@@ -2266,11 +2276,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     else
     {
       var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
+      var videoIndex;
       if(video != null)
       {
-        self.pausing_videos.push($(video.parentElement).data('index'));
+        videoIndex = $(video.parentElement).data('index');
+        self.pausing_videos.push(videoIndex);
         video.pause();
         self.options["video-sync-time"] = video.currentTime;
+        self.syncing_videos.push(videoIndex);
+        video.currentTime = self.options["video-sync-time"];
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
         self._sync_open_images();
       }
