@@ -78,8 +78,8 @@ column_types = ["string" for name in column_names]
 rows = rows[1:]                                     #rows is now a list of lists
 row_count = len(rows)
 
-# if column_names[0] != arguments.id_column:
-#   raise Exception("The first column in %s must be %s, got %s instead." % (arguments.inputs_file, arguments.id_column, column_names[0]))
+if column_names[0] != arguments.id_column:
+  raise Exception("The first column in %s must be %s, got %s instead." % (arguments.inputs_file, arguments.id_column, column_names[0]))
 
 columns = zip(*rows)   #this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
 

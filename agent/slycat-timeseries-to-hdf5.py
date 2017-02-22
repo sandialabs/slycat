@@ -85,14 +85,14 @@ row_count = len(rows)
 
 columns = zip(*rows)   # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
 
-# if arguments.id_column is not None:
-#   if column_names[0] != arguments.id_column:
-#     raise Exception("The first column in %s must be %s, got %s instead." % (arguments.inputs_file, arguments.id_column, column_names[0]))
-#   columns[0] = numpy.array(columns[0], dtype="int64")  # repack the index col as numpy array
-# else:
-# if the ID column isn't specified, creates one and prepend it to the columns
-column_names = ["%eval_id"] + column_names
-columns = [numpy.array(range(0, row_count), dtype="int64")] + columns
+if arguments.id_column is not None:
+  if column_names[0] != arguments.id_column:
+    raise Exception("The first column in %s must be %s, got %s instead." % (arguments.inputs_file, arguments.id_column, column_names[0]))
+  columns[0] = numpy.array(columns[0], dtype="int64")  # repack the index col as numpy array
+else:
+  # if the ID column isn't specified, creates one and prepend it to the columns
+  column_names = ["%eval_id"] + column_names
+  columns = [numpy.array(range(0, row_count), dtype="int64")] + columns
 
 column_types[0] = "int64"
 
