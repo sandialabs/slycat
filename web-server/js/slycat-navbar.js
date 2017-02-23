@@ -151,7 +151,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
           var stateSubscription = component.model()[0].state.subscribe(function(newValue) {
             if(newValue == 'closed')
             {
-              document.location.reload();
+//                window.location.reload(true);
+//              document.location.reload(true);
             }
           });
         }
@@ -164,6 +165,10 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
         {
           mid: model._id(),
           state: "closed",
+          success : function(wizards)
+            {
+              window.location.reload(true);
+            }
         });
       }
 
