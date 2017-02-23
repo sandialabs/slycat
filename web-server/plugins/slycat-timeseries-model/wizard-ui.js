@@ -319,9 +319,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_hdf5_directory = function() {
-      component.hdf5_directory( component.browser_hdf5.path() );
-
-      component.tab(5);
+      dialog.confirm({
+        title: "Confirm HDF5 Directory",
+        message: "Please confirm this is the directory containing your HDF5 files: <br />" + component.browser_hdf5.path(),
+        ok: function(){
+          component.hdf5_directory( component.browser_hdf5.path() );
+          component.tab(5);
+        },
+      });
     };
 
     component.name_model = function() {
