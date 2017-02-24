@@ -103,15 +103,23 @@
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4 control-label">Cluster Sample Type</label>
+        <label class="col-sm-4 control-label">Resampling Algorithm</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-sample-type" class="form-control" data-bind="options: cluster_sample_type"></select>
+          <select id="timeseries-wizard-cluster-sample-type" class="form-control" 
+            data-bind="
+              options: cluster_sample_type, 
+              optionsText: 'text',
+              optionsValue: 'value'"></select>
         </div>
       </div>
     	<div class="form-group">
-        <label class="col-sm-4 control-label">Cluster Type</label>
+        <label class="col-sm-4 control-label">Cluster Linkage Measure</label>
         <div class="col-sm-8">
-          <select id="timeseries-wizard-cluster-type" class="form-control" data-bind="options: cluster_type"></select>
+          <select id="timeseries-wizard-cluster-type" class="form-control" 
+            data-bind="
+              options: cluster_type,
+              optionsText: 'text',
+              optionsValue: 'value'"></select>
         </div>
       </div>
     	<div class="form-group">
