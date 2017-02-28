@@ -20,8 +20,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.timeseries_name = ko.observable('');
     component.cluster_sample_count = ko.observable(500);
     component.timeseries_names = ko.observableArray([]);
-    component.cluster_sample_type = ko.observableArray(['uniform-paa', 'uniform-pla']);
-    component.cluster_type = ko.observableArray(['average', 'single', 'complete', 'weighted']);
+    component.cluster_sample_type = ko.observableArray([
+      {'text':'uniform piecewise aggregate approximation', 'value':'uniform-paa'}, 
+      {'text':'uniform piecewise linear approximation', 'value':'uniform-pla'}]);
+    component.cluster_type = ko.observableArray([
+      {'text':'average: Unweighted Pair Group Method with Arithmetic Mean (UPGMA) Algorithm', 'value':'average'},
+      {'text':'single: Nearest Point Algorithm', 'value':'single'},
+      {'text':'complete: Farthest Point Algorithm', 'value':'complete'},
+      {'text':'weighted: Weighted Pair Group Method with Arithmetic Mean (WPGMA) Algorithm','value':'weighted'}]);
     component.cluster_metric = ko.observableArray(['euclidean']);
     // SLURM parameters
     component.wckey = ko.observable('');
@@ -319,9 +325,14 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_hdf5_directory = function() {
-      component.hdf5_directory( component.browser_hdf5.path() );
-
-      component.tab(5);
+      dialog.confirm({
+        title: "Confirm HDF5 Directory",
+        message: "Please confirm this is the directory containing your HDF5 files: <br />" + component.browser_hdf5.path(),
+        ok: function(){
+          component.hdf5_directory( component.browser_hdf5.path() );
+          component.tab(5);
+        },
+      });
     };
 
     component.name_model = function() {

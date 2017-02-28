@@ -6,7 +6,7 @@
           <h3 class="modal-title" data-bind="text:title"></h3>
         </div>
         <div class="modal-body">
-          <p data-bind="text:message"></p>
+          <p data-bind="html:message"></p>
           <input type="text" class="form-control"
             data-bind="visible:input, value:value, attr:{placeholder:placeholder}">
           <div class="alert alert-danger" role="alert"
