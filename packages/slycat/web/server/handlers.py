@@ -977,11 +977,11 @@ def login():
 ## @cherrypy.tools.json_out(on=True)
 def create_session():
     """
-  WSGI/RevProxy no-login session creations.
-  Takes the post object under cherrypy.request.json with the users name and password
-  and determins with the user can be authenticated with slycat
-  :return: authentication status
-  """
+      WSGI/RevProxy no-login session creations.
+      Takes the post object under cherrypy.request.json with the users name and password
+      and determins with the user can be authenticated with slycat
+      :return: authentication status
+      """
     # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
     # try and delete any outdated sessions for the user if they have the cookie for it
     if "slycatauth" in cherrypy.request.cookie:

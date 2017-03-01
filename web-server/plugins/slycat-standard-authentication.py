@@ -51,6 +51,19 @@ def register_slycat_plugin(context):
         session = couchdb.get("session", sid)
         started = session["created"]
         user_name = session["creator"]
+
+        # check if users match blow away the session if they dont and throw
+        # an unauthorized error to the web browser
+        if user_name != auth_user:
+          cherrypy.log.error("user_name::%s is not equal to auth_user::%s in standard auth"
+                             "deleting session and throwing 403 error to the browser" % (user_name, auth_user))
+          couchdb.delete(session)
+          # expire the old cookie
+          cherrypy.response.cookie["slycatauth"] = sid
+          cherrypy.response.cookie["slycatauth"]['expires'] = 0
+          session = None
+          cherrypy.response.status = "403 Forbidden"
+          raise cherrypy.HTTPError(403)
         groups = session["groups"]
 
         # no chaching plz
