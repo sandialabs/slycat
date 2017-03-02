@@ -968,11 +968,29 @@ def create_session(hostname, username, password, agent):
     cherrypy.log.error("Creating remote session for %s@%s from %s" % (username, hostname, client))
 
     try:
-        sid = uuid.uuid4().hex
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=hostname, username=username, password=password)
-        ssh.get_transport().set_keepalive(5)
+        if password is not None and username is not None:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=hostname, username=username, password=password)
+            ssh.get_transport().set_keepalive(5)
+        else:
+            # # pvtKeyName = "id_rsa"
+            # # pubKeyName = pvtKeyName + ".pub"
+            # numBits = 2056
+            # domain = ""
+            # principal = username + "@" + domain
+            # # create the private key
+            # pvt_key = paramiko.RSAKey.generate(numBits)
+            # # create the public key
+            # pub_key = "ssh-rsa " + pvt_key.get_base64() + " " + principal + "\n"
+            # # write out to test validity
+            key_file = None
+            cert_file = None
+            cert = paramiko.RSACert(privkey_filename=key_file, cert_filename=cert_file)
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert)
+            ssh.get_transport().set_keepalive(5)
 
         # Detect problematic startup scripts.
         stdin, stdout, stderr = ssh.exec_command("/bin/true")
