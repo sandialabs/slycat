@@ -985,7 +985,8 @@ def create_session(hostname, username, password, agent):
             r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
                              cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
                                    slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
-                             data={'principal': 'john', 'pubkey': pub_key, 'options': ['force-command=*']})
+                             data={'principal': 'john', 'pubkey': pub_key, 'options': ['force-command=*']},
+                             headers={"Content-Type": "application/json"})
             key_file = None
             cert_file = None
             cert = paramiko.RSACert(privkey_filename=key_file, cert_filename=cert_file)
