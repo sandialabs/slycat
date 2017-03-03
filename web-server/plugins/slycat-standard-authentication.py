@@ -113,7 +113,7 @@ def register_slycat_plugin(context):
         remote_ip = cherrypy.request.headers.get(
             "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
         auth_user = cherrypy.request.headers.get("Authuser")
-        cherrypy.log.error("++ std-auth running for %s at %s" % (auth_user, remote_ip))
+        #cherrypy.log.error("++ std-auth running for %s at %s" % (auth_user, remote_ip))
 
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
