@@ -982,8 +982,10 @@ def create_session(hostname, username, password, agent):
             pvt_key = paramiko.RSAKey.generate(num_bits)
             # create the public key
             pub_key = "ssh-rsa " + pvt_key.get_base64() + " " + principal + "\n"
-            r = requests.get(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"])
-
+            r = requests.get(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
+                             cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
+                                   slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
+                             data={'principal': 'john', 'pubkey': pub_key, 'options': ['force-command=*']})
             key_file = None
             cert_file = None
             cert = paramiko.RSACert(privkey_filename=key_file, cert_filename=cert_file)
