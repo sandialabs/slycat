@@ -968,6 +968,7 @@ def create_session(hostname, username, password, agent):
     cherrypy.log.error("Creating remote session for %s@%s from %s" % (username, hostname, client))
 
     try:
+        sid = uuid.uuid4().hex
         if password is not None and username is not None:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
