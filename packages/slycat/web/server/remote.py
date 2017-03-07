@@ -975,20 +975,30 @@ def create_session(hostname, username, password, agent):
             ssh.connect(hostname=hostname, username=username, password=password)
             ssh.get_transport().set_keepalive(5)
         else:
-            import requests
+            import requests, tempfile
             num_bits = 2056
-            # principal = username + "@" + hostname
             # create the private key
             pvt_key = paramiko.RSAKey.generate(num_bits)
             # create the public key
-            pub_key = "ssh-rsa " + pvt_key.get_base64()
+            pub_key = "ssh-rsa " + pvt_key.get_base64()                            # SSO specific format
+            #pub_key = "ssh-rsa " + pvt_key.get_base64() + " " + principal + "\n"  # General Format, principal is <username>@<hostname>
             r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
                              cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
                                    slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
                              data='{"principal": "' + cherrypy.request.login + '", "pubkey": "' + pub_key + '"}',
                              headers={"Content-Type": "application/json"},
                              verify=False)
-            cert = paramiko.RSACert(privkey_file_obj=pvt_key, cert_file_obj=r.json()["certificate"])
+            
+            # create a cert file obj
+            _certFO = tempfile.TemporaryFile()
+            _certFO.write(str(r.json()["certificate"])) 
+            _certFO.seek(0)
+            # create a key file obj
+            _keyFO = tempfile.TemporaryFile()
+            pvt_key.write_private_key(_keyFO)
+            _keyFO.seek(0)            
+            # create the cert used for auth
+            cert = paramiko.RSACert(privkey_file_obj=_keyFO, cert_file_obj=_certFO)
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
