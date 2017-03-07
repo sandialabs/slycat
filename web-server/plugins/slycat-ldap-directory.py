@@ -50,6 +50,7 @@ def user(uid):
         "email" : result[configuration["ldapEmail"]][0],
         }
     except ldap.NO_SUCH_OBJECT:
+      cherrypy.log.error("404 ldap.NO_SUCH_OBJECT")
       slycat.email.send_error("slycat-ldap-directory.py user", "cherrypy.HTTPError 404 ldap.NO_SUCH_OBJECT")
       raise cherrypy.HTTPError(404)
     except AssertionError as e:
