@@ -977,19 +977,19 @@ def create_session(hostname, username, password, agent):
         else:
             import requests
             num_bits = 2056
-            principal = username + "@" + hostname
+            # principal = username + "@" + hostname
             # create the private key
             pvt_key = paramiko.RSAKey.generate(num_bits)
             # create the public key
-            pub_key = "ssh-rsa " + pvt_key.get_base64() + " " + principal + "\n"
+            pub_key = "ssh-rsa " + pvt_key.get_base64()
             r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
                              cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
                                    slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
-                             data={'principal': cherrypy.request.login, 'pubkey': pub_key, 'options': ['force-command=*']},
-                             headers={"Content-Type": "application/json"})
-            key_file = None
-            cert_file = None
-            cert = paramiko.RSACert(privkey_filename=key_file, cert_filename=cert_file)
+                             data='{"principal": "' + cherrypy.request.login + '", "pubkey": "' + pub_key + '"}',
+                             headers={"Content-Type": "application/json"},
+                             verify=False)
+            cert_file = r.json()["certificate"]
+            cert = paramiko.RSACert(privkey_filename=pvt_key, cert_filename=cert_file)
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
