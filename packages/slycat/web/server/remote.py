@@ -988,8 +988,7 @@ def create_session(hostname, username, password, agent):
                              data='{"principal": "' + cherrypy.request.login + '", "pubkey": "' + pub_key + '"}',
                              headers={"Content-Type": "application/json"},
                              verify=False)
-            cert_file = r.json()["certificate"]
-            cert = paramiko.RSACert(privkey_filename=pvt_key, cert_filename=cert_file)
+            cert = paramiko.RSACert(privkey_file_obj=pvt_key, cert_file_obj=r.json()["certificate"])
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
