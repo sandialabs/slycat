@@ -151,14 +151,14 @@ def register_slycat_plugin(context):
 
             # there was no session time to authenticate
             if session is None:
-                cherrypy.log.error("++ no session found redirecting %s to login2" % remote_ip)
+                cherrypy.log.error("++ no session found redirecting %s to SSO_session" % remote_ip)
                 create_single_sign_on_session(remote_ip, auth_user)
                 # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
                 # Successful authentication, create a session and return.
                 # return
         else:
-            cherrypy.log.error("++ no cookie found redirecting %s to login2" % remote_ip)
+            cherrypy.log.error("++ no cookie found redirecting %s to SSO_session" % remote_ip)
             create_single_sign_on_session(remote_ip, auth_user)
             # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
