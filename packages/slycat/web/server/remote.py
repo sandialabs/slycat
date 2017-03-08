@@ -1003,6 +1003,8 @@ def create_session(hostname, username, password, agent):
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
             ssh.get_transport().set_keepalive(5)
+            _certFO.close()
+            _keyFO.close()
 
         # Detect problematic startup scripts.
         stdin, stdout, stderr = ssh.exec_command("/bin/true")
