@@ -57,7 +57,7 @@ def register_slycat_plugin(context):
             cherrypy.response.status = "403 Forbidden"
             raise cherrypy.HTTPError(403)
 
-    def create_single_sign_on_session(remote_ip, apache_username):
+    def create_single_sign_on_session(remote_ip, auth_user):
         """
         WSGI/RevProxy no-login session creations.
         Successful authentication and access verification,
@@ -69,9 +69,9 @@ def register_slycat_plugin(context):
         groups = []
 
         # Successful authentication and access verification, create a session and return.
-        cherrypy.log.error("++ login2 creating session for %s" % apache_username)
+        cherrypy.log.error("++ create_single_sign_on_session creating session for %s" % auth_user)
         sid = uuid.uuid4().hex
-        session = {"created": datetime.datetime.utcnow(), "creator": apache_username}
+        session = {"created": datetime.datetime.utcnow(), "creator": auth_user}
         database = slycat.web.server.database.couchdb.connect()
         database.save(
             {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
@@ -90,7 +90,7 @@ def register_slycat_plugin(context):
         cherrypy.response.cookie["slycattimeout"]["Max-Age"] = timeout
 
         cherrypy.response.status = "200 OK"
-        cherrypy.request.login = apache_username
+        cherrypy.request.login = auth_user
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
@@ -112,11 +112,22 @@ def register_slycat_plugin(context):
         # Get the client ip, which might be forwarded by a proxy.
         remote_ip = cherrypy.request.headers.get(
             "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
-        auth_user = cherrypy.request.headers.get("Authuser")
+        
+        auth_user = ""
+        # If user does not have a session, OpenID supplies user info within URL of return_to call
+        # Test if no slycat cookie, path is /projects (curr return_to location) and contains user auth info
+        if "slycatauth" not in cherrypy.request.cookie and current_url.path == '/projects' and 'Authuser' in current_url.query:
+            kerberosPrincipal = urlparse.parse_qs(current_url.query)['openid.ext2.value.Authuser'][0]
+            auth_user = kerberosPrincipal.split("@")
+            cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
+                
+        #auth_user = cherrypy.request.headers.get("Authuser")
         #cherrypy.log.error("++ std-auth running for %s at %s" % (auth_user, remote_ip))
 
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
+            if auth_user == "":
+                cherrypy.log.error("++ warning: should not have blank auth_user AND a slycatauth cookie!")  #fixme, handle this better
             sid = cherrypy.request.cookie["slycatauth"].value
             couchdb = slycat.web.server.database.couchdb.connect()
             session = None
@@ -127,7 +138,8 @@ def register_slycat_plugin(context):
 
                 # check if users match blow away the session if they dont and throw
                 # an unauthorized error to the web browser
-                check_user(user_name, auth_user, couchdb, sid, session)
+                # check_user relies on header auth info which isn't available here
+                #check_user(user_name, auth_user, couchdb, sid, session)
                 groups = session["groups"]
 
                 # no chaching plz
@@ -150,16 +162,17 @@ def register_slycat_plugin(context):
                 cherrypy.log.error("@%s: could not get db session from cookie for %s" % (e, remote_ip))
 
             # there was no session time to authenticate
-            if session is None:
-                cherrypy.log.error("++ no session found redirecting %s to SSO_session" % remote_ip)
+            if session is None and auth_user != "":
+                cherrypy.log.error("++ no session found redirecting %s at %s to SSO_session" % (auth_user, remote_ip))
                 create_single_sign_on_session(remote_ip, auth_user)
                 # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
                 # Successful authentication, create a session and return.
                 # return
         else:
-            cherrypy.log.error("++ no cookie found redirecting %s to SSO_session" % remote_ip)
+            cherrypy.log.error("++ no cookie found redirecting user: %s to SSO_session" % auth_user)
             create_single_sign_on_session(remote_ip, auth_user)
-            # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
+            raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects" , 307) #force redirect to /projects which is the current return_to location
+            #raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
-    context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
+    context.register_tool("slycat-openid-authentication", "on_start_resource", authenticate)
