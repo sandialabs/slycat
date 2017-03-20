@@ -1315,7 +1315,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         cherrypy.log.error("found unique in results: " )
         cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         for unique in results["unique"]:
-            unique["values"] = [lista for lista in unique["values"]]
+            unique["values"] = [list_of_values for list_of_values in unique["values"]]
             # unique["values"] = [array.tolist() for array in unique["values"]]
     cherrypy.log.error("returning results")
 
