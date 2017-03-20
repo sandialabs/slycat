@@ -135,5 +135,5 @@ def register_slycat_plugin(context):
 
     # register input wizard with slycat.
     context.register_wizard("new-dac", "New DAC Model", require={"action":"create", "context":"project"})
-    context.register_wizard_resource("new-dac", "dac-wizard.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
-    context.register_wizard_resource("new-dac", "dac-wizard.html", os.path.join(os.path.dirname(__file__), "dac-wizard.html"))
+    context.register_wizard_resource("new-dac", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
+    context.register_wizard_resource("new-dac", "ui.html", os.path.join(os.path.dirname(__file__), "dac-wizard.html"))
