@@ -73,7 +73,9 @@ var waveforms_metadata = null; // This holds the waveforms metadata for each clu
 var initial_cluster = null; // This holds the index of the initially selected cluster
 var table_metadata = null;
 var color_array = null; // This holds the sorted array of values for the color scale
+var colorscale = null; // This holds the current color scale
 var selected_column = null; // This holds the currently selected column
+var selected_column_type = null;  // This holds the data type of the currently selected column
 var selected_column_min = null; // This holds the min value of the currently selected column
 var selected_column_max = null; // This holds the max value of the currently selected column
 var selected_simulations = null; // This hold the currently selected rows
@@ -211,6 +213,14 @@ function setup_page()
   });
 }
 
+function setup_colorscale()
+{
+  if(table_metadata && selected_column !== null)
+  {
+
+  }
+}
+
 function artifact_missing()
 {
   $(".load-status").css("display", "none");
@@ -238,6 +248,7 @@ function setup_colordata()
     else
       column = table_metadata["column-count"]-1;
     selected_column = column;
+    selected_column_type = table_metadata["column-types"][selected_column];
     selected_column_min = table_metadata["column-min"][selected_column];
     selected_column_max = table_metadata["column-max"][selected_column];
 
@@ -440,6 +451,28 @@ function setup_widgets()
     $("#color-switcher").colorswitcher({colormap:colormap});
     $("#color-switcher").bind("colormap-changed", function(event, colormap)
     {
+      $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+      $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
+
+      $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
+      // This might be a more correct way to pass the color scale since it's how we do it for the waveforms and dendrogram sparklines,
+      // but it still doesn't seem to fix the table's color problems.
+      //$("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
+
+      $("#dendrogram-sparkline-backdrop").css({
+        "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+        });
+      $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
+
+      $("#waveform-pane").css({
+        "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+        });
+      $("#waveform-viewer rect.selectionMask").css({
+        "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+        "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+        });
+      $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
+
       selected_colormap_changed(colormap);
     });
   }
@@ -470,23 +503,6 @@ function setup_widgets()
       max: table_metadata["column-max"][v_index],
     });
 
-    // Changing the color map updates the legend ...
-    $("#color-switcher").bind("colormap-changed", function(event, colormap)
-    {
-      $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-      $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
-    });
-
-    // Changing the table variable selection updates the legend ...
-    $("#table").bind("variable-selection-changed", function(event, selection)
-    {
-      $("#legend").legend("option", {
-        min: table_metadata["column-min"][selection.variable[0]],
-        max: table_metadata["column-max"][selection.variable[0]],
-        label: table_metadata["column-names"][selection.variable[0]],
-      });
-    });
-
   }
 
   // Setup the waveform plot ...
@@ -499,8 +515,7 @@ function setup_widgets()
 
     $("#waveform-pane .load-status").css("display", "none");
 
-    // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
-    //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+    // This gets the colormap from the colorswitcher
     var colormap = $("#color-switcher").colorswitcher("option", "colormap");
     var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max);
 
@@ -549,19 +564,6 @@ function setup_widgets()
       $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
     });
 
-    // Changing the color map updates the waveform plot ...
-    $("#color-switcher").bind("colormap-changed", function(event, colormap)
-    {
-      $("#waveform-pane").css({
-        "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        });
-      $("#waveform-viewer rect.selectionMask").css({
-        "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
-        });
-      $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
-    });
-
     // Log changes to the waveform selection
     $("#waveform-viewer").bind("waveform-selection-changed", function(event, selection)
     {
@@ -570,7 +572,7 @@ function setup_widgets()
   }
 
   // Setup the table ...
-  if( !table_ready && bookmark && table_metadata && initial_cluster !==  null && selected_simulations !== null)
+  if( !table_ready && bookmark && table_metadata && initial_cluster !== null && selected_simulations !== null)
   {
     table_ready = true;
 
@@ -582,6 +584,7 @@ function setup_widgets()
       mid : model._id,
       aid : "inputs",
       metadata : table_metadata,
+      colorscale : colorscale,
     };
 
     var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
@@ -604,7 +607,37 @@ function setup_widgets()
       table_options["sort-order"] = bookmark["sort-order"];
     }
 
-    $("#table").table(table_options);
+
+
+    selected_column = table_options["variable-selection"][0];
+    selected_column_type = table_metadata["column-types"][selected_column];
+    selected_column_min = table_metadata["column-min"][selected_column];
+    selected_column_max = table_metadata["column-max"][selected_column];
+
+    if(selected_column_type != "string")
+    {
+      colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, selected_column_min, selected_column_max);
+      table_options["colorscale"] = colorscale;
+      $("#table").table(table_options);
+    }
+    else
+    {
+      $.ajax({
+        type: "GET",
+        url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column + "/...",
+        success : function(result) {
+          console.log("here are the unique values: " + result);
+          var uniqueValues = result.unique[0].values[0];
+
+          colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
+          table_options["colorscale"] = colorscale;
+          $("#table").table(table_options);
+        },
+        error: function(result) {
+          console.log("there was an error. here it is: " + result);
+        }
+      });
+    }
 
     // Changing the selected dendrogram node updates the table ...
     $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
@@ -623,15 +656,6 @@ function setup_widgets()
     $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
     {
       $("#table").table("option", "row-selection", waveform_indexes);
-    });
-
-    // Changing the colormap updates the table ...
-    $("#color-switcher").bind("colormap-changed", function(event, colormap)
-    {
-      $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
-      // This might be a more correct way to pass the color scale since it's how we do it for the waveforms and dendrogram sparklines,
-      // but it still doesn't seem to fix the table's color problems.
-      //$("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
     });
 
     // Log changes to the table row selection
@@ -657,6 +681,12 @@ function setup_widgets()
       selected_variable_changed(parameters.variable);
       update_waveform_dendrogram_on_selected_variable_changed(parameters.variable[0]);
       $("#controls").controls("option", "color-variable", parameters.variable[0]);
+
+      $("#legend").legend("option", {
+        min: table_metadata["column-min"][parameters.variable[0]],
+        max: table_metadata["column-max"][parameters.variable[0]],
+        label: table_metadata["column-names"][parameters.variable[0]],
+      });
     });
   }
 
@@ -669,8 +699,7 @@ function setup_widgets()
 
     $("#dendrogram-pane .load-status").css("display", "none");
 
-    // This gets the colormap from the bookmark, but at this point we should have the colorswitcher so let's try to get it from there instead.
-    //var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+    // This gets the colormap from the colorswitcher
     var colormap = $("#color-switcher").colorswitcher("option", "colormap");
     var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max);
 
@@ -715,15 +744,6 @@ function setup_widgets()
     $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, selection)
     {
       selected_simulations_changed(selection);
-    });
-
-    // Changing the color map updates the dendrogram ...
-    $("#color-switcher").bind("colormap-changed", function(event, colormap)
-    {
-      $("#dendrogram-sparkline-backdrop").css({
-        "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        });
-      $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
     });
 
     // Changing table's sort order updated the dendrogram sort control
@@ -812,25 +832,88 @@ function selected_variable_changed(variable)
   bookmarker.updateState(selected_variable);
 }
 
+function set_new_colorscale(callback)
+{
+  if(selected_column_type != "string")
+  {
+    colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, selected_column_min, selected_column_max);
+    callback();
+  }
+  else
+  {
+    $.ajax({
+      type: "GET",
+      url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column + "/...",
+      success : function(result) {
+        console.log("here are the unique values: " + result);
+        var uniqueValues = result.unique[0].values[0];
+
+        colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
+        callback();
+      },
+      error: function(result) {
+        console.log("there was an error. here it is: " + result);
+      }
+    });
+  }
+}
+
+
 function update_waveform_dendrogram_on_selected_variable_changed(variable)
 {
   selected_column = variable;
+  selected_column_type = table_metadata["column-types"][selected_column];
   selected_column_min = table_metadata["column-min"][selected_column];
   selected_column_max = table_metadata["column-max"][selected_column];
 
-  retrieve_sorted_column({
-    column : selected_column,
-    callback : function(array){
-      var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
-      var parameters = {
-        color_array : array,
-        color_scale : $("#color-switcher").colorswitcher("get_color_scale", currentColormap, selected_column_min, selected_column_max),
-      };
+  if(selected_column_type != "string")
+  {
+    colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, selected_column_min, selected_column_max);
+    retrieve_sorted_column({
+      column : selected_column,
+      callback : function(array){
+        var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
+        var parameters = {
+          color_array : array,
+          color_scale : colorscale,
+        };
 
-      $("#waveform-viewer").waveformplot("option", "color-options", parameters);
-      $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
-    }
-  });
+        $("#waveform-viewer").waveformplot("option", "color-options", parameters);
+        $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
+        $("#table").table("option", "colorscale", colorscale);
+      }
+    });
+  }
+  else
+  {
+    $.ajax({
+      type: "GET",
+      url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column + "/...",
+      success : function(result) {
+        console.log("here are the unique values: " + result);
+        var uniqueValues = result.unique[0].values[0];
+
+        colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
+        retrieve_sorted_column({
+          column : selected_column,
+          callback : function(array){
+            var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
+            var parameters = {
+              color_array : array,
+              color_scale : colorscale,
+            };
+
+            $("#waveform-viewer").waveformplot("option", "color-options", parameters);
+            $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
+            $("#table").table("option", "colorscale", colorscale);
+          }
+        });
+      },
+      error: function(result) {
+        console.log("there was an error. here it is: " + result);
+      }
+    });
+  }
 }
 
 function variable_sort_changed(variable, order)

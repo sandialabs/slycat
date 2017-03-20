@@ -22,6 +22,7 @@ define("slycat-timeseries-table", ["d3"], function(d3)
       "sort-variable" : null,
       "sort-order" : null,
       colormap : null,
+      colorscale : null,
       table_filter : [],
       waveform_indexes : [],
       selection : null,
@@ -39,8 +40,8 @@ define("slycat-timeseries-table", ["d3"], function(d3)
 
     	function cell_formatter(row, cell, value, columnDef, dataContext)
       {
-        if(columnDef.colormap) {
-          return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colormap(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colormap(value) + "'>" + value_formatter(value) + "</div>";
+        if(columnDef.colorscale) {
+          return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
         }
         else if(value==null)
           return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
@@ -131,10 +132,10 @@ define("slycat-timeseries-table", ["d3"], function(d3)
         self.options[key] = value;
         self._color_variables(value);
       }
-      else if(key == "colormap")
+      else if(key == "colorscale")
       {
         self.options[key] = value;
-        self._color_variables(self.options["variable-selection"])
+        self._color_variables(self.options["variable-selection"]);
       }
       else if(key == "selection")
       {
@@ -278,8 +279,8 @@ define("slycat-timeseries-table", ["d3"], function(d3)
               if(!self._array_equal([args.column.field], self.options["variable-selection"]))
               {
                 self.options["variable-selection"] = [args.column.field];
-                self._color_variables(self.options["variable-selection"]);
-                self.element.trigger("variable-selection-changed", { variable:self.options["variable-selection"], colormap:args.column.colormap, });
+                // self._color_variables(self.options["variable-selection"]);
+                self.element.trigger("variable-selection-changed", { variable:self.options["variable-selection"], colorscale:args.column.colorscale, });
               }
             });
 
@@ -367,28 +368,38 @@ define("slycat-timeseries-table", ["d3"], function(d3)
       for(var i in columns)
       {
         var column = columns[i];
-        if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
+        if(self.options.colorscale !== null && $.inArray(column.id, variables) != -1)
         {
-          // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
-          column.colormap = self.options.colormap.copy();
-
-          var new_domain = []
-          var domain_scale = d3.scale.linear()
-            .domain([0, column.colormap.range().length - 1])
-            .range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
-          for(var i in column.colormap.range())
-            new_domain.push(domain_scale(i));
-          column.colormap.domain(new_domain);
-
+          column.colorscale = self.options.colorscale;
           column.cssClass = column.cssClass.split(" ")[0] + " highlight";
-          column.highlighted = true;
         }
         else
         {
-          column.colormap = null;
+          column.colorscale = null;
           column.cssClass = column.cssClass.split(" ")[0];
-          column.highlighted = false;
         }
+        // if(self.options.colormap !== null && $.inArray(column.id, variables) != -1)
+        // {
+        //   // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
+        //   column.colormap = self.options.colormap.copy();
+
+        //   var new_domain = []
+        //   var domain_scale = d3.scale.linear()
+        //     .domain([0, column.colormap.range().length - 1])
+        //     .range([self.options.metadata["column-min"][column.id], self.options.metadata["column-max"][column.id]]);
+        //   for(var i in column.colormap.range())
+        //     new_domain.push(domain_scale(i));
+        //   column.colormap.domain(new_domain);
+
+        //   column.cssClass = column.cssClass.split(" ")[0] + " highlight";
+        //   column.highlighted = true;
+        // }
+        // else
+        // {
+        //   column.colormap = null;
+        //   column.cssClass = column.cssClass.split(" ")[0];
+        //   column.highlighted = false;
+        // }
       }
 
       self.grid.invalidate();
