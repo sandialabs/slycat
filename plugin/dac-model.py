@@ -132,3 +132,8 @@ def register_slycat_plugin(context):
         os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
         os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
         ])
+
+    # register input wizard with slycat.
+    context.register_wizard("new-dac", "New DAC Model", require={"action":"create", "context":"project"})
+    context.register_wizard_resource("new-dac", "dac-wizard.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
+    context.register_wizard_resource("new-dac", "dac-wizard.html", os.path.join(os.path.dirname(__file__), "dac-wizard.html"))

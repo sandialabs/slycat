@@ -1,0 +1,91 @@
+<div class="modal-header">
+  <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h3 class="modal-title">New DAC Model</h3>
+</div>
+<div class="modal-body">
+  <ul class="nav nav-pills">
+    <li data-bind="css:{active:tab() == 0}" class="btn-secondary"><a>Locate Data</a></li>
+    <li data-bind="css:{active:tab() == 1}, visible: cca_type() == 'local'"><a>Upload Table</a></li>
+    <li data-bind="css:{active:tab() == 2}, visible: cca_type() == 'remote'"><a>Choose Host</a></li>
+    <li data-bind="css:{active:tab() == 3}, visible: cca_type() == 'remote'"><a>Select Table</a></li>
+    <li data-bind="css:{active:tab() == 4}"><a>Select Columns</a></li>
+    <li data-bind="css:{active:tab() == 5}"><a>Name Model</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div data-bind="visible:tab() == 0">
+      <div class="radio" style="margin-left: 15px;">
+        <label>
+          <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: cca_type">
+          Local
+        </label>
+      </div>
+      <div class="radio" style="margin-left: 15px;">
+        <label>
+          <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: cca_type">
+          Remote
+        </label>
+      </div>
+    </div>
+
+    <div data-bind="visible:tab() == 1" class="form-horizontal">
+      <slycat-local-browser params="selection:browser.selection"></slycat-local-browser>
+      <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+    </div>
+
+    <div data-bind="visible:tab() == 2">
+      <form class="form-horizontal" role="form">
+        <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
+      </form>
+    </div>
+
+    <div data-bind="visible:tab() == 3" style="height: 400px">
+      <slycat-remote-browser params="
+        type:'remote',
+        sid:remote.sid,
+        hostname:remote.hostname,
+        selection:browser.selection,
+        path:browser.path,
+        open_file_callback:load_table,
+        session_exists:remote.session_exists,
+        persistence_id:'cca-table-file'"></slycat-remote-browser>
+      <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+    </div>
+
+    <div data-bind="visible:tab() == 4">
+      <slycat-table-ingestion params="
+        variables: attributes,
+        properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
+      "></slycat-table-ingestion>
+      <form class="form-horizontal" role="form">
+        <div class="form-group">
+          <div class="col-sm-offset-6 col-sm-6">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" data-bind="checked: scale_inputs"/>Scale to unit variance
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div data-bind="visible:tab() == 5">
+      <form class="form-horizontal" role="form" onsubmit="return false">
+        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+      </form>
+    </div>
+
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
+  <button class="btn btn-primary local-browser-continue browser-continue" data-bind="visible:tab() == 1,click:upload_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 2,click:connect,enable:remote.enable">Continue</button>
+  <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 5,click:name_model">Finish & Go To Model</button>
+</div>
