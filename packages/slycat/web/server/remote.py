@@ -970,6 +970,7 @@ def create_session(hostname, username, password, agent):
     try:
         sid = uuid.uuid4().hex
         if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] != "certificate":
+            cherrypy.log.error("++ doing non-cert ssh.connect for %s" % username)
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=hostname, username=username, password=password)
@@ -982,6 +983,7 @@ def create_session(hostname, username, password, agent):
             # create the public key
             pub_key = "ssh-rsa " + pvt_key.get_base64()                            # SSO specific format
             #pub_key = "ssh-rsa " + pvt_key.get_base64() + " " + principal + "\n"  # General Format, principal is <username>@<hostname>
+            cherrypy.log.error("++ cert method, POST to sso-auth-server for user: %s" % cherrypy.request.login)
             r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
                              cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
                                    slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
@@ -989,6 +991,7 @@ def create_session(hostname, username, password, agent):
                              headers={"Content-Type": "application/json"},
                              verify=False)
             
+            cherrypy.log.error("++ cert method, POST result: %s" % str(r))
             # create a cert file obj
             _certFO = tempfile.TemporaryFile()
             _certFO.write(str(r.json()["certificate"])) 
@@ -1001,6 +1004,7 @@ def create_session(hostname, username, password, agent):
             cert = paramiko.RSACert(privkey_file_obj=_keyFO, cert_file_obj=_certFO)
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            cherrypy.log.error("++ cert method, calling ssh.connect for user: %s" % cherrypy.request.login)
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
             ssh.get_transport().set_keepalive(5)
             _certFO.close()
@@ -1014,6 +1018,7 @@ def create_session(hostname, username, password, agent):
             raise cherrypy.HTTPError(
                 "500 Slycat can't connect because you have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. Startup scripts should only write to stderr, never stdout - see sshd(8).")
 
+        cherrypy.log.error("++ cert method, ssh connection made, continuing")
         # Start sftp.
         sftp = ssh.open_sftp()
 
