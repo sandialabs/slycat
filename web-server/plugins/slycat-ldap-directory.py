@@ -46,7 +46,7 @@ def user(uid):
       # Cache the information we need for speedy lookup.
       result = result[0][1]
       configuration["cache"][uid] = {
-        "name" : result["cn"][0],
+        "name" : result["displayName"][0],
         "email" : result[configuration["ldapEmail"]][0],
         }
     except ldap.NO_SUCH_OBJECT:
