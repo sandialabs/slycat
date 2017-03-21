@@ -159,6 +159,16 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    */
   function uploadFile(pid, mid, uid, file, fileObject)
   {
+    // Make sure we actually have a file first
+    if(file == undefined)
+    {
+      if(fileObject.error)
+      {
+        fileObject.error();
+      }
+      return;
+    }
+
     console.log("Uploading file "+ file + " \nfile size:" + file.size);
     console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
 
