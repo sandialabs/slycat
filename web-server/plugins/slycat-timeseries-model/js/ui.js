@@ -9,6 +9,46 @@ define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manage
   ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
 
 //////////////////////////////////////////////////////////////////////////////////////////
+// Setup global variables.
+//////////////////////////////////////////////////////////////////////////////////////////
+
+var model = { _id: URI(window.location).segment(-1) };
+var cluster_bin_count = null;
+var cluster_bin_type = null;
+var cluster_type = null;
+
+var bookmarker = null;
+var bookmark = null;
+
+var clusters = null; // This is just the list of cluster names
+var clusters_data = null; // This holds data for each cluster
+var waveforms_data = null; // This holds the waveforms for each cluster
+var waveforms_metadata = null; // This holds the waveforms metadata for each cluster
+var cluster_index = null;  // This holds the index of the currently selected cluster
+var table_metadata = null;
+
+var color_array = null; // This holds the sorted array of values for the color scale
+var colorscale = null; // This holds the current color scale
+var colormap = null; // This hold the current color map
+var color_variable_index = null; // This holds the index of the current color variable
+var color_variables = null; // This holds the indexes of all the color variables
+
+var selected_column = null; // This holds the currently selected column
+var selected_column_type = null;  // This holds the data type of the currently selected column
+var selected_column_min = null; // This holds the min value of the currently selected column
+var selected_column_max = null; // This holds the max value of the currently selected column
+var selected_simulations = null; // This hold the currently selected rows
+
+var controls_ready = false;
+var colorswitcher_ready = false;
+var dendrogram_ready = false;
+var waveformplot_ready = false;
+var table_ready = false;
+var legend_ready = false;
+
+var selected_waveform_indexes = null;
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout and forms.
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -53,39 +93,6 @@ var bodyLayout = $("#timeseries-model").layout({
     },
   },
 });
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// Setup global variables.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-var model = { _id: URI(window.location).segment(-1) };
-var cluster_bin_count = null;
-var cluster_bin_type = null;
-var cluster_type = null;
-
-var bookmarker = null;
-var bookmark = null;
-
-var clusters = null; // This is just the list of cluster names
-var clusters_data = null; // This holds data for each cluster
-var waveforms_data = null; // This holds the waveforms for each cluster
-var waveforms_metadata = null; // This holds the waveforms metadata for each cluster
-var initial_cluster = null; // This holds the index of the initially selected cluster
-var table_metadata = null;
-var color_array = null; // This holds the sorted array of values for the color scale
-var colorscale = null; // This holds the current color scale
-var selected_column = null; // This holds the currently selected column
-var selected_column_type = null;  // This holds the data type of the currently selected column
-var selected_column_min = null; // This holds the min value of the currently selected column
-var selected_column_max = null; // This holds the max value of the currently selected column
-var selected_simulations = null; // This hold the currently selected rows
-
-var controls_ready = false;
-var colorswitcher_ready = false;
-var dendrogram_ready = false;
-var waveformplot_ready = false;
-var table_ready = false;
-var legend_ready = false;
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Get the model
@@ -171,6 +178,7 @@ function setup_page()
       setup_controls();
       setup_widgets();
       setup_waveforms();
+      retrieve_bookmarked_state();
     },
     error: artifact_missing
   });
@@ -185,39 +193,60 @@ function setup_page()
       setup_widgets();
       setup_colordata();
       setup_controls();
+      retrieve_bookmarked_state();
     },
     error: artifact_missing
   });
 
   // Retrieve bookmarked state information ...
-  bookmarker.getState(function(state)
-  {
-    bookmark = state;
-
-    // Set state of selected simulations
-    selected_simulations = [];
-    if("simulation-selection" in bookmark)
-      selected_simulations = bookmark["simulation-selection"];
-    else if("cluster-index" in bookmark && (bookmark["cluster-index"] + "-selected-row-simulations") in bookmark)
+  function retrieve_bookmarked_state(){
+    if(table_metadata !== null && clusters !== null)
     {
-      selected_simulations = bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
+      bookmarker.getState(function(state)
+      {
+        bookmark = state;
+
+        // Set state of selected cluster
+        cluster_index = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
+
+        // Set state of selected simulations
+        selected_simulations = [];
+        if("simulation-selection" in bookmark)
+          selected_simulations = bookmark["simulation-selection"];
+        else if("cluster-index" in bookmark && (bookmark["cluster-index"] + "-selected-row-simulations") in bookmark)
+        {
+          selected_simulations = bookmark[bookmark["cluster-index"] + "-selected-row-simulations"];
+        }
+
+        // Set state of selected column
+        selected_column = bookmark[cluster_index + "-column-index"] !== undefined ? bookmark[cluster_index + "-column-index"] : table_metadata["column-count"]-1;
+        selected_column_type = table_metadata["column-types"][selected_column];
+        selected_column_min = table_metadata["column-min"][selected_column];
+        selected_column_max = table_metadata["column-max"][selected_column];
+
+        // Set state of color variable
+        color_variables = [];
+        for(var i = 0; i < table_metadata["column-count"]; i++)
+        {
+          color_variables.push(i);
+        }
+        // Move index column to top
+        color_variables.unshift(color_variables.pop());
+        color_variable_index = bookmark[cluster_index + "-column-index"] !== undefined ? bookmark[cluster_index + "-column-index"] : table_metadata["column-count"] - 1;
+
+        // Set state of selected waveform indexes
+        selected_waveform_indexes = [];
+        for(var i=0; i < clusters.length; i++)
+        {
+          selected_waveform_indexes[i] = bookmark[i + "-selected-waveform-indexes"] !== undefined ? bookmark[i + "-selected-waveform-indexes"] : null;
+        }
+
+        setup_controls();
+        setup_widgets();
+        setup_waveforms();
+        setup_colordata();
+      });
     }
-
-    // Set state of initial cluster
-    initial_cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
-
-    setup_controls();
-    setup_widgets();
-    setup_waveforms();
-    setup_colordata();
-  });
-}
-
-function setup_colorscale()
-{
-  if(table_metadata && selected_column !== null)
-  {
-
   }
 }
 
@@ -238,22 +267,10 @@ function artifact_missing()
 
 function setup_colordata()
 {
-  if(bookmark && table_metadata)
+  if(bookmark && table_metadata && selected_column != null)
   {
-    var cluster = bookmark["cluster-index"] !== undefined ? bookmark["cluster-index"] : 0;
-
-    var column = null;
-    if(bookmark[cluster + "-column-index"] !== undefined)
-      column = bookmark[cluster + "-column-index"];
-    else
-      column = table_metadata["column-count"]-1;
-    selected_column = column;
-    selected_column_type = table_metadata["column-types"][selected_column];
-    selected_column_min = table_metadata["column-min"][selected_column];
-    selected_column_max = table_metadata["column-max"][selected_column];
-
     retrieve_sorted_column({
-      column : column,
+      column : selected_column,
       callback : function(array){
         setup_widgets();
       },
@@ -289,11 +306,11 @@ function setup_controls()
   {
     $.ajax(
     {
-      url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[initial_cluster],
+      url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster_index],
       contentType : "application/json",
       success : function(cluster_data)
       {
-        clusters_data[initial_cluster] = cluster_data;
+        clusters_data[cluster_index] = cluster_data;
         setup_widgets();
       },
       error: artifact_missing
@@ -301,30 +318,14 @@ function setup_controls()
   }
 
   if(
-    !controls_ready && bookmark && s_to_a(clusters) && (initial_cluster !== null)
-    && (selected_simulations != null) && table_metadata
+    !controls_ready && bookmark && s_to_a(clusters) && (cluster_index !== null)
+    && (selected_simulations != null) && table_metadata && color_variables !== null && color_variable_index !== null
+    && selected_waveform_indexes !== null
   )
   {
     controls_ready = true;
 
     $("#cluster-pane .load-status").css("display", "none");
-
-    var color_variables = [];
-    for(var i = 0; i < table_metadata["column-count"]; i++)
-    {
-      color_variables.push(i);
-    }
-    // Move index column to top
-    color_variables.unshift(color_variables.pop());
-    var color_variable = null;
-    if(bookmark[initial_cluster + "-column-index"] !== undefined)
-    {
-      color_variable = [bookmark[initial_cluster + "-column-index"]];
-    }
-    else
-    {
-      color_variable = [table_metadata["column-count"] - 1];
-    }
 
     var controls_options =
     {
@@ -334,13 +335,11 @@ function setup_controls()
       metadata: table_metadata,
       highlight: selected_simulations,
       clusters: s_to_a(clusters),
-      cluster: initial_cluster,
+      cluster: cluster_index,
       color_variables: color_variables,
-      "color-variable" : color_variable,
+      "color-variable" : color_variable_index,
+      "selection" : selected_waveform_indexes[parseInt(cluster_index, 10)],
     };
-
-    if(bookmark[initial_cluster + "-selected-waveform-indexes"] !== undefined)
-      controls_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
 
     $("#controls").controls(controls_options);
 
@@ -422,18 +421,18 @@ function setup_controls()
 
 function setup_waveforms()
 {
-  if(bookmark && s_to_a(clusters) && initial_cluster !== null && waveforms_data !== null)
+  if(bookmark && s_to_a(clusters) && cluster_index !== null && waveforms_data !== null)
   {
 
     // Load the waveforms.
     get_model_arrayset({
       server_root : server_root + "",
       mid : model._id,
-      aid : "preview-" + s_to_a(clusters)[initial_cluster],
+      aid : "preview-" + s_to_a(clusters)[cluster_index],
       success : function(result, metadata)
       {
-        waveforms_data[initial_cluster] = result;
-        waveforms_metadata[initial_cluster] = metadata;
+        waveforms_data[cluster_index] = result;
+        waveforms_metadata[cluster_index] = metadata;
         setup_widgets();
       },
       error : artifact_missing
@@ -478,7 +477,7 @@ function setup_widgets()
   }
 
   // Setup the legend ...
-  if(!legend_ready && bookmark && table_metadata && (initial_cluster !==  null))
+  if(!legend_ready && bookmark && table_metadata && (cluster_index !==  null))
   {
     legend_ready = true;
 
@@ -489,9 +488,9 @@ function setup_widgets()
     $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
     var v_index = table_metadata["column-count"] - 1;
-    if(bookmark[initial_cluster + "-column-index"] !== undefined)
+    if(bookmark[cluster_index + "-column-index"] !== undefined)
     {
-      v_index = bookmark[initial_cluster + "-column-index"];
+      v_index = bookmark[cluster_index + "-column-index"];
     }
 
     $("#legend").legend({
@@ -507,8 +506,8 @@ function setup_widgets()
 
   // Setup the waveform plot ...
   if(
-    !waveformplot_ready && bookmark && (initial_cluster !== null) && (waveforms_data !== null) && (waveforms_data[initial_cluster] !== undefined)
-    && color_array !== null && table_metadata !== null && selected_simulations !== null
+    !waveformplot_ready && bookmark && (cluster_index !== null) && (waveforms_data !== null) && (waveforms_data[cluster_index] !== undefined)
+    && color_array !== null && table_metadata !== null && selected_simulations !== null && selected_waveform_indexes !== null
     )
   {
     waveformplot_ready = true;
@@ -531,14 +530,12 @@ function setup_widgets()
     {
       "server-root" : server_root,
       mid : model._id,
-      waveforms: waveforms_data[initial_cluster],
+      waveforms: waveforms_data[cluster_index],
       color_scale: color_scale,
       color_array: color_array,
       highlight: selected_simulations,
+      "selection" : selected_waveform_indexes[parseInt(cluster_index, 10)],
     };
-
-    if(bookmark[initial_cluster + "-selected-waveform-indexes"] !== undefined)
-      waveformplot_options["selection"] = bookmark[initial_cluster + "-selected-waveform-indexes"];
 
     $("#waveform-viewer").waveformplot(waveformplot_options);
 
@@ -572,7 +569,7 @@ function setup_widgets()
   }
 
   // Setup the table ...
-  if( !table_ready && bookmark && table_metadata && initial_cluster !== null && selected_simulations !== null)
+  if( !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null)
   {
     table_ready = true;
 
@@ -590,9 +587,9 @@ function setup_widgets()
     var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
     table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
 
-    if(bookmark[initial_cluster + "-column-index"] !== undefined)
+    if(bookmark[cluster_index + "-column-index"] !== undefined)
     {
-      table_options["variable-selection"] = [bookmark[initial_cluster + "-column-index"]];
+      table_options["variable-selection"] = [bookmark[cluster_index + "-column-index"]];
     }
     else
     {
@@ -691,7 +688,7 @@ function setup_widgets()
   }
 
   // Setup the dendrogram ...
-  if(!dendrogram_ready && bookmark && s_to_a(clusters) && initial_cluster !==  null && clusters_data[initial_cluster] !== undefined
+  if(!dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined
       && color_array !== null && selected_simulations !== null
     )
   {
@@ -708,11 +705,11 @@ function setup_widgets()
       "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
       });
 
-    var dendrogram_options = build_dendrogram_node_options(initial_cluster);
+    var dendrogram_options = build_dendrogram_node_options(cluster_index);
     dendrogram_options["server-root"]=server_root;
     dendrogram_options.mid = model._id;
     dendrogram_options.clusters = s_to_a(clusters);
-    dendrogram_options.cluster_data = s_to_o(clusters_data[initial_cluster]);
+    dendrogram_options.cluster_data = s_to_o(clusters_data[cluster_index]);
     dendrogram_options.color_scale = color_scale;
     dendrogram_options.color_array = color_array;
 
@@ -857,7 +854,6 @@ function set_new_colorscale(callback)
     });
   }
 }
-
 
 function update_waveform_dendrogram_on_selected_variable_changed(variable)
 {
