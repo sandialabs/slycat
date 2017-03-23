@@ -1005,7 +1005,13 @@ def create_session(hostname, username, password, agent):
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             cherrypy.log.error("++ cert method, calling ssh.connect for user: %s" % cherrypy.request.login)
-            ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
+            import traceback
+            try:
+                ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
+            except paramiko.AuthenticationException as e:
+                cherrypy.log.error("Authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
+                cherrypy.log.error("++ cert method, called ssh.connect traceback: %s" % traceback.print_exc())
+                raise cherrypy.HTTPError("403 Remote authentication failed.")
             ssh.get_transport().set_keepalive(5)
             _certFO.close()
             _keyFO.close()
