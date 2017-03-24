@@ -36,7 +36,6 @@ import sys
 import threading
 import time
 import uuid
-
 import cherrypy
 import paramiko
 
@@ -45,6 +44,7 @@ import slycat.mime_type
 import slycat.web.server.authentication
 import slycat.web.server.database
 import slycat.web.server.streaming
+import slycat.web.server
 
 
 def cache_object(pid, key, content_type, content):
@@ -445,7 +445,9 @@ class Session(object):
             for image_columns_name in params["image_columns_names"]:
                 # uncomment this line for production
                 arr.append(
-                    "python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (
+                    "python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py"
+                    " --distance-measure %s --distance-column \"%s\" \"%s\" "
+                    "~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (
                         function_id, image_columns_name, params["input"], image_columns_name, uid, function_id))
                 # uncomment this line for local development
                 # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
@@ -462,14 +464,16 @@ class Session(object):
             if params["timeseries_type"] == "csv":
                 # uncomment this line for production
                 arr.append(
-                    "python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (
+                    "python $SLYCAT_HOME/agent/slycat-timeseries-to-hdf5.py --output-directory"
+                    " \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (
                         hdf5_dir, params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
                 # uncomment this line for local development
                 # arr.append("python slycat-timeseries-to-hdf5.py --output-directory \"%s\" --id-column=\"%s\" --inputs-file \"%s\" --inputs-file-delimiter=%s --force" % (params["output_directory"], params["id_column"], params["inputs_file"], params["inputs_file_delimiter"]))
             elif params["timeseries_type"] == "xyce":
                 # uncomment this line for production
                 arr.append(
-                    "python $SLYCAT_HOME/agent/slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (
+                    "python $SLYCAT_HOME/agent/slycat-xyce-timeseries-to-hdf5.py "
+                    "--id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (
                         params["id_column"], params["xyce_timeseries_file"], params["input_directory"], hdf5_dir))
                 # uncomment this line for locat development
                 # arr.append("python slycat-xyce-timeseries-to-hdf5.py --id-column=\"%s\" --timeseries-file=\"%s\" --force \"%s\" \"%s\"" % (params["id_column"], params["xyce_timeseries_file"], params["input_directory"], params["output_directory"]))
@@ -481,7 +485,9 @@ class Session(object):
             if params["timeseries_name"] != "":
                 # uncomment this line for production
                 arr.append(
-                    "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
+                    "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py "
+                    "\"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s"
+                    " --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
                         hdf5_dir, params["timeseries_name"], params["cluster_sample_count"],
                         params["cluster_sample_type"],
                         params["cluster_type"], params["cluster_metric"], pickle_dir, uid))
@@ -490,7 +496,9 @@ class Session(object):
             else:
                 # uncomment this line for production
                 arr.append(
-                    "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
+                    "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py "
+                    "\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s"
+                    " --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
                         hdf5_dir, params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"],
                         params["cluster_metric"], pickle_dir, uid))
                 # uncomment this line for local development
@@ -692,10 +700,15 @@ class Session(object):
                 cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
                     self.hostname, path)
                 cherrypy.response.headers[
-                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has" \
+                                       " access to %s, and don't forget to set appropriate permissions" \
+                                       " on all the parent directories!" % (
                     self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 you do not have permission to retrieve %s:%s. Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories." % (
+                                        "cherrypy.HTTPError 400 you do not have permission to "
+                                        "retrieve %s:%s. Check the filesystem on %s to verify that"
+                                        " your user has access to %s, and don't forget to set appropriate "
+                                        "permissions on all the parent directories." % (
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
             elif metadata["message"] == "Path not found.":
@@ -715,10 +728,15 @@ class Session(object):
                 cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
                     self.hostname, path)
                 cherrypy.response.headers[
-                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access" \
+                                       " to %s, and don't forget to set appropriate permissions on all" \
+                                       " the parent directories!" % (
                     self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 you do not have permission to retrieve %s:%s. Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories." % (
+                                        "cherrypy.HTTPError 400 you do not have permission to"
+                                        " retrieve %s:%s. Check the filesystem on %s to verify "
+                                        "that your user has access to %s, and don't forget to set"
+                                        " appropriate permissions on all the parent directories." % (
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
 
@@ -761,7 +779,8 @@ class Session(object):
                 raise cherrypy.HTTPError("500 Remote access failed.")
 
             if e.strerror == "No such file":
-                # Ideally this would be a 404, but we already use 404 to handle an unknown sessions, and clients need to make the distinction.
+                # Ideally this would be a 404, but we already use
+                # 404 to handle an unknown sessions, and clients need to make the distinction.
                 cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
                     self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
@@ -774,10 +793,15 @@ class Session(object):
                 cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
                     self.hostname, path)
                 cherrypy.response.headers[
-                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access " \
+                                       "to %s, and don't forget to set appropriate permissions on all " \
+                                       "the parent directories!" % (
                     self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 you do not have permission to retrieve %s:%s. Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories." % (
+                                        "cherrypy.HTTPError 400 you do not have permission to "
+                                        "retrieve %s:%s. Check the filesystem on %s to verify that your "
+                                        "user has access to %s, and don't forget to set appropriate permissions"
+                                        " on all the parent directories." % (
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
 
@@ -859,10 +883,15 @@ class Session(object):
             cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
                 self.hostname, path)
             cherrypy.response.headers[
-                "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories!" % (
+                "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access " \
+                                   "to %s, and don't forget to set appropriate permissions on all " \
+                                   "the parent directories!" % (
                 self.hostname, path)
             slycat.email.send_error("slycat.web.server.remote.py get_image",
-                                    "cherrypy.HTTPError 400 you do not have permission to retrieve %s:%s. Check the filesystem on %s:%s to verify that your user has access to %s, and don't forget to set appropriate permissions on all the parent directories." % (
+                                    "cherrypy.HTTPError 400 you do not have permission to "
+                                    "retrieve %s:%s. Check the filesystem on %s:%s to verify that "
+                                    "your user has access to %s, and don't forget to set appropriate "
+                                    "permissions on all the parent directories." % (
                                         self.hostname, path, self.hostname, path, path))
             raise cherrypy.HTTPError("400 Access denied.")
 
@@ -963,66 +992,23 @@ def create_session(hostname, username, password, agent):
       A unique session identifier.
     """
     _start_session_cleanup_worker()
-
     client = cherrypy.request.headers.get("x-forwarded-for")
     cherrypy.log.error("Creating remote session for %s@%s from %s" % (username, hostname, client))
-
+    sid = uuid.uuid4().hex
     try:
-        sid = uuid.uuid4().hex
-        if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] != "certificate":
-            cherrypy.log.error("++ doing non-cert ssh.connect for %s" % username)
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=hostname, username=username, password=password)
-            ssh.get_transport().set_keepalive(5)
-        else:
-            import requests, tempfile
-            num_bits = 2056
-            # create the private key
-            pvt_key = paramiko.RSAKey.generate(num_bits)
-            # create the public key
-            pub_key = "ssh-rsa " + pvt_key.get_base64()                            # SSO specific format
-            #pub_key = "ssh-rsa " + pvt_key.get_base64() + " " + principal + "\n"  # General Format, principal is <username>@<hostname>
-            cherrypy.log.error("++ cert method, POST to sso-auth-server for user: %s" % cherrypy.request.login)
-            r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
-                             cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
-                                   slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
-                             data='{"principal": "' + cherrypy.request.login + '", "pubkey": "' + pub_key + '"}',
-                             headers={"Content-Type": "application/json"},
-                             verify=False)
-            
-            cherrypy.log.error("++ cert method, POST result: %s" % str(r))
-            # create a cert file obj
-            _certFO = tempfile.TemporaryFile()
-            _certFO.write(str(r.json()["certificate"])) 
-            _certFO.seek(0)
-            # create a key file obj
-            _keyFO = tempfile.TemporaryFile()
-            pvt_key.write_private_key(_keyFO)
-            _keyFO.seek(0)            
-            # create the cert used for auth
-            cert = paramiko.RSACert(privkey_file_obj=_keyFO, cert_file_obj=_certFO)
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            cherrypy.log.error("++ cert method, calling ssh.connect for user: %s" % cherrypy.request.login)
-            import traceback
-            try:
-                ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert, port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
-            except paramiko.AuthenticationException as e:
-                cherrypy.log.error("Authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
-                cherrypy.log.error("++ cert method, called ssh.connect traceback: %s" % traceback.print_exc())
-                raise cherrypy.HTTPError("403 Remote authentication failed.")
-            ssh.get_transport().set_keepalive(5)
-            _certFO.close()
-            _keyFO.close()
-
+        ssh = slycat.web.server.ssh_connect(hostname=hostname, username=username, password=password)
         # Detect problematic startup scripts.
         stdin, stdout, stderr = ssh.exec_command("/bin/true")
         if stdout.read():
             slycat.email.send_error("slycat.web.server.remote.py create_session",
-                                    "cherrypy.HTTPError 500 Slycat can't connect because you have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. Startup scripts should only write to stderr, never stdout - see sshd(8).")
+                                    "cherrypy.HTTPError 500 Slycat can't connect because you "
+                                    "have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar)"
+                                    " that writes data to stdout. Startup scripts should only write to "
+                                    "stderr, never stdout - see sshd(8).")
             raise cherrypy.HTTPError(
-                "500 Slycat can't connect because you have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. Startup scripts should only write to stderr, never stdout - see sshd(8).")
+                "500 Slycat can't connect because you have a startup script "
+                "(~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. "
+                "Startup scripts should only write to stderr, never stdout - see sshd(8).")
 
         cherrypy.log.error("++ cert method, ssh connection made, continuing")
         # Start sftp.
@@ -1044,7 +1030,8 @@ def create_session(hostname, username, password, agent):
                 raise cherrypy.HTTPError("400 Missing agent configuration.")
             if "command" not in remote_hosts[hostname]["agent"]:
                 slycat.email.send_error("slycat.web.server.remote.py create_session",
-                                        "cherrypy.HTTPError 500 missing agent configuration for host %s: missing command keyword." % hostname)
+                                        "cherrypy.HTTPError 500 missing agent configuration"
+                                        " for host %s: missing command keyword." % hostname)
                 raise cherrypy.HTTPError("500 Missing agent configuration.")
 
             cherrypy.log.error("Starting agent executable for %s@%s with command: %s" % (
@@ -1122,7 +1109,8 @@ def get_session(sid):
                     client, session.username, session.hostname, session.client))
                 del session_cache[sid]
                 slycat.email.send_error("slycat.web.server.remote.py get_session",
-                                        "cherrypy.HTTPError 404: client %s attempted to access remote session for %s@%s from %s" % (
+                                        "cherrypy.HTTPError 404: client %s attempted to "
+                                        "access remote session for %s@%s from %s" % (
                                             client, session.username, session.hostname, session.client))
                 raise cherrypy.HTTPError("404")
 
@@ -1207,7 +1195,7 @@ def _session_monitor():
         cherrypy.log.error("Remote session cleanup worker running.")
         with session_cache_lock:
             for sid in list(
-                    session_cache.keys()):  # We make an explicit copy of the keys because we may be modifying the dict contents
+                    session_cache.keys()):# We make an explicit copy of the keys because we may be modifying the dict contents
                 _expire_session(sid)
         cherrypy.log.error("Remote session cleanup worker finished.")
         time.sleep(datetime.timedelta(minutes=15).total_seconds())
