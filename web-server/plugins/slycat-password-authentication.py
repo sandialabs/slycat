@@ -2,18 +2,14 @@
 # DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 # rights in this software.
 
+
 def register_slycat_plugin(context):
-    """
-    register a plugin
-    :param context:
-    :return:
-    """
     import cherrypy
     import datetime
-    import slycat.web.server
+    import slycat.web.server.database.couchdb
+    import slycat.web.server.plugin
     import slycat.email
-    import uuid
-    import urlparse
+    from urlparse import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
@@ -22,10 +18,9 @@ def register_slycat_plugin(context):
                                     "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 
-        # wsgi: apache can probably handle ssl decrypt can reduce to http
         # we need to parse the current url so we can do an https redirect
         # cherrypy will redirect http by default :(
-        current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+        current_url = urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
         # Require a secure connection.
         if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
             slycat.email.send_error("slycat-standard-authentication.py authenticate",
@@ -35,21 +30,6 @@ def register_slycat_plugin(context):
         # Get the client ip, which might be forwarded by a proxy.
         remote_ip = cherrypy.request.headers.get(
             "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
-        
-        cherrypy.log.error("++ openid-auth existing snlauth cookie: %s" % str("slycatauth" in cherrypy.request.cookie) )
-
-        auth_user = ""
-        # This is the login test
-        # If user does not have a session, OpenID supplies user info within URL of return_to call
-        # Test if no slycat cookie, path is /projects (curr return_to location) and contains user auth info
-        if "slycatauth" not in cherrypy.request.cookie and current_url.path == '/projects' and 'Authuser' in current_url.query:
-            kerberosPrincipal = urlparse.parse_qs(current_url.query)['openid.ext2.value.Authuser'][0]
-            auth_user = kerberosPrincipal.split("@")[0]
-            cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
-            slycat.web.server.create_single_sign_on_session(remote_ip, auth_user)
-            raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects" , 307)
-
-        #auth_user = cherrypy.request.headers.get("Authuser")
 
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
@@ -60,11 +40,6 @@ def register_slycat_plugin(context):
                 session = couchdb.get("session", sid)
                 started = session["created"]
                 user_name = session["creator"]
-
-                # check if users match blow away the session if they dont and throw
-                # an unauthorized error to the web browser
-                # check_user relies on header auth info which isn't available here
-                #check_user(user_name, auth_user, couchdb, sid, session)
                 groups = session["groups"]
 
                 # no chaching plz
@@ -88,20 +63,17 @@ def register_slycat_plugin(context):
 
             # there was no session time to authenticate
             if session is None:
-            #if session is None and auth_user != "":
-                cherrypy.log.error("++ auth error, no session found ")
-                #create_single_sign_on_session(remote_ip, auth_user)
-                # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
-                raise cherrypy.HTTPError("401 Authentication required.")
+                cherrypy.log.error("no session found redirecting %s to login" % remote_ip)
+                raise cherrypy.HTTPRedirect(
+                    "https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace(
+                        "http:", "https:"), 307)
 
                 # Successful authentication, create a session and return.
                 # return
         else:
-            # this logic is bad, can't assume we have auth_user here, if no auth_user do something to get that info
-            cherrypy.log.error("++ returning XXX: no cookie, no /projecst?authInfo... ")
-            raise cherrypy.HTTPError("401 Authentication required.")
-            #create_single_sign_on_session(remote_ip, auth_user)
-            #raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects" , 307) #force redirect to /projects which is the current return_to location
-            ##raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
+            cherrypy.log.error("no cookie found redirecting %s to login" % remote_ip)
+            raise cherrypy.HTTPRedirect(
+                "https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace(
+                    "http:", "https:"), 307)
 
-    context.register_tool("slycat-openid-authentication", "on_start_resource", authenticate)
+    context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)

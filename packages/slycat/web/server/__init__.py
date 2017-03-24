@@ -5,7 +5,7 @@
 import os
 import shutil
 import uuid
-
+import datetime
 import cherrypy
 import numpy
 import paramiko
@@ -542,3 +542,81 @@ def ssh_connect(hostname=None, username=None, password=None):
         cert_file_object.close()
         key_file_object.close()
     return ssh
+
+
+def clean_up_old_session():
+    """
+    try and delete any outdated sessions
+    for the user if they have the cookie for it
+    :return:no-op
+    """
+    if "slycatauth" in cherrypy.request.cookie:
+        try:
+            # cherrypy.log.error("found old session trying to delete it ")
+            sid = cherrypy.request.cookie["slycatauth"].value
+            couchdb = slycat.web.server.database.couchdb.connect()
+            session = couchdb.get("session", sid)
+            if session is not None:
+                couchdb.delete(session)
+        except:
+            # if an exception was throw there is nothing to be done
+            pass
+
+
+def check_user(session_user, apache_user, couchdb, sid, session):
+    """
+    check to see if the session user is equal to the apache user raise 403 and delete the
+    session if they are not equal
+    :param session_user: user_name in the couchdb use session
+    :param apache_user: user sent in the apache header "authuser"
+    :param couchdb: hook to couch
+    :param sid: session id
+    :param session: session object from couch
+    :return:
+    """
+    if session_user != apache_user:
+        cherrypy.log.error("session_user::%s is not equal to apache_user::%s in standard auth"
+                           "deleting session and throwing 403 error to the browser" % (session_user, apache_user))
+        couchdb.delete(session)
+        # expire the old cookie
+        cherrypy.response.cookie["slycatauth"] = sid
+        cherrypy.response.cookie["slycatauth"]['expires'] = 0
+        session = None
+        cherrypy.response.status = "403 Forbidden"
+        raise cherrypy.HTTPError(403)
+
+
+def create_single_sign_on_session(remote_ip, auth_user):
+    """
+    WSGI/RevProxy no-login session creations.
+    Successful authentication and access verification,
+    create a session and return.
+    :return: authentication status
+    """
+    clean_up_old_session()
+    # must define groups but not populating at the moment !!!
+    groups = []
+
+    # Successful authentication and access verification, create a session and return.
+    cherrypy.log.error("++ create_single_sign_on_session creating session for %s" % auth_user)
+    sid = uuid.uuid4().hex
+    session = {"created": datetime.datetime.utcnow(), "creator": auth_user}
+    database = slycat.web.server.database.couchdb.connect()
+    database.save(
+        {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
+         'groups': groups, 'ip': remote_ip, "sessions": []})
+
+    slycat.web.server.handlers.login.sessions[sid] = session
+
+    cherrypy.response.cookie["slycatauth"] = sid
+    cherrypy.response.cookie["slycatauth"]["path"] = "/"
+    cherrypy.response.cookie["slycatauth"]["secure"] = 1
+    cherrypy.response.cookie["slycatauth"]["httponly"] = 1
+    timeout = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
+    cherrypy.response.cookie["slycatauth"]["Max-Age"] = timeout
+    cherrypy.response.cookie["slycattimeout"] = "timeout"
+    cherrypy.response.cookie["slycattimeout"]["path"] = "/"
+    cherrypy.response.cookie["slycattimeout"]["Max-Age"] = timeout
+
+    cherrypy.response.status = "200 OK"
+    cherrypy.request.login = auth_user
