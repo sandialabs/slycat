@@ -51,7 +51,7 @@ def register_slycat_plugin(context):
 
                 # check if users match blow away the session if they dont and throw
                 # an unauthorized error to the web browser
-                check_user(user_name, auth_user, couchdb, sid, session)
+                slycat.web.server.check_user(user_name, auth_user, couchdb, sid, session)
                 groups = session["groups"]
 
                 # no chaching plz
