@@ -241,6 +241,9 @@ function setup_page()
           selected_waveform_indexes[i] = bookmark[i + "-selected-waveform-indexes"] !== undefined ? bookmark[i + "-selected-waveform-indexes"] : null;
         }
 
+        // Set state of colormap
+        colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
         setup_controls();
         setup_widgets();
         setup_waveforms();
@@ -430,47 +433,22 @@ function setup_waveforms()
 function setup_widgets()
 {
   // Setup the color switcher ...
-  if(!colorswitcher_ready && bookmark)
+  if(!colorswitcher_ready && bookmark && colormap !== null)
   {
     colorswitcher_ready = true;
-    var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
     $("#color-switcher").colorswitcher({colormap:colormap});
-    $("#color-switcher").bind("colormap-changed", function(event, colormap)
+    $("#color-switcher").bind("colormap-changed", function(event, newColormap)
     {
-      $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-      $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
-
-      $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
-      // This might be a more correct way to pass the color scale since it's how we do it for the waveforms and dendrogram sparklines,
-      // but it still doesn't seem to fix the table's color problems.
-      //$("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
-
-      $("#dendrogram-sparkline-backdrop").css({
-        "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        });
-      $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
-
-      $("#waveform-pane").css({
-        "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        });
-      $("#waveform-viewer rect.selectionMask").css({
-        "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
-        "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
-        });
-      $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
-
-      selected_colormap_changed(colormap);
+      selected_colormap_changed(newColormap);
     });
   }
 
   // Setup the legend ...
-  if(!legend_ready && bookmark && table_metadata && (cluster_index !==  null))
+  if(!legend_ready && bookmark && table_metadata && (cluster_index !==  null) && colormap !== null)
   {
     legend_ready = true;
 
     $("#legend-pane .load-status").css("display", "none");
-
-    var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
     $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
@@ -501,8 +479,6 @@ function setup_widgets()
 
     $("#waveform-pane .load-status").css("display", "none");
 
-    // This gets the colormap from the colorswitcher
-    var colormap = $("#color-switcher").colorswitcher("option", "colormap");
     var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max);
 
     $("#waveform-pane").css({
@@ -561,7 +537,6 @@ function setup_widgets()
       colorscale : colorscale,
     };
 
-    var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
     table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
 
     if(bookmark[cluster_index + "-column-index"] !== undefined)
@@ -664,10 +639,7 @@ function setup_widgets()
 
     $("#dendrogram-pane .load-status").css("display", "none");
 
-    // This gets the colormap from the colorswitcher
-    var colormap = $("#color-switcher").colorswitcher("option", "colormap");
     var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max);
-
 
     $("#dendrogram-sparkline-backdrop").css({
       "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
@@ -738,8 +710,31 @@ function setup_widgets()
 // Event handlers.
 //////////////////////////////////////////////////////////////////////////////////////////
 
-function selected_colormap_changed(colormap)
+function selected_colormap_changed(newColormap)
 {
+  colormap = newColormap;
+  $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+  $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
+
+  $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
+  // This might be a more correct way to pass the color scale since it's how we do it for the waveforms and dendrogram sparklines,
+  // but it still doesn't seem to fix the table's color problems.
+  //$("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
+
+  $("#dendrogram-sparkline-backdrop").css({
+    "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+    });
+  $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
+
+  $("#waveform-pane").css({
+    "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+    });
+  $("#waveform-viewer rect.selectionMask").css({
+    "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
+    "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
+    });
+  $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
+      
   $.ajax(
   {
     type : "POST",
