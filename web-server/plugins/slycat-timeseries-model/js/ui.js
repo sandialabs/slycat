@@ -685,13 +685,16 @@ function setup_widgets()
       dendrogram_options.dendrogram_sort_order = false;
     }
 
-    $("#dendrogram-viewer").dendrogram(dendrogram_options);
-
-    // Log changes to the node selection ...
+    // Respond to note selection changes. This needs to be above the instantiation of the dendrogram
+    // because the table needs to know which node is selected in order for it to initialize. If this
+    // event handler is registered after the dendrogram is initialized, its first node-selection-changed
+    // event never makes it to the table and we end up with a blank table.
     $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
     {
       selected_node_changed(parameters);
     });
+
+    $("#dendrogram-viewer").dendrogram(dendrogram_options);
 
     // Bookmark changes to expanded and collapsed nodes ...
     $("#dendrogram-viewer").bind("expanded-collapsed-nodes-changed", function(event, nodes)
