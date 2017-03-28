@@ -361,19 +361,6 @@ function setup_controls()
       $("#controls").controls("option", "highlight", waveform_indexes);
     });
 
-    // Changing the selected dendrogram node updates the controls ...
-    $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
-    {
-      // Only want to update the controls if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the controls at that time.
-      if(parameters.skip_bookmarking != true) {
-        // $("#waveform-viewer").waveformplot("option", "selection", getWaveformIndexes(parameters.selection));
-        // $("#waveform-viewer").waveformplot("option", "highlight", selected_simulations);
-
-        $("#controls").controls("option", "selection", getWaveformIndexes(parameters.selection));
-        $("#controls").controls("option", "highlight", selected_simulations);
-      }
-    });
-
     // Changes to the cluster selection ...
     $("#controls").bind("cluster-changed", function(event, cluster)
     {
@@ -539,16 +526,6 @@ function setup_widgets()
 
     $("#waveform-viewer").waveformplot(waveformplot_options);
 
-    // Changing the selected dendrogram node updates the waveform plot ...
-    $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
-    {
-      // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
-      if(parameters.skip_bookmarking != true) {
-        $("#waveform-viewer").waveformplot("option", "selection", getWaveformIndexes(parameters.selection));
-        $("#waveform-viewer").waveformplot("option", "highlight", selected_simulations);
-      }
-    });
-
     // Changing the table row selection updates the waveform plot ...
     $("#table").bind("row-selection-changed", function(event, waveform_indexes)
     {
@@ -604,8 +581,6 @@ function setup_widgets()
       table_options["sort-order"] = bookmark["sort-order"];
     }
 
-
-
     selected_column = table_options["variable-selection"][0];
     selected_column_type = table_metadata["column-types"][selected_column];
     selected_column_min = table_metadata["column-min"][selected_column];
@@ -635,13 +610,6 @@ function setup_widgets()
         }
       });
     }
-
-    // Changing the selected dendrogram node updates the table ...
-    $("#dendrogram-viewer").bind("node-selection-changed", function(event, parameters)
-    {
-      $("#table").table("option", "row-selection-silent", selected_simulations);
-      $("#table").table("option", "selection", parameters.selection);
-    });
 
     // Changing the waveform selection updates the table row selection ...
     $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
@@ -789,17 +757,38 @@ function selected_cluster_changed(cluster)
 
 function selected_node_changed(parameters)
 {
+  selected_waveform_indexes[parseInt(cluster_index, 10)] = getWaveformIndexes(parameters.selection)
+
+  // Only want to update the controls if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the controls at that time.
+  // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
+  if(parameters.skip_bookmarking != true) {
+    // Changing the selected dendrogram node updates the controls ...
+    $("#controls").controls("option", "selection", selected_waveform_indexes[parseInt(cluster_index, 10)]);
+    $("#controls").controls("option", "highlight", selected_simulations);
+
+    // Changing the selected dendrogram node updates the waveform plot ...
+    $("#waveform-viewer").waveformplot("option", "selection", selected_waveform_indexes[parseInt(cluster_index, 10)]);
+    $("#waveform-viewer").waveformplot("option", "highlight", selected_simulations);
+
+    // Update bookmark
+    var state = {};
+    state[ $("#controls").controls("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
+    state[ $("#controls").controls("option", "cluster") + "-selected-waveform-indexes" ] = selected_waveform_indexes[parseInt(cluster_index, 10)];
+    bookmarker.updateState(state);    
+  }
+
+  // Changing the selected dendrogram node updates the table ...
+  $("#table").table("option", "row-selection-silent", selected_simulations);
+  $("#table").table("option", "selection", parameters.selection);
+
+  // Post analytics
   if(parameters.node != null && parameters.node["node-index"] != null)
+  {
     $.ajax(
     {
       type : "POST",
       url : server_root + "events/models/" + model._id + "/select/node/" + parameters.node["node-index"],
     });
-  if(parameters.skip_bookmarking != true) {
-    var state = {};
-    state[ $("#controls").controls("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
-    state[ $("#controls").controls("option", "cluster") + "-selected-waveform-indexes" ] = getWaveformIndexes(parameters.selection);
-    bookmarker.updateState(state);
   }
 }
 
