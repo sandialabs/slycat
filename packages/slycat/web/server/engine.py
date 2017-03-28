@@ -168,6 +168,7 @@ def start(root_path, config_file):
 
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
+  dispatcher.connect("get-authenticate", "/login/open-id-auth/", slycat.web.server.handlers.open_id_authenticate, conditions={"method": ["GET"]})
   dispatcher.connect("get-root", "/", slycat.web.server.handlers.get_root, conditions={"method" : ["GET"]})
 
 
@@ -226,7 +227,6 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("fonts"),
     "tools.staticdir.on": True,
     }
-
   configuration["/resources"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,

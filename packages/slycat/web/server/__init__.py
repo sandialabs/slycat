@@ -620,3 +620,16 @@ def create_single_sign_on_session(remote_ip, auth_user):
 
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = auth_user
+
+
+def check_https_get_remote_ip():
+    """
+    checks that the connection is https and then returns the users remote ip
+    :return: remote ip
+    """
+    if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
+        slycat.email.send_error("slycat-standard-authentication.py authenticate",
+                                "cherrypy.HTTPError 403 secure connection required.")
+        raise cherrypy.HTTPError("403 Secure connection required.")
+    return cherrypy.request.headers.get(
+        "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem

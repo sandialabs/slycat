@@ -12,7 +12,6 @@ def register_slycat_plugin(context):
     import datetime
     import slycat.web.server
     import slycat.email
-    import uuid
     import urlparse
 
     def authenticate(realm, rules=None):
@@ -33,21 +32,9 @@ def register_slycat_plugin(context):
             raise cherrypy.HTTPError("403 Secure connection required.")
 
         # Get the client ip, which might be forwarded by a proxy.
-        remote_ip = cherrypy.request.headers.get(
-            "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
+        remote_ip = slycat.web.server.check_https_get_remote_ip()
         
         cherrypy.log.error("++ openid-auth existing snlauth cookie: %s" % str("slycatauth" in cherrypy.request.cookie) )
-
-        auth_user = ""
-        # This is the login test
-        # If user does not have a session, OpenID supplies user info within URL of return_to call
-        # Test if no slycat cookie, path is /projects (curr return_to location) and contains user auth info
-        if "slycatauth" not in cherrypy.request.cookie and current_url.path == '/projects' and 'Authuser' in current_url.query:
-            kerberosPrincipal = urlparse.parse_qs(current_url.query)['openid.ext2.value.Authuser'][0]
-            auth_user = kerberosPrincipal.split("@")[0]
-            cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
-            slycat.web.server.create_single_sign_on_session(remote_ip, auth_user)
-            raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects" , 307)
 
         #auth_user = cherrypy.request.headers.get("Authuser")
 

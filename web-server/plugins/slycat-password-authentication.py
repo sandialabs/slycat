@@ -21,15 +21,10 @@ def register_slycat_plugin(context):
         # we need to parse the current url so we can do an https redirect
         # cherrypy will redirect http by default :(
         current_url = urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
-        # Require a secure connection.
-        if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
-            slycat.email.send_error("slycat-standard-authentication.py authenticate",
-                                    "cherrypy.HTTPError 403 secure connection required.")
-            raise cherrypy.HTTPError("403 Secure connection required.")
 
+        # Require a secure connection.
         # Get the client ip, which might be forwarded by a proxy.
-        remote_ip = cherrypy.request.headers.get(
-            "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
+        remote_ip = slycat.web.server.check_https_get_remote_ip()
 
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
@@ -76,4 +71,4 @@ def register_slycat_plugin(context):
                 "https://" + current_url.netloc + "/login/slycat-login.html?from=" + current_url.geturl().replace(
                     "http:", "https:"), 307)
 
-    context.register_tool("slycat-standard-authentication", "on_start_resource", authenticate)
+    context.register_tool("slycat-password-authentication", "on_start_resource", authenticate)

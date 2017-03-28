@@ -825,6 +825,26 @@ def delete_upload(uid):
     cherrypy.response.status = "204 Upload session deleted."
 
 
+def open_id_authenticate(**params):
+    """
+    takes the openid parameter sent
+    to this function and logs in a user
+    :param params: openid params as a dictionary
+    :return: not used
+    """
+    # check for openid in the config for security
+    if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
+        raise cherrypy.HTTPError(404)
+
+    cherrypy.log.error("params = %s" % params)
+    current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+    kerberos_principal = params['openid.ext2.value.Authuser']
+    auth_user = kerberos_principal.split("@")[0]
+    cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
+    slycat.web.server.create_single_sign_on_session(slycat.web.server.check_https_get_remote_ip(), auth_user)
+    raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects", 307)
+
+
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def login():
