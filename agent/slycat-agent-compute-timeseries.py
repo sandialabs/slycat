@@ -89,7 +89,7 @@ try:
 
   # reduce the num of samples if fewer timeseries that curr cluster-sample-count
   if timeseries_samples.min() < _numSamples:
-    _numSamples = timeseries_samples.min()
+    _numSamples = int(timeseries_samples.min())
     print("Reducing cluster sample count to minimum found in data: %s", _numSamples)
 
 
