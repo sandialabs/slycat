@@ -38,6 +38,9 @@ var selected_column_min = null; // This holds the min value of the currently sel
 var selected_column_max = null; // This holds the max value of the currently selected column
 var selected_simulations = null; // This hold the currently selected rows
 
+var sort_variable = null; // This holds the sorted variable
+var sort_order = null; // This holds the sort order
+
 var controls_ready = false;
 var colorswitcher_ready = false;
 var dendrogram_ready = false;
@@ -248,6 +251,10 @@ function setup_page()
 
         // Set state of colormap
         colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+        // Set sort variable and order
+        sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : undefined;
+        sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : undefined;
 
         setup_controls();
         setup_widgets();
@@ -501,6 +508,7 @@ function setup_widgets()
   if( 
     !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null
     && selected_column !== null && selected_column_type !== null && selected_column_min !== null && selected_column_max !== null
+    && sort_variable !== null && sort_order !== null
     )
   {
     table_ready = true;
@@ -517,13 +525,9 @@ function setup_widgets()
       colormap : colormap,
       "variable-selection" : [selected_column[cluster_index]],
       "row-selection" : selected_simulations,
+      "sort-variable" : sort_variable,
+      "sort-order" : sort_order,
     };
-
-    if("sort-variable" in bookmark && "sort-order" in bookmark)
-    {
-      table_options["sort-variable"] = bookmark["sort-variable"];
-      table_options["sort-order"] = bookmark["sort-order"];
-    }
 
     if(selected_column_type[cluster_index] != "string")
     {
@@ -590,6 +594,7 @@ function setup_widgets()
   // Setup the dendrogram ...
   if(!dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined
       && color_array !== null && selected_simulations !== null && colormap !== null && selected_column_min !== null && selected_column_max !== null
+      && sort_variable !== null
     )
   {
     dendrogram_ready = true;
@@ -610,7 +615,7 @@ function setup_widgets()
     dendrogram_options.color_scale = color_scale;
     dendrogram_options.color_array = color_array;
 
-    if(bookmark["sort-variable"] != undefined) {
+    if(sort_variable != undefined) {
       dendrogram_options.dendrogram_sort_order = false;
     }
 
@@ -872,12 +877,15 @@ function update_waveform_dendrogram_legend_on_selected_variable_changed(variable
 
 function variable_sort_changed(variable, order)
 {
+  sort_variable = variable;
+  sort_order = order;
+  
   $.ajax(
   {
     type : "POST",
     url : server_root + "events/models/" + model._id + "/select/sort-order/" + variable + "/" + order
   });
-  bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
+  bookmarker.updateState( {"sort-variable" : sort_variable, "sort-order" : sort_order} );
 }
 
 function expanded_collapsed_nodes_changed(nodes){
