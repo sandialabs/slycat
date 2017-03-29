@@ -378,12 +378,9 @@ function setup_controls()
       selected_cluster_changed(cluster);
 
       // Changing the cluster updates the table variable selection ...
-      if(bookmark[$("#controls").controls("option", "cluster") + "-column-index"] !== undefined)
-      {
-        $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
-        $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
-        update_waveform_dendrogram_legend_on_selected_variable_changed(bookmark[$("#controls").controls("option", "cluster") + "-column-index"]);
-      }
+      $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
+      $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
+      update_waveform_dendrogram_legend_on_selected_variable_changed(selected_column[cluster_index]);
     });
 
     // Changes to the waveform color ...
@@ -431,7 +428,7 @@ function setup_widgets()
   }
 
   // Setup the legend ...
-  if(!legend_ready && bookmark && table_metadata && cluster_index !== null && colormap !== null)
+  if(!legend_ready && bookmark && table_metadata && cluster_index !== null && colormap !== null && selected_column !== null)
   {
     legend_ready = true;
 
@@ -439,19 +436,13 @@ function setup_widgets()
 
     $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
-    var v_index = table_metadata["column-count"] - 1;
-    if(bookmark[cluster_index + "-column-index"] !== undefined)
-    {
-      v_index = bookmark[cluster_index + "-column-index"];
-    }
-
     $("#legend").legend({
       width: $("#legend-pane").width(),
       height: $("#legend-pane").height(),
       gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
-      label: table_metadata["column-names"][v_index],
-      min: table_metadata["column-min"][v_index],
-      max: table_metadata["column-max"][v_index],
+      label: table_metadata["column-names"][selected_column[cluster_index]],
+      min: table_metadata["column-min"][selected_column[cluster_index]],
+      max: table_metadata["column-max"][selected_column[cluster_index]],
     });
 
   }
@@ -526,18 +517,9 @@ function setup_widgets()
       metadata : table_metadata,
       colorscale : colorscale,
       colormap : colormap,
+      "variable-selection" : [selected_column[cluster_index]],
+      "row-selection" : selected_simulations,
     };
-
-    if(bookmark[cluster_index + "-column-index"] !== undefined)
-    {
-      table_options["variable-selection"] = [bookmark[cluster_index + "-column-index"]];
-    }
-    else
-    {
-      table_options["variable-selection"] = [table_metadata["column-count"] - 1];
-    }
-
-    table_options["row-selection"] = selected_simulations;
 
     if("sort-variable" in bookmark && "sort-order" in bookmark)
     {
@@ -802,7 +784,7 @@ function selected_variable_changed(variable)
     url : server_root + "events/models/" + model._id + "/select/variable/" + selected_column[cluster_index]
   });
   var selected_variable = {};
-  selected_variable[ $("#controls").controls("option", "cluster") + "-column-index"] = selected_column[cluster_index];
+  selected_variable[cluster_index + "-column-index"] = selected_column[cluster_index];
   bookmarker.updateState(selected_variable);
 }
 
