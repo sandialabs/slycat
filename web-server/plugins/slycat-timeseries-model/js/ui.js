@@ -41,6 +41,10 @@ var selected_simulations = null; // This hold the currently selected rows
 var sort_variable = null; // This holds the sorted variable
 var sort_order = null; // This holds the sort order
 
+var collapsed_nodes = null; // This holds the collapsed nodes
+var expanded_nodes = null; // This holds the expanded nodes
+var selected_nodes = null; // This holds the selected nodes
+
 var controls_ready = false;
 var colorswitcher_ready = false;
 var dendrogram_ready = false;
@@ -255,6 +259,17 @@ function setup_page()
         // Set sort variable and order
         sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : undefined;
         sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : undefined;
+
+        // Set collapsed, expanded, and selected nodes
+        collapsed_nodes = [];
+        expanded_nodes = [];
+        selected_nodes = [];
+        for(var i=0; i < clusters.length; i++)
+        {
+          collapsed_nodes[i] = bookmark[i + "-collapsed-nodes"];
+          expanded_nodes[i] = bookmark[i + "-expanded-nodes"];
+          selected_nodes[i] = bookmark[i + "-selected-nodes"];
+        }
 
         setup_controls();
         setup_widgets();
@@ -723,7 +738,8 @@ function selected_cluster_changed(cluster)
 
 function selected_node_changed(parameters)
 {
-  selected_waveform_indexes[parseInt(cluster_index, 10)] = getWaveformIndexes(parameters.selection)
+  selected_waveform_indexes[parseInt(cluster_index, 10)] = getWaveformIndexes(parameters.selection);
+  selected_nodes[cluster_index] = getNodeIndexes(parameters.selection);
 
   // Only want to update the controls if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the controls at that time.
   // Only want to update the waveform plot if the user changed the selected node. It's automatically set at dendrogram creation time, and we want to avoid updating the waveform plot at that time.
@@ -738,7 +754,7 @@ function selected_node_changed(parameters)
 
     // Update bookmark
     var state = {};
-    state[ cluster_index + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
+    state[ cluster_index + "-selected-nodes" ] = selected_nodes[cluster_index];
     state[ cluster_index + "-selected-waveform-indexes" ] = selected_waveform_indexes[parseInt(cluster_index, 10)];
     bookmarker.updateState(state);    
   }
@@ -889,9 +905,12 @@ function variable_sort_changed(variable, order)
 }
 
 function expanded_collapsed_nodes_changed(nodes){
+  collapsed_nodes[cluster_index] = nodes.collapsed;
+  expanded_nodes[cluster_index] = nodes.expanded;
+
   var cluster_state = {};
-  cluster_state[$("#controls").controls("option", "cluster") + "-expanded-nodes"] = nodes.expanded;
-  cluster_state[$("#controls").controls("option", "cluster") + "-collapsed-nodes"] = nodes.collapsed;
+  cluster_state[cluster_index + "-expanded-nodes"] = expanded_nodes[cluster_index];
+  cluster_state[cluster_index + "-collapsed-nodes"] = collapsed_nodes[cluster_index];
   bookmarker.updateState(cluster_state);
 }
 
@@ -968,9 +987,9 @@ function build_dendrogram_node_options(cluster)
     cluster: cluster,
   };
 
-  dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
-  dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
-  dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
+  dendrogram_options.collapsed_nodes = collapsed_nodes[cluster];
+  dendrogram_options.expanded_nodes = expanded_nodes[cluster];
+  dendrogram_options.selected_nodes = selected_nodes[cluster];
   dendrogram_options.highlight = selected_simulations;
 
   return dendrogram_options;
