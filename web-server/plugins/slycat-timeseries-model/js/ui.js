@@ -30,7 +30,6 @@ var table_metadata = null;
 var color_array = null; // This holds the sorted array of values for the color scale
 var colorscale = null; // This holds the current color scale
 var colormap = null; // This hold the current color map
-var color_variable_index = null; // This holds the index of the current color variable
 var color_variables = null; // This holds the indexes of all the color variables
 
 var selected_column = null; // This holds the currently selected column
@@ -239,7 +238,6 @@ function setup_page()
         }
         // Move index column to top
         color_variables.unshift(color_variables.pop());
-        color_variable_index = bookmark[cluster_index + "-column-index"] !== undefined ? bookmark[cluster_index + "-column-index"] : table_metadata["column-count"] - 1;
 
         // Set state of selected waveform indexes
         selected_waveform_indexes = [];
@@ -329,8 +327,8 @@ function setup_controls()
 
   if(
     !controls_ready && bookmark && s_to_a(clusters) && (cluster_index !== null)
-    && (selected_simulations != null) && table_metadata && color_variables !== null && color_variable_index !== null
-    && selected_waveform_indexes !== null
+    && (selected_simulations != null) && table_metadata && color_variables !== null
+    && selected_waveform_indexes !== null && selected_column !== null && cluster_index !== null
   )
   {
     controls_ready = true;
@@ -347,7 +345,7 @@ function setup_controls()
       clusters: s_to_a(clusters),
       cluster: cluster_index,
       color_variables: color_variables,
-      "color-variable" : color_variable_index,
+      "color-variable" : selected_column[cluster_index],
       "selection" : selected_waveform_indexes[parseInt(cluster_index, 10)],
     };
 
