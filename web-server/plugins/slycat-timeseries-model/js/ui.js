@@ -738,8 +738,8 @@ function selected_node_changed(parameters)
 
     // Update bookmark
     var state = {};
-    state[ $("#controls").controls("option", "cluster") + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
-    state[ $("#controls").controls("option", "cluster") + "-selected-waveform-indexes" ] = selected_waveform_indexes[parseInt(cluster_index, 10)];
+    state[ cluster_index + "-selected-nodes" ] = getNodeIndexes(parameters.selection);
+    state[ cluster_index + "-selected-waveform-indexes" ] = selected_waveform_indexes[parseInt(cluster_index, 10)];
     bookmarker.updateState(state);    
   }
 
@@ -765,10 +765,10 @@ function selected_simulations_changed(selection)
   $.ajax(
   {
     type : "POST",
-    url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selection.length
+    url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selected_simulations.length
   });
   var bookmark_selected_simulations = {};
-  bookmark_selected_simulations["simulation-selection"] = selection;
+  bookmark_selected_simulations["simulation-selection"] = selected_simulations;
   bookmarker.updateState(bookmark_selected_simulations);
 }
 
@@ -944,8 +944,8 @@ function update_waveformplot(cluster)
         var waveformplot_options =
         {
           waveforms: waveforms_data[cluster],
-          selection: bookmark[cluster + "-selected-waveform-indexes"],
-          highlight: bookmark["simulation-selection"],
+          selection: selected_waveform_indexes[cluster],
+          highlight: selected_simulations,
         };
         $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
       },
@@ -955,8 +955,8 @@ function update_waveformplot(cluster)
     var waveformplot_options =
     {
       waveforms: waveforms_data[cluster],
-      selection: bookmark[cluster + "-selected-waveform-indexes"],
-      highlight: bookmark["simulation-selection"],
+      selection: selected_waveform_indexes[cluster],
+      highlight: selected_simulations,
     };
     $("#waveform-viewer").waveformplot("option", "waveforms", waveformplot_options);
   }
@@ -971,7 +971,7 @@ function build_dendrogram_node_options(cluster)
   dendrogram_options.collapsed_nodes = bookmark[cluster  + "-collapsed-nodes"];
   dendrogram_options.expanded_nodes = bookmark[cluster  + "-expanded-nodes"];
   dendrogram_options.selected_nodes = bookmark[cluster  + "-selected-nodes"];
-  dendrogram_options.highlight = bookmark["simulation-selection"];
+  dendrogram_options.highlight = selected_simulations;
 
   return dendrogram_options;
 }
