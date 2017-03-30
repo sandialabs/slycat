@@ -181,9 +181,7 @@ function setup_page()
       clusters_data = new Array(clusters.length);
       waveforms_data = new Array(clusters.length);
       waveforms_metadata = new Array(clusters.length);
-      setup_controls();
       setup_widgets();
-      setup_waveforms();
       retrieve_bookmarked_state();
     },
     error: artifact_missing
@@ -198,7 +196,6 @@ function setup_page()
       table_metadata = metadata;
       setup_widgets();
       setup_colordata();
-      setup_controls();
       retrieve_bookmarked_state();
     },
     error: artifact_missing
@@ -271,9 +268,7 @@ function setup_page()
           selected_nodes[i] = bookmark[i + "-selected-nodes"];
         }
 
-        setup_controls();
         setup_widgets();
-        setup_waveforms();
         setup_colordata();
       });
     }
@@ -330,10 +325,33 @@ function retrieve_sorted_column(parameters)
   });
 }
 
-function setup_controls()
+function setup_widgets()
 {
-  if(bookmark && s_to_a(clusters))
+  // Setup waveforms ...
+  if(bookmark && s_to_a(clusters) && cluster_index !== null && waveforms_data[cluster_index] === undefined && waveforms_metadata[cluster_index] === undefined)
   {
+    waveforms_data[cluster_index] = null;
+    waveforms_metadata[cluster_index] = null;
+    
+    // Load the waveforms.
+    get_model_arrayset({
+      server_root : server_root + "",
+      mid : model._id,
+      aid : "preview-" + s_to_a(clusters)[cluster_index],
+      success : function(result, metadata)
+      {
+        waveforms_data[cluster_index] = result;
+        waveforms_metadata[cluster_index] = metadata;
+        setup_widgets();
+      },
+      error : artifact_missing
+    });
+  }
+
+  // Setup controls ...
+  if(bookmark && s_to_a(clusters) && clusters_data[cluster_index] === undefined)
+  { 
+    clusters_data[cluster_index] = null;
     $.ajax(
     {
       url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster_index],
@@ -411,31 +429,7 @@ function setup_controls()
       $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
     });
   }
-}
 
-function setup_waveforms()
-{
-  if(bookmark && s_to_a(clusters) && cluster_index !== null && waveforms_data !== null)
-  {
-
-    // Load the waveforms.
-    get_model_arrayset({
-      server_root : server_root + "",
-      mid : model._id,
-      aid : "preview-" + s_to_a(clusters)[cluster_index],
-      success : function(result, metadata)
-      {
-        waveforms_data[cluster_index] = result;
-        waveforms_metadata[cluster_index] = metadata;
-        setup_widgets();
-      },
-      error : artifact_missing
-    });
-  }
-}
-
-function setup_widgets()
-{
   // Setup the color switcher ...
   if(!colorswitcher_ready && bookmark && colormap !== null)
   {
@@ -469,7 +463,7 @@ function setup_widgets()
 
   // Setup the waveform plot ...
   if(
-    !waveformplot_ready && bookmark && (cluster_index !== null) && (waveforms_data !== null) && (waveforms_data[cluster_index] !== undefined)
+    !waveformplot_ready && bookmark && (cluster_index !== null) && (waveforms_data !== null) && (waveforms_data[cluster_index] !== undefined && waveforms_data[cluster_index] !== null)
     && color_array !== null && table_metadata !== null && selected_simulations !== null && selected_waveform_indexes !== null
     )
   {
@@ -607,7 +601,7 @@ function setup_widgets()
   }
 
   // Setup the dendrogram ...
-  if(!dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined
+  if(!dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined && clusters_data[cluster_index] !== null
       && color_array !== null && selected_simulations !== null && colormap !== null && selected_column_min !== null && selected_column_max !== null
       && sort_variable !== null
     )
@@ -926,7 +920,7 @@ function node_toggled(node){
 function update_dendrogram(cluster)
 {
   // Retrieve cluster data if it's not already in the cache
-  if(clusters_data[cluster] === undefined) {
+  if((clusters_data[cluster] === undefined) || (clusters_data[cluster] === null)) {
      $.ajax(
     {
       url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster],
