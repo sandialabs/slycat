@@ -9,14 +9,17 @@
 // 1/27/2015
 
 define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data", 
-	"dac-plots", "dac-table", "dac-manage-selections", "jquery", "d3"], 
-	function(client, request, plots, metadata_table, selections, $, d3) {
+	"dac-plots", "dac-table", "dac-manage-selections", "jquery", "d3", "URI"],
+	function(client, request, plots, metadata_table, selections, $, d3, URI) {
 	
 	// public functions will be returned via the module variable
 	var module = {};
 	
 	// private variable containing MDS coordinates
 	var mds_coords = [];
+
+	// model ID
+	var mid = URI(window.location).segment(-1);
 	
 	// d3 variables for drawing MDS coords
 	var scatter_plot = null;
@@ -272,7 +275,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 		// call server to compute new coords
 		client.get_model_command(
 		{
-			mid: location.href,
+			mid: mid,
       		type: "DAC",
 			command: "update_mds_coords",
 			parameters: alpha_values,
@@ -319,7 +322,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 		// call server to compute Fisher values for time series
 		client.get_model_command(
 		{
-			mid: location.href,
+			mid: mid,
 			type: "DAC",
 			command: "compute_fisher",
 			parameters: [sel_1, sel_2],
