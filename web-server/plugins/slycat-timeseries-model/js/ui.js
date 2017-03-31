@@ -31,6 +31,7 @@ var color_array = null; // This holds the sorted array of values for the color s
 var colorscale = null; // This holds the current color scale
 var colormap = null; // This hold the current color map
 var color_variables = null; // This holds the indexes of all the color variables
+var uniqueValues = null; // This holds the column's unique values for last selected string column
 
 var selected_column = null; // This holds the currently selected column
 var selected_column_type = null;  // This holds the data type of the currently selected column
@@ -328,7 +329,10 @@ function retrieve_sorted_column(parameters)
 function setup_widgets()
 {
   // Setup waveforms ...
-  if(bookmark && s_to_a(clusters) && cluster_index !== null && waveforms_data[cluster_index] === undefined && waveforms_metadata[cluster_index] === undefined)
+  if(
+      bookmark && s_to_a(clusters) && cluster_index !== null && waveforms_data[cluster_index] === undefined 
+      && waveforms_metadata[cluster_index] === undefined
+    )
   {
     waveforms_data[cluster_index] = null;
     waveforms_metadata[cluster_index] = null;
@@ -348,7 +352,7 @@ function setup_widgets()
     });
   }
 
-  // Setup controls ...
+  // Setup clusters data ...
   if(bookmark && s_to_a(clusters) && clusters_data[cluster_index] === undefined)
   { 
     clusters_data[cluster_index] = null;
@@ -365,11 +369,12 @@ function setup_widgets()
     });
   }
 
+  // Setup controls ...
   if(
-    !controls_ready && bookmark && s_to_a(clusters) && (cluster_index !== null)
-    && (selected_simulations != null) && table_metadata && color_variables !== null
-    && selected_waveform_indexes !== null && selected_column !== null && cluster_index !== null
-  )
+      !controls_ready && bookmark && s_to_a(clusters) && (cluster_index !== null)
+      && (selected_simulations != null) && table_metadata && color_variables !== null
+      && selected_waveform_indexes !== null && selected_column !== null && cluster_index !== null
+    )
   {
     controls_ready = true;
 
@@ -391,30 +396,11 @@ function setup_widgets()
 
     $("#controls").controls(controls_options);
 
-    // Changing the table row selection updates the controls ...
-    $("#table").bind("row-selection-changed", function(event, waveform_indexes)
-    {
-      $("#controls").controls("option", "highlight", waveform_indexes);
-    });
-
-    // Changing the dendrogram waveform selection updates the controls ...
-    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
-    {
-      $("#controls").controls("option", "highlight", waveform_indexes);
-    });
-
-    // Changing the waveform selection updates the controls ...
-    $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
-    {
-      $("#controls").controls("option", "highlight", waveform_indexes);
-    });
-
     // Changes to the cluster selection ...
     $("#controls").bind("cluster-changed", function(event, cluster)
     {
       // Log changes to the cluster selection ...
       selected_cluster_changed(cluster);
-
       // Changing the cluster updates the table variable selection ...
       $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
       $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
@@ -435,6 +421,9 @@ function setup_widgets()
   {
     colorswitcher_ready = true;
     $("#color-switcher").colorswitcher({colormap:colormap});
+
+    update_current_colorscale(setup_widgets);
+
     $("#color-switcher").bind("colormap-changed", function(event, newColormap)
     {
       selected_colormap_changed(newColormap);
@@ -442,7 +431,10 @@ function setup_widgets()
   }
 
   // Setup the legend ...
-  if(!legend_ready && bookmark && table_metadata && cluster_index !== null && colormap !== null && selected_column !== null)
+  if( 
+      !legend_ready && bookmark && table_metadata && cluster_index !== null && colormap !== null && selected_column !== null 
+      && selected_column_type !== null && colorscale !== null
+    )
   {
     legend_ready = true;
 
@@ -457,6 +449,8 @@ function setup_widgets()
       label: table_metadata["column-names"][selected_column[cluster_index]],
       min: table_metadata["column-min"][selected_column[cluster_index]],
       max: table_metadata["column-max"][selected_column[cluster_index]],
+      v_type: selected_column_type[cluster_index],
+      uniqueValues : uniqueValues,
     });
 
   }
@@ -464,14 +458,12 @@ function setup_widgets()
   // Setup the waveform plot ...
   if(
     !waveformplot_ready && bookmark && (cluster_index !== null) && (waveforms_data !== null) && (waveforms_data[cluster_index] !== undefined && waveforms_data[cluster_index] !== null)
-    && color_array !== null && table_metadata !== null && selected_simulations !== null && selected_waveform_indexes !== null
+    && color_array !== null && colorscale !== null && table_metadata !== null && selected_simulations !== null && selected_waveform_indexes !== null
     )
   {
     waveformplot_ready = true;
 
     $("#waveform-pane .load-status").css("display", "none");
-
-    var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min[cluster_index], selected_column_max[cluster_index]);
 
     $("#waveform-pane").css({
       "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
@@ -486,7 +478,7 @@ function setup_widgets()
       "server-root" : server_root,
       mid : model._id,
       waveforms: waveforms_data[cluster_index],
-      color_scale: color_scale,
+      color_scale: colorscale,
       color_array: color_array,
       highlight: selected_simulations,
       "selection" : selected_waveform_indexes[parseInt(cluster_index, 10)],
@@ -494,28 +486,23 @@ function setup_widgets()
 
     $("#waveform-viewer").waveformplot(waveformplot_options);
 
-    // Changing the table row selection updates the waveform plot ...
-    $("#table").bind("row-selection-changed", function(event, waveform_indexes)
+    // Changing the waveform selection ...
+    $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
     {
-      $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
-    });
-
-    // Changing the dendrogram waveform selection updates the waveform plot ...
-    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
-    {
-      $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
-    });
-
-    // Log changes to the waveform selection
-    $("#waveform-viewer").bind("waveform-selection-changed", function(event, selection)
-    {
-      selected_simulations_changed(selection);
+      // Log changes to the waveform selection
+      selected_simulations_changed(waveform_indexes);
+      // Updates the dendrogram ...
+      $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
+      // Updates the controls ...
+      $("#controls").controls("option", "highlight", waveform_indexes);
+      // Updates the table row selection ...
+      $("#table").table("option", "row-selection", waveform_indexes);
     });
   }
 
   // Setup the table ...
   if( 
-    !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null
+    !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null && colorscale !== null
     && selected_column !== null && selected_column_type !== null && selected_column_min !== null && selected_column_max !== null
     && sort_variable !== null && sort_order !== null
     )
@@ -538,58 +525,28 @@ function setup_widgets()
       "sort-order" : sort_order,
     };
 
-    if(selected_column_type[cluster_index] != "string")
-    {
-      colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, selected_column_min[cluster_index], selected_column_max[cluster_index]);
-      table_options["colorscale"] = colorscale;
-      $("#table").table(table_options);
-    }
-    else
-    {
-      $.ajax({
-        type: "GET",
-        url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column[cluster_index] + "/...",
-        success : function(result) {
-          console.log("here are the unique values: " + result);
-          var uniqueValues = result.unique[0].values[0];
+    $("#table").table(table_options);
 
-          colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
-          table_options["colorscale"] = colorscale;
-          $("#table").table(table_options);
-        },
-        error: function(result) {
-          console.log("there was an error. here it is: " + result);
-        }
-      });
-    }
-
-    // Changing the waveform selection updates the table row selection ...
-    $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
+    // Changing the table row selection ...
+    $("#table").bind("row-selection-changed", function(event, waveform_indexes)
     {
-      $("#table").table("option", "row-selection", waveform_indexes);
+      // Log changes to the table row selection
+      selected_simulations_changed(waveform_indexes);
+      // Update the controls ...
+      $("#controls").controls("option", "highlight", waveform_indexes);
+      // Update the waveform plot ...
+      $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+      // Changing the table row selection updates the dendrogram ...
+      $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
     });
 
-    // Changing the waveform selection updates the table row selection ...
-    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
-    {
-      $("#table").table("option", "row-selection", waveform_indexes);
-    });
-
-    // Log changes to the table row selection
-    $("#table").bind("row-selection-changed", function(event, selection)
-    {
-      selected_simulations_changed(selection);
-    });
-
-    // Log changes to the table sort order ...
+    // Changing table's sort order ...
     $("#table").bind("variable-sort-changed", function(event, variable, order)
     {
+      // Log changes to the table sort order ...
       variable_sort_changed(variable, order);
-    });
-
-    // Changing the sort order to dendrogram order updates the table ...
-    $("#dendrogram-viewer").bind("sort-by-dendrogram-order", function(event){
-      $("#table").table("option", "sort-variable", null);
+      // Updated the dendrogram sort control
+      $("#dendrogram-viewer").dendrogram("option", "dendrogram_sort_order", variable == null && order == null ? true : false);
     });
 
     // Changing the table variable selection logs it, updates the waveform plot and dendrogram...
@@ -602,15 +559,13 @@ function setup_widgets()
 
   // Setup the dendrogram ...
   if(!dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined && clusters_data[cluster_index] !== null
-      && color_array !== null && selected_simulations !== null && colormap !== null && selected_column_min !== null && selected_column_max !== null
+      && color_array !== null && colorscale !== null && selected_simulations !== null && colormap !== null && selected_column_min !== null && selected_column_max !== null
       && sort_variable !== null
     )
   {
     dendrogram_ready = true;
 
     $("#dendrogram-pane .load-status").css("display", "none");
-
-    var color_scale = $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min[cluster_index], selected_column_max[cluster_index]);
 
     $("#dendrogram-sparkline-backdrop").css({
       "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
@@ -621,7 +576,7 @@ function setup_widgets()
     dendrogram_options.mid = model._id;
     dendrogram_options.clusters = s_to_a(clusters);
     dendrogram_options.cluster_data = s_to_o(clusters_data[cluster_index]);
-    dendrogram_options.color_scale = color_scale;
+    dendrogram_options.color_scale = colorscale;
     dendrogram_options.color_array = color_array;
 
     if(sort_variable != undefined) {
@@ -651,28 +606,22 @@ function setup_widgets()
       node_toggled(node);
     });
 
-    // Log changes to the waveform selection
-    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, selection)
+    // Changing the dendrogram waveform selection ...
+    $("#dendrogram-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
     {
-      selected_simulations_changed(selection);
+      // Log changes to the waveform selection
+      selected_simulations_changed(waveform_indexes);
+      // Update the controls ...
+      $("#controls").controls("option", "highlight", waveform_indexes);
+      // Update the waveform plot ...
+      $("#waveform-viewer").waveformplot("option", "highlight", waveform_indexes);
+      // Update the table row selection ...
+      $("#table").table("option", "row-selection", waveform_indexes);
     });
 
-    // Changing table's sort order updated the dendrogram sort control
-    $("#table").bind("variable-sort-changed", function(event, variable, order)
-    {
-      $("#dendrogram-viewer").dendrogram("option", "dendrogram_sort_order", variable == null && order == null ? true : false);
-    });
-
-    // Changing the table row selection updates the dendrogram ...
-    $("#table").bind("row-selection-changed", function(event, waveform_indexes)
-    {
-      $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
-    });
-
-    // Changing the waveform selection updates the dendrogram ...
-    $("#waveform-viewer").bind("waveform-selection-changed", function(event, waveform_indexes)
-    {
-      $("#dendrogram-viewer").dendrogram("option", "highlight", waveform_indexes);
+    // Changing the sort order to dendrogram order updates the table ...
+    $("#dendrogram-viewer").bind("sort-by-dendrogram-order", function(event){
+      $("#table").table("option", "sort-variable", null);
     });
   }
 }
@@ -801,7 +750,7 @@ function selected_variable_changed(variable)
   bookmarker.updateState(selected_variable);
 }
 
-function set_new_colorscale(callback)
+function update_current_colorscale(callback)
 {
   if(selected_column_type[cluster_index] != "string")
   {
@@ -814,9 +763,7 @@ function set_new_colorscale(callback)
       type: "GET",
       url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column[cluster_index] + "/...",
       success : function(result) {
-        console.log("here are the unique values: " + result);
-        var uniqueValues = result.unique[0].values[0];
-
+        uniqueValues = result.unique[0].values[0];
         colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
         callback();
       },
@@ -859,7 +806,6 @@ function update_waveform_dendrogram_legend_on_selected_variable_changed(variable
       type: "GET",
       url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column[cluster_index] + "/...",
       success : function(result) {
-        console.log("here are the unique values: " + result);
         var uniqueValues = result.unique[0].values[0];
 
         colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);

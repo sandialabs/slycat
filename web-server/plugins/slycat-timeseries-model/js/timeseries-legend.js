@@ -17,6 +17,8 @@ define("slycat-timeseries-legend", ["d3"], function(d3)
       min : null,
       max : null,
       border : 25,
+      v_type : null,
+      uniqueValues : null,
     },
 
     _create: function()
@@ -164,7 +166,20 @@ define("slycat-timeseries-legend", ["d3"], function(d3)
 
       if(self.updates["update_legend_axis"])
       {
-        self.legend_scale = d3.scale.linear().domain([self.options.max, self.options.min]).range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))]);
+        if(self.options.v_type != 'string')
+        {
+          self.legend_scale = d3.scale.linear()
+            .domain([self.options.max, self.options.min])
+            .range([0, parseInt(self.legend_layer.select("rect.color").attr("height"))])
+            ;
+        }
+        else
+        {
+          self.legend_scale = d3.scale.ordinal()
+            .domain(self.options.uniqueValues.reverse())
+            .rangePoints([0, parseInt(self.legend_layer.select("rect.color").attr("height"))])
+            ;
+        }
         self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
         self.legend_axis_layer
           .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
