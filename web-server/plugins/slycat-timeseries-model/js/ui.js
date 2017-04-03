@@ -404,7 +404,7 @@ function setup_widgets()
       // Changing the cluster updates the table variable selection ...
       $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
       $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
-      update_waveform_dendrogram_legend_on_selected_variable_changed(selected_column[cluster_index]);
+      update_waveform_dendrogram_table_legend_on_selected_variable_changed(selected_column[cluster_index]);
     });
 
     // Changes to the waveform color ...
@@ -738,7 +738,7 @@ function selected_variable_changed(variable)
   selected_column_min[cluster_index] = table_metadata["column-min"][selected_column[cluster_index]];
   selected_column_max[cluster_index] = table_metadata["column-max"][selected_column[cluster_index]];
   
-  update_waveform_dendrogram_legend_on_selected_variable_changed(selected_column[cluster_index]);
+  update_waveform_dendrogram_table_legend_on_selected_variable_changed(selected_column[cluster_index]);
 
   $.ajax(
   {
@@ -755,7 +755,7 @@ function update_current_colorscale(callback)
   if(selected_column_type[cluster_index] != "string")
   {
     colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, selected_column_min[cluster_index], selected_column_max[cluster_index]);
-    callback();
+    callback(colorscale);
   }
   else
   {
@@ -765,7 +765,7 @@ function update_current_colorscale(callback)
       success : function(result) {
         uniqueValues = result.unique[0].values[0];
         colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
-        callback();
+        callback(colorscale);
       },
       error: function(result) {
         console.log("there was an error. here it is: " + result);
@@ -774,21 +774,12 @@ function update_current_colorscale(callback)
   }
 }
 
-function update_waveform_dendrogram_legend_on_selected_variable_changed(variable)
+function update_waveform_dendrogram_table_legend_on_selected_variable_changed(variable)
 {
-  $("#legend").legend("option", {
-    min: table_metadata["column-min"][selected_column[cluster_index]],
-    max: table_metadata["column-max"][selected_column[cluster_index]],
-    label: table_metadata["column-names"][selected_column[cluster_index]],
-  });
-
-  if(selected_column_type[cluster_index] != "string")
-  {
-    colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, selected_column_min[cluster_index], selected_column_max[cluster_index]);
+  update_current_colorscale(function(colorscale){
     retrieve_sorted_column({
       column : selected_column[cluster_index],
       callback : function(array){
-        var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
         var parameters = {
           color_array : array,
           color_scale : colorscale,
@@ -797,38 +788,16 @@ function update_waveform_dendrogram_legend_on_selected_variable_changed(variable
         $("#waveform-viewer").waveformplot("option", "color-options", parameters);
         $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
         $("#table").table("option", "colorscale", colorscale);
-      }
-    });
-  }
-  else
-  {
-    $.ajax({
-      type: "GET",
-      url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column[cluster_index] + "/...",
-      success : function(result) {
-        var uniqueValues = result.unique[0].values[0];
-
-        colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
-        retrieve_sorted_column({
-          column : selected_column[cluster_index],
-          callback : function(array){
-            var currentColormap = $("#color-switcher").colorswitcher("option", "colormap");
-            var parameters = {
-              color_array : array,
-              color_scale : colorscale,
-            };
-
-            $("#waveform-viewer").waveformplot("option", "color-options", parameters);
-            $("#dendrogram-viewer").dendrogram("option", "color-options", parameters);
-            $("#table").table("option", "colorscale", colorscale);
-          }
+        $("#legend").legend("option", {
+          min: table_metadata["column-min"][selected_column[cluster_index]],
+          max: table_metadata["column-max"][selected_column[cluster_index]],
+          label: table_metadata["column-names"][selected_column[cluster_index]],
+          v_type: selected_column_type[cluster_index],
+          uniqueValues: uniqueValues,
         });
-      },
-      error: function(result) {
-        console.log("there was an error. here it is: " + result);
       }
     });
-  }
+  });
 }
 
 function variable_sort_changed(variable, order)
