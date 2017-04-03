@@ -64,7 +64,7 @@ $.widget("timeseries.controls",
       </button> \
       ")
       .click(function(){
-        if (self.options.highlight.length == 0) {
+        if (self.options.highlight.length == 0 && ( self.options.selection == null || self.options.selection.length == self.options.metadata['row-count'] )) {
           self._write_data_table();
         } else {
           openCSVSaveChoiceDialog();
@@ -80,7 +80,7 @@ $.widget("timeseries.controls",
         {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
       var filteredHighlight;
-      if(self.options.selection.length > 0)
+      if(self.options.selection != null && self.options.selection.length > 0)
       {
         filteredHighlight = self.options.highlight.filter(function(el){
           return self.options.selection.indexOf(el) != -1;
@@ -96,7 +96,7 @@ $.widget("timeseries.controls",
         txt += "You have " + filteredHighlight.length + " rows selected. ";
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
       }
-      if(self.options.selection.length > 0 && self.options.selection.length < self.options.metadata['row-count'])
+      if(self.options.selection != null && self.options.selection.length > 0 && self.options.selection.length < self.options.metadata['row-count'])
       {
         var visibleRows = self.options.selection.length;
         txt += "You have " + visibleRows + " rows visible. ";
