@@ -404,7 +404,7 @@ function setup_widgets()
       // Changing the cluster updates the table variable selection ...
       $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
       $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
-      update_waveform_dendrogram_table_legend_on_selected_variable_changed(selected_column[cluster_index]);
+      update_waveform_dendrogram_table_legend_on_selected_variable_changed();
     });
 
     // Changes to the waveform color ...
@@ -452,13 +452,12 @@ function setup_widgets()
       v_type: selected_column_type[cluster_index],
       uniqueValues : uniqueValues,
     });
-
   }
 
   // Setup the waveform plot ...
   if(
-    !waveformplot_ready && bookmark && (cluster_index !== null) && (waveforms_data !== null) && (waveforms_data[cluster_index] !== undefined && waveforms_data[cluster_index] !== null)
-    && color_array !== null && colorscale !== null && table_metadata !== null && selected_simulations !== null && selected_waveform_indexes !== null
+      !waveformplot_ready && bookmark && (cluster_index !== null) && (waveforms_data !== null) && (waveforms_data[cluster_index] !== undefined && waveforms_data[cluster_index] !== null)
+      && color_array !== null && colorscale !== null && table_metadata !== null && selected_simulations !== null && selected_waveform_indexes !== null
     )
   {
     waveformplot_ready = true;
@@ -502,9 +501,9 @@ function setup_widgets()
 
   // Setup the table ...
   if( 
-    !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null && colorscale !== null
-    && selected_column !== null && selected_column_type !== null && selected_column_min !== null && selected_column_max !== null
-    && sort_variable !== null && sort_order !== null
+      !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null && colorscale !== null
+      && selected_column !== null && selected_column_type !== null && selected_column_min !== null && selected_column_max !== null
+      && sort_variable !== null && sort_order !== null
     )
   {
     table_ready = true;
@@ -558,7 +557,8 @@ function setup_widgets()
   }
 
   // Setup the dendrogram ...
-  if(!dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined && clusters_data[cluster_index] !== null
+  if(
+      !dendrogram_ready && bookmark && s_to_a(clusters) && cluster_index !==  null && clusters_data[cluster_index] !== undefined && clusters_data[cluster_index] !== null
       && color_array !== null && colorscale !== null && selected_simulations !== null && colormap !== null && selected_column_min !== null && selected_column_max !== null
       && sort_variable !== null
     )
@@ -633,18 +633,14 @@ function setup_widgets()
 function selected_colormap_changed(newColormap)
 {
   colormap = newColormap;
+
+  // First we change background colors, gradients, and other things that don't require recalculating the colorscale
   $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
   $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
-
-  $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
-  // This might be a more correct way to pass the color scale since it's how we do it for the waveforms and dendrogram sparklines,
-  // but it still doesn't seem to fix the table's color problems.
-  //$("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min, selected_column_max));
 
   $("#dendrogram-sparkline-backdrop").css({
     "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
     });
-  $("#dendrogram-viewer").dendrogram("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min[cluster_index], selected_column_max[cluster_index]));
 
   $("#waveform-pane").css({
     "background-color" : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
@@ -653,7 +649,9 @@ function selected_colormap_changed(newColormap)
     "fill"             : $("#color-switcher").colorswitcher("get_background", colormap).toString(),
     "fill-opacity"     : $("#color-switcher").colorswitcher("get_opacity", colormap),
     });
-  $("#waveform-viewer").waveformplot("option", "color_scale", $("#color-switcher").colorswitcher("get_color_scale", colormap, selected_column_min[cluster_index], selected_column_max[cluster_index]));
+
+  // Now we get the new colorscale and update components
+  update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
   $.ajax(
   {
@@ -738,7 +736,7 @@ function selected_variable_changed(variable)
   selected_column_min[cluster_index] = table_metadata["column-min"][selected_column[cluster_index]];
   selected_column_max[cluster_index] = table_metadata["column-max"][selected_column[cluster_index]];
   
-  update_waveform_dendrogram_table_legend_on_selected_variable_changed(selected_column[cluster_index]);
+  update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
   $.ajax(
   {
@@ -774,7 +772,7 @@ function update_current_colorscale(callback)
   }
 }
 
-function update_waveform_dendrogram_table_legend_on_selected_variable_changed(variable)
+function update_waveform_dendrogram_table_legend_on_selected_variable_changed()
 {
   update_current_colorscale(function(colorscale){
     retrieve_sorted_column({
@@ -830,7 +828,6 @@ function node_toggled(node){
     url : server_root + "events/models/" + model._id + "/toggle/node/" + node["node-index"],
   });
 }
-
 
 function update_dendrogram(cluster)
 {
