@@ -1439,12 +1439,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     // Create scaffolding and status indicator if we already don't have one
-    if ( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() && !isStl ) {
+    if ( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ) {
       frame_html = build_frame_html(image);
     }
 
     // If the image is already in the cache, display it.
-    if (image.uri in self.options.image_cache && !isStl) {
+    if (image.uri in self.options.image_cache) {
       console.log("Displaying image " + image.uri + " from cache...");
       var url_creator = window.URL || window.webkitURL;
       var blob = self.options.image_cache[image.uri];
@@ -1598,6 +1598,23 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         }
 
       }
+      else if(isStl)
+      {
+        var container = frame_html[0][0];
+        var viewer = document.createElement('slycat-3d-viewer');
+
+        var ps = document.createAttribute('params')
+        // var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
+        var stl_uri = image_url;
+        ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
+        var s = document.createAttribute('style');
+        s.value = 'width: 100%; height: 100%;';
+        viewer.setAttributeNode(ps);
+        viewer.setAttributeNode(s);
+
+        container.appendChild(viewer);
+        ko.applyBindings({}, container);
+      }
       else {
         // We don't support this file type, so just create a download link
         console.log("creating download link");
@@ -1655,35 +1672,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var uri = URI(image.uri);
 
     var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
-
-    if (isStl && is_stl_return) {
-      if (!frame_html) {
-        frame_html = build_frame_html(image);
-      }
-
-      var container = frame_html[0][0];
-      var viewer = document.createElement('slycat-3d-viewer');
-
-      var ps = document.createAttribute('params')
-      var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
-      ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
-      var s = document.createAttribute('style');
-      s.value = 'width: 100%; height: 100%;';
-      viewer.setAttributeNode(ps);
-      viewer.setAttributeNode(s);
-
-      container.appendChild(viewer);
-      ko.applyBindings({}, container);
-
-      add_resize_handle(frame_html);
-      add_pin_button(frame_html);
-      add_download_button(frame_html, stl_uri, image.uri.split('/').pop());
-
-      self._open_images(images.slice(1), true);
-
-      // Do not comment out this return because it will cause an infinite loop and Firefox will blacklist WebGL.
-      return;
-    }
 
     console.log("Attempting to load image from server-side cache...");
     console.log("Loading image " + image.uri + " from server...");
