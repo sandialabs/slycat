@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import CAA from './model_views'
+import Views from './model_views'
 class Projects extends Component  {
   render() {
     return (
@@ -7,7 +7,7 @@ class Projects extends Component  {
           <button className="">
             {this.props.value}
           </button>
-          <CAA value={this.props.value} />
+          <Views.ParameterSpace value={this.props.value} />
       </div>
     );
   }
