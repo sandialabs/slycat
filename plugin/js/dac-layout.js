@@ -17,7 +17,8 @@ define ("dac-layout",["jquery", "dac-scatter-plot", "dac-plots", "dac-table"],
 		// ***************************************************
 		
     	// setup the default window layout using jQuery uilayout
-    	$("#dac-model").height($(window).height() - SLYCAT_HEADER);
+    	// (it appears that slycat now does this automatically)
+    	// $("#dac-model").height($(window).height() - SLYCAT_HEADER);
 
 		// Set up the outer layout (includes center and east)
     	$("#dac-model").layout(

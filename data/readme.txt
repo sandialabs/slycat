@@ -6,7 +6,7 @@ over the year 2014 for the top 100 most populated cities in the US, taken
 from the weather underground web site.
     
 The files in each directory conform the the following format, which is
-the input format for dial-a-cluster.
+the input format for dial-a-cluster.  All the files are comma separated.
 
 The central index file (selected using the Wizard):
 

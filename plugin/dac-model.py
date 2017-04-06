@@ -16,10 +16,10 @@ def register_slycat_plugin(context):
     import imp
        
     def finish(database, model):
-		slycat.web.server.update_model(database, model, 
-		state="finished", result="succeeded", 
-		finished=datetime.datetime.utcnow().isoformat(), 
-		progress=1.0, message="")
+        slycat.web.server.update_model(database, model,
+		    state="finished", result="succeeded",
+		    finished=datetime.datetime.utcnow().isoformat(),
+		    progress=1.0, message="")
 
     def page_html(database, model):
         return open(os.path.join(os.path.dirname(__file__), 
@@ -57,11 +57,11 @@ def register_slycat_plugin(context):
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
 		    
-    	# convert kwargs into selections in two numpy arrays    	
+        # convert kwargs into selections in two numpy arrays
         sel_1 = numpy.array([int(value) for value in kwargs["0"] if int(value) >= 0])
-       	sel_2 = numpy.array([int(value) for value in kwargs["1"] if int(value) >= 0])
+        sel_2 = numpy.array([int(value) for value in kwargs["1"] if int(value) >= 0])
 
-    	# get number of distance matrices (same as number of alpha values)
+        # get number of distance matrices (same as number of alpha values)
     	alpha_values = slycat.web.server.get_model_parameter (
     	   database, model, "dac-alpha-parms")
     	
@@ -74,7 +74,7 @@ def register_slycat_plugin(context):
         # calculate Fisher's discriminant for each variable
         num_sel_1 = len(sel_1)
         num_sel_2 = len(sel_2)
-        fisher_disc = numpy.zeros(len(alpha_values));
+        fisher_disc = numpy.zeros(len(alpha_values))
         for i in range(len(alpha_values)):
             sx2 = numpy.sum(numpy.square(dist_mats[i][sel_1,:][:,sel_1])) / (2 * num_sel_1)
             sy2 = numpy.sum(numpy.square(dist_mats[i][sel_2,:][:,sel_2])) / (2 * num_sel_2)
@@ -84,10 +84,10 @@ def register_slycat_plugin(context):
 
         # scale discriminant values between 0 and 1
     	fisher_min = numpy.amin(fisher_disc)
-    	fisher_max = numpy.amax(fisher_disc)
-    	fisher_disc = (fisher_disc - fisher_min) / (fisher_max - fisher_min)
+        fisher_max = numpy.amax(fisher_disc)
+        fisher_disc = (fisher_disc - fisher_min) / (fisher_max - fisher_min)
     	
-    	# return unsorted discriminant values as JSON array
+        # return unsorted discriminant values as JSON array
     	return json.dumps({"fisher_disc": fisher_disc.tolist()})
     			
 		
@@ -133,7 +133,7 @@ def register_slycat_plugin(context):
         os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
         ])
 
-    # register input wizard with slycat.
-    context.register_wizard("new-dac", "New DAC Model", require={"action":"create", "context":"project"})
-    context.register_wizard_resource("new-dac", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
-    context.register_wizard_resource("new-dac", "ui.html", os.path.join(os.path.dirname(__file__), "dac-wizard.html"))
+    # register input wizard with slycat
+    context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action":"create", "context":"project"})
+    context.register_wizard_resource("DAC", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
+    context.register_wizard_resource("DAC", "ui.html", os.path.join(os.path.dirname(__file__), "dac-wizard.html"))

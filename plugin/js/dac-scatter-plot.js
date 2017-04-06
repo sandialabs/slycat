@@ -20,7 +20,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 
 	// model ID
 	var mid = URI(window.location).segment(-1);
-	
+
 	// d3 variables for drawing MDS coords
 	var scatter_plot = null;
 	var scatter_points = null;
