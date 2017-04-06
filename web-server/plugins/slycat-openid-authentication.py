@@ -34,7 +34,7 @@ def register_slycat_plugin(context):
         # Get the client ip, which might be forwarded by a proxy.
         remote_ip = slycat.web.server.check_https_get_remote_ip()
         
-        cherrypy.log.error("++ openid-auth existing snlauth cookie: %s" % str("slycatauth" in cherrypy.request.cookie) )
+        #cherrypy.log.error("++ openid-auth existing snlauth cookie: %s" % str("slycatauth" in cherrypy.request.cookie) )
 
         #auth_user = cherrypy.request.headers.get("Authuser")
 
@@ -75,20 +75,13 @@ def register_slycat_plugin(context):
 
             # there was no session time to authenticate
             if session is None:
-            #if session is None and auth_user != "":
-                cherrypy.log.error("++ auth error, no session found ")
-                #create_single_sign_on_session(remote_ip, auth_user)
-                # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
+                cherrypy.log.error("++ auth error, found cookie with expired session, asking user to login ")
                 raise cherrypy.HTTPError("401 Authentication required.")
 
-                # Successful authentication, create a session and return.
-                # return
         else:
-            # this logic is bad, can't assume we have auth_user here, if no auth_user do something to get that info
-            cherrypy.log.error("++ returning XXX: no cookie, no /projecst?authInfo... ")
+            # incoming user doesn't have a session, must route through openid login process starting
+            # at /index.html to authenticate & create a session
+            cherrypy.log.error("++ unauthenticated request, asking user to login")
             raise cherrypy.HTTPError("401 Authentication required.")
-            #create_single_sign_on_session(remote_ip, auth_user)
-            #raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects" , 307) #force redirect to /projects which is the current return_to location
-            ##raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
     context.register_tool("slycat-openid-authentication", "on_start_resource", authenticate)
