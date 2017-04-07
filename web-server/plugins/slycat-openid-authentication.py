@@ -29,7 +29,7 @@ def register_slycat_plugin(context):
         if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
             slycat.email.send_error("slycat-standard-authentication.py authenticate",
                                     "cherrypy.HTTPError 403 secure connection required.")
-            raise cherrypy.HTTPError("403 Secure connection required.")
+            raise cherrypy.HTTPError(403, 'Secure connection is required')
 
         # Get the client ip, which might be forwarded by a proxy.
         remote_ip = slycat.web.server.check_https_get_remote_ip()
@@ -76,12 +76,12 @@ def register_slycat_plugin(context):
             # there was no session time to authenticate
             if session is None:
                 cherrypy.log.error("++ auth error, found cookie with expired session, asking user to login ")
-                raise cherrypy.HTTPError("401 Authentication required.")
+                raise cherrypy.HTTPError(401, 'Authentication is required')
 
         else:
             # incoming user doesn't have a session, must route through openid login process starting
             # at /index.html to authenticate & create a session
             cherrypy.log.error("++ unauthenticated request, asking user to login")
-            raise cherrypy.HTTPError("401 Authentication required.")
+            raise cherrypy.HTTPError(401, 'Authentication is required')
 
     context.register_tool("slycat-openid-authentication", "on_start_resource", authenticate)
