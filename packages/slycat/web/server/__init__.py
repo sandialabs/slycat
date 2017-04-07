@@ -591,7 +591,7 @@ def create_single_sign_on_session(remote_ip, auth_user):
     WSGI/RevProxy no-login session creations.
     Successful authentication and access verification,
     create a session and return.
-    :return: authentication status
+    :return: not used
     """
     clean_up_old_session()
     # must define groups but not populating at the moment !!!
