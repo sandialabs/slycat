@@ -520,7 +520,10 @@ def ssh_connect(hostname=None, username=None, password=None):
 
         cherrypy.log.error("++ cert method, POST result: %s" % str(r))
         # create a cert file obj
-        cert_file_object = tempfile.TemporaryFile().write(str(r.json()["certificate"])).seek(0)
+        #cert_file_object = tempfile.TemporaryFile().write(str(r.json()["certificate"])).seek(0) #this line crashes
+        cert_file_object = tempfile.TemporaryFile()
+        cert_file_object.write(str(r.json()["certificate"]))
+        cert_file_object.seek(0)
         # create a key file obj
         key_file_object = tempfile.TemporaryFile()
         pvt_key.write_private_key(key_file_object)
