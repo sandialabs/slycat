@@ -18,28 +18,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null,
-                            status_type: null, enable: true, focus: false, sid: null, session_exists: false});
-    component.remote.focus.extend({notify: "always"});
     component.browser = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
 
     // local file input is selected by default
+    // for this modification of the wizard, "local" means "DAC Generic Format"
+    // and "remote" means "PTS CSV/META Format"
     component.cca_type = ko.observable("local");
     component.row_count = ko.observable(null);
 
     // the cca_type indicates local or remote file access,
     // but if I rename the variable the wizard quits functioning
     component.cca_type.subscribe(function(newValue) {
-        if(newValue == 'local')
-        {
         $(".modal-dialog").removeClass("modal-lg");
-        }
-        else
-        {
-        $(".modal-dialog").addClass("modal-lg");
-        }
     });
 
     // creates a model of type "DAC"
@@ -115,7 +107,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 });
             }
             mapping.fromJS(attributes, component.attributes);
-            component.tab(4);
+            component.tab(3);
             $('.browser-continue').toggleClass("disabled", false);
         }
         });
@@ -136,66 +128,34 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             upload_success();
         },
         error: function(){
-            dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+            dialog.ajax_error(
+                "Did you choose the correct file and filetype?  There was a problem parsing the file.")
+                ("","","");
             $('.local-browser-continue').toggleClass("disabled", false);
         }
         };
         fileUploader.uploadFile(fileObject);
     };
 
-    // this function accesses remote file systems
-    component.connect = function() {
-        component.remote.enable(false);
-        component.remote.status_type("info");
-        component.remote.status("Connecting ...");
-
-        if(component.remote.session_exists())
-        {
-            component.tab(3);
-            component.remote.enable(true);
-            component.remote.status_type(null);
-            component.remote.status(null);
-        }
-        else
-        {
-        client.post_remotes({
-            hostname: component.remote.hostname(),
-            username: component.remote.username(),
-            password: component.remote.password(),
-            success: function(sid) {
-            component.remote.session_exists(true);
-            component.remote.sid(sid);
-            component.tab(3);
-            component.remote.enable(true);
-            component.remote.status_type(null);
-            component.remote.status(null);
-            },
-            error: function(request, status, reason_phrase) {
-            component.remote.enable(true);
-            component.remote.status_type("danger");
-            component.remote.status(reason_phrase);
-            component.remote.focus("password");
-            }
-        });
-        }
-    };
-
-    // this function uploads meta data from a remote server
+    // this function uploads the meta data table from the CSV/META format
     component.load_table = function() {
-        $('.remote-browser-continue').toggleClass("disabled", true);
+        $('.local-browser-continue').toggleClass("disabled", true);
+        //TODO: add logic to the file uploader to look for multiple files list to add
+        var file = component.browser.selection()[0];
         var fileObject ={
         pid: component.project._id(),
-        hostname: [component.remote.hostname()],
         mid: component.model._id(),
-        paths: [component.browser.selection()],
+        file: file,
         aids: ["dac-wizard-metadata"],
         parser: component.parser(),
         success: function(){
             upload_success();
         },
         error: function(){
-            dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-            $('.remote-browser-continue').toggleClass("disabled", false);
+            dialog.ajax_error(
+                "Did you choose the correct file and filetype?  There was a problem parsing the file.")
+                ("","","");
+            $('.local-browser-continue').toggleClass("disabled", false);
         }
         };
         fileUploader.uploadFile(fileObject);
@@ -226,7 +186,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             aid: "dac-wizard-metadata-include-columns",
             input: true,
             success: function() {
-                component.tab(5);
+                component.tab(4);
             }
         });
 
@@ -256,19 +216,23 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // function for operating the back button in the wizard
     component.back = function() {
+
         var target = component.tab();
-        // Skip Upload Table tab if we're on the Choose Host tab.
-        if(component.tab() == 2)
+
+        // skip remote (PTS) ui tabs if we are DAC Generic format
+        if(component.cca_type() == 'local' && component.tab() == 3)
         {
             target--;
         }
-        // Skip remote ui tabs if we are local
-        if(component.cca_type() == 'local' && component.tab() == 4)
+
+        // skip local (DAC Generic) if we are remote (PTS) format
+        if (component.cca_type() == 'remote' && component.tab() == 2)
         {
             target--;
-            target--;
         }
+
         target--;
+
         component.tab(target);
     };
 
