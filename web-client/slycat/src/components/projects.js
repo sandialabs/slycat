@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Views from './model_views'
+
 class Projects extends Component  {
   render() {
     return (
