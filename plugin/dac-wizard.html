@@ -56,14 +56,17 @@ S. Martin
          tag indicates which type of table to load, which in our case is 'dac-table' -->
     <div data-bind="visible:tab() == 2" class="form-horizontal">
 
-        Select all files in META directory.
-        <slycat-local-browser params="selection:browser.selection multiple"></slycat-local-browser>
+        <label>Select all files in META directory</label>
+        <slycat-local-browser params="selection:browser1.selection,multiple:true"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
-<!--
-        Select all files in CSV directory.
-        <slycat-local-browser params="selection:browser.selection"></slycat-local-browser>
+
+        <hr />
+
+        <div style="margin-top: 40px;">
+        <label>Select all files in CSV directory</label>
+        <slycat-local-browser params="selection:browser2.selection"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
-        -->
+        </div>
 
     </div>
 

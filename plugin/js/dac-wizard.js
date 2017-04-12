@@ -19,6 +19,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
     component.browser = mapping.fromJS({path:null, selection: []});
+    component.browser1 = mapping.fromJS({path:null, selection: []});
+    component.browser2 = mapping.fromJS({path:null, selection: []});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
 
@@ -141,6 +143,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.load_table = function() {
         $('.local-browser-continue').toggleClass("disabled", true);
         //TODO: add logic to the file uploader to look for multiple files list to add
+        console.log(component.browser1.selection());
+        console.log(component.browser2.selection());
+
         var file = component.browser.selection()[0];
         var fileObject ={
         pid: component.project._id(),
