@@ -18,9 +18,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.project = params.projects()[0];
     component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
-    component.browser = mapping.fromJS({path:null, selection: []});
-    component.browser1 = mapping.fromJS({path:null, selection: []});
-    component.browser2 = mapping.fromJS({path:null, selection: []});
+
+    // DAC generic format file selections
+    component.browser_dac_file = mapping.fromJS({path:null, selection: []});
+    component.browser_var_files = mapping.fromJS({path:null, selection: []});
+    component.browser_time_files = mapping.fromJS({path:null, selection: []});
+    component.browser_dist_files = mapping.fromJS({path:null, selection: []});
+    component.browser_pref_files = mapping.fromJS({path:null, selection: []});
+
+
+    // PTS META/CSV file selections
+    component.browser_csv_files = mapping.fromJS({path:null, selection: []});
+    component.browser_meta_files = mapping.fromJS({path:null, selection: []});
+
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
 
@@ -115,7 +125,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         });
     };
 
-    // this function uploads the meta data table from a local file
+    // this function uploads the meta data table from a local file (i.e.
+    // DAC generic format)
     component.upload_table = function() {
         $('.local-browser-continue').toggleClass("disabled", true);
         //TODO: add logic to the file uploader to look for multiple files list to add
@@ -143,8 +154,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.load_table = function() {
         $('.local-browser-continue').toggleClass("disabled", true);
         //TODO: add logic to the file uploader to look for multiple files list to add
-        console.log(component.browser1.selection());
-        console.log(component.browser2.selection());
+        console.log(component.browser_csv_files.selection());
+        console.log(component.browser_meta_files.selection());
 
         var file = component.browser.selection()[0];
         var fileObject ={

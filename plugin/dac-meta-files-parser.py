@@ -1,5 +1,8 @@
-# This script imports CSV files for DAC.  It is modified from
-# the slycat-csv-parser.
+# This script imports PTS log files for DAC.  It is modified from
+# the slycat-csv-parser.  The log file is not actually input,
+# but it is a directory pointer to the directory that has the
+# CSV and META folders available.  The meta data is read from
+# multiple files in the META directory.
 #
 # S. Martin
 # 4/4/2017
@@ -26,7 +29,7 @@ def parse_file(file):
     except ValueError:
       return False
 
-  cherrypy.log.error("dac gen parsing:::::::")
+  cherrypy.log.error("dac pts parsing:::::::")
   rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
   if len(rows) < 2:
     slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
@@ -91,5 +94,5 @@ def parse(database, model, input, files, aids, **kwargs):
   database.save(model)
 
 def register_slycat_plugin(context):
-  context.register_parser("dac-gen-parser", "DAC Generic Format", ["dac-table"], parse)
+  context.register_parser("dac-meta-files-parser", "PTS META files", ["dac-meta-files"], parse)
 

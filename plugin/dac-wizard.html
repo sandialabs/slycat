@@ -35,7 +35,7 @@ S. Martin
         <div class="radio" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: cca_type">
-            PTS CSV/META Format
+            PTS META/CSV Format
         </label>
         </div>
     </div>
@@ -44,28 +44,52 @@ S. Martin
          load a dac-table type table. -->
     <div data-bind="visible:tab() == 1" class="form-horizontal">
 
-        <slycat-local-browser params="selection:browser.selection"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
-<!--
-        <slycat-local-browser params="selection:browser.selection"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
--->
+        <div style="margin-top: 40px;">
+        <label>Select .dac meta-data file:</label>
+        <slycat-local-browser params="selection:browser_dac_file.selection"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-index-file'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .var variable files:</label>
+        <slycat-local-browser params="selection:browser_var_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-var-files'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .time time point files:</label>
+        <slycat-local-browser params="selection:browser_time_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-time-files'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .dist pairwise distance files:</label>
+        <slycat-local-browser params="selection:browser_dist_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-dist-files'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .pref preference files:</label>
+        <slycat-local-browser params="selection:browser_pref_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-pref-files'"></slycat-parser-controls>
+        </div>
+
     </div>
 
     <!-- This tab is for loading a file from a remote computer.  The slycat-parser-controls
          tag indicates which type of table to load, which in our case is 'dac-table' -->
     <div data-bind="visible:tab() == 2" class="form-horizontal">
 
-        <label>Select all files in META directory</label>
-        <slycat-local-browser params="selection:browser1.selection,multiple:true"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
-
-        <hr />
+        <div style="margin-top: 40px;">
+        <label>Select all files in META directory:</label>
+        <slycat-local-browser params="selection:browser_meta_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-meta-files'"></slycat-parser-controls>
+        </div>
 
         <div style="margin-top: 40px;">
-        <label>Select all files in CSV directory</label>
-        <slycat-local-browser params="selection:browser2.selection"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
+        <label>Select all files in CSV directory:</label>
+        <slycat-local-browser params="selection:browser_csv_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser,category:'dac-csv-files'"></slycat-parser-controls>
         </div>
 
     </div>
