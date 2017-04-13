@@ -51,7 +51,7 @@ class Agent(agent.Agent):
             "output": -1
         }
 
-        results["output"], results["errors"] = self.run_remote_command("sbatch %s" % results["filename"])
+        results["output"], results["errors"] = self.run_remote_command("qsuv %s" % results["filename"])
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -62,7 +62,7 @@ class Agent(agent.Agent):
             "jid": command["command"]
         }
 
-        results["output"], results["errors"] = self.run_remote_command("checkjob %s" % results["jid"])
+        results["output"], results["errors"] = self.run_remote_command("qstat $PBS_JOBID")
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -101,25 +101,45 @@ class Agent(agent.Agent):
                        tmp_file):
         f = tmp_file
 
-        f.write("#!/bin/bash\n\n")
-        f.write("#SBATCH --account=%s\n" % wckey)
-        f.write("#SBATCH --job-name=slycat-tmp\n")
-        f.write("#SBATCH --partition=%s\n\n" % partition)
-        f.write("#SBATCH --nodes=%s\n" % nnodes)
-        f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
-        f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-        f.write("source /etc/profile.d/modules.sh")
-        f.write("module load %s" % module_name)
-        f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)")
-        f.write("echo \"Creating profile ${profile}\"")
-        f.write("ipython profile create --parallel --profile=${profile}")
-        f.write("echo \"Launching controller\"")
-        f.write("ipcontroller --ip='*' --profile=${profile} &")
-        f.write("sleep 1m")
-        f.write("echo \"Launching engines\"")
-        f.write("srun ipengine --profile=${profile} --location=$(hostname) &")
-        f.write("sleep 1m")
-        f.write("echo \"Launching job\"")
+        f.write("#!/bin/csh\n\n")
+        f.write("#PBS -l walltime=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+        f.write("#PBS -l select=1:ncpus=32:vntype=gpu\n")
+        f.write("#PBS -l place=scatter:excl\n")
+        f.write("#PBS -N slycat\n")
+        f.write("#PBS -q debug\n")
+        f.write("#PBS -r n\n")
+        f.write("#PBS -A slycat_project\n")
+        f.write("#PBS -V\n")
+        f.write("#PBS -j oe\n")
+
+        f.write("set slyDir=slycat_tmp\n")
+        f.write("cd $WORKDIR\n")
+
+        f.write("if (! -d $WORKDIR/$slyDir) then\n")
+        f.write("    mkdir $slyDir\n")
+        f.write("endif\n" % wckey)
+
+        f.write("set exechost=`hostname -s`\n")
+        f.write("echo \"++Slycat timeseries job running at `date` on $exechost, in directory `pwd` \"\n")
+        f.write("unlimit")
+        f.write("module load slycat\n")
+
+        f.write("echo \"++ Slycat job: launching ipcontroller at `date`\"\n")
+        f.write("ipcontroller --ip='*' &\n")
+        f.write("sleep 20\n")
+        f.write("echo \"++ Slycat job: launching ipython engines at `date`\"\n")
+        f.write("ipengine --location=$exechost &\n")
+        f.write("sleep 1\n")
+        f.write("ipengine --location=$exechost &\n")
+        f.write("sleep 1\n")
+        f.write("ipengine --location=$exechost &\n")
+        f.write("sleep 1\n")
+        f.write("ipengine --location=$exechost &\n")
+        f.write("sleep 20\n")
+        f.write("set dataDir=/apps/unsupported/slycat/data/diode_clippper/")
+        f.write("set inFile=dakota_tabular.dat")
+        f.write("set timeFile=clipper_tran_template.cir.prn")
+        f.write("echo \"++ Slycat job: launching hdf5 conversion at `date`\"")
 
         for c in fn:
             f.write("%s\n" % c)
