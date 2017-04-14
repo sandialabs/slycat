@@ -2060,12 +2060,15 @@ def get_remote_show_user_password():
     checks to see if the application needs to show password
     :return: json {show:bool, msg:msg}
     """
-    show = False
+    ssh = False
+    slycat_pass = False
     msg = "unknown"
     if cherrypy.request.app.config["slycat-web-server"]["remote-authentication"]["method"] == "password":
-        show = True
+        ssh = True
         msg = "password auth required for remotes"
-    return {"show": show, "msg": msg}
+    if cherrypy.request.app.config["slycat-web-server"]["authentication"]["plugin"] == "slycat-password-authentication":
+        slycat_pass = True
+    return {"ssh": ssh, "slycat": slycat_pass, "msg": msg}
 
 
 def delete_remote(sid):
