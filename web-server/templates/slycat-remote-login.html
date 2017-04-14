@@ -8,16 +8,17 @@
           </button>
           <h3 class="modal-title" data-bind="text:title"></h3>
         </div>
-          <div class="modal-body">
-            <p data-bind="visible:message, text:message"></p>
-            <form class="form-horizontal" role="form">
-              <slycat-login-controls params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:login"></slycat-login-controls>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-default" data-bind="click:login,enable:remote.enable">Login</button>
-          </div>
-        </form>
+        <div class="modal-body">
+          <p data-bind="visible:message, text:message"></p>
+          <!-- ko if: ispasswordrequired -->
+          <form class="form-horizontal" role="form">
+            <slycat-login-controls params="username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:login"></slycat-login-controls>
+          </form>
+          <!-- /ko -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default" data-bind="click:login,enable:remote.enable">Login</button>
+        </div>
       </div>
     </div>
   </div>

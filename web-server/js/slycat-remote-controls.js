@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "jquery"], function(server_root, client, ko, mapping, $)
+define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "jquery", "slycat-server-ispasswordrequired"], function(server_root, client, ko, mapping, $, ispasswordrequired)
 {
   ko.components.register("slycat-remote-controls",
   {
@@ -22,6 +22,7 @@ define("slycat-remote-controls", ["slycat-server-root", "slycat-web-client", "kn
         component.status_type = params.status_type || ko.observable(null);
         component.remote_hosts = mapping.fromJS([]);
         component.session_exists = params.session_exists;
+        component.ispasswordrequired = ispasswordrequired;
 
         component.status_classes = ko.pureComputed(function()
         {

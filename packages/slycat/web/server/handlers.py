@@ -80,6 +80,7 @@ def js_bundle():
                                                                                   "js/knockout-projections.js",
                                                                                   "js/knockstrap.js",
                                                                                   "js/slycat-server-root.js",
+                                                                                  "js/slycat-server-ispasswordrequired.js",
                                                                                   "js/slycat-bookmark-manager.js",
                                                                                   "js/slycat-web-client.js",
                                                                                   "js/slycat_file_uploader_factory.js",
