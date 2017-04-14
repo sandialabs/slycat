@@ -25,11 +25,15 @@
               <li class="dropdown-header" data-bind="text: user.name">User's Actual Name</li>
               <li class="dropdown-header" data-bind="text:'Username: ' + user.uid()">Username</li>
               <li role="separator" class="divider"></li>
-              <!--<li class="slycat-clickable">
+
+              <!-- ko if: ispasswordrequired.slycat_passwordrequired -->
+              <li class="slycat-clickable">
                 <a data-bind="click:sign_out">
                   <span class="fa fa-sign-out"></span> Sign Out
                 </a>
-              </li>-->
+              </li>
+              <!-- /ko -->
+
             </ul>
           </li>
           <li class="dropdown">

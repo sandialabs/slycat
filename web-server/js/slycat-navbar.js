@@ -4,7 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping"], function(server_root, client, changes_feed, dialog, model_names, ko, mapping)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping", "slycat-server-ispasswordrequired"], 
+  function(server_root, client, changes_feed, dialog, model_names, ko, mapping, ispasswordrequired)
 {
   ko.components.register("slycat-navbar",
   {
@@ -15,8 +16,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       function checkCookie(){
         var myCookie = getCookie("slycattimeout");
         if(myCookie == null){
-            //window.location.href = "/login/slycat-login.html?from=" + window.location.href;
-            window.location.href = "/projects";
+            window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+            // window.location.href = "/projects";
         }
       }
 
@@ -42,6 +43,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       var component = this;
       component.server_root = server_root;
       component.model_names = model_names;
+      component.ispasswordrequired = ispasswordrequired;
 
       // Keep track of the current project, if any.
       component.project_id = ko.observable(params.project_id);
@@ -455,8 +457,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         client.sign_out({ 
           success: function(){
-            //window.location.href = "/login/slycat-login.html?from=" + window.location.href;
-            window.location.href = "/projects";
+            window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+            // window.location.href = "/projects";
           }, 
           error: function(){
             window.alert("Sorry, something went wrong and you are not signed out."); 

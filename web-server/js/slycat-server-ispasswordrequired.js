@@ -7,20 +7,23 @@ rights in this software.
 define("slycat-server-ispasswordrequired", ['knockout', 'slycat-server-root'], function(ko, server_root)
 {
 
-  var ispasswordrequired = ko.observable(true);
+  var slycat_passwordrequired = ko.observable(true);
+  var ssh_passwordrequired = ko.observable(true);
+
 
   $.ajax({
     contentType: 'application/json',
     type: 'GET',
     url: server_root + 'remotes/show/user-password',
     success: function(result) {
-      ispasswordrequired(result.show);
+      slycat_passwordrequired(result.slycat);
+      ssh_passwordrequired(result.ssh);
     },
     error: function(request, status, reason_phrase) {
       
     }
   });
 
-  return ispasswordrequired;
-  
+  return {slycat_passwordrequired: slycat_passwordrequired, ssh_passwordrequired: ssh_passwordrequired};
+
 });
