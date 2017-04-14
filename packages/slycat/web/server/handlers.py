@@ -1339,9 +1339,17 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
     cherrypy.log.error("looking for unique in results")
     if "unique" in results:
-        cherrypy.log.error("found unique in results")
+        cherrypy.log.error("found unique in results: " )
+        cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
+        cherrypy.log.error("type:")
+        cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
         for unique in results["unique"]:
-            unique["values"] = [array.tolist() for array in unique["values"]]
+            # Maybe due to caching, sometimes the result comes back as a 'list'
+            if type(results["unique"][0]['values'][0]) is list:
+              unique["values"] = [list_of_values for list_of_values in unique["values"]]
+            # Other times it's a 'numpy.ndarray'
+            else:
+              unique["values"] = [array.tolist() for array in unique["values"]]
     cherrypy.log.error("returning results")
 
     return results

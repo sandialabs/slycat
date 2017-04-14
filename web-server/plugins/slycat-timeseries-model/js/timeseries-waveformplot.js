@@ -16,7 +16,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
     	"server-root" : "",
       mid : null,
       waveforms : null, // Time & value data for all waveforms, not just the visible ones
-      selection : undefined, // Array of ids of waveforms that are visible
+      selection : null, // Array of ids of waveforms that are visible
       highlight : [],
       color_array : null,
       color_scale : null,
@@ -208,7 +208,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
       // Set all waveforms to visible if this options has not been set
       var visible = this.options.selection;
-      if(visible === undefined) {
+      if(visible === null) {
         visible = [];
         for(var i=0; i<this.waveforms.length; i++) {
           visible.push(this.waveforms[i]["input-index"]);
@@ -678,7 +678,7 @@ define("slycat-timeseries-waveformplot", ["d3", "knob"], function(d3, knob)
 
         this.options.waveforms = value.waveforms;
         // Setting selection to all if it's undefined
-        if(value.selection === undefined) {
+        if(value.selection === null) {
           visible = [];
           for(var i=0; i<this.options.waveforms.length; i++) {
             visible.push(this.options.waveforms[i]["input-index"]);
