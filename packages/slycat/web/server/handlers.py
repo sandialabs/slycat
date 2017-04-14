@@ -80,6 +80,7 @@ def js_bundle():
                                                                                   "js/knockout-projections.js",
                                                                                   "js/knockstrap.js",
                                                                                   "js/slycat-server-root.js",
+                                                                                  "js/slycat-server-ispasswordrequired.js",
                                                                                   "js/slycat-bookmark-manager.js",
                                                                                   "js/slycat-web-client.js",
                                                                                   "js/slycat_file_uploader_factory.js",
@@ -825,6 +826,26 @@ def delete_upload(uid):
     cherrypy.response.status = "204 Upload session deleted."
 
 
+def open_id_authenticate(**params):
+    """
+    takes the openid parameter sent
+    to this function and logs in a user
+    :param params: openid params as a dictionary
+    :return: not used
+    """
+    # check for openid in the config for security
+    if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
+        raise cherrypy.HTTPError(404)
+
+    cherrypy.log.error("params = %s" % params)
+    current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+    kerberos_principal = params['openid.ext2.value.Authuser']
+    auth_user = kerberos_principal.split("@")[0]
+    cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
+    slycat.web.server.create_single_sign_on_session(slycat.web.server.check_https_get_remote_ip(), auth_user)
+    raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects")
+
+
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def login():
@@ -970,11 +991,18 @@ def login():
         cherrypy.response.status = "404 no auth found!!!"
 
     return {'success': success, 'target': response_url}
-
-
 login.password_check = None
 login.sessions = {}
 login.session_cleanup = None
+
+
+def get_root():
+    """
+  Redirect all requests to "/" to "/projects"
+  """
+    current_url = urlparse.urlparse(cherrypy.url())
+    proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
+    raise cherrypy.HTTPRedirect(proj_url, 303)
 
 
 def logout():
@@ -2024,6 +2052,20 @@ def get_remotes(hostname):
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
     return {"status": status, "msg": msg}
+
+
+@cherrypy.tools.json_out(on=True)
+def get_remote_show_user_password():
+    """
+    checks to see if the application needs to show password
+    :return: json {show:bool, msg:msg}
+    """
+    show = False
+    msg = "unknown"
+    if cherrypy.request.app.config["slycat-web-server"]["remote-authentication"]["method"] == "password":
+        show = True
+        msg = "password auth required for remotes"
+    return {"show": show, "msg": msg}
 
 
 def delete_remote(sid):

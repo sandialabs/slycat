@@ -15,7 +15,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       function checkCookie(){
         var myCookie = getCookie("slycattimeout");
         if(myCookie == null){
-            window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+            //window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+            window.location.href = "/projects";
         }
       }
 
@@ -454,7 +455,8 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       {
         client.sign_out({ 
           success: function(){
-            window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+            //window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+            window.location.href = "/projects";
           }, 
           error: function(){
             window.alert("Sorry, something went wrong and you are not signed out."); 
