@@ -96,6 +96,13 @@ def parse(database, model, input, files, aids, **kwargs):
     model["db_creation_time"] = (end - start)
     database.save(model)
 
+# register all generic file parsers (really just the same csv parser), so that they
+# appear with different labels in the file picker.
 def register_slycat_plugin(context):
     context.register_parser("dac-index-file-parser", "DAC .dac meta-data file", ["dac-index-file"], parse)
+    context.register_parser("dac-var-files-parser", "DAC .var files (and variables.meta file)", ["dac-var-files"], parse)
+    context.register_parser("dac-time-files-parser", "DAC .time files", ["dac-time-files"], parse)
+    context.register_parser("dac-dist-files-parser", "DAC .dist files", ["dac-dist-files"], parse)
+    context.register_parser("dac-pref-files-parser", "DAC .pref files", ["dac-pref-files"], parse)
+
 
