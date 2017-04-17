@@ -883,7 +883,9 @@ def login():
     success, groups = password_check(realm, user_name, password)
 
     if success:
+        # check the rules
         slycat.web.server.check_rules(groups)
+        # we got passed the rules check
         # Successful authentication and access verification, create a session and return.
         slycat.web.server.create_single_sign_on_session(remote_ip, user_name)
     else:
