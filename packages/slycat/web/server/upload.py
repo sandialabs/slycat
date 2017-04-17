@@ -45,7 +45,7 @@ import uuid
 
 session_cache = {}
 session_cache_lock = threading.Lock()
-parsing_lock = threading.Lock()
+parsing_locks = {}
 
 def root():
   if root.path is None:
@@ -161,7 +161,11 @@ class Session(object):
 
   def _parse_uploads(self):
     cherrypy.log.error("Upload parsing started.")
-    with parsing_lock:
+
+    if self._mid not in parsing_locks:
+      parsing_locks[self._mid] = threading.Lock()
+
+    with parsing_locks[self._mid]:
       cherrypy.log.error("got lock: %s" % self._mid)
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", self._mid)
