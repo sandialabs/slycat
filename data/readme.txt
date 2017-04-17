@@ -1,4 +1,4 @@
-﻿This directory contains example data for use with the dial-a-cluster
+This directory contains example data for use with the dial-a-cluster
 application.  The subdirectories are as follows:
 
 weather -- a multivariate time series dataset containing weather statistics
@@ -54,14 +54,14 @@ Finally, you can specify dial-a-cluster preferences in three files (in
 the weather directory):
 
 alpha-parms.pref --  alpha parameters and order to present sliders to user, has
-a header with the columns (tab delimited): Alpha, Order.  Each row specifies
+a header with the columns (comma delimited): Alpha, Order.  Each row specifies
 the time series variable alpha default (starting with first time series), and
 the order to present to the user (starting with 1).
 
 variable-defaults.pref -- the three preferred time series (variables) to show
-on the right hand side of the dial-a-cluster app, tab delimited on one line.
+on the right hand side of the dial-a-cluster app, comma delimited on one line.
 This file just has three numbers which give the defaults variables to display (starting with 1).
 
-dac-ui.pref -- dial-a-cluster user interface parameters in a tab separated table,
+dac-ui.pref -- dial-a-cluster user interface parameters in a comma separated table,
 one per line in the format NAME value.  The parameters specify colors, pixel sizes,
 etc. for the web page.  Any values not specified have defaults. 

@@ -16,10 +16,6 @@ define("dac-model", ["dac-layout", "dac-request-data", "dac-alpha-sliders",
 	$.when (request.get_parameters("dac-ui-parms", 0)).then(
 			function (ui_parms)
 			{
-			
-				// the slycat header is 50 pixels in height
-    			// (but it changes if using different markings)
-    			var SLYCAT_HEADER = parseInt(ui_parms["SLYCAT_HEADER"]);
     
     			// the step size for the alpha slider (varies from 0 to 1)
     			var ALPHA_STEP = parseFloat(ui_parms["ALPHA_STEP"]);
@@ -63,11 +59,9 @@ define("dac-model", ["dac-layout", "dac-request-data", "dac-alpha-sliders",
 					X_TICK_FREQ: parseInt(ui_parms["X_TICK_FREQ"]),
 					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"])
 				};
-				
-				console.log(PLOT_ADJUSTMENTS);
-				
+
 				// set up jQuery layout for user interface
-				layout.setup (SLYCAT_HEADER, ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
+				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
 					SCATTER_BUTTONS_HEIGHT);
 	
 				// set up the alpha sliders

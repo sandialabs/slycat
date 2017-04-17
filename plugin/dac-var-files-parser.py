@@ -94,5 +94,5 @@ def parse(database, model, input, files, aids, **kwargs):
   database.save(model)
 
 def register_slycat_plugin(context):
-  context.register_parser("dac-var-files-parser", "DAC .var files", ["dac-var-files"], parse)
+  context.register_parser("dac-var-files-parser", "DAC .var files (and variables.meta file)", ["dac-var-files"], parse)
 
