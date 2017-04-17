@@ -160,6 +160,10 @@ class Session(object):
     cherrypy.response.status = "202 Upload session finished."
 
   def _parse_uploads(self):
+    """
+    calls the parse function specified by the registered parser
+    :return: not used
+    """
     cherrypy.log.error("Upload parsing started.")
 
     if self._mid not in parsing_locks:
@@ -195,6 +199,10 @@ class Session(object):
       cherrypy.log.error("Upload parsing finished.")
 
   def close(self):
+    """
+    destroys the temp files made by an upload session
+    :return: 
+    """
     if self._parsing_thread is not None and self._parsing_thread.is_alive():
       # Commenting out the error email since it seems like a frequent one as well...
       # slycat.email.send_error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
