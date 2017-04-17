@@ -45,6 +45,7 @@ import uuid
 
 session_cache = {}
 session_cache_lock = threading.Lock()
+parsing_lock = threading.Lock()
 
 def root():
   if root.path is None:
@@ -160,33 +161,34 @@ class Session(object):
 
   def _parse_uploads(self):
     cherrypy.log.error("Upload parsing started.")
+    with parsing_lock:
+      cherrypy.log.error("got lock: %s" % self._mid)
+      database = slycat.web.server.database.couchdb.connect()
+      model = database.get("model", self._mid)
 
-    database = slycat.web.server.database.couchdb.connect()
-    model = database.get("model", self._mid)
+      def numeric_order(x):
+        """Files and file parts must be loaded in numeric, not lexicographical, order."""
+        return int(x.split("-")[-1])
 
-    def numeric_order(x):
-      """Files and file parts must be loaded in numeric, not lexicographical, order."""
-      return int(x.split("-")[-1])
+      files = []
+      storage = path(self._uid)
+      for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
+        cherrypy.log.error("Assembling %s" % file_dir)
+        file = ""
+        for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
+          cherrypy.log.error(" Loading %s" % file_part)
+          with open(file_part, "r") as f:
+            file += f.read()
+        files.append(file)
 
-    files = []
-    storage = path(self._uid)
-    for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
-      cherrypy.log.error("Assembling %s" % file_dir)
-      file = ""
-      for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
-        cherrypy.log.error(" Loading %s" % file_part)
-        with open(file_part, "r") as f:
-          file += f.read()
-      files.append(file)
+      try:
+        slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files, self._aids, **self._kwargs)
+      except Exception as e:
+        cherrypy.log.error("Exception parsing posted files: %s" % e)
+        import traceback
+        cherrypy.log.error(traceback.format_exc())
 
-    try:
-      slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files, self._aids, **self._kwargs)
-    except Exception as e:
-      cherrypy.log.error("Exception parsing posted files: %s" % e)
-      import traceback
-      cherrypy.log.error(traceback.format_exc())
-
-    cherrypy.log.error("Upload parsing finished.")
+      cherrypy.log.error("Upload parsing finished.")
 
   def close(self):
     if self._parsing_thread is not None and self._parsing_thread.is_alive():
