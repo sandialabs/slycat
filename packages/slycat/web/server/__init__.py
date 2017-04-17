@@ -15,6 +15,9 @@ import slycat.hyperchunks
 import slycat.web.server.hdf5
 import slycat.web.server.remote
 from slycat.web.server.cache import Cache
+from cherrypy._cpcompat import base64_decode
+import urlparse
+import functools
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
@@ -520,7 +523,7 @@ def ssh_connect(hostname=None, username=None, password=None):
 
         cherrypy.log.error("++ cert method, POST result: %s" % str(r))
         # create a cert file obj
-        #cert_file_object = tempfile.TemporaryFile().write(str(r.json()["certificate"])).seek(0) #this line crashes
+        # cert_file_object = tempfile.TemporaryFile().write(str(r.json()["certificate"])).seek(0) #this line crashes
         cert_file_object = tempfile.TemporaryFile()
         cert_file_object.write(str(r.json()["certificate"]))
         cert_file_object.seek(0)
@@ -545,6 +548,67 @@ def ssh_connect(hostname=None, username=None, password=None):
         cert_file_object.close()
         key_file_object.close()
     return ssh
+
+
+def get_password_function():
+    if get_password_function.password_check is None:
+        if "password-check" not in cherrypy.request.app.config["slycat-web-server"]:
+            raise cherrypy.HTTPError("500 No password check configured.")
+        plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
+        args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
+        kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
+        if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
+            slycat.email.send_error("slycat-standard-authentication.py authenticate",
+                                    "cherrypy.HTTPError 500 no password check plugin found.")
+            raise cherrypy.HTTPError("500 No password check plugin found.")
+        get_password_function.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args,
+                                                 **kwargs)
+    return get_password_function.password_check
+get_password_function.password_check = None
+
+def response_url():
+    """
+    get the resonse_url and clean it to make sure
+    that we are not being spoofed
+    :return: url to route to once signed in
+    """
+    current_url = urlparse.urlparse(cherrypy.url())  # gets current location on the server
+    location = cherrypy.request.json["location"]
+    try:
+        if urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from']:  # get from query href
+            cleaned_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
+            if not cleaned_url.__contains__(
+                    current_url.netloc):  # check net location to avoid cross site script attacks
+                cleaned_url = "https://" + current_url.netloc + "/projects"
+        else:
+            cleaned_url = "https://" + current_url.netloc + "/projects"
+    except Exception as e:
+        # cherrypy.log.error("no location provided setting target to /projects")
+        cleaned_url = "https://" + current_url.netloc + "/projects"
+    return cleaned_url
+
+
+def decode_username_and_password():
+    """
+    decode the url from the json that was passed to us
+    :return: decoded url and password as a tuple
+    """
+    try:
+        # cherrypy.log.error("decoding username and password")
+        user_name = base64_decode(cherrypy.request.json["user_name"])
+        password = base64_decode(cherrypy.request.json["password"])
+
+        # try and get the redirect path for after successful login
+        try:
+            location = cherrypy.request.json["location"]
+        except Exception as e:
+            location = None
+            # cherrypy.log.error("no location provided moving on")
+    except Exception as e:
+        # cherrypy.log.error("username and password could not be decoded")
+        slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
+        raise cherrypy.HTTPError(400)
+    return user_name, password
 
 
 def clean_up_old_session():
@@ -609,8 +673,6 @@ def create_single_sign_on_session(remote_ip, auth_user):
         {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
          'groups': groups, 'ip': remote_ip, "sessions": []})
 
-    slycat.web.server.handlers.login.sessions[sid] = session
-
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
     cherrypy.response.cookie["slycatauth"]["secure"] = 1
@@ -624,6 +686,44 @@ def create_single_sign_on_session(remote_ip, auth_user):
     cherrypy.response.status = "200 OK"
     cherrypy.request.login = auth_user
 
+
+def check_rules(groups):
+    # cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
+    # Successful authentication, now check access rules.
+    authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
+    # for rules see slycat config file
+    rules = []
+    if "rules" in authentication_kwargs:
+        rules = authentication_kwargs["rules"]
+    if "realm" in authentication_kwargs:
+        realm = authentication_kwargs["realm"]
+    # cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)))
+
+    if rules:
+        # found rules now time to apply them
+        # cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
+        deny = True
+        for operation, category, members in rules:
+            if operation not in ["allow"]:
+                raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
+            if category not in ["users", "groups", "directory"]:
+                raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)
+            if category in ["groups"]:
+                # see the slycat-dev web config for an example with this rule
+                # verify the group given in rules is one of the user's meta groups as returned by the ldap password fn
+                for group in groups:
+                    if group in members:
+                        deny = False
+            if category in ["directory"]:
+                try:
+                    lookupResult = cherrypy.request.app.config["slycat-web-server"]["directory"](user_name)
+                    if lookupResult != {}:
+                        deny = False
+                except:
+                    # cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
+                    pass
+            if deny:
+                raise cherrypy.HTTPError("403 User denied by authentication rules.")
 
 def check_https_get_remote_ip():
     """
