@@ -119,12 +119,12 @@ js_bundle._bundle = None
 
 def get_sid(hostname):
     """
-  Takes a hostname address and returns the established sid value
-  base on what is found in the users session
-  raises 400 and 404
-  :param hostname: name of the host we are trying to connect to
-  :return: sid : uuid for the session name
-  """
+    Takes a hostname address and returns the established sid value
+    base on what is found in the users session
+    raises 400 and 404
+    :param hostname: name of the host we are trying to connect to
+    :return: sid : uuid for the session name
+    """
     sid = None
     try:
         database = slycat.web.server.database.couchdb.connect()
@@ -239,11 +239,11 @@ def post_projects():
 
 def get_project(pid):
     """
-  returns a project based on "content-type" header
-  :param pid: project ID
-  :return: Either html landing page of given project or the json
-  representation of the project
-  """
+    returns a project based on "content-type" header
+    :param pid: project ID
+    :return: Either html landing page of given project or the json
+    representation of the project
+    """
 
     # Return the client's preferred media-type (from the given Content-Types)
     accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
@@ -361,11 +361,11 @@ def get_project_references(pid):
 @cherrypy.tools.json_out(on=True)
 def post_project_models(pid):
     """
-  When a pid along with json "model-type", "marking", "name" is sent with POST
-  creates a model and saves it to the database
-  :param pid: project ID for created model
-  :return: json {"id" : mid}
-  """
+    When a pid along with json "model-type", "marking", "name" is sent with POST
+    creates a model and saves it to the database
+    :param pid: project ID for created model
+    :return: json {"id" : mid}
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -762,9 +762,9 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 @cherrypy.tools.json_out(on=True)
 def post_uploads():
     """
-  creates a session for uploading a file to
-  :return: Upload ID
-  """
+    creates a session for uploading a file to
+    :return: Upload ID
+    """
     mid = require_json_parameter("mid")
     input = require_boolean_json_parameter("input")
     parser = require_json_parameter("parser")
@@ -812,10 +812,10 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
 @cherrypy.tools.json_out(on=True)
 def post_upload_finished(uid):
     """
-  ask the server to finish the upload
-  :param uid: upload session ID
-  :return: status of upload
-  """
+    ask the server to finish the upload
+    :param uid: upload session ID
+    :return: status of upload
+    """
     uploaded = require_integer_array_json_parameter("uploaded")
     with slycat.web.server.upload.get_session(uid) as session:
         return session.post_upload_finished(uploaded)
@@ -897,8 +897,8 @@ def login():
 
 def get_root():
     """
-  Redirect all requests to "/" to "/projects"
-  """
+    Redirect all requests to "/" to "/projects"
+    """
     current_url = urlparse.urlparse(cherrypy.url())
     proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
     raise cherrypy.HTTPRedirect(proj_url, 303)
@@ -906,10 +906,10 @@ def get_root():
 
 def logout():
     """
-  See if the client has a valid session.
-  If so delete it
-  :return: the status of the request
-  """
+    See if the client has a valid session.
+    If so delete it
+    :return: the status of the request
+    """
     try:
         if "slycatauth" in cherrypy.request.cookie:
             sid = cherrypy.request.cookie["slycatauth"].value
@@ -1795,18 +1795,18 @@ def get_user(uid):
 @cherrypy.tools.json_out(on=True)
 def get_model_statistics(mid):
     """
-  returns statistics on the model
-  :param mid: model ID
-  :return json: {
-    "mid":mid,
-    "hdf5_file_size":hdf5_file_size,
-    "total_server_data_size": total_server_data_size,
-    "hdf5_store_size":total_hdf5_server_size,
-    "model":model,
-    "delta_creation_time":delta_creation_time,
-    "couchdb_doc_size": sys.getsizeof(model)
-  }
-  """
+    returns statistics on the model
+    :param mid: model ID
+    :return json: {
+      "mid":mid,
+      "hdf5_file_size":hdf5_file_size,
+      "total_server_data_size": total_server_data_size,
+      "hdf5_store_size":total_hdf5_server_size,
+      "model":model,
+      "delta_creation_time":delta_creation_time,
+      "couchdb_doc_size": sys.getsizeof(model)
+    }
+    """
     database = slycat.web.server.database.couchdb.connect()
     try:
         model = database.get("model", mid)
@@ -1930,11 +1930,11 @@ def post_remotes():
 @cherrypy.tools.json_out(on=True)
 def get_remotes(hostname):
     """
-  Returns {status: True} if the hostname was found in the user's
-  session
-  :param hostname: connection host name
-  :return: {"status":status, "msg":msg}
-  """
+    Returns {status: True} if the hostname was found in the user's
+    session
+    :param hostname: connection host name
+    :return: {"status":status, "msg":msg}
+    """
     status = False
     msg = "hostname session not found"
     try:
@@ -2097,13 +2097,13 @@ def post_remote_browse(hostname, path):
 
 def get_remote_file(hostname, path, **kwargs):
     """
-  Given a hostname and file path returns the file given
-  by the path
-  :param hostname: connection host name
-  :param path: path to file
-  :param kwargs:
-  :return: file
-  """
+    Given a hostname and file path returns the file given
+    by the path
+    :param hostname: connection host name
+    :param path: path to file
+    :param kwargs:
+    :return: file
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path, **kwargs)
@@ -2111,13 +2111,13 @@ def get_remote_file(hostname, path, **kwargs):
 
 def get_remote_image(hostname, path, **kwargs):
     """
-  Given a hostname and image path returns the image given
-  by the path
-  :param hostname: connection host name
-  :param path: path to image
-  :param kwargs:
-  :return: image
-  """
+    Given a hostname and image path returns the image given
+    by the path
+    :param hostname: connection host name
+    :param path: path to image
+    :param kwargs:
+    :return: image
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_image(path, **kwargs)
@@ -2126,12 +2126,12 @@ def get_remote_image(hostname, path, **kwargs):
 @cherrypy.tools.json_out(on=True)
 def get_time_series_names(hostname, path, **kwargs):
     """
-            Parse a time series csv for all column names
-            :param hostname: connection host name
-            :param path: path to csv file
-            :param kwargs:
-            :return: json object of column names
-            """
+    Parse a time series csv for all column names
+    :param hostname: connection host name
+    :param path: path to csv file
+    :param kwargs:
+    :return: json object of column names
+    """
     cherrypy.log.error("webservice was hit with %s : %s" % (hostname, path))
 
     sid = get_sid(hostname)
@@ -2146,9 +2146,9 @@ def get_time_series_names(hostname, path, **kwargs):
 
     def _isNumeric(j):
         """"
-                Check if the input object is a numerical value, i.e. a float
-                :param j: input object to check
-                :return: boolean
+        Check if the input object is a numerical value, i.e. a float
+        :param j: input object to check
+        :return: boolean
         """
         try:
             x = float(j)
@@ -2196,12 +2196,12 @@ def post_remote_videos(sid):
 @cherrypy.tools.json_out(on=True)
 def get_remote_video_status(hostname, vsid):
     """
-  Given a hostname and vsid returns the video status given
-  by the vsid
-  :param hostname: connection host name
-  :param vsid: video uuid
-  :return: json
-  """
+    Given a hostname and vsid returns the video status given
+    by the vsid
+    :param hostname: connection host name
+    :param vsid: video uuid
+    :return: json
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_video_status(vsid)
@@ -2209,12 +2209,12 @@ def get_remote_video_status(hostname, vsid):
 
 def get_remote_video(hostname, vsid):
     """
-  Given a hostname and vsid returns the video given
-  by the vsid
-  :param hostname: connection host name
-  :param vsid: video uuid
-  :return: video
-  """
+    Given a hostname and vsid returns the video given
+    by the vsid
+    :param hostname: connection host name
+    :param vsid: video uuid
+    :return: video
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_video(vsid)
