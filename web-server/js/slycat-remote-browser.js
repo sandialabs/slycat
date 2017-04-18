@@ -175,6 +175,11 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
 
       component.session_exists.subscribe(function(new_session_exists)
       {
+        console.log("PATH: inside component.session_exists.subscribe");
+        console.log("PATH: new_session_exists: " + new_session_exists);
+        console.log("PATH: component.path(): " + component.path());
+        console.log('PATH: localStorage.getItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname()): ' + localStorage.getItem("slycat-remote-browser-path-" + component.persistence_id + component.hostname()) );
+
         if(new_session_exists)
         {
           if(!component.path())
