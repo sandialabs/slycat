@@ -80,6 +80,7 @@ def js_bundle():
                                                                                   "js/knockout-projections.js",
                                                                                   "js/knockstrap.js",
                                                                                   "js/slycat-server-root.js",
+                                                                                  "js/slycat-server-ispasswordrequired.js",
                                                                                   "js/slycat-bookmark-manager.js",
                                                                                   "js/slycat-web-client.js",
                                                                                   "js/slycat_file_uploader_factory.js",
@@ -118,12 +119,12 @@ js_bundle._bundle = None
 
 def get_sid(hostname):
     """
-  Takes a hostname address and returns the established sid value
-  base on what is found in the users session
-  raises 400 and 404
-  :param hostname: name of the host we are trying to connect to
-  :return: sid : uuid for the session name
-  """
+    Takes a hostname address and returns the established sid value
+    base on what is found in the users session
+    raises 400 and 404
+    :param hostname: name of the host we are trying to connect to
+    :return: sid : uuid for the session name
+    """
     sid = None
     try:
         database = slycat.web.server.database.couchdb.connect()
@@ -238,11 +239,11 @@ def post_projects():
 
 def get_project(pid):
     """
-  returns a project based on "content-type" header
-  :param pid: project ID
-  :return: Either html landing page of given project or the json
-  representation of the project
-  """
+    returns a project based on "content-type" header
+    :param pid: project ID
+    :return: Either html landing page of given project or the json
+    representation of the project
+    """
 
     # Return the client's preferred media-type (from the given Content-Types)
     accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
@@ -360,11 +361,11 @@ def get_project_references(pid):
 @cherrypy.tools.json_out(on=True)
 def post_project_models(pid):
     """
-  When a pid along with json "model-type", "marking", "name" is sent with POST
-  creates a model and saves it to the database
-  :param pid: project ID for created model
-  :return: json {"id" : mid}
-  """
+    When a pid along with json "model-type", "marking", "name" is sent with POST
+    creates a model and saves it to the database
+    :param pid: project ID for created model
+    :return: json {"id" : mid}
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -761,9 +762,9 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 @cherrypy.tools.json_out(on=True)
 def post_uploads():
     """
-  creates a session for uploading a file to
-  :return: Upload ID
-  """
+    creates a session for uploading a file to
+    :return: Upload ID
+    """
     mid = require_json_parameter("mid")
     input = require_boolean_json_parameter("input")
     parser = require_json_parameter("parser")
@@ -811,160 +812,82 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
 @cherrypy.tools.json_out(on=True)
 def post_upload_finished(uid):
     """
-  ask the server to finish the upload
-  :param uid: upload session ID
-  :return: status of upload
-  """
+    ask the server to finish the upload
+    :param uid: upload session ID
+    :return: status of upload
+    """
     uploaded = require_integer_array_json_parameter("uploaded")
     with slycat.web.server.upload.get_session(uid) as session:
         return session.post_upload_finished(uploaded)
 
 
 def delete_upload(uid):
+    """
+    cleans up an upload session throws 409
+    if the session is busy
+    :param uid: 
+    :return: not used
+    """
     slycat.web.server.upload.delete_session(uid)
     cherrypy.response.status = "204 Upload session deleted."
+
+
+def open_id_authenticate(**params):
+    """
+    takes the openid parameter sent
+    to this function and logs in a user
+    :param params: openid params as a dictionary
+    :return: not used
+    """
+    # check for openid in the config for security
+    if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
+        raise cherrypy.HTTPError(404)
+
+    cherrypy.log.error("params = %s" % params)
+    current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+    kerberos_principal = params['openid.ext2.value.Authuser']
+    auth_user = kerberos_principal.split("@")[0]
+    cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
+    slycat.web.server.create_single_sign_on_session(slycat.web.server.check_https_get_remote_ip(), auth_user)
+    raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects")
 
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def login():
     """
-  Takes the post object under cherrypy.request.json with the users name and password
-  and determins with the user can be authenticated with slycat
-  :return: authentication status
-  """
+    Takes the post object under cherrypy.request.json with the users name and password
+    and determins with the user can be authenticated with slycat
+    :return: authentication status
+    """
     # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
     # try and delete any outdated sessions for the user if they have the cookie for it
-    if "slycatauth" in cherrypy.request.cookie:
-        try:
-            # cherrypy.log.error("found old session trying to delete it ")
-            sid = cherrypy.request.cookie["slycatauth"].value
-            couchdb = slycat.web.server.database.couchdb.connect()
-            session = couchdb.get("session", sid)
-            if session is not None:
-                couchdb.delete(session)
-        except:
-            # if an exception was throw there is nothing to be done
-            pass
+    slycat.web.server.clean_up_old_session()
 
     # try and decode the username and password
-    try:
-        # cherrypy.log.error("decoding username and password")
-        user_name = base64_decode(cherrypy.request.json["user_name"])
-        password = base64_decode(cherrypy.request.json["password"])
+    user_name, password = slycat.web.server.decode_username_and_password()
 
-        # try and get the redirect path for after successful login
-        try:
-            location = cherrypy.request.json["location"]
-        except Exception as e:
-            location = None
-            # cherrypy.log.error("no location provided moving on")
-    except Exception as e:
-        # cherrypy.log.error("username and password could not be decoded")
-        slycat.email.send_error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
-        raise cherrypy.HTTPError(400)
     realm = None
 
     # get the route they came from and check if the server root is the same,
     # if so redirect to the place they came from
-    current_url = urlparse.urlparse(cherrypy.url())  # gets current location on the server
-    try:
-        if urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from']:  # get from query href
-            response_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
-            if not response_url.__contains__(
-                    current_url.netloc):  # check net location to avoid cross site script attacks
-                response_url = "https://" + current_url.netloc + "/projects"
-        else:
-            response_url = "https://" + current_url.netloc + "/projects"
-    except Exception as e:
-        # cherrypy.log.error("no location provided setting target to /projects")
-        response_url = "https://" + current_url.netloc + "/projects"
+    response_url = slycat.web.server.response_url()
 
     # Get the client ip, which might be forwarded by a proxy.
     remote_ip = cherrypy.request.headers.get(
         "x-forwarded-for") if "x-forwarded-for" in cherrypy.request.headers else cherrypy.request.rem
 
     # see if we have a registered password checking function from our config
-    if login.password_check is None:
-        if "password-check" not in cherrypy.request.app.config["slycat-web-server"]:
-            raise cherrypy.HTTPError("500 No password check configured.")
-        plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
-        args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
-        kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
-        if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
-            slycat.email.send_error("slycat-standard-authentication.py authenticate",
-                                    "cherrypy.HTTPError 500 no password check plugin found.")
-            raise cherrypy.HTTPError("500 No password check plugin found.")
-        login.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args,
-                                                 **kwargs)
-
+    password_check = slycat.web.server.get_password_function()
     # time to test username and password
-    success, groups = login.password_check(realm, user_name, password)
+    success, groups = password_check(realm, user_name, password)
 
     if success:
-        # cherrypy.log.error("%s@%s: Password check succeeded. checking for rules" % (user_name, remote_ip))
-        # Successful authentication, now check access rules.
-        authentication_kwargs = cherrypy.request.app.config["slycat-web-server"]["authentication"]["kwargs"]
-        # for rules see slycat config file
-        rules = []
-        if "rules" in authentication_kwargs:
-            rules = authentication_kwargs["rules"]
-        if "realm" in authentication_kwargs:
-            realm = authentication_kwargs["realm"]
-        # cherrypy.log.error(("rules: %s args: %s" % (rules, authentication_kwargs)))
-
-        if rules:
-            # found rules now time to apply them
-            # cherrypy.log.error("found rules::%s:: applying them to the user" % (rules))
-            deny = True
-            for operation, category, members in rules:
-                if operation not in ["allow"]:
-                    raise cherrypy.HTTPError("500 Unknown access rule operation: %s." % operation)
-                if category not in ["users", "groups", "directory"]:
-                    raise cherrypy.HTTPError("500 Unknown access rule category: %s." % category)
-                if category in ["groups"]:
-                    # see the slycat-dev web config for an example with this rule
-                    # verify the group given in rules is one of the user's meta groups as returned by the ldap password fn
-                    for group in groups:
-                        if group in members:
-                            deny = False
-                if category in ["directory"]:
-                    try:
-                        lookupResult = cherrypy.request.app.config["slycat-web-server"]["directory"](user_name)
-                        if lookupResult != {}:
-                            deny = False
-                    except:
-                        # cherrypy.log.error("Authentication failed to confirm %s is in access directory." % user_name)
-                        pass
-                if deny:
-                    raise cherrypy.HTTPError("403 User denied by authentication rules.")
-        else:
-            # cherrypy.log.error("no rules were found")
-            pass
+        # check the rules
+        slycat.web.server.check_rules(groups)
+        # we got passed the rules check
         # Successful authentication and access verification, create a session and return.
-        sid = uuid.uuid4().hex
-        session = {"created": datetime.datetime.utcnow(), "creator": user_name}
-        database = slycat.web.server.database.couchdb.connect()
-        database.save(
-            {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
-             'groups': groups, 'ip': remote_ip, "sessions": []})
-
-        login.sessions[sid] = session
-
-        cherrypy.response.cookie["slycatauth"] = sid
-        cherrypy.response.cookie["slycatauth"]["path"] = "/"
-        cherrypy.response.cookie["slycatauth"]["secure"] = 1
-        cherrypy.response.cookie["slycatauth"]["httponly"] = 1
-        timeout = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
-        cherrypy.response.cookie["slycatauth"]["Max-Age"] = timeout
-        cherrypy.response.cookie["slycattimeout"] = "timeout"
-        cherrypy.response.cookie["slycattimeout"]["path"] = "/"
-        cherrypy.response.cookie["slycattimeout"]["Max-Age"] = timeout
-
-        cherrypy.response.status = "200 OK"
-        cherrypy.request.login = user_name
-        # cherrypy.log.error("cookie returned %s success:%s response_url:%s" % (
-        #    cherrypy.response.cookie["slycatauth"], success, response_url))
+        slycat.web.server.create_single_sign_on_session(remote_ip, user_name)
     else:
         # cherrypy.log.error("user %s at %s failed authentication" % (user_name, remote_ip))
         cherrypy.response.status = "404 no auth found!!!"
@@ -972,17 +895,21 @@ def login():
     return {'success': success, 'target': response_url}
 
 
-login.password_check = None
-login.sessions = {}
-login.session_cleanup = None
+def get_root():
+    """
+    Redirect all requests to "/" to "/projects"
+    """
+    current_url = urlparse.urlparse(cherrypy.url())
+    proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
+    raise cherrypy.HTTPRedirect(proj_url, 303)
 
 
 def logout():
     """
-  See if the client has a valid session.
-  If so delete it
-  :return: the status of the request
-  """
+    See if the client has a valid session.
+    If so delete it
+    :return: the status of the request
+    """
     try:
         if "slycatauth" in cherrypy.request.cookie:
             sid = cherrypy.request.cookie["slycatauth"].value
@@ -1868,18 +1795,18 @@ def get_user(uid):
 @cherrypy.tools.json_out(on=True)
 def get_model_statistics(mid):
     """
-  returns statistics on the model
-  :param mid: model ID
-  :return json: {
-    "mid":mid,
-    "hdf5_file_size":hdf5_file_size,
-    "total_server_data_size": total_server_data_size,
-    "hdf5_store_size":total_hdf5_server_size,
-    "model":model,
-    "delta_creation_time":delta_creation_time,
-    "couchdb_doc_size": sys.getsizeof(model)
-  }
-  """
+    returns statistics on the model
+    :param mid: model ID
+    :return json: {
+      "mid":mid,
+      "hdf5_file_size":hdf5_file_size,
+      "total_server_data_size": total_server_data_size,
+      "hdf5_store_size":total_hdf5_server_size,
+      "model":model,
+      "delta_creation_time":delta_creation_time,
+      "couchdb_doc_size": sys.getsizeof(model)
+    }
+    """
     database = slycat.web.server.database.couchdb.connect()
     try:
         model = database.get("model", mid)
@@ -2003,11 +1930,11 @@ def post_remotes():
 @cherrypy.tools.json_out(on=True)
 def get_remotes(hostname):
     """
-  Returns {status: True} if the hostname was found in the user's
-  session
-  :param hostname: connection host name
-  :return: {"status":status, "msg":msg}
-  """
+    Returns {status: True} if the hostname was found in the user's
+    session
+    :param hostname: connection host name
+    :return: {"status":status, "msg":msg}
+    """
     status = False
     msg = "hostname session not found"
     try:
@@ -2024,6 +1951,23 @@ def get_remotes(hostname):
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
     return {"status": status, "msg": msg}
+
+
+@cherrypy.tools.json_out(on=True)
+def get_remote_show_user_password():
+    """
+    checks to see if the application needs to show password
+    :return: json {show:bool, msg:msg}
+    """
+    ssh = False
+    slycat_pass = False
+    msg = "unknown"
+    if cherrypy.request.app.config["slycat-web-server"]["remote-authentication"]["method"] == "password":
+        ssh = True
+        msg = "password auth required for remotes"
+    if cherrypy.request.app.config["slycat-web-server"]["authentication"]["plugin"] == "slycat-password-authentication":
+        slycat_pass = True
+    return {"ssh": ssh, "slycat": slycat_pass, "msg": msg}
 
 
 def delete_remote(sid):
@@ -2153,13 +2097,13 @@ def post_remote_browse(hostname, path):
 
 def get_remote_file(hostname, path, **kwargs):
     """
-  Given a hostname and file path returns the file given
-  by the path
-  :param hostname: connection host name
-  :param path: path to file
-  :param kwargs:
-  :return: file
-  """
+    Given a hostname and file path returns the file given
+    by the path
+    :param hostname: connection host name
+    :param path: path to file
+    :param kwargs:
+    :return: file
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path, **kwargs)
@@ -2167,13 +2111,13 @@ def get_remote_file(hostname, path, **kwargs):
 
 def get_remote_image(hostname, path, **kwargs):
     """
-  Given a hostname and image path returns the image given
-  by the path
-  :param hostname: connection host name
-  :param path: path to image
-  :param kwargs:
-  :return: image
-  """
+    Given a hostname and image path returns the image given
+    by the path
+    :param hostname: connection host name
+    :param path: path to image
+    :param kwargs:
+    :return: image
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_image(path, **kwargs)
@@ -2182,12 +2126,12 @@ def get_remote_image(hostname, path, **kwargs):
 @cherrypy.tools.json_out(on=True)
 def get_time_series_names(hostname, path, **kwargs):
     """
-            Parse a time series csv for all column names
-            :param hostname: connection host name
-            :param path: path to csv file
-            :param kwargs:
-            :return: json object of column names
-            """
+    Parse a time series csv for all column names
+    :param hostname: connection host name
+    :param path: path to csv file
+    :param kwargs:
+    :return: json object of column names
+    """
     cherrypy.log.error("webservice was hit with %s : %s" % (hostname, path))
 
     sid = get_sid(hostname)
@@ -2202,9 +2146,9 @@ def get_time_series_names(hostname, path, **kwargs):
 
     def _isNumeric(j):
         """"
-                Check if the input object is a numerical value, i.e. a float
-                :param j: input object to check
-                :return: boolean
+        Check if the input object is a numerical value, i.e. a float
+        :param j: input object to check
+        :return: boolean
         """
         try:
             x = float(j)
@@ -2252,12 +2196,12 @@ def post_remote_videos(sid):
 @cherrypy.tools.json_out(on=True)
 def get_remote_video_status(hostname, vsid):
     """
-  Given a hostname and vsid returns the video status given
-  by the vsid
-  :param hostname: connection host name
-  :param vsid: video uuid
-  :return: json
-  """
+    Given a hostname and vsid returns the video status given
+    by the vsid
+    :param hostname: connection host name
+    :param vsid: video uuid
+    :return: json
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_video_status(vsid)
@@ -2265,12 +2209,12 @@ def get_remote_video_status(hostname, vsid):
 
 def get_remote_video(hostname, vsid):
     """
-  Given a hostname and vsid returns the video given
-  by the vsid
-  :param hostname: connection host name
-  :param vsid: video uuid
-  :return: video
-  """
+    Given a hostname and vsid returns the video given
+    by the vsid
+    :param hostname: connection host name
+    :param vsid: video uuid
+    :return: video
+    """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_video(vsid)

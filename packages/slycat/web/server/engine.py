@@ -42,6 +42,7 @@ def start(root_path, config_file):
     slycat.email.send_error("slycat.web.server.engine.py start", "Configuration file %s does not exist." % config_file)
     raise Exception("Configuration file %s does not exist." % config_file)
 
+  # below, simply tell engine to watch config file for potential reload, reloading may be ON or OFF
   cherrypy.engine.autoreload.files.add(config_file)
   parser = ConfigParser.SafeConfigParser()
   parser.read(config_file)
@@ -118,6 +119,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-remote-video", "/remotes/:hostname/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video-status", "/remotes/:hostname/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-remote-show-user-password", "/remotes/show/user-password", slycat.web.server.handlers.get_remote_show_user_password, conditions={"method": ["GET"]})
 
   dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
@@ -167,6 +169,9 @@ def start(root_path, config_file):
 
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
+  dispatcher.connect("openid-login", "/openid-login/", slycat.web.server.handlers.open_id_authenticate, conditions={"method": ["GET"]})
+  dispatcher.connect("get-root", "/", slycat.web.server.handlers.get_root, conditions={"method" : ["GET"]})
+
 
   def log_configuration(tree, indent=""):
     for key, value in sorted(tree.items()):
@@ -192,6 +197,7 @@ def start(root_path, config_file):
   configuration["/"]["tools.caching.on"] = True
   configuration["/"]["tools.caching.delay"] = 3600
 
+  # wsgi: look at the auth below
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
   # configuration["/logout"]["tools.%s.on" % authentication] = False
@@ -222,7 +228,6 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("fonts"),
     "tools.staticdir.on": True,
     }
-
   configuration["/resources"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,
@@ -243,6 +248,12 @@ def start(root_path, config_file):
     "tools.%s.on" % authentication : False,
     "tools.staticdir.dir": abspath("slycat-login"),
     "tools.staticdir.on": True,
+    }
+  configuration["/openid-login"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
     }
   configuration["/resources/global/slycat-logo-navbar.png"] = {
     "tools.expires.force": True,
@@ -265,6 +276,7 @@ def start(root_path, config_file):
       raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Setup the requested directory plugin.
+  # wsgi: this is the ldap fn to lookup a username and rtn/cache uid, name, email
   directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
   if directory_type not in manager.directories.keys():
     slycat.email.send_error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory.type)
@@ -277,15 +289,17 @@ def start(root_path, config_file):
   # Expand remote host aliases.
   configuration["slycat-web-server"]["remote-hosts"] = {hostname: remote for remote in configuration["slycat-web-server"]["remote-hosts"] for hostname in remote.get("hostnames", [])}
 
+  # wsgi: this just saves this dict in the slycat obj, no cherrypy stuff here
   slycat.web.server.config = configuration
 
   # Start all of our cleanup workers.
   cherrypy.engine.subscribe("start", slycat.web.server.cleanup.start, priority=80)
 
-  # sets a custom 404 page
+  # sets custom 4XX pages
   cherrypy.config.update({ 'error_page.404': os.path.join(root_path, "templates/slycat-404.html") })
-  cherrypy.config.update({ 'error_page.401': os.path.join(root_path, "templates/slycat-404.html") })
+  cherrypy.config.update({ 'error_page.401': os.path.join(root_path, "templates/slycat-401.html") })
 
   # Start the web server.
   cherrypy.quickstart(None, "", configuration)
-
+  # wsgi: for actual wsgi - don't call quickstart just rtn config below
+  #return configuration

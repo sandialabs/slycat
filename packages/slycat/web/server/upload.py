@@ -45,6 +45,7 @@ import uuid
 
 session_cache = {}
 session_cache_lock = threading.Lock()
+parsing_locks = {}
 
 def root():
   if root.path is None:
@@ -159,36 +160,49 @@ class Session(object):
     cherrypy.response.status = "202 Upload session finished."
 
   def _parse_uploads(self):
+    """
+    calls the parse function specified by the registered parser
+    :return: not used
+    """
     cherrypy.log.error("Upload parsing started.")
 
-    database = slycat.web.server.database.couchdb.connect()
-    model = database.get("model", self._mid)
+    if self._mid not in parsing_locks:
+      parsing_locks[self._mid] = threading.Lock()
 
-    def numeric_order(x):
-      """Files and file parts must be loaded in numeric, not lexicographical, order."""
-      return int(x.split("-")[-1])
+    with parsing_locks[self._mid]:
+      cherrypy.log.error("got lock: %s" % self._mid)
+      database = slycat.web.server.database.couchdb.connect()
+      model = database.get("model", self._mid)
 
-    files = []
-    storage = path(self._uid)
-    for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
-      cherrypy.log.error("Assembling %s" % file_dir)
-      file = ""
-      for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
-        cherrypy.log.error(" Loading %s" % file_part)
-        with open(file_part, "r") as f:
-          file += f.read()
-      files.append(file)
+      def numeric_order(x):
+        """Files and file parts must be loaded in numeric, not lexicographical, order."""
+        return int(x.split("-")[-1])
 
-    try:
-      slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files, self._aids, **self._kwargs)
-    except Exception as e:
-      cherrypy.log.error("Exception parsing posted files: %s" % e)
-      import traceback
-      cherrypy.log.error(traceback.format_exc())
+      files = []
+      storage = path(self._uid)
+      for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
+        cherrypy.log.error("Assembling %s" % file_dir)
+        file = ""
+        for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
+          cherrypy.log.error(" Loading %s" % file_part)
+          with open(file_part, "r") as f:
+            file += f.read()
+        files.append(file)
 
-    cherrypy.log.error("Upload parsing finished.")
+      try:
+        slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files, self._aids, **self._kwargs)
+      except Exception as e:
+        cherrypy.log.error("Exception parsing posted files: %s" % e)
+        import traceback
+        cherrypy.log.error(traceback.format_exc())
+
+      cherrypy.log.error("Upload parsing finished.")
 
   def close(self):
+    """
+    destroys the temp files made by an upload session
+    :return: 
+    """
     if self._parsing_thread is not None and self._parsing_thread.is_alive():
       # Commenting out the error email since it seems like a frequent one as well...
       # slycat.email.send_error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")

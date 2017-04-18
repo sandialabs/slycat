@@ -1,4 +1,4 @@
-define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "jquery"], function(server_root, client, ko, mapping, $)
+define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "jquery", "slycat-server-ispasswordrequired"], function(server_root, client, ko, mapping, $, ispasswordrequired)
 {
   var module = {};
 
@@ -43,6 +43,7 @@ define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout",
       component.remote = mapping.fromJS({username: null, password: null, status: null, enable: true, focus: false, status_type: null});
       component.remote.focus.extend({notify: "always"});
       component.container = $($.parseHTML(template)).appendTo($("body"));
+      component.ispasswordrequired = ispasswordrequired;
       component.container.children().on("shown.bs.modal", function()
       {
         component.remote.focus(true);
