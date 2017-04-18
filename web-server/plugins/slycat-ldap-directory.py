@@ -14,7 +14,7 @@ configuration = {
   "timeout"  : None
 }
 
-def init(server, base, who="", cred="", attrlist=["uid", "cn", "mail"], ldapEmail="mail", timeout=datetime.timedelta(seconds=5)):
+def init(server, base, who="", cred="", attrlist=["uid", "displayName", "mail"], ldapEmail="mail", timeout=datetime.timedelta(seconds=5)):
   global configuration
   configuration["server"] = server
   configuration["base"] = base
