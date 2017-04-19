@@ -8,7 +8,7 @@
 # S. Martin
 # 11/12/2014
 
-"""Uploads tab-delimited files from a dial-a-cluster data directory
+"""Uploads comma-delimited files from a dial-a-cluster data directory
 to the Slycat Web Server."""
 
 import dac_compute_coords as dac
@@ -16,7 +16,6 @@ import dac_compute_coords as dac
 import numpy
 from scipy import optimize
 import slycat.web.client
-import sys
 import os
 
 parser = slycat.web.client.ArgumentParser()
@@ -32,8 +31,8 @@ arguments = parser.parse_args()
 # read in datapoints.meta file
 ##############################
 
-with open(arguments.dir + '/datapoints.meta', 'r') as stream:
-    meta_rows = [row.split('\t') for row in stream]
+with open(arguments.dir + '/datapoints.dac', 'r') as stream:
+    meta_rows = [row.split(',') for row in stream]
 print "Reading datapoints.meta file ..."
 
 # extract column names from the first line of the file, and assume that all columns contain string data.
@@ -57,8 +56,8 @@ for index in range(len(meta_columns)):
 #############################
 
 # (this is just like reading the datapoints.meta file)
-with open(arguments.dir + '/variables.meta', 'r') as stream:
-    meta_vars = [row.split('\t') for row in stream]
+with open(arguments.dir + '/var/variables.meta', 'r') as stream:
+    meta_vars = [row.split(',') for row in stream]
 print"Reading variables.meta file ..."
 
 meta_var_col_names = [name.strip() for name in meta_vars[0]]
@@ -88,11 +87,11 @@ if meta_var_col_names[3] != "Plot Type":
 ###############################################################
 
 # check to see if alpha_parms.pref file exists
-if os.path.isfile(arguments.dir + '/alpha_parms.pref'):
+if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
 
 	# load file
-    with open(arguments.dir + '/alpha_parms.pref', 'r') as stream:
-        alpha_file = [row.split('\t') for row in stream]
+    with open(arguments.dir + '/pref/alpha_parms.pref', 'r') as stream:
+        alpha_file = [row.split(',') for row in stream]
     print "Reading alpha_parms.pref file ..."
     
     # check column names
@@ -131,11 +130,11 @@ alpha_order = alpha_order.tolist()
 #####################################################################
 
 # check to see if variable_defaults.pref file is present
-if os.path.isfile(arguments.dir + '/variable_defaults.pref'):
+if os.path.isfile(arguments.dir + '/pref/variable_defaults.pref'):
 
     # load file
-    with open(arguments.dir + '/variable_defaults.pref') as stream:
-        defaults_file = [row.split('\t') for row in stream]
+    with open(arguments.dir + '/pref/variable_defaults.pref') as stream:
+        defaults_file = [row.split(',') for row in stream]
     print "Reading varible_defaults.pref file ..."
     
     # check for 3 integers
@@ -156,7 +155,7 @@ var_plot_order = var_plot_order.tolist()
 ##########################################################
 
 # first define defaults
-dac_ui_parms = {'SLYCAT_HEADER': 50,   # slycat header is typically 50 pixels high
+dac_ui_parms = {
     'ALPHA_STEP': .001,                # step size for alpha sliders
     'ALPHA_SLIDER_WIDTH': 170,         # width in pixels for alpha slider
     'ALPHA_BUTTONS_HEIGHT': 33,        # height of alpha buttons pixels
@@ -181,14 +180,15 @@ dac_ui_parms = {'SLYCAT_HEADER': 50,   # slycat header is typically 50 pixels hi
     'Y_LABEL_PADDING': 13,             # padding for time series y-label
     'LABEL_OPACITY': .2,               # opacity for time series label
     'X_TICK_FREQ': 80,                 # pixel distance between x ticks
-    'Y_TICK_FREQ': 40}                 # pixel distance between y ticks
-      
+    'Y_TICK_FREQ': 40                  # pixel distance between y ticks
+}
+
 # check to see if dac_ui.pref file exists
-if os.path.isfile(arguments.dir + '/dac_ui.pref'):
+if os.path.isfile(arguments.dir + '/pref/dac_ui.pref'):
     
     # load file
-    with open(arguments.dir + '/dac_ui.pref') as stream:
-        dac_ui_file = [row.split('\t') for row in stream]
+    with open(arguments.dir + '/pref/dac_ui.pref') as stream:
+        dac_ui_file = [row.split(',') for row in stream]
     print "Reading dac_ui.pref file ..."
     
     # check for 2 columns
@@ -217,8 +217,8 @@ time_steps = []	# store as a list of numpy arrays
 for i in range(num_vars):
        
     # read variable_i.time file
-    with open(arguments.dir + '/variable_' + str(i + 1) + '.time') as stream:
-       time_step_i_file = [row.strip().split('\t') for row in stream]
+    with open(arguments.dir + '/time/variable_' + str(i + 1) + '.time') as stream:
+       time_step_i_file = [row.strip().split(',') for row in stream]
     
     # convert to numpy array
     time_steps_i = numpy.array([float(name.strip())
@@ -235,8 +235,8 @@ variable = []	# store as a list of numpy matrices
 for i in range(num_vars):
        
     # read variable_i.var file
-    with open(arguments.dir + '/variable_' + str(i + 1) + '.var') as stream:
-       variable_i_file = [row.strip().split('\t') for row in stream]
+    with open(arguments.dir + '/var/variable_' + str(i + 1) + '.var') as stream:
+       variable_i_file = [row.strip().split(',') for row in stream]
     
     # check that variable_i has the right number of data points
     if len(variable_i_file) != num_time_series:
@@ -259,8 +259,8 @@ var_dist = []	# store as a list of numpy matrices
 for i in range(num_vars):
 
     # read variable_i.dist file
-    with open(arguments.dir + '/variable_' + str(i + 1) + '.dist') as stream:
-        var_dist_i_file = [row.strip().split('\t') for row in stream]
+    with open(arguments.dir + '/dist/variable_' + str(i + 1) + '.dist') as stream:
+        var_dist_i_file = [row.strip().split(',') for row in stream]
     
     # check that var_dist file has the right number of data points
     if len(var_dist_i_file) != num_time_series:

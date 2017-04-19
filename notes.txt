@@ -9,13 +9,16 @@ Once you do that, the model is "registered" with the Slycat server and it knows
 where to find the other code (all stored within this directory).  To start a new
 dial-a-cluster model, you next need to load data, for example
 
-$ python create-dac-model.py --model-name “Weather” ../../data/weather —-no-verify
+$ python dac-create-model.py --model-name “weather” ../../data/weather —-no-verify
 
 loads the weather data onto the web server (run this from the plugin/py directory).
 
 To load the data onto the actual slycat server (not one running in docker), you 
 have to run something like:
 
-$ python create-dac-model.py --host https://slycat.sandia.gov --no-verify
-    --user smartin --marking uur model-name “Weather” --project-name “Weather-DAC”
+$ python dac-create-model.py --host https://slycat.sandia.gov --no-verify
+    --user smartin --marking uur --model-name “weather” --project-name “Weather-DAC”
     ../../data/weather
+
+For this to work you may need to make available some of the slycat source
+code (like the web client module).
