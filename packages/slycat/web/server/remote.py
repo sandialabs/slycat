@@ -985,7 +985,6 @@ def create_session(hostname, username, password, agent):
     """
     _start_session_cleanup_worker()
     client = cherrypy.request.headers.get("x-forwarded-for")
-    cherrypy.log.error("Creating remote session for %s@%s from %s" % (username, hostname, client))
     sid = uuid.uuid4().hex
     try:
         ssh = slycat.web.server.ssh_connect(hostname=hostname, username=username, password=password)
@@ -1002,7 +1001,7 @@ def create_session(hostname, username, password, agent):
                 "(~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. "
                 "Startup scripts should only write to stderr, never stdout - see sshd(8).")
 
-        cherrypy.log.error("++ cert method, ssh connection made, continuing")
+        cherrypy.log.error("Created remote session for %s@%s from %s" % (username, hostname, client))
         # Start sftp.
         sftp = ssh.open_sftp()
 
