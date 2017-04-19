@@ -69,6 +69,7 @@ def parse_file(file):
     return attributes, dimensions, data
 
 # note this version assumes there is no header row and the file is a matrix
+# note that we are assuming floats in our matrices
 def parse_mat_file(file):
 
     """
@@ -86,13 +87,15 @@ def parse_mat_file(file):
             return False
 
     cherrypy.log.error("dac gen matrix parsing:::::::")
-    rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
-    if len(rows) < 2:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
-        raise Exception("File must contain at least two rows.")
+    rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
+            escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
-    attributes = []
-    dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
+    # if len(rows) < 2:
+    #    slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
+    #    raise Exception("File must contain at least two rows.")
+
+    attributes = [{"name":"value", "type":"float64"}]
+    dimensions = [{"name":"row", "begin":0, "end":len(rows[1:])}]
     data = []
 
     # go through the csv by column
@@ -100,7 +103,7 @@ def parse_mat_file(file):
         column_has_floats = False
 
         # start from 1 to avoid the column name
-        for value in column[1:]:
+        for value in column[0:]:
             if isfloat(value):
                 column_has_floats = True
             try:# note NaN's are floats
@@ -112,11 +115,12 @@ def parse_mat_file(file):
             except Exception as e:
                 column_has_floats = False
                 cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
+                raise Exception("Matrix entries must be floats.")
             break
 
-        if not column_has_floats:
-            data.append(numpy.array(column[1:]))
-            attributes.append({"name":column[0], "type":"string"})
+        # if not column_has_floats:
+        #    data.append(numpy.array(column[1:]))
+        #    attributes.append({"name":column[0], "type":"string"})
 
     if len(attributes) < 1:
         slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
@@ -177,6 +181,7 @@ def parse(database, model, input, files, aids, **kwargs):
         parsed = [parse_mat_file(file) for file in files]
 
     # array_index = int(kwargs.get("array", "0"))
+    cherrypy.log.error(str(array_col))
     for (attributes, dimensions, data), aid in zip(parsed, aids):
         slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)

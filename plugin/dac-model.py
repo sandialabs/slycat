@@ -14,7 +14,8 @@ def register_slycat_plugin(context):
     import slycat.web.server
     import numpy
     import imp
-       
+    import cherrypy
+
     def finish(database, model):
         slycat.web.server.update_model(database, model,
 		    state="finished", result="succeeded",
@@ -24,6 +25,41 @@ def register_slycat_plugin(context):
     def page_html(database, model):
         return open(os.path.join(os.path.dirname(__file__), 
                     "dac-ui.html"), "r").read()
+
+    def init_mds_coords(database, model, verb, type, command, **kwargs):
+        """
+        Computes and stores into the slycat database the variables
+        "dac-mds-coords", "dac-full-mds-coords", and "dac-alpha-clusters".
+
+        Assumes everything needed is already stored in the slycat
+        database and is called from JS using client.get_model_command with
+        no arguments.
+
+        Used to initialize the MDS coordinates from the dac wizard.
+        """
+
+        # get alpha parameters from slycat server
+        alpha_values = slycat.web.server.get_model_parameter(
+            database, model, "dac-alpha-parms")
+
+        cherrypy.log.error (str(alpha_values))
+
+        # get distance matrices as a list of numpy arrays from slycat server
+        dist_mats = []
+        for i in range(len(alpha_values)):
+            dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-var-dist", "%s/0/..." % i))))
+
+        # compute MDS coordinates assuming alpha = 1
+        #full_mds_coords = dac.compute_coords(dist_mats, numpy.ones(len(alpha_values)))
+        #full_mds_coords = full_mds_coords[0][:, 0:3]
+
+
+        #unscaled_mds_coords = dac.compute_coords(var_dist, numpy.array(alpha_parms))
+        #unscaled_mds_coords = unscaled_mds_coords[0][:, 0:3]
+
+        # returns dummy argument indicating success
+        return json.dumps({"success": 1})
 
     # computes new MDS coordinate representation using alpha values
     def update_mds_coords(database, model, verb, type, command, **kwargs):
@@ -89,8 +125,8 @@ def register_slycat_plugin(context):
     	
         # return unsorted discriminant values as JSON array
     	return json.dumps({"fisher_disc": fisher_disc.tolist()})
-    			
-		
+
+
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords', 
         os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
@@ -100,7 +136,8 @@ def register_slycat_plugin(context):
     context.register_page("DAC", page_html)
     context.register_model_command("GET", "DAC", "update_mds_coords", update_mds_coords)
     context.register_model_command("GET", "DAC", "compute_fisher", compute_fisher)
-    
+    context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
+
     # registry css resources with slycat
     context.register_page_bundle("DAC", "text/css", [
         os.path.join(os.path.dirname(__file__), "css/dac-ui.css"),

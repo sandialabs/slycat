@@ -5,8 +5,8 @@
 // 3/31/2017
 
 define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings",
-        "knockout", "knockout-mapping", "slycat_file_uploader_factory"],
-    function(server_root, client, dialog, markings, ko, mapping, fileUploader)
+        "knockout", "knockout-mapping", "jquery", "slycat_file_uploader_factory"],
+    function(server_root, client, dialog, markings, ko, mapping, $, fileUploader)
 {
 
     function constructor(params)
@@ -153,15 +153,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // check for .dac extension
         if (file_ext == 'dac') {
-
             // proceed to upload variables.meta file, if present
             upload_var_meta_file();
-
         } else {
-
             // no .dac file selected
             dialog.ajax_error("Must select a .dac file.")("","","");
-
         }
     };
 
@@ -193,7 +189,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 aids: ["dac-variables-meta"],
                 parser: component.parser_var_files(),
                 success: function(){
-
                     // check that variable names are present
                     check_var_files(file_names);
                 },
@@ -241,16 +236,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     }
                 }
 
+                // next upload .time files
                 if ((num_vars == (file_names.length-1)) && all_var_files_found) {
-
                     check_time_files();
-
                 } else {
-
                     // missing .var files
                     dialog.ajax_error ("All *.var files must be selected.")("","","");
                     $('.dac-gen-browser-continue').toggleClass("disabled", false);
-
                 }
 
             }
@@ -276,17 +268,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             }
         }
 
+        // finally check .dist files
         if (all_time_files_found) {
-
-            // finally check .dist files
             check_dist_files();
-
         } else {
-
             // missing .time files
             dialog.ajax_error ("All *.time files must be selected.")("","","");
             $('.dac-gen-browser-continue').toggleClass("disabled", false);
-
         }
     }
 
@@ -309,17 +297,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             }
         }
 
+        // now start uploads, beginning with metadata
         if (all_dist_files_found) {
-
-            // now start uploads, beginning with metadata
             upload_dac_file();
-
         } else {
-
-            // missing .time files
+            // missing .dist files
             dialog.ajax_error ("All *.dist files must be selected.")("","","");
             $('.dac-gen-browser-continue').toggleClass("disabled", false);
-
         }
     }
 
@@ -432,7 +416,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     if (file_num < (dist_file_inds.length - 1)) {
                         upload_dist_files(file_num + 1);
                     } else {
-                        upload_MDS_coords();
+                        upload_pref_files();
                     }
                 },
             error: function(){
@@ -444,12 +428,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             };
         fileUploader.uploadFile(fileObject);
 
-    }
-
-    // computes initial MDS coords
-    var upload_MDS_coords = function () {
-
-        upload_pref_files();
     }
 
     // uploads or creates the ui preferences for DAC to slycat
@@ -522,47 +500,70 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // modify defaults according to user preferences
 
-        // upload all parameters
 
-        // upload ui preferences to slycat
+
+        // upload all preferences to slycat (these have to be uploaded
+        // sequentially to keep slycat from crashing)
+
+        // upload ui parms to slycat
         client.put_model_parameter ({
             mid: component.model._id(),
             aid: "dac-ui-parms",
             value: dac_ui_parms,
-            error: dialog.ajax_error("Error uploading UI preferences.")
+            error: dialog.ajax_error("Error uploading UI preferences."),
+            success: function () {
+
+             // upload alpha parameters to slycat
+             client.put_model_parameter({
+                mid: component.model._id(),
+                aid: "dac-alpha-parms",
+                value: [dac_alpha_parms],
+                error: dialog.ajax_error("Error uploading alpha parameter preferences."),
+                success: function () {
+
+                // upload alpha order to slycat
+                client.put_model_parameter({
+                    mid: component.model._id(),
+                    aid: "dac-alpha-order",
+                    value: [dac_alpha_order],
+                    error: dialog.ajax_error("Error uploading alpha order preferences."),
+                    success: function () {
+
+                    // upload plot order to slycat
+                    client.put_model_parameter({
+                        mid: component.model._id(),
+                        aid: "dac-var-plot-order",
+                        value: [dac_var_plot_order],
+                        error: dialog.ajax_error("Error uploading variable plot order preferences."),
+
+                        // now initialize MDS coords by calling server
+                        success: function () {
+                            init_MDS_coords();
+                        }
+                    }); }
+                }); }
+             }); }
         });
+    }
 
-        // upload alpha parameters to slycat
-        client.put_model_parameter ({
-            mid: component.model._id(),
-            aid: "dac-alpha-parms",
-            value: [dac_alpha_parms],
-            error: dialog.ajax_error("Error uploading alpha parameter preferences.")
-        });
+    // calls the server to initialize the MDS coords
+    var init_MDS_coords = function () {
 
-        // upload alpha order to slycat
-        client.put_model_parameter ({
-            mid: component.model._id(),
-            aid: "dac-alpha-order",
-            value: [dac_alpha_order],
-            error: dialog.ajax_error("Error uploading alpha order preferences.")
-        });
+        // call server to compute new coords
+		client.get_model_command(
+		{
+			mid: component.model._id(),
+      		type: "DAC",
+			command: "init_mds_coords",
+			success: function (result)
+				{
+				    console.log(result);
+					console.log("called init mds coords");
+					upload_success();
+				},
+			error: dialog.ajax_error("Server error initializing MDS coordinates.")
 
-        // upload plot order to slycat
-        client.put_model_parameter ({
-            mid: component.model._id(),
-            aid: "dac-var-plot-order",
-            value: [dac_var_plot_order],
-            error: dialog.ajax_error("Error uploading variable plot order preferences.")
-        });
-
-
-        console.log("entered pref upload");
-        console.log(component.browser_pref_files.selection().length);
-        console.log(component.browser_pref_files.selection()[0]);
-
-        upload_success();
-
+		});
     }
 
     // PTS format upload code
