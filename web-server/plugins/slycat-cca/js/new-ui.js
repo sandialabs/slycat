@@ -9,7 +9,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: markings.preselected()});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: "always"});
-    component.browser = mapping.fromJS({path:null, selection: []});
+    component.browser = mapping.fromJS({path:null, selection: [], progress: ko.observable(null)});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);

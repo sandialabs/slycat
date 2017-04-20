@@ -14,6 +14,7 @@ define("slycat-local-browser", ["slycat-server-root", "slycat-web-client", "knoc
       component.selection = params.selection;
       component.disabled = params.disabled === undefined ? false : params.disabled;
       component.multiple = params.multiple == true ? 'multiple' : null; // Set multiple parameter to true if you want multiple file selection enabled
+      component.progress = params.progress != undefined ? params.progress : ko.observable(undefined);
       component.selection_changed = function(model, event)
       {
         component.selection(event.target.files);
