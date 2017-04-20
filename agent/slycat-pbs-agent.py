@@ -51,7 +51,7 @@ class Agent(agent.Agent):
             "output": -1
         }
 
-        results["output"], results["errors"] = self.run_remote_command("qsuv %s" % results["filename"])
+        results["output"], results["errors"] = self.run_remote_command("qsub %s" % results["filename"])
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -106,9 +106,9 @@ class Agent(agent.Agent):
         f.write("#PBS -l select=1:ncpus=32:vntype=gpu\n")
         f.write("#PBS -l place=scatter:excl\n")
         f.write("#PBS -N slycat\n")
-        f.write("#PBS -q debug\n")
+        f.write("#PBS -q %s\n" % partition)
         f.write("#PBS -r n\n")
-        f.write("#PBS -A slycat_project\n")
+        f.write("#PBS -A %s\n" % wckey)
         f.write("#PBS -V\n")
         f.write("#PBS -j oe\n")
 
@@ -117,11 +117,12 @@ class Agent(agent.Agent):
 
         f.write("if (! -d $WORKDIR/$slyDir) then\n")
         f.write("    mkdir $slyDir\n")
-        f.write("endif\n" % wckey)
+        f.write("endif\n")
+        f.write("cd $slyDir\n")
 
         f.write("set exechost=`hostname -s`\n")
         f.write("echo \"++Slycat timeseries job running at `date` on $exechost, in directory `pwd` \"\n")
-        f.write("unlimit")
+        f.write("unlimit\n")
         f.write("module load slycat\n")
 
         f.write("echo \"++ Slycat job: launching ipcontroller at `date`\"\n")
@@ -136,10 +137,7 @@ class Agent(agent.Agent):
         f.write("sleep 1\n")
         f.write("ipengine --location=$exechost &\n")
         f.write("sleep 20\n")
-        f.write("set dataDir=/apps/unsupported/slycat/data/diode_clippper/")
-        f.write("set inFile=dakota_tabular.dat")
-        f.write("set timeFile=clipper_tran_template.cir.prn")
-        f.write("echo \"++ Slycat job: launching hdf5 conversion at `date`\"")
+        f.write("echo \"++ Slycat job: launching hdf5 conversion at `date`\"\n")
 
         for c in fn:
             f.write("%s\n" % c)
@@ -168,7 +166,7 @@ class Agent(agent.Agent):
                             time_seconds, fn,
                             tmp_file)
         results["temp_file"] = tmp_file
-        results["output"], results["errors"] = self.run_remote_command("sbatch %s" % tmp_file.name)
+        results["output"], results["errors"] = self.run_remote_command("qsub %s" % tmp_file.name)
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()

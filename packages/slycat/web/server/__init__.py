@@ -498,7 +498,6 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 
 def ssh_connect(hostname=None, username=None, password=None):
     if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] != "certificate":
-        cherrypy.log.error("++ doing non-cert ssh.connect for %s" % username)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=hostname, username=username, password=password)
@@ -513,7 +512,7 @@ def ssh_connect(hostname=None, username=None, password=None):
         pub_key = "ssh-rsa " + pvt_key.get_base64()  # SSO specific format
         # pub_key = "ssh-rsa " + pvt_key.get_base64()
         # + " " + principal + "\n"  # General Format, principal is <username>@<hostname>
-        cherrypy.log.error("++ cert method, POST to sso-auth-server for user: %s" % cherrypy.request.login)
+        cherrypy.log.error("ssh_connect cert method, POST to sso-auth-server for user: %s" % cherrypy.request.login)
         r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
                           cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
                                 slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
@@ -521,7 +520,7 @@ def ssh_connect(hostname=None, username=None, password=None):
                           headers={"Content-Type": "application/json"},
                           verify=False)
 
-        cherrypy.log.error("++ cert method, POST result: %s" % str(r))
+        cherrypy.log.error("ssh_connect cert method, POST result: %s" % str(r))
         # create a cert file obj
         # cert_file_object = tempfile.TemporaryFile().write(str(r.json()["certificate"])).seek(0) #this line crashes
         cert_file_object = tempfile.TemporaryFile()
@@ -535,14 +534,14 @@ def ssh_connect(hostname=None, username=None, password=None):
         cert = paramiko.RSACert(privkey_file_obj=key_file_object, cert_file_obj=cert_file_object)
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        cherrypy.log.error("++ cert method, calling ssh.connect for user: %s" % cherrypy.request.login)
+        cherrypy.log.error("ssh_connect cert method, calling ssh.connect for user: %s" % cherrypy.request.login)
         import traceback
         try:
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert,
                         port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("Authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
-            cherrypy.log.error("++ cert method, called ssh.connect traceback: %s" % traceback.print_exc())
+            cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
+            cherrypy.log.error("ssh_connect cert method, called ssh.connect traceback: %s" % traceback.print_exc())
             raise cherrypy.HTTPError("403 Remote authentication failed.")
         ssh.get_transport().set_keepalive(5)
         cert_file_object.close()

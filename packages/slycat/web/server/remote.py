@@ -144,7 +144,6 @@ class Session(object):
         self._sftp.close()
         self._ssh.close()
 
-    # TODO modify to follow new remote computation interface
     def submit_batch(self, filename):
         """
         Submits a command to the slycat-agent to start an input batch file on a cluster running SLURM.
@@ -183,7 +182,6 @@ class Session(object):
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
-    # TODO modify to follow new remote computation interface
     def checkjob(self, jid):
         """
         Submits a command to the slycat-agent to check the status of a submitted job to a cluster running SLURM.
@@ -235,7 +233,6 @@ class Session(object):
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
-    # TODO modify to follow new remote computation interface
     def cancel_job(self, jid):
         """
         Submits a command to the slycat-agent to cancel a running job on a cluster running SLURM.
@@ -271,7 +268,6 @@ class Session(object):
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
-    # TODO modify to follow new remote computation interface
     def get_job_output(self, jid, path):
         """
         Submits a command to the slycat-agent to fetch the content of the a job's output file from a cluster running SLURM.
@@ -365,9 +361,6 @@ class Session(object):
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
-    # TODO remote jobs commands and parameters are generated here for the
-    # parameter space and timeseries models. The call to the agent and its
-    # parameters will have to be modified to work with the new format.
     def run_agent_function(self, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds, fn,
                            fn_params, uid):
         """
@@ -553,7 +546,6 @@ class Session(object):
 
         return {"jid": jid, "errors": response["errors"]}
 
-    # TODO modify to follow new remote computation interface
     def launch(self, command):
         """
         Submits a single command to a remote location via the slycat-agent or SSH.
@@ -703,7 +695,7 @@ class Session(object):
                     "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has" \
                                        " access to %s, and don't forget to set appropriate permissions" \
                                        " on all the parent directories!" % (
-                    self.hostname, path)
+                                           self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to "
                                         "retrieve %s:%s. Check the filesystem on %s to verify that"
@@ -731,7 +723,7 @@ class Session(object):
                     "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access" \
                                        " to %s, and don't forget to set appropriate permissions on all" \
                                        " the parent directories!" % (
-                    self.hostname, path)
+                                           self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to"
                                         " retrieve %s:%s. Check the filesystem on %s to verify "
@@ -796,7 +788,7 @@ class Session(object):
                     "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access " \
                                        "to %s, and don't forget to set appropriate permissions on all " \
                                        "the parent directories!" % (
-                    self.hostname, path)
+                                           self.hostname, path)
                 slycat.email.send_error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to "
                                         "retrieve %s:%s. Check the filesystem on %s to verify that your "
@@ -886,7 +878,7 @@ class Session(object):
                 "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access " \
                                    "to %s, and don't forget to set appropriate permissions on all " \
                                    "the parent directories!" % (
-                self.hostname, path)
+                                       self.hostname, path)
             slycat.email.send_error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 you do not have permission to "
                                     "retrieve %s:%s. Check the filesystem on %s:%s to verify that "
@@ -993,7 +985,6 @@ def create_session(hostname, username, password, agent):
     """
     _start_session_cleanup_worker()
     client = cherrypy.request.headers.get("x-forwarded-for")
-    cherrypy.log.error("Creating remote session for %s@%s from %s" % (username, hostname, client))
     sid = uuid.uuid4().hex
     try:
         ssh = slycat.web.server.ssh_connect(hostname=hostname, username=username, password=password)
@@ -1010,7 +1001,7 @@ def create_session(hostname, username, password, agent):
                 "(~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar) that writes data to stdout. "
                 "Startup scripts should only write to stderr, never stdout - see sshd(8).")
 
-        cherrypy.log.error("++ cert method, ssh connection made, continuing")
+        cherrypy.log.error("Created remote session for %s@%s from %s" % (username, hostname, client))
         # Start sftp.
         sftp = ssh.open_sftp()
 
@@ -1195,7 +1186,7 @@ def _session_monitor():
         cherrypy.log.error("Remote session cleanup worker running.")
         with session_cache_lock:
             for sid in list(
-                    session_cache.keys()):# We make an explicit copy of the keys because we may be modifying the dict contents
+                    session_cache.keys()):  # We make an explicit copy of the keys because we may be modifying the dict contents
                 _expire_session(sid)
         cherrypy.log.error("Remote session cleanup worker finished.")
         time.sleep(datetime.timedelta(minutes=15).total_seconds())
