@@ -120,7 +120,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    * @param file
    *  file to be uploaded
    */
-  function uploadFileSlice(uid, sliceNumber, file){
+  function uploadFileSlice(uid, sliceNumber, file, fileObject, progressIncreasePerSlice){
     // Split the file into slices.
     //TODO: add incrementing file id in upload file
     var fileSlice = getFileSlice(sliceNumber, file);
@@ -134,6 +134,10 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         success: function()
         {
           console.log("File uploaded part:" + sliceNumber + " successfully");
+          if(fileObject && fileObject.progress && progressIncreasePerSlice)
+          {
+            fileObject.progress( fileObject.progress() + progressIncreasePerSlice );
+          }
         },
         error: function(){
           console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
@@ -169,6 +173,18 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       return;
     }
 
+    var progressIncrease = 40;
+    var progressIncreasePerSlice = (progressIncrease - 10) / Math.ceil(file.size / module.MEGABYTE);
+    if(fileObject.progress)
+    {
+      // Setting initial progress to 10%
+      fileObject.progress(10);
+    }
+    if(fileObject.status)
+    {
+      fileObject.status('Uploading...');
+    }
+
     console.log("Uploading file "+ file + " \nfile size:" + file.size);
     console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
 
@@ -177,7 +193,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       var running = true;
       var sliceNumber = 0;
       while(running) {
-        uploadFileSlice(uid, sliceNumber, file);
+        uploadFileSlice(uid, sliceNumber, file, fileObject, progressIncreasePerSlice);
         running = ((sliceNumber * module.MEGABYTE) <= file.size);
         sliceNumber ++;
       }
@@ -185,6 +201,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
     }else{
       // Upload the whole file since it is small.
       console.log("Uploading part whole file");
+      
       client.put_upload_file_part({
         uid: uid,
         fid: 0,
@@ -193,6 +210,10 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         success: function()
         {
           console.log("File uploaded.");
+          if(fileObject.progress)
+          {
+            fileObject.progress(fileObject.progress() + progressIncreasePerSlice);
+          }
           finishUpload(pid, mid, uid, file, 1, fileObject);
         },
         error: function(){
@@ -228,6 +249,11 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       success: function()
       {
         console.log("Upload session finished.");
+        if(fileObject.progress)
+        {
+          // Setting progress to 50%
+          fileObject.progress(50);
+        }
         deleteUpload(pid, mid, uid, fileObject);
       },
       error: function(request, status, reason_phrase)
@@ -263,11 +289,20 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    */
   function deleteUpload(pid, mid, uid, fileObject)
   {
+    if(fileObject.status)
+    {
+      fileObject.status('Parsing...')
+    }
     client.delete_upload({
       uid: uid,
       success: function()
       {
         console.log("Upload session deleted.");
+        if(fileObject.progress)
+        {
+          // Setting progress to 90%
+          fileObject.progress(90);
+        }
         if(fileObject.success){
           fileObject.success();
         }
@@ -276,7 +311,12 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       {
         if(request.status == 409)
         {
-          window.setTimeout(deleteUpload.bind(null, pid, mid, uid, fileObject), 3000)
+          window.setTimeout(deleteUpload.bind(null, pid, mid, uid, fileObject), 3000);
+          if(fileObject.progress && fileObject.progress() < 90)
+          {
+            // Setting progress to 90%
+            fileObject.progress(Math.min(90, fileObject.progress() + 10));
+          }
         }
       }
     });
