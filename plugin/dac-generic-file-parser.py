@@ -79,52 +79,24 @@ def parse_mat_file(file):
     :returns: attributes, dimensions, data
     """
 
-    def isfloat(value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+    cherrypy.log.error("Started DAC generic matrix parser.")
 
-    cherrypy.log.error("dac gen matrix parsing:::::::")
+    # parse file using comma delimiter
     rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
             escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
-    # if len(rows) < 2:
-    #    slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
-    #    raise Exception("File must contain at least two rows.")
+    # fill a numpy matrix with matrix from file (assumes floats, fails otherwise)
+    data = numpy.zeros((len(rows[0:]), len(rows[0])))
+    for j in range(len(rows[0:])):
+        try:
+            data[j,:] = numpy.array([float(name) for name in rows[j]])
+        except:
+            raise Exception ("Matrix entries must be floats.")
 
-    attributes = [{"name":"value", "type":"float64"}]
-    dimensions = [{"name":"row", "begin":0, "end":len(rows[1:])}]
-    data = []
-
-    # go through the csv by column
-    for column in zip(*rows):
-        column_has_floats = False
-
-        # start from 1 to avoid the column name
-        for value in column[0:]:
-            if isfloat(value):
-                column_has_floats = True
-            try:# note NaN's are floats
-                output_list = map(lambda x: 'NaN' if x=='' else x, column[1:])
-                data.append(numpy.array(output_list).astype("float64"))
-                attributes.append({"name":column[0], "type":"float64"})
-
-            # could not convert something to a float defaulting to string
-            except Exception as e:
-                column_has_floats = False
-                cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
-                raise Exception("Matrix entries must be floats.")
-            break
-
-        # if not column_has_floats:
-        #    data.append(numpy.array(column[1:]))
-        #    attributes.append({"name":column[0], "type":"string"})
-
-    if len(attributes) < 1:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
-        raise Exception("File must contain at least one column.")
+    # describe matrix using attributes, dimensions
+    dimensions = [dict(name="row", end=int(data.shape[0])),
+        dict(name="column", end=int(data.shape[1]))]
+    attributes = [dict(name="value", type="float64")]
 
     return attributes, dimensions, data
 
@@ -176,16 +148,28 @@ def parse(database, model, input, files, aids, **kwargs):
 
     # parse file as either table or matrix
     if table:
-        parsed = [parse_file(file) for file in files]
-    else:
-        parsed = [parse_mat_file(file) for file in files]
 
-    # array_index = int(kwargs.get("array", "0"))
-    cherrypy.log.error(str(array_col))
-    for (attributes, dimensions, data), aid in zip(parsed, aids):
-        slycat.web.server.put_model_arrayset(database, model, aid, input)
+        # table parser (original csv parser)
+        parsed = [parse_file(file) for file in files]
+        for (attributes, dimensions, data), aid in zip(parsed, aids):
+            slycat.web.server.put_model_arrayset(database, model, aid, input)
+            slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
+            slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_col, data)
+
+    else:
+
+        # matrix parser (newer parser)
+        attributes, dimensions, data = parse_mat_file(files[0])
+        aid = aids[0]
+        cherrypy.log.error(aid)
+        cherrypy.log.error(str(array_col))
+        cherrypy.log.error(str(attributes))
+        cherrypy.log.error(str(dimensions))
+        cherrypy.log.error(str([data]))
+        if (array_col == 0):
+            slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_col, data)
+        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/0/..." % array_col, [data])
 
     end = time.time()
     model["db_creation_time"] = (end - start)

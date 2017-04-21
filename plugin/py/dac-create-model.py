@@ -261,7 +261,7 @@ for i in range(num_vars):
     # read variable_i.dist file
     with open(arguments.dir + '/dist/variable_' + str(i + 1) + '.dist') as stream:
         var_dist_i_file = [row.strip().split(',') for row in stream]
-    
+
     # check that var_dist file has the right number of data points
     if len(var_dist_i_file) != num_time_series:
         raise Exception ('variable_' + str(i + 1) + 
@@ -274,7 +274,7 @@ for i in range(num_vars):
     
     # scale distance matrices to have maximum distance of 1
     var_dist_i = var_dist_i/numpy.amax(var_dist_i)
-    
+
     # store in list of distance matrices
     var_dist.append(var_dist_i)
 
@@ -467,7 +467,12 @@ for i in range(num_vars):
     dimensions = [dict(name="row", end=int(dist_mat.shape[0])),
         dict(name="column", end=int(dist_mat.shape[1]))]
     attributes = [dict(name="value", type="float64")]
-    
+
+    print(i)
+    print(dimensions)
+    print(attributes)
+    print([dist_mat])
+
     # upload to slycat as seperate arrays
     connection.put_model_arrayset_array(mid, "dac-var-dist", i, dimensions, attributes)
     connection.put_model_arrayset_data(mid, "dac-var-dist", "%s/0/..." % i, [dist_mat])
