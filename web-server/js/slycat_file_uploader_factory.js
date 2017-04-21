@@ -300,8 +300,12 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         console.log("Upload session deleted.");
         if(fileObject.progress)
         {
-          // Setting progress to 90%
-          fileObject.progress(90);
+          var finalProgress = 100;
+          if(fileObject.finalProgress != undefined)
+          {
+            finalProgress = fileObject.finalProgress;
+          }
+          fileObject.progress(finalProgress);
         }
         if(fileObject.success){
           fileObject.success();
@@ -312,10 +316,15 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         if(request.status == 409)
         {
           window.setTimeout(deleteUpload.bind(null, pid, mid, uid, fileObject), 3000);
-          if(fileObject.progress && fileObject.progress() < 90)
+          var finalProgress = 90;
+          if(fileObject.finalProgress != undefined)
+          {
+            finalProgress = fileObject.finalProgress * .9;
+          }
+          if(fileObject.progress && fileObject.progress() < finalProgress)
           {
             // Setting progress to 90%
-            fileObject.progress(Math.min(90, fileObject.progress() + 10));
+            fileObject.progress(Math.min(finalProgress, fileObject.progress() + 10));
           }
         }
       }

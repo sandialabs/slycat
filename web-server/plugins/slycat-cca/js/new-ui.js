@@ -124,6 +124,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
        parser: component.parser(),
        progress: component.browser.progress,
        status: component.browser.status,
+       finalProgress: 90,
        success: function(){
          upload_success();
        },

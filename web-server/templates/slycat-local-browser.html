@@ -5,7 +5,7 @@
   </label>
   <div class="col-sm-10">
     <input type="file" class="" id="slycat-local-browser-file" placeholder="file" data-bind="event:{change: selection_changed}, attr: {'disabled' : disabled, 'multiple' : multiple}">
-    <div class="progress" data-bind="visible: progress() != undefined">
+    <div class="progress" data-bind="visible: progress() != undefined && progress() > 0">
       <div class="progress-bar progress-bar-striped active" role="progressbar" 
         aria-valuemin="0" 
         aria-valuemax="100" 
