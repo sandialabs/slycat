@@ -9,7 +9,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.model = mapping.fromJS({_id: null, name: "New CCA Model", description: "", marking: markings.preselected()});
     component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
     component.remote.focus.extend({notify: "always"});
-    component.browser = mapping.fromJS({path:null, selection: [], progress: ko.observable(null), status: ko.observable('')});
+    component.browser = mapping.fromJS({path:null, selection: [], progress: ko.observable(null), progress_status: ko.observable('')});
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.scale_inputs = ko.observable(true);
@@ -62,7 +62,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     var upload_success = function() {
       component.browser.progress(95);
-      component.browser.status('Finishing...');
+      component.browser.progress_status('Finishing...');
       client.get_model_arrayset_metadata({
         mid: component.model._id(),
         aid: "data-table",
@@ -70,7 +70,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         statistics: "0/...",
         success: function(metadata) {
           component.browser.progress(100);
-          component.browser.status('Finished');
+          component.browser.progress_status('Finished');
           component.row_count(metadata.arrays[0].shape[0]); // Set number of rows
           var attributes = [];
           var name = null;
@@ -123,7 +123,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
        aids: ["data-table"],
        parser: component.parser(),
        progress: component.browser.progress,
-       status: component.browser.status,
+       progress_status: component.browser.progress_status,
        finalProgress: 90,
        success: function(){
          upload_success();

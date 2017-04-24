@@ -180,9 +180,9 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       // Setting initial progress to 10%
       fileObject.progress(10);
     }
-    if(fileObject.status)
+    if(fileObject.progress_status)
     {
-      fileObject.status('Uploading...');
+      fileObject.progress_status('Uploading...');
     }
 
     console.log("Uploading file "+ file + " \nfile size:" + file.size);
@@ -289,9 +289,9 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    */
   function deleteUpload(pid, mid, uid, fileObject)
   {
-    if(fileObject.status)
+    if(fileObject.progress_status)
     {
-      fileObject.status('Parsing...')
+      fileObject.progress_status('Parsing...')
     }
     client.delete_upload({
       uid: uid,
