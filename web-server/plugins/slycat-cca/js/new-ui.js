@@ -148,8 +148,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.local-browser-continue').toggleClass("disabled", false);
-          component.remote.progress(null);
-          component.remote.progress_status('');
+          component.browser.progress(null);
+          component.browser.progress_status('');
         }
       };
       fileUploader.uploadFile(fileObject);

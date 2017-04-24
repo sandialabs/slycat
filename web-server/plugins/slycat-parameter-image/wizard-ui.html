@@ -32,13 +32,20 @@
     </div>
 
     <div data-bind="visible:tab() == 1" class="form-horizontal">
-      <slycat-local-browser params="selection:browser.selection"></slycat-local-browser>
+      <slycat-local-browser params="
+        selection:browser.selection,
+        progress:browser.progress,
+        progress_status:browser.progress_status"></slycat-local-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
     </div>
 
     <div data-bind="visible:tab() == 2">
       <form class="form-horizontal" role="form">
-        <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
+        <slycat-remote-controls params="
+          hostname:remote.hostname,
+          username:remote.username,
+          password:remote.password,
+          status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
       </form>
     </div>
 
@@ -51,7 +58,9 @@
         path:browser.path,
         open_file_callback:load_table,
         session_exists:remote.session_exists,
-        persistence_id:'pi-table-file'"></slycat-remote-browser>
+        persistence_id:'pi-table-file',
+        progress:remote.progress,
+        progress_status:remote.progress_status"></slycat-remote-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
     </div>
 
