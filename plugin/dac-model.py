@@ -13,6 +13,7 @@ def register_slycat_plugin(context):
     import os
     import slycat.web.server
     import numpy
+    from scipy import optimize
     import imp
     import cherrypy
 
@@ -38,25 +39,56 @@ def register_slycat_plugin(context):
         Used to initialize the MDS coordinates from the dac wizard.
         """
 
+        # compute MDS coords
+        # ------------------
+
         # get alpha parameters from slycat server
         alpha_values = slycat.web.server.get_model_parameter(
             database, model, "dac-alpha-parms")
 
-        cherrypy.log.error (str(alpha_values))
-
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
         for i in range(len(alpha_values)):
-            dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-var-dist", "%s/0/..." % i))))
+            dist_mat_i = next(iter(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-var-dist", "%s/0/..." % i)))
+            dist_mat_i = dist_mat_i/numpy.amax(dist_mat_i)
+            dist_mats.append(dist_mat_i)
 
-        # compute MDS coordinates assuming alpha = 1
-        #full_mds_coords = dac.compute_coords(dist_mats, numpy.ones(len(alpha_values)))
-        #full_mds_coords = full_mds_coords[0][:, 0:3]
+        # compute MDS coordinates assuming alpha = 1 for scaling
+        full_mds_coords = dac.compute_coords(dist_mats, numpy.ones(len(alpha_values)))
+        full_mds_coords = full_mds_coords[0][:, 0:3]
+
+        # compute preliminary coordinates
+        unscaled_mds_coords = dac.compute_coords(dist_mats, numpy.array(alpha_values))
+        unscaled_mds_coords = unscaled_mds_coords[0][:, 0:3]
+
+        # scale using full coordinates
+        mds_coords = dac.scale_coords(unscaled_mds_coords, full_mds_coords)
+
+        # compute alpha cluster parameters
+        # --------------------------------
+
+        # get number of variables, number time series, and metadata column types
+        var_metadata = slycat.web.server.get_model_arrayset_metadata (database, model, "dac-variables-meta")
+        cherrypy.log.error(str(var_metadata))
 
 
-        #unscaled_mds_coords = dac.compute_coords(var_dist, numpy.array(alpha_parms))
-        #unscaled_mds_coords = unscaled_mds_coords[0][:, 0:3]
+        # upload computations to slycat server
+        # ------------------------------------
+
+        # create array for MDS coordinates
+        slycat.web.server.put_model_arrayset(database, model, "dac-mds-coords")
+
+        # store as matrix
+        dimensions = [dict(name="row", end=int(mds_coords.shape[0])),
+                        dict(name="column", end=int(mds_coords.shape[1]))]
+        attributes = [dict(name="value", type="float64")]
+
+        # upload as slycat array
+        slycat.web.server.put_model_array(database, model, "dac-mds-coords", 0, attributes, dimensions)
+        slycat.web.server.put_model_arrayset_data(database, model, "dac-mds-coords", "0/0/...", [mds_coords])
+
+        # create array for alpha cluster parameters
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})

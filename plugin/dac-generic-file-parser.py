@@ -161,11 +161,6 @@ def parse(database, model, input, files, aids, **kwargs):
         # matrix parser (newer parser)
         attributes, dimensions, data = parse_mat_file(files[0])
         aid = aids[0]
-        cherrypy.log.error(aid)
-        cherrypy.log.error(str(array_col))
-        cherrypy.log.error(str(attributes))
-        cherrypy.log.error(str(dimensions))
-        cherrypy.log.error(str([data]))
         if (array_col == 0):
             slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)

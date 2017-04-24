@@ -300,7 +300,7 @@ mds_coords = dac.scale_coords(unscaled_mds_coords, full_mds_coords)
 #####################################
 
 # form a matrix with each distance matrix as a column (this is U matrix)
-all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars));
+all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars))
 for i in range(num_vars):
     all_dist_mat[:,i] = numpy.squeeze(numpy.reshape(var_dist[i], 
         (num_time_series * num_time_series,1)))
