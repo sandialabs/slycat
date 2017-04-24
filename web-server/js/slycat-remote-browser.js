@@ -24,6 +24,8 @@ define("slycat-remote-browser", ["slycat-server-root", "slycat-web-client", "kno
       component.browse_error = ko.observable(false);
       component.path_error = ko.observable(true);
       component.browser_updating = ko.observable(false);
+      component.progress = params.progress != undefined ? params.progress : ko.observable(undefined);
+      component.progress_status = params.progress_status != undefined ? params.progress_status : ko.observable('');
 
       component.icon_map = {
         "application/x-directory" : "<span class='fa fa-folder-o'></span>",

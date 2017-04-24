@@ -62,7 +62,9 @@
         path:browser.path,
         open_file_callback:load_table,
         session_exists:remote.session_exists,
-        persistence_id:'cca-table-file'"></slycat-remote-browser>
+        persistence_id:'cca-table-file',
+        progress:remote.progress,
+        progress_status:remote.progress_status"></slycat-remote-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
     </div>
 
