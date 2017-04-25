@@ -11,11 +11,50 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.ps_type = ko.observable("remote"); // local is selected by default...
     component.matrix_type = ko.observable("remote"); // remote is selected by default...
     component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), focus: false, sid: null, session_exists: false});
+    component.remote = mapping.fromJS({
+      hostname: null, 
+      username: null, 
+      password: null, 
+      status: null, 
+      status_type: null, 
+      enable: ko.computed(function(){return component.ps_type() == 'remote' ? true : false;}), 
+      focus: false, 
+      sid: null, 
+      session_exists: false,
+      path:null,
+      selection: [],
+      progress: ko.observable(null), 
+      progress_status: ko.observable(''),
+    });
     component.remote.focus.extend({notify: "always"});
-    component.remote_matrix = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: ko.computed(function(){return component.matrix_type() == 'remote' ? true : false;}), focus: false, sid: null, session_exists: false});
+    component.remote_matrix = mapping.fromJS({
+      hostname: null, 
+      username: null, 
+      password: null, 
+      status: null, 
+      status_type: null, 
+      enable: ko.computed(function(){return component.matrix_type() == 'remote' ? true : false;}), 
+      focus: false, 
+      sid: null, 
+      session_exists: false,
+      path:null, 
+      selection: [], 
+      progress: ko.observable(null), 
+      progress_status: ko.observable(''),
+    });
     component.remote_matrix.focus.extend({notify: "always"});
-    component.browser = mapping.fromJS({path:null, selection: []});
+    component.browser = mapping.fromJS({
+      path:null, 
+      selection: [], 
+      progress: ko.observable(null), 
+      progress_status: ko.observable(''),
+    });
+    component.browser_matrix = mapping.fromJS({
+      path:null, 
+      selection: [], 
+      progress: ko.observable(null), 
+      progress_status: ko.observable(''),
+    });
     component.parser = ko.observable(null);
     component.attributes = mapping.fromJS([]);
     component.image_attributes = ko.computed(function(){
@@ -94,7 +133,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       }
     };
 
-    var upload_success = function() {
+    var upload_success = function(uploader) {
+      uploader.progress(95);
+      uploader.progress_status('Finishing...');
       client.get_model_command({
         mid: component.model._id(),
         type: "parameter-image-plus",
@@ -104,6 +145,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             mid: component.model._id(),
             aid: "data-table",
             success: function(metadata) {
+              uploader.progress(100);
+              uploader.progress_status('Finished');
               var attributes = [];
               for(var i = 0; i != metadata["column-names"].length; ++i)
               {
@@ -147,12 +190,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
        file: file,
        aids: ["data-table"],
        parser: component.parser(),
+       progress: component.browser.progress,
+       progress_status: component.browser.progress_status,
+       progress_final: 90,
        success: function(){
-         upload_success();
+         upload_success(component.browser);
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.browser-continue').toggleClass("disabled", false);
+          component.browser.progress(null);
+          component.browser.progress_status('');
         }
       };
       fileUploader.uploadFile(fileObject);
