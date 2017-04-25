@@ -232,7 +232,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       component.tab(7);
     };
 
-    var upload_matrix_success = function() {
+    var upload_matrix_success = function(uploader) {
+      uploader.progress(95);
+      uploader.progress_status('Finishing...');
       client.get_model_command({
         mid: component.model._id(),
         type: "parameter-image",
@@ -242,6 +244,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             mid: component.model._id(),
             aid: "data-table",
             success: function(metadata) {
+              uploader.progress(100);
+              uploader.progress_status('Finished');
               // var attributes = [];
               // for(var i = 0; i != metadata["column-names"].length; ++i)
               //   attributes.push({
@@ -270,19 +274,24 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     component.upload_distance_matrix = function() {
       //$('.local-browser-continue').toggleClass("disabled", true);
-      var file = component.browser.selection()[0];
+      var file = component.browser_matrix.selection()[0];
       var fileObject ={
        pid: component.project._id(),
        mid: component.model._id(),
        file: file,
        aids: ["distance-matrix"],
        parser: "slycat-csv-parser",
+       progress: component.browser_matrix.progress,
+       progress_status: component.browser_matrix.progress_status,
+       progress_final: 90,
        success: function(){
-         upload_matrix_success();
+         upload_matrix_success(component.browser_matrix);
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.browser-continue').toggleClass("disabled", false);
+          component.browser_matrix.progress(null);
+          component.browser_matrix.progress_status('');
         }
       };
       fileUploader.uploadFile(fileObject);
@@ -364,15 +373,20 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
        pid: component.project._id(),
        hostname: [component.remote.hostname()],
        mid: component.model._id(),
-       paths: [component.browser.selection()],
+       paths: [component.remote.selection()],
        aids: ["data-table"],
        parser: component.parser(),
+       progress: component.remote.progress,
+       progress_status: component.remote.progress_status,
+       progress_final: 90,
        success: function(){
-         upload_success();
+         upload_success(component.remote);
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.browser-continue').toggleClass("disabled", false);
+          component.remote.progress(null);
+          component.remote.progress_status('');
         }
       };
       fileUploader.uploadFile(fileObject);
@@ -382,17 +396,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       $('.remote-browser-continue-matrix').toggleClass("disabled", true);
       var fileObject ={
        pid: component.project._id(),
-       hostname: [component.remote.hostname()],
+       hostname: [component.remote_matrix.hostname()],
        mid: component.model._id(),
-       paths: [component.browser.selection()],
+       paths: [component.remote_matrix.selection()],
        aids: ["distance-matrix"],
        parser: "slycat-csv-parser",
+       progress: component.remote_matrix.progress,
+       progress_status: component.remote_matrix.progress_status,
+       progress_final: 90,
        success: function(){
-         upload_matrix_success();
+         upload_matrix_success(component.remote_matrix);
        },
        error: function(){
           dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
           $('.browser-continue').toggleClass("disabled", false);
+          component.remote_matrix.progress(null);
+          component.remote_matrix.progress_status('');
         }
       };
       fileUploader.uploadFile(fileObject);
