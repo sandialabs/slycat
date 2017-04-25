@@ -63,11 +63,13 @@
         type:'remote',
         sid:remote.sid,
         hostname:remote.hostname,
-        selection:browser_input.selection,
-        path:browser_input.path,
+        selection:remote.selection,
+        path:remote.path,
         open_file_callback:select_input_file,
         session_exists:remote.session_exists,
-        persistence_id:'timeseries-table-file'"></slycat-remote-browser>
+        persistence_id:'timeseries-table-file',
+        progress:remote.progress,
+        progress_status:remote.progress_status"></slycat-remote-browser>
     </div>
 
     <div data-bind="visible:tab() == 4" class="form-horizontal">
@@ -137,11 +139,13 @@
         type:'remote',
         sid:remote.sid,
         hostname:remote.hostname,
-        selection:browser_timeseries.selection,
-        path:browser_timeseries.path,
+        selection:remote_timeseries.selection,
+        path:remote_timeseries.path,
         open_file_callback:select_xyce_timeseries_file,
         session_exists:remote.session_exists,
-        persistence_id:'timeseries-example-timeseries-file'"></slycat-remote-browser>
+        persistence_id:'timeseries-example-timeseries-file',
+        progress:remote_timeseries.progress,
+        progress_status:remote_timeseries.progress_status"></slycat-remote-browser>
     </div>
 
     <div data-bind="visible:tab() == 3" style="height: 400px">
@@ -150,8 +154,8 @@
         type:'remote-directory',
         sid:remote.sid,
         hostname:remote.hostname,
-        selection:browser_hdf5.selection,
-        path:browser_hdf5.path,
+        selection:remote_hdf5.selection,
+        path:remote_hdf5.path,
         session_exists:remote.session_exists,
         persistence_id:'timeseries-hdf5-directory'"></slycat-remote-browser>
     </div>
