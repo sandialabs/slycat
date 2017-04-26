@@ -46,31 +46,46 @@ S. Martin
 
         <div style="margin-top: 40px;">
         <label>Select .dac meta-data file:</label>
-        <slycat-local-browser params="selection:browser_dac_file.selection"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_dac_file.selection,
+            progress:browser_dac_file.progress,
+            progress_status:browser_dac_file.progress_status"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_dac_file,category:'dac-index-file'"></slycat-parser-controls>
         </div>
 
         <div style="margin-top: 40px;">
         <label>Select all .var variable files (plus variables.meta file):</label>
-        <slycat-local-browser params="selection:browser_var_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_var_files.selection,
+            multiple:true,
+            progress:browser_var_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_var_files,category:'dac-var-files'"></slycat-parser-controls>
         </div>
 
         <div style="margin-top: 40px;">
         <label>Select all .time time point files:</label>
-        <slycat-local-browser params="selection:browser_time_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_time_files.selection,
+            multiple:true,
+            progress:browser_time_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_time_files,category:'dac-time-files'"></slycat-parser-controls>
         </div>
 
         <div style="margin-top: 40px;">
         <label>Select all .dist pairwise distance files:</label>
-        <slycat-local-browser params="selection:browser_dist_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_dist_files.selection,
+            multiple:true,
+            progress:browser_dist_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_dist_files,category:'dac-dist-files'"></slycat-parser-controls>
         </div>
 
         <div style="margin-top: 40px;">
         <label>Select all .pref preference files:</label>
-        <slycat-local-browser params="selection:browser_pref_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_pref_files.selection,
+            multiple:true,
+            progress:browser_pref_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_pref_files,category:'dac-pref-files'"></slycat-parser-controls>
         </div>
 

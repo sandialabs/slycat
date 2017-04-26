@@ -23,11 +23,32 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                             description: "", marking: markings.preselected()});
 
     // DAC generic format file selections
-    component.browser_dac_file = mapping.fromJS({path:null, selection: []});
-    component.browser_var_files = mapping.fromJS({path:null, selection: []});
-    component.browser_time_files = mapping.fromJS({path:null, selection: []});
-    component.browser_dist_files = mapping.fromJS({path:null, selection: []});
-    component.browser_pref_files = mapping.fromJS({path:null, selection: []});
+    component.browser_dac_file = mapping.fromJS({
+        path:null, 
+        selection: [], 
+        progress: ko.observable(null),
+        progress_status: ko.observable(''),
+    });
+    component.browser_var_files = mapping.fromJS({
+        path:null, 
+        selection: [], 
+        progress: ko.observable(null),
+    });
+    component.browser_time_files = mapping.fromJS({
+        path:null, 
+        selection: [], 
+        progress: ko.observable(null),
+    });
+    component.browser_dist_files = mapping.fromJS({
+        path:null, 
+        selection: [], 
+        progress: ko.observable(null),
+    });
+    component.browser_pref_files = mapping.fromJS({
+        path:null, 
+        selection: [], 
+        progress: ko.observable(null),
+    });
 
     // PTS META/CSV file selections
     component.browser_csv_files = mapping.fromJS({path:null, selection: []});
@@ -318,6 +339,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             file: file,
             aids: ["dac-datapoints-meta"],
             parser: component.parser_dac_file(),
+            progress: component.browser_dac_file.progress,
+            progress_status: component.browser_dac_file.progress_status,
             success: function(){
                 upload_var_files(0);
             },
@@ -346,6 +369,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             file: file,
             aids: ["dac-var-data", file_num.toString(), "matrix"],
             parser: component.parser_var_files(),
+            progress: component.browser_var_files.progress,
             success: function(){
                     if (file_num < (var_file_inds.length - 1)) {
                         upload_var_files(file_num + 1);
