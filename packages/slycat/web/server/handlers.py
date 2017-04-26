@@ -2176,7 +2176,7 @@ def get_time_series_names(hostname, path, **kwargs):
     if not response_time_series_names:
         return response_time_series_names
     else:
-        raise cherrypy.HTTPError("400 Missing time:wqseries names.")
+        raise cherrypy.HTTPError("400 Missing timeseries names.")
 
 
 @cherrypy.tools.json_in(on=True)
