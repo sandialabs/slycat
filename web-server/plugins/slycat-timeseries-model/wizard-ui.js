@@ -6,11 +6,32 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.project = params.projects()[0];
     component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
     component.timeseries_type = ko.observable('xyce');
-    component.remote = mapping.fromJS({hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false});
+    component.remote = mapping.fromJS({
+      hostname: null, 
+      username: null, 
+      password: null, 
+      status: null, 
+      status_type: null, 
+      enable: true, 
+      focus: false, 
+      sid: null, 
+      session_exists: false,
+      path:null, 
+      selection: [],
+      progress: ko.observable(null), 
+      progress_status: ko.observable(''),
+    });
     component.remote.focus.extend({notify: 'always'});
-    component.browser_input = mapping.fromJS({path:null, selection: []});
-    component.browser_timeseries = mapping.fromJS({path:null, selection: []});
-    component.browser_hdf5 = mapping.fromJS({path:null, selection: []});
+    component.remote_timeseries = mapping.fromJS({
+      path:null,
+      selection: [],
+      progress: ko.observable(null), 
+      progress_status: ko.observable(''),
+    });
+    component.remote_hdf5 = mapping.fromJS({
+      path:null, 
+      selection: [],
+    });
     component.inputs_file = ko.observable('');
     component.input_directory = ko.observable('');
     component.hdf5_directory = ko.observable('');
@@ -226,34 +247,41 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_input_file = function() {
-      var file_path = component.browser_input.selection()[0];
-      console.log("calling time series name");
-      client.dummy();
-      component.timeseries_names(client.get_time_series_names({
-        hostname: component.remote.hostname(),
-        path: file_path,
-        success: function(response) {
-            component.timeseries_names(JSON.parse(response))
-            console.log(component.timeseries_names());
-        },
-        error: function(request, status, reason_phrase) {
-          console.log(reason_phrase);
-        }
-      }));
-
+      var file_path = component.remote.selection()[0];
       if(file_path == undefined)
       {
         dialog.dialog({message: "Please select your table file."})();
         return;
       }
-
       component.inputs_file(file_path);
 
-      if (component.timeseries_type() === 'xyce') {
+      if (component.timeseries_type() === 'csv') {
+        component.remote.progress_status("Uploading...");
+        component.remote.progress(50);
+
+        component.timeseries_names(client.get_time_series_names({
+          hostname: component.remote.hostname(),
+          path: file_path,
+          success: function(response) {
+            component.remote.progress_status("Finished");
+            component.remote.progress(100);
+            component.timeseries_names(JSON.parse(response))
+            console.log(component.timeseries_names());
+            component.tab(4);
+          },
+          error: function(request, status, reason_phrase) {
+            console.log(reason_phrase);
+            component.remote.progress_status("");
+            component.remote.progress(null);
+            dialog.dialog({message: "Please select a CSV file with a valid timeseries column."})();
+          }
+        }));
+      }
+      else if (component.timeseries_type() === 'xyce') {
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
+        component.tab(4);
       }
-      component.tab(4);
     };
 
     component.params_continue = function() {
@@ -309,7 +337,7 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     };
 
     component.select_xyce_timeseries_file = function() {
-      var filepath = component.browser_timeseries.selection()[0];
+      var filepath = component.remote_timeseries.selection()[0];
 
       if(filepath == undefined)
       {
@@ -327,9 +355,9 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
     component.select_hdf5_directory = function() {
       dialog.confirm({
         title: "Confirm HDF5 Directory",
-        message: "Please confirm this is the directory containing your HDF5 files: <br />" + component.browser_hdf5.path(),
+        message: "Please confirm this is the directory containing your HDF5 files: <br />" + component.remote_hdf5.path(),
         ok: function(){
-          component.hdf5_directory( component.browser_hdf5.path() );
+          component.hdf5_directory( component.remote_hdf5.path() );
           component.tab(5);
         },
       });

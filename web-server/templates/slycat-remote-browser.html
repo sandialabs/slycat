@@ -49,4 +49,16 @@
       </tbody>
     </table>
   </div>
+  <div class="progress" data-bind="visible: progress() != undefined && progress() > 0">
+    <div class="progress-bar progress-bar-striped active" role="progressbar" 
+      aria-valuemin="0" 
+      aria-valuemax="100" 
+      data-bind="
+        attr: {'aria-valuenow' : progress},
+        style: {'width' : progress() + '%'},
+        text: progress_status,
+    ">
+      Uploading
+    </div>
+  </div>
 </div>

@@ -27,7 +27,11 @@
         </label>
       </div>
       <div class="local-browser form-horizontal">
-        <slycat-local-browser params="selection:browser.selection, disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;})"></slycat-local-browser>
+        <slycat-local-browser params="
+          selection:browser.selection, 
+          disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;}),
+          progress:browser.progress,
+          progress_status:browser.progress_status"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser, category:'table', disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;})"></slycat-parser-controls>
       </div>
       <div class="radio remote" style="margin-left: 15px;">
@@ -48,11 +52,13 @@
         type:'remote',
         sid:remote.sid,
         hostname:remote.hostname,
-        selection:browser.selection,
-        path:browser.path,
+        selection:remote.selection,
+        path:remote.path,
         open_file_callback:load_table,
         session_exists:remote.session_exists,
-        persistence_id:'pip-table-file'"></slycat-remote-browser>
+        persistence_id:'pip-table-file',
+        progress:remote.progress,
+        progress_status:remote.progress_status"></slycat-remote-browser>
       <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
     </div>
 
@@ -93,7 +99,11 @@
         </label>
       </div>
       <div class="local-browser form-horizontal">
-        <slycat-local-browser params="selection:browser.selection, disabled: ko.computed(function(){return matrix_type() == 'local' ? false : true;})"></slycat-local-browser>
+        <slycat-local-browser params="
+          selection:browser_matrix.selection, 
+          disabled: ko.computed(function(){return matrix_type() == 'local' ? false : true;}),
+          progress:browser_matrix.progress,
+          progress_status:browser_matrix.progress_status"></slycat-local-browser>
       </div>
       <div class="radio remote" style="margin-left: 15px;">
         <label>
@@ -132,11 +142,13 @@
         type:'remote',
         sid:remote_matrix.sid,
         hostname:remote_matrix.hostname,
-        selection:browser.selection,
-        path:browser.path,
+        selection:remote_matrix.selection,
+        path:remote_matrix.path,
         open_file_callback:load_distance_matrix,
         session_exists:remote_matrix.session_exists,
-        persistence_id:'pip-distances-file'"></slycat-remote-browser>
+        persistence_id:'pip-distances-file',
+        progress:remote_matrix.progress,
+        progress_status:remote_matrix.progress_status"></slycat-remote-browser>
     </div>
 
     <div data-bind="visible:tab() == 7">

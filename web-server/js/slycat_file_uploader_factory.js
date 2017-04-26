@@ -72,6 +72,17 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
   function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject){
     // Upload the whole file since it is over ssh.
     console.log("Uploading part whole file");
+    
+    if(fileObject.progress)
+    {
+      // Setting initial progress to 10%
+      fileObject.progress(10);
+    }
+    if(fileObject.progress_status)
+    {
+      fileObject.progress_status('Uploading...');
+    }
+
     client.put_upload_file_part({
       uid: uid,
       fid: 0,
@@ -300,12 +311,12 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         console.log("Upload session deleted.");
         if(fileObject.progress)
         {
-          var finalProgress = 100;
-          if(fileObject.finalProgress != undefined)
+          var progress_final = 100;
+          if(fileObject.progress_final != undefined)
           {
-            finalProgress = fileObject.finalProgress;
+            progress_final = fileObject.progress_final;
           }
-          fileObject.progress(finalProgress);
+          fileObject.progress(progress_final);
         }
         if(fileObject.success){
           fileObject.success();
@@ -316,15 +327,15 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         if(request.status == 409)
         {
           window.setTimeout(deleteUpload.bind(null, pid, mid, uid, fileObject), 3000);
-          var finalProgress = 90;
-          if(fileObject.finalProgress != undefined)
+          var progress_final = 90;
+          if(fileObject.progress_final != undefined)
           {
-            finalProgress = fileObject.finalProgress * .9;
+            progress_final = fileObject.progress_final * .9;
           }
-          if(fileObject.progress && fileObject.progress() < finalProgress)
+          if(fileObject.progress && fileObject.progress() < progress_final)
           {
             // Setting progress to 90%
-            fileObject.progress(Math.min(finalProgress, fileObject.progress() + 10));
+            fileObject.progress(Math.min(progress_final, fileObject.progress() + 10));
           }
         }
       }
