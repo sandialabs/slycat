@@ -308,10 +308,10 @@ def step_impl(context, type):
       return file.name
   context.image_sequence = [generate_image(type, index, 10) for index in range(10)]
 
-@when(u'creating a {type} video')
-def step_impl(context, type):
-  context.agent.stdin.write("%s\n" % json.dumps({"action":"create-video", "content-type":"video/" + type, "images":context.image_sequence}))
-  context.agent.stdin.flush()
+# @when(u'creating a {type} video')
+# def step_impl(context, type):
+#   context.agent.stdin.write("%s\n" % json.dumps({"action":"create-video", "content-type":"video/" + type, "images":context.image_sequence}))
+#   context.agent.stdin.flush()
 
 @then(u'the agent should return a video session id')
 def step_impl(context):
