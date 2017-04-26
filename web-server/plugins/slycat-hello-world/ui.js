@@ -1,11 +1,11 @@
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings", "knockout", "knockout-mapping"], function(server_root, client, dialog, ko, mapping)
+define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings", "knockout", "knockout-mapping"], function(server_root, client, markings, dialog, ko, mapping)
 {
   function constructor(params)
   {
     var component = {};
     component.tab = ko.observable(0);
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New Hello World Model", description: "", marking: markings.preselected()});
+    component.model = mapping.fromJS({_id: null, name: "New Hello World Model", description: "", marking: markings.preselected});
     component.recipient = ko.observable("World");
 
     component.create = function()
@@ -49,7 +49,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             }
           });
         },
-        error: dialog.ajax_error("Error creating model."),
+        error: markings.ajax_error("Error creating model."),
       });
     }
     return component;
