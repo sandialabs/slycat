@@ -75,39 +75,40 @@ rights in this software.
             //url : server_root + "remotes/" + sid + "/image/etc/shadow",
             success: function()
             {
-              create_remote_video(sid);
+//              create_remote_video(sid);//deprecated
             },
             error: function()
             {
-              create_remote_video(sid);
+//              create_remote_video(sid);//deprecated
             },
           });
         }
 
-        function create_remote_video(sid)
-        {
-          var content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
-          //var content_type = "video/tim";
-          var images = [];
-          for(var i = 0; i < 100; ++i)
-            images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/" + i + ".jpg");
-          //images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/k.jpg");
-
-          client.post_remote_video(
-          {
-            sid: sid,
-            "content-type": content_type,
-            images: images,
-            success: function(vsid)
-            {
-              wait_for_video(sid, vsid);
-            },
-            error: function()
-            {
-              delete_remote(sid);
-            }
-          });
-        }
+        //deprecated
+//        function create_remote_video(sid)
+//        {
+//          var content_type = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? "video/webm" : "video/mp4";
+//          //var content_type = "video/tim";
+//          var images = [];
+//          for(var i = 0; i < 100; ++i)
+//            images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/" + i + ".jpg");
+//          //images.push("/home/slycat/src/slycat/web-client/sample-parameter-images/k.jpg");
+//
+//          client.post_remote_video(
+//          {
+//            sid: sid,
+//            "content-type": content_type,
+//            images: images,
+//            success: function(vsid)
+//            {
+//              wait_for_video(sid, vsid);
+//            },
+//            error: function()
+//            {
+//              delete_remote(sid);
+//            }
+//          });
+//        }
 
         function wait_for_video(sid, vsid)
         {
