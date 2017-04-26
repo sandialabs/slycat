@@ -1012,32 +1012,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
-  //deprecated
-  // module.post_remote_video = function(params)
-  // {
-  //   $.ajax(
-  //   {
-  //     contentType: "application/json",
-  //     data: JSON.stringify(
-  //     {
-  //       "content-type": params["content-type"],
-  //       "images": params.images
-  //     }),
-  //     type: "POST",
-  //     url: server_root + "remotes/" + params.sid + "/videos",
-  //     success: function(result)
-  //     {
-  //       if(params.success)
-  //         params.success(result.sid);
-  //     },
-  //     error: function(request, status, reason_phrase)
-  //     {
-  //       if(params.error)
-  //         params.error(request, status, reason_phrase);
-  //     }
-  //   });
-  // };
-
   module.post_uploads = function(params)
   {
     $.ajax(
