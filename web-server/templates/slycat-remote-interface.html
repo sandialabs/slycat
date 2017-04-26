@@ -35,11 +35,13 @@
         <label for="slycat-remote-interface-command" class="col-sm-4 control-label">Maximum Time</label>
         <div class="col-sm-2">
           <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" placeholder="hours" data-bind="value: time_hours, disable: time_recommended">
+          hours
         </div>
         <div class="col-sm-2">
           <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" max="59" placeholder="minutes" data-bind="value: time_minutes, disable: time_recommended">
+          minutes
         </div>
-        <div class="col-sm-2">
+        <div style="display: none;">
           <input class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" max="59" placeholder="seconds" data-bind="value: time_seconds, disable: time_recommended">
         </div>
       </fieldset>
