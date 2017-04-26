@@ -93,9 +93,20 @@ def parse_mat_file(file):
         except:
             raise Exception ("Matrix entries must be floats.")
 
-    # describe matrix using attributes, dimensions
-    dimensions = [dict(name="row", end=int(data.shape[0])),
-        dict(name="column", end=int(data.shape[1]))]
+
+    # for a vector we strip off the out python array []
+    if int(data.shape[0]) == 1:
+
+        data = data[0]
+        dimensions = [dict(name="row", end=len(data))]
+
+    else:
+
+        # for a matrix we need the number of columns too
+        dimensions = [dict(name="row", end=int(data.shape[0])),
+            dict(name="column", end=int(data.shape[1]))]
+
+    # attributes are the same for matrices and vectors
     attributes = [dict(name="value", type="float64")]
 
     return attributes, dimensions, data

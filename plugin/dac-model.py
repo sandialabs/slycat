@@ -47,19 +47,19 @@ def register_slycat_plugin(context):
             database, model, "dac-alpha-parms")
 
         # get distance matrices as a list of numpy arrays from slycat server
-        dist_mats = []
+        var_dist = []
         for i in range(len(alpha_values)):
-            dist_mat_i = next(iter(slycat.web.server.get_model_arrayset_data(
+            var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-var-dist", "%s/0/..." % i)))
-            dist_mat_i = dist_mat_i/numpy.amax(dist_mat_i)
-            dist_mats.append(dist_mat_i)
+            var_dist_i = var_dist_i/numpy.amax(var_dist_i)
+            var_dist.append(var_dist_i)
 
         # compute MDS coordinates assuming alpha = 1 for scaling
-        full_mds_coords = dac.compute_coords(dist_mats, numpy.ones(len(alpha_values)))
+        full_mds_coords = dac.compute_coords(var_dist, numpy.ones(len(alpha_values)))
         full_mds_coords = full_mds_coords[0][:, 0:3]
 
         # compute preliminary coordinates
-        unscaled_mds_coords = dac.compute_coords(dist_mats, numpy.array(alpha_values))
+        unscaled_mds_coords = dac.compute_coords(var_dist, numpy.array(alpha_values))
         unscaled_mds_coords = unscaled_mds_coords[0][:, 0:3]
 
         # scale using full coordinates
@@ -68,10 +68,69 @@ def register_slycat_plugin(context):
         # compute alpha cluster parameters
         # --------------------------------
 
-        # get number of variables, number time series, and metadata column types
-        var_metadata = slycat.web.server.get_model_arrayset_metadata (database, model, "dac-variables-meta")
-        cherrypy.log.error(str(var_metadata))
+        # number of time series varables
+        num_vars = len(alpha_values)
 
+        # get metadata information
+        metadata = slycat.web.server.get_model_arrayset_metadata (database, model, "dac-datapoints-meta")
+
+        # number of columns of metadata
+        metadata_cols = metadata[0]['attributes']
+        num_meta_cols = len(metadata_cols)
+
+        # data type of each column
+        meta_column_types = []
+        for i in range(num_meta_cols):
+            meta_column_types.append (metadata_cols[i]['type'])
+
+        # number of time series (data points)
+        num_time_series = metadata[0]["shape"][0]
+
+        # get actual metadata
+        meta_columns = slycat.web.server.get_model_arrayset_data (database, model, "dac-datapoints-meta", "0/.../...")
+
+        # form a matrix with each distance matrix as a column (this is U matrix)
+        all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars))
+        for i in range(num_vars):
+            all_dist_mat[:,i] = numpy.squeeze(numpy.reshape(var_dist[i],
+                (num_time_series * num_time_series,1)))
+
+        # for each quantitative meta variable, compute distances as columns (V matrices)
+        prop_dist_mats = []    # store as a list of numpy columns
+        num_meta_cols = len(meta_column_types)
+        for i in range(num_meta_cols):
+            if meta_column_types[i] == "float64":
+
+                # compute pairwise distance matrix for property i
+                prop_dist_mat_i = numpy.absolute(
+                    numpy.transpose(numpy.tile(meta_columns[i],
+                    (num_time_series,1))) - numpy.tile(meta_columns[i],
+                    (num_time_series,1)))
+                prop_dist_vec_i = numpy.squeeze(numpy.reshape(prop_dist_mat_i,
+                    (num_time_series * num_time_series,1)))
+
+                # make sure we don't divide by 0
+                prop_dist_vec_max_i = numpy.amax(prop_dist_vec_i)
+                if prop_dist_vec_max_i <= numpy.finfo(float).eps:
+                    prop_dist_vec_max_i = 1.0
+                prop_dist_mats.append(prop_dist_vec_i/prop_dist_vec_max_i)
+
+            else:
+                prop_dist_mats.append(0)
+
+        # compute NNLS cluster button alpha values
+        alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
+        print "Computing alpha values for property clusters ..."
+        for i in range(num_meta_cols):
+            if meta_column_types[i] == "float64":
+                beta_i = optimize.nnls(all_dist_mat, prop_dist_mats[i])
+                alpha_i = numpy.sqrt(beta_i[0])
+
+                # again don't divide by zero
+                alpha_max_i = numpy.amax(alpha_i)
+                if alpha_max_i <= numpy.finfo(float).eps:
+                    alpha_max_i = 1
+                alpha_cluster_mat[i,:] = alpha_i/alpha_max_i
 
         # upload computations to slycat server
         # ------------------------------------
@@ -88,7 +147,29 @@ def register_slycat_plugin(context):
         slycat.web.server.put_model_array(database, model, "dac-mds-coords", 0, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, "dac-mds-coords", "0/0/...", [mds_coords])
 
+        # create array for full-mds-coords
+        slycat.web.server.put_model_arrayset(database, model, "dac-full-mds-coords")
+
+        # store as matrix
+        dimensions = [dict(name="row", end=int(full_mds_coords.shape[0])),
+                        dict(name="column", end=int(full_mds_coords.shape[1]))]
+        attributes = [dict(name="value", type="float64")]
+
+        # upload as slycat array
+        slycat.web.server.put_model_array(database, model, "dac-full-mds-coords", 0, attributes, dimensions)
+        slycat.web.server.put_model_arrayset_data(database, model, "dac-full-mds-coords", "0/0/...", [full_mds_coords])
+
         # create array for alpha cluster parameters
+        slycat.web.server.put_model_arrayset(database, model, "dac-alpha-clusters")
+
+        # store as matrix
+        dimensions = [dict(name="row", end=int(alpha_cluster_mat.shape[0])),
+                        dict(name="column", end=int(alpha_cluster_mat.shape[1]))]
+        attributes = [dict(name="value", type="float64")]
+
+        # upload as slycat array
+        slycat.web.server.put_model_array(database, model, "dac-alpha-clusters", 0, attributes, dimensions)
+        slycat.web.server.put_model_arrayset_data(database, model, "dac-alpha-clusters", "0/0/...", [alpha_cluster_mat])
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
