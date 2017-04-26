@@ -248,29 +248,34 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
 
     component.select_input_file = function() {
       var file_path = component.remote.selection()[0];
-      console.log("calling time series name");
-      client.dummy();
-      component.timeseries_names(client.get_time_series_names({
-        hostname: component.remote.hostname(),
-        path: file_path,
-        success: function(response) {
-            component.timeseries_names(JSON.parse(response))
-            console.log(component.timeseries_names());
-        },
-        error: function(request, status, reason_phrase) {
-          console.log(reason_phrase);
-        }
-      }));
-
       if(file_path == undefined)
       {
         dialog.dialog({message: "Please select your table file."})();
         return;
       }
-
       component.inputs_file(file_path);
 
-      if (component.timeseries_type() === 'xyce') {
+      if (component.timeseries_type() === 'csv') {
+        component.remote.progress_status("Uploading...");
+        component.remote.progress(50);
+
+        component.timeseries_names(client.get_time_series_names({
+          hostname: component.remote.hostname(),
+          path: file_path,
+          success: function(response) {
+            component.remote.progress_status("Finished");
+            component.remote.progress(100);
+            component.timeseries_names(JSON.parse(response))
+            console.log(component.timeseries_names());
+          },
+          error: function(request, status, reason_phrase) {
+            console.log(reason_phrase);
+            component.remote.progress_status("");
+            component.remote.progress(null);
+          }
+        }));
+      }
+      else if (component.timeseries_type() === 'xyce') {
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
       }

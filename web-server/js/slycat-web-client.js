@@ -1289,9 +1289,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
       }
     });
   };
-  module.dummy = function()
-  {console.log("dummy server root " + server_root)}
-
+  
   module.get_time_series_names = function(params)
   {
     $.ajax({
