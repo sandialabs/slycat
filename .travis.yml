@@ -38,8 +38,9 @@ before_install:
   - openssl x509 -req -in $TRAVIS_BUILD_DIR/web-server.csr -CA $TRAVIS_BUILD_DIR/root-ca.cert -CAkey $TRAVIS_BUILD_DIR/root-ca.key -CAcreateserial -out $TRAVIS_BUILD_DIR/web-server.cert -days 365
   # Put the server key and certificate where haproxy can find them.
   - cat $TRAVIS_BUILD_DIR/web-server.key $TRAVIS_BUILD_DIR/web-server.cert > $TRAVIS_BUILD_DIR/ssl.pem
-  # Create a directory to store HDF5 files.
+  # Create a directory to store HDF5 files and cache files.
   - mkdir $TRAVIS_BUILD_DIR/data-store
+  - mkdir $TRAVIS_BUILD_DIR/cache
   # We're going to use conda to install our Python interpreter and dependencies.
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh

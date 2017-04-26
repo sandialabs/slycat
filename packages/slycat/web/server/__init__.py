@@ -572,8 +572,8 @@ def response_url():
     :return: url to route to once signed in
     """
     current_url = urlparse.urlparse(cherrypy.url())  # gets current location on the server
-    location = cherrypy.request.json["location"]
     try:
+        location = cherrypy.request.json["location"]
         if urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from']:  # get from query href
             cleaned_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
             if not cleaned_url.__contains__(
