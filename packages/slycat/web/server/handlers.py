@@ -2173,7 +2173,10 @@ def get_time_series_names(hostname, path, **kwargs):
             file_ext = val[len(rows[1][i]) - 3:]
             if file_ext == "csv" or file_ext == "dat" or file_ext == "prn":
                 response_time_series_names.append(column_names[i])
-    return response_time_series_names
+    if not response_time_series_names:
+        return response_time_series_names
+    else:
+        raise cherrypy.HTTPError("400 Missing time:wqseries names.")
 
 
 @cherrypy.tools.json_in(on=True)
