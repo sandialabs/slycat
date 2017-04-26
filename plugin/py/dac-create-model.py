@@ -161,7 +161,7 @@ dac_ui_parms = {
     'ALPHA_BUTTONS_HEIGHT': 33,        # height of alpha buttons pixels
     'MAX_POINTS_ANIMATE': 2500,        # number of points below which we animate
     'SCATTER_BORDER': .025,            # border around scatter plot (fraction)
-    'SCATTER_BUTTONS_HEIGHT': 35,      # scatter plot toolbar height
+    'SCATTER_BUTTONS_HEIGHT': 37,      # scatter plot toolbar height
     'POINT_COLOR': 'whitesmoke',       # css named color for non selected points
     'POINT_SIZE': 5,                   # d3 point size for scatter plot
     'NO_SEL_COLOR': 'gray',            # css named color border for scatter points
@@ -171,7 +171,7 @@ dac_ui_parms = {
     'COLOR_BY_HIGH': 'limegreen',      # color for high value colored points
     'OUTLINE_NO_SEL': 1,               # pixel width of non selected point
     'OUTLINE_SEL': 2,                  # pixel width of border for selected point
-    'PLOTS_PULL_DOWN_HEIGHT': 35,      # time series spacing for pull downs
+    'PLOTS_PULL_DOWN_HEIGHT': 38,      # time series spacing for pull downs
     'PADDING_TOP': 10,                 # padding for top of time series plot
     'PADDING_BOTTOM': 24,              # padding for bottom of time series plot
     'PADDING_LEFT': 37,                # padding for left of time series plot
@@ -424,12 +424,12 @@ connection.put_model_arrayset(mid, "dac-time-points")
 
 # upload as a series of 1-d arrays
 for i in range(num_vars):
-    
+
     # set up time points array
     time_points = time_steps[i]
     dimensions = [dict(name="row", end=len(time_points))]
     attributes = [dict(name="value", type="float64")]
-    
+
     # upload to slycat at array i
     connection.put_model_arrayset_array(mid, "dac-time-points", i, dimensions, attributes)
     connection.put_model_arrayset_data(mid, "dac-time-points", "%s/0/..." % i, [time_points])
@@ -467,11 +467,6 @@ for i in range(num_vars):
     dimensions = [dict(name="row", end=int(dist_mat.shape[0])),
         dict(name="column", end=int(dist_mat.shape[1]))]
     attributes = [dict(name="value", type="float64")]
-
-    print(i)
-    print(dimensions)
-    print(attributes)
-    print([dist_mat])
 
     # upload to slycat as seperate arrays
     connection.put_model_arrayset_array(mid, "dac-var-dist", i, dimensions, attributes)

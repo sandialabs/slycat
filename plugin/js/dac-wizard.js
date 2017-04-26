@@ -355,7 +355,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     }
 
-
     // upload *.var files
     var upload_var_files = function (file_num) {
 
@@ -492,7 +491,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 		    SCATTER_BORDER: 0.025,
 
             // scatter button toolbar height
-		    SCATTER_BUTTONS_HEIGHT: 35,
+		    SCATTER_BUTTONS_HEIGHT: 37,
 
 		    // scatter plot colors (css/d3 named colors)
 		    POINT_COLOR: 'whitesmoke',
@@ -507,7 +506,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
 
 		    // pixel adjustments for d3 time series plots
-			PLOTS_PULL_DOWN_HEIGHT: 35,
+			PLOTS_PULL_DOWN_HEIGHT: 38,
 			PADDING_TOP: 10,
 			PADDING_BOTTOM: 24,
 		    PADDING_LEFT: 37,
