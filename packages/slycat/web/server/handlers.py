@@ -2173,7 +2173,7 @@ def get_time_series_names(hostname, path, **kwargs):
             file_ext = val[len(rows[1][i]) - 3:]
             if file_ext == "csv" or file_ext == "dat" or file_ext == "prn":
                 response_time_series_names.append(column_names[i])
-    if not response_time_series_names:
+    if len(response_time_series_names) >= 1:
         return response_time_series_names
     else:
         raise cherrypy.HTTPError("400 Missing timeseries names.")
