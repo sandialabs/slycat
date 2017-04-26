@@ -4,7 +4,6 @@ import os
 import sys
 
 def before_all(context):
-  context.local_ffmpeg = distutils.spawn.find_executable("ffmpeg")
   context.project_admin_password = getpass.getpass("%s password: " % context.project_admin_user) if "SLYCAT_PROJECT_ADMIN_USER" in os.environ else "project-admin"
   context.project_admin_user = os.environ.get("SLYCAT_PROJECT_ADMIN_USER", "project-admin")
   context.project_outsider_password = getpass.getpass("%s password: " % context.project_outsider_user) if "SLYCAT_PROJECT_OUTSIDER_USER" in os.environ else "project-outsider"

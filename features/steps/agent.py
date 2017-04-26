@@ -20,7 +20,7 @@ slycat_agent = os.path.join(root_dir, "agent", "slycat-agent.py")
 
 @given(u'a running Slycat agent')
 def step_impl(context):
-  context.agent = subprocess.Popen([sys.executable, slycat_agent, "--ffmpeg=%s" % context.local_ffmpeg], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  context.agent = subprocess.Popen([sys.executable, slycat_agent], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   nose.tools.assert_equal(json.loads(context.agent.stdout.readline()), {"ok": True, "message": "Ready."})
 
 @when("an unparsable command is received")

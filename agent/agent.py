@@ -35,37 +35,6 @@ import ConfigParser
 session_cache = {}
 
 
-class VideoSession(threading.Thread):
-    def __init__(self, ffmpeg, content_type, images):
-        threading.Thread.__init__(self)
-        self.content_type = content_type
-        self._images = images
-        self._ffmpeg = ffmpeg
-        self.exception = None
-        self.stdout = None
-        self.stderr = None
-        self.returncode = None
-        self.output = None
-        self.finished = False
-
-    def run(self):
-        try:
-            fd, path = tempfile.mkstemp(suffix=slycat.mime_type.guess_extension(self.content_type, strict=False))
-            os.close(fd)
-            command = [self._ffmpeg, "-y"]
-            command += ["-f", "concat"]
-            command += ["-i", "-"]
-            command.append(path)
-            ffmpeg = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            for image in self._images:
-                ffmpeg.stdin.write("file %s\n" % image)
-            self.stdout, self.stderr = ffmpeg.communicate()
-            self.returncode = ffmpeg.returncode
-            self.output = path
-        except Exception as e:
-            self.exception = e
-        self.finished = True
-
 class Agent(object):
     """
 
@@ -97,7 +66,8 @@ class Agent(object):
         pass
 
     @abc.abstractmethod
-    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes, time_seconds,
+    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                       time_seconds,
                        fn,
                        tmp_file):
         pass
@@ -215,7 +185,7 @@ class Agent(object):
         sys.stdout.flush()
 
     # Handle the 'get-file' command.
-    def get_file(self,command):
+    def get_file(self, command):
         if "path" not in command:
             raise Exception("Missing path.")
         path = command["path"]
@@ -310,25 +280,7 @@ class Agent(object):
              "size": len(content.getvalue())}), content.getvalue()))
         sys.stdout.flush()
 
-    # Handle the 'create-video' command.
-    def create_video(self, command, arguments):
-        if arguments.ffmpeg is None:
-            raise Exception("ffmpeg not configured.")
-        if "content-type" not in command:
-            raise Exception("Missing content-type.")
-        if command["content-type"] not in ["video/mp4", "video/webm"]:
-            raise Exception("Unsupported content-type: %s." % command["content-type"])
-        if "images" not in command:
-            raise Exception("Missing images.")
-
-        sid = uuid.uuid4().hex
-        session_cache[sid] = VideoSession(arguments.ffmpeg, command["content-type"], command["images"])
-        session_cache[sid].start()
-
-        sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Creating video.", "sid": sid}))
-        sys.stdout.flush()
-
-    def video_status(self,command):
+    def video_status(self, command):
         if "sid" not in command:
             raise Exception("Missing session id.")
         if command["sid"] not in session_cache:
@@ -380,22 +332,10 @@ class Agent(object):
                             help="Fail immediately on startup.  Obviously, this is for testing.")
         parser.add_argument("--fail-exit", default=False, action="store_true",
                             help="Fail during exit.  Obviously, this is for testing.")
-        parser.add_argument("--ffmpeg", default=None, help="Absolute path to an ffmpeg executable.")
         arguments = parser.parse_args()
 
         if arguments.fail_startup:
             exit(-1)
-
-        try:
-            if arguments.ffmpeg is not None:
-                if not os.path.isabs(arguments.ffmpeg):
-                    raise Exception("--ffmpeg must specify an absolute path.")
-                if not os.path.exists(arguments.ffmpeg):
-                    raise Exception("--ffmpeg must specify an existing file.")
-        except Exception as e:
-            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
-            sys.stdout.flush()
-            exit(1)
 
         # Let the caller know we're ready to handle commands.
         sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Ready."}))
@@ -429,7 +369,9 @@ class Agent(object):
                 elif action == "get-image":
                     self.get_image(command)
                 elif action == "create-video":
-                    self.create_video(command, arguments)
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "this command is depricated and has "
+                                                                                  "been removed"}))
+                    sys.stdout.flush()
                 elif action == "video-status":
                     self.video_status(command)
                 elif action == "get-video":
