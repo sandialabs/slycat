@@ -135,7 +135,6 @@ def start(root_path, config_file):
 
   #TODO: scrub sid
   dispatcher.connect("post-remote-browse", "/remotes/:hostname/browse{path:.*}", slycat.web.server.handlers.post_remote_browse, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-remote-videos", "/remotes/:sid/videos", slycat.web.server.handlers.post_remote_videos, conditions={"method" : ["POST"]})
   dispatcher.connect("post-remotes", "/remotes", slycat.web.server.handlers.post_remotes, conditions={"method" : ["POST"]})
 
 

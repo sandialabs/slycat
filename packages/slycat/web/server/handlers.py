@@ -2179,22 +2179,6 @@ def get_time_series_names(hostname, path, **kwargs):
         raise cherrypy.HTTPError("400 Missing timeseries names.")
 
 
-@cherrypy.tools.json_in(on=True)
-@cherrypy.tools.json_out(on=True)
-def post_remote_videos(sid):
-    if "content-type" not in cherrypy.request.json:
-        slycat.email.send_error("slycat.web.server.handlers.py post_remote_videos",
-                                "cherrypy.HTTPError 400 missing content-type.")
-        raise cherrypy.HTTPError("400 Missing content-type.")
-    if "images" not in cherrypy.request.json:
-        slycat.email.send_error("slycat.web.server.handlers.py post_remote_videos",
-                                "cherrypy.HTTPError 400 missing images.")
-        raise cherrypy.HTTPError("400 Missing images.")
-
-    with slycat.web.server.remote.get_session(sid) as session:
-        return session.post_video(cherrypy.request.json["content-type"], cherrypy.request.json["images"])
-
-
 @cherrypy.tools.json_out(on=True)
 def get_remote_video_status(hostname, vsid):
     """
