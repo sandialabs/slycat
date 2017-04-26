@@ -267,19 +267,21 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
             component.remote.progress(100);
             component.timeseries_names(JSON.parse(response))
             console.log(component.timeseries_names());
+            component.tab(4);
           },
           error: function(request, status, reason_phrase) {
             console.log(reason_phrase);
             component.remote.progress_status("");
             component.remote.progress(null);
+            dialog.dialog({message: "Please select a CSV file with a valid timeseries column."})();
           }
         }));
       }
       else if (component.timeseries_type() === 'xyce') {
         var in_dir = file_path.substring(0, file_path.lastIndexOf('/') + 1);
         component.input_directory(in_dir);
+        component.tab(4);
       }
-      component.tab(4);
     };
 
     component.params_continue = function() {
