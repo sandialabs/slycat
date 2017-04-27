@@ -3,12 +3,15 @@
 # rights in this software.
 
 import argparse
+import collections
 import getpass
 import json
 import logging
+import numbers
 import numpy
 import os
 import requests
+import requests.exceptions as exceptions
 import shlex
 import slycat.darray
 import slycat.email
