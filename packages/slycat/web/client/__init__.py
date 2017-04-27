@@ -3,15 +3,12 @@
 # rights in this software.
 
 import argparse
-import collections
 import getpass
 import json
 import logging
-import numbers
 import numpy
 import os
 import requests
-import requests.exceptions as exceptions
 import shlex
 import slycat.darray
 import slycat.email
@@ -22,6 +19,10 @@ try:
   import cStringIO as StringIO
 except:
   import StringIO
+
+
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)
