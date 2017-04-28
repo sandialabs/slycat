@@ -198,6 +198,8 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
                             values = evaluate(hdf5_array, attribute.expression, "uniques")
                             for hyperslice in attribute.hyperslices():
                                 unique["values"].append(numpy.unique(values)[hyperslice])
+                        if type(unique["values"][0]) is not list:
+                            unique["values"] = [a.tolist() for a in unique["values"]]
                         results["unique"].append(unique)
 
             return results
