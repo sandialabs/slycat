@@ -245,7 +245,7 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 		
 		// draw each plot to size of container
 		var width = $("#dac-plots").width();
-		var height = $("#dac-plots").height()/3 - 
+		var height = $("#dac-plots").height()/3 -
 			plot_adjustments.pull_down_height;
 		
 		// compute number of tick marks needed
