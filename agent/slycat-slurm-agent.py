@@ -143,9 +143,7 @@ class Agent(agent.Agent):
         fn = command["command"]["fn"]
         # uid = command["command"]["uid"]
 
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        with open("slurm-tmp-out-file-details.txt", "w") as text_file:
-            text_file.write("tempfile name: %s" % tmp_file.name)
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
