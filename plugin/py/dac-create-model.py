@@ -190,11 +190,16 @@ if os.path.isfile(arguments.dir + '/pref/dac_ui.pref'):
     with open(arguments.dir + '/pref/dac_ui.pref') as stream:
         dac_ui_file = [row.split(',') for row in stream]
     print "Reading dac_ui.pref file ..."
-    
-    # check for 2 columns
-    dac_ui_row = [name.strip() for name in dac_ui_file[0]]
 
-    
+    # check header row
+    dac_file_col_names = [name.strip() for name in dac_ui_file[0]]
+    if len(dac_file_col_names) != 2:
+        raise Exception("dac_ui.pref file doesn't have 2 columns!")
+    if dac_file_col_names[0] != "Preference":
+        raise Exception('first column of dac_ui.pref is not "Preference".')
+    if dac_file_col_names[1] != "Value":
+        raise Exception('second column of dac_ui.pref is not "Value".')
+
     # check for matching ui preferences in file
     for i in range(len(dac_ui_file)):
         

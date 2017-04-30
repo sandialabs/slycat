@@ -38,14 +38,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.parser_var_files = ko.observable(null);
     component.parser_time_files = ko.observable(null);
     component.parser_dist_files = ko.observable(null);
-    component.parser_pref_files = ko.observable(null);
 
     // DAC META/CSV parsers
     component.parser_meta_files = ko.observable(null);
     component.parser_csv_files = ko.observable(null);
 
     // other attributes to pass to wizard (for example headers in metadata)
-    component.attributes = mapping.fromJS([]);
+    component.meta_attributes = mapping.fromJS([]);
+    component.var_attributes = mapping.fromJS([]);
 
     // dac-generic format is selected by default
     component.dac_format = ko.observable("dac-gen");
@@ -94,18 +94,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         }
     };
 
-    // this function gets called after all data is uploaded,
-    // including metadata table
-    var upload_success = function() {
+    // this function is called to select variables to
+    // include (after selecting metadata)
+    component.include_variables = function() {
 
         // load header row and use to let user select metadata
         client.get_model_arrayset_metadata({
             mid: component.model._id(),
-            aid: "dac-datapoints-meta",
+            aid: "dac-variables-meta",
             arrays: "0",
             statistics: "0/...",
             success: function(metadata) {
-                console.log(metadata);
                 var attributes = [];
                 var name = null;
                 var type = null;
@@ -129,7 +128,47 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         tooltip: tooltip
                     });
                 }
-                mapping.fromJS(attributes, component.attributes);
+                mapping.fromJS(attributes, component.var_attributes);
+                component.tab(4);
+            }
+        });
+
+    }
+    // this function gets called after all data is uploaded,
+    // including metadata table
+    var include_metadata = function() {
+
+        // load header row and use to let user select metadata
+        client.get_model_arrayset_metadata({
+            mid: component.model._id(),
+            aid: "dac-datapoints-meta",
+            arrays: "0",
+            statistics: "0/...",
+            success: function(metadata) {
+                var attributes = [];
+                var name = null;
+                var type = null;
+                var constant = null;
+                var string = null;
+                var tooltip = null;
+                for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
+                {
+                    name = metadata.arrays[0].attributes[i].name;
+                    type = metadata.arrays[0].attributes[i].type;
+                    tooltip = "";
+                    attributes.push({
+                        name: name,
+                        type: type,
+                        constant: constant,
+                        disabled: null,
+                        Include: true,
+                        hidden: false,
+                        selected: false,
+                        lastSelected: false,
+                        tooltip: tooltip
+                    });
+                }
+                mapping.fromJS(attributes, component.meta_attributes);
                 component.tab(3);
                 $('.browser-continue').toggleClass("disabled", false);
             }
@@ -224,8 +263,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 // number of rows in variables.meta file (global variable)
                 num_vars = metadata.arrays[0].shape[0];
 
-                // check header names
-                console.log(metadata);
+                // get header names
+                headers = metadata.arrays[0].attributes;
+                num_headers = headers.length;
+
+                // check header row in variables.meta
+                headers_OK = true;
+                if (num_headers == 4) {
+
+                    if (headers[0].name != 'Name') { headers_OK = false };
+                    if (headers[1].name != 'Time Units') { headers_OK = false };
+                    if (headers[2].name != 'Units') { headers_OK = false };
+                    if (headers[3].name != 'Plot Type') {headers_OK = false };
+
+                } else {
+                    headers_OK = false;
+                }
 
                 // check variable file names
                 var all_var_files_found = true;
@@ -237,14 +290,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 }
 
                 // next upload .time files
-                if ((num_vars == (file_names.length-1)) && all_var_files_found) {
+                if (headers_OK && (num_vars == (file_names.length-1)) && all_var_files_found) {
                     check_time_files();
-                } else {
+                } else if ( headers_OK ) {
                     // missing .var files
                     dialog.ajax_error ("All *.var files must be selected.")("","","");
                     $('.dac-gen-browser-continue').toggleClass("disabled", false);
+                } else {
+                    // bad headers
+                    dialog.ajax_error ("Header row in variables.meta is incorrect.")("","","");
+                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
                 }
-
             }
         });
     }
@@ -415,7 +471,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     if (file_num < (dist_file_inds.length - 1)) {
                         upload_dist_files(file_num + 1);
                     } else {
-                        upload_pref_files();
+                        assign_pref_defaults();
                     }
                 },
             error: function(){
@@ -429,18 +485,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     }
 
-    // uploads or creates the ui preferences for DAC to slycat
-    var upload_pref_files = function () {
+    // assigns default ui preferences for DAC to slycat
+    var assign_pref_defaults = function () {
 
-        // assign defaults for all preferences, override afterwards
+        // assign defaults for all preferences, override available in push script
 
         // from alpha-parms.pref file
-        //---------------------------
         var dac_alpha_parms = [];
-        var dac_alpha_order = {};
+        var dac_alpha_order = [];
+        //---------------------------
         for (i = 0; i < num_vars; i++) {
-            dac_alpha_parms[i] = 1;
-            dac_alpha_order[i] = i;
+            dac_alpha_parms.push(1);
+            dac_alpha_order.push(i);
         }
 
         // from variable-defaults.pref file
@@ -480,7 +536,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 		    OUTLINE_NO_SEL: 1,
 		    OUTLINE_SEL: 2,
 
-
 		    // pixel adjustments for d3 time series plots
 			PLOTS_PULL_DOWN_HEIGHT: 38,
 			PADDING_TOP: 10,
@@ -495,14 +550,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         };
 
-        // did the user select any ui preference files?
-
-        // modify defaults according to user preferences
-
-        // upload all preferences to slycat (these have to be uploaded
-        // sequentially to keep slycat from crashing)
-
-        // upload ui parms to slycat
+        // upload the default ui parms
         client.put_model_parameter ({
             mid: component.model._id(),
             aid: "dac-ui-parms",
@@ -554,9 +602,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 			command: "init_mds_coords",
 			success: function (result)
 				{
-				    console.log(result);
-					console.log("called init mds coords");
-					upload_success();
+					include_metadata();
 				},
 			error: dialog.ajax_error("Server error initializing MDS coordinates.")
 
@@ -581,7 +627,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         aids: ["dac-datapoints-meta"],
         parser: component.parser(),
         success: function(){
-            upload_success();
+            include_metadata();
         },
         error: function(){
             dialog.ajax_error(
@@ -604,24 +650,28 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // this script gets called at the end of the 4th tab (after selecting columns to include)
     component.finish = function() {
 
-        // record columns that user wants to include
-        var include_columns = [];
-        for(var i = 0; i != component.attributes().length; ++i) {
-        if(component.attributes()[i].Include())
-            include_columns.push(i);
+        // record metadata columns that user wants to include
+        var meta_include_columns = [];
+        for(var i = 0; i != component.meta_attributes().length; ++i) {
+        if(component.meta_attributes()[i].Include())
+            meta_include_columns.push(i);
         }
+
+        // record variables columns that user wants to include
 
         // for debugging: columns chosen to display
         // console.log (include_columns);
 
-        // record desired columns as an artifact in the new model
+        // record desired metadata columns as an artifact in the new model
         client.put_model_parameter({
             mid: component.model._id(),
-            value: include_columns,
+            value: meta_include_columns,
             aid: "dac-metadata-include-columns",
             input: true,
             success: function() {
-                component.tab(4);
+
+                // now record desired variable columns as an artifact
+                component.tab(5);
             }
         });
 
