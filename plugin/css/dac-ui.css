@@ -11,12 +11,6 @@
 	padding: 0px !important;
 }
 
-/*********************/
-/* dac wizard styles */
-/*********************/
-
-
-
 /***************************/
 /* mds scatter plot styles */
 /***************************/
@@ -60,7 +54,7 @@
 /*****************************/
 
 /* no scroll bars for time series plots */
-#dac-plots 
+#dac-plots
 {
 	overflow: hidden !important;
 	text-align: right;
@@ -71,7 +65,7 @@
 {
 	margin: 0px 3px 3px 0px;
 	border: 1px solid #c1c1c1;
-    padding: 4px 20px; 
+    padding: 4px 20px;
     border-radius: 3px;
 }
 
@@ -99,17 +93,17 @@
 /************************/
 
 #dac-alpha-sliders
-{ 
-	list-style-type: none; 
-	margin: 0; 
-	padding: 0; 
-	width: 100%; 
+{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	width: 100%;
 }
 
 .dac-alpha-slider
 {
     border: 1px solid #d1d1d1;
-    padding: 3px 15px; 
+    padding: 3px 15px;
     border-radius: 5px;
     margin: 3px 3px 3px 3px;
     overflow: hidden;

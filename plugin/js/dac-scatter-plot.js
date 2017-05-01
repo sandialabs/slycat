@@ -105,7 +105,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 			
 				// input data into model
 				mds_coords = mds_data;
-								
+
 				// init shift key detection
 				d3.select("body").on("keydown.brush", key_flip)
     						     .on("keyup.brush", key_flip);

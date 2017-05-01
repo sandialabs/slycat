@@ -15,11 +15,12 @@ S. Martin
 <!-- Organizes the tabs in the input wizard. -->
 <div class="modal-body">
     <ul class="nav nav-pills">
-        <li data-bind="css:{active:tab() == 0}" class="btn-secondary"><a>Choose Data Type</a></li>
-        <li data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'"><a>Upload Data</a></li>
-        <li data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'"><a>Upload Data</a></li>
-        <li data-bind="css:{active:tab() == 3}"><a>Select Columns</a></li>
-        <li data-bind="css:{active:tab() == 4}"><a>Name Model</a></li>
+        <li data-bind="css:{active:tab() == 0}" class="btn-secondary"><a>Data Format</a></li>
+        <li data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'"><a>Upload</a></li>
+        <li data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'"><a>Upload</a></li>
+        <li data-bind="css:{active:tab() == 3}"><a>Metadata</a></li>
+        <li data-bind="css:{active:tab() == 4}"><a>Variables</a></li>
+        <li data-bind="css:{active:tab() == 5}"><a>Name Model</a></li>
     </ul>
 
     <!-- This tab lets the user select whether or not the file to upload is on the local
@@ -114,13 +115,23 @@ S. Martin
          column include or not include in the meta-data table. -->
     <div data-bind="visible:tab() == 3">
         <slycat-table-ingestion params="
-            variables: attributes,
+            variables: meta_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+    </div>
+
+    <!-- The slycat-table-ingestion tag indicates what to name columns (name: ) and whether
+     the columns are checkboxes (bool) or radio buttons (select).  Here we have one
+     column include or not include in the meta-data table. -->
+    <div data-bind="visible:tab() == 4">
+        <slycat-table-ingestion params="
+            variables: var_attributes,
             properties: [{name: 'Include', type: 'bool'}]
         "></slycat-table-ingestion>
     </div>
 
     <!-- Inputs the name of the model (final tab). -->
-    <div data-bind="visible:tab() == 4">
+    <div data-bind="visible:tab() == 5">
         <form class="form-horizontal" role="form" onsubmit="return false">
             <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         </form>
@@ -136,6 +147,7 @@ S. Martin
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
     <button class="btn btn-primary dac-gen-browser-continue browser-continue" data-bind="visible:tab() == 1,click:upload_dac_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary pts-browser-continue browser-continue" data-bind="visible:tab() == 2,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 3,click:finish">Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 4,click:name_model">Finish & Go To Model</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 3,click:include_variables">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 5,click:name_model">Finish & Go To Model</button>
 </div>

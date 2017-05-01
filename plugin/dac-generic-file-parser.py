@@ -189,6 +189,5 @@ def register_slycat_plugin(context):
     context.register_parser("dac-var-files-parser", "DAC .var files (and variables.meta file)", ["dac-var-files"], parse)
     context.register_parser("dac-time-files-parser", "DAC .time files", ["dac-time-files"], parse)
     context.register_parser("dac-dist-files-parser", "DAC .dist files", ["dac-dist-files"], parse)
-    context.register_parser("dac-pref-files-parser", "DAC .pref files", ["dac-pref-files"], parse)
 
 

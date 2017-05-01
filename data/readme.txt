@@ -64,6 +64,7 @@ variable_defaults.pref -- the three preferred time series (variables) to show
 on the right hand side of the dial-a-cluster app, comma delimited on one line.
 This file just has three numbers which give the defaults variables to display (starting with 1).
 
-dac_ui.pref -- dial-a-cluster user interface parameters in a comma separated table,
-one per line in the format NAME value.  The parameters specify colors, pixel sizes,
-etc. for the web page.  Any values not specified have defaults. 
+dac_ui.pref -- dial-a-cluster user interface parameters in a comma separated
+table, one per line in the format NAME,value.  The file must contain the header
+Preference,Value.  The parameters specify colors, pixel sizes, etc. for the
+web page.  Any values not specified have defaults. 
