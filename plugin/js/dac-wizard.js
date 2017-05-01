@@ -192,7 +192,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         // get all file names
         var files = component.browser_var_files.selection();
         var file_names = [];
-        for (i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
+        for (i = 0; i < files.length; i++) { 
+            file_names[i] = files[i].name; 
+        }
 
         // look for variables.meta
         var var_meta_ind = file_names.indexOf("variables.meta");
@@ -369,6 +371,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             aids: ["dac-var-data", file_num.toString(), "matrix"],
             parser: component.parser_var_files(),
             progress: component.browser_var_files.progress,
+            progress_increment: 100/var_file_inds.length,
             success: function(){
                     if (file_num < (var_file_inds.length - 1)) {
                         upload_var_files(file_num + 1);
