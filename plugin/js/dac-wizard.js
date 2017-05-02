@@ -58,6 +58,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var time_file_inds = [];
     var dist_file_inds = [];
 
+    // csv/meta file information
+    var csv_files = [];
+    var csv_file_names = [];
+    var meta_files = [];
+    var meta_file_names = [];
+
     // creates a model of type "DAC"
     component.create_model = function() {
         client.post_project_models({
@@ -612,31 +618,141 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // PTS format upload code
     // **********************
 
-    // this function uploads the meta data table from the CSV/META format
+    // this function starts the upload process for the CSV/META format
     component.upload_pts_format = function() {
-        $('.pts-browser-continue').toggleClass("disabled", true);
-        //TODO: add logic to the file uploader to look for multiple files list to add
-        console.log(component.browser_csv_files.selection());
-        console.log(component.browser_meta_files.selection());
 
-        var file = component.browser_csv_files.selection()[0];
-        var fileObject ={
-        pid: component.project._id(),
-        mid: component.model._id(),
-        file: file,
-        aids: ["dac-datapoints-meta"],
-        parser: component.parser(),
-        success: function(){
-            include_metadata();
-        },
-        error: function(){
-            dialog.ajax_error(
-                "Did you choose the correct file and filetype?  There was a problem parsing the file.")
-                ("","","");
-            $('.pts-browser-continue').toggleClass("disabled", false);
+        // list out csv file names, check for .csv extension
+        csv_files = component.browser_csv_files.selection();
+        var csv_ext = true;
+        for (i = 0; i < csv_files.length; i++) {
+
+            // parse file name for .csv extension
+            var file_name = csv_files[i].name;
+            var file_name_split = file_name.split(".");
+            if (file_name_split.length > 1) {
+                var file_ext = file_name_split[file_name_split.length - 1];
+
+                // if no .csv extension then we quit
+                if (file_ext != "csv") {
+                    csv_ext = false;
+                    break;
+                } else {
+                    // remove .csv extension and keep file name
+                    csv_file_names.push(file_name.substring(0, file_name.length - 4));
+                }
+            } else {
+                csv_ext = false;
+                break;
+            }
         }
-        };
-        fileUploader.uploadFile(fileObject);
+
+        // list out meta file names, check for .ini extension (redundant code)
+        meta_files = component.browser_meta_files.selection();
+        var meta_ext = true;
+        for (i = 0; i < meta_files.length; i++) {
+
+            // parse file name for .csv extension
+            var file_name = meta_files[i].name;
+            var file_name_split = file_name.split(".");
+            if (file_name_split.length > 1) {
+                var file_ext = file_name_split[file_name_split.length - 1];
+
+                // if no .ini extension then we quit
+                if (file_ext != "ini") {
+                    meta_ext = false;
+                    break;
+                } else {
+                    // remove .ini extension and keep file name
+                    meta_file_names.push(file_name.substring(0, file_name.length - 4));
+                }
+            } else {
+                meta_ext = false;
+                break;
+            }
+        }
+
+        // check for matching file names between csv and meta files
+        var files_match = true;
+        if (csv_file_names.length == meta_file_names.length) {
+            for (i = 0; i < csv_file_names.length; i++) {
+                if (meta_file_names.indexOf (csv_file_names[i]) == -1) {
+                    files_match = false;
+                    break;
+                }
+            }
+        } else {
+            files_match = false;
+        }
+
+        // continue only if we have all csv and ini files and the files match
+        if (csv_files.length == 0) {
+
+            // no csv files
+            dialog.ajax_error("Please select CSV files.")("","","");
+
+        } else if (meta_files.length == 0) {
+
+            // no meta files
+            dialog.ajax_error("Please select META files.")("","","");
+
+        } else if (!csv_ext) {
+
+            // csv files have wrong extension
+            dialog.ajax_error("CSV file selection contains file without .csv extension.")("","","");
+
+        } else if (!meta_ext) {
+
+            // meta files have wrong extension
+            dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
+
+        } else if (csv_files.length != meta_files.length) {
+
+            // different number of files
+            dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
+
+        } else if (!files_match) {
+
+            // file names do not match
+            dialog.ajax_error("Make sure the CSV and META file names have the same names (except for extensions).")
+                ("","","");
+
+        } else {
+
+            // everything is OK -- go on to parsing
+            parse_csv_files();
+        }
+
+        // for debugging:
+        // console.log('csv files:');
+        // console.log(csv_files);
+        // console.log(csv_file_names);
+        // console.log(csv_ext);
+
+        // console.log('meta files:');
+        // console.log(meta_files);
+        // console.log(meta_file_names);
+        // console.log(meta_ext);
+
+        // console.log('files match:');
+        // console.log(files_match);
+
+
+    };
+
+    // parse files and store in slycat database
+    var parse_csv_files = function () {
+
+        // start continue button spinning
+        //$('.pts-browser-continue').toggleClass("disabled", true);
+
+        //
+        console.log(csv_files);
+        console.log(csv_file_names);
+
+        console.log(meta_files);
+        console.log(meta_file_names);
+
+
     };
 
     // wizard finish model code
