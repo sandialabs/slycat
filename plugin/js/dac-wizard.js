@@ -27,7 +27,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         path:null, 
         selection: [], 
         progress: ko.observable(null),
-        progress_status: ko.observable(''),
     });
     component.browser_var_files = mapping.fromJS({
         path:null, 
@@ -404,7 +403,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             aids: ["dac-datapoints-meta"],
             parser: component.parser_dac_file(),
             progress: component.browser_dac_file.progress,
-            progress_status: component.browser_dac_file.progress_status,
             success: function(){
                 upload_var_files(0);
             },
@@ -467,6 +465,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             file: file,
             aids: ["dac-time-points", file_num.toString(), "matrix"],
             parser: component.parser_time_files(),
+            progress: component.browser_time_files.progress,
+            progress_increment: 100/time_file_inds.length,
             success: function(){
                     if (file_num < (time_file_inds.length - 1)) {
                         upload_time_files(file_num + 1);
@@ -500,6 +500,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             file: file,
             aids: ["dac-var-dist", file_num.toString(), "matrix"],
             parser: component.parser_dist_files(),
+            progress: component.browser_dist_files.progress,
+            progress_increment: 100/dist_file_inds.length,
             success: function(){
                     if (file_num < (dist_file_inds.length - 1)) {
                         upload_dist_files(file_num + 1);
