@@ -184,12 +184,18 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       return;
     }
 
+    var progressIncreaseInitial = 10;
     var progressIncrease = 40;
-    var progressIncreasePerSlice = (progressIncrease - 10) / Math.ceil(file.size / module.MEGABYTE);
+    if(fileObject.progress_increment != undefined)
+    {
+      progressIncreaseInitial = fileObject.progress_increment * 0.1;
+      progressIncrease = fileObject.progress_increment * 0.4;
+    }
+    var progressIncreasePerSlice = (progressIncrease - progressIncreaseInitial) / Math.ceil(file.size / module.MEGABYTE);
     if(fileObject.progress)
     {
       // Setting initial progress to 10%
-      fileObject.progress(10);
+      fileObject.progress( fileObject.progress() + progressIncreaseInitial )
     }
     if(fileObject.progress_status)
     {
@@ -199,8 +205,9 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
     console.log("Uploading file "+ file + " \nfile size:" + file.size);
     console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
 
-    if(file.size > module.MEGABYTE){
-      console.log("multi File upload initiated.");
+    if(file.size > module.MEGABYTE)
+    {
+      console.log("Multi-file upload initiated.");
       var running = true;
       var sliceNumber = 0;
       while(running) {
@@ -209,9 +216,11 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         sliceNumber ++;
       }
       finishUpload(pid, mid, uid, file, sliceNumber, fileObject);//good to go
-    }else{
+    }
+    else
+    {
       // Upload the whole file since it is small.
-      console.log("Uploading part whole file");
+      console.log("Uploading whole file.");
       
       client.put_upload_file_part({
         uid: uid,
@@ -262,8 +271,14 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         console.log("Upload session finished.");
         if(fileObject.progress)
         {
-          // Setting progress to 50%
-          fileObject.progress(50);
+          // Setting progress to half by adding 1/10th of total progress or progress_increment
+          // since uploadFile() has already set it to 4/10ths
+          var progressToHalf = 10;
+          if(fileObject.progress_increment != undefined)
+          {
+            progressToHalf = fileObject.progress_increment * 0.1;
+          }
+          fileObject.progress(fileObject.progress() + progressToHalf);
         }
         deleteUpload(pid, mid, uid, fileObject);
       },
@@ -298,7 +313,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    * @param fileObject
    *  json object that contains the file info
    */
-  function deleteUpload(pid, mid, uid, fileObject)
+  function deleteUpload(pid, mid, uid, fileObject, progress_increment_applied)
   {
     if(fileObject.progress_status)
     {
@@ -316,6 +331,11 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
           {
             progress_final = fileObject.progress_final;
           }
+          else if(fileObject.progress_increment != undefined)
+          {
+            var progress_increment_used = progress_increment_applied == undefined ? 0 : progress_increment_applied;
+            progress_final = fileObject.progress() + (fileObject.progress_increment - (fileObject.progress_increment * .5) - progress_increment_used);
+          }
           fileObject.progress(progress_final);
         }
         if(fileObject.success){
@@ -326,17 +346,26 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       {
         if(request.status == 409)
         {
-          window.setTimeout(deleteUpload.bind(null, pid, mid, uid, fileObject), 3000);
+          var progress_increment_used = progress_increment_applied == undefined ? 0 : progress_increment_applied;
+          var progress_step = 10;
           var progress_final = 90;
           if(fileObject.progress_final != undefined)
           {
             progress_final = fileObject.progress_final * .9;
           }
+          else if(fileObject.progress_increment != undefined)
+          {
+            progress_final = fileObject.progress() + (fileObject.progress_increment * 0.4) - progress_increment_used;
+            progress_step = fileObject.progress_increment * 0.4 * 0.25;
+          }
           if(fileObject.progress && fileObject.progress() < progress_final)
           {
             // Setting progress to 90%
-            fileObject.progress(Math.min(progress_final, fileObject.progress() + 10));
+            fileObject.progress(Math.min(progress_final, fileObject.progress() + progress_step));
           }
+          
+
+          window.setTimeout(deleteUpload.bind(null, pid, mid, uid, fileObject, progress_increment_used), 3000);
         }
       }
     });
