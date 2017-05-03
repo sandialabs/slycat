@@ -1245,7 +1245,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
         for unique in results["unique"]:
             # Maybe due to caching, sometimes the result comes back as a 'list'
-            if type(results["unique"][0]['values'][0]) is list:
+            if isinstance(results["unique"][0]['values'][0], list):
               unique["values"] = [list_of_values for list_of_values in unique["values"]]
             # Other times it's a 'numpy.ndarray'
             else:
