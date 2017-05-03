@@ -2132,16 +2132,10 @@ def get_time_series_names(hostname, path, **kwargs):
     :param kwargs:
     :return: json object of column names
     """
-    cherrypy.log.error("webservice was hit with %s : %s" % (hostname, path))
-
     sid = get_sid(hostname)
-    cherrypy.log.error("host aquired")
     with slycat.web.server.remote.get_session(sid) as session:
         csv = session.get_file(path, **kwargs)
-    cherrypy.log.error("rows: %s %s" % (csv, str(type(csv))))
     rows = [row.split(",") for row in str(csv).splitlines()]
-    cherrypy.log.error("rows: %s" % rows)
-
     column_names = [name.strip() for name in rows[0]]
 
     def _isNumeric(j):
@@ -2162,9 +2156,6 @@ def get_time_series_names(hostname, path, **kwargs):
             column_types.append("numeric")
         else:
             column_types.append("string")
-
-    cherrypy.log.error("name : types: %s : %s" % (column_names, column_types))
-
     rows = rows[1:]  # removes first row (header)
 
     response_time_series_names = []
