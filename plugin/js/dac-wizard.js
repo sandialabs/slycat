@@ -748,7 +748,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         } else {
 
             // everything is OK -- go on to parsing
-            parse_csv_files();
+            $('.pts-browser-continue').toggleClass("disabled", true);
+            upload_csv_files(0);
         }
 
         // for debugging:
@@ -768,19 +769,71 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     };
 
-    // parse files and store in slycat database
-    var parse_csv_files = function () {
+    // parse files and upload to slycat database
+    var upload_csv_files = function (file_num) {
 
-        // start continue button spinning
-        //$('.pts-browser-continue').toggleClass("disabled", true);
+        // upload requested .time file then call again with next file
+        var file = csv_files[file_num];
+        console.log("Uploading file: " + file.name);
 
-        //
-        console.log(csv_files);
-        console.log(csv_file_names);
+        var fileObject ={
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: file,
+            aids: ["dac-pts-csv", file_num.toString()],
+            parser: component.parser_csv_files(),
+            success: function(){
+                    if (file_num < (csv_files.length - 1)) {
+                        upload_csv_files(file_num + 1);
+                    } else {
+                        upload_meta_files(0);
+                    }
+                },
+            error: function(){
+                dialog.ajax_error(
+                    "There was a problem parsing the file: " + csv_file_names[file_num])
+                    ("","","");
+                    $('.pts-browser-continue').toggleClass("disabled", false);
+                }
+            };
+        fileUploader.uploadFile(fileObject);
+    };
 
-        console.log(meta_files);
-        console.log(meta_file_names);
+    var upload_meta_files = function (file_num) {
 
+        // upload requested .time file then call again with next file
+        var file = meta_files[file_num];
+        console.log("Uploading file: " + file.name);
+
+        var fileObject ={
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: file,
+            aids: ["dac-pts-meta", file_num.toString()],
+            parser: component.parser_meta_files(),
+            success: function(){
+                    if (file_num < (meta_files.length - 1)) {
+                        upload_meta_files(file_num + 1);
+                    } else {
+                        transform_csv_meta_uploads();
+                    }
+                },
+            error: function(){
+                dialog.ajax_error(
+                    "There was a problem parsing the file: " + meta_file_names[file_num])
+                    ("","","");
+                    $('.pts-browser-continue').toggleClass("disabled", false);
+                }
+            };
+        fileUploader.uploadFile(fileObject);
+    };
+
+    // this routine calls a python script on the server which
+    // re-organizes all of the csv and meta files into dac generic
+    // format and pushes that to the server
+    var transform_csv_meta_uploads = function () {
+
+        console.log("calling server to parse csv, meta uploads");
 
     };
 
