@@ -165,7 +165,9 @@ class Agent(agent.Agent):
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
-        results["temp_file"] = tmp_file
+        with open(tmp_file.name, 'r') as myfile:
+            data = myfile.read().replace('\n', '')
+        results["temp_file"] = data
         results["output"], results["errors"] = self.run_remote_command("qsub %s" % tmp_file.name)
 
         sys.stdout.write("%s\n" % json.dumps(results))
