@@ -42,6 +42,8 @@ def parse_ini_file(file):
             # check line for one equal sign
             row_data = rows[i].split("=")
             if (len(row_data) == 2):
+                row_data[0] = row_data[0].translate(None, '"')
+                row_data[1] = row_data[1].translate(None, '"')
                 data.append(row_data)
 
         # turn off parsing at end of file
@@ -50,35 +52,9 @@ def parse_ini_file(file):
 
     data.append(["[waveform_conversion]", waveform_data])
 
-    cherrypy.log.error(data)
-
-    cherrypy.log.error(str(len(rows)))
-    cherrypy.log.error(str(rows))
-
-
-    #rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
-    #        escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
-
-    # fill a numpy matrix with matrix from file (assumes floats, fails otherwise)
-    data = numpy.zeros((len(rows[0:]), len(rows[0])))
-    #for j in range(len(rows[0:])):
-    #    try:
-    #        data[j,:] = numpy.array([float(name) for name in rows[j]])
-    #    except:
-    #        raise Exception ("Matrix entries must be floats.")
-
-
-    # for a vector we strip off the out python array []
-    #if int(data.shape[0]) == 1:
-
-    #    data = data[0]
-    #    dimensions = [dict(name="row", end=len(data))]
-
-    #else:
-
-    # for a matrix we need the number of columns too
-    dimensions = [dict(name="row", end=int(data.shape[0])),
-        dict(name="column", end=int(data.shape[1]))]
+    # however many rows by 2 columns
+    dimensions = [dict(name="row", end=len(data)),
+        dict(name="column", end=2)]
 
     # attributes are the same for matrices and vectors
     attributes = [dict(name="value", type="string")]
@@ -113,9 +89,6 @@ def parse(database, model, input, files, aids, **kwargs):
 
     # this version only parses the .ini files, not tables or matrices
 
-    # print out file and return
-    cherrypy.log.error (str(files[0]))
-
     # set defaults (array 0)
     array_col = 0
 
@@ -132,12 +105,11 @@ def parse(database, model, input, files, aids, **kwargs):
 
     # table parser (original csv parser)
     parsed = [parse_ini_file(file) for file in files]
-    return
-
     for (attributes, dimensions, data), aid in zip(parsed, aids):
-        slycat.web.server.put_model_arrayset(database, model, aid, input)
+        if (array_col == 0):
+            slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_col, data)
+        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/0/..." % array_col, data)
 
     end = time.time()
     model["db_creation_time"] = (end - start)

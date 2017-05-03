@@ -27,6 +27,38 @@ def register_slycat_plugin(context):
         return open(os.path.join(os.path.dirname(__file__), 
                     "dac-ui.html"), "r").read()
 
+    def parse_pts_data (database, model, verb, type, command, **kwargs):
+        """
+        Reads in the previously uploaded CSV/META data from the server
+        and processes it/combines it into data in the DAC generic format,
+        finally pushing that data to the server.
+        """
+
+        # get csv file names and meta file names from kwargs
+        csv_file_names = kwargs["0"]
+        meta_file_names = kwargs["1"]
+
+        # make sure csv and meta files names are arrays
+        # (note csv_file_names and meta_file_names should be same size arrays)
+        if not(isinstance(csv_file_names, list)):
+            csv_file_names = [csv_file_names]
+            meta_file_names = [meta_file_names]
+
+        # upload meta data first
+        meta_data = []
+        for i in range(len(meta_file_names)):
+            meta_data_i = next(iter(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-pts-meta", "%s/0/..." % i)))
+            meta_data.append(meta_data_i)
+
+        cherrypy.log.error(str(meta_data))
+
+        cherrypy.log.error ("entered parse_pts_data")
+
+        # returns dummy argument indicating success
+        return json.dumps({"success": 1})
+
+
     def init_mds_coords(database, model, verb, type, command, **kwargs):
         """
         Computes and stores into the slycat database the variables
@@ -250,6 +282,7 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "update_mds_coords", update_mds_coords)
     context.register_model_command("GET", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
+    context.register_model_command("GET", "DAC", "parse_pts_data", parse_pts_data)
 
     # registry css resources with slycat
     context.register_page_bundle("DAC", "text/css", [

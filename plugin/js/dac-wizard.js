@@ -640,7 +640,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 					include_metadata();
 				},
 			error: dialog.ajax_error("Server error initializing MDS coordinates.")
-
 		});
     }
 
@@ -652,6 +651,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // list out csv file names, check for .csv extension
         csv_files = component.browser_csv_files.selection();
+        csv_file_names = [];
         var csv_ext = true;
         for (i = 0; i < csv_files.length; i++) {
 
@@ -677,6 +677,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // list out meta file names, check for .ini extension (redundant code)
         meta_files = component.browser_meta_files.selection();
+        meta_file_names = [];
         var meta_ext = true;
         for (i = 0; i < meta_files.length; i++) {
 
@@ -833,7 +834,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // format and pushes that to the server
     var transform_csv_meta_uploads = function () {
 
-        console.log("calling server to parse csv, meta uploads");
+        // call server to transform data
+		client.get_model_command(
+		{
+			mid: component.model._id(),
+      		type: "DAC",
+			command: "parse_pts_data",
+			parameters: [csv_file_names, meta_file_names],
+			success: function (result)
+				{
+					console.log(result);
+				},
+			error: dialog.ajax_error("Server error parsing PTS data.")
+		});
+
+        // carry on with wizard
+        // assign_pref_defaults();
 
     };
 
