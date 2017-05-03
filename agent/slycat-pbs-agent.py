@@ -161,7 +161,7 @@ class Agent(agent.Agent):
         fn = command["command"]["fn"]
         # uid = command["command"]["uid"]
 
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
