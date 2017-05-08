@@ -58,7 +58,12 @@
     </div>
 
     <div data-bind="visible:tab() == 2" style="height: 400px">
-      <label class="bottom-margin">Please select your table file</label>
+      <label class="bottom-margin">
+        Please select your table file 
+        <i class="fa fa-question-circle inline-help" aria-hidden="true" 
+          title="The central input common to all Slycat™ models is a scalar data table. In this table, each column consists of values for a single input or output variable across all runs, and each row holds all of the variable values for a single simulation. Slycat™ accepts two file formats for table data, either Comma Separated Value (CSV) files, or for Dakota users, Dakota tabular files. If your data is not currently in one of these two formats, Excel can be used to create CSV files from most common table formats. Note that if output metrics have been created separately in a post-processing step, they will need to be integrated with the inputs into a single file ahead of time. In a CSV file, we expect to see only a single row of header information consisting of the column names."
+        ></i>
+      </label>
       <slycat-remote-browser params="
         type:'remote',
         sid:remote.sid,
