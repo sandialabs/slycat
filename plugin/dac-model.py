@@ -137,6 +137,7 @@ def register_slycat_plugin(context):
         var_warning = False
 
         # construct meta data table and variable meta data table
+        meta_rows = []
         for i in range(len(uniq_test_op)):
 
             # get csv data for test op i
@@ -177,7 +178,7 @@ def register_slycat_plugin(context):
         cherrypy.log.error(str(var_warning))
 
         cherrypy.log.error(str(meta_rows))
-        
+
         cherrypy.log.error(str(parse_error_log))
 
         #cherrypy.log(str(var_data))
