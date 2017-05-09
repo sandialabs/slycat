@@ -83,19 +83,25 @@ S. Martin
 
     </div>
 
-    <!-- This tab is for loading a file from a remote computer.  The slycat-parser-controls
+    <!-- This tab is for loading the CSV/META files.  The slycat-parser-controls
          tag indicates which type of table to load, which in our case is 'dac-table' -->
     <div data-bind="visible:tab() == 2" class="form-horizontal">
 
         <div style="margin-top: 40px;">
         <label>Select all files in CSV directory:</label>
-        <slycat-local-browser params="selection:browser_csv_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_csv_files.selection,
+            multiple:true,
+            progress:browser_csv_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_csv_files,category:'dac-csv-files'"></slycat-parser-controls>
         </div>
 
         <div style="margin-top: 40px;">
         <label>Select all files in META directory:</label>
-        <slycat-local-browser params="selection:browser_meta_files.selection,multiple:true"></slycat-local-browser>
+        <slycat-local-browser params="
+            selection:browser_meta_files.selection,
+            multiple:true,
+            progress:browser_meta_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_meta_files,category:'dac-meta-files'"></slycat-parser-controls>
         </div>
 

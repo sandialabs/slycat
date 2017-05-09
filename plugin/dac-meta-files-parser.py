@@ -28,29 +28,22 @@ def parse_ini_file(file):
     # parse file one row at a time
     rows = file.splitlines()
     data = []
-    waveform_conversion = False
-    waveform_data = ""
     for i in range(0,len(rows)):
 
-        if (waveform_conversion):
+        # keep prefixes
+        if "[" in rows[i]:
+            prefix = rows[i][0:5] + "]"
 
-            # collect all rows as a string after
-            # we find "[waveform_conversion]"
-            waveform_data = waveform_data + ", " + rows[i]
+        # check line for one equal sign
+        row_data = rows[i].split("=")
+        if (len(row_data) == 2):
+            row_data[0] = row_data[0].translate(None, '"')
+            row_data[1] = row_data[1].translate(None, '"')
+            data.append((prefix + row_data[0], row_data[1]))
 
-        else:
-            # check line for one equal sign
-            row_data = rows[i].split("=")
-            if (len(row_data) == 2):
-                row_data[0] = row_data[0].translate(None, '"')
-                row_data[1] = row_data[1].translate(None, '"')
-                data.append(row_data)
-
-        # turn off parsing at end of file
-        if (rows[i] == "[waveform_conversion]"):
-            waveform_conversion = True
-
-    data.append(["[waveform_conversion]", waveform_data])
+        # discard waveform_conversion information
+        if rows[i] == "[waveform_conversion]":
+            break
 
     # however many rows by 2 columns
     dimensions = [dict(name="row", end=len(data)),
@@ -109,7 +102,7 @@ def parse(database, model, input, files, aids, **kwargs):
         if (array_col == 0):
             slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/0/..." % array_col, data)
+        slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/0/..." % array_col, [data])
 
     end = time.time()
     model["db_creation_time"] = (end - start)

@@ -93,8 +93,7 @@ def parse_mat_file(file):
         except:
             raise Exception ("Matrix entries must be floats.")
 
-
-    # for a vector we strip off the out python array []
+    # for a vector we strip off the outer python array []
     if int(data.shape[0]) == 1:
 
         data = data[0]

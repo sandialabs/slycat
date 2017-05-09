@@ -31,41 +31,55 @@ def parse_file(file):
             return False
 
     cherrypy.log.error("dac pts csv table parsing:::::::")
-    rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+    rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
+            escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+
     if len(rows) < 2:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
-        raise Exception("File must contain at least two rows.")
 
-    attributes = []
-    dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
-    data = []
+        # use a row of zeros for an empty file
+        attributes = []
+        data = []
+        for column in zip(*rows):
+            attributes.append({"name":column[0], "type":"float64"})
+            data.append([0])
+        dimensions = [{"name":"row", "type":"int64", "begin":0, "end":1}]
 
-    # go through the csv by column
-    for column in zip(*rows):
-        column_has_floats = False
+        # old code:
+        # slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
+        # raise Exception("File must contain at least two rows.")
 
-        # start from 1 to avoid the column name
-        for value in column[1:]:
-            if isfloat(value):
-                column_has_floats = True
-            try:# note NaN's are floats
-                output_list = map(lambda x: 'NaN' if x=='' else x, column[1:])
-                data.append(numpy.array(output_list).astype("float64"))
-                attributes.append({"name":column[0], "type":"float64"})
+    else:
 
-            # could not convert something to a float defaulting to string
-            except Exception as e:
-                column_has_floats = False
-                cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
-            break
+        attributes = []
+        dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
+        data = []
 
-        if not column_has_floats:
-            data.append(numpy.array(column[1:]))
-            attributes.append({"name":column[0], "type":"string"})
+        # go through the csv by column
+        for column in zip(*rows):
+            column_has_floats = False
 
-    if len(attributes) < 1:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
-        raise Exception("File must contain at least one column.")
+            # start from 1 to avoid the column name
+            for value in column[1:]:
+                if isfloat(value):
+                    column_has_floats = True
+                try:# note NaN's are floats
+                    output_list = map(lambda x: 'NaN' if x=='' else x, column[1:])
+                    data.append(numpy.array(output_list).astype("float64"))
+                    attributes.append({"name":column[0], "type":"float64"})
+
+                # could not convert something to a float defaulting to string
+                except Exception as e:
+                    column_has_floats = False
+                    cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
+                break
+
+            if not column_has_floats:
+                data.append(numpy.array(column[1:]))
+                attributes.append({"name":column[0], "type":"string"})
+
+        if len(attributes) < 1:
+            slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
+            raise Exception("File must contain at least one column.")
 
     return attributes, dimensions, data
 
@@ -112,10 +126,12 @@ def parse(database, model, input, files, aids, **kwargs):
         slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
+
     # table parser (original csv parser)
     parsed = [parse_file(file) for file in files]
     for (attributes, dimensions, data), aid in zip(parsed, aids):
-        slycat.web.server.put_model_arrayset(database, model, aid, input)
+        if (array_col == 0):
+            slycat.web.server.put_model_arrayset(database, model, aid, input)
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_col, data)
 

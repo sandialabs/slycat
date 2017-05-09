@@ -43,15 +43,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         selection: [], 
         progress: ko.observable(null),
     });
-    component.browser_pref_files = mapping.fromJS({
-        path:null, 
-        selection: [], 
-        progress: ko.observable(null),
-    });
 
     // PTS META/CSV file selections
-    component.browser_csv_files = mapping.fromJS({path:null, selection: []});
-    component.browser_meta_files = mapping.fromJS({path:null, selection: []});
+    component.browser_csv_files = mapping.fromJS({
+        path:null,
+        selection: [],
+        progress: ko.observable(null),
+    });
+    component.browser_meta_files = mapping.fromJS({
+        path:null,
+        selection: [],
+        progress: ko.observable(null),
+    });
 
     // DAC generic parsers
     component.parser_dac_file = ko.observable(null);
@@ -650,13 +653,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.upload_pts_format = function() {
 
         // list out csv file names, check for .csv extension
-        csv_files = component.browser_csv_files.selection();
+        var unordered_csv_files = component.browser_csv_files.selection();
         csv_file_names = [];
         var csv_ext = true;
-        for (i = 0; i < csv_files.length; i++) {
+        for (i = 0; i < unordered_csv_files.length; i++) {
 
             // parse file name for .csv extension
-            var file_name = csv_files[i].name;
+            var file_name = unordered_csv_files[i].name;
             var file_name_split = file_name.split(".");
             if (file_name_split.length > 1) {
                 var file_ext = file_name_split[file_name_split.length - 1];
@@ -715,7 +718,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         }
 
         // continue only if we have all csv and ini files and the files match
-        if (csv_files.length == 0) {
+        if (unordered_csv_files.length == 0) {
 
             // no csv files
             dialog.ajax_error("Please select CSV files.")("","","");
@@ -735,7 +738,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             // meta files have wrong extension
             dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
 
-        } else if (csv_files.length != meta_files.length) {
+        } else if (unordered_csv_files.length != meta_files.length) {
 
             // different number of files
             dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
@@ -748,7 +751,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         } else {
 
-            // everything is OK -- go on to parsing
+            // everything is OK, reorder csv file order to match meta file order
+            csv_files = [];
+            for (i = 0; i < meta_file_names.length; i++) {
+                csv_files.push (unordered_csv_files[csv_file_names.indexOf(meta_file_names[i])])
+            }
+
+            // now go on to uploading and parsing
             $('.pts-browser-continue').toggleClass("disabled", true);
             upload_csv_files(0);
         }
@@ -783,6 +792,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             file: file,
             aids: ["dac-pts-csv", file_num.toString()],
             parser: component.parser_csv_files(),
+            progress: component.browser_csv_files.progress,
+            progress_increment: 100/csv_files.length,
             success: function(){
                     if (file_num < (csv_files.length - 1)) {
                         upload_csv_files(file_num + 1);
@@ -812,6 +823,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             file: file,
             aids: ["dac-pts-meta", file_num.toString()],
             parser: component.parser_meta_files(),
+            progress: component.browser_meta_files.progress,
+            progress_increment: 100/meta_files.length,
             success: function(){
                     if (file_num < (meta_files.length - 1)) {
                         upload_meta_files(file_num + 1);
@@ -840,7 +853,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 			mid: component.model._id(),
       		type: "DAC",
 			command: "parse_pts_data",
-			parameters: [csv_file_names, meta_file_names],
+			parameters: [meta_file_names],
 			success: function (result)
 				{
 					console.log(result);
