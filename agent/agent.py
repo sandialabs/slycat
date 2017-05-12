@@ -28,8 +28,7 @@ import tempfile
 import threading
 import uuid
 import abc
-# import multiprocessing
-# import time
+import logging
 import ConfigParser
 
 session_cache = {}
@@ -37,32 +36,66 @@ session_cache = {}
 
 class Agent(object):
     """
-
+    This class is an interface for agent functionality on a cluster server
     """
     __metaclass__ = abc.ABCMeta
-
+    _log_lock = threading.Lock()
+    log = logging.getLogger()
+    log.setLevel(logging.INFO)
+    log.addHandler(logging.FileHandler('slycat-agent-timeseries-to-hdf5.log'))
+    log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
     @abc.abstractmethod
     def run_remote_command(self, command):
+        """
+        command to be run on the remote machine
+        :param command: json command
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
     def launch(self, command):
+        """
+        launch a job on the remote machine
+        :param command: json command
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
     def submit_batch(self, command):
+        """
+        submit a batch job on the remote machine
+        :param command: json command
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
     def checkjob(self, command):
+        """
+        check a job's status on a remote machine
+        :param command: json command
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
     def cancel_job(self, command):
+        """
+        cancels a remote job
+        :param command: json command
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
     def get_job_output(self, command):
+        """
+        get a detailed version of the jobs output
+        :param command: json command
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
@@ -70,13 +103,38 @@ class Agent(object):
                        time_seconds,
                        fn,
                        tmp_file):
+        """
+        generate a remote batch file that can be used
+        by the remote system's mpi queue
+        :param module_name: 
+        :param wckey: 
+        :param nnodes: 
+        :param partition: 
+        :param ntasks_per_node: 
+        :param time_hours: 
+        :param time_minutes: 
+        :param time_seconds: 
+        :param fn: 
+        :param tmp_file: 
+        :return: 
+        """
         pass
 
     @abc.abstractmethod
     def run_function(self, command):
+        """
+        function used to run a job
+        :param command: json command
+        :return: 
+        """
         pass
 
     def get_user_config(self):
+        """
+        writes the users config as json 
+        {results:{config:{}, "ok":bool, errors:"string errors message"}}
+        :return: 
+        """
         results = {
             "ok": True
         }
