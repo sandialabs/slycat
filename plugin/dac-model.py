@@ -40,7 +40,10 @@ def register_slycat_plugin(context):
         parse_error_log = []
 
         # get csv file names and meta file names (same) from kwargs
-        meta_file_names = kwargs["0"]
+        # meta_file_names = kwargs["0"]
+
+        # upload meta file names
+        meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
 
         # make sure csv and meta files names are arrays
         # (note csv_file_names and meta_file_names should be same size arrays)
@@ -51,6 +54,7 @@ def register_slycat_plugin(context):
         # (skip bad/empty files)
         wave_data = []
         table_data = []
+        table_keys = set()
         csv_data = []
         dig_id = []
         test_op_id = []
@@ -63,13 +67,6 @@ def register_slycat_plugin(context):
 
             # convert to dictionary
             meta_dict_i = dict(meta_data_i[0])
-
-            # check that keys are uniform throughout dataset
-            if i == 0:
-                meta_data_keys = set(meta_dict_i)
-            if set(meta_dict_i) != meta_data_keys:
-                parse_error_log.append("META data keys diverged -- skipping file " + meta_file_names[i])
-                continue
 
             # get csv data
             csv_data_i = slycat.web.server.get_model_arrayset_data(
@@ -95,6 +92,9 @@ def register_slycat_plugin(context):
                 else:
                     table_data_i[key_no_prefix] = meta_dict_i[key]
 
+                    # add key to set of all table keys
+                    table_keys.add(key_no_prefix)
+
             # record relevant information for organizing data
             test_op_id.append (int(meta_dict_i["[oper]test_op_inst_id"]))
             dig_id.append (int(meta_dict_i["[wave]WF_DIG_ID"]))
@@ -115,17 +115,21 @@ def register_slycat_plugin(context):
         # find unique digitizer ids
         uniq_dig_id, uniq_dig_clusts = numpy.unique (dig_id, return_inverse = True)
 
-        cherrypy.log.error(str(csv_data))
-        cherrypy.log.error(str(wave_data))
-        cherrypy.log.error(str(table_data))
+        cherrypy.log.error(str(table_keys))
 
-        cherrypy.log.error(str(test_op_id))
-        cherrypy.log.error(str(uniq_test_op))
-        cherrypy.log.error(str(uniq_test_op_clusts))
+        cherrypy.log.error(str(len(csv_data)))
 
-        cherrypy.log.error(str(dig_id))
-        cherrypy.log.error(str(uniq_dig_id))
-        cherrypy.log.error(str(uniq_dig_clusts))
+        #cherrypy.log.error(str(csv_data))
+        #cherrypy.log.error(str(wave_data))
+        #cherrypy.log.error(str(table_data))
+
+        #cherrypy.log.error(str(test_op_id))
+        #cherrypy.log.error(str(uniq_test_op))
+        #cherrypy.log.error(str(uniq_test_op_clusts))
+
+        #cherrypy.log.error(str(dig_id))
+        #cherrypy.log.error(str(uniq_dig_id))
+        #cherrypy.log.error(str(uniq_dig_clusts))
 
         # construct meta data table and store variable/time information for further processing
         #meta_column_names = []
@@ -138,6 +142,8 @@ def register_slycat_plugin(context):
 
         # construct meta data table and variable meta data table
         meta_rows = []
+        test_inds = []
+        test_dig_ids = []
         for i in range(len(uniq_test_op)):
 
             # get csv data for test op i
@@ -151,33 +157,21 @@ def register_slycat_plugin(context):
             # use first row for table entry
             meta_rows.append (table_data[test_i_inds[0]])
 
-                #if (wave_data[j]["WF_X_UNITS"] != wave_data[0]["WF_X_UNITS"]) or \
-                #   (wave_data[j]["WF_Y_UNITS"] != wave_data[0]["WF_Y_UNITS"]):
-                #    var_warning = True
-
-
-            cherrypy.log.error(str(test_i_inds))
-
-            # coalesce meta data into row of table
-            #meta_dict_i = meta_data[test_i_inds[0]]
-
-   #         cherrypy.log.error(str(meta_dict_i))
-
-    #        cherrypy.log.error(str(meta_dict_i_no_wf))
-
-            #meta_table =
+            # store test inds for each row
+            test_inds.append(test_i_inds)
+            test_dig_ids.append(numpy.array(dig_id)[test_i_inds])
 
             # look through test op ids for digitizer ids
-            #for j in range(len(var_i_inds)):
+            #for j in range(len(test_i_inds)):
 
                 # get digitizer j variable and time information
-             #   var_data[j].append(csv_data[var_i_inds[j]][2])
-              #  time_data[j].append(csv_data[var_i_inds[j]][3])
+            #    var_data[j].append(csv_data[var_i_inds[j]][2])
+            #    time_data[j].append(csv_data[var_i_inds[j]][3])
 
 
-        cherrypy.log.error(str(var_warning))
+        #cherrypy.log.error(str(test_inds))
 
-        cherrypy.log.error(str(meta_rows))
+        #cherrypy.log.error(str(meta_rows))
 
         cherrypy.log.error(str(parse_error_log))
 

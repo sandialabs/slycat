@@ -5,13 +5,37 @@
 // S. Martin
 // 1/15/2015
 
-define("dac-model", ["dac-layout", "dac-request-data", "dac-alpha-sliders",
+define("dac-model", ["slycat-web-client", "dac-layout", "dac-request-data", "dac-alpha-sliders",
 					 "dac-alpha-buttons", "dac-scatter-plot", "dac-plots",
-					 "dac-table", "jquery", "d3", "domReady!"], 
-    function(layout, request, alpha_sliders, alpha_buttons, scatter_plot, 
-    		 plots, metadata_table, $, d3)
+					 "dac-table", "jquery", "d3", "URI", "domReady!"],
+    function(client, layout, request, alpha_sliders, alpha_buttons, scatter_plot,
+    		 plots, metadata_table, $, d3, URI)
 {
 
+    // model ID
+	var mid = URI(window.location).segment(-1);
+
+    // bind selection/zoom buttons to callback operations
+	$("#dac-scatter-button-sel-1").on("click",
+		function() {
+
+		// call server to transform data
+		client.get_model_command(
+		{
+			mid: mid,
+      		type: "DAC",
+			command: "parse_pts_data",
+			parameters: 0,
+			success: function (result)
+				{
+					console.log(result);
+				},
+			error: function () { console.log("error calling parse_pts_data") }
+		});
+
+    });
+
+	/*
 	// load ui parameters and initialize dial-a-cluser	
 	$.when (request.get_parameters("dac-ui-parms", 0)).then(
 			function (ui_parms)
@@ -87,5 +111,6 @@ define("dac-model", ["dac-layout", "dac-request-data", "dac-alpha-sliders",
 				alert ("Server failure: could not load UI parameters.");
 			}
 	);
+	*/
 	
 });

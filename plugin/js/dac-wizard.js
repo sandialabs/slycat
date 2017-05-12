@@ -847,6 +847,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // format and pushes that to the server
     var transform_csv_meta_uploads = function () {
 
+        // create model with uploaded data linked to selection 1 button
+        client.put_model_parameter ({
+            mid: component.model._id(),
+            aid: "dac-wizard-file-names",
+            value: meta_file_names,
+            error: dialog.ajax_error("Error uploading meta file names."),
+            success: function () {
+                component.tab(5);
+            }
+        });
+
+        /*
         // call server to transform data
 		client.get_model_command(
 		{
@@ -860,6 +872,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 				},
 			error: dialog.ajax_error("Server error parsing PTS data.")
 		});
+        */
 
         // carry on with wizard
         // assign_pref_defaults();
