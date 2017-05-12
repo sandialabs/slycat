@@ -197,19 +197,19 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
       t_first_row = [val.strip() for val in stream.readline().split(t_delimiter)]
 
       # check if an index column is present or flag it otherwise
-      if isinstance(t_first_row[0], int):
-        t_add_index_column = True
-        t_column_names = ["Index"] + t_column_names
-      else:
-        t_column_names[0] = "Index"
+      # if isinstance(t_first_row[0], float):
+      # t_add_index_column = True
+      t_column_names = ["Index"] + t_column_names # always add index column
+      # else:
+      #   t_column_names[0] = "Index"
 
       t_column_types = ["float64" for name in t_column_names]
       t_column_names[1] = "TIME"
 
     # pull data from file and add an index column if flagged earlier...
     data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
-    if t_add_index_column is True:
-      data = numpy.insert(data, 0, range(len(data)), axis=1)
+    # if t_add_index_column is True:
+    data = numpy.insert(data, 0, range(len(data)), axis=1)
 
     timeseries_dir = os.path.join(arguments.output_directory, timeseries_name)
     if not os.path.exists(timeseries_dir):
