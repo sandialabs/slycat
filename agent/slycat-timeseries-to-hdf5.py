@@ -47,8 +47,8 @@ arguments = parser.parse_args()
 log_lock = threading.Lock()
 log = logging.getLogger()
 log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler())
-log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
+log.addHandler(logging.FileHandler('slycat-agent-timeseries-to-hdf5.log'))
+log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
 
 if arguments.force:
   shutil.rmtree(arguments.output_directory, ignore_errors=True)
