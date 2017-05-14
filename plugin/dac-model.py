@@ -35,6 +35,17 @@ def register_slycat_plugin(context):
         and returned to the calling function.
         """
 
+        # ad-hoc "global" parameters to eliminate likely unusable PTS files
+
+        # minimum number of time points in a CSV file
+        CSV_MIN_SIZE = 10
+
+        # minimum number of digitizers in a CSV file
+        MIN_NUM_DIG = 3
+
+        # Parsing the CSV/META files
+        # --------------------------
+
         # keep a parsing error log to help user correct input data
         # (each array entry is a string)
         parse_error_log = []
@@ -54,33 +65,37 @@ def register_slycat_plugin(context):
         # (skip bad/empty files)
         wave_data = []
         table_data = []
-        table_keys = set()
         csv_data = []
         dig_id = []
         test_op_id = []
         file_name = []
+        table_keys = []
         for i in range(len(meta_file_names)):
-
-            # get meta data
-            meta_data_i = slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-pts-meta", "%s/0/..." % i)
-
-            # convert to dictionary
-            meta_dict_i = dict(meta_data_i[0])
 
             # get csv data
             csv_data_i = slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-pts-csv", "%s/.../..." % i)
 
             # check for an empty csv file
-            if len(csv_data_i[0]) == 1:
-                parse_error_log.append("CSV data file empty -- skipping " + meta_file_names[i])
+            if len(csv_data_i[0]) < CSV_MIN_SIZE:
+                parse_error_log.append("CSV data file has less than " + str(CSV_MIN_SIZE)
+                                       + " entries -- skipping " + meta_file_names[i])
                 continue
+
+            # get meta data
+            meta_data_i = slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-pts-meta", "%s/0/..." % i)
+            meta_data_i = meta_data_i[0]
+
+            # make dictionary for wave, table data
+            meta_dict_i = dict(meta_data_i)
 
             # split into wave/table data
             wave_data_i = {}
             table_data_i = {}
-            for key in meta_dict_i:
+            for j in range(len(meta_data_i)):
+
+                key = meta_data_i[j][0]
 
                 # strip off key prefix to obtain new key
                 prefix = key[0:6]
@@ -93,7 +108,8 @@ def register_slycat_plugin(context):
                     table_data_i[key_no_prefix] = meta_dict_i[key]
 
                     # add key to set of all table keys
-                    table_keys.add(key_no_prefix)
+                    if not key_no_prefix in table_keys:
+                        table_keys.insert(j, key_no_prefix)
 
             # record relevant information for organizing data
             test_op_id.append (int(meta_dict_i["[oper]test_op_inst_id"]))
@@ -112,42 +128,83 @@ def register_slycat_plugin(context):
         # look for unique test-op ids (these are the rows in the metadata table)
         uniq_test_op, uniq_test_op_clusts = numpy.unique(test_op_id, return_inverse = True)
 
-        # find unique digitizer ids
-        uniq_dig_id, uniq_dig_clusts = numpy.unique (dig_id, return_inverse = True)
-
-        cherrypy.log.error(str(table_keys))
-
-        cherrypy.log.error(str(len(csv_data)))
-
-        #cherrypy.log.error(str(csv_data))
-        #cherrypy.log.error(str(wave_data))
-        #cherrypy.log.error(str(table_data))
-
-        #cherrypy.log.error(str(test_op_id))
-        #cherrypy.log.error(str(uniq_test_op))
-        #cherrypy.log.error(str(uniq_test_op_clusts))
-
-        #cherrypy.log.error(str(dig_id))
-        #cherrypy.log.error(str(uniq_dig_id))
-        #cherrypy.log.error(str(uniq_dig_clusts))
-
-        # construct meta data table and store variable/time information for further processing
-        #meta_column_names = []
-        #meta_rows = []
-        #var_data = []
-        #time_data = []
-
-        # flags to keep track of inconsistent table/wave form meta data
-        var_warning = False
-
-        # construct meta data table and variable meta data table
-        meta_rows = []
+        # screen for consistent digitizer ids
         test_inds = []
         test_dig_ids = []
+        dig_id_keys = []
         for i in range(len(uniq_test_op)):
 
-            # get csv data for test op i
+            # get indices for test op clusters
             test_i_inds = numpy.where(uniq_test_op_clusts == i)[0]
+
+            # order indices according to digitizer id
+            dig_ids_i = numpy.array(dig_id)[test_i_inds]
+            dig_ids_i_sort_inds = numpy.argsort(dig_ids_i)
+
+            test_i_inds = numpy.array(test_i_inds)[dig_ids_i_sort_inds]
+            dig_ids_i = numpy.array(dig_id)[test_i_inds]
+
+            # if too few digitizer signals ignore data
+            if len(dig_ids_i) < MIN_NUM_DIG:
+                parse_error_log.append("Less than " + str(MIN_NUM_DIG) +
+                                       " time series -- skipping test-op id #"
+                                       + str(uniq_test_op[i]))
+                continue
+
+            # store test inds for each row and digitizer ids (sorted)
+            test_inds.append(test_i_inds)
+            test_dig_ids.append(dig_ids_i)
+
+            # keep track of total number of digitizers
+            for j in range(len(dig_ids_i)):
+                if not dig_ids_i[j] in dig_id_keys:
+                    dig_id_keys.append(dig_ids_i[j])
+
+        # screen for intersecting digitizer ids
+        keep_dig_ids = dig_id_keys
+        for i in range(len(test_dig_ids)):
+            keep_dig_ids = list(set(keep_dig_ids) & set(test_dig_ids[i]))
+
+        # add removed ids to parse error log
+        for i in range(len(dig_id_keys)):
+            if not dig_id_keys[i] in keep_dig_ids:
+                parse_error_log.append("Not found in all test ops --- skipping digitizer #" +
+                                       str(dig_id_keys[i]))
+
+        # sort and keep consistent, intersecting digitizer ids
+        dig_id_keys = sorted(keep_dig_ids)
+
+        # trim test_inds and dig_ids to according to new ids
+        for i in range(len(test_inds)):
+
+            # get previously unculled digitizer ids
+            old_dig_ids_i = test_dig_ids[i]
+            old_test_inds_i = test_inds[i]
+
+            # construct new indices
+            new_test_i_inds = []
+            new_dig_ids_i = []
+
+            # remove unused digitizers indices
+            for j in range(len(old_dig_ids_i)):
+                if old_dig_ids_i[j] in dig_id_keys:
+                    new_dig_ids_i.append(old_dig_ids_i[j])
+                    new_test_i_inds.append(old_test_inds_i[j])
+
+            # replace in list of indices
+            test_inds[i] = new_test_i_inds
+            test_dig_ids[i] = new_dig_ids_i
+
+        # construct meta data table and variable/time dictionaries
+        meta_column_names = table_keys
+        meta_column_types = ["string" for name in meta_column_names]
+        meta_rows = []
+        var_data = []
+        time_data = []
+        for i in range(len(test_inds)):
+
+            # get indices for test op
+            test_i_inds = test_inds[i]
 
             # check that table data/wave form data is consistent
             for j in range(len(test_i_inds)):
@@ -155,34 +212,65 @@ def register_slycat_plugin(context):
                     parse_error_log.append("Inconsistent meta data for test-op id #" + str(uniq_test_op[i]))
 
             # use first row for table entry
-            meta_rows.append (table_data[test_i_inds[0]])
+            meta_row_i = []
+            for j in range(len(meta_column_names)):
+                meta_dict_i = table_data[test_i_inds[0]]
+                if meta_column_names[j] in meta_dict_i:
+                    meta_row_i.append(meta_dict_i[meta_column_names[j]])
+                else:
+                    meta_row_i.append("")
+            meta_rows.append (meta_row_i)
 
-            # store test inds for each row
-            test_inds.append(test_i_inds)
-            test_dig_ids.append(numpy.array(dig_id)[test_i_inds])
-
-            # look through test op ids for digitizer ids
-            #for j in range(len(test_i_inds)):
+            # store variable/time information
+            var_data_j = []
+            time_data_j = []
+            for j in range(len(test_i_inds)):
 
                 # get digitizer j variable and time information
-            #    var_data[j].append(csv_data[var_i_inds[j]][2])
-            #    time_data[j].append(csv_data[var_i_inds[j]][3])
+                var_data_j.append(csv_data[test_i_inds[j]][2])
+                time_data_j.append(csv_data[test_i_inds[j]][3])
+            var_data.append(var_data_j)
+            time_data.append(time_data_j)
+
+        # convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
+        meta_columns = zip(*meta_rows)
+        for index in range(len(meta_columns)):
+            try:
+                meta_columns[index] = numpy.array(meta_columns[index], dtype="float64")
+                meta_column_types[index] = "float64"
+            except:
+                meta_columns[index] = numpy.array(meta_columns[index], dtype="string")
+
+        # construct variables.meta table, check time/var consistency
 
 
-        #cherrypy.log.error(str(test_inds))
 
-        #cherrypy.log.error(str(meta_rows))
+
+
+        cherrypy.log.error(str(test_inds))
+        cherrypy.log.error(str(test_dig_ids))
+
+        cherrypy.log.error(str(meta_column_names))
+        cherrypy.log.error(str(meta_column_types))
+        cherrypy.log.error(str(meta_rows))
+
+        cherrypy.log.error(str(var_data))
+        cherrypy.log.error(str(time_data))
 
         cherrypy.log.error(str(parse_error_log))
 
-        #cherrypy.log(str(var_data))
-        #cherrypy.log(str(time_data))
 
+
+        # Push DAC variables to slycat server
+        # -----------------------------------
+
+        # Remove CSV/META files in slycat server
+        # --------------------------------------
 
         #
         # construct an array of lists for each test-op id, where the lists contain
 
-        # returns dummy argument indicating success
+        # returns parsing problems for display to user
         return json.dumps({"success": 1})
 
 
