@@ -14,6 +14,7 @@ def register_slycat_plugin(context):
     import slycat.web.server
     import numpy
     from scipy import optimize
+    from scipy import spatial
     import imp
     import cherrypy
 
@@ -199,8 +200,8 @@ def register_slycat_plugin(context):
         meta_column_names = table_keys
         meta_column_types = ["string" for name in meta_column_names]
         meta_rows = []
-        var_data = []
-        time_data = []
+        var_data = [[] for key in dig_id_keys]
+        time_data = [[] for key in dig_id_keys]
         for i in range(len(test_inds)):
 
             # get indices for test op
@@ -213,24 +214,21 @@ def register_slycat_plugin(context):
 
             # use first row for table entry
             meta_row_i = []
+            meta_dict_i = table_data[test_i_inds[0]]
             for j in range(len(meta_column_names)):
-                meta_dict_i = table_data[test_i_inds[0]]
                 if meta_column_names[j] in meta_dict_i:
                     meta_row_i.append(meta_dict_i[meta_column_names[j]])
                 else:
                     meta_row_i.append("")
             meta_rows.append (meta_row_i)
 
-            # store variable/time information
-            var_data_j = []
-            time_data_j = []
+            # store variable/time information (should be in dig id order)
             for j in range(len(test_i_inds)):
 
                 # get digitizer j variable and time information
-                var_data_j.append(csv_data[test_i_inds[j]][2])
-                time_data_j.append(csv_data[test_i_inds[j]][3])
-            var_data.append(var_data_j)
-            time_data.append(time_data_j)
+                time_data[j].append(csv_data[test_i_inds[j]][2])
+                var_data[j].append(csv_data[test_i_inds[j]][3])
+
 
         # convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
         meta_columns = zip(*meta_rows)
@@ -241,25 +239,85 @@ def register_slycat_plugin(context):
             except:
                 meta_columns[index] = numpy.array(meta_columns[index], dtype="string")
 
-        # construct variables.meta table, check time/var consistency
+        # construct variables.meta table, variable/distance matrices, and time vectors
+        meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
+        meta_var_col_types = ["string" for name in meta_var_col_names]
+        meta_vars = []
+        time_steps = []
+        variable = []
+        var_dist = []
+        for i in range(len(dig_id_keys)):
 
+            # row i for variables.meta table
+            name_i = wave_data[test_inds[0][i]].get("WF_DIG_LABEL", "WF_DIG_ID " + str(dig_id_keys[i]))
+            units_i = wave_data[test_inds[0][i]].get("WF_Y_UNITS", "Not Given")
+            time_units_i = wave_data[test_inds[0][i]].get("WF_X_UNITS", "Not Given")
+            plot_type_i = "Curve"
 
+            # time vector for digitizer i
+            time_i = time_data[0][i]
+            max_time_i_len = len(time_i)
 
+            # look through each set of test indices to see if units are unchanged
+            meta_vars = []
+            for j in range(len(test_inds)):
 
+                # get units from next set of test indices
+                units_j = wave_data[test_inds[j][i]].get("WF_Y_UNITS")
+                time_units_j = wave_data[test_inds[j][i]].get("WF_X_UNITS")
 
-        cherrypy.log.error(str(test_inds))
-        cherrypy.log.error(str(test_dig_ids))
+                # issue warning if units are not the same
+                if units_i != units_j:
+                    parse_error_log.append("Units for test op #" + str(test_op_id[test_inds[j][i]])
+                                           + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
+                                           + " for " + name_i + ".")
 
-        cherrypy.log.error(str(meta_column_names))
-        cherrypy.log.error(str(meta_column_types))
-        cherrypy.log.error(str(meta_rows))
+                # issue warning if time units are not the same
+                if time_units_i != time_units_j:
+                    parse_error_log.append("Time units for test op #" + str(test_op_id[test_inds[j][i]])
+                                           + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
+                                           + " for " + name_i + ".")
 
-        cherrypy.log.error(str(var_data))
-        cherrypy.log.error(str(time_data))
+                # populate variables.meta table
+                meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
 
-        cherrypy.log.error(str(parse_error_log))
+                # intersect time vector
+                time_i = list(set(time_i) & set(time_data[i][j]))
+                max_time_i_len = max(max_time_i_len, len(time_data[i][j]))
 
+            # check if time vectors were inconsistent
+            if len(time_i) < max_time_i_len:
+                parse_error_log.append("Inconsistent time points for digitizer #" + str(dig_id_keys[i])
+                                       + " -- reduced to " + str(len(time_i)) + " time points.")
 
+            # check if reduction is below minimum threshold
+            if len(time_i) < CSV_MIN_SIZE:
+
+                # make time vector generic length CSV_MIN_SIZE, make data vectors 0
+                time_steps.append (range(1,CSV_MIN_SIZE+1))
+                variable_i = numpy.zeros((len(test_inds),CSV_MIN_SIZE))
+                variable.append (variable_i)
+
+                # log as an error
+                parse_error_log.append("Common time points for digitizer #" + str(dig_id_keys[i]) +
+                                       " are less than " + str(CSV_MIN_SIZE) + " -- setting values to zero.")
+
+            else:
+
+                # push time vector to list of time vectors
+                time_steps.append (time_i)
+
+                # intersect variable data
+                variable_i = numpy.zeros((len(test_inds),len(time_i)))
+                for j in range(0,len(test_inds)):
+                    dict_time_j = dict((val, ind) for ind, val in enumerate(time_data[i][j]))
+                    time_j_inds = [dict_time_j[val] for val in time_i]
+                    variable_i[j:] = var_data[i][j][time_j_inds]
+                variable.append (variable_i)
+
+            # create pairwise distance matrix
+            dist_i = spatial.distance.pdist(variable_i)
+            var_dist.append(spatial.distance.squareform (dist_i))
 
         # Push DAC variables to slycat server
         # -----------------------------------
@@ -267,11 +325,8 @@ def register_slycat_plugin(context):
         # Remove CSV/META files in slycat server
         # --------------------------------------
 
-        #
-        # construct an array of lists for each test-op id, where the lists contain
-
         # returns parsing problems for display to user
-        return json.dumps({"success": 1})
+        return json.dumps(parse_error_log)
 
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
