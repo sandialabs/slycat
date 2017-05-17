@@ -89,6 +89,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // creates a model of type "DAC"
     component.create_model = function() {
+
+        // use large dialog format
+        $(".modal-dialog").addClass("modal-lg");
+
         client.post_project_models({
         pid: component.project._id(),
         type: "DAC",
@@ -127,6 +131,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // include (after selecting metadata)
     component.include_variables = function() {
 
+        // REST call here to get actual array data
+        
+
         // load header row and use to let user select metadata
         client.get_model_arrayset_metadata({
             mid: component.model._id(),
@@ -158,11 +165,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     });
                 }
                 mapping.fromJS(attributes, component.var_attributes);
-                component.tab(4);
+                component.tab(5);
             }
         });
 
     }
+
     // this function gets called after all data is uploaded,
     // including metadata table
     var include_metadata = function() {
@@ -198,8 +206,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     });
                 }
                 mapping.fromJS(attributes, component.meta_attributes);
-                component.tab(3);
+
+                // stop any buttons that may still be spinning
                 $('.browser-continue').toggleClass("disabled", false);
+                $('.dac-gen-browser-continue').toggleClass('disabled', false);
+                $('.pts-browser-continue').toggleClass('disabled', false);
+
+                component.tab(4);
             }
         });
     };
@@ -829,7 +842,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     if (file_num < (meta_files.length - 1)) {
                         upload_meta_files(file_num + 1);
                     } else {
-                        transform_csv_meta_uploads();
+                        $('.pts-browser-continue').toggleClass("disabled", false);
+                        component.tab(3);
                     }
                 },
             error: function(){
@@ -842,11 +856,21 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         fileUploader.uploadFile(fileObject);
     };
 
+    // after data is uploaded we can test the processing by examining
+    // the log file, if desired
+    component.process_pts_format = function () {
+
+        console.log("process_pts_data");
+
+    };
+
     // this routine calls a python script on the server which
     // re-organizes all of the csv and meta files into dac generic
     // format and pushes that to the server
     var transform_csv_meta_uploads = function () {
 
+        /*
+        // routine for testing code without having to upload data repeatedly
         // create model with uploaded data linked to selection 1 button
         client.put_model_parameter ({
             mid: component.model._id(),
@@ -857,8 +881,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 component.tab(5);
             }
         });
+        */
 
-        /*
         // call server to transform data
 		client.get_model_command(
 		{
@@ -872,10 +896,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 				},
 			error: dialog.ajax_error("Server error parsing PTS data.")
 		});
-        */
 
         // carry on with wizard
-        // assign_pref_defaults();
+        assign_pref_defaults();
 
     };
 
@@ -945,8 +968,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         var target = component.tab();
 
         // skip PTS ui tabs if we are DAC Generic format
-        if(component.dac_format() == 'dac-gen' && component.tab() == 3)
+        if(component.dac_format() == 'dac-gen' && component.tab() == 4)
         {
+            target--;
             target--;
         }
 

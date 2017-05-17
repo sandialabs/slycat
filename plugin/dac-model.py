@@ -52,10 +52,10 @@ def register_slycat_plugin(context):
         parse_error_log = []
 
         # get csv file names and meta file names (same) from kwargs
-        # meta_file_names = kwargs["0"]
+        meta_file_names = kwargs["0"]
 
         # upload meta file names
-        meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
+        # meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
 
         # make sure csv and meta files names are arrays
         # (note csv_file_names and meta_file_names should be same size arrays)
@@ -241,7 +241,6 @@ def register_slycat_plugin(context):
 
         # construct variables.meta table, variable/distance matrices, and time vectors
         meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
-        meta_var_col_types = ["string" for name in meta_var_col_names]
         meta_vars = []
         time_steps = []
         variable = []
@@ -254,12 +253,14 @@ def register_slycat_plugin(context):
             time_units_i = wave_data[test_inds[0][i]].get("WF_X_UNITS", "Not Given")
             plot_type_i = "Curve"
 
+            # populate variables.meta table
+            meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
+
             # time vector for digitizer i
             time_i = time_data[0][i]
             max_time_i_len = len(time_i)
 
             # look through each set of test indices to see if units are unchanged
-            meta_vars = []
             for j in range(len(test_inds)):
 
                 # get units from next set of test indices
@@ -277,9 +278,6 @@ def register_slycat_plugin(context):
                     parse_error_log.append("Time units for test op #" + str(test_op_id[test_inds[j][i]])
                                            + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
                                            + " for " + name_i + ".")
-
-                # populate variables.meta table
-                meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
 
                 # intersect time vector
                 time_i = list(set(time_i) & set(time_data[i][j]))
@@ -319,8 +317,85 @@ def register_slycat_plugin(context):
             dist_i = spatial.distance.pdist(variable_i)
             var_dist.append(spatial.distance.squareform (dist_i))
 
+        # convert from row-oriented to column-oriented data
+        meta_var_cols = zip(*meta_vars)
+        for index in range(len(meta_var_cols)):
+            meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="string")
+
         # Push DAC variables to slycat server
         # -----------------------------------
+
+        # create meta data table on server
+        slycat.web.server.put_model_arrayset(database, model, "dac-datapoints-meta")
+
+        # start our single "dac-datapoints-meta" array.
+        dimensions = [dict(name="row", end=len(meta_rows))]
+        attributes = [dict(name=name, type=type) for name, type in zip(meta_column_names, meta_column_types)]
+        slycat.web.server.put_model_array(database, model, "dac-datapoints-meta", 0, attributes, dimensions)
+
+        # upload data into the array
+        for index, data in enumerate(meta_columns):
+            slycat.web.server.put_model_arrayset_data(database, model, "dac-datapoints-meta", "0/%s/..." % index, [data])
+
+        # create variables.meta table on server
+        slycat.web.server.put_model_arrayset(database, model, "dac-variables-meta")
+
+        # start our single "dac-datapoints-meta" array.
+        dimensions = [dict(name="row", end=len(meta_vars))]
+        attributes = [dict(name=name, type="string") for name in meta_var_col_names]
+        slycat.web.server.put_model_array(database, model, "dac-variables-meta", 0, attributes, dimensions)
+
+        # upload data into the array
+        for index, data in enumerate(meta_var_cols):
+            slycat.web.server.put_model_arrayset_data(database, model, "dac-variables-meta", "0/%s/..." % index, [data])
+
+        # create time points matrix on server
+        slycat.web.server.put_model_arrayset(database, model, "dac-time-points")
+
+        # upload as a series of 1-d arrays
+        num_vars = len(meta_vars)
+        for i in range(num_vars):
+
+            # set up time points array
+            time_points = time_steps[i]
+            dimensions = [dict(name="row", end=len(time_points))]
+            attributes = [dict(name="value", type="float64")]
+
+            # upload to slycat at array i
+            slycat.web.server.put_model_array(database, model, "dac-time-points", i, attributes, dimensions)
+            slycat.web.server.put_model_arrayset_data(database, model, "dac-time-points", "%s/0/..." % i, [time_points])
+
+        # create variable matrices on server
+        slycat.web.server.put_model_arrayset(database, model, "dac-var-data")
+
+        # store each .var file in a seperate array in the arrayset
+        for i in range(num_vars):
+
+            # set up dist matrices
+            data_mat = variable[i]
+            dimensions = [dict(name="row", end=int(data_mat.shape[0])),
+                dict(name="column", end=int(data_mat.shape[1]))]
+            attributes = [dict(name="value", type="float64")]
+
+            # upload to slycat as seperate arrays
+            slycat.web.server.put_model_array(database, model, "dac-var-data", i, attributes, dimensions)
+            slycat.web.server.put_model_arrayset_data(database, model, "dac-var-data", "%s/0/..." % i, [data_mat])
+
+        # create distance matrices on server
+        slycat.web.server.put_model_arrayset(database, model, "dac-var-dist")
+
+        # store each .dist file in a seperate array in the arrayset
+        for i in range(num_vars):
+
+            # set up dist matrices
+            dist_mat = var_dist[i]
+            dimensions = [dict(name="row", end=int(dist_mat.shape[0])),
+                dict(name="column", end=int(dist_mat.shape[1]))]
+            attributes = [dict(name="value", type="float64")]
+
+            # upload to slycat as seperate arrays
+            slycat.web.server.put_model_array(database, model, "dac-var-dist", i, attributes, dimensions)
+            slycat.web.server.put_model_arrayset_data(database, model, "dac-var-dist", "%s/0/..." % i, [dist_mat])
 
         # Remove CSV/META files in slycat server
         # --------------------------------------
