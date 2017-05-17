@@ -249,6 +249,7 @@ def convert_timeseries(timeseries_index, eval_id, row):
   """
   for i, val in enumerate(row):
     if column_types[i] is "string":
+      val = val.strip()
       file_ext = val[len(val) - 3:]
       if file_ext == "csv" or file_ext == "dat" or file_ext == "txt" or file_ext == "prn":# TODO add or file_ext == "prn"
         process_timeseries(val, column_names[i], timeseries_index, eval_id)
