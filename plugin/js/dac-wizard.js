@@ -131,26 +131,29 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // include (after selecting metadata)
     component.include_variables = function() {
 
-        // REST call here to get actual array data
-        
-
-        // load header row and use to let user select metadata
-        client.get_model_arrayset_metadata({
+        // load first column and use to let user select metadata
+        client.get_model_arrayset_data({
             mid: component.model._id(),
             aid: "dac-variables-meta",
-            arrays: "0",
-            statistics: "0/...",
-            success: function(metadata) {
+            hyperchunks: "0/0/...",
+            success: function(data) {
+
+                // time series names
+                var_names = data[0];
+
+                // attributes for gui
                 var attributes = [];
                 var name = null;
                 var type = null;
                 var constant = null;
                 var string = null;
                 var tooltip = null;
-                for(var i = 0; i != metadata.arrays[0].attributes.length; ++i)
-                {
-                    name = metadata.arrays[0].attributes[i].name;
-                    type = metadata.arrays[0].attributes[i].type;
+
+                // put time series names into gui attributes
+                for (var i = 0; i != var_names.length; i++) {
+
+                    name = var_names[i];
+                    type = "string";
                     tooltip = "";
                     attributes.push({
                         name: name,
@@ -163,7 +166,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         lastSelected: false,
                         tooltip: tooltip
                     });
+
                 }
+
+                // give access to gui
                 mapping.fromJS(attributes, component.var_attributes);
                 component.tab(5);
             }
@@ -918,12 +924,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         for(var i = 0; i != component.meta_attributes().length; ++i) {
         if(component.meta_attributes()[i].Include())
             meta_include_columns.push(i);
-        }
+        };
 
         // record variables columns that user wants to include
-
-        // for debugging: columns chosen to display
-        // console.log (include_columns);
+        var var_include_columns = [];
+        for(var i = 0; i != component.var_attributes().length; ++i) {
+        if(component.var_attributes()[i].Include())
+            var_include_columns.push(i);
+        };
 
         // record desired metadata columns as an artifact in the new model
         client.put_model_parameter({
@@ -934,8 +942,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             success: function() {
 
                 // now record desired variable columns as an artifact
-                component.tab(5);
+                client.put_model_parameter({
+                    mid: component.model._id(),
+                    value: var_include_columns,
+                    aid: "dac-var-include-columns",
+                    input: true,
+                    success: function() {
+                        component.tab(6);
+                    }
+                });
             }
+
         });
 
     };

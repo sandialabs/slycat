@@ -12,16 +12,17 @@ define("dac-model", ["slycat-web-client", "dac-layout", "dac-request-data", "dac
     		 plots, metadata_table, $, d3, URI)
 {
 
+    /*
+    // routine used to test pts import for large uploads
+    // call server to transform data
+
     // model ID
-	var mid = URI(window.location).segment(-1);
+    var mid = URI(window.location).segment(-1);
 
     // bind selection/zoom buttons to callback operations
 	$("#dac-scatter-button-sel-1").on("click",
 		function() {
 
-        /*
-        // routine used to test pts import for large uploads
-		// call server to transform data
 		client.get_model_command(
 		{
 			mid: mid,
@@ -34,7 +35,7 @@ define("dac-model", ["slycat-web-client", "dac-layout", "dac-request-data", "dac
 				},
 			error: function () { console.log("error calling parse_pts_data") }
 		});
-        */
+    */
 
 	// load ui parameters and initialize dial-a-cluser	
 	$.when (request.get_parameters("dac-ui-parms", 0)).then(
