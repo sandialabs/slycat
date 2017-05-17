@@ -42,7 +42,7 @@ class Agent(object):
     _log_lock = threading.Lock()
     log = logging.getLogger()
     log.setLevel(logging.INFO)
-    log.addHandler(logging.FileHandler('slycat-agent-timeseries-to-hdf5.log'))
+    log.addHandler(logging.FileHandler('slycat-agent.log'))
     log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
     @abc.abstractmethod
     def run_remote_command(self, command):
@@ -338,52 +338,9 @@ class Agent(object):
              "size": len(content.getvalue())}), content.getvalue()))
         sys.stdout.flush()
 
-    def video_status(self, command):
-        if "sid" not in command:
-            raise Exception("Missing session id.")
-        if command["sid"] not in session_cache:
-            raise Exception("Unknown session id.")
-        session = session_cache[command["sid"]]
-        if not isinstance(session, VideoSession):
-            raise Exception("Not a video session.")
-        if session.exception is not None:
-            raise Exception("Video creation failed: %s" % session.exception)
-        if not session.finished:
-            sys.stdout.write("%s\n" % json.dumps({"ok": True, "ready": False, "message": "Not ready."}))
-            sys.stdout.flush()
-            return
-        if session.returncode != 0:
-            sys.stdout.write("%s\n" % json.dumps(
-                {"ok": False, "message": "Video creation failed.", "returncode": session.returncode,
-                 "stderr": session.stderr}))
-            sys.stdout.flush()
-            return
-        sys.stdout.write("%s\n" % json.dumps({"ok": True, "ready": True, "message": "Video ready."}))
-        sys.stdout.flush()
-
-    def get_video(self, command):
-        if "sid" not in command:
-            raise Exception("Missing session id.")
-        if command["sid"] not in session_cache:
-            raise Exception("Unknown session id.")
-        session = session_cache[command["sid"]]
-        if not isinstance(session, VideoSession):
-            raise Exception("Not a video session.")
-        if session.exception is not None:
-            raise Exception("Video creation failed: %s" % session.exception)
-        if not session.finished:
-            raise Exception("Not ready.")
-        if session.returncode != 0:
-            raise Exception("Video creation failed.")
-        content = open(session.output, "rb").read()
-        sys.stdout.write("%s\n%s" % (
-            json.dumps(
-                {"ok": True, "message": "Video retrieved.", "content-type": session.content_type,
-                 "size": len(content)}),
-            content))
-        sys.stdout.flush()
-
     def run(self):
+        self.log.info("\n")
+        self.log.info("*agent started*")
         # Parse and sanity-check command-line arguments.
         parser = argparse.ArgumentParser()
         parser.add_argument("--fail-startup", default=False, action="store_true",
@@ -400,6 +357,7 @@ class Agent(object):
         sys.stdout.flush()
 
         while True:
+            # format: {"action":"action"}
             # Read the next command from caller.
             command = sys.stdin.readline()
             if command == "":  # EOF means the caller went away and it's time to shut-down.
@@ -410,14 +368,19 @@ class Agent(object):
                 try:
                     command = json.loads(command)
                 except:
+                    self.log.error("Not a JSON object.")
                     raise Exception("Not a JSON object.")
                 if not isinstance(command, dict):
+                    self.log.error("Not a JSON object.")
                     raise Exception("Not a JSON object.")
                 if "action" not in command:
+                    self.log.error("Missing action for command: %s" % command)
                     raise Exception("Missing action.")
 
                 action = command["action"]
+                self.log.info("command: %s" % command)
                 if action == "exit":
+                    self.log.info("*agent stopping*\n")
                     if not arguments.fail_exit:
                         break
                 elif action == "browse":
@@ -432,8 +395,6 @@ class Agent(object):
                     sys.stdout.flush()
                 elif action == "video-status":
                     self.video_status(command)
-                elif action == "get-video":
-                    self.get_video(command)
                 elif action == "launch":
                     self.launch(command)
                 elif action == "submit-batch":
@@ -451,6 +412,7 @@ class Agent(object):
                 elif action == "set-user-config":
                     self.set_user_config(command)
                 else:
+                    self.log.error("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
                 sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
