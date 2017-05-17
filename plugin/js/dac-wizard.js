@@ -73,6 +73,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // dac-generic format is selected by default
     component.dac_format = ko.observable("dac-gen");
 
+    // parameters for testing PTS ingestion
+    component.csv_min_size = ko.observable("csv_min_size");
+    component.min_num_dig = ko.observable("min_num_dig");
+
     // number of variables (time series) in data
     var num_vars = 0;
 
@@ -87,11 +91,19 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var meta_files = [];
     var meta_file_names = [];
 
+    // upload state information
+    var dac_upload = false;
+    var csv_meta_upload = false;
+
     // creates a model of type "DAC"
     component.create_model = function() {
 
         // use large dialog format
         $(".modal-dialog").addClass("modal-lg");
+
+        // make sure upload state says nothing uploaded
+        dac_upload = false;
+        csv_meta_upload = false;
 
         client.post_project_models({
         pid: component.project._id(),
@@ -213,8 +225,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 }
                 mapping.fromJS(attributes, component.meta_attributes);
 
-                // stop any buttons that may still be spinning
-                $('.browser-continue').toggleClass("disabled", false);
+                // stop any spinning buttons that may have been triggered
                 $('.dac-gen-browser-continue').toggleClass('disabled', false);
                 $('.pts-browser-continue').toggleClass('disabled', false);
 
@@ -229,22 +240,30 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // this function uploads the meta data table in DAC generic format
     component.upload_dac_format = function() {
 
-        // isolate file extension, if file was selected
-        var file = component.browser_dac_file.selection();
-        var file_name = "no file selected";
-        if (file.length == 1) {
-            file_name = file[0].name;
-        }
-        var file_name_split = file_name.split(".");
-        var file_ext = file_name_split[file_name_split.length - 1];
+        // if already uploaded files then skip forward, do not re-upload
+        if (dac_upload == true) {
 
-        // check for .dac extension
-        if (file_ext == 'dac') {
-            // proceed to upload variables.meta file, if present
-            upload_var_meta_file();
+            component.tab(4);
+
         } else {
-            // no .dac file selected
-            dialog.ajax_error("Must select a .dac file.")("","","");
+
+            // isolate file extension, if file was selected
+            var file = component.browser_dac_file.selection();
+            var file_name = "no file selected";
+            if (file.length == 1) {
+                file_name = file[0].name;
+            }
+            var file_name_split = file_name.split(".");
+            var file_ext = file_name_split[file_name_split.length - 1];
+
+            // check for .dac extension
+            if (file_ext == 'dac') {
+                // proceed to upload variables.meta file, if present
+                upload_var_meta_file();
+            } else {
+                // no .dac file selected
+                dialog.ajax_error("Must select a .dac file.")("","","");
+            }
         }
     };
 
@@ -528,6 +547,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     if (file_num < (dist_file_inds.length - 1)) {
                         upload_dist_files(file_num + 1);
                     } else {
+                        dac_upload = true;
                         assign_pref_defaults();
                     }
                 },
@@ -612,7 +632,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             mid: component.model._id(),
             aid: "dac-ui-parms",
             value: dac_ui_parms,
-            error: dialog.ajax_error("Error uploading UI preferences."),
+            error: function () {
+                dialog.ajax_error("Error uploading UI preferences.")("","","");
+                $('.dac-gen-browser-continue').toggleClass("disabled", false);
+                $('.pts-browser-continue').toggleClass('disabled', false);
+            },
             success: function () {
 
              // upload alpha parameters to slycat
@@ -620,7 +644,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 mid: component.model._id(),
                 aid: "dac-alpha-parms",
                 value: dac_alpha_parms,
-                error: dialog.ajax_error("Error uploading alpha parameter preferences."),
+                error: function () {
+                    dialog.ajax_error("Error uploading alpha parameter preferences.")("","","");
+                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
+                    $('.pts-browser-continue').toggleClass('disabled', false);
+                },
                 success: function () {
 
                 // upload alpha order to slycat
@@ -628,7 +656,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     mid: component.model._id(),
                     aid: "dac-alpha-order",
                     value: dac_alpha_order,
-                    error: dialog.ajax_error("Error uploading alpha order preferences."),
+                    error: function () {
+                        dialog.ajax_error("Error uploading alpha order preferences.")("","","");
+                        $('.dac-gen-browser-continue').toggleClass("disabled", false);
+                        $('.pts-browser-continue').toggleClass('disabled', false);
+                    },
                     success: function () {
 
                     // upload plot order to slycat
@@ -636,8 +668,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         mid: component.model._id(),
                         aid: "dac-var-plot-order",
                         value: dac_var_plot_order,
-                        error: dialog.ajax_error("Error uploading variable plot order preferences."),
-
+                        error: function () {
+                            dialog.ajax_error("Error uploading variable plot order preferences.")("","","");
+                            $('.dac-gen-browser-continue').toggleClass("disabled", false);
+                            $('.pts-browser-continue').toggleClass('disabled', false);
+                        },
                         // now initialize MDS coords by calling server
                         success: function () {
                             init_MDS_coords();
@@ -661,7 +696,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 				{
 					include_metadata();
 				},
-			error: dialog.ajax_error("Server error initializing MDS coordinates.")
+			error: function () {
+			    dialog.ajax_error("Server error initializing MDS coordinates.")("","","");
+			    $('.dac-gen-browser-continue').toggleClass("disabled", false);
+			    $('.pts-browser-continue').toggleClass('disabled', false);
+			}
 		});
     }
 
@@ -671,131 +710,138 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // this function starts the upload process for the CSV/META format
     component.upload_pts_format = function() {
 
-        // list out csv file names, check for .csv extension
-        var unordered_csv_files = component.browser_csv_files.selection();
-        csv_file_names = [];
-        var csv_ext = true;
-        for (i = 0; i < unordered_csv_files.length; i++) {
+        // if already uploaded data, do not re-upload
+        if (csv_meta_upload == true) {
 
-            // parse file name for .csv extension
-            var file_name = unordered_csv_files[i].name;
-            var file_name_split = file_name.split(".");
-            if (file_name_split.length > 1) {
-                var file_ext = file_name_split[file_name_split.length - 1];
+            component.tab(3);
 
-                // if no .csv extension then we quit
-                if (file_ext != "csv") {
+        } else {
+
+            // list out csv file names, check for .csv extension
+            var unordered_csv_files = component.browser_csv_files.selection();
+            csv_file_names = [];
+            var csv_ext = true;
+            for (i = 0; i < unordered_csv_files.length; i++) {
+
+                // parse file name for .csv extension
+                var file_name = unordered_csv_files[i].name;
+                var file_name_split = file_name.split(".");
+                if (file_name_split.length > 1) {
+                    var file_ext = file_name_split[file_name_split.length - 1];
+
+                    // if no .csv extension then we quit
+                    if (file_ext != "csv") {
+                        csv_ext = false;
+                        break;
+                    } else {
+                        // remove .csv extension and keep file name
+                        csv_file_names.push(file_name.substring(0, file_name.length - 4));
+                    }
+                } else {
                     csv_ext = false;
                     break;
-                } else {
-                    // remove .csv extension and keep file name
-                    csv_file_names.push(file_name.substring(0, file_name.length - 4));
                 }
-            } else {
-                csv_ext = false;
-                break;
             }
-        }
 
-        // list out meta file names, check for .ini extension (redundant code)
-        meta_files = component.browser_meta_files.selection();
-        meta_file_names = [];
-        var meta_ext = true;
-        for (i = 0; i < meta_files.length; i++) {
+            // list out meta file names, check for .ini extension (redundant code)
+            meta_files = component.browser_meta_files.selection();
+            meta_file_names = [];
+            var meta_ext = true;
+            for (i = 0; i < meta_files.length; i++) {
 
-            // parse file name for .csv extension
-            var file_name = meta_files[i].name;
-            var file_name_split = file_name.split(".");
-            if (file_name_split.length > 1) {
-                var file_ext = file_name_split[file_name_split.length - 1];
+                // parse file name for .csv extension
+                var file_name = meta_files[i].name;
+                var file_name_split = file_name.split(".");
+                if (file_name_split.length > 1) {
+                    var file_ext = file_name_split[file_name_split.length - 1];
 
-                // if no .ini extension then we quit
-                if (file_ext != "ini") {
+                    // if no .ini extension then we quit
+                    if (file_ext != "ini") {
+                        meta_ext = false;
+                        break;
+                    } else {
+                        // remove .ini extension and keep file name
+                        meta_file_names.push(file_name.substring(0, file_name.length - 4));
+                    }
+                } else {
                     meta_ext = false;
                     break;
-                } else {
-                    // remove .ini extension and keep file name
-                    meta_file_names.push(file_name.substring(0, file_name.length - 4));
+                }
+            }
+
+            // check for matching file names between csv and meta files
+            var files_match = true;
+            if (csv_file_names.length == meta_file_names.length) {
+                for (i = 0; i < csv_file_names.length; i++) {
+                    if (meta_file_names.indexOf (csv_file_names[i]) == -1) {
+                        files_match = false;
+                        break;
+                    }
                 }
             } else {
-                meta_ext = false;
-                break;
+                files_match = false;
             }
-        }
 
-        // check for matching file names between csv and meta files
-        var files_match = true;
-        if (csv_file_names.length == meta_file_names.length) {
-            for (i = 0; i < csv_file_names.length; i++) {
-                if (meta_file_names.indexOf (csv_file_names[i]) == -1) {
-                    files_match = false;
-                    break;
+            // continue only if we have all csv and ini files and the files match
+            if (unordered_csv_files.length == 0) {
+
+                // no csv files
+                dialog.ajax_error("Please select CSV files.")("","","");
+
+            } else if (meta_files.length == 0) {
+
+                // no meta files
+                dialog.ajax_error("Please select META files.")("","","");
+
+            } else if (!csv_ext) {
+
+                // csv files have wrong extension
+                dialog.ajax_error("CSV file selection contains file without .csv extension.")("","","");
+
+            } else if (!meta_ext) {
+
+                // meta files have wrong extension
+                dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
+
+            } else if (unordered_csv_files.length != meta_files.length) {
+
+                // different number of files
+                dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
+
+            } else if (!files_match) {
+
+                // file names do not match
+                dialog.ajax_error("Make sure the CSV and META file names have the same names (except for extensions).")
+                    ("","","");
+
+            } else {
+
+                // everything is OK, reorder csv file order to match meta file order
+                csv_files = [];
+                for (i = 0; i < meta_file_names.length; i++) {
+                    csv_files.push (unordered_csv_files[csv_file_names.indexOf(meta_file_names[i])])
                 }
-            }
-        } else {
-            files_match = false;
-        }
 
-        // continue only if we have all csv and ini files and the files match
-        if (unordered_csv_files.length == 0) {
-
-            // no csv files
-            dialog.ajax_error("Please select CSV files.")("","","");
-
-        } else if (meta_files.length == 0) {
-
-            // no meta files
-            dialog.ajax_error("Please select META files.")("","","");
-
-        } else if (!csv_ext) {
-
-            // csv files have wrong extension
-            dialog.ajax_error("CSV file selection contains file without .csv extension.")("","","");
-
-        } else if (!meta_ext) {
-
-            // meta files have wrong extension
-            dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
-
-        } else if (unordered_csv_files.length != meta_files.length) {
-
-            // different number of files
-            dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
-
-        } else if (!files_match) {
-
-            // file names do not match
-            dialog.ajax_error("Make sure the CSV and META file names have the same names (except for extensions).")
-                ("","","");
-
-        } else {
-
-            // everything is OK, reorder csv file order to match meta file order
-            csv_files = [];
-            for (i = 0; i < meta_file_names.length; i++) {
-                csv_files.push (unordered_csv_files[csv_file_names.indexOf(meta_file_names[i])])
+                // now go on to uploading and parsing
+                $('.pts-browser-continue').toggleClass("disabled", true);
+                upload_csv_files(0);
             }
 
-            // now go on to uploading and parsing
-            $('.pts-browser-continue').toggleClass("disabled", true);
-            upload_csv_files(0);
+            // for debugging:
+            // console.log('csv files:');
+            // console.log(csv_files);
+            // console.log(csv_file_names);
+            // console.log(csv_ext);
+
+            // console.log('meta files:');
+            // console.log(meta_files);
+            // console.log(meta_file_names);
+            // console.log(meta_ext);
+
+            // console.log('files match:');
+            // console.log(files_match);
+
         }
-
-        // for debugging:
-        // console.log('csv files:');
-        // console.log(csv_files);
-        // console.log(csv_file_names);
-        // console.log(csv_ext);
-
-        // console.log('meta files:');
-        // console.log(meta_files);
-        // console.log(meta_file_names);
-        // console.log(meta_ext);
-
-        // console.log('files match:');
-        // console.log(files_match);
-
-
     };
 
     // parse files and upload to slycat database
@@ -849,6 +895,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         upload_meta_files(file_num + 1);
                     } else {
                         $('.pts-browser-continue').toggleClass("disabled", false);
+                        csv_meta_upload = true;
                         component.tab(3);
                     }
                 },
