@@ -74,8 +74,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.dac_format = ko.observable("dac-gen");
 
     // parameters for testing PTS ingestion
-    component.csv_min_size = ko.observable("csv_min_size");
-    component.min_num_dig = ko.observable("min_num_dig");
+    component.csv_min_size = ko.observable(null);
+    component.min_num_dig = ko.observable(null);
+
+    var test_str = "hello";
 
     // number of variables (time series) in data
     var num_vars = 0;
@@ -104,6 +106,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         // make sure upload state says nothing uploaded
         dac_upload = false;
         csv_meta_upload = false;
+
+        // set PTS parameter defaults
+        component.csv_min_size = 10;
+        component.min_num_dig = 3;
 
         client.post_project_models({
         pid: component.project._id(),
@@ -913,8 +919,50 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // the log file, if desired
     component.process_pts_format = function () {
 
-        console.log("process_pts_data");
+        // check PTS parse parameters
+        var csv_parm = Math.round(Number(component.csv_min_size));
+        var dig_parm = Math.round(Number(component.min_num_dig));
+        if (csv_parm < 2 || dig_parm < 1) {
 
+            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameters must be >= 1.")("","","");
+
+        } else {
+
+            // disabled both process and continue buttons
+            $(".pts-browser-continue").toggleClass("disabled", true);
+
+            // call server to transform data
+            client.get_model_command(
+            {
+                mid: component.model._id(),
+                type: "DAC",
+                command: "parse_pts_data",
+                parameters: [meta_file_names, csv_parm, dig_parm],
+                success: function (result)
+                    {
+                        console.log(result)
+
+                        // show log in text box
+                        $('#dac-wizard-process-results').val(result[1]);
+
+                        // if nothing was processed then alert user
+                        if (result[0] == "No Data") {
+
+                            dialog.ajax_error("Parser could not find any usable PTS data.  Please try different parameters.")
+                                ("","","");
+                            $(".pts-browser-continue").toggleClass("disabled", false);
+
+                        } else {
+
+                            // continue on to next stage, if requested
+
+                            $(".pts-browser-continue").toggleClass("disabled", false);
+                            console.log("passed parsing");
+                        };
+                    },
+                error: dialog.ajax_error("Server error parsing PTS data.")
+            });
+        };
     };
 
     // this routine calls a python script on the server which

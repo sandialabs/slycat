@@ -36,13 +36,12 @@ def register_slycat_plugin(context):
         and returned to the calling function.
         """
 
-        # ad-hoc "global" parameters to eliminate likely unusable PTS files
+        # get csv file names and meta file names (same) from kwargs
+        meta_file_names = kwargs["0"]
 
-        # minimum number of time points in a CSV file
-        CSV_MIN_SIZE = 10
-
-        # minimum number of digitizers in a CSV file
-        MIN_NUM_DIG = 3
+        # get parameters to eliminate likely unusable PTS files
+        CSV_MIN_SIZE = int(kwargs["1"])
+        MIN_NUM_DIG = int(kwargs["2"])
 
         # Parsing the CSV/META files
         # --------------------------
@@ -50,9 +49,6 @@ def register_slycat_plugin(context):
         # keep a parsing error log to help user correct input data
         # (each array entry is a string)
         parse_error_log = []
-
-        # get csv file names and meta file names (same) from kwargs
-        meta_file_names = kwargs["0"]
 
         # upload meta file names
         # meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
@@ -80,7 +76,7 @@ def register_slycat_plugin(context):
             # check for an empty csv file
             if len(csv_data_i[0]) < CSV_MIN_SIZE:
                 parse_error_log.append("CSV data file has less than " + str(CSV_MIN_SIZE)
-                                       + " entries -- skipping " + meta_file_names[i])
+                                       + " entries -- skipping " + meta_file_names[i] + ".")
                 continue
 
             # get meta data
@@ -149,7 +145,7 @@ def register_slycat_plugin(context):
             if len(dig_ids_i) < MIN_NUM_DIG:
                 parse_error_log.append("Less than " + str(MIN_NUM_DIG) +
                                        " time series -- skipping test-op id #"
-                                       + str(uniq_test_op[i]))
+                                       + str(uniq_test_op[i]) + ".")
                 continue
 
             # store test inds for each row and digitizer ids (sorted)
@@ -170,7 +166,7 @@ def register_slycat_plugin(context):
         for i in range(len(dig_id_keys)):
             if not dig_id_keys[i] in keep_dig_ids:
                 parse_error_log.append("Not found in all test ops --- skipping digitizer #" +
-                                       str(dig_id_keys[i]))
+                                       str(dig_id_keys[i])+ ".")
 
         # sort and keep consistent, intersecting digitizer ids
         dig_id_keys = sorted(keep_dig_ids)
@@ -210,7 +206,7 @@ def register_slycat_plugin(context):
             # check that table data/wave form data is consistent
             for j in range(len(test_i_inds)):
                 if table_data[test_i_inds[j]] != table_data[test_i_inds[0]]:
-                    parse_error_log.append("Inconsistent meta data for test-op id #" + str(uniq_test_op[i]))
+                    parse_error_log.append("Inconsistent meta data for test-op id #" + str(uniq_test_op[i]) + ".")
 
             # use first row for table entry
             meta_row_i = []
@@ -228,7 +224,6 @@ def register_slycat_plugin(context):
                 # get digitizer j variable and time information
                 time_data[j].append(csv_data[test_i_inds[j]][2])
                 var_data[j].append(csv_data[test_i_inds[j]][3])
-
 
         # convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
         meta_columns = zip(*meta_rows)
@@ -257,7 +252,7 @@ def register_slycat_plugin(context):
             meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
 
             # time vector for digitizer i
-            time_i = time_data[0][i]
+            time_i = time_data[i][0]
             max_time_i_len = len(time_i)
 
             # look through each set of test indices to see if units are unchanged
@@ -321,6 +316,22 @@ def register_slycat_plugin(context):
         meta_var_cols = zip(*meta_vars)
         for index in range(len(meta_var_cols)):
             meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="string")
+
+        # if no parse errors then inform user
+        if len(parse_error_log) == 0:
+            parse_error_log.append("None.")
+
+        # summarize results for user
+        parse_error_log.insert(0, "Summary:")
+        parse_error_log.insert(1, "Total number of tests parsed: " + str(len(meta_rows)) + ".")
+        parse_error_log.insert(2, "Each test has " + str(len(dig_id_keys)) + " digitizer time series.")
+
+        # also report issues during processing
+        parse_error_log.insert(3, "\nIssues:")
+
+        # if no data then return failed result
+        if len(meta_rows) == 0:
+            return json.dumps(["No Data", "\n".join(parse_error_log)])
 
         # Push DAC variables to slycat server
         # -----------------------------------
@@ -397,11 +408,8 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_array(database, model, "dac-var-dist", i, attributes, dimensions)
             slycat.web.server.put_model_arrayset_data(database, model, "dac-var-dist", "%s/0/..." % i, [dist_mat])
 
-        # Remove CSV/META files in slycat server
-        # --------------------------------------
-
         # returns parsing problems for display to user
-        return json.dumps(parse_error_log)
+        return json.dumps(["Success", "\n".join(parse_error_log)])
 
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
