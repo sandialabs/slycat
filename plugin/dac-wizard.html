@@ -119,7 +119,7 @@ S. Martin
 
         <div style="margin-top: 40px; margin-left: 15px">
           <label>Minimum number of digitizers in a test:</label>
-          <input class="form-control" type="number" min="2" data-bind="value: min_num_dig">
+          <input class="form-control" type="number" min="3" data-bind="value: min_num_dig">
         </div>
 
         <div style="margin-top: 40px; margin-left: 15px">
@@ -171,9 +171,9 @@ S. Martin
     <button class="btn btn-primary pts-browser-continue browser-continue"
             data-bind="visible:tab() == 2,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary pts-browser-continue browser-continue"
-            data-bind="visible:tab() == 3,click:process_pts_format"><i class="fa fa-spinner fa-pulse"></i> Process</button>
+            data-bind="visible:tab() == 3,click:process_pts_format_stop"><i class="fa fa-spinner fa-pulse"></i> Process</button>
     <button class="btn btn-primary pts-browser-continue browser-continue"
-            data-bind="visible:tab() == 3,click:process_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+            data-bind="visible:tab() == 3,click:process_pts_format_continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 4,click:include_variables">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 5,click:finish">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 6,click:name_model">Finish & Go To Model</button>

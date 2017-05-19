@@ -240,6 +240,7 @@ def register_slycat_plugin(context):
         time_steps = []
         variable = []
         var_dist = []
+        keep_dig_inds = []
         for i in range(len(dig_id_keys)):
 
             # row i for variables.meta table
@@ -247,9 +248,6 @@ def register_slycat_plugin(context):
             units_i = wave_data[test_inds[0][i]].get("WF_Y_UNITS", "Not Given")
             time_units_i = wave_data[test_inds[0][i]].get("WF_X_UNITS", "Not Given")
             plot_type_i = "Curve"
-
-            # populate variables.meta table
-            meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
 
             # time vector for digitizer i
             time_i = time_data[i][0]
@@ -286,16 +284,14 @@ def register_slycat_plugin(context):
             # check if reduction is below minimum threshold
             if len(time_i) < CSV_MIN_SIZE:
 
-                # make time vector generic length CSV_MIN_SIZE, make data vectors 0
-                time_steps.append (range(1,CSV_MIN_SIZE+1))
-                variable_i = numpy.zeros((len(test_inds),CSV_MIN_SIZE))
-                variable.append (variable_i)
-
                 # log as an error
-                parse_error_log.append("Common time points for digitizer #" + str(dig_id_keys[i]) +
-                                       " are less than " + str(CSV_MIN_SIZE) + " -- setting values to zero.")
+                parse_error_log.append("Common time points are less than " + str(CSV_MIN_SIZE)
+                                       + " -- skipping digitizer #" + str(dig_id_keys[i]) + ".")
 
             else:
+
+                # populate variables.meta table
+                meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
 
                 # push time vector to list of time vectors
                 time_steps.append (time_i)
@@ -308,14 +304,22 @@ def register_slycat_plugin(context):
                     variable_i[j:] = var_data[i][j][time_j_inds]
                 variable.append (variable_i)
 
-            # create pairwise distance matrix
-            dist_i = spatial.distance.pdist(variable_i)
-            var_dist.append(spatial.distance.squareform (dist_i))
+                # create pairwise distance matrix
+                dist_i = spatial.distance.pdist(variable_i)
+                var_dist.append(spatial.distance.squareform (dist_i))
+
 
         # convert from row-oriented to column-oriented data
         meta_var_cols = zip(*meta_vars)
         for index in range(len(meta_var_cols)):
             meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="string")
+
+        # check that we still have enough digitizers
+        num_vars = len(meta_vars)
+        if num_vars < MIN_NUM_DIG:
+            parse_error_log.append("Total number of digitizers less than " + str(MIN_NUM_DIG) +
+                                   "-- no data remaining.")
+            meta_rows = []
 
         # if no parse errors then inform user
         if len(parse_error_log) == 0:
@@ -324,14 +328,14 @@ def register_slycat_plugin(context):
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
         parse_error_log.insert(1, "Total number of tests parsed: " + str(len(meta_rows)) + ".")
-        parse_error_log.insert(2, "Each test has " + str(len(dig_id_keys)) + " digitizer time series.")
+        parse_error_log.insert(2, "Each test has " + str(num_vars) + " digitizer time series.")
 
         # also report issues during processing
         parse_error_log.insert(3, "\nIssues:")
 
         # if no data then return failed result
         if len(meta_rows) == 0:
-            return json.dumps(["No Data", "\n".join(parse_error_log)])
+            return json.dumps(["No Data", "0", "\n".join(parse_error_log)])
 
         # Push DAC variables to slycat server
         # -----------------------------------
@@ -364,7 +368,6 @@ def register_slycat_plugin(context):
         slycat.web.server.put_model_arrayset(database, model, "dac-time-points")
 
         # upload as a series of 1-d arrays
-        num_vars = len(meta_vars)
         for i in range(num_vars):
 
             # set up time points array
@@ -400,6 +403,7 @@ def register_slycat_plugin(context):
 
             # set up dist matrices
             dist_mat = var_dist[i]
+
             dimensions = [dict(name="row", end=int(dist_mat.shape[0])),
                 dict(name="column", end=int(dist_mat.shape[1]))]
             attributes = [dict(name="value", type="float64")]
@@ -409,7 +413,7 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_arrayset_data(database, model, "dac-var-dist", "%s/0/..." % i, [dist_mat])
 
         # returns parsing problems for display to user
-        return json.dumps(["Success", "\n".join(parse_error_log)])
+        return json.dumps(["Success", str(num_vars), "\n".join(parse_error_log)])
 
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
@@ -436,7 +440,13 @@ def register_slycat_plugin(context):
         for i in range(len(alpha_values)):
             var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-var-dist", "%s/0/..." % i)))
-            var_dist_i = var_dist_i/numpy.amax(var_dist_i)
+
+            # scale distance matric by maximum, unless maximum is zero
+            coords_scale = numpy.amax(var_dist_i)
+            if coords_scale < numpy.finfo(float).eps:
+                coords_scale = 1.0
+
+            var_dist_i = var_dist_i/coords_scale
             var_dist.append(var_dist_i)
 
         # compute MDS coordinates assuming alpha = 1 for scaling
@@ -503,19 +513,20 @@ def register_slycat_plugin(context):
             else:
                 prop_dist_mats.append(0)
 
-        # compute NNLS cluster button alpha values
+        # compute NNLS cluster button alpha values, if more than one data point
         alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
-        print "Computing alpha values for property clusters ..."
-        for i in range(num_meta_cols):
-            if meta_column_types[i] == "float64":
-                beta_i = optimize.nnls(all_dist_mat, prop_dist_mats[i])
-                alpha_i = numpy.sqrt(beta_i[0])
+        if num_time_series > 1:
+            for i in range(num_meta_cols):
+                if meta_column_types[i] == "float64":
 
-                # again don't divide by zero
-                alpha_max_i = numpy.amax(alpha_i)
-                if alpha_max_i <= numpy.finfo(float).eps:
-                    alpha_max_i = 1
-                alpha_cluster_mat[i,:] = alpha_i/alpha_max_i
+                    beta_i = optimize.nnls(all_dist_mat, prop_dist_mats[i])
+                    alpha_i = numpy.sqrt(beta_i[0])
+
+                    # again don't divide by zero
+                    alpha_max_i = numpy.amax(alpha_i)
+                    if alpha_max_i <= numpy.finfo(float).eps:
+                        alpha_max_i = 1
+                    alpha_cluster_mat[i,:] = alpha_i/alpha_max_i
 
         # upload computations to slycat server
         # ------------------------------------
@@ -576,15 +587,15 @@ def register_slycat_plugin(context):
         # get full MDS coordinate representation for scaling
         full_mds_coords = next(iter(slycat.web.server.get_model_arrayset_data (
 			database, model, "dac-full-mds-coords", "0/0/...")))
-			       
+
         # compute new MDS coords
         mds_coords = dac.compute_coords(dist_mats, alpha_values)
         mds_coords = mds_coords[0][:,0:3]
-                
+
         # adjust MDS coords using full MDS scaling
         scaled_mds_coords = dac.scale_coords(mds_coords, 
             full_mds_coords)
-        
+
         # return JSON matrix of coordinates to client
         return json.dumps({"mds_coords": scaled_mds_coords.tolist()})
 

@@ -77,7 +77,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.csv_min_size = ko.observable(null);
     component.min_num_dig = ko.observable(null);
 
-    var test_str = "hello";
+    // process pts continue or stop flag
+    var process_continue = false;
 
     // number of variables (time series) in data
     var num_vars = 0;
@@ -915,16 +916,38 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         fileUploader.uploadFile(fileObject);
     };
 
+    // process button stops after processing finished
+    component.process_pts_format_stop = function () {
+
+        // set process continue to stop
+        process_continue = false;
+
+        // process pts data
+        process_pts_format();
+
+    };
+
+    // continue buttons goes to next tab after processing
+    component.process_pts_format_continue = function () {
+
+        // set process to continue
+        process_continue = true;
+
+        // process pts data
+        process_pts_format();
+
+    };
+
     // after data is uploaded we can test the processing by examining
     // the log file, if desired
-    component.process_pts_format = function () {
+    var process_pts_format = function () {
 
         // check PTS parse parameters
         var csv_parm = Math.round(Number(component.csv_min_size));
         var dig_parm = Math.round(Number(component.min_num_dig));
-        if (csv_parm < 2 || dig_parm < 1) {
+        if (csv_parm < 2 || dig_parm < 3) {
 
-            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameters must be >= 1.")("","","");
+            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameter must be >= 3.")("","","");
 
         } else {
 
@@ -940,10 +963,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 parameters: [meta_file_names, csv_parm, dig_parm],
                 success: function (result)
                     {
-                        console.log(result)
 
                         // show log in text box
-                        $('#dac-wizard-process-results').val(result[1]);
+                        $('#dac-wizard-process-results').val(result[2]);
 
                         // if nothing was processed then alert user
                         if (result[0] == "No Data") {
@@ -954,53 +976,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                         } else {
 
-                            // continue on to next stage, if requested
-
                             $(".pts-browser-continue").toggleClass("disabled", false);
-                            console.log("passed parsing");
+
+                            // continue onto next stage, if desired
+                            num_vars = Number(result[1]);
+                            if (process_continue) { assign_pref_defaults(); };
+
                         };
                     },
                 error: dialog.ajax_error("Server error parsing PTS data.")
             });
         };
-    };
-
-    // this routine calls a python script on the server which
-    // re-organizes all of the csv and meta files into dac generic
-    // format and pushes that to the server
-    var transform_csv_meta_uploads = function () {
-
-        /*
-        // routine for testing code without having to upload data repeatedly
-        // create model with uploaded data linked to selection 1 button
-        client.put_model_parameter ({
-            mid: component.model._id(),
-            aid: "dac-wizard-file-names",
-            value: meta_file_names,
-            error: dialog.ajax_error("Error uploading meta file names."),
-            success: function () {
-                component.tab(5);
-            }
-        });
-        */
-
-        // call server to transform data
-		client.get_model_command(
-		{
-			mid: component.model._id(),
-      		type: "DAC",
-			command: "parse_pts_data",
-			parameters: [meta_file_names],
-			success: function (result)
-				{
-					console.log(result);
-				},
-			error: dialog.ajax_error("Server error parsing PTS data.")
-		});
-
-        // carry on with wizard
-        assign_pref_defaults();
-
     };
 
     // wizard finish model code

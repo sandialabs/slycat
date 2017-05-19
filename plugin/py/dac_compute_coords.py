@@ -59,7 +59,13 @@ def cmdscale(D):
     L  = np.diag(np.sqrt(evals[w]))
     V  = evecs[:,w]
     Y  = V.dot(L)
-     
+
+    # if only one coordinate then add column of zeros
+    if len(evals) == 1:
+        Y2D = np.zeros((Y.shape[0],Y.shape[1]+1))
+        Y2D[:,0] = Y
+        Y = Y2D
+
     return Y, evals
     
 def compute_coords (dist_mats, alpha_values):
