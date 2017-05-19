@@ -294,6 +294,7 @@ def register_slycat_plugin(context):
                 meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
 
                 # push time vector to list of time vectors
+                time_i.sort()
                 time_steps.append (time_i)
 
                 # intersect variable data
