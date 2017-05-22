@@ -8,7 +8,7 @@
 # S. Martin
 # 11/12/2014
 
-"""Uploads tab-delimited files from a dial-a-cluster data directory
+"""Uploads comma-delimited files from a dial-a-cluster data directory
 to the Slycat Web Server."""
 
 import dac_compute_coords as dac
@@ -16,7 +16,6 @@ import dac_compute_coords as dac
 import numpy
 from scipy import optimize
 import slycat.web.client
-import sys
 import os
 
 parser = slycat.web.client.ArgumentParser()
@@ -32,8 +31,8 @@ arguments = parser.parse_args()
 # read in datapoints.meta file
 ##############################
 
-with open(arguments.dir + '/datapoints.meta', 'r') as stream:
-    meta_rows = [row.split('\t') for row in stream]
+with open(arguments.dir + '/datapoints.dac', 'r') as stream:
+    meta_rows = [row.split(',') for row in stream]
 print "Reading datapoints.meta file ..."
 
 # extract column names from the first line of the file, and assume that all columns contain string data.
@@ -57,8 +56,8 @@ for index in range(len(meta_columns)):
 #############################
 
 # (this is just like reading the datapoints.meta file)
-with open(arguments.dir + '/variables.meta', 'r') as stream:
-    meta_vars = [row.split('\t') for row in stream]
+with open(arguments.dir + '/var/variables.meta', 'r') as stream:
+    meta_vars = [row.split(',') for row in stream]
 print"Reading variables.meta file ..."
 
 meta_var_col_names = [name.strip() for name in meta_vars[0]]
@@ -88,11 +87,11 @@ if meta_var_col_names[3] != "Plot Type":
 ###############################################################
 
 # check to see if alpha_parms.pref file exists
-if os.path.isfile(arguments.dir + '/alpha_parms.pref'):
+if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
 
 	# load file
-    with open(arguments.dir + '/alpha_parms.pref', 'r') as stream:
-        alpha_file = [row.split('\t') for row in stream]
+    with open(arguments.dir + '/pref/alpha_parms.pref', 'r') as stream:
+        alpha_file = [row.split(',') for row in stream]
     print "Reading alpha_parms.pref file ..."
     
     # check column names
@@ -131,11 +130,11 @@ alpha_order = alpha_order.tolist()
 #####################################################################
 
 # check to see if variable_defaults.pref file is present
-if os.path.isfile(arguments.dir + '/variable_defaults.pref'):
+if os.path.isfile(arguments.dir + '/pref/variable_defaults.pref'):
 
     # load file
-    with open(arguments.dir + '/variable_defaults.pref') as stream:
-        defaults_file = [row.split('\t') for row in stream]
+    with open(arguments.dir + '/pref/variable_defaults.pref') as stream:
+        defaults_file = [row.split(',') for row in stream]
     print "Reading varible_defaults.pref file ..."
     
     # check for 3 integers
@@ -156,13 +155,13 @@ var_plot_order = var_plot_order.tolist()
 ##########################################################
 
 # first define defaults
-dac_ui_parms = {'SLYCAT_HEADER': 50,   # slycat header is typically 50 pixels high
+dac_ui_parms = {
     'ALPHA_STEP': .001,                # step size for alpha sliders
     'ALPHA_SLIDER_WIDTH': 170,         # width in pixels for alpha slider
     'ALPHA_BUTTONS_HEIGHT': 33,        # height of alpha buttons pixels
     'MAX_POINTS_ANIMATE': 2500,        # number of points below which we animate
     'SCATTER_BORDER': .025,            # border around scatter plot (fraction)
-    'SCATTER_BUTTONS_HEIGHT': 35,      # scatter plot toolbar height
+    'SCATTER_BUTTONS_HEIGHT': 37,      # scatter plot toolbar height
     'POINT_COLOR': 'whitesmoke',       # css named color for non selected points
     'POINT_SIZE': 5,                   # d3 point size for scatter plot
     'NO_SEL_COLOR': 'gray',            # css named color border for scatter points
@@ -172,7 +171,7 @@ dac_ui_parms = {'SLYCAT_HEADER': 50,   # slycat header is typically 50 pixels hi
     'COLOR_BY_HIGH': 'limegreen',      # color for high value colored points
     'OUTLINE_NO_SEL': 1,               # pixel width of non selected point
     'OUTLINE_SEL': 2,                  # pixel width of border for selected point
-    'PLOTS_PULL_DOWN_HEIGHT': 35,      # time series spacing for pull downs
+    'PLOTS_PULL_DOWN_HEIGHT': 38,      # time series spacing for pull downs
     'PADDING_TOP': 10,                 # padding for top of time series plot
     'PADDING_BOTTOM': 24,              # padding for bottom of time series plot
     'PADDING_LEFT': 37,                # padding for left of time series plot
@@ -181,20 +180,26 @@ dac_ui_parms = {'SLYCAT_HEADER': 50,   # slycat header is typically 50 pixels hi
     'Y_LABEL_PADDING': 13,             # padding for time series y-label
     'LABEL_OPACITY': .2,               # opacity for time series label
     'X_TICK_FREQ': 80,                 # pixel distance between x ticks
-    'Y_TICK_FREQ': 40}                 # pixel distance between y ticks
-      
+    'Y_TICK_FREQ': 40                  # pixel distance between y ticks
+}
+
 # check to see if dac_ui.pref file exists
-if os.path.isfile(arguments.dir + '/dac_ui.pref'):
+if os.path.isfile(arguments.dir + '/pref/dac_ui.pref'):
     
     # load file
-    with open(arguments.dir + '/dac_ui.pref') as stream:
-        dac_ui_file = [row.split('\t') for row in stream]
+    with open(arguments.dir + '/pref/dac_ui.pref') as stream:
+        dac_ui_file = [row.split(',') for row in stream]
     print "Reading dac_ui.pref file ..."
-    
-    # check for 2 columns
-    dac_ui_row = [name.strip() for name in dac_ui_file[0]]
 
-    
+    # check header row
+    dac_file_col_names = [name.strip() for name in dac_ui_file[0]]
+    if len(dac_file_col_names) != 2:
+        raise Exception("dac_ui.pref file doesn't have 2 columns!")
+    if dac_file_col_names[0] != "Preference":
+        raise Exception('first column of dac_ui.pref is not "Preference".')
+    if dac_file_col_names[1] != "Value":
+        raise Exception('second column of dac_ui.pref is not "Value".')
+
     # check for matching ui preferences in file
     for i in range(len(dac_ui_file)):
         
@@ -217,8 +222,8 @@ time_steps = []	# store as a list of numpy arrays
 for i in range(num_vars):
        
     # read variable_i.time file
-    with open(arguments.dir + '/variable_' + str(i + 1) + '.time') as stream:
-       time_step_i_file = [row.strip().split('\t') for row in stream]
+    with open(arguments.dir + '/time/variable_' + str(i + 1) + '.time') as stream:
+       time_step_i_file = [row.strip().split(',') for row in stream]
     
     # convert to numpy array
     time_steps_i = numpy.array([float(name.strip())
@@ -235,8 +240,8 @@ variable = []	# store as a list of numpy matrices
 for i in range(num_vars):
        
     # read variable_i.var file
-    with open(arguments.dir + '/variable_' + str(i + 1) + '.var') as stream:
-       variable_i_file = [row.strip().split('\t') for row in stream]
+    with open(arguments.dir + '/var/variable_' + str(i + 1) + '.var') as stream:
+       variable_i_file = [row.strip().split(',') for row in stream]
     
     # check that variable_i has the right number of data points
     if len(variable_i_file) != num_time_series:
@@ -259,9 +264,9 @@ var_dist = []	# store as a list of numpy matrices
 for i in range(num_vars):
 
     # read variable_i.dist file
-    with open(arguments.dir + '/variable_' + str(i + 1) + '.dist') as stream:
-        var_dist_i_file = [row.strip().split('\t') for row in stream]
-    
+    with open(arguments.dir + '/dist/variable_' + str(i + 1) + '.dist') as stream:
+        var_dist_i_file = [row.strip().split(',') for row in stream]
+
     # check that var_dist file has the right number of data points
     if len(var_dist_i_file) != num_time_series:
         raise Exception ('variable_' + str(i + 1) + 
@@ -274,7 +279,7 @@ for i in range(num_vars):
     
     # scale distance matrices to have maximum distance of 1
     var_dist_i = var_dist_i/numpy.amax(var_dist_i)
-    
+
     # store in list of distance matrices
     var_dist.append(var_dist_i)
 
@@ -300,7 +305,7 @@ mds_coords = dac.scale_coords(unscaled_mds_coords, full_mds_coords)
 #####################################
 
 # form a matrix with each distance matrix as a column (this is U matrix)
-all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars));
+all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars))
 for i in range(num_vars):
     all_dist_mat[:,i] = numpy.squeeze(numpy.reshape(var_dist[i], 
         (num_time_series * num_time_series,1)))
@@ -424,12 +429,12 @@ connection.put_model_arrayset(mid, "dac-time-points")
 
 # upload as a series of 1-d arrays
 for i in range(num_vars):
-    
+
     # set up time points array
     time_points = time_steps[i]
     dimensions = [dict(name="row", end=len(time_points))]
     attributes = [dict(name="value", type="float64")]
-    
+
     # upload to slycat at array i
     connection.put_model_arrayset_array(mid, "dac-time-points", i, dimensions, attributes)
     connection.put_model_arrayset_data(mid, "dac-time-points", "%s/0/..." % i, [time_points])
@@ -467,7 +472,7 @@ for i in range(num_vars):
     dimensions = [dict(name="row", end=int(dist_mat.shape[0])),
         dict(name="column", end=int(dist_mat.shape[1]))]
     attributes = [dict(name="value", type="float64")]
-    
+
     # upload to slycat as seperate arrays
     connection.put_model_arrayset_array(mid, "dac-var-dist", i, dimensions, attributes)
     connection.put_model_arrayset_data(mid, "dac-var-dist", "%s/0/..." % i, [dist_mat])

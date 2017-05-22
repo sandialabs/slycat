@@ -8,7 +8,7 @@
 define ("dac-layout",["jquery", "dac-scatter-plot", "dac-plots", "dac-table"],
 	function($, scatter_plot, plots, metadata_table) { return {
 	 
-	setup: function(SLYCAT_HEADER, ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
+	setup: function(ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
 		SCATTER_BUTTONS_HEIGHT)
     {
     
@@ -79,7 +79,7 @@ define ("dac-layout",["jquery", "dac-scatter-plot", "dac-plots", "dac-table"],
     	// when resizing the window, adjust the height of the layout.
     	$(window).resize(function()
     	{
-      		$("#dac-model").height($(window).height() - SLYCAT_HEADER);
+      		$("#dac-model").height($(window).height());
     	});
 	
 	}

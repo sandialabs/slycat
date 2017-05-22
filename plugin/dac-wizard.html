@@ -15,12 +15,13 @@ S. Martin
 <!-- Organizes the tabs in the input wizard. -->
 <div class="modal-body">
     <ul class="nav nav-pills">
-        <li data-bind="css:{active:tab() == 0}" class="btn-secondary"><a>Locate Data</a></li>
-        <li data-bind="css:{active:tab() == 1}, visible: cca_type() == 'local'"><a>Upload Data</a></li>
-        <li data-bind="css:{active:tab() == 2}, visible: cca_type() == 'remote'"><a>Choose Host</a></li>
-        <li data-bind="css:{active:tab() == 3}, visible: cca_type() == 'remote'"><a>Upload Data</a></li>
-        <li data-bind="css:{active:tab() == 4}"><a>Select Columns</a></li>
-        <li data-bind="css:{active:tab() == 5}"><a>Name Model</a></li>
+        <li data-bind="css:{active:tab() == 0}" class="btn-secondary"><a>Data Format</a></li>
+        <li data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'"><a>Upload Data</a></li>
+        <li data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'"><a>Upload Data</a></li>
+        <li data-bind="css:{active:tab() == 3}, visible: dac_format() == 'pts'"><a>Process Data</a></li>
+        <li data-bind="css:{active:tab() == 4}"><a>Select Metadata</a></li>
+        <li data-bind="css:{active:tab() == 5}"><a>Select Variables</a></li>
+        <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
     </ul>
 
     <!-- This tab lets the user select whether or not the file to upload is on the local
@@ -29,45 +30,105 @@ S. Martin
     <div data-bind="visible:tab() == 0">
         <div class="radio" style="margin-left: 15px;">
         <label>
-            <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: cca_type">
-            Local
+            <input type="radio" name="local-or-remote-radios" id="local-radio" value="dac-gen" data-bind="checked: dac_format">
+            Dial-A-Cluster Generic Format
         </label>
         </div>
         <div class="radio" style="margin-left: 15px;">
         <label>
-            <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: cca_type">
-            Remote
+            <input type="radio" name="local-or-remote-radios" id="remote-radio" value="pts" data-bind="checked: dac_format">
+            PTS CSV/META Format
         </label>
         </div>
     </div>
 
-    <!-- This tab loads data from the local host, using the slycat-parser-controls to
+    <!-- This tab loads data from the local host, in DAC Generic Format, using the slycat-parser-controls to
          load a dac-table type table. -->
     <div data-bind="visible:tab() == 1" class="form-horizontal">
-        <slycat-local-browser params="selection:browser.selection"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
+
+        <div style="margin-top: 40px;">
+        <label>Select .dac meta-data file:</label>
+        <slycat-local-browser params="
+            selection:browser_dac_file.selection,
+            progress:browser_dac_file.progress,
+            progress_status:browser_dac_file.progress_status"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_dac_file,category:'dac-index-file'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .var variable files (plus variables.meta file):</label>
+        <slycat-local-browser params="
+            selection:browser_var_files.selection,
+            multiple:true,
+            progress:browser_var_files.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_var_files,category:'dac-var-files'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .time time point files:</label>
+        <slycat-local-browser params="
+            selection:browser_time_files.selection,
+            multiple:true,
+            progress:browser_time_files.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_time_files,category:'dac-time-files'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all .dist pairwise distance files:</label>
+        <slycat-local-browser params="
+            selection:browser_dist_files.selection,
+            multiple:true,
+            progress:browser_dist_files.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_dist_files,category:'dac-dist-files'"></slycat-parser-controls>
+        </div>
+
     </div>
 
-    <!-- This tab authenticates to the remote host. -->
-    <div data-bind="visible:tab() == 2">
-        <form class="form-horizontal" role="form">
-            <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
-        </form>
-    </div>
-
-    <!-- This tab is for loading a file from a remote computer.  The slycat-parser-controls
+    <!-- This tab is for loading the CSV/META files.  The slycat-parser-controls
          tag indicates which type of table to load, which in our case is 'dac-table' -->
-    <div data-bind="visible:tab() == 3" style="height: 400px">
-        <slycat-remote-browser params="
-            type:'remote',
-            sid:remote.sid,
-            hostname:remote.hostname,
-            selection:browser.selection,
-            path:browser.path,
-            open_file_callback:load_table,
-            session_exists:remote.session_exists,
-            persistence_id:'cca-table-file'"></slycat-remote-browser>
-        <slycat-parser-controls params="parser:parser,category:'dac-table'"></slycat-parser-controls>
+    <div data-bind="visible:tab() == 2" class="form-horizontal">
+
+        <div style="margin-top: 40px;">
+        <label>Select all files in CSV directory:</label>
+        <slycat-local-browser params="
+            selection:browser_csv_files.selection,
+            multiple:true,
+            progress:browser_csv_files.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_csv_files,category:'dac-csv-files'"></slycat-parser-controls>
+        </div>
+
+        <div style="margin-top: 40px;">
+        <label>Select all files in META directory:</label>
+        <slycat-local-browser params="
+            selection:browser_meta_files.selection,
+            multiple:true,
+            progress:browser_meta_files.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_meta_files,category:'dac-meta-files'"></slycat-parser-controls>
+        </div>
+
+    </div>
+
+    <!-- This tab is for processing the CSV/META files, including minimum number of digitizers,
+         and showing the error log. -->
+    <div data-bind="visible:tab() == 3" class="form-horizontal">
+
+        <div style="margin-top: 40px; margin-left:15px">
+          <label>Minimum number of time points in a CSV file:</label>
+          <input class="form-control" type="number" min="2" data-bind="value: csv_min_size">
+        </div>
+
+        <div style="margin-top: 40px; margin-left: 15px">
+          <label>Minimum number of digitizers in a test:</label>
+          <input class="form-control" type="number" min="3" data-bind="value: min_num_dig">
+        </div>
+
+        <div style="margin-top: 40px; margin-left: 15px">
+          <label>Process Results:</label>
+          <textarea class="form-control" rows="15" readonly id="dac-wizard-process-results">
+          </textarea>
+        </div>
+
+
     </div>
 
     <!-- The slycat-table-ingestion tag indicates what to name columns (name: ) and whether
@@ -75,13 +136,23 @@ S. Martin
          column include or not include in the meta-data table. -->
     <div data-bind="visible:tab() == 4">
         <slycat-table-ingestion params="
-            variables: attributes,
+            variables: meta_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+    </div>
+
+    <!-- The slycat-table-ingestion tag indicates what to name columns (name: ) and whether
+     the columns are checkboxes (bool) or radio buttons (select).  Here we have one
+     column include or not include in the meta-data table. -->
+    <div data-bind="visible:tab() == 5">
+        <slycat-table-ingestion params="
+            variables: var_attributes,
             properties: [{name: 'Include', type: 'bool'}]
         "></slycat-table-ingestion>
     </div>
 
     <!-- Inputs the name of the model (final tab). -->
-    <div data-bind="visible:tab() == 5">
+    <div data-bind="visible:tab() == 6">
         <form class="form-horizontal" role="form" onsubmit="return false">
             <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         </form>
@@ -95,9 +166,15 @@ S. Martin
 <div class="modal-footer">
     <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
-    <button class="btn btn-primary local-browser-continue browser-continue" data-bind="visible:tab() == 1,click:upload_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 2,click:connect,enable:remote.enable">Continue</button>
-    <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 5,click:name_model">Finish & Go To Model</button>
+    <button class="btn btn-primary dac-gen-browser-continue browser-continue"
+            data-bind="visible:tab() == 1,click:upload_dac_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary pts-browser-continue browser-continue"
+            data-bind="visible:tab() == 2,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary pts-browser-continue browser-continue"
+            data-bind="visible:tab() == 3,click:process_pts_format_stop"><i class="fa fa-spinner fa-pulse"></i> Process</button>
+    <button class="btn btn-primary pts-browser-continue browser-continue"
+            data-bind="visible:tab() == 3,click:process_pts_format_continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 4,click:include_variables">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 5,click:finish">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 6,click:name_model">Finish & Go To Model</button>
 </div>

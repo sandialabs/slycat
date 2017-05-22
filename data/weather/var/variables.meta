@@ -5,9 +5,9 @@ Min Temperature,Day,F,Curve
 Max Dew Point,Day,F,Curve
 Mean Dew Point,Day,F,Curve
 Min Dew Point,Day,F,Curve
-Max Humidity,Day,
-Mean Humidity,Day,
-Min Humidity,Day,
+Max Humidity,Day,%,Curve
+Mean Humidity,Day,%,Curve
+Min Humidity,Day,%,Curve
 Max Sea Level Pressure,Day,In,Curve
 Mean Sea Level Pressure,Day,In,Curve
 Min Sea Level Pressure,Day,In,Curve

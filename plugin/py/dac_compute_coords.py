@@ -14,6 +14,7 @@ in a list of 2d numpy arrays and the alpha values are stored in a 1d numpy
 array."""
 
 import numpy as np
+import cherrypy
 
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D):
@@ -59,7 +60,16 @@ def cmdscale(D):
     L  = np.diag(np.sqrt(evals[w]))
     V  = evecs[:,w]
     Y  = V.dot(L)
-     
+
+    # if only one coordinate then add two columns of zeros
+    if len(w) == 1:
+        Y = np.append(np.reshape(Y, (Y.shape[0],1)),
+                      np.zeros((Y.shape[0],2)), axis=1)
+
+    # if only two coordinates then add one column of zeros
+    if len(w) == 2:
+        Y = np.append(Y, np.zeros((Y.shape[0],1)), axis=1)
+
     return Y, evals
     
 def compute_coords (dist_mats, alpha_values):
