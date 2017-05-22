@@ -319,7 +319,7 @@ def register_slycat_plugin(context):
         num_vars = len(meta_vars)
         if num_vars < MIN_NUM_DIG:
             parse_error_log.append("Total number of digitizers less than " + str(MIN_NUM_DIG) +
-                                   "-- no data remaining.")
+                                   " -- no data remaining.")
             meta_rows = []
 
         # if no parse errors then inform user
@@ -626,13 +626,21 @@ def register_slycat_plugin(context):
             sy2 = numpy.sum(numpy.square(dist_mats[i][sel_2,:][:,sel_2])) / (2 * num_sel_2)
             uxuy2 = (numpy.sum(numpy.square(dist_mats[i][sel_1,:][:,sel_2])) / 
                 (num_sel_1 * num_sel_2) - sx2 / num_sel_1 - sy2 / num_sel_2)
-            fisher_disc[i] = (uxuy2 / (sx2 + sy2))
+
+            # make sure we don't divide by zero
+            if (sx2 + sy2) > numpy.finfo(float).eps:
+                fisher_disc[i] = (uxuy2 / (sx2 + sy2))
+            else:
+                fisher_disc[i] = uxuy2
 
         # scale discriminant values between 0 and 1
     	fisher_min = numpy.amin(fisher_disc)
         fisher_max = numpy.amax(fisher_disc)
-        fisher_disc = (fisher_disc - fisher_min) / (fisher_max - fisher_min)
-    	
+
+        # again don't divide by zero
+        if fisher_max > fisher_min:
+            fisher_disc = (fisher_disc - fisher_min) / (fisher_max - fisher_min)
+
         # return unsorted discriminant values as JSON array
     	return json.dumps({"fisher_disc": fisher_disc.tolist()})
 

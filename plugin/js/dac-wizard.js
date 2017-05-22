@@ -574,7 +574,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // assign defaults for all preferences, override available in push script
 
-        // from alpha-parms.pref file
+        // default alpha parameters
         var dac_alpha_parms = [];
         var dac_alpha_order = [];
         //---------------------------
@@ -970,7 +970,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         // if nothing was processed then alert user
                         if (result[0] == "No Data") {
 
-                            dialog.ajax_error("Parser could not find any usable PTS data.  Please try different parameters.")
+                            dialog.ajax_error("Parser could not find any usable PTS data.  Please try different parameters, or restart wizard and select more files.")
                                 ("","","");
                             $(".pts-browser-continue").toggleClass("disabled", false);
 
