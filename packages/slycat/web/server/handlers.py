@@ -968,7 +968,7 @@ def delete_model_parameter(mid, aid):
     """
     delete a model artifact 
     :param mid: model Id
-    :param aid: 
+    :param aid: artifact id
     :return: 
     """
     database = slycat.web.server.database.couchdb.connect()

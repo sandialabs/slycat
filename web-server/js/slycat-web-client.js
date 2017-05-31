@@ -1161,6 +1161,16 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  /**
+   * delete model artifacts from the nosql database
+   * @param params
+   * {
+   *  mid:model_id,
+   *  aid:artifact_id,
+   *  success:func(called on ajax success),
+   *  error:func(called on ajax error)
+   * }
+   */
   module.delete_model_parameter = function(params)
   {
     $.ajax(
