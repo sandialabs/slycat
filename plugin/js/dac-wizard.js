@@ -1041,6 +1041,17 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // called after the last tab is finished to name the model
     component.name_model = function() {
 
+        // remove CSV and META artifacts (doesn't actually matter if it works)
+        client.delete_model_parameter({
+            mid: component.model._id(),
+            aid: "dac-pts-csv",
+        });
+        client.delete_model_parameter({
+            mid: component.model._id(),
+            aid: "dac-pts-meta",
+        });
+
+        // declare import a success
         client.put_model(
         {
         mid: component.model._id(),

@@ -279,7 +279,8 @@ def register_slycat_plugin(context):
             # check if time vectors were inconsistent
             if len(time_i) < max_time_i_len:
                 parse_error_log.append("Inconsistent time points for digitizer #" + str(dig_id_keys[i])
-                                       + " -- reduced to " + str(len(time_i)) + " time points.")
+                                       + " -- reduced from " + str(max_time_i_len) + " to "
+                                       + str(len(time_i)) + " time points.")
 
             # check if reduction is below minimum threshold
             if len(time_i) < CSV_MIN_SIZE:
