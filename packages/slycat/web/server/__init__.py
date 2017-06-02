@@ -418,6 +418,7 @@ def delete_model_parameter(database, model, aid):
     :param aid: artifact id
     :return: not used
     """
+    #TODO: add a lock around this call
     del model["artifact:%s" % aid]
     del model["artifact-types"][aid]
     database.save(model)

@@ -1176,7 +1176,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax(
     {
       type: "DELETE",
-      url: server_root + "/delete-artifact/" + params.mid + "/" + params.aid,
+      url: server_root + "delete-artifact/" + params.mid + "/" + params.aid,
       success: function()
       {
         if(params.success)
