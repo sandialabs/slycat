@@ -976,11 +976,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                         } else {
 
-                            $(".pts-browser-continue").toggleClass("disabled", false);
-
                             // continue onto next stage, if desired
                             num_vars = Number(result[1]);
-                            if (process_continue) { assign_pref_defaults(); };
+                            if (process_continue) {
+                                assign_pref_defaults();
+                            } else {
+                                $(".pts-browser-continue").toggleClass("disabled", false);
+                            }
 
                         };
                     },
@@ -1041,15 +1043,35 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // called after the last tab is finished to name the model
     component.name_model = function() {
 
-        // remove CSV and META artifacts (doesn't actually matter if it works)
+        // remove CSV and META artifacts
+        // (one at a time to prevent conflicts, but it
+        // doesn't actually matter if it works)
         client.delete_model_parameter({
             mid: component.model._id(),
             aid: "dac-pts-csv",
+            success: function () {
+
+                client.delete_model_parameter({
+                    mid: component.model._id(),
+                    aid: "dac-pts-meta",
+                    success: function () {
+                        finish_model();
+                    },
+                    error: function () {
+                        console.log("dac-pts-meta deletion failed");
+                        finish_model();
+                    }
+                });
+            },
+            error: function () {
+                console.log("dac-pts-csv and dac-pts-meta deletion failed");
+                finish_model();
+            }
         });
-        client.delete_model_parameter({
-            mid: component.model._id(),
-            aid: "dac-pts-meta",
-        });
+
+    };
+
+    var finish_model = function () {
 
         // declare import a success
         client.put_model(
