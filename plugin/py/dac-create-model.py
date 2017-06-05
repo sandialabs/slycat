@@ -33,7 +33,7 @@ arguments = parser.parse_args()
 
 with open(arguments.dir + '/datapoints.dac', 'r') as stream:
     meta_rows = [row.split(',') for row in stream]
-print "Reading datapoints.meta file ..."
+print "Reading datapoints.dac file ..."
 
 # extract column names from the first line of the file, and assume that all columns contain string data.
 meta_column_names = [name.strip() for name in meta_rows[0]]
@@ -135,7 +135,7 @@ if os.path.isfile(arguments.dir + '/pref/variable_defaults.pref'):
     # load file
     with open(arguments.dir + '/pref/variable_defaults.pref') as stream:
         defaults_file = [row.split(',') for row in stream]
-    print "Reading varible_defaults.pref file ..."
+    print "Reading variable_defaults.pref file ..."
     
     # check for 3 integers
     default_row = [name.strip() for name in defaults_file[0]]

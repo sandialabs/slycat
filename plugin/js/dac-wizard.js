@@ -595,7 +595,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     	    ALPHA_STEP: 0.001,
 
     	    // default width for the alpha sliders (in pixels)
-    	    ALPHA_SLIDER_WIDTH: 270,
+    	    ALPHA_SLIDER_WIDTH: 170,
 
     	    // default height of alpha buttons (in pixels)
             ALPHA_BUTTONS_HEIGHT: 33,
