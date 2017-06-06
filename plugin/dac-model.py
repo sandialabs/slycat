@@ -244,7 +244,10 @@ def register_slycat_plugin(context):
         for i in range(len(dig_id_keys)):
 
             # row i for variables.meta table
-            name_i = wave_data[test_inds[0][i]].get("WF_DIG_LABEL", "WF_DIG_ID " + str(dig_id_keys[i]))
+            if "WF_DIG_LABEL" in wave_data[test_inds[0][i]]:
+                name_i = wave_data[test_inds[0][i]]["WF_DIG_LABEL"] + " (" + str(dig_id_keys[i]) + ")"
+            else:
+                name_i = "WF_DIG_ID " + str(dig_id_keys[i])
             units_i = wave_data[test_inds[0][i]].get("WF_Y_UNITS", "Not Given")
             time_units_i = wave_data[test_inds[0][i]].get("WF_X_UNITS", "Not Given")
             plot_type_i = "Curve"
