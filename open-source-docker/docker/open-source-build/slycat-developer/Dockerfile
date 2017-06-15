@@ -44,10 +44,11 @@ RUN /usr/bin/update-ca-trust
 
 
 # Install yum packages for development.
-RUN yum install -y openssh-server sudo
+RUN yum install -y openssh-server; yum clean all
+RUN yum install -y sudo; yum clean all
 
 # Install yum packages for testing
-RUN yum -y install cmake qt-devel libxml2-devel libxslt-devel qtwebkit-devel xorg-x11-server-Xvfb firefox
+RUN yum -y install cmake qt-devel libxml2-devel libxslt-devel qtwebkit-devel xorg-x11-server-Xvfb firefox; yum clean all
 
 # Make sure we find qmake for pyside
 ENV PATH /usr/lib64/qt4/bin:$PATH
