@@ -22,6 +22,13 @@ import threading
 import csv
 from urlparse import urlparse
 
+def getType(value):
+  try:
+    int(value)
+    return int
+  except ValueError:
+    return str
+
 def _isNumeric(j):
   """
   Check if the input object is a numerical value, i.e. a float
@@ -47,8 +54,8 @@ arguments = parser.parse_args()
 log_lock = threading.Lock()
 log = logging.getLogger()
 log.setLevel(logging.INFO)
-log.addHandler(logging.StreamHandler())
-log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
+log.addHandler(logging.FileHandler('slycat-agent-timeseries-to-hdf5.log'))
+log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
 
 if arguments.force:
   shutil.rmtree(arguments.output_directory, ignore_errors=True)
@@ -197,9 +204,10 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
       t_first_row = [val.strip() for val in stream.readline().split(t_delimiter)]
 
       # check if an index column is present or flag it otherwise
-      if isinstance(t_first_row[0], int):
+      # if isinstance(t_first_row[0], float):
+      if getType(t_first_row[0]) is not int:
         t_add_index_column = True
-        t_column_names = ["Index"] + t_column_names
+        t_column_names = ["Index"] + t_column_names # always add index column
       else:
         t_column_names[0] = "Index"
 
@@ -241,6 +249,7 @@ def convert_timeseries(timeseries_index, eval_id, row):
   """
   for i, val in enumerate(row):
     if column_types[i] is "string":
+      val = val.strip()
       file_ext = val[len(val) - 3:]
       if file_ext == "csv" or file_ext == "dat" or file_ext == "txt" or file_ext == "prn":# TODO add or file_ext == "prn"
         process_timeseries(val, column_names[i], timeseries_index, eval_id)

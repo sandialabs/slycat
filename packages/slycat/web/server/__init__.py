@@ -410,6 +410,20 @@ def put_model_parameter(database, model, aid, value, input=False):
     database.save(model)
 
 
+def delete_model_parameter(database, model, aid):
+    """
+    Delete a model parameter in the couch database
+    :param database: 
+    :param model: model from the couchdb
+    :param aid: artifact id
+    :return: not used
+    """
+    #TODO: add a lock around this call
+    del model["artifact:%s" % aid]
+    del model["artifact-types"][aid]
+    database.save(model)
+
+
 def create_session(hostname, username, password):
     """Create a cached remote session for the given host.
 

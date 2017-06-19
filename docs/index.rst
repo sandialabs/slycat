@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome!
-========
+Welcome!!
+=========
 
 This is Slycat™ - a web-based data science analysis and visualization platform,
 created at `Sandia National Laboratories <http://www.sandia.gov>`_.

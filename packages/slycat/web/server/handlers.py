@@ -964,6 +964,24 @@ def put_model_parameter(mid, aid):
     slycat.web.server.put_model_parameter(database, model, aid, value, input)
 
 
+def delete_model_parameter(mid, aid):
+    """
+    delete a model artifact 
+    :param mid: model Id
+    :param aid: artifact id
+    :return: 
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    slycat.web.server.delete_model_parameter(database, model, aid)
+    slycat.web.server.cleanup.arrays()
+
+    cherrypy.response.status = "204 Model deleted."
+
+
 @cherrypy.tools.json_in(on=True)
 def put_model_arrayset(mid, aid):
     database = slycat.web.server.database.couchdb.connect()

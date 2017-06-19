@@ -4,15 +4,21 @@ FROM centos:6.6
 
 # install required additional OS packages
 RUN yum -y update
-RUN yum install -y epel-release hdf5-devel haproxy lapack-devel openldap-devel openssl-devel lcms2-devel tcl-devel tkinter libjpeg-turbo-devel openjpeg-devel libtiff-devel libffi-devel libX11-devel htop
+RUN yum install -y epel-release; yum clean all
+RUN yum install -y hdf5-devel haproxy lapack-devel openldap-devel openssl-devel; yum clean all
+RUN yum install -y lcms2-devel; yum clean all
+RUN yum install -y tcl-devel tkinter libjpeg-turbo-devel; yum clean all
+RUN yum install -y openjpeg-devel libtiff-devel libffi-devel libX11-devel htop; yum clean all
 
 # for some twisted reason we don't get hdf5-devel from above
-RUN yum install -y hdf5-devel
+RUN yum install -y hdf5-devel; yum clean all
 
-RUN yum groupinstall -y Base "Development Tools" Emacs
+RUN yum groupinstall -y Base; yum clean all
+RUN yum groupinstall -y "Development Tools"; yum clean all
+RUN yum groupinstall -y Emacs; yum clean all
 
 # additional OS packages needed by couchdb
-RUN yum install -y automake libcurl-devel erlang erlang-asn1 erlang-erts erlang-eunit erlang-os_mon erlang-xmerl js-devel help2man libicu-devel
+RUN yum install -y automake libcurl-devel erlang erlang-asn1 erlang-erts erlang-eunit erlang-os_mon erlang-xmerl js-devel help2man libicu-devel; yum clean all
 
 # create a slycat user
 RUN groupadd -g 500 slycat; useradd -u 500 -g 500 slycat
@@ -22,11 +28,15 @@ RUN mkdir /etc/slycat; chgrp slycat /etc/slycat; chmod g+w /etc/slycat
 USER slycat
 RUN mkdir -p /home/slycat/src/python; mkdir /home/slycat/install; echo "export PATH=/home/slycat/install/conda/bin:$PATH" >> /home/slycat/.bashrc; echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.bashrc;
 
-RUN cd /home/slycat/src/python; wget -nv --no-check-certificate https://repo.continuum.io/miniconda/Miniconda-3.7.0-Linux-x86_64.sh; chmod u+x Miniconda-3.7.0-Linux-x86_64.sh; ./Miniconda-3.7.0-Linux-x86_64.sh -b -p /home/slycat/install/conda
+RUN cd /home/slycat/src/python; wget -nv --no-check-certificate http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh; chmod u+x miniconda.sh; ./miniconda.sh -b -p /home/slycat/install/conda
 
 COPY .condarc /home/slycat/.condarc
+USER root
+RUN chown slycat:slycat /home/slycat/.condarc
+USER slycat
+RUN /home/slycat/install/conda/bin/conda update --yes conda
 RUN /home/slycat/install/conda/bin/conda install --yes h5py ipython paramiko pip Pillow scipy scikit-image tornado
-RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB "cherrypy==4.0.0" "pyparsing>=2.0.3" pystache routes tornado-couchdb ipyparallel pyzmq
+RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB cherrypy "pyparsing>=2.0.3" pystache routes tornado-couchdb ipyparallel pyzmq
 
 # checkout the slycat 
 RUN cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git

@@ -1161,6 +1161,35 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  /**
+   * delete model artifacts from the nosql database
+   * @param params
+   * {
+   *  mid:model_id,
+   *  aid:artifact_id,
+   *  success:func(called on ajax success),
+   *  error:func(called on ajax error)
+   * }
+   */
+  module.delete_model_parameter = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "delete-artifact/" + params.mid + "/" + params.aid,
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.put_model = function(params)
   {
     var model = {};
