@@ -102,6 +102,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
             .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
             ,
           autowidth: ko.observable(false),
+          nulls: ko.observable(false),
           order: ko.observable( variable_order.indexOf(index) ) 
         });
       };
@@ -121,6 +122,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           low: low,
           invert: ko.observable(false),
           active: ko.observable(false),
+          nulls: ko.observable(false),
           order: ko.observable( variable_order.indexOf(index) ),
           rateLimitedHigh: ko.pureComputed(high).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
           rateLimitedLow: ko.pureComputed(low).extend({ rateLimit: { timeout: rateLimit, method: "notifyWhenChangesStop" } }),
@@ -281,6 +283,17 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           else
           {
             filter.autowidth(true);
+          }
+          self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+        };
+        vm.toggleNull = function(filter, event) {
+          if(filter.nulls())
+          {
+            filter.nulls(false);
+          }
+          else
+          {
+            filter.nulls(true);
           }
           self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
         };
