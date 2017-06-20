@@ -1091,6 +1091,7 @@ function update_widgets_after_color_variable_change()
 function update_widgets_when_hidden_simulations_change()
 {
   hidden_simulations_changed();
+
   if(auto_scale)
   {
     update_current_colorscale();
@@ -1107,6 +1108,7 @@ function update_widgets_when_hidden_simulations_change()
     if($("#scatterplot").data("parameter_image-scatterplot"))
       $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
   }
+
   if($("#controls").data("parameter_image-controls"))
     $("#controls").controls("option", "hidden_simulations", hidden_simulations);
 }
@@ -1445,6 +1447,7 @@ function filters_changed(newValue)
 
         for(var i=0; i < filter_status.length; i++)
         {
+          // Add if it's being filtered out
           if(!filter_status[i])
           {
             new_filtered_simulations.push( filter_indices[i] );
