@@ -45,6 +45,7 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0):
         left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1)
         for operand in expression.operands[1:]:
             right = evaluate(hdf5_array, operand, expression_type, expression_level + 1)
+            # cherrypy.log.error("left::%s \n right::%s" % (left, right))
             if expression.operator == "<":
                 left = left < right
             elif expression.operator == ">":
@@ -54,7 +55,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0):
             elif expression.operator == ">=":
                 left = left >= right
             elif expression.operator == "==":
-                left = left == right
+                if numpy.isnan(right):
+                    left = numpy.isnan(left)
+                else:
+                    left = left == right
             elif expression.operator == "!=":
                 left = left != right
             elif expression.operator == "and":
@@ -232,10 +236,8 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
             hdf5_arrayset = slycat.hdf5.ArraySet(file)
             for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
                 hdf5_array = hdf5_arrayset[array.index]
-
                 if array.order is not None:
                     order = evaluate(hdf5_array, array.order, "order")
-
                 for attribute in array.attributes(len(hdf5_array.attributes)):
                     values = evaluate(hdf5_array, attribute.expression, "attribute")
                     for hyperslice in attribute.hyperslices():

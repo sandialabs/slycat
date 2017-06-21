@@ -25,7 +25,7 @@ def register_slycat_plugin(context):
     :param database:
       our connection to couch db
     """
-    expression = re.compile("file://")
+    expression = re.compile('file://|http')
     search = numpy.vectorize(lambda x:bool(expression.search(x)))
 
     columns = []
