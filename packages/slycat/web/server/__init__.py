@@ -209,7 +209,7 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
             return results
 
 
-# @cache_it
+@cache_it
 def get_model_arrayset_data(database, model, aid, hyperchunks):
     """
   Read data from an arrayset artifact.
