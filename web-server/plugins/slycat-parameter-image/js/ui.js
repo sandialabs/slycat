@@ -1365,6 +1365,9 @@ function active_filters_ready()
         filters_changed(newValue);
       });
     }
+    filter.nulls.subscribe(function(newValue){
+      filters_changed(newValue);
+    });
   }
 
   $("#controls").controls("option", "disable_hide_show",  filter_manager.active_filters().length > 0);
@@ -1419,6 +1422,10 @@ function filters_changed(newValue)
           }
         }
         new_filters.push( '(' + filter_var + ' in [' + selected_values.join(', ') + '])' );
+      }
+      if( filter.nulls() )
+      {
+        new_filters[new_filters.length-1] = '(' + new_filters[new_filters.length-1] + ' or ' + filter_var + ' == nan'  + ')';
       }
     }
   }
