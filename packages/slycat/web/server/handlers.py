@@ -1319,6 +1319,7 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
                               slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
+
         else:
             for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
                 if sys.byteorder != byteorder:
@@ -1400,14 +1401,11 @@ def post_model_arrayset_data(mid, aid):
             return array
 
     def content():
-        include_nans = False
-        if "include_nans" in cherrypy.request.json:
-            include_nans = cherrypy.request.json["include_nans"]
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
-                              slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks, include_nans)])
+                              slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
         else:
-            for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks, include_nans):
+            for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
                 if sys.byteorder != byteorder:
                     yield hyperslice.byteswap().tostring(order="C")
                 else:

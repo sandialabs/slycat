@@ -29,7 +29,7 @@ def mix(a, b, amount):
 
 
 # @cache_it
-def evaluate(hdf5_array, expression, expression_type, expression_level=0, include_nans=False):
+def evaluate(hdf5_array, expression, expression_type, expression_level=0):
     """Evaluate a hyperchunk expression."""
     cherrypy.log.error("%sEvaluating %s expression: %s" % (
         "  " * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))
@@ -42,13 +42,9 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, includ
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
         return hdf5_array.get_data(expression.index)[...]
     elif isinstance(expression, slycat.hyperchunks.grammar.BinaryOperator):
-        left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1, include_nans)
-        nan_truth_table = None
-        nans_exist = numpy.isnan(numpy.sum(left))
-        if include_nans and nans_exist:
-            nan_truth_table = numpy.isnan(left)
+        left = evaluate(hdf5_array, expression.operands[0], expression_type, expression_level + 1)
         for operand in expression.operands[1:]:
-            right = evaluate(hdf5_array, operand, expression_type, expression_level + 1, include_nans)
+            right = evaluate(hdf5_array, operand, expression_type, expression_level + 1)
             # cherrypy.log.error("left::%s \n right::%s" % (left, right))
             if expression.operator == "<":
                 left = left < right
@@ -59,7 +55,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, includ
             elif expression.operator == ">=":
                 left = left >= right
             elif expression.operator == "==":
-                left = left == right
+                if numpy.isnan(right):
+                    left = numpy.isnan(left)
+                else:
+                    left = left == right
             elif expression.operator == "!=":
                 left = left != right
             elif expression.operator == "and":
@@ -74,14 +73,12 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0, includ
                 slycat.email.send_error("slycat.web.server.__init__.py evaluate",
                                         "Unknown operator: %s" % expression.operator)
                 raise ValueError("Unknown operator: %s" % expression.operator)
-        if include_nans and nans_exist:
-            left = numpy.logical_or(left, nan_truth_table)
         return left
     elif isinstance(expression, slycat.hyperchunks.grammar.FunctionCall):
         if expression.name == "index":
             return numpy.indices(hdf5_array.shape)[expression.args[0]]
         elif expression.name == "rank":
-            values = evaluate(hdf5_array, expression.args[0], expression_type, expression_level + 1, include_nans)
+            values = evaluate(hdf5_array, expression.args[0], expression_type, expression_level + 1)
             order = numpy.argsort(values)
             if expression.args[1] == "desc":
                 order = order[::-1]
@@ -212,8 +209,8 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
             return results
 
 
-@cache_it
-def get_model_arrayset_data(database, model, aid, hyperchunks, include_nans=False):
+# @cache_it
+def get_model_arrayset_data(database, model, aid, hyperchunks):
     """
   Read data from an arrayset artifact.
   Parameters
@@ -240,9 +237,9 @@ def get_model_arrayset_data(database, model, aid, hyperchunks, include_nans=Fals
             for array in slycat.hyperchunks.arrays(hyperchunks, hdf5_arrayset.array_count()):
                 hdf5_array = hdf5_arrayset[array.index]
                 if array.order is not None:
-                    order = evaluate(hdf5_array, array.order, "order", include_nans=include_nans)
+                    order = evaluate(hdf5_array, array.order, "order")
                 for attribute in array.attributes(len(hdf5_array.attributes)):
-                    values = evaluate(hdf5_array, attribute.expression, "attribute", include_nans=include_nans)
+                    values = evaluate(hdf5_array, attribute.expression, "attribute")
                     for hyperslice in attribute.hyperslices():
                         if array.order is not None:
                             return_list.append(values[order][hyperslice])
