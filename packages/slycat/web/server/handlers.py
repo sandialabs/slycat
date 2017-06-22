@@ -194,9 +194,16 @@ def require_integer_parameter(value, name):
 
 
 def get_projects(_=None):
+    """
+    returns either and array of projects or html for displaying the projects
+    :param _: 
+    :return: 
+    """
     accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
     cherrypy.response.headers["content-type"] = accept
-
+    cherrypy.log.error("mtype: %s ptype:" % (cherrypy.request.headers))
+    if 'Content-Type' in cherrypy.request.headers:
+        accept = cherrypy.request.headers.get('Content-Type')
     if accept == "text/html":
         context = {}
         context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
@@ -1319,7 +1326,6 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
                               slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
-
         else:
             for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
                 if sys.byteorder != byteorder:
@@ -1401,6 +1407,8 @@ def post_model_arrayset_data(mid, aid):
             return array
 
     def content():
+        if "include_nans" in cherrypy.request.json:
+            include_nans = cherrypy.request.json["include_nans"]
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
                               slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])

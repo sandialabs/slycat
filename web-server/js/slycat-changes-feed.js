@@ -37,87 +37,46 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI",
 
   function start()
   {
-    if(started)
-      return;
-    started = true;
 
-    var websocket_uri = URI(window.location).scheme("wss").path(server_root + "changes-feed");
-    var websocket = new WebSocket(websocket_uri);
-    websocket.onmessage = function(message)
-    {
-      // console.log("\nmessage recieved: " + message.data + "\n");
-      var change = JSON.parse(message.data);
-
-      // Keep track of project changes.
-      if(change.deleted)
-      {
-        if(change.id in project_ids)
+    var project_params = {
+      success : function(results){
+      results = JSON.parse(results);
+      results.projects.forEach(function(project){
+        if(project._id in project_ids)
         {
-          delete project_ids[change.id];
-          for(var i = 0; i != projects().length; ++i)
-          {
-            if(projects()[i]._id() == change.id)
-            {
-              projects.splice(i, 1);
-              break;
-            }
-          }
+          mapping.fromJS(project, project_ids[project._id]);
         }
-      }
-      else
-      {
-        if(change.doc.type == "project")
+        else
         {
-          var project = change.doc;
-          if(project._id in project_ids)
-          {
-            mapping.fromJS(project, project_ids[project._id]);
-          }
-          else
-          {
-            project_ids[project._id] = mapping.fromJS(project);
-            projects.push(project_ids[project._id]);
-            sort_projects();
-          }
+          project_ids[project._id] = mapping.fromJS(project);
+          projects.push(project_ids[project._id]);
+          sort_projects();
         }
-      }
-
-      // Keep track of model changes.
-      if(change.deleted)
-      {
-        if(change.id in model_ids)
-        {
-          delete model_ids[change.id];
-          for(var i = 0; i != models().length; ++i)
-          {
-            if(models()[i]._id() == change.id)
-            {
-              models.splice(i, 1);
-              break;
-            }
+        // console.log(results);
+        var model_params = {
+          pid : project._id,
+          success : function(results){
+            // console.log(results);
+            // results = JSON.parse(results);
+            results.forEach(function(model){
+              if(model._id in model_ids)
+              {
+                mapping.fromJS(model, model_ids[model._id]);
+              }
+              else
+              {
+                model_ids[model._id] = mapping.fromJS(model);
+                models.push(model_ids[model._id]);
+                sort_models();
+              }
+            });
           }
-        }
-      }
-      else
-      {
-        if(change.doc.type == "model")
-        {
-          var model = change.doc;
-          if(model._id in model_ids)
-          {
-            mapping.fromJS(model, model_ids[model._id]);
-          }
-          else
-          {
-            model_ids[model._id] = mapping.fromJS(model);
-            models.push(model_ids[model._id]);
-            sort_models();
-          }
-        }
-      }
+        };
+        client.get_project_models(model_params);
+      });
 
-
-    }
+    }};
+    client.get_projects(project_params);
   }
 
   var module = {};
@@ -126,13 +85,13 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI",
   {
     start();
     return projects;
-  }
+  };
 
   module.models = function()
   {
     start();
     return models;
-  }
+  };
 
   return module;
 });
