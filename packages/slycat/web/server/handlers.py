@@ -201,7 +201,6 @@ def get_projects(_=None):
     """
     accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
     cherrypy.response.headers["content-type"] = accept
-    cherrypy.log.error("mtype: %s ptype:" % (cherrypy.request.headers))
     if 'Content-Type' in cherrypy.request.headers:
         accept = cherrypy.request.headers.get('Content-Type')
     if accept == "text/html":
