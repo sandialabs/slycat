@@ -240,7 +240,6 @@ def register_slycat_plugin(context):
         time_steps = []
         variable = []
         var_dist = []
-        keep_dig_inds = []
         for i in range(len(dig_id_keys)):
 
             # row i for variables.meta table
@@ -260,8 +259,8 @@ def register_slycat_plugin(context):
             for j in range(len(test_inds)):
 
                 # get units from next set of test indices
-                units_j = wave_data[test_inds[j][i]].get("WF_Y_UNITS")
-                time_units_j = wave_data[test_inds[j][i]].get("WF_X_UNITS")
+                units_j = wave_data[test_inds[j][i]].get("WF_Y_UNITS", "Not Given")
+                time_units_j = wave_data[test_inds[j][i]].get("WF_X_UNITS", "Not Given")
 
                 # issue warning if units are not the same
                 if units_i != units_j:

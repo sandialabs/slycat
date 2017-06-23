@@ -1,9 +1,14 @@
-This directory contains example data for use with the dial-a-cluster
+﻿This directory contains example data for use with the dial-a-cluster
 application.  There is only one sample dataset, as follows:
 
-weather -- a multivariate time series dataset containing weather statistics
+weather-csv -- a multivariate time series dataset containing weather statistics
 over the year 2014 for the top 100 most populated cities in the US, taken
-from the weather underground web site.
+from the weather underground web site.  This folder contains the generic
+dial-a-cluster format described below.
+
+weather-pts -- the same data set in the "pts" format.  The "pts" format is an
+inferior internal format which only a lunatic would use.  It therefore remains
+undocumented.
 
 The files in the weather directory conform to the generic dial-a-cluster format.
 All the files are comma separated.
