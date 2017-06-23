@@ -424,6 +424,19 @@ def post_project_models(pid):
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
+def post_log():
+    """
+    send post json {"message":"message"} to log client errors onto the
+    client server
+    :return: 
+    """
+    message = require_json_parameter("message")
+    cherrypy.log.error("[CLIENT/JAVASCRIPT]:: %s" % (message))
+    return {"logged": True}
+
+
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
 def post_project_bookmarks(pid):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
