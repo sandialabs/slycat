@@ -51,10 +51,10 @@ before_install:
 install:
   - conda create --yes -n slycat coverage h5py mock nose paramiko Pillow pip pyparsing requests scipy
   - source activate slycat
-  - pip install --no-use-wheel behave cherrypy couchdb coveralls python-ldap pystache routes tornado-couchdb selenium pyvirtualdisplay
+  - pip install --no-use-wheel behave cherrypy couchdb coveralls python-ldap pystache routes selenium pyvirtualdisplay
   - python $TRAVIS_BUILD_DIR/web-server/slycat-couchdb-setup.py
   - sudo haproxy -f $TRAVIS_BUILD_DIR/travis-ci/proxy-server-config.conf -db &
-  - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
+#  - python $TRAVIS_BUILD_DIR/feed-server/slycat-feed-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
   - python $TRAVIS_BUILD_DIR/web-server/slycat-web-server.py --config $TRAVIS_BUILD_DIR/travis-ci/config.ini &
   - env | sort
 
