@@ -10,7 +10,7 @@ weather-pts -- the same data set in the "pts" format.  The "pts" format is an
 inferior internal format which only a lunatic would use.  It therefore remains
 undocumented.
 
-The files in the weather directory conform to the generic dial-a-cluster format.
+The files in the weather-csv directory conform to the generic dial-a-cluster format.
 All the files are comma separated.
 
 The central index file (selected using the wizard) is:
