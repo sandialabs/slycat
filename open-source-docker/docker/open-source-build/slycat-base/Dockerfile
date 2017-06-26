@@ -35,8 +35,8 @@ USER root
 RUN chown slycat:slycat /home/slycat/.condarc
 USER slycat
 RUN /home/slycat/install/conda/bin/conda update --yes conda
-RUN /home/slycat/install/conda/bin/conda install --yes h5py ipython paramiko pip Pillow scipy scikit-image tornado
-RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB cherrypy "pyparsing>=2.0.3" pystache routes tornado-couchdb ipyparallel pyzmq
+RUN /home/slycat/install/conda/bin/conda install --yes h5py ipython paramiko pip Pillow scipy scikit-image
+RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB cherrypy "pyparsing>=2.0.3" pystache routes ipyparallel pyzmq
 
 # checkout the slycat 
 RUN cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git
@@ -64,7 +64,7 @@ RUN cp /usr/local/etc/rc.d/couchdb /etc/rc.d/init.d/couchdb;
 
 RUN cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg_orig; cp /home/slycat/src/slycat/open-source-docker/deploy/common/proxy-server-config.conf /etc/haproxy/haproxy.cfg; cp /home/slycat/src/slycat/open-source-docker/deploy/common/rsyslog-config.conf /etc/rsyslog.d/haproxy.conf
 
-RUN ln -s /etc/slycat/slycat-web-server /etc/rc.d/init.d/slycat-web-server; ln -s /etc/slycat/slycat-feed-server /etc/rc.d/init.d/slycat-feed-server
+RUN ln -s /etc/slycat/slycat-web-server /etc/rc.d/init.d/slycat-web-server
 
 # Create a directory to contain HDF5 files stored by Slycat.
 RUN mkdir -p /var/lib/slycat/data-store
