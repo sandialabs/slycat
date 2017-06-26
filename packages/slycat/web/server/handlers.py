@@ -199,26 +199,28 @@ def get_projects(_=None):
     :param _: 
     :return: 
     """
-    accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
-    cherrypy.response.headers["content-type"] = accept
-    if 'Content-Type' in cherrypy.request.headers:
-        accept = cherrypy.request.headers.get('Content-Type')
-    if accept == "text/html":
-        context = {}
-        context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-        context["slycat-css-bundle"] = css_bundle()
-        context["slycat-js-bundle"] = js_bundle()
-        return slycat.web.server.template.render("slycat-projects.html", context)
+    context = {}
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
+    context["slycat-css-bundle"] = css_bundle()
+    context["slycat-js-bundle"] = js_bundle()
+    return slycat.web.server.template.render("slycat-projects.html", context)
 
-    if accept == "application/json":
-        database = slycat.web.server.database.couchdb.connect()
-        projects = [project for project in database.scan("slycat/projects") if
-                    slycat.web.server.authentication.is_project_reader(
-                        project) or slycat.web.server.authentication.is_project_writer(
-                        project) or slycat.web.server.authentication.is_project_administrator(
-                        project) or slycat.web.server.authentication.is_server_administrator()]
-        projects = sorted(projects, key=lambda x: x["created"], reverse=True)
-        return json.dumps({"revision": 0, "projects": projects})
+
+@cherrypy.tools.json_out(on=True)
+def get_projects_list(_=None):
+    """
+    returns either and array of projects or html for displaying the projects
+    :param _: 
+    :return: 
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    projects = [project for project in database.scan("slycat/projects") if
+                slycat.web.server.authentication.is_project_reader(
+                    project) or slycat.web.server.authentication.is_project_writer(
+                    project) or slycat.web.server.authentication.is_project_administrator(
+                    project) or slycat.web.server.authentication.is_server_administrator()]
+    projects = sorted(projects, key=lambda x: x["created"], reverse=True)
+    return {"revision": 0, "projects": projects}
 
 
 @cherrypy.tools.json_in(on=True)

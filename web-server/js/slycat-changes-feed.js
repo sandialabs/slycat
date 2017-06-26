@@ -40,7 +40,7 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI",
 
     var project_params = {
       success : function(results){
-      results = JSON.parse(results);
+      // results = JSON.parse(results);
       results.projects.forEach(function(project){
         if(project._id in project_ids)
         {

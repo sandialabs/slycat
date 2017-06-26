@@ -1339,7 +1339,7 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     $.ajax({
       contentType: 'application/json',
       type: 'GET',
-      url: server_root + 'projects',
+      url: server_root + 'projects_list',
       success: function(result) {
         if (params.success)
           params.success(result);
