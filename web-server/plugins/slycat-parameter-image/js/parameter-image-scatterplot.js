@@ -330,84 +330,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-    var filtered_indices = self._cloneArrayBuffer(indices);
 
-    var filtered_selection = selection.slice(0);
-    var length = indices.length;
-
-    // var in_array = 0;
-    // var in_array_start;
-    // var in_array_end;
-
-    // var rest = 0;
-    // var rest_start;
-    // var rest_end;
-
-    // // Remove hidden simulations and NaNs and empty strings
-    // console.time("Original");
-    // for(var i=length-1; i>=0; i--){
-    //   // in_array_start = performance.now();
-    //   // $.inArray seems to be just as fast as .indexOf
-    //   // var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-    //   var hidden = hidden_simulations.indexOf(indices[i]) > -1;
-    //   // in_array_end = performance.now();
-    //   // in_array += in_array_end - in_array_start;
-
-    //   // rest_start = performance.now();
-    //   if(hidden || !self._validateValue(x[i]) || !self._validateValue(y[i])) {
-    //     filtered_indices.splice(i, 1);
-    //     var selectionIndex = $.inArray(indices[i], filtered_selection);
-    //     if( selectionIndex > -1 ) {
-    //       filtered_selection.splice(selectionIndex, 1);
-    //     }
-    //   }
-    //   // rest_end = performance.now();
-    //   // rest += rest_end - rest_start;
-    // }
-    // console.timeEnd("Original");
-
-    // // console.log("in_array: " + in_array + 'milliseconds');
-    // // console.log("rest: " + rest + 'milliseconds');
-
-    // console.time("Filter");
-    // var new_filtered_indices = self.options.indices.filter((element, index, array) => {
-    //   return hidden_simulations.indexOf(element) < 0 
-    //     && self._validateValue(x[index]) 
-    //     && self._validateValue(y[index]);
-    // });
-    // var new_filtered_selection = self.options.selection.filter((element, index, array) => {
-    //   return hidden_simulations.indexOf(element) < 0 
-    //     && self._validateValue(x[index]) 
-    //     && self._validateValue(y[index]);
-    // });
-    // console.timeEnd("Filter");
-
-
-    console.time("Iterate over hidden");
-    var indices_index, selection_index;
-    for(var i=0; i<hidden_simulations.length; i++){
-      indices_index = filtered_indices.indexOf(hidden_simulations[i]);
-      if(indices_index > -1 || !self._validateValue(x[indices_index]) || !self._validateValue(y[indices_index]))
-      {
-        filtered_indices.splice(indices_index, 1);
-        selection_index = filtered_selection.indexOf(hidden_simulations[i]);
-        if(selection_index > -1)
-        {
-          filtered_selection.splice(selection_index, 1);
-        }
-      }
-    }
-    console.timeEnd("Iterate over hidden");
-
-    // console.log("filtered_indices: " + filtered_indices);
-    // console.log("new_filtered_indices: " + new_filtered_indices);
-    // console.log("new_new_filtered_indices: " + new_new_filtered_indices);
-    // console.log("filtered_selection: " + filtered_selection);
-    // console.log("new_filtered_selection: " + new_filtered_selection);
-    // console.log("new_new_filtered_selection: " + new_new_filtered_selection);
-
-    self.options.filtered_indices = filtered_indices;
-    self.options.filtered_selection = filtered_selection;
+    self.options.filtered_indices = _.difference(self._cloneArrayBuffer(indices).filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), hidden_simulations);
+    self.options.filtered_selection = _.difference(selection.filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), hidden_simulations);
   },
 
   // Filters source values by removing hidden_simulations
@@ -521,13 +446,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     //console.log("parameter_image.scatterplot._setOption()", key, value);
     self.options[key] = value;
 
-    if(key == "indices")
-    {
-      self._filterIndices();
-      self._schedule_update({update_indices:true, render_selection:true});
-    }
+    // This "indices" key never seems to be used, so Alex is commenting it out for now.
+    // if(key == "indices")
+    // {
+    //   self._filterIndices();
+    //   self._schedule_update({update_indices:true, render_selection:true});
+    // }
 
-    else if(key == "x_label")
+    // else if(key == "x_label")
+    if(key == "x_label")
     {
       self._schedule_update({update_x_label:true});
     }

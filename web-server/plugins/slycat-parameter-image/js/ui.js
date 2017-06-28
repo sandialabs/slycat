@@ -41,7 +41,6 @@ var images = null;
 var selected_simulations = null;
 var hidden_simulations = null;
 var manually_hidden_simulations = null;
-var filtered_simulations = null;
 var colormap = null;
 var colorscale = null;
 var auto_scale = null;
@@ -71,13 +70,7 @@ layout = $("#parameter-image-plus-layout").layout(
   },
   center:
   {
-    // resizeWhileDragging: false,
-    // onresize: function() {
-    //   $("#scatterplot").scatterplot("option", {
-    //     width: $("#scatterplot-pane").width(),
-    //     height: $("#scatterplot-pane").height()
-    //   });
-    // },
+
   },
   west:
   {
@@ -1450,29 +1443,22 @@ function filters_changed(newValue)
       {
         var filter_indices = data[0];
         var filter_status = data[1];
-        var new_filtered_simulations = [];
-
-        for(var i=0; i < filter_status.length; i++)
-        {
-          // Add if it's being filtered out
-          if(!filter_status[i])
-          {
-            new_filtered_simulations.push( filter_indices[i] );
-          }
-        }
-
-        new_filtered_simulations.sort();
-
-        filtered_simulations = new_filtered_simulations;
 
         // Clear hidden_simulations
         while(hidden_simulations.length > 0) {
           hidden_simulations.pop();
         }
 
-        for(var i=0; i<filtered_simulations.length; i++){
-          hidden_simulations.push(filtered_simulations[i]);
+        for(var i=0; i < filter_status.length; i++)
+        {
+          // Add if it's being filtered out
+          if(!filter_status[i])
+          {
+            hidden_simulations.push( filter_indices[i] );
+          }
         }
+
+        hidden_simulations.sort((a, b) => a - b);
 
         update_widgets_when_hidden_simulations_change();
       },
