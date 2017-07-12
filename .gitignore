@@ -23,7 +23,7 @@ web-client/images*
 web-server/config.ini
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio
-
+/data/test
 *.iml
 *.image
 *.hdf5

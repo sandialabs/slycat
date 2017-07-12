@@ -737,7 +737,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     var file_ext = file_name_split[file_name_split.length - 1];
 
                     // if no .csv extension then we quit
-                    if (file_ext != "csv") {
+                    if (false) {
                         csv_ext = false;
                         break;
                     } else {
@@ -763,7 +763,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     var file_ext = file_name_split[file_name_split.length - 1];
 
                     // if no .ini extension then we quit
-                    if (file_ext != "ini") {
+                    if (false) {
                         meta_ext = false;
                         break;
                     } else {
@@ -777,51 +777,51 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             }
 
             // check for matching file names between csv and meta files
-            var files_match = true;
-            if (csv_file_names.length == meta_file_names.length) {
-                for (i = 0; i < csv_file_names.length; i++) {
-                    if (meta_file_names.indexOf (csv_file_names[i]) == -1) {
-                        files_match = false;
-                        break;
-                    }
-                }
-            } else {
-                files_match = false;
-            }
+            // var files_match = true;
+            // if (csv_file_names.length == meta_file_names.length) {
+            //     for (i = 0; i < csv_file_names.length; i++) {
+            //         if (meta_file_names.indexOf (csv_file_names[i]) == -1) {
+            //             files_match = false;
+            //             break;
+            //         }
+            //     }
+            // } else {
+            //     files_match = false;
+            // }
 
-            // continue only if we have all csv and ini files and the files match
-            if (unordered_csv_files.length == 0) {
-
-                // no csv files
-                dialog.ajax_error("Please select CSV files.")("","","");
-
-            } else if (meta_files.length == 0) {
-
-                // no meta files
-                dialog.ajax_error("Please select META files.")("","","");
-
-            } else if (!csv_ext) {
-
-                // csv files have wrong extension
-                dialog.ajax_error("CSV file selection contains file without .csv extension.")("","","");
-
-            } else if (!meta_ext) {
-
-                // meta files have wrong extension
-                dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
-
-            } else if (unordered_csv_files.length != meta_files.length) {
-
-                // different number of files
-                dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
-
-            } else if (!files_match) {
-
-                // file names do not match
-                dialog.ajax_error("Make sure the CSV and META file names have the same names (except for extensions).")
-                    ("","","");
-
-            } else {
+            // // continue only if we have all csv and ini files and the files match
+            // if (unordered_csv_files.length == 0) {
+            //
+            //     // no csv files
+            //     dialog.ajax_error("Please select CSV files.")("","","");
+            //
+            // } else if (meta_files.length == 0) {
+            //
+            //     // no meta files
+            //     dialog.ajax_error("Please select META files.")("","","");
+            //
+            // } else if (!csv_ext) {
+            //
+            //     // csv files have wrong extension
+            //     dialog.ajax_error("CSV file selection contains file without .csv extension.")("","","");
+            //
+            // } else if (!meta_ext) {
+            //
+            //     // meta files have wrong extension
+            //     dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
+            //
+            // } else if (unordered_csv_files.length != meta_files.length) {
+            //
+            //     // different number of files
+            //     dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
+            //
+            // } else if (!files_match) {
+            //
+            //     // file names do not match
+            //     dialog.ajax_error("Make sure the CSV and META file names have the same names (except for extensions).")
+            //         ("","","");
+            //
+            // } else {
 
                 // everything is OK, reorder csv file order to match meta file order
                 csv_files = [];
@@ -831,9 +831,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                 // now go on to uploading and parsing
                 $('.pts-browser-continue').toggleClass("disabled", true);
-                upload_csv_files(0);
-            }
-
+                upload_zip_file();
+            // }
+            component.browser_csv_files.selection()
             // for debugging:
             // console.log('csv files:');
             // console.log(csv_files);
@@ -849,6 +849,35 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             // console.log(files_match);
 
         }
+    };
+    var upload_zip_file = function (file_num) {
+        console.log("uploading");
+        // upload requested .time file then call again with next file
+        var file = csv_files[0];
+        console.log("Uploading file: " + file.name);
+
+        var fileObject ={
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: file,
+            aids: ["dac-pts-csv", 0],
+            parser: "dac-zip-files-parser",
+            progress: component.browser_meta_files.progress,
+            progress_increment: 100/meta_files.length,
+            success: function(){
+                dialog.ajax_error(
+                    "worked" + file)
+                    ("","","");
+                    $('.pts-browser-continue').toggleClass("disabled", false);
+                },
+            error: function(){
+                dialog.ajax_error(
+                    "There was a problem parsing the file: " + file)
+                    ("","","");
+                    $('.pts-browser-continue').toggleClass("disabled", false);
+                }
+            };
+        fileUploader.uploadFile(fileObject);
     };
 
     // parse files and upload to slycat database
