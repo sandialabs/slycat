@@ -44,13 +44,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         progress: ko.observable(null),
     });
 
-    // PTS META/CSV file selections
-    component.browser_csv_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-    component.browser_meta_files = mapping.fromJS({
+    // PTS META/CSV zip file selection
+    component.browser_zip_file = mapping.fromJS({
         path:null,
         selection: [],
         progress: ko.observable(null),
@@ -62,9 +57,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.parser_time_files = ko.observable(null);
     component.parser_dist_files = ko.observable(null);
 
-    // DAC META/CSV parsers
-    component.parser_meta_files = ko.observable(null);
-    component.parser_csv_files = ko.observable(null);
+    // DAC META/CSV parser (now in zip file)
+    component.parser_zip_file = ko.observable(null);
 
     // other attributes to pass to wizard (for example headers in metadata)
     component.meta_attributes = mapping.fromJS([]);
@@ -724,225 +718,52 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         } else {
 
-            // list out csv file names, check for .csv extension
-            var unordered_csv_files = component.browser_csv_files.selection();
-            csv_file_names = [];
-            var csv_ext = true;
-            for (i = 0; i < unordered_csv_files.length; i++) {
+            // check for file selected
+            if (component.browser_zip_file.selection().length > 0) {
 
-                // parse file name for .csv extension
-                var file_name = unordered_csv_files[i].name;
-                var file_name_split = file_name.split(".");
-                if (file_name_split.length > 1) {
-                    var file_ext = file_name_split[file_name_split.length - 1];
+                // get file extension
+                var file = component.browser_zip_file.selection()[0];
+                var file_ext = file.name.split(".");
+                file_ext = file_ext[file_ext.length - 1];
 
-                    // if no .csv extension then we quit
-                    if (false) {
-                        csv_ext = false;
-                        break;
-                    } else {
-                        // remove .csv extension and keep file name
-                        csv_file_names.push(file_name.substring(0, file_name.length - 4));
-                    }
+                if (file_ext == 'zip') {
+
+                    // now go on to uploading and parsing
+                    $('.pts-browser-continue').toggleClass("disabled", true);
+
+                    console.log("Uploading file: " + file.name);
+
+                    var fileObject ={
+                        pid: component.project._id(),
+                        mid: component.model._id(),
+                        file: file,
+                        aids: ["dac-pts-zip", 0],
+                        parser: "dac-zip-file-parser",
+                        progress: component.browser_zip_file.progress,
+                        progress_increment: 100,
+                        success: function(){
+                            dialog.ajax_error(
+                                "worked" + file)
+                                ("","","");
+                                $('.pts-browser-continue').toggleClass("disabled", false);
+                            },
+                        error: function(){
+                            dialog.ajax_error(
+                                "There was a problem parsing the file: " + file)
+                                ("","","");
+                                $('.pts-browser-continue').toggleClass("disabled", false);
+                            }
+                    };
+                    fileUploader.uploadFile(fileObject);
+
                 } else {
-                    csv_ext = false;
-                    break;
+                    dialog.ajax_error("Please select a file with the .zip extension.")("","","");
                 }
+
+            } else {
+                dialog.ajax_error("Please select PTS CSV/META .zip file.")("","","");
             }
-
-            // list out meta file names, check for .ini extension (redundant code)
-            meta_files = component.browser_meta_files.selection();
-            meta_file_names = [];
-            var meta_ext = true;
-            for (i = 0; i < meta_files.length; i++) {
-
-                // parse file name for .csv extension
-                var file_name = meta_files[i].name;
-                var file_name_split = file_name.split(".");
-                if (file_name_split.length > 1) {
-                    var file_ext = file_name_split[file_name_split.length - 1];
-
-                    // if no .ini extension then we quit
-                    if (false) {
-                        meta_ext = false;
-                        break;
-                    } else {
-                        // remove .ini extension and keep file name
-                        meta_file_names.push(file_name.substring(0, file_name.length - 4));
-                    }
-                } else {
-                    meta_ext = false;
-                    break;
-                }
-            }
-
-            // check for matching file names between csv and meta files
-            // var files_match = true;
-            // if (csv_file_names.length == meta_file_names.length) {
-            //     for (i = 0; i < csv_file_names.length; i++) {
-            //         if (meta_file_names.indexOf (csv_file_names[i]) == -1) {
-            //             files_match = false;
-            //             break;
-            //         }
-            //     }
-            // } else {
-            //     files_match = false;
-            // }
-
-            // // continue only if we have all csv and ini files and the files match
-            // if (unordered_csv_files.length == 0) {
-            //
-            //     // no csv files
-            //     dialog.ajax_error("Please select CSV files.")("","","");
-            //
-            // } else if (meta_files.length == 0) {
-            //
-            //     // no meta files
-            //     dialog.ajax_error("Please select META files.")("","","");
-            //
-            // } else if (!csv_ext) {
-            //
-            //     // csv files have wrong extension
-            //     dialog.ajax_error("CSV file selection contains file without .csv extension.")("","","");
-            //
-            // } else if (!meta_ext) {
-            //
-            //     // meta files have wrong extension
-            //     dialog.ajax_error("META file selection contains file without .ini extension.")("","","");
-            //
-            // } else if (unordered_csv_files.length != meta_files.length) {
-            //
-            //     // different number of files
-            //     dialog.ajax_error("Make sure CSV and META file selections have the same number of files.")("","","");
-            //
-            // } else if (!files_match) {
-            //
-            //     // file names do not match
-            //     dialog.ajax_error("Make sure the CSV and META file names have the same names (except for extensions).")
-            //         ("","","");
-            //
-            // } else {
-
-                // everything is OK, reorder csv file order to match meta file order
-                csv_files = [];
-                for (i = 0; i < meta_file_names.length; i++) {
-                    csv_files.push (unordered_csv_files[csv_file_names.indexOf(meta_file_names[i])])
-                }
-
-                // now go on to uploading and parsing
-                $('.pts-browser-continue').toggleClass("disabled", true);
-                upload_zip_file();
-            // }
-            component.browser_csv_files.selection()
-            // for debugging:
-            // console.log('csv files:');
-            // console.log(csv_files);
-            // console.log(csv_file_names);
-            // console.log(csv_ext);
-
-            // console.log('meta files:');
-            // console.log(meta_files);
-            // console.log(meta_file_names);
-            // console.log(meta_ext);
-
-            // console.log('files match:');
-            // console.log(files_match);
-
         }
-    };
-    var upload_zip_file = function (file_num) {
-        console.log("uploading");
-        // upload requested .time file then call again with next file
-        var file = csv_files[0];
-        console.log("Uploading file: " + file.name);
-
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: ["dac-pts-csv", 0],
-            parser: "dac-zip-files-parser",
-            progress: component.browser_meta_files.progress,
-            progress_increment: 100/meta_files.length,
-            success: function(){
-                dialog.ajax_error(
-                    "worked" + file)
-                    ("","","");
-                    $('.pts-browser-continue').toggleClass("disabled", false);
-                },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the file: " + file)
-                    ("","","");
-                    $('.pts-browser-continue').toggleClass("disabled", false);
-                }
-            };
-        fileUploader.uploadFile(fileObject);
-    };
-
-    // parse files and upload to slycat database
-    var upload_csv_files = function (file_num) {
-
-        // upload requested .time file then call again with next file
-        var file = csv_files[file_num];
-        console.log("Uploading file: " + file.name);
-
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: ["dac-pts-csv", file_num.toString()],
-            parser: component.parser_csv_files(),
-            progress: component.browser_csv_files.progress,
-            progress_increment: 100/csv_files.length,
-            success: function(){
-                    if (file_num < (csv_files.length - 1)) {
-                        upload_csv_files(file_num + 1);
-                    } else {
-                        upload_meta_files(0);
-                    }
-                },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the file: " + csv_file_names[file_num])
-                    ("","","");
-                    $('.pts-browser-continue').toggleClass("disabled", false);
-                }
-            };
-        fileUploader.uploadFile(fileObject);
-    };
-
-    var upload_meta_files = function (file_num) {
-
-        // upload requested .time file then call again with next file
-        var file = meta_files[file_num];
-        console.log("Uploading file: " + file.name);
-
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: ["dac-pts-meta", file_num.toString()],
-            parser: component.parser_meta_files(),
-            progress: component.browser_meta_files.progress,
-            progress_increment: 100/meta_files.length,
-            success: function(){
-                    if (file_num < (meta_files.length - 1)) {
-                        upload_meta_files(file_num + 1);
-                    } else {
-                        $('.pts-browser-continue').toggleClass("disabled", false);
-                        csv_meta_upload = true;
-                        component.tab(3);
-                    }
-                },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the file: " + meta_file_names[file_num])
-                    ("","","");
-                    $('.pts-browser-continue').toggleClass("disabled", false);
-                }
-            };
-        fileUploader.uploadFile(fileObject);
     };
 
     // process button stops after processing finished

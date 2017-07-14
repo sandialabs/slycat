@@ -139,7 +139,7 @@ def parse(database, model, input, files, aids, **kwargs):
     model["db_creation_time"] = (end - start)
     database.save(model)
 
-
-def register_slycat_plugin(context):
-    context.register_parser("dac-csv-files-parser", "PTS CSV files", ["dac-csv-files"], parse)
+# deprecated (now using zip parser)
+#def register_slycat_plugin(context):
+#    context.register_parser("dac-csv-files-parser", "PTS CSV files", ["dac-csv-files"], parse)
 
