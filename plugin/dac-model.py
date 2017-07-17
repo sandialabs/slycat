@@ -37,11 +37,11 @@ def register_slycat_plugin(context):
         """
 
         # get csv file names and meta file names (same) from kwargs
-        meta_file_names = kwargs["0"]
+        #meta_file_names = kwargs["0"]
 
         # get parameters to eliminate likely unusable PTS files
-        CSV_MIN_SIZE = int(kwargs["1"])
-        MIN_NUM_DIG = int(kwargs["2"])
+        CSV_MIN_SIZE = int(kwargs["0"])
+        MIN_NUM_DIG = int(kwargs["1"])
 
         # Parsing the CSV/META files
         # --------------------------
@@ -51,7 +51,7 @@ def register_slycat_plugin(context):
         parse_error_log = []
 
         # upload meta file names
-        # meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
+        meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
 
         # make sure csv and meta files names are arrays
         # (note csv_file_names and meta_file_names should be same size arrays)

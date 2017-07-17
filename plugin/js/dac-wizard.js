@@ -742,10 +742,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         progress: component.browser_zip_file.progress,
                         progress_increment: 100,
                         success: function(){
-                            dialog.ajax_error(
-                                "worked" + file)
-                                ("","","");
+
                                 $('.pts-browser-continue').toggleClass("disabled", false);
+                                component.tab(3);
+
                             },
                         error: function(){
                             dialog.ajax_error(
@@ -810,7 +810,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 mid: component.model._id(),
                 type: "DAC",
                 command: "parse_pts_data",
-                parameters: [meta_file_names, csv_parm, dig_parm],
+                parameters: [csv_parm, dig_parm],
                 success: function (result)
                     {
 
