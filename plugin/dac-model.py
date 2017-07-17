@@ -43,6 +43,8 @@ def register_slycat_plugin(context):
         CSV_MIN_SIZE = int(kwargs["0"])
         MIN_NUM_DIG = int(kwargs["1"])
 
+        cherrypy.log.error("DAC: parse PTS started.")
+
         # Parsing the CSV/META files
         # --------------------------
 
@@ -57,6 +59,8 @@ def register_slycat_plugin(context):
         # (note csv_file_names and meta_file_names should be same size arrays)
         if not(isinstance(meta_file_names, list)):
             meta_file_names = [meta_file_names]
+
+        cherrypy.log.error("DAC: loading CSV/META data from database.")
 
         # get meta/csv data, store as arrays of dictionaries
         # (skip bad/empty files)
@@ -125,6 +129,8 @@ def register_slycat_plugin(context):
         # look for unique test-op ids (these are the rows in the metadata table)
         uniq_test_op, uniq_test_op_clusts = numpy.unique(test_op_id, return_inverse = True)
 
+        cherrypy.log.error("DAC: screening for consistent digitizer IDs.")
+
         # screen for consistent digitizer ids
         test_inds = []
         test_dig_ids = []
@@ -156,6 +162,8 @@ def register_slycat_plugin(context):
             for j in range(len(dig_ids_i)):
                 if not dig_ids_i[j] in dig_id_keys:
                     dig_id_keys.append(dig_ids_i[j])
+
+        cherrypy.log.error("DAC: getting intersecting IDs.")
 
         # screen for intersecting digitizer ids
         keep_dig_ids = dig_id_keys
@@ -191,6 +199,8 @@ def register_slycat_plugin(context):
             # replace in list of indices
             test_inds[i] = new_test_i_inds
             test_dig_ids[i] = new_dig_ids_i
+
+        cherrypy.log.error("DAC: constructing meta data table and variable/time matrices.")
 
         # construct meta data table and variable/time dictionaries
         meta_column_names = table_keys
@@ -233,6 +243,8 @@ def register_slycat_plugin(context):
                 meta_column_types[index] = "float64"
             except:
                 meta_columns[index] = numpy.array(meta_columns[index], dtype="string")
+
+        cherrypy.log.error ("DAC: constructing variables.meta table and data matrices.")
 
         # construct variables.meta table, variable/distance matrices, and time vectors
         meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
@@ -340,6 +352,8 @@ def register_slycat_plugin(context):
         # if no data then return failed result
         if len(meta_rows) == 0:
             return json.dumps(["No Data", "0", "\n".join(parse_error_log)])
+
+        cherrypy.log.error("DAC: pushing data to database.")
 
         # Push DAC variables to slycat server
         # -----------------------------------
