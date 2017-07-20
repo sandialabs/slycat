@@ -211,9 +211,14 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     meta_files = [meta_files[i] for i in meta_order]
 
     # extract and push CSV files to database
+    num_files = len(csv_files)
     for i in range(0, len(csv_files)):
 
         cherrypy.log.error("Parsing CSV file: %s" % csv_files[i])
+
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Progress", 100.0 * i / (2.0 * num_files)])
 
         # extract csv file from archive and parse
         attributes, dimensions, data = parse_csv(zip_ref.read(csv_files[i]))
@@ -229,6 +234,10 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
         cherrypy.log.error("Parsing META file: %s" % meta_files[i])
 
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Progress", 100.0 * (i + num_files) / (2.0 * num_files)])
+
         # extract csv file from archive and parse
         attributes, dimensions, data = parse_meta(zip_ref.read(meta_files[i]))
 
@@ -243,6 +252,9 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
     # push file names to database
     slycat.web.server.put_model_parameter(database, model, "dac-wizard-file-names", csv_no_ext)
+
+    # push final progress to database
+    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100.0])
 
 
 def register_slycat_plugin(context):

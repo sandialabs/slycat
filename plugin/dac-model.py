@@ -351,12 +351,15 @@ def register_slycat_plugin(context):
 
         # if no data then return failed result
         if len(meta_rows) == 0:
-            return json.dumps(["No Data", "0", "\n".join(parse_error_log)])
+            return json.dumps(["No Data", "0"])
 
         cherrypy.log.error("DAC: pushing data to database.")
 
         # Push DAC variables to slycat server
         # -----------------------------------
+
+        # push error log to database
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log", "\n".join(parse_error_log))
 
         # create meta data table on server
         slycat.web.server.put_model_arrayset(database, model, "dac-datapoints-meta")
@@ -431,7 +434,7 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_arrayset_data(database, model, "dac-var-dist", "%s/0/..." % i, [dist_mat])
 
         # returns parsing problems for display to user
-        return json.dumps(["Success", str(num_vars), "\n".join(parse_error_log)])
+        return json.dumps(["Success", str(num_vars)])
 
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
