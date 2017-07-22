@@ -108,17 +108,31 @@ S. Martin
           <input class="form-control" type="number" min="2" data-bind="value: csv_min_size">
         </div>
 
-        <div style="margin-top: 40px; margin-left: 15px">
+        <div style="margin-top: 20px; margin-left: 15px">
           <label>Minimum number of digitizers in a test:</label>
           <input class="form-control" type="number" min="3" data-bind="value: min_num_dig">
         </div>
 
-        <div style="margin-top: 40px; margin-left: 15px">
+        <div style="margin-top: 20px; margin-left: 15px">
           <label>Process Results:</label>
           <textarea class="form-control" rows="15" readonly id="dac-wizard-process-results">
           </textarea>
         </div>
 
+        <div style="margin-top: 20px; margin-left: 15px">
+            <div class="progress"> <!-- data-bind="visible: parse_progress() != undefined && parse_progress() > 0"-->
+                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    data-bind="
+                        attr: {'aria-valuenow' : parse_progress},
+                        style: {'width' : parse_progress() + '%'},
+                        text: parse_progress_status,
+                    ">
+                    Parsing...
+                </div>
+            </div>
+        </div>
 
     </div>
 
