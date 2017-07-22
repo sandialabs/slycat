@@ -49,7 +49,7 @@ def register_slycat_plugin(context):
         # --------------------------
 
         # signal polling start
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", 0])
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", 1])
 
         # keep a parsing error log to help user correct input data
         # (each array entry is a string)
@@ -129,11 +129,19 @@ def register_slycat_plugin(context):
             # record file name origin
             file_name.append(meta_file_names[i])
 
+            # update read progress
+            progress = (i+1.0)/len(meta_file_names)*19.0 + 1.0
+            if progress <= 12:
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", progress])
+            else:
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                      ["Parsing ...", progress])
+
         # look for unique test-op ids (these are the rows in the metadata table)
         uniq_test_op, uniq_test_op_clusts = numpy.unique(test_op_id, return_inverse = True)
 
         # loaded CSV/META data (5%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", 5])
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 20])
 
         cherrypy.log.error("DAC: screening for consistent digitizer IDs.")
 
@@ -209,7 +217,7 @@ def register_slycat_plugin(context):
         cherrypy.log.error("DAC: constructing meta data table and variable/time matrices.")
 
         # screened CSV/META data (10%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Parsing ...", 10])
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 25])
 
         # construct meta data table and variable/time dictionaries
         meta_column_names = table_keys
@@ -331,7 +339,7 @@ def register_slycat_plugin(context):
 
                 # distance computations progress
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Computing ...", (j+1)/len(test_inds) * 20 + 10])
+                                                      ["Computing ...", (j+1.0)/len(test_inds) * 15.0 + 25.0])
 
                 # create pairwise distance matrix
                 dist_i = spatial.distance.pdist(variable_i)
@@ -377,7 +385,7 @@ def register_slycat_plugin(context):
         # -----------------------------------
 
         # starting uploads (30%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Uploading ...", 30])
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Uploading ...", 40])
 
         # push error log to database
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
@@ -424,7 +432,7 @@ def register_slycat_plugin(context):
 
             # progress bar update
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Uploading ...", (i+1.0)/(3.0*num_vars) * 70.0/3.0 + 30.0])
+                                                  ["Uploading ...", (i+1.0)/num_vars * 20.0 + 40.0])
 
         # create variable matrices on server
         slycat.web.server.put_model_arrayset(database, model, "dac-var-data")
@@ -444,7 +452,7 @@ def register_slycat_plugin(context):
 
             # progress bar update
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Uploading ...", (i+1.0)/(3.0*num_vars) * 70.0/3 + 30.0 + 70.0/3.0])
+                                                  ["Uploading ...", (i+1.0)/num_vars * 20.0 + 60.0])
 
         # create distance matrices on server
         slycat.web.server.put_model_arrayset(database, model, "dac-var-dist")
@@ -465,7 +473,7 @@ def register_slycat_plugin(context):
 
             # progress bar update
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Uploading ...", (i+1.0)/(3.0*num_vars) * 70.0/3.0 + 30.0 + 2.0*70.0/3.0])
+                                                  ["Uploading ...", (i+1.0)/num_vars * 20.0 + 80.0])
 
         # done
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", num_vars])
