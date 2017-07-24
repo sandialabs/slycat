@@ -17,7 +17,6 @@ def register_slycat_plugin(context):
     from scipy import spatial
     import imp
     import cherrypy
-    import slycat.web.server.hdf5
     import threading
 
     def finish(database, model):
