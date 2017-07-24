@@ -1214,18 +1214,25 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 value: ["", 0],
                 success: function () {
 
+                    // start polling
+                    poll_pts_parse();
+
                     // call server to transform data
                     client.get_model_command({
                         mid: component.model._id(),
                         type: "DAC",
                         command: "parse_pts_data",
-                        parameters: [csv_parm, dig_parm]
+                        parameters: [csv_parm, dig_parm],
 
                         // note: success and errors are handled by polling
+                        error: function () {
+                            console.log("dac parse-pts-data failed.");
+                        },
+                        success: function (result) {
+                            console.log("dac parse-pts-data finished");
+                            console.log(result);
+                        }
                     })
-
-                    // start polling
-                    poll_pts_parse();
 
                 },
                 error: function () {
@@ -1238,7 +1245,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // this function polls the "dac-poll-progress" variable while
     // the server is parsing the pts data
-    var poll_pts_parse = function () {
+    function poll_pts_parse () {
 
         console.log ("Polling PTS parser.");
 
@@ -1251,10 +1258,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // polling interval is 1 second
         var interval = ONE_SECOND;
-
-        // parsing goes from 0% to 100%
-        var progress_start = 0;
-        var progress_end = 100;
 
         // poll database for artifact "dac-poll-progress"
         (function pts_poll() {
@@ -1272,7 +1275,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
 		                // done uploading to database
                         component.parse_progress(100);
-                        component.parse_progress_status('')
+                        component.parse_progress_status('');
 
                         // when done uploading, we pass number vars in second
                         // position of the polling progress indicator
@@ -1318,7 +1321,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         component.parse_progress_status(result[0]);
                         component.parse_progress(result[1]);
 
-		                // reset timout and continue
+		                // reset timeout and continue
                         endTime = Number(new Date()) + ONE_MINUTE;
                         window.setTimeout(pts_poll, interval);
 		            }
@@ -1327,6 +1330,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                     // set progress bar to show we are still trying to parse
                     component.parse_progress(result[1]);
+                    console.log("error");
 
                     if (Number(new Date()) < endTime) {
 

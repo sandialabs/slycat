@@ -17,6 +17,8 @@ def register_slycat_plugin(context):
     from scipy import spatial
     import imp
     import cherrypy
+    import slycat.web.server.hdf5
+    import threading
 
     def finish(database, model):
         slycat.web.server.update_model(database, model,
@@ -28,7 +30,15 @@ def register_slycat_plugin(context):
         return open(os.path.join(os.path.dirname(__file__), 
                     "dac-ui.html"), "r").read()
 
+    # parse pts starts a thread to avoid the gateway timeout error
     def parse_pts_data (database, model, verb, type, command, **kwargs):
+
+        thread = threading.Thread(target=parse_pts_thread, args=(database, model, verb, type, command, kwargs))
+        thread.start()
+
+        return json.dumps(["Success", 1])
+
+    def parse_pts_thread (database, model, verb, type, command, kwargs):
         """
         Reads in the previously uploaded CSV/META data from the server
         and processes it/combines it into data in the DAC generic format,
@@ -37,7 +47,9 @@ def register_slycat_plugin(context):
         """
 
         # get csv file names and meta file names (same) from kwargs
-        #meta_file_names = kwargs["0"]
+        # meta_file_names = kwargs["0"]
+
+        cherrypy.log.error("DAC: parse PTS started.")
 
         # get parameters to eliminate likely unusable PTS files
         CSV_MIN_SIZE = int(kwargs["0"])
@@ -65,6 +77,12 @@ def register_slycat_plugin(context):
 
         cherrypy.log.error("DAC: loading CSV/META data from database.")
 
+        # load all of the csv data at once
+        # csv_data_all = slycat.web.server.get_model_arrayset_data(database, model, "dac-pts-csv", ".../.../...")
+
+        # load all of the meta data at once
+        # meta_data_all = slycat.web.server.get_model_arrayset_data(database, model, "dac-pts-meta", ".../.../...")
+
         # get meta/csv data, store as arrays of dictionaries
         # (skip bad/empty files)
         wave_data = []
@@ -79,6 +97,7 @@ def register_slycat_plugin(context):
             # get csv data
             csv_data_i = slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-pts-csv", "%s/.../..." % i)
+            # csv_data_i = csv_data_all[(i*4):((i+1)*4)]
 
             # check for an empty csv file
             if len(csv_data_i[0]) < CSV_MIN_SIZE:
@@ -90,6 +109,7 @@ def register_slycat_plugin(context):
             meta_data_i = slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-pts-meta", "%s/0/..." % i)
             meta_data_i = meta_data_i[0]
+            # meta_data_i = meta_data_all[i]
 
             # make dictionary for wave, table data
             meta_dict_i = dict(meta_data_i)
@@ -131,16 +151,17 @@ def register_slycat_plugin(context):
 
             # update read progress
             progress = (i+1.0)/len(meta_file_names)*19.0 + 1.0
+            cherrypy.log.error(str(progress))
             if progress <= 12:
-                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", progress])
+               slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", progress])
             else:
-                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Parsing ...", progress])
+               slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                     ["Parsing ...", progress])
 
         # look for unique test-op ids (these are the rows in the metadata table)
         uniq_test_op, uniq_test_op_clusts = numpy.unique(test_op_id, return_inverse = True)
 
-        # loaded CSV/META data (5%)
+        # loaded CSV/META data (20%)
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 20])
 
         cherrypy.log.error("DAC: screening for consistent digitizer IDs.")
