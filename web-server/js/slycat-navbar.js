@@ -4,8 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping", "slycat-server-ispasswordrequired"], 
-  function(server_root, client, changes_feed, dialog, model_names, ko, mapping, ispasswordrequired)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping", "slycat-server-ispasswordrequired"], 
+  function(server_root, client, dialog, model_names, ko, mapping, ispasswordrequired)
 {
   ko.components.register("slycat-navbar",
   {
