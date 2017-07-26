@@ -91,7 +91,6 @@ def js_bundle():
                                                                                   "js/slycat-model-controls.js",
                                                                                   "js/slycat-parser-controls.js",
                                                                                   "js/slycat-model-results.js",
-                                                                                  "js/slycat-changes-feed.js",
                                                                                   "js/slycat-model-names.js",
                                                                                   "js/slycat-navbar.js",
                                                                                   "js/slycat-local-browser.js",
