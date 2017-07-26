@@ -47,32 +47,6 @@
           </li>
         </ul>
 
-        <!-- Model Status -->
-        <ul class="nav navbar-nav navbar-right model-status">
-          <li class="dropdown" data-bind="visible:open_models().length">
-            <a class="dropdown-toggle" data-toggle="dropdown"><span class="badge"><span data-bind="text:running_models().length"></span> / <span data-bind="text:finished_models().length"></span></span><span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <!-- ko foreach: finished_models -->
-                <li>
-                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()},popover:{trigger:'hover',content:$data.message()}">
-                    <button type="button" class="btn btn-default btn-xs" data-bind="click:$parent.close_model,clickBubble:false,css:{'btn-success':$data.result && $data.result()==='succeeded','btn-danger':$data.result && $data.result()!=='succeeded'}"><span class="fa fa-check"></span></button>
-                    <span data-bind="text:name"></span>
-                  </a>
-                </li>
-              <!-- /ko -->
-              <li class="divider" data-bind="visible:finished_models().length && running_models().length"></li>
-              <!-- ko foreach: running_models -->
-                <li>
-                  <a data-bind="attr:{href:$parent.server_root + 'models/' + $data._id()}">
-                    <span data-bind="text:name"></span>
-                  </a>
-                  <div style="height:10px; margin: 0 10px" data-bind="progress:{value:progress_percent,type:progress_type}">
-                </li>
-              <!-- /ko -->
-            </ul>
-          </li>
-        </ul>
-
         <!-- Menus -->
         <div class="nav navbar-menus navbar-nav navbar-right btn-group">
           <div class="btn-group" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">

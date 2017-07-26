@@ -254,7 +254,7 @@ def get_project(pid):
     """
 
     # Return the client's preferred media-type (from the given Content-Types)
-    accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
+    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
     cherrypy.response.headers["content-type"] = accept
 
     database = slycat.web.server.database.couchdb.connect()

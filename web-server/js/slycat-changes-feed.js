@@ -37,7 +37,6 @@ define("slycat-changes-feed", ["slycat-server-root", "slycat-web-client", "URI",
 
   function start()
   {
-
     var project_params = {
       success : function(results){
       // results = JSON.parse(results);
