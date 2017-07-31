@@ -3,7 +3,12 @@ import logo from './media/slycat-brand.png';
 import './App.css';
 import Projects from './components/projects'
 import Navigation from './components/navigation'
+import ReactDOM from 'react-dom';
 
+
+
+
+  
 class App extends Component  {
   render() {
     return (
@@ -12,15 +17,18 @@ class App extends Component  {
         <div className="App-header">
           <h2></h2>
           <img src={logo} className="App-logo" alt="logo" />
-          <h2><Projects value="APP hello" /></h2>
-        </div>
+          <h2><Projects value="APP hello" /></h2>        
+          </div>
         <p className="App-intro">
-          To get started, edit <code>src/App.js</code>
+          To get started, edit <code> src/App.js </code>
            and save to reload.
+
         </p>
+
       </div>
     );
   }
 }
-
 export default App;
+//(505) 845-0495
+ 

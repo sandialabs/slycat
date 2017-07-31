@@ -1,0 +1,288 @@
+<!-- X3D Viewer   -->
+<meta charset="utf-8"/>
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html>
+<html>
+   <head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <!-- Dependencies -->
+  <script type='text/javascript' src='https://www.x3dom.org/download/x3dom.js'> </script>
+  <link rel='stylesheet' type='text/css' href='https://www.x3dom.org/download/x3dom.css'></link>
+  <link rel="stylesheet" type="text/css" href="styles.css"> </link>
+   </head>
+   <!-- Set Background color to white -->
+   <body bgcolor="#FFFFFF">
+  <div style="background-color:#FFFFFF";>
+    <div>
+        <!-- Menu bar -->
+          <button class="btn2" onclick="reset()"> Reset View </button>
+        <button class="btn2" onclick="Save()">Save View </button>
+          &nbsp; &nbsp; # of Viewers
+          <select class="select1" name=" number of viewers" id="viewers" size="1" onchange="changeViewers()">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+          </select>
+
+    All
+    <input type="checkbox" onchange="All(this)">
+    </div>
+    </div>
+  <div class="parent"">
+    <div id="viewerDiv" style="background-color: #52576e;" class="wide">
+    </div>
+    <div class="middle">
+      <img border="0" src="canColor.png" alt="Mountain View" style="width:150px;height:600px;">
+    </div>
+    <div id="menubar" class="narrow">
+    </div>
+  </div>
+  <script>
+        /*
+          Json array to load x3d file. The idea was to load this externally so that files are loaded dynamically. I was getting a cross reference error so I temporarily hard coded it
+        */
+        var arr = [
+                  {
+                    "file": "crush.x3d", "Desc": "Can", "picId": "canId", "btnId": "btn4"
+                  }
+                  ];
+
+        var camPos;
+        var camRot;
+        var viewers;
+        var pos;
+        var rot; 
+        //get variables from URL
+         pos = decodeURI(getQueryVariable("position"));
+          rot = decodeURI(getQueryVariable("orientation"));
+          viewers = decodeURI(getQueryVariable("viewers"));
+          var r = decodeURI(getQueryVariable("orientation"));
+            //set parameters depending on the number of viewers
+            if(viewers)
+            {
+              var yourSelect = document.getElementById( "viewers" );
+              yourSelect.selectedIndex = viewers - 1;
+              if(viewers > 4)
+              {
+                viewers = 4;
+              }
+              if(viewers < 0)
+                viewers = 0;
+              var height;
+              var width;
+              if(viewers == 1)
+              {
+                height = "600px";
+                width = "1100px";
+              }
+              else if(viewers == 2)
+              {
+                height = "600px";
+                width = "550px";
+              }
+              else if(viewers > 2)
+              {
+                height = "300px";
+                width = "550px";
+              }
+              if(pos && rot)
+              {
+
+              }
+              else
+              {
+                pos = '0 0 0';
+                rot = '0 0 0 0';
+              }
+              var out="";
+              var i = 0;
+              //Create x3d viewers depending on the number of viewers
+              for(i = 0; i < viewers; i++)
+              {
+                out += "<div> <x3d border='0' id='Dom" + (i + 1) + "' width='" + width + "' height='" + height + "'> <scene> <Viewpoint id='view" + (i + 1) + "' position='" + pos + "' orientation='" + rot + "' description='camera' ></Viewpoint><Transform><group id='pics" + (i + 1) + "'> <inline" 
+                if(i == viewers - 1)
+                  out += " onload='setParts()'" 
+                out += " render='true'  nameSpaceName='" + arr[0].picId + (i + 1) + "' id='" + arr[0].picId + (i + 1) + "' mapDEFToID='true' url='" + arr[0].file + "'> </inline></group></Transform></scene></x3d> </div>"
+                document.getElementById("viewerDiv").innerHTML = out;
+              }
+          console.log("Start");
+          console.log(document.getElementsByTagName('MetadataString'));
+            }
+        //Update the position of the viewers
+        function update(evt)
+        {
+          if (evt)
+          {
+            var pos1 = evt.position;
+            var rot1 = evt.orientation;
+            var mat = evt.matrix;
+            camPos = pos1.x.toFixed(4)+' '+pos1.y.toFixed(4)+' '+pos1.z.toFixed(4);
+            camRot = rot1[0].x.toFixed(4)+' '+rot1[0].y.toFixed(4)+' '+rot1[0].z.toFixed(4)+' '+rot1[1].toFixed(4);
+
+            var i = 0;
+            var viewid = "";
+            for(i = 0; i < viewers; i++)
+            {
+                viewid = "view" + (i + 1);
+                if(camPos != '0.0000 0.0000 0.0000' && camRot != '0.0000 0.0000 0.0000 0.0000')
+                {
+                  document.getElementById(viewid).setAttribute("position", camPos);
+                  document.getElementById(viewid).setAttribute("orientation", camRot);
+
+                }
+            }
+            console.log("POS   " + camPos + "          ROT" + camRot);
+
+          }
+        }
+        document.onload = function()
+        {
+          var i = 0;
+          var viewid ="";
+          for(i = 0; i < viewers; i++)
+          {
+            viewid = "view" + (i + 1);
+            document.getElementById(viewid).addEventListener('viewpointChanged', update, false);
+          }
+        
+          console.log(decodeURI(window.location.href));
+          console.log("Document");
+          console.log(document.getElementsByTagName('MetadataString'));
+          
+           update(null);
+        }
+        //function to pull any variable value from URL
+        function getQueryVariable(variable)
+        {
+              var query = window.location.search.substring(1);
+              console.log(query);
+              var vars = query.split("&");
+              for (var i=0;i<vars.length;i++)
+              {
+                      var pair = vars[i].split("=");
+                      if(pair[0] == variable){
+                        console.log(pair[1]);
+                        return pair[1];}
+              }
+              return(false);
+        }
+        //Saves current viewpoint
+        function Save()
+        {
+          //window.location.href = "file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/t.html?position="+camPos+"&rotation="+camRot;
+          var view = document.getElementById("view1");
+          var viewpos = view.getAttribute("position");
+          var viewrot = view.getAttribute("orientation");
+          var pathArray = location.href.split( '/' );
+          var protocol = pathArray[0];
+          var host = pathArray[2];
+          var url = protocol + '//' + host;
+          console.log(url);
+          window.location.href = url +"/t.html?viewers="+viewers+"&position="+viewpos+"&orientation=" + viewrot;
+          console.log(window.location.href);
+        }
+        //Resets View
+        function reset()
+        {
+          var viewid ="";
+          for(var i = 0; i < viewers; i++)
+          {
+            viewid = "view" + (i + 1);
+            document.getElementById(viewid).setAttribute("position", pos);
+            document.getElementById(viewid).setAttribute("orientation", rot);
+         }
+        }
+        function changeViewers()
+        {
+          console.log(document.getElementById("Dom1"));
+          var yourSelect = document.getElementById( "viewers" );
+          var viewnum = yourSelect.options[ yourSelect.selectedIndex ].value;
+          var pathArray = location.href.split( '/' );
+          var protocol = pathArray[0];
+          var host = pathArray[2];
+          var url = protocol + '//' + host;
+          console.log(url);
+          window.location.href = url +"/t.html?viewers="+viewnum+"&position="+pos+"&orientation=" + rot;
+          //"file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/t.html?position="+camPos+"&rotation="+camRot;
+        }
+        //Assign buttons for each part of X3D file
+        function setParts()
+        {
+          var parts = document.getElementsByTagName('MetadataString');
+          var out = "";
+          var part ="";
+          for(var i = 0; i < parts.length / viewers; i++)
+          {
+            part = document.getElementsByTagName('MetadataString')[i].getAttribute("value").replace(/['"]+/g, '')
+            out += "<div> <div> " + part + " <input id=" + (i + 1) + " type='checkbox' onchange=togglePart(this)> </div> </div><br>"
+            console.log(out);
+          }
+
+          document.getElementById("menubar").innerHTML = document.getElementById("menubar").innerHTML + out;
+          console.log("Window");
+
+          console.log(document.getElementsByTagName('MetadataString')[0].getAttribute("value"));
+          console.log(document.getElementsByTagName('MetadataString')[0].nextElementSibling);
+
+
+          for(i = 0; document.getElementsByTagName('MetadataString').length; i++)
+          {
+            viewid = i + 1;
+            document.getElementById(viewid).checked = true;
+          }
+        }
+        //
+        function togglePart(checkelem)
+        {
+          if(checkelem.checked)
+          {
+            var i = 0;
+            var domid ="";
+            for(i = 0; i < viewers; i++)
+            {
+        
+              console.log(document.getElementsByTagName('MetadataString')[checkelem.getAttribute("id") - 1].nextElementSibling.getAttribute("render"));
+              document.getElementsByTagName('MetadataString')[(checkelem.getAttribute("id") - 1) + (i * (document.getElementsByTagName('MetadataString').length / viewers))].nextElementSibling.setAttribute("render", "true");
+            }
+          }
+          else
+          {
+            var i = 0;
+            var domid ="";
+            for(i = 0; i < viewers; i++)
+            {
+              document.getElementsByTagName('MetadataString')[(checkelem.getAttribute("id") - 1) + (i * (document.getElementsByTagName('MetadataString').length / viewers))].nextElementSibling.setAttribute("render", "false");
+            }
+          }
+        }
+        function All(elem)
+        {
+          if(elem.checked)
+          {
+            for(var i = 0; i < viewers; i++)
+            {
+              for(var j = 0; j < document.getElementsByTagName('MetadataString').length / viewers; j++)
+              {
+                var viewid = j + 1;
+                document.getElementById(viewid).checked = true;
+                document.getElementsByTagName('MetadataString')[j + (i * (document.getElementsByTagName('MetadataString').length / viewers))].nextElementSibling.setAttribute("render", "true");
+              }
+            }
+          }
+          else
+          {
+            for(var i = 0; i < viewers; i++)
+            {
+              for(var j = 0; j < document.getElementsByTagName('MetadataString').length / viewers; j++)
+              {
+                var viewid = j + 1;
+                document.getElementById(viewid).checked = false;
+                document.getElementsByTagName('MetadataString')[j + (i * (document.getElementsByTagName('MetadataString').length / viewers))].nextElementSibling.setAttribute("render", "false");
+              }
+            }
+          }
+        }
+  </script>
+   </body>
+</html>
