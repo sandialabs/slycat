@@ -27,3 +27,42 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+.Btn 
+{
+        align-content: center;
+        display: inline-block;
+        padding: 15px 25px;
+        font-size: 24px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #FBC714;
+        background-color: #000000;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 9px #999;
+}
+.Btn:hover 
+{
+  background-color: #FBC714;
+  color: #fff;
+}
+.Btn:active 
+{
+background-color: #FBC714;
+  color: #fff;
+box-shadow: 0 5px #666;
+transform: translateY(4px);
+}
+.scrollable
+{
+  height:300px;
+  overflow: scroll;
+  border: 1px solid;
+  padding: 10px;
+}
+div
+{
+  display:block;
+}

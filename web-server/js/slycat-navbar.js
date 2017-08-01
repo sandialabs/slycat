@@ -4,8 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-changes-feed", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping", "slycat-server-ispasswordrequired"], 
-  function(server_root, client, changes_feed, dialog, model_names, ko, mapping, ispasswordrequired)
+define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping", "slycat-server-ispasswordrequired"], 
+  function(server_root, client, dialog, model_names, ko, mapping, ispasswordrequired)
 {
   ko.components.register("slycat-navbar",
   {
@@ -47,21 +47,32 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
 
       // Keep track of the current project, if any.
       component.project_id = ko.observable(params.project_id);
+      component.project = ko.observableArray();
+      component.project_models = mapping.fromJS([]);
 
-      component.project = changes_feed.projects().filter(function(project)
+      // Retrieve current project, if any.
+      if(component.project_id())
       {
-        return project._id() == component.project_id();
-      }).map(function(project)
-      {
-        return {
-          _id: project._id,
-          name: project.name,
-          description: project.description,
-          creator: project.creator,
-          created: project.created,
-          acl: project.acl
-        };
-      });
+        client.get_project({
+          pid: component.project_id(),
+          success: function(result) {
+            component.project.push(mapping.fromJS(result));
+          },
+          error: function(request, status, reason_phrase) {
+            console.log("Unable to retrieve project.");
+          }
+        });
+
+        client.get_project_models({
+          pid: component.project_id(),
+          success: function(result) {
+            mapping.fromJS(result, component.project_models);
+          },
+          error: function(request, status, reason_phrase) {
+            console.log("Unable to retrieve project models.");
+          }
+        });
+      }
 
       component.relation = ko.pureComputed(function(){
         if(component.project()[0])
@@ -81,14 +92,22 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       });
 
       // Keep track of the current model, if any.
-      component.models = changes_feed.models();
-
       component.model_id = ko.observable(params.model_id);
+      component.model = ko.observableArray();
 
-      component.model = component.models.filter(function(model)
+      // Retrieve current model, if any.
+      if(component.model_id())
       {
-        return model._id() == component.model_id();
-      });
+        client.get_model({
+          mid: component.model_id(),
+          success: function(result) {
+            component.model.push(mapping.fromJS(result));
+          },
+          error: function(request, status, reason_phrase) {
+            console.log("Unable to retrieve model.");
+          }
+        });
+      }
 
       component.navbar_popover = ko.pureComputed(function(){
         var projectInfo = "";
@@ -173,34 +192,6 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
       }).map(function(model)
       {
         component.close_model(model);
-      });
-
-      // Keep track of running models
-      component.open_models = component.models.filter(function(model)
-      {
-        return model.state() && model.state() != "closed";
-      });
-      component.finished_models = component.open_models.filter(function(model)
-      {
-        return model.state() == "finished";
-      });
-      component.running_models = component.open_models.filter(function(model)
-      {
-        return model.state() != "finished";
-      }).map(function(model)
-      {
-        return  {
-          _id: model._id,
-          name: model.name,
-          progress_percent: ko.pureComputed(function()
-          {
-            return model.progress() * 100;
-          }),
-          progress_type: ko.pureComputed(function()
-          {
-            return model.state() === "running" ? "success" : null;
-          }),
-        }
       });
 
       // Get the set of available wizards.
@@ -347,7 +338,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
           return reference.bid() && reference.mid() && reference.mid() != component.model_id();
       }).map(function(reference)
       {
-        var model = ko.utils.arrayFirst(component.models(), function(model)
+        var model = ko.utils.arrayFirst(component.project_models(), function(model)
         {
           return model._id() == reference.mid();
         });
@@ -371,7 +362,7 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-chan
           return reference.bid() && reference.mid() && reference.mid() == component.model_id();
       }).map(function(reference)
       {
-        var model = ko.utils.arrayFirst(component.models(), function(model)
+        var model = ko.utils.arrayFirst(component.project_models(), function(model)
         {
           return model._id() == reference.mid();
         });

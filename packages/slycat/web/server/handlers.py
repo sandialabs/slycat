@@ -91,7 +91,6 @@ def js_bundle():
                                                                                   "js/slycat-model-controls.js",
                                                                                   "js/slycat-parser-controls.js",
                                                                                   "js/slycat-model-results.js",
-                                                                                  "js/slycat-changes-feed.js",
                                                                                   "js/slycat-model-names.js",
                                                                                   "js/slycat-navbar.js",
                                                                                   "js/slycat-local-browser.js",
@@ -254,7 +253,7 @@ def get_project(pid):
     """
 
     # Return the client's preferred media-type (from the given Content-Types)
-    accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
+    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
     cherrypy.response.headers["content-type"] = accept
 
     database = slycat.web.server.database.couchdb.connect()
