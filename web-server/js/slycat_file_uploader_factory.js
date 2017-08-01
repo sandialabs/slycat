@@ -28,26 +28,26 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
   module.uploadFile = function (fileObject)
   {
     if(fileObject.hostname && fileObject.paths){
-      console.log("creating remote file upload session");
+      // console.log("creating remote file upload session");
       client.post_uploads({
         mid: fileObject.mid,
         input: true,
         parser: fileObject.parser,
         aids: fileObject.aids,
         success: function (uid) {
-          console.log("Upload session created.");
+          // console.log("Upload session created.");
           uploadRemoteFile(fileObject.pid, fileObject.mid, uid, fileObject.hostname, fileObject.paths, fileObject);
         }
       });
     }else {
-      console.log("creating file upload session");
+      // console.log("creating file upload session");
       client.post_uploads({
         mid: fileObject.mid,
         input: true,
         parser: fileObject.parser,
         aids: fileObject.aids,
         success: function (uid) {
-          console.log("Upload session created.");
+          // console.log("Upload session created.");
           uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject);
         }
       });
@@ -71,7 +71,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
    */
   function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject){
     // Upload the whole file since it is over ssh.
-    console.log("Uploading part whole file");
+    // console.log("Uploading part whole file");
     
     if(fileObject.progress)
     {
@@ -91,7 +91,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       hostname: hostname,
       success: function()
       {
-        console.log("File uploaded.");
+        // console.log("File uploaded.");
         finishUpload(pid, mid, uid, null, 1, fileObject);
       },
       error: function(){
@@ -136,7 +136,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
     //TODO: add incrementing file id in upload file
     var fileSlice = getFileSlice(sliceNumber, file);
       // Upload each part separately.
-      console.log("Uploading part", sliceNumber);
+      // console.log("Uploading part", sliceNumber);
       client.put_upload_file_part({
         uid: uid,
         fid: 0,
@@ -144,14 +144,14 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         file: fileSlice,
         success: function()
         {
-          console.log("File uploaded part:" + sliceNumber + " successfully");
+          // console.log("File uploaded part:" + sliceNumber + " successfully");
           if(fileObject && fileObject.progress && progressIncreasePerSlice)
           {
             fileObject.progress( fileObject.progress() + progressIncreasePerSlice );
           }
         },
         error: function(){
-          console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
+          // console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
         }
       });
   }
@@ -202,12 +202,12 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       fileObject.progress_status('Uploading...');
     }
 
-    console.log("Uploading file "+ file + " \nfile size:" + file.size);
-    console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
+    // console.log("Uploading file "+ file + " \nfile size:" + file.size);
+    // console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
 
     if(file.size > module.MEGABYTE)
     {
-      console.log("Multi-file upload initiated.");
+      // console.log("Multi-file upload initiated.");
       var running = true;
       var sliceNumber = 0;
       while(running) {
@@ -220,7 +220,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
     else
     {
       // Upload the whole file since it is small.
-      console.log("Uploading whole file.");
+      // console.log("Uploading whole file.");
       
       client.put_upload_file_part({
         uid: uid,
@@ -229,7 +229,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         file: file,
         success: function()
         {
-          console.log("File uploaded.");
+          // console.log("File uploaded.");
           if(fileObject.progress)
           {
             fileObject.progress(fileObject.progress() + progressIncreasePerSlice);
@@ -268,7 +268,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       uploaded: [numberOfUploadedSlices],
       success: function()
       {
-        console.log("Upload session finished.");
+        // console.log("Upload session finished.");
         if(fileObject.progress)
         {
           // Setting progress to half by adding 1/10th of total progress or progress_increment
@@ -323,7 +323,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       uid: uid,
       success: function()
       {
-        console.log("Upload session deleted.");
+        // console.log("Upload session deleted.");
         if(fileObject.progress)
         {
           var progress_final = 100;

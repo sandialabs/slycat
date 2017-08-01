@@ -651,7 +651,8 @@ rights in this software.
 .slycat-pim-filter .invert-button,
 .slycat-pim-filter .select-all-button,
 .slycat-pim-filter .select-none-button,
-.slycat-pim-filter .auto-width-button
+.slycat-pim-filter .auto-width-button,
+.slycat-pim-filter .null-button
 {
   position: absolute;
 }
@@ -677,6 +678,10 @@ rights in this software.
 .category-filter .select-none-button {
   left: 65px;
   bottom: 7px;
+}
+.slycat-pim-filter .null-button {
+  bottom: 7px;
+  left: 7px;
 }
 .slycat-pim-filter .minMaxHighLow .max,
 .slycat-pim-filter .minMaxHighLow .min,

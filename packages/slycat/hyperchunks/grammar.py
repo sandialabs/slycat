@@ -60,8 +60,11 @@ point_float_p = (pp.Optional("-") + pp.Word(pp.nums) + "." + pp.Optional(pp.Word
 float_literal_p = point_float_p
 float_literal_p.setParseAction(lambda tokens: float("".join(tokens)))
 
+#add none real numbers
+nan_p = pp.Word("nan")
+nan_p.setParseAction(lambda tokens: float("".join(tokens)))
 
-number_literal_p = float_literal_p | integer_literal_p
+number_literal_p = float_literal_p | integer_literal_p | nan_p
 
 string_literal_p = pp.QuotedString(quoteChar='"', escChar="\\")
 

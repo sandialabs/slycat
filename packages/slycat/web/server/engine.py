@@ -111,7 +111,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.get_project_cache_object, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
-
+  dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
 
@@ -131,6 +131,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-references", "/projects/:pid/references", slycat.web.server.handlers.post_project_references, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-log", "/log", slycat.web.server.handlers.post_log, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
 
   #TODO: scrub sid
@@ -167,6 +168,7 @@ def start(root_path, config_file):
   dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
 
   dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("delete-model-parameter", "/delete-artifact/:mid/:aid", slycat.web.server.handlers.delete_model_parameter, conditions={"method" : ["DELETE"]})
   dispatcher.connect("login", "/login", slycat.web.server.handlers.login, conditions={"method" : ["POST"]})
   dispatcher.connect("openid-login", "/openid-login/", slycat.web.server.handlers.open_id_authenticate, conditions={"method": ["GET"]})
   dispatcher.connect("get-root", "/", slycat.web.server.handlers.get_root, conditions={"method" : ["GET"]})

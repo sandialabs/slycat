@@ -1,4 +1,13 @@
-define("slycat-parameter-image-model", ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "slycat-parameter-image-note-manager", "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", "domReady!"], function(server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI)
+define("slycat-parameter-image-model", 
+  ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", 
+   "slycat-bookmark-manager", "slycat-dialog", "slycat-parameter-image-note-manager", 
+   "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", 
+   "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", 
+   "domReady!"
+  ], 
+  function(
+    server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI
+  )
 {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
@@ -32,7 +41,6 @@ var images = null;
 var selected_simulations = null;
 var hidden_simulations = null;
 var manually_hidden_simulations = null;
-var filtered_simulations = null;
 var colormap = null;
 var colorscale = null;
 var auto_scale = null;
@@ -62,13 +70,7 @@ layout = $("#parameter-image-plus-layout").layout(
   },
   center:
   {
-    // resizeWhileDragging: false,
-    // onresize: function() {
-    //   $("#scatterplot").scatterplot("option", {
-    //     width: $("#scatterplot-pane").width(),
-    //     height: $("#scatterplot-pane").height()
-    //   });
-    // },
+
   },
   west:
   {
@@ -1082,6 +1084,7 @@ function update_widgets_after_color_variable_change()
 function update_widgets_when_hidden_simulations_change()
 {
   hidden_simulations_changed();
+
   if(auto_scale)
   {
     update_current_colorscale();
@@ -1098,6 +1101,7 @@ function update_widgets_when_hidden_simulations_change()
     if($("#scatterplot").data("parameter_image-scatterplot"))
       $("#scatterplot").scatterplot("option", "hidden_simulations", hidden_simulations);
   }
+
   if($("#controls").data("parameter_image-controls"))
     $("#controls").controls("option", "hidden_simulations", hidden_simulations);
 }
@@ -1354,6 +1358,9 @@ function active_filters_ready()
         filters_changed(newValue);
       });
     }
+    filter.nulls.subscribe(function(newValue){
+      filters_changed(newValue);
+    });
   }
 
   $("#controls").controls("option", "disable_hide_show",  filter_manager.active_filters().length > 0);
@@ -1409,6 +1416,10 @@ function filters_changed(newValue)
         }
         new_filters.push( '(' + filter_var + ' in [' + selected_values.join(', ') + '])' );
       }
+      if( filter.nulls() )
+      {
+        new_filters[new_filters.length-1] = '(' + new_filters[new_filters.length-1] + ' or ' + filter_var + ' == nan'  + ')';
+      }
     }
   }
   filter_expression = new_filters.join(' and ');
@@ -1432,28 +1443,22 @@ function filters_changed(newValue)
       {
         var filter_indices = data[0];
         var filter_status = data[1];
-        var new_filtered_simulations = [];
-
-        for(var i=0; i < filter_status.length; i++)
-        {
-          if(!filter_status[i])
-          {
-            new_filtered_simulations.push( filter_indices[i] );
-          }
-        }
-
-        new_filtered_simulations.sort();
-
-        filtered_simulations = new_filtered_simulations;
 
         // Clear hidden_simulations
         while(hidden_simulations.length > 0) {
           hidden_simulations.pop();
         }
 
-        for(var i=0; i<filtered_simulations.length; i++){
-          hidden_simulations.push(filtered_simulations[i]);
+        for(var i=0; i < filter_status.length; i++)
+        {
+          // Add if it's being filtered out
+          if(!filter_status[i])
+          {
+            hidden_simulations.push( filter_indices[i] );
+          }
         }
+
+        hidden_simulations.sort((a, b) => a - b);
 
         update_widgets_when_hidden_simulations_change();
       },

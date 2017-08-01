@@ -330,25 +330,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var indices = self.options.indices;
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
-    var filtered_indices = self._cloneArrayBuffer(indices);
-    var filtered_selection = selection.slice(0);
-    var length = indices.length;
 
-    // Remove hidden simulations and NaNs and empty strings
-    for(var i=length-1; i>=0; i--){
-      var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-
-      if(hidden || !self._validateValue(x[i]) || !self._validateValue(y[i])) {
-        filtered_indices.splice(i, 1);
-        var selectionIndex = $.inArray(indices[i], filtered_selection);
-        if( selectionIndex > -1 ) {
-          filtered_selection.splice(selectionIndex, 1);
-        }
-      }
-    }
-
-    self.options.filtered_indices = filtered_indices;
-    self.options.filtered_selection = filtered_selection;
+    self.options.filtered_indices = _.difference(self._cloneArrayBuffer(indices).filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), hidden_simulations);
+    self.options.filtered_selection = _.difference(selection.filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), hidden_simulations);
   },
 
   // Filters source values by removing hidden_simulations
@@ -462,13 +446,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     //console.log("parameter_image.scatterplot._setOption()", key, value);
     self.options[key] = value;
 
-    if(key == "indices")
-    {
-      self._filterIndices();
-      self._schedule_update({update_indices:true, render_selection:true});
-    }
+    // This "indices" key never seems to be used, so Alex is commenting it out for now.
+    // if(key == "indices")
+    // {
+    //   self._filterIndices();
+    //   self._schedule_update({update_indices:true, render_selection:true});
+    // }
 
-    else if(key == "x_label")
+    // else if(key == "x_label")
+    if(key == "x_label")
     {
       self._schedule_update({update_x_label:true});
     }

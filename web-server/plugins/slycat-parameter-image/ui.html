@@ -173,6 +173,13 @@ rights in this software.
                 css: { 'fa-compress': invert(), 'fa-arrows-v': !invert() }
               "
             ></i>
+            <i class="fa fa-ban fa-flip-horizontal null-button button" 
+              data-bind="
+                click: $parent.toggleNull,
+                attr: { title: nulls() ? 'Hide nulls' : 'Show nulls' },
+                style: { color: nulls() ? 'black' : '#9c9c9c' },
+              "
+            ></i>
           </div>
         <!-- /ko -->
         <!-- ko if: type() === 'category' -->
@@ -191,7 +198,7 @@ rights in this software.
                     model_id: $parent.model_id
                     "></slycat-category-select>
             <i class="fa fa-times close-button button" title="Close filter" data-bind="click: $parent.removeFilter"></i>
-            <i class="fa auto-width-button button" title="Close filter" 
+            <i class="fa auto-width-button button"
               data-bind="
                 click: $parent.toggleAutoWidth, 
                 css: { 'fa-chevron-left': autowidth(), 'fa-chevron-right': !autowidth() },
@@ -209,6 +216,13 @@ rights in this software.
               data-bind="
                 click: $parent.selectNone, 
                 css: { 'active': false }
+              "
+            ></i>
+            <i class="fa fa-ban fa-flip-horizontal null-button button" 
+              data-bind="
+                click: $parent.toggleNull,
+                attr: { title: nulls() ? 'Hide nulls' : 'Show nulls' },
+                style: { color: nulls() ? 'black' : 'gray' },
               "
             ></i>
           </div>

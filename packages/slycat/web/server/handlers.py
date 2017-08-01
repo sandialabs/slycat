@@ -91,7 +91,6 @@ def js_bundle():
                                                                                   "js/slycat-model-controls.js",
                                                                                   "js/slycat-parser-controls.js",
                                                                                   "js/slycat-model-results.js",
-                                                                                  "js/slycat-changes-feed.js",
                                                                                   "js/slycat-model-names.js",
                                                                                   "js/slycat-navbar.js",
                                                                                   "js/slycat-local-browser.js",
@@ -194,25 +193,33 @@ def require_integer_parameter(value, name):
 
 
 def get_projects(_=None):
-    accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
-    cherrypy.response.headers["content-type"] = accept
+    """
+    returns either and array of projects or html for displaying the projects
+    :param _: 
+    :return: 
+    """
+    context = {}
+    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
+    context["slycat-css-bundle"] = css_bundle()
+    context["slycat-js-bundle"] = js_bundle()
+    return slycat.web.server.template.render("slycat-projects.html", context)
 
-    if accept == "text/html":
-        context = {}
-        context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-        context["slycat-css-bundle"] = css_bundle()
-        context["slycat-js-bundle"] = js_bundle()
-        return slycat.web.server.template.render("slycat-projects.html", context)
 
-    if accept == "application/json":
-        database = slycat.web.server.database.couchdb.connect()
-        projects = [project for project in database.scan("slycat/projects") if
-                    slycat.web.server.authentication.is_project_reader(
-                        project) or slycat.web.server.authentication.is_project_writer(
-                        project) or slycat.web.server.authentication.is_project_administrator(
-                        project) or slycat.web.server.authentication.is_server_administrator()]
-        projects = sorted(projects, key=lambda x: x["created"], reverse=True)
-        return json.dumps({"revision": 0, "projects": projects})
+@cherrypy.tools.json_out(on=True)
+def get_projects_list(_=None):
+    """
+    returns either and array of projects or html for displaying the projects
+    :param _: 
+    :return: 
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    projects = [project for project in database.scan("slycat/projects") if
+                slycat.web.server.authentication.is_project_reader(
+                    project) or slycat.web.server.authentication.is_project_writer(
+                    project) or slycat.web.server.authentication.is_project_administrator(
+                    project) or slycat.web.server.authentication.is_server_administrator()]
+    projects = sorted(projects, key=lambda x: x["created"], reverse=True)
+    return {"revision": 0, "projects": projects}
 
 
 @cherrypy.tools.json_in(on=True)
@@ -246,7 +253,7 @@ def get_project(pid):
     """
 
     # Return the client's preferred media-type (from the given Content-Types)
-    accept = cherrypy.lib.cptools.accept(["text/html", "application/json"])
+    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
     cherrypy.response.headers["content-type"] = accept
 
     database = slycat.web.server.database.couchdb.connect()
@@ -414,6 +421,19 @@ def post_project_models(pid):
     cherrypy.response.headers["location"] = "%s/models/%s" % (cherrypy.request.base, mid)
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
+
+
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
+def post_log():
+    """
+    send post json {"message":"message"} to log client errors onto the
+    client server
+    :return: 
+    """
+    message = require_json_parameter("message")
+    cherrypy.log.error("[CLIENT/JAVASCRIPT]:: %s" % (message))
+    return {"logged": True}
 
 
 @cherrypy.tools.json_in(on=True)
@@ -964,6 +984,24 @@ def put_model_parameter(mid, aid):
     slycat.web.server.put_model_parameter(database, model, aid, value, input)
 
 
+def delete_model_parameter(mid, aid):
+    """
+    delete a model artifact 
+    :param mid: model Id
+    :param aid: artifact id
+    :return: 
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    slycat.web.server.delete_model_parameter(database, model, aid)
+    slycat.web.server.cleanup.arrays()
+
+    cherrypy.response.status = "204 Model deleted."
+
+
 @cherrypy.tools.json_in(on=True)
 def put_model_arrayset(mid, aid):
     database = slycat.web.server.database.couchdb.connect()
@@ -1382,6 +1420,8 @@ def post_model_arrayset_data(mid, aid):
             return array
 
     def content():
+        if "include_nans" in cherrypy.request.json:
+            include_nans = cherrypy.request.json["include_nans"]
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
                               slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])

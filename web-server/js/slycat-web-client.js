@@ -1039,6 +1039,29 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     });
   };
 
+  module.post_log = function(params)
+  {
+    $.ajax(
+    {
+      contentType: "application/json",
+      data: JSON.stringify(
+      {
+        "message": params.message
+      }),
+      type: "POST",
+      url: server_root + "log",
+      success: function () {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
   module.post_upload_finished = function(params)
   {
     $.ajax(
@@ -1148,6 +1171,35 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     {
       type: "DELETE",
       url: server_root + "projects/" + params.pid + "/delete-cache",
+      success: function()
+      {
+        if(params.success)
+          params.success();
+      },
+      error: function(request, status, reason_phrase)
+      {
+        if(params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  /**
+   * delete model artifacts from the nosql database
+   * @param params
+   * {
+   *  mid:model_id,
+   *  aid:artifact_id,
+   *  success:func(called on ajax success),
+   *  error:func(called on ajax error)
+   * }
+   */
+  module.delete_model_parameter = function(params)
+  {
+    $.ajax(
+    {
+      type: "DELETE",
+      url: server_root + "delete-artifact/" + params.mid + "/" + params.aid,
       success: function()
       {
         if(params.success)
@@ -1275,6 +1327,54 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
         //console.log("result "+JSON.stringify(result))
         if (params.success)
           return params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  module.get_project = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      type: 'GET',
+      url: server_root + 'projects/' + params.pid,
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  module.get_projects = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      type: 'GET',
+      url: server_root + 'projects_list',
+      success: function(result) {
+        if (params.success)
+          params.success(result);
+      },
+      error: function(request, status, reason_phrase) {
+        if (params.error)
+          params.error(request, status, reason_phrase);
+      }
+    });
+  };
+
+  module.get_project_models = function(params) {
+    $.ajax({
+      contentType: 'application/json',
+      type: 'GET',
+      url: server_root + 'projects/'+ params.pid + '/models',
+      success: function(result) {
+        if (params.success)
+          params.success(result);
       },
       error: function(request, status, reason_phrase) {
         if (params.error)
