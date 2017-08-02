@@ -92,12 +92,9 @@
               <!-- /ko -->
             </ul>
           </div>
-          <div class="btn-group nav-bookmarks" data-bind="visible: model_id() || project_id()">
-            <button type="button" class="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown"
-              data-bind="
-                visible: !(model_id() ? false : saved_project_bookmarks().length < 1 && saved_model_bookmarks().length < 1),
-                css: { disabled: model_id() ? false : saved_project_bookmarks().length < 1 && saved_model_bookmarks().length < 1 },
-                ">
+          <div class="btn-group nav-bookmarks" 
+            data-bind="visible: model_id() || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0))">
+            <button type="button" class="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">
               Bookmarks <span class="caret"/>
             </button>
             <ul class="dropdown-menu dropdown-menu-right">
