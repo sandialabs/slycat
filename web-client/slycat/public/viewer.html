@@ -105,6 +105,7 @@
                   out += " onload='setParts()'" 
                 out += " render='true'  nameSpaceName='" + arr[0].picId + (i + 1) + "' id='" + arr[0].picId + (i + 1) + "' mapDEFToID='true' url='" + arr[0].file + "'> </inline></group></Transform></scene></x3d> </div>"
                 document.getElementById("viewerDiv").innerHTML = out;
+                
               }
           console.log("Start");
           console.log(document.getElementsByTagName('MetadataString'));
@@ -170,7 +171,7 @@
         //Saves current viewpoint
         function Save()
         {
-          //window.location.href = "file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/t.html?position="+camPos+"&rotation="+camRot;
+          //window.location.href = "file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/viewer.html?position="+camPos+"&rotation="+camRot;
           var view = document.getElementById("view1");
           var viewpos = view.getAttribute("position");
           var viewrot = view.getAttribute("orientation");
@@ -179,7 +180,7 @@
           var host = pathArray[2];
           var url = protocol + '//' + host;
           console.log(url);
-          window.location.href = url +"/t.html?viewers="+viewers+"&position="+viewpos+"&orientation=" + viewrot;
+          window.location.href = url +"/viewer.html?viewers="+viewers+"&position="+viewpos+"&orientation=" + viewrot;
           console.log(window.location.href);
         }
         //Resets View
@@ -203,8 +204,8 @@
           var host = pathArray[2];
           var url = protocol + '//' + host;
           console.log(url);
-          window.location.href = url +"/t.html?viewers="+viewnum+"&position="+pos+"&orientation=" + rot;
-          //"file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/t.html?position="+camPos+"&rotation="+camRot;
+          window.location.href = url +"/viewer.html?viewers="+viewnum+"&position="+pos+"&orientation=" + rot;
+          //"file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/viewer.html?position="+camPos+"&rotation="+camRot;
         }
         //Assign buttons for each part of X3D file
         function setParts()
