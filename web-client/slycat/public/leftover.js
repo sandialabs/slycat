@@ -1,3 +1,6 @@
+/*
+This file contains Stuff we removed 
+*/
 function random()
 {
   var colorStr = "";

@@ -27,13 +27,14 @@
 
     All
     <input type="checkbox" onchange="All(this)">
+    &nbsp; &nbsp; &nbsp; <img src="info.png" height="20px" width="20px" onclick="showLegend()">
     </div>
     </div>
   <div class="parent"">
     <div id="viewerDiv" style="background-color: #52576e;" class="wide">
     </div>
     <div class="middle">
-      <img border="0" src="canColor.png" alt="Mountain View" style="width:150px;height:600px;">
+      <img style="background-color: #000000" border="0" id="legend">
     </div>
     <div id="menubar" class="narrow">
     </div>
@@ -44,31 +45,34 @@
         */
         var arr = [
                   {
-                    "file": "crush.x3d", "Desc": "Can", "picId": "canId", "btnId": "btn4"
+                    "file": "sphere.x3d", "Desc": "Can", "picId": "canId", "btnId": "btn4"
                   }
                   ];
-
+         //These variables define global viewpoint positions so that all viewers are synchronized       
         var camPos;
         var camRot;
+        //Defines the number of viewers. value will be pulled from URL.
         var viewers;
+        //Defines viewpoint coordinates that will be pulled from the URL.
         var pos;
         var rot; 
         //get variables from URL
-         pos = decodeURI(getQueryVariable("position"));
+          pos = decodeURI(getQueryVariable("position"));
           rot = decodeURI(getQueryVariable("orientation"));
           viewers = decodeURI(getQueryVariable("viewers"));
-          var r = decodeURI(getQueryVariable("orientation"));
             //set parameters depending on the number of viewers
             if(viewers)
             {
               var yourSelect = document.getElementById( "viewers" );
               yourSelect.selectedIndex = viewers - 1;
+              //set boundaries for the number of viewers
               if(viewers > 4)
               {
                 viewers = 4;
               }
               if(viewers < 0)
                 viewers = 0;
+              //height and width of each viewer. values will depend on the number of viewers so that they can all fit in the modal
               var height;
               var width;
               if(viewers == 1)
@@ -86,6 +90,7 @@
                 height = "300px";
                 width = "550px";
               }
+              //if position and rotation were not found in the url, then set their values to '0 0 0'
               if(pos && rot)
               {
 
@@ -95,32 +100,34 @@
                 pos = '0 0 0';
                 rot = '0 0 0 0';
               }
+              //out string represents html code
               var out="";
-              var i = 0;
               //Create x3d viewers depending on the number of viewers
-              for(i = 0; i < viewers; i++)
+              for(var i = 0; i < viewers; i++)
               {
                 out += "<div> <x3d border='0' id='Dom" + (i + 1) + "' width='" + width + "' height='" + height + "'> <scene> <Viewpoint id='view" + (i + 1) + "' position='" + pos + "' orientation='" + rot + "' description='camera' ></Viewpoint><Transform><group id='pics" + (i + 1) + "'> <inline" 
                 if(i == viewers - 1)
                   out += " onload='setParts()'" 
                 out += " render='true'  nameSpaceName='" + arr[0].picId + (i + 1) + "' id='" + arr[0].picId + (i + 1) + "' mapDEFToID='true' url='" + arr[0].file + "'> </inline></group></Transform></scene></x3d> </div>"
+                //print x3d viewers to document
                 document.getElementById("viewerDiv").innerHTML = out;
-                
+
               }
-          console.log("Start");
-          console.log(document.getElementsByTagName('MetadataString'));
             }
-        //Update the position of the viewers
+        //Update function updates the position of the viewers. function gets called anytime a viewer's viewpoint changes
         function update(evt)
         {
-          if (evt)
+          //evt is the current viewers event attribute
+          if(evt)
           {
+            //get the current viewer's camera coordinates
             var pos1 = evt.position;
             var rot1 = evt.orientation;
             var mat = evt.matrix;
             camPos = pos1.x.toFixed(4)+' '+pos1.y.toFixed(4)+' '+pos1.z.toFixed(4);
             camRot = rot1[0].x.toFixed(4)+' '+rot1[0].y.toFixed(4)+' '+rot1[0].z.toFixed(4)+' '+rot1[1].toFixed(4);
 
+            //change the viewpoint of all other viewers to match the one that was changed.
             var i = 0;
             var viewid = "";
             for(i = 0; i < viewers; i++)
@@ -133,25 +140,20 @@
 
                 }
             }
-            console.log("POS   " + camPos + "          ROT" + camRot);
-
           }
         }
+        //function gets called when the page is initially loaded.
         document.onload = function()
         {
           var i = 0;
           var viewid ="";
+          //add event listener to every viewer to synchronize them
           for(i = 0; i < viewers; i++)
           {
             viewid = "view" + (i + 1);
             document.getElementById(viewid).addEventListener('viewpointChanged', update, false);
           }
-        
-          console.log(decodeURI(window.location.href));
-          console.log("Document");
-          console.log(document.getElementsByTagName('MetadataString'));
-          
-           update(null);
+          update(null);
         }
         //function to pull any variable value from URL
         function getQueryVariable(variable)
@@ -171,7 +173,6 @@
         //Saves current viewpoint
         function Save()
         {
-          //window.location.href = "file:///C:/Users/gthomp2/Documents/GitHub/slycat/web-client/slycat/public/viewer.html?position="+camPos+"&rotation="+camRot;
           var view = document.getElementById("view1");
           var viewpos = view.getAttribute("position");
           var viewrot = view.getAttribute("orientation");
@@ -210,40 +211,40 @@
         //Assign buttons for each part of X3D file
         function setParts()
         {
+          //get all metadata strings to get the name of each component of x3d object.
           var parts = document.getElementsByTagName('MetadataString');
           var out = "";
           var part ="";
+          //account for the number of viewers. if there is more than one viewer than there would that many times the amount of metadatastrings holding
+          //redundant values.
           for(var i = 0; i < parts.length / viewers; i++)
           {
+            //create button for each part.
             part = document.getElementsByTagName('MetadataString')[i].getAttribute("value").replace(/['"]+/g, '')
             out += "<div> <div> " + part + " <input id=" + (i + 1) + " type='checkbox' onchange=togglePart(this)> </div> </div><br>"
-            console.log(out);
           }
-
           document.getElementById("menubar").innerHTML = document.getElementById("menubar").innerHTML + out;
-          console.log("Window");
-
-          console.log(document.getElementsByTagName('MetadataString')[0].getAttribute("value"));
-          console.log(document.getElementsByTagName('MetadataString')[0].nextElementSibling);
-
-
           for(i = 0; document.getElementsByTagName('MetadataString').length; i++)
           {
+            //set all buttons so that their initial value is checked
             viewid = i + 1;
             document.getElementById(viewid).checked = true;
           }
         }
-        //
+        //this function toggles a specific component of x3d object on/off
         function togglePart(checkelem)
         {
+          //since every metadatastring has a sibling element "shape" which has a "render" attribute that you can set to true or false
+          //to toggle whether to display it on the screen or not, I get each shape by looking for the metadastring by the name of the 
+          //button that is passed in as a parameter. then i get it's sibling attribute and set it to true or false depending on if the
+          //button is checked or not.
           if(checkelem.checked)
           {
             var i = 0;
             var domid ="";
+            //account for number of viewers.
             for(i = 0; i < viewers; i++)
             {
-        
-              console.log(document.getElementsByTagName('MetadataString')[checkelem.getAttribute("id") - 1].nextElementSibling.getAttribute("render"));
               document.getElementsByTagName('MetadataString')[(checkelem.getAttribute("id") - 1) + (i * (document.getElementsByTagName('MetadataString').length / viewers))].nextElementSibling.setAttribute("render", "true");
             }
           }
@@ -257,8 +258,11 @@
             }
           }
         }
+        //go through all x3d object components and toggle them on/off
         function All(elem)
         {
+
+
           if(elem.checked)
           {
             for(var i = 0; i < viewers; i++)
@@ -283,6 +287,58 @@
               }
             }
           }
+        }
+        //draw legend from pixel values
+        function showLegend()
+        {
+          //get pixel texture element 
+          var legend = document.getElementsByTagName('PixelTexture');
+          var pixels = legend[0].getAttribute("coordIndex").split(" ");
+          for(var i = 0; i < pixels.length; i++)
+          {
+            if(pixels[i] === "")
+            {
+              pixels.splice(i, 1);
+              i--;
+            }
+          }
+          //get dimensions of pixel array.
+          var width = pixels.splice(0, 1);
+          var height = pixels.splice(0, 1);
+          var rgb = pixels.splice(0, 1);
+          buffer = new Uint8ClampedArray(width * height * rgb);
+          for(var i = 0; i < pixels.length; i++)
+          {
+            buffer[i] = pixels[pixels.length - i - 1];
+          }
+          //flip image on x-axis
+          for (i=0; i<height; i++)
+          {
+            for (j=0; j<width/2; j++)
+            {
+               var index=(i*4)*width+(j*4);
+               var mirrorIndex=((i+1)*4)*width-((j+1)*4);
+               for (p=0; p<4; p++)
+               {
+                 var temp=buffer[index+p];
+                 buffer[index+p]=buffer[mirrorIndex+p];
+                 buffer[mirrorIndex+p]=temp;
+               }
+            }
+          }
+          //Create canvas to draw pixel values to 
+          var canvas = document.createElement('canvas');
+          ctx = canvas.getContext('2d');
+          canvas.width = width;
+          canvas.height = height;
+          // create imageData object         
+          var idata = ctx.createImageData(width, height);
+          // set our buffer as source
+          idata.data.set(buffer);
+          // update canvas with new data
+          ctx.putImageData(idata, 0, 0);
+          var dataUri = canvas.toDataURL();
+          document.getElementById("legend").setAttribute("src", dataUri);
         }
   </script>
    </body>
