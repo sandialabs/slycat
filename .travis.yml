@@ -18,9 +18,9 @@ before_install:
   - sudo apt-get install haproxy
   - sudo apt-get install xvfb firefox
   # Install ffmpeg for our agent testing.
-  - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
-  - mkdir ffmpeg
-  - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
+#  - wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
+#  - mkdir ffmpeg
+#  - tar xf ffmpeg-release-64bit-static.tar.xz --strip-components 1 -C ffmpeg
   - wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz
   - tar xf geckodriver-v0.11.1-linux64.tar.gz
   - sudo cp $TRAVIS_BUILD_DIR/geckodriver /usr/bin/geckodriver
