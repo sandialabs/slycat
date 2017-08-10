@@ -6,7 +6,7 @@ rights in this software.
 define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
 {
   var module = {};//uploader object we wish to populate and return
-  module.MEGABYTE = 400000000;//the number we will split large files on
+  module.MEGABYTE = 10000000;//the number of bytes we will split large files on
 
   /**
    *  File uploader that can either be given a file or
@@ -121,17 +121,53 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       }
   }
 
-  /**
-   * Used to upload a slice of a file to the server database
-   *
-   * @param uid
-   *  unique upload session id
-   * @param sliceNumber
-   *  The incremental identifier for the file slice
-   * @param file
-   *  file to be uploaded
-   */
-  function uploadFileSlice(uid, sliceNumber, file, fileObject, progressIncreasePerSlice){
+    /**
+     * Used to upload a slice of a file to the server database
+     *
+     * @param pid
+     * @param mid
+     * @param uid
+     *  unique upload session id
+     * @param sliceNumber
+     *  The incremental identifier for the file slice
+     * @param file
+     *  file to be uploaded
+     * @param fileObject
+     * @param progressIncreasePerSlice
+     */
+  function uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progressIncreasePerSlice){
+    // Split the file into slices.
+    //TODO: add incrementing file id in upload file
+    var fileSlice = getFileSlice(sliceNumber, file);
+      // Upload each part separately.
+      // console.log("Uploading part", sliceNumber);
+      client.put_upload_file_part({
+        uid: uid,
+        fid: 0,
+        pid: sliceNumber,
+        file: fileSlice,
+        success: function()
+        {
+          running = ((sliceNumber * module.MEGABYTE) <= file.size);
+          sliceNumber ++;
+          // console.log("File uploaded part:" + sliceNumber + " successfully");
+          if(fileObject && fileObject.progress && progressIncreasePerSlice)
+          {
+            fileObject.progress( fileObject.progress() + progressIncreasePerSlice );
+          }
+          if(running){
+            uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progressIncreasePerSlice)
+          }else{
+            finishUpload(pid, mid, uid, file, sliceNumber, fileObject);//good to go
+          }
+        },
+        error: function(){
+          // console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
+        }
+      });
+  }
+
+  function uploadFileSlice(uid, sliceNumber, file){
     // Split the file into slices.
     //TODO: add incrementing file id in upload file
     var fileSlice = getFileSlice(sliceNumber, file);
@@ -145,10 +181,6 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
         success: function()
         {
           // console.log("File uploaded part:" + sliceNumber + " successfully");
-          if(fileObject && fileObject.progress && progressIncreasePerSlice)
-          {
-            fileObject.progress( fileObject.progress() + progressIncreasePerSlice );
-          }
         },
         error: function(){
           // console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
@@ -210,12 +242,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       // console.log("Multi-file upload initiated.");
       var running = true;
       var sliceNumber = 0;
-      while(running) {
-        uploadFileSlice(uid, sliceNumber, file, fileObject, progressIncreasePerSlice);
-        running = ((sliceNumber * module.MEGABYTE) <= file.size);
-        sliceNumber ++;
-      }
-      finishUpload(pid, mid, uid, file, sliceNumber, fileObject);//good to go
+      uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progressIncreasePerSlice);
     }
     else
     {
