@@ -469,7 +469,7 @@ class Connection(object):
     --------
     :http:get:`/projects`
     """
-    return self.request("GET", "/projects", headers={"accept":"application/json"})
+    return self.request("GET", "/projects_list", headers={"accept":"application/json"})
 
   def get_remote_file(self, sid, path, cache=None, project=None, key=None):
     """Retrieve a file using a remote session.
