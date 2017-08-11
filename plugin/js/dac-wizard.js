@@ -15,7 +15,7 @@
 define("dac-file-uploader", ["slycat-web-client"], function(client)
 {
   var module = {};//uploader object we wish to populate and return
-  module.MEGABYTE = 400000000;//the number we will split large files on
+  module.MEGABYTE = 10000000;//the number of bytes we will split large files on
 
   /**
    *  File uploader that can either be given a file or
@@ -43,8 +43,19 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
         parser: fileObject.parser,
         aids: fileObject.aids,
         success: function (uid) {
-          console.log("Upload session created.");
-          uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject);
+
+            console.log("Upload session created.");
+
+            // initialize dac-polling-progress variable
+            client.put_model_parameter({
+                mid: fileObject.mid,
+                aid: "dac-polling-progress",
+                value: ["", 0],
+                success: function () {
+                    uploadFile(fileObject.pid, fileObject.mid, uid, fileObject.file, fileObject);
+                }
+            });
+
         }
       });
   };
@@ -68,22 +79,26 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
       }
   }
 
-  /**
-   * Used to upload a slice of a file to the server database
-   *
-   * @param uid
-   *  unique upload session id
-   * @param sliceNumber
-   *  The incremental identifier for the file slice
-   * @param file
-   *  file to be uploaded
-   */
-  function uploadFileSlice(uid, sliceNumber, file, fileObject, progressIncreasePerSlice){
+    /**
+     * Used to upload a slice of a file to the server database
+     *
+     * @param pid
+     * @param mid
+     * @param uid
+     *  unique upload session id
+     * @param sliceNumber
+     *  The incremental identifier for the file slice
+     * @param file
+     *  file to be uploaded
+     * @param fileObject
+     * @param progressIncreasePerSlice
+     */
+  function uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progressIncreasePerSlice){
     // Split the file into slices.
     //TODO: add incrementing file id in upload file
     var fileSlice = getFileSlice(sliceNumber, file);
       // Upload each part separately.
-      console.log("Uploading part", sliceNumber);
+      // console.log("Uploading part", sliceNumber);
       client.put_upload_file_part({
         uid: uid,
         fid: 0,
@@ -91,14 +106,42 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
         file: fileSlice,
         success: function()
         {
-          console.log("File uploaded part:" + sliceNumber + " successfully");
+          running = ((sliceNumber * module.MEGABYTE) <= file.size);
+          sliceNumber ++;
+          // console.log("File uploaded part:" + sliceNumber + " successfully");
           if(fileObject && fileObject.progress && progressIncreasePerSlice)
           {
             fileObject.progress( fileObject.progress() + progressIncreasePerSlice );
           }
+          if(running){
+            uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progressIncreasePerSlice)
+          }else{
+            finishUpload(pid, mid, uid, file, sliceNumber, fileObject);//good to go
+          }
         },
         error: function(){
-          console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
+          // console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
+        }
+      });
+  }
+
+  function uploadFileSlice(uid, sliceNumber, file){
+    // Split the file into slices.
+    //TODO: add incrementing file id in upload file
+    var fileSlice = getFileSlice(sliceNumber, file);
+      // Upload each part separately.
+      // console.log("Uploading part", sliceNumber);
+      client.put_upload_file_part({
+        uid: uid,
+        fid: 0,
+        pid: sliceNumber,
+        file: fileSlice,
+        success: function()
+        {
+          // console.log("File uploaded part:" + sliceNumber + " successfully");
+        },
+        error: function(){
+          // console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
         }
       });
   }
@@ -131,11 +174,11 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
       return;
     }
 
-    var progressIncreaseInitial = 10;
+    var progressIncreaseInitial = 12;
     var progressIncrease = 40;
     if(fileObject.progress_increment != undefined)
     {
-      progressIncreaseInitial = fileObject.progress_increment * 0.1;
+      progressIncreaseInitial = fileObject.progress_increment * 0.12;
       progressIncrease = fileObject.progress_increment * 0.4;
     }
     var progressIncreasePerSlice = (progressIncrease - progressIncreaseInitial) / Math.ceil(file.size / module.MEGABYTE);
@@ -149,25 +192,20 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
       fileObject.progress_status('Uploading ...');
     }
 
-    console.log("Uploading file "+ file + " \nfile size:" + file.size);
-    console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
+    // console.log("Uploading file "+ file + " \nfile size:" + file.size);
+    // console.log("floor size" + Math.floor(file.size / module.MEGABYTE));
 
     if(file.size > module.MEGABYTE)
     {
-      console.log("Multi-file upload initiated.");
+      // console.log("Multi-file upload initiated.");
       var running = true;
       var sliceNumber = 0;
-      while(running) {
-        uploadFileSlice(uid, sliceNumber, file, fileObject, progressIncreasePerSlice);
-        running = ((sliceNumber * module.MEGABYTE) <= file.size);
-        sliceNumber ++;
-      }
-      finishUpload(pid, mid, uid, file, sliceNumber, fileObject);//good to go
+      uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progressIncreasePerSlice);
     }
     else
     {
       // Upload the whole file since it is small.
-      console.log("Uploading whole file.");
+      // console.log("Uploading whole file.");
 
       client.put_upload_file_part({
         uid: uid,
@@ -176,7 +214,7 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
         file: file,
         success: function()
         {
-          console.log("File uploaded.");
+          // console.log("File uploaded.");
           if(fileObject.progress)
           {
             fileObject.progress(fileObject.progress() + progressIncreasePerSlice);
@@ -215,7 +253,7 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
       uploaded: [numberOfUploadedSlices],
       success: function()
       {
-        console.log("Upload session finished.");
+        // console.log("Upload session finished.");
         if(fileObject.progress)
         {
           // Setting progress to half by adding 1/10th of total progress or progress_increment
@@ -321,7 +359,6 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
 
   }
 
-
   /**
    * Used to delete a file upload session at any point during the upload
    *
@@ -340,12 +377,11 @@ define("dac-file-uploader", ["slycat-web-client"], function(client)
     {
       fileObject.progress_status('')
     }
-
     client.delete_upload({
       uid: uid,
       success: function()
       {
-        console.log("Upload session deleted.");
+        // console.log("Upload session deleted.");
         if(fileObject.progress)
         {
           var progress_final = 100;
@@ -467,6 +503,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // process pts continue or stop flag
     var process_continue = false;
+    var already_processed = false;
 
     // process pts progress bar
     component.parse_progress = ko.observable(null);
@@ -626,7 +663,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                 // stop any spinning buttons that may have been triggered
                 $('.dac-gen-browser-continue').toggleClass('disabled', false);
-                $('.pts-browser-continue').toggleClass('disabled', false);
+                $('.pts-process-continue').toggleClass('disabled', false);
 
                 component.tab(4);
             }
@@ -1034,7 +1071,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             error: function () {
                 dialog.ajax_error("Error uploading UI preferences.")("","","");
                 $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                $('.pts-browser-continue').toggleClass('disabled', false);
+                $('.pts-process-continue').toggleClass('disabled', false);
             },
             success: function () {
 
@@ -1046,7 +1083,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 error: function () {
                     dialog.ajax_error("Error uploading alpha parameter preferences.")("","","");
                     $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                    $('.pts-browser-continue').toggleClass('disabled', false);
+                    $('.pts-process-continue').toggleClass('disabled', false);
                 },
                 success: function () {
 
@@ -1058,7 +1095,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     error: function () {
                         dialog.ajax_error("Error uploading alpha order preferences.")("","","");
                         $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                        $('.pts-browser-continue').toggleClass('disabled', false);
+                        $('.pts-process-continue').toggleClass('disabled', false);
                     },
                     success: function () {
 
@@ -1070,7 +1107,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         error: function () {
                             dialog.ajax_error("Error uploading variable plot order preferences.")("","","");
                             $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                            $('.pts-browser-continue').toggleClass('disabled', false);
+                            $('.pts-process-continue').toggleClass('disabled', false);
                         },
                         // now initialize MDS coords by calling server
                         success: function () {
@@ -1098,7 +1135,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 			error: function () {
 			    dialog.ajax_error("Server error initializing MDS coordinates.")("","","");
 			    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-			    $('.pts-browser-continue').toggleClass('disabled', false);
+			    $('.pts-process-continue').toggleClass('disabled', false);
 			}
 		});
     }
@@ -1187,7 +1224,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         process_continue = true;
 
         // process pts data
-        process_pts_format();
+        if (already_processed) {
+
+            // skip ahead to next wizard screen
+            $(".pts-process-continue").toggleClass("disabled", true);
+            assign_pref_defaults();
+
+        } else {
+
+            process_pts_format();
+        }
 
     };
 
@@ -1205,13 +1251,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         } else {
 
             // disable both process and continue buttons
-            $(".pts-browser-continue").toggleClass("disabled", true);
+            $(".pts-process-continue").toggleClass("disabled", true);
 
             // push initial progress indicator to database
             client.put_model_parameter({
                 mid: component.model._id(),
                 aid: "dac-polling-progress",
-                value: ["", 0],
+                value: ["Parsing ...", 10],
                 success: function () {
 
                     // start polling
@@ -1222,22 +1268,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         mid: component.model._id(),
                         type: "DAC",
                         command: "parse_pts_data",
-                        parameters: [csv_parm, dig_parm],
+                        parameters: [csv_parm, dig_parm]
 
                         // note: success and errors are handled by polling
-                        error: function () {
-                            console.log("dac parse-pts-data failed.");
-                        },
-                        success: function (result) {
-                            console.log("dac parse-pts-data finished");
-                            console.log(result);
-                        }
                     })
 
                 },
                 error: function () {
                     dialog.ajax_error("Error starting PTS parsing.")("","","");
-                    $('.pts-browser-continue').toggleClass("disabled", false);
+                    $('.pts-process-continue').toggleClass("disabled", false);
                 }
             });
         };
@@ -1271,6 +1310,22 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                     // set progress bar to show we are parsing files
 
+                    // update text box if parsing
+                    if (result[0] == "Parsing ..." || result[0] == "Computing ...") {
+
+                        // get parse error log
+                        client.get_model_parameter(
+		                {
+			                mid: component.model._id(),
+      		                aid: "dac-parse-log",
+			                success: function (result)
+				            {
+					            // show log in text box
+                                $('#dac-wizard-process-results').val(result[1]);
+                            }
+                        })
+                    }
+
 		            if (result[0] == "Done") {
 
 		                // done uploading to database
@@ -1296,30 +1351,33 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                                     dialog.ajax_error("Parser could not find any usable PTS data.  Please try different parameters, or restart wizard and select more files.")
                                         ("","","");
-                                    $(".pts-browser-continue").toggleClass("disabled", false);
+                                    $(".pts-process-continue").toggleClass("disabled", false);
 
                                 } else {
+
+                                    // keep track that data was successfully processed
+                                    already_processed = true;
 
                                     // continue onto next stage, if desired
                                     if (process_continue) {
                                         assign_pref_defaults();
                                     } else {
-                                        $(".pts-browser-continue").toggleClass("disabled", false);
+                                        $(".pts-process-continue").toggleClass("disabled", false);
                                     }
 
                                 };
 				            },
 			                error: function () {
 			                    dialog.ajax_error("Server error retrieving parse results.")("","","");
-			                    $('.pts-browser-continue').toggleClass('disabled', false);
+			                    $('.pts-process-continue').toggleClass('disabled', false);
 			                }
 		                });
 
 		            } else {
 
                         // update progress bar
-                        component.parse_progress_status(result[0]);
                         component.parse_progress(result[1]);
+                        component.parse_progress_status(result[0]);
 
 		                // reset timeout and continue
                         endTime = Number(new Date()) + ONE_MINUTE;
@@ -1327,10 +1385,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 		            }
 		        },
 		        error: function () {
-
-                    // set progress bar to show we are still trying to parse
-                    component.parse_progress(result[1]);
-                    console.log("error");
 
                     if (Number(new Date()) < endTime) {
 
@@ -1341,6 +1395,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                         // give up
                         dialog.ajax_error("Server error parsing PTS data.")("","","");
+                        $(".pts-process-continue").toggleClass("disabled", false);
 
                     }
 		        }

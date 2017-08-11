@@ -60,11 +60,14 @@ def register_slycat_plugin(context):
         # --------------------------
 
         # signal polling start
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", 1])
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Parsing ...", 10])
 
         # keep a parsing error log to help user correct input data
         # (each array entry is a string)
         parse_error_log = []
+        parse_error_log.append("Issues:")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
 
         # upload meta file names
         meta_file_names = slycat.web.server.get_model_parameter(database, model, "dac-wizard-file-names")
@@ -102,6 +105,8 @@ def register_slycat_plugin(context):
             if len(csv_data_i[0]) < CSV_MIN_SIZE:
                 parse_error_log.append("CSV data file has less than " + str(CSV_MIN_SIZE)
                                        + " entries -- skipping " + meta_file_names[i] + ".")
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
                 continue
 
             # get meta data
@@ -149,12 +154,9 @@ def register_slycat_plugin(context):
             file_name.append(meta_file_names[i])
 
             # update read progress
-            progress = (i+1.0)/len(meta_file_names)*19.0 + 1.0
+            progress = (i+1.0)/len(meta_file_names)*10.0 + 10.0
             cherrypy.log.error(str(progress))
-            if progress <= 12:
-               slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["", progress])
-            else:
-               slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                      ["Parsing ...", progress])
 
         # look for unique test-op ids (these are the rows in the metadata table)
@@ -186,6 +188,8 @@ def register_slycat_plugin(context):
                 parse_error_log.append("Less than " + str(MIN_NUM_DIG) +
                                        " time series -- skipping test-op id #"
                                        + str(uniq_test_op[i]) + ".")
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
                 continue
 
             # store test inds for each row and digitizer ids (sorted)
@@ -209,6 +213,8 @@ def register_slycat_plugin(context):
             if not dig_id_keys[i] in keep_dig_ids:
                 parse_error_log.append("Not found in all test ops --- skipping digitizer #" +
                                        str(dig_id_keys[i])+ ".")
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
 
         # sort and keep consistent, intersecting digitizer ids
         dig_id_keys = sorted(keep_dig_ids)
@@ -254,6 +260,8 @@ def register_slycat_plugin(context):
             for j in range(len(test_i_inds)):
                 if table_data[test_i_inds[j]] != table_data[test_i_inds[0]]:
                     parse_error_log.append("Inconsistent meta data for test-op id #" + str(uniq_test_op[i]) + ".")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["Progress", "\n".join(parse_error_log)])
 
             # use first row for table entry
             meta_row_i = []
@@ -316,12 +324,16 @@ def register_slycat_plugin(context):
                     parse_error_log.append("Units for test op #" + str(test_op_id[test_inds[j][i]])
                                            + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
                                            + " for " + name_i + ".")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["Progress", "\n".join(parse_error_log)])
 
                 # issue warning if time units are not the same
                 if time_units_i != time_units_j:
                     parse_error_log.append("Time units for test op #" + str(test_op_id[test_inds[j][i]])
                                            + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
                                            + " for " + name_i + ".")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["Progress", "\n".join(parse_error_log)])
 
                 # intersect time vector
                 time_i = list(set(time_i) & set(time_data[i][j]))
@@ -332,6 +344,8 @@ def register_slycat_plugin(context):
                 parse_error_log.append("Inconsistent time points for digitizer #" + str(dig_id_keys[i])
                                        + " -- reduced from " + str(max_time_i_len) + " to "
                                        + str(len(time_i)) + " time points.")
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
 
             # check if reduction is below minimum threshold
             if len(time_i) < CSV_MIN_SIZE:
@@ -339,6 +353,8 @@ def register_slycat_plugin(context):
                 # log as an error
                 parse_error_log.append("Common time points are less than " + str(CSV_MIN_SIZE)
                                        + " -- skipping digitizer #" + str(dig_id_keys[i]) + ".")
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
 
             else:
 
@@ -376,19 +392,20 @@ def register_slycat_plugin(context):
         if num_vars < MIN_NUM_DIG:
             parse_error_log.append("Total number of digitizers less than " + str(MIN_NUM_DIG) +
                                    " -- no data remaining.")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
             meta_rows = []
 
         # if no parse errors then inform user
-        if len(parse_error_log) == 0:
+        if len(parse_error_log) == 1:
             parse_error_log.append("None.")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                    ["Progress", "\n".join(parse_error_log)])
 
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
         parse_error_log.insert(1, "Total number of tests parsed: " + str(len(meta_rows)) + ".")
-        parse_error_log.insert(2, "Each test has " + str(num_vars) + " digitizer time series.")
-
-        # also report issues during processing
-        parse_error_log.insert(3, "\nIssues:")
+        parse_error_log.insert(2, "Each test has " + str(num_vars) + " digitizer time series.\n")
 
         # if no data then return failed result
         if len(meta_rows) == 0:
