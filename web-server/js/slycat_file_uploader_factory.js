@@ -122,7 +122,7 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
   }
 
     /**
-     * Used to upload a slice of a file to the server database
+     * Used to upload multiple sequential slices of a file to the server database
      *
      * @param pid
      * @param mid
@@ -167,6 +167,12 @@ define("slycat_file_uploader_factory",["slycat-web-client"], function(client)
       });
   }
 
+    /**
+     * used to upload a single slice of a file
+     * @param uid
+     * @param sliceNumber
+     * @param file
+     */
   function uploadFileSlice(uid, sliceNumber, file){
     // Split the file into slices.
     //TODO: add incrementing file id in upload file
