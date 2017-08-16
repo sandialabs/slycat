@@ -5,6 +5,10 @@ FROM centos:6.6
 # install required additional OS packages
 RUN yum -y update
 RUN yum install -y epel-release; yum clean all
+RUN cat /etc/yum.repos.d/epel.repo
+RUN sed -i 's|https|http|g' /etc/yum.repos.d/epel.repo
+RUN cat /etc/yum.repos.d/epel.repo
+
 RUN yum install -y hdf5-devel haproxy lapack-devel openldap-devel openssl-devel; yum clean all
 RUN yum install -y lcms2-devel; yum clean all
 RUN yum install -y tcl-devel tkinter libjpeg-turbo-devel; yum clean all
@@ -34,9 +38,14 @@ COPY .condarc /home/slycat/.condarc
 USER root
 RUN chown slycat:slycat /home/slycat/.condarc
 USER slycat
+RUN /home/slycat/install/conda/bin/conda config --set ssl_verify false
 RUN /home/slycat/install/conda/bin/conda update --yes conda
-RUN /home/slycat/install/conda/bin/conda install --yes h5py ipython paramiko pip Pillow scipy scikit-image
-RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB cherrypy "pyparsing>=2.0.3" pystache routes ipyparallel pyzmq
+RUN /home/slycat/install/conda/bin/conda install --yes h5py ipython paramiko pip Pillow scipy scikit-image tornado
+RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB
+RUN /home/slycat/install/conda/bin/pip --trusted-host pypi.python.org
+RUN /home/slycat/install/conda/bin/pip install --no-use-wheel setuptools_scm
+RUN /home/slycat/install/conda/bin/pip install --no-use-wheel cherrypy
+RUN /home/slycat/install/conda/bin/pip install --no-use-wheel "pyparsing>=2.0.3" pystache routes tornado-couchdb ipyparallel pyzmq
 
 # checkout the slycat 
 RUN cd /home/slycat/src; git clone https://github.com/sandialabs/slycat.git
