@@ -174,7 +174,7 @@ $.widget("timeseries.controls",
     var numRows = array[0].length;
     var numCols = array.length;
     var rowMajorOutput = "";
-    var r, c;
+    var r, c, value;
     // add the headers
     for(c=0; c<numCols; c++) {
       rowMajorOutput += self.options.metadata["column-names"][c] + ",";
@@ -186,7 +186,12 @@ $.widget("timeseries.controls",
       if(selectionList.length == 0 || selectionList.indexOf(r) > -1)
       {
         for(c=0; c<numCols; c++) {
-          rowMajorOutput += array[c][r] + ",";
+          value = array[c][r];
+          if(value === null)
+          {
+            value = NaN;
+          }
+          rowMajorOutput += value + ",";
         }
         rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
         rowMajorOutput += "\n";

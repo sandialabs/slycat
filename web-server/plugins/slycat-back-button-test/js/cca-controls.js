@@ -136,7 +136,7 @@ $.widget("cca.controls",
     var numCols = array.columns.length;
     var rowMajorOutput = "";
     numCols = numCols - 1;  // skip last column which is slycat index
-    var r, c;
+    var r, c, value;
     // add the headers
     for(c=0; c<numCols; c++) {
       rowMajorOutput += array["column-names"][c] + ",";
@@ -146,7 +146,12 @@ $.widget("cca.controls",
     // add the data
     for(r=0; r<numRows; r++) {
       for(c=0; c<numCols; c++) {
-        rowMajorOutput += array.data[c][r] + ",";
+        value = array.data[c][r];
+        if(value === null)
+        {
+          value = NaN;
+        }
+        rowMajorOutput += value + ",";
       }
       rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
       rowMajorOutput += "\n";
