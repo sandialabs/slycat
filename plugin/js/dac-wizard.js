@@ -1122,22 +1122,88 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // calls the server to initialize the MDS coords
     var init_MDS_coords = function () {
 
-        // call server to compute new coords
-		client.get_model_command(
-		{
-			mid: component.model._id(),
-      		type: "DAC",
-			command: "init_mds_coords",
-			success: function (result)
-				{
-					include_metadata();
-				},
-			error: function () {
-			    dialog.ajax_error("Server error initializing MDS coordinates.")("","","");
-			    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-			    $('.pts-process-continue').toggleClass('disabled', false);
-			}
-		});
+        // reset dac-polling-progress variable for MDS coord calculation
+        client.put_model_parameter({
+            mid: component.model._id(),
+            aid: "dac-polling-progress",
+            value: ["Progress", 0],
+            success: function () {
+
+                // start polling
+                poll_init_MDS();
+
+                // call server to compute new coords
+                client.get_model_command({
+                    mid: component.model._id(),
+                    type: "DAC",
+                    command: "init_mds_coords",
+
+                    // note: success and errors are handled by polling
+
+                })
+            },
+            error: function () {
+                dialog.ajax_error("Error starting MDS coordinate initialization.")("","","");
+                $('.pts-process-continue').toggleClass("disabled", false);
+                $('.dac-gen-browser-continue').toggleClass("disabled", false);
+            }
+        });
+    }
+
+    // polls for MDS thread to finish
+    function poll_init_MDS () {
+
+        console.log ("Polling initial MDS calculation.");
+
+        // constants for timeouts
+        var ONE_MINUTE = 60000;
+        var ONE_SECOND = 1000;
+
+        // waits 1 minute past last successful progress update
+        var endTime = Number(new Date()) + ONE_MINUTE;
+
+        // polling interval is 1 second
+        var interval = ONE_SECOND;
+
+        // poll database for artifact "dac-poll-progress"
+        (function mds_poll() {
+
+            client.get_model_parameter(
+	        {
+	            mid: component.model._id(),
+      	        aid: "dac-polling-progress",
+		        success: function (result)
+		        {
+
+		            if (result[0] == "Done") {
+
+                        include_metadata();
+
+		            } else {
+
+		                // reset timeout and continue
+                        endTime = Number(new Date()) + ONE_MINUTE;
+                        window.setTimeout(mds_poll, interval);
+		            }
+		        },
+		        error: function () {
+
+                    if (Number(new Date()) < endTime) {
+
+		                // continue, do not reset timer
+                        window.setTimeout(mds_poll, interval);
+
+                    } else {
+
+                        // give up
+                        dialog.ajax_error("Server error initializing MDS coordinates.")("","","");
+			            $('.dac-gen-browser-continue').toggleClass("disabled", false);
+			            $('.pts-process-continue').toggleClass('disabled', false);
+
+                    }
+		        }
+	        });
+	    })();
     }
 
     // PTS format upload code

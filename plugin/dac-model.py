@@ -414,6 +414,9 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                   ["No Data", "\n".join(parse_error_log)])
 
+            # done polling
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", num_vars])
+
             return json.dumps(["No Data", "0"])
 
         cherrypy.log.error("DAC: pushing data to database.")
@@ -669,6 +672,9 @@ def register_slycat_plugin(context):
         # upload as slycat array
         slycat.web.server.put_model_array(database, model, "dac-alpha-clusters", 0, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, "dac-alpha-clusters", "0/0/...", [alpha_cluster_mat])
+
+        # upload done indicator for polling routine
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
