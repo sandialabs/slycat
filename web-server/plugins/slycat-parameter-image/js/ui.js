@@ -114,43 +114,53 @@ $("#model-pane").layout(
 //////////////////////////////////////////////////////////////////////////////////////////
 // Load the model
 //////////////////////////////////////////////////////////////////////////////////////////
-
-$.ajax(
-{
-  type : "GET",
-  url : server_root + "models/" + model_id,
-  success : function(result)
+function doPoll(){
+  $.ajax(
   {
-    model = result;
-    bookmarker = bookmark_manager.create(model.project, model._id);
-    input_columns = model["artifact:input-columns"];
-    output_columns = model["artifact:output-columns"];
-    image_columns = model["artifact:image-columns"];
-    rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
-    category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
-    filter_manager = new FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns);
-    if(filter_manager.active_filters_ready())
+    type : "GET",
+    url : server_root + "models/" + model_id,
+    success : function(result)
     {
-      active_filters_ready();
-    }
-    else
+      model = result;
+      bookmarker = bookmark_manager.create(model.project, model._id);
+      input_columns = model["artifact:input-columns"];
+      output_columns = model["artifact:output-columns"];
+      image_columns = model["artifact:image-columns"];
+      rating_columns = model["artifact:rating-columns"] == undefined ? [] : model["artifact:rating-columns"];
+      category_columns = model["artifact:category-columns"] == undefined ? [] : model["artifact:category-columns"];
+      filter_manager = new FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns);
+      if(filter_manager.active_filters_ready())
+      {
+        active_filters_ready();
+      }
+      else
+      {
+        filter_manager.active_filters_ready.subscribe(function(newValue) {
+          if(newValue)
+          {
+            active_filters_ready();
+            // Terminating subscription
+            this.dispose();
+          }
+        });
+      }
+      if(model["state"] === "waiting" || model["state"] === "running") {
+        setTimeout(doPoll, 5000);
+        return;
+      }
+      if(model["state"] === "closed" && model["result"] === null)
+        return;
+      if(model["result"] === "failed")
+        return;
+      model_loaded();
+    },
+    error: function(request, status, reason_phrase)
     {
-      filter_manager.active_filters_ready.subscribe(function(newValue) {
-        if(newValue)
-        {
-          active_filters_ready();
-          // Terminating subscription
-          this.dispose();
-        }
-      });
+      window.alert("Error retrieving model: " + reason_phrase);
     }
-    model_loaded();
-  },
-  error: function(request, status, reason_phrase)
-  {
-    window.alert("Error retrieving model: " + reason_phrase);
-  }
-});
+  });
+}
+doPoll();
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Once the model has been loaded, retrieve metadata / bookmarked state
@@ -165,7 +175,6 @@ function model_loaded()
     return;
   if(model["result"] == "failed")
     return;
-
   // Display progress as the load happens ...
   $(".load-status").text("Loading data.");
 
