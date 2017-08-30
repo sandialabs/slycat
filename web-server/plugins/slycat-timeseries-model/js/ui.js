@@ -104,25 +104,40 @@ var bodyLayout = $("#timeseries-model").layout({
 //////////////////////////////////////////////////////////////////////////////////////////
 // Get the model
 //////////////////////////////////////////////////////////////////////////////////////////
+function doPoll() {
+  $.ajax(
+  {
+    type : "GET",
+    url : server_root + "models/" + model._id,
+    success : function(result)
+    {
+      model = result;
+      bookmarker = bookmark_manager.create(model.project, model._id);
+      cluster_bin_count = model["artifact:cluster-bin-count"];
+      cluster_bin_type = model["artifact:cluster-bin-type"];
+      cluster_type = model["artifact:cluster-type"];
+        // If the model isn't ready or failed, we're done.
+      if(model["state"] == "waiting" || model["state"] == "running") {
+        show_checkjob();
+        setTimeout(doPoll, 5000);
+        return;
+      }
 
-$.ajax(
-{
-  type : "GET",
-  url : server_root + "models/" + model._id,
-  success : function(result)
-  {
-    model = result;
-    bookmarker = bookmark_manager.create(model.project, model._id);
-    cluster_bin_count = model["artifact:cluster-bin-count"];
-    cluster_bin_type = model["artifact:cluster-bin-type"];
-    cluster_type = model["artifact:cluster-type"];
-    setup_page();
-  },
-  error: function(request, status, reason_phrase)
-  {
-    window.alert("Error retrieving model: " + reason_phrase);
-  }
-});
+      $('.slycat-job-checker').remove();
+
+      if(model["state"] == "closed" && model["result"] === null)
+        return;
+      if(model["result"] == "failed")
+        return;
+      setup_page();
+    },
+    error: function(request, status, reason_phrase)
+    {
+      window.alert("Error retrieving model: " + reason_phrase);
+    }
+  });
+}
+doPoll();
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // If the model is ready, start retrieving data, including bookmarked state.
@@ -156,18 +171,6 @@ var show_checkjob = function() {
 
 function setup_page()
 {
-  // If the model isn't ready or failed, we're done.
-  if(model["state"] == "waiting" || model["state"] == "running") {
-    show_checkjob();
-    return;
-  }
-
-  $('.slycat-job-checker').remove();
-
-  if(model["state"] == "closed" && model["result"] === null)
-    return;
-  if(model["result"] == "failed")
-    return;
 
   // Display progress as the load happens ...
   $(".load-status").text("Loading data.");
