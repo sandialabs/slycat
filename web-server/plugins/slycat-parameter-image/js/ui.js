@@ -152,6 +152,7 @@ function doPoll(){
         return;
       if(model["result"] === "failed")
         return;
+      $('.slycat-navbar-alert').remove();
       model_loaded();
     },
     error: function(request, status, reason_phrase)
