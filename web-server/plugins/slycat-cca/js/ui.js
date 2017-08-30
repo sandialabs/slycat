@@ -35,25 +35,41 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
   var table_ready = false;
   var legend_ready = false;
   var controls_ready = false;
+  var previous_state = "";
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
-
-  client.get_model(
-  {
-    mid: model._id,
-    success : function(result)
+  function doPoll(){
+    client.get_model(
     {
-      model = result;
-      bookmarker = bookmark_manager.create(model.project, model._id);
-      input_columns = model["artifact:input-columns"];
-      output_columns = model["artifact:output-columns"];
-      scale_inputs = model["artifact:scale-inputs"];
-      setup_page();
-    },
-    error: dialog.ajax_error("Error retrieving model."),
-  });
+      mid: model._id,
+      success : function(result)
+      {
+        model = result;
+        if(previous_state === ""){
+          previous_state = model["state"];
+        }
+        bookmarker = bookmark_manager.create(model.project, model._id);
+        input_columns = model["artifact:input-columns"];
+        output_columns = model["artifact:output-columns"];
+        scale_inputs = model["artifact:scale-inputs"];
+
+        if(model["state"] === "waiting" || model["state"] === "running") {
+          setTimeout(doPoll, 5000);
+          return;
+        }
+        if(model["state"] === "closed" && model["result"] === null)
+          return;
+        if(model["result"] === "failed")
+          return;
+
+        setup_page();
+      },
+      error: dialog.ajax_error("Error retrieving model."),
+    });
+  }
+  doPoll();
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
