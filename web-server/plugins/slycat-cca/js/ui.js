@@ -63,7 +63,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
           return;
         if(model["result"] === "failed")
           return;
-
+        $('.slycat-navbar-alert').remove();
         setup_page();
       },
       error: dialog.ajax_error("Error retrieving model."),
