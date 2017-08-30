@@ -134,6 +134,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
         acl: mapping.toJS(component.modified.acl),
         success: function()
         {
+          window.location.reload(true);
         },
         error: dialog.ajax_error("Error updating project."),
       });
