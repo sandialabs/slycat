@@ -61,8 +61,16 @@ class Agent(agent.Agent):
             "ok": True,
             "jid": command["command"]
         }
-
-        results["output"], results["errors"] = self.run_remote_command("checkjob %s" % results["jid"])
+        try:
+            results["output"], results["errors"] = self.run_remote_command("sacct -j %s --format=jobname,state" % results["jid"])
+            myset = [line.split() for line in results["output"]]
+            for _ in myset:
+                if "slycat-tmp" in _:
+                    results["output"] = _[1]
+                    break
+        except OSError as e:
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
+            sys.stdout.flush()
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
