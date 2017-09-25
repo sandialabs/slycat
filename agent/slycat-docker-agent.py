@@ -34,25 +34,22 @@ class Agent(agent.Agent):
         return p.communicate()
 
     def launch(self, command):
+        output = self.run_remote_command(command["command"])
         results = {
             "ok": True,
-            "command": command["command"]
-        }
-
-        results["output"], results["errors"] = self.run_remote_command(command["command"])
-
+            "command": command["command"],
+            "output": output[0],
+            "errors": output[1]}
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
     def submit_batch(self, command):
+        output = self.run_remote_command(command["command"])
         results = {
             "ok": True,
             "filename": command["command"],
-            "output": -1
-        }
-
-        results["output"], results["errors"] = self.run_remote_command("sbatch %s" % results["filename"])
-
+            "output": output[0],
+            "errors": output[1]}
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
@@ -71,19 +68,17 @@ class Agent(agent.Agent):
         except OSError as e:
             sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
             sys.stdout.flush()
-
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
     def cancel_job(self, command):
+        output = self.run_remote_command("scancel %s" % command["command"]) # command is jid here
         results = {
             "ok": True,
-            "jid": command["command"]
+            "jid": command["command"],
+            "output": output[0],
+            "errors": output[1]
         }
-
-        results["output"], results["errors"] = self.run_remote_command(
-            "scancel %s" % results["jid"]) 
-
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
