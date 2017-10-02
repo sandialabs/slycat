@@ -211,6 +211,7 @@ class Session(object):
                 raise cherrypy.HTTPError(400)
 
             # parses the useful information from job status
+            cherrypy.log.error("response %s" % response["output"])
             out = response["output"]
             js = "UNKNOWN"
 
@@ -219,6 +220,7 @@ class Session(object):
                     try:
                         js = line.split(':')[1].strip().upper()
                     except Exception as e:
+                        #TODO: write some usefull output here
                         js = "UNKNOWN"
                     break
 
