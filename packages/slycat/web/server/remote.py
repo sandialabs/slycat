@@ -211,21 +211,9 @@ class Session(object):
                 raise cherrypy.HTTPError(400)
 
             # parses the useful information from job status
-            cherrypy.log.error("response %s" % response["output"])
-            out = response["output"]
-            js = "UNKNOWN"
-
-            for line in out.splitlines():
-                if "State" in line:
-                    try:
-                        js = line.split(':')[1].strip().upper()
-                    except Exception as e:
-                        #TODO: write some usefull output here
-                        js = "UNKNOWN"
-                    break
-
+            cherrypy.log.error("response state:%s" % response["output"])
             status = {
-                "state": js
+                "state": response["output"]
             }
 
             return {"jid": response["jid"], "status": status, "errors": response["errors"]}
