@@ -244,7 +244,7 @@ def register_slycat_plugin(context):
             state = response["status"]["state"]
             cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
 
-            if state == "RUNNING":
+            if state == "RUNNING" or state == "PENDING":
                 retry_counter = 5
                 database = slycat.web.server.database.couchdb.connect()
                 model = database.get("model", mid)
