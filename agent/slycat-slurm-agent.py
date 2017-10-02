@@ -63,10 +63,11 @@ class Agent(agent.Agent):
         }
         try:
             results["output"], results["errors"] = self.run_remote_command("sacct -j %s --format=jobname,state" % results["jid"])
-            myset = [line.split() for line in results["output"]]
+            myset = results["output"].split('\n')
+            results["output"]="COMPLETED"
             for _ in myset:
                 if "slycat-tmp" in _:
-                    results["output"] = _[1]
+                    results["output"] = _.split()[1]
                     break
         except OSError as e:
             sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
