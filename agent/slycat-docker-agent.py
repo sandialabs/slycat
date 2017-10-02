@@ -104,21 +104,25 @@ class Agent(agent.Agent):
                        tmp_file):
         f = tmp_file
         f.write("#!/bin/bash\n\n")
+        f.write("export SLYCAT_HOME=\/home\/slycat\/src\/slycat\n")
         f.write("#SBATCH --account=%s\n" % wckey)
         f.write("#SBATCH --job-name=slycat-tmp\n")
         f.write("#SBATCH --partition=%s\n\n" % partition)
         f.write("#SBATCH --nodes=%s\n" % nnodes)
         f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
         f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-        f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)\n")
+        f.write("ipython profile create")
         f.write("echo \"Creating profile ${profile}\"\n")
-        f.write("ipython profile create --parallel --profile=${profile}\n")
+        f.write("ipcontroller --ip='*' &\n")
+        f.write("ipcluster start -n 4 &")
         f.write("echo \"Launching controller\"\n")
-        f.write("ipcontroller --ip='*' --profile=${profile} &\n")
         f.write("sleep 1m\n")
         f.write("echo \"Launching job\"\n")
         for c in fn:
             f.write("%s\n" % c)
+        f.write("pkill -f ipcontroller \n")
+        f.write("pkill -f ipcluster \n")
+        f.write("pkill -f python \n")
         f.close()
 
     def run_function(self, command):
