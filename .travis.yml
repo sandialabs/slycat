@@ -7,5 +7,6 @@ services:
 
 before_install:
   - docker pull slycat/slycat-developer
-  - docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 --name slycat slycat/slycat-developer
+  - docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer
+  - ssh slycat@localhost -p 2222
   - testslycat
