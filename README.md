@@ -40,10 +40,6 @@ git clone https://github.com/sandialabs/slycat.git
 ```bash
 cd /open-source-docker/docker/open-source-build/
 python build.py slycat-developer-image
-````
-* load the newly built images into docker
-```bash
-docker load -i slycat-developer-****-****.image
 ```
 * make the container
 ```bash
