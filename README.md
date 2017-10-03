@@ -46,7 +46,7 @@ docker load -i slycat-developer-****-****.image
 ```bash
 docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat-developer sandialabs/slycat-developer
 ```
-* log into slycat @ (https:/192.168.99.100 for mac/windows and localhost for linux) and play around!
+* log into slycat and play around! https://localhost/login/slycat-login.html
 * for logging into this quick container the only requirement is username = pasword
 * root user:pass is slycat:slycat for the container
 
