@@ -23,3 +23,6 @@ script:
   - pwd
   - whoami
   - ls
+  - docker exec -i slycat "/bin/bash"; pwd
+  - ls
+  - pwd
