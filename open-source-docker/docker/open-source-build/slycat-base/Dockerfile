@@ -85,4 +85,4 @@ RUN chown slycat:slycat /var/log/slycat
 EXPOSE 443
 
 COPY run-slycat.sh /etc/slycat/
-CMD /etc/slycat/run-slycat.sh
+CMD /etc/slycat/run-slycat.sh > /home/slycat/run-slycat.log
