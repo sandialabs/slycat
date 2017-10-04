@@ -18,5 +18,8 @@ before_install:
 #  - docker exec -i slycat bash -c "cd /home/slycat; export PATH=/usr/bin:$PATH"
 #  - docker exec -i slycat bash -c "cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)\" /home/slycat/src/slycat/features/"
 script:
+  - pwd
   - cd /home/slycat/src/slycat; git pull
+  - pwd
+  - whoami
   - ls
