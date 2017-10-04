@@ -96,7 +96,7 @@ function(dialog, request, $, d3)
 				plot_type = variables_data[0]["data"][3];
 				
 				// init plot order (repeated if not enough plots)
-				plots_selected = [num_plots, num_plots, num_plots];
+				plots_selected = [num_plots-1, num_plots-1, num_plots-1];
 				for (i = 0; i < Math.min(num_plots,3); i++) {
 				    plots_selected[i] = i;
 				}
@@ -128,7 +128,7 @@ function(dialog, request, $, d3)
 				);
 				
 				// initialize plots as d3 plots
-				for (var i = 0; i != Math.min(num_plots,3); ++i) {
+				for (var i = 0; i < 3; ++i) {
 				
 					// populate pull down menu
 					display_plot_pull_down.bind($("#dac-select-plot-" + (i+1)))(i);
@@ -237,7 +237,7 @@ function(dialog, request, $, d3)
 	module.change_selections = function(plot_selections)
 	{
 		// update selections
-		for (var i = 0; i != Math.min(num_plots,3); ++i) {
+		for (var i = 0; i < 3; ++i) {
 			$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();		
 		}
 	}
@@ -256,7 +256,7 @@ function(dialog, request, $, d3)
 		var num_y_ticks = Math.round(height/plot_adjustments.y_tick_freq);
 		
 		// the sizes and ranges of the plots are all the same
-		for (var i = 0; i != Math.min(num_plots, 3); ++i) {
+		for (var i = 0; i < 3; ++i) {
 				   
 			// change scale
 			x_scale[i].range([plot_adjustments.padding_left + 
@@ -475,14 +475,6 @@ function(dialog, request, $, d3)
 		d3.select(this).call(d3.event.target);
 			
 		draw_plot(i);
-		
-		// re-draw display (animate if small number of points)
-		//if (mds_coords.length > max_points_animate) {
-		//	module.draw();
-		//} else {
-		//		animate();
-		//};
-			
 	};	
 	
 	// update selections (and data) for all plots

@@ -63,7 +63,7 @@
 /* margins around pull down menus */
 .dac-select
 {
-	margin: 0px 3px 3px 0px;
+	margin: 3px 3px 3px 0px;
 	border: 1px solid #c1c1c1;
     padding: 4px 20px;
     border-radius: 3px;

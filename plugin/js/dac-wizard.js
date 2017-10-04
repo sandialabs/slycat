@@ -514,8 +514,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
 		    // pixel adjustments for d3 time series plots
 			PLOTS_PULL_DOWN_HEIGHT: 38,
-			PADDING_TOP: 24,
-			PADDING_BOTTOM: 10,
+			PADDING_TOP: 10,        // 10 (values when plot selectors were)
+			PADDING_BOTTOM: 14,     // 24 (at the bottom of the plots)
 		    PADDING_LEFT: 37,
 			PADDING_RIGHT: 10,
 			X_LABEL_PADDING: 4,
