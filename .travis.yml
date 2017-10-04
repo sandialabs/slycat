@@ -1,12 +1,11 @@
 sudo: required
 
-language: python
-
 services:
   - docker
 
 before_install:
   - docker pull slycat/slycat-developer
+install:
   - docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer /bin/sh -c "cd /home/slycat"
 #  - docker exec -i slycat "/bin/bash"
 #  - docker exec -i slycat bash -c "cd /home/slycat/src/slycat; git pull"
