@@ -22,7 +22,7 @@ function(dialog, request, $, d3)
 	// -----------------
 	
 	// current plots being shown (indices & data)
-	var plots_selected = null;
+	var plots_selected = [];
 	var plots_selected_time = [];	// a vector of time values for plot {0,1,2}
 	var plots_selected_data = [];	// a matrix of y-values for plot {0,1,2}
 
@@ -96,39 +96,36 @@ function(dialog, request, $, d3)
 				plot_type = variables_data[0]["data"][3];
 				
 				// init plot order (repeated if not enough plots)
-				plots_selected = [num_plots-1, num_plots-1, num_plots-1];
 				for (i = 0; i < Math.min(num_plots,3); i++) {
-				    plots_selected[i] = i;
+				    plots_selected.push(i);
 				}
-				
+
+				// remove unused plot pull downs
+				for (i = num_plots; i < 3; i++) {
+				    $("#dac-select-plot-" + (i+1)).remove();
+				}
+
 				// load up matrices for time series that we're looking at
-				$.when(request.get_array("dac-time-points", plots_selected[0]),
-					   request.get_array("dac-time-points", plots_selected[1]),
-					   request.get_array("dac-time-points", plots_selected[2]),
-					   request.get_array("dac-var-data", plots_selected[0]),
-					   request.get_array("dac-var-data", plots_selected[1]),
-					   request.get_array("dac-var-data", plots_selected[2])).then(
-					function (time_values_0, time_values_1, time_values_2,
-						      time_vars_0, time_vars_1, time_vars_2)
-					{
-					
-						// save data as likely candidates for viewing later
-						plots_selected_time[0] = time_values_0[0];
-						plots_selected_time[1] = time_values_1[0];
-						plots_selected_time[2] = time_values_2[0];
-						plots_selected_data[0] = time_vars_0[0];
-						plots_selected_data[1] = time_vars_1[0];
-						plots_selected_data[2] = time_vars_2[0];
-						
-					},
-					function ()
-					{
-						dialog.ajax_error('Server failure: could not load plot data.')("","","");
-					}
-				);
-				
+				for (i = 0; i < Math.min(num_plots,3); i++) {
+
+				    $.when(request.get_array("dac-time-points", plots_selected[i]),
+					       request.get_array("dac-var-data", plots_selected[i])).then(
+					    function (time_values, time_vars) {
+
+						    // save data as likely candidates for viewing later
+						    plots_selected_time.push(time_values[0]);
+						    plots_selected_data.push(time_vars[0]);
+
+					    },
+					    function ()
+					    {
+						    dialog.ajax_error('Server failure: could not load plot data.')("","","");
+					    }
+				    );
+				}
+
 				// initialize plots as d3 plots
-				for (var i = 0; i < 3; ++i) {
+				for (var i = 0; i < Math.min(num_plots,3); ++i) {
 				
 					// populate pull down menu
 					display_plot_pull_down.bind($("#dac-select-plot-" + (i+1)))(i);
@@ -237,7 +234,7 @@ function(dialog, request, $, d3)
 	module.change_selections = function(plot_selections)
 	{
 		// update selections
-		for (var i = 0; i < 3; ++i) {
+		for (var i = 0; i < Math.min(num_plots,3); ++i) {
 			$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();		
 		}
 	}
@@ -256,7 +253,7 @@ function(dialog, request, $, d3)
 		var num_y_ticks = Math.round(height/plot_adjustments.y_tick_freq);
 		
 		// the sizes and ranges of the plots are all the same
-		for (var i = 0; i < 3; ++i) {
+		for (var i = 0; i < Math.min(num_plots,3); ++i) {
 				   
 			// change scale
 			x_scale[i].range([plot_adjustments.padding_left + 
@@ -485,9 +482,9 @@ function(dialog, request, $, d3)
 		selection_2 = new_sel_2;
 		
 		// update plot data (all plots have changed)
-		update_data(0);
-		update_data(1);
-		update_data(2);
+		for (i = 0; i < Math.min(num_plots,3); i++) {
+		    update_data(i);
+		}
 		
 		// re-draw all plots
 		module.draw();

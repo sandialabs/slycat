@@ -104,7 +104,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // set PTS parameter defaults
         component.csv_min_size = 10;
-        component.min_num_dig = 3;
+        component.min_num_dig = 1;
 
         client.post_project_models({
         pid: component.project._id(),
