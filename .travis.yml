@@ -6,7 +6,7 @@ services:
 before_install:
   - docker pull slycat/slycat-developer
 install:
-  - docker run -d --name slycat slycat/slycat-developer /bin/sh -c "cd /home/slycat"
+  - docker run -d --name slycat slycat/slycat-developer
 #  - docker exec -i slycat "/bin/bash"
 #  - docker exec -i slycat bash -c "cd /home/slycat/src/slycat; git pull"
 #  - docker exec -i slycat bash -c "sudo service slycat-web-server stop; sudo service slycat-web-server start; sudo service slycat-web-server cleanup"
