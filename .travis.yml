@@ -15,13 +15,11 @@ install:
   - docker exec -i slycat bash -c "cd /home/slycat; cp geckodriver /usr/bin/geckodriver"
   - docker exec -i slycat bash -c "cd /home/slycat; mv geckodriver /usr/bin/wires"
   - docker exec -i slycat bash -c "cd /home/slycat; export PATH=/usr/bin:$PATH"
-#  - docker exec -i slycat bash -c "cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks|rest-api|slycat-web-server|slycat-project)\" /home/slycat/src/slycat/features/"
+#  - docker exec -i slycat bash -c "cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks|rest-api)\" /home/slycat/src/slycat/features/"
 script:
   - pwd
   - whoami
   - ls
   - docker ps -a
   - docker start slycat
-  - docker exec slycat "/bin/bash"
-  - ls
-  - pwd
+  - docker exec -i slycat bash -c "cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks|rest-api)\" /home/slycat/src/slycat/features/"
