@@ -537,13 +537,15 @@ def register_slycat_plugin(context):
         # compute MDS coords
         # ------------------
 
-        # get alpha parameters from slycat server
-        alpha_values = slycat.web.server.get_model_parameter(
-            database, model, "dac-alpha-parms")
+        cherrypy.log.error("DAC: initializing MDS coords.")
+
+        # get number of alpha values using array metadata
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
+        num_vars = len(meta_dist)
 
         # get distance matrices as a list of numpy arrays from slycat server
         var_dist = []
-        for i in range(len(alpha_values)):
+        for i in range(num_vars):
             var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-var-dist", "%s/0/..." % i)))
 
@@ -554,6 +556,9 @@ def register_slycat_plugin(context):
 
             var_dist_i = var_dist_i/coords_scale
             var_dist.append(var_dist_i)
+
+        # assume initial alpha values are all one
+        alpha_values = [1.0] * num_vars
 
         # compute MDS coordinates assuming alpha = 1 for scaling
         full_mds_coords = dac.compute_coords(var_dist, numpy.ones(len(alpha_values)))
@@ -568,9 +573,6 @@ def register_slycat_plugin(context):
 
         # compute alpha cluster parameters
         # --------------------------------
-
-        # number of time series varables
-        num_vars = len(alpha_values)
 
         # get metadata information
         metadata = slycat.web.server.get_model_arrayset_metadata (database, model, "dac-datapoints-meta")
@@ -675,6 +677,7 @@ def register_slycat_plugin(context):
 
         # upload done indicator for polling routine
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
+        cherrypy.log.error("DAC: done initializing MDS coords.")
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})

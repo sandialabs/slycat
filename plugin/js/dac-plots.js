@@ -11,7 +11,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d3)
+define("dac-plots", ["slycat-dialog", "dac-request-data", "jquery", "d3"],
+function(dialog, request, $, d3)
 {
 
 	// public functions (or variables)
@@ -83,8 +84,7 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 		// read in meta data, populate pull down menus,
 		// and initialize d3 plots
 		$.when(request.get_table_metadata("dac-variables-meta"),
-		   	   request.get_table("dac-variables-meta"),
-		   	   request.get_parameters("dac-var-plot-order")).then(
+		   	   request.get_table("dac-variables-meta")).then(
 			function (variables_metadata, variables_data, plot_order)
 			{
 
@@ -95,8 +95,11 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 				y_axis_name = variables_data[0]["data"][2];
 				plot_type = variables_data[0]["data"][3];
 				
-				// get plot order
-				plots_selected = plot_order[0];
+				// init plot order (repeated if not enough plots)
+				plots_selected = [num_plots, num_plots, num_plots];
+				for (i = 0; i < Math.min(num_plots,3); i++) {
+				    plots_selected[i] = i;
+				}
 				
 				// load up matrices for time series that we're looking at
 				$.when(request.get_array("dac-time-points", plots_selected[0]),
@@ -120,7 +123,7 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 					},
 					function ()
 					{
-						alert('Could not load plot data.');
+						dialog.ajax_error('Server failure: could not load plot data.')("","","");
 					}
 				);
 				
@@ -174,7 +177,7 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 			},
 			function ()
 			{
-				alert("Could not load plot meta-data.");
+				dialog.ajax_error ("Server failure: could not load plot meta-data.")("","","");
 			}
 		);
 	}
@@ -223,7 +226,7 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 					},
 					function ()
 					{
-						alert('Could not load plot data.');
+					    dialog.ajax_error ("Server failure: could not load plot data.")("","","");
 					}
 				);
 			});
@@ -320,8 +323,10 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 				   .attr("clip-path", "url(#clip)");
 				   				   			    		
 		} else {
-			alert('Only "Curve" type plots are implemented.');
-		}; 
+
+		    // note: this will never happen using the PTS wizard
+			dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
+		};
 
 		// label axes (if necessary re-draw)
 		x_label[i].text(x_axis_name[plots_selected[i]]);
@@ -361,7 +366,7 @@ define("dac-plots", ["dac-request-data", "jquery", "d3"], function(request, $, d
 					   .attr("fill", "none");
 					   			
 			} else {
-				alert ('Only "Curve" type plots are implemented.');
+				dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
 			};
 
 		};

@@ -5,8 +5,8 @@
 // S. Martin
 // 1/15/2015
 
-define ("dac-alpha-sliders", ["jquery", "dac-request-data", "dac-scatter-plot"], 
-	function($, request, scatter_plot) {
+define ("dac-alpha-sliders", ["jquery", "slycat-dialog", "dac-request-data"],
+	function($, dialog, request) {
 	
 	// return functions in module variables
 	var module = {};
@@ -14,24 +14,26 @@ define ("dac-alpha-sliders", ["jquery", "dac-request-data", "dac-scatter-plot"],
 	// private variables
 	var alpha_num = null;
 	var alpha_names = null;
-	var alpha_values = null;
-	var alpha_order = null;
+	var alpha_values = [];
+	var alpha_order = [];
 	
 	module.setup = function (ALPHA_STEP)
 	{
 		// load up alpha names, alpha values, and alpha order
 		$.when(request.get_table_metadata("dac-variables-meta"),
-		   	   request.get_table("dac-variables-meta"),
-		   	   request.get_parameters("dac-alpha-parms"),
-		   	   request.get_parameters("dac-alpha-order")).then(
-			function (variables_metadata, variables_data, alpha_parms, alpha_slider_order)
+		   	   request.get_table("dac-variables-meta")).then(
+			function (variables_metadata, variables_data)
 			{
 
 				// sort out the information we need
 				alpha_num = variables_metadata[0]["row-count"];
 				alpha_names = variables_data[0]["data"][0];
-				alpha_values = alpha_parms[0];
-				alpha_order = alpha_slider_order[0];
+
+				// initialize alpha slider values to all 1 and order to 1 ... n
+				for (i = 0; i < alpha_num; i++) {
+                    alpha_values.push(1.0);
+                    alpha_order.push(i);
+                }
 			
 				// write out list of sliders to html file
 				display_alpha_sliders.bind($("#dac-alpha-sliders"))(ALPHA_STEP);
@@ -41,7 +43,7 @@ define ("dac-alpha-sliders", ["jquery", "dac-request-data", "dac-scatter-plot"],
 			},
 			function ()
 			{
-				alert("Could not load alpha parameters.");
+			    dialog.ajax_error("Server error: could not load variable meta data.")("","","");
 			}
 		);
 	}
@@ -76,8 +78,11 @@ define ("dac-alpha-sliders", ["jquery", "dac-request-data", "dac-scatter-plot"],
 					// set new value in alpha variables
 					alpha_values[slider_id] = slider_value;
 					
-					// update MDS coords
-					scatter_plot.update(alpha_values);
+					// fire alpha value change event
+					var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+					    { detail: alpha_values });
+                    document.body.dispatchEvent(alphaEvent);
+
 				});
 		};
 	}
@@ -90,9 +95,7 @@ define ("dac-alpha-sliders", ["jquery", "dac-request-data", "dac-scatter-plot"],
 			alpha_values[i] = new_alpha_values[i];
 			$("#dac-alpha-slider-" + i).val(alpha_values[i]);
 		}
-		
-		// update MDS coords & re-draw
-		scatter_plot.update(alpha_values);	
+
 	}
 	return module;
 	

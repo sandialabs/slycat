@@ -5,40 +5,15 @@
 // S. Martin
 // 1/15/2015
 
-define("dac-model", ["slycat-web-client", "dac-layout", "dac-request-data", "dac-alpha-sliders",
-					 "dac-alpha-buttons", "dac-scatter-plot", "dac-plots",
+define("dac-model", ["slycat-web-client", "slycat-dialog", "dac-layout", "dac-request-data",
+                     "dac-alpha-sliders", "dac-alpha-buttons", "dac-scatter-plot", "dac-plots",
 					 "dac-table", "jquery", "d3", "URI", "domReady!"],
-    function(client, layout, request, alpha_sliders, alpha_buttons, scatter_plot,
-    		 plots, metadata_table, $, d3, URI)
+function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_plot,
+         plots, metadata_table, $, d3, URI)
 {
 
-    /*
-    // routine used to test pts import for large uploads
-    // call server to transform data
-
-    // model ID
-    var mid = URI(window.location).segment(-1);
-
-    // bind selection/zoom buttons to callback operations
-	$("#dac-scatter-button-sel-1").on("click",
-		function() {
-
-		client.get_model_command(
-		{
-			mid: mid,
-      		type: "DAC",
-			command: "parse_pts_data",
-			parameters: 0,
-			success: function (result)
-				{
-					console.log(result);
-				},
-			error: function () { console.log("error calling parse_pts_data") }
-		});
-    */
-
-	// load ui parameters and initialize dial-a-cluser	
-	$.when (request.get_parameters("dac-ui-parms", 0)).then(
+	// load ui parameters and initialize dial-a-cluser layout
+	$.when (request.get_parameters("dac-ui-parms")).then(
 			function (ui_parms)
 			{
     
@@ -88,29 +63,60 @@ define("dac-model", ["slycat-web-client", "dac-layout", "dac-request-data", "dac
 				// set up jQuery layout for user interface
 				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
 					SCATTER_BUTTONS_HEIGHT);
-	
-				// set up the alpha sliders
-				alpha_sliders.setup (ALPHA_STEP);
-	
-				// set up the alpha buttons
-				alpha_buttons.setup ();
-	
-				// set up the time series plots
-				plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS);
-	
-				// set up the MDS scatter plot
-				scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					   POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-					   COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL);
-	
-				// set up table (propagate selections through to scatter plot)
-				metadata_table.setup(function () { scatter_plot.draw(); });
-												
+
+	            // check to see if server computations are complete
+	            $.when (request.get_parameters("dac-polling-progress")).then (
+	                function (progress) {
+
+	                    // complete -- assign alpha parms, order, and var plot order
+	                    if (progress[0] == "Done") {
+
+                            // set up alpha slider value change event
+                            document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
+
+                        	// set up the alpha sliders
+				            alpha_sliders.setup (ALPHA_STEP);
+
+				            // set up the alpha buttons
+				            alpha_buttons.setup ();
+
+				            // set up the time series plots
+				            plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS);
+
+				            // set up the MDS scatter plot
+				            scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
+					            POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
+					            COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL);
+
+				            // set up table (propagate selections through to scatter plot)
+				            metadata_table.setup(function () { scatter_plot.draw(); });
+
+                        // not complete -- set up display window and poll
+                        } else {
+
+                            console.log ("Not done processing.");
+
+                        }
+		            },
+		            function () {
+    		            dialog.ajax_error ("Server failure: could not load DAC pre-processing data.")("","","");
+    		        }
+		        );
 			},
 			function ()
 			{
-				alert ("Server failure: could not load UI parameters.");
+				dialog.ajax_error ("Server failure: could not load UI parameters.")("","","");
 			}
 	);
+
+    // custom event for change in alpha slider values
+    function alpha_values_changed (new_alpha_values)
+    {
+        // update actual sliders
+        alpha_sliders.set_alpha_values(new_alpha_values.detail);
+
+        // update MDS scatter plot
+        scatter_plot.update(new_alpha_values.detail);
+    }
 
 });

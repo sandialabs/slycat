@@ -5,9 +5,9 @@
 // S. Martin
 // 2/12/2015
 
-define ("dac-alpha-buttons", ["slycat-web-client", "jquery", "dac-request-data", 
-	"dac-alpha-sliders", "dac-manage-selections", "dac-scatter-plot"], 
-	function(client, $, request, alpha_sliders, selections, scatter_plot) {
+define ("dac-alpha-buttons", ["slycat-web-client", "slycat-dialog", "jquery",
+    "dac-request-data", "dac-manage-selections"],
+function(client, dialog, $, request, selections) {
 	
 	// return functions in module variables
 	var module = {};
@@ -24,9 +24,12 @@ define ("dac-alpha-buttons", ["slycat-web-client", "jquery", "dac-request-data",
 		for (var i = 0; i != alpha_num; ++i) {
 			zero_array[i] = 0.0;
 		}
-				
-		// set alpha values to zero array
-		alpha_sliders.set_alpha_values(zero_array);	
+
+	    // fire alpha value change event
+		var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+			{ detail: zero_array });
+        document.body.dispatchEvent(alphaEvent);
+
 	}
 	
 	// put all alpha sliders to one
@@ -38,25 +41,31 @@ define ("dac-alpha-buttons", ["slycat-web-client", "jquery", "dac-request-data",
 			ones_array[i] = 1.0;
 		}
 				
-		// set alpha values to zero array
-		alpha_sliders.set_alpha_values(ones_array);	
+	    // fire alpha value change event
+		var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+			{ detail: ones_array });
+        document.body.dispatchEvent(alphaEvent);
 	}
 	
 	// cluster button modifies alpha values according to selections
 	var cluster_button_callback = function ()
 	{
 		// get current color by column
-		var color_by_col = scatter_plot.color_by_selection();
-		
+		var color_by_col = $("#dac-scatter-select").val();
+
 		// make sure it is not empty
 		if (color_by_col == -1)
 		{
-			alert('Please select a color for the scatter plot.');
+			dialog.ajax_error('Please select a color (from the "Do Not Color" pulldown) for clustering.')
+			    ("","","");
 			return;
 		}
-		
-		// set pre-computed alpha values for the selected column
-		alpha_sliders.set_alpha_values(alpha_clusters[color_by_col]);	
+
+	    // fire alpha value change event with pre-computed alpha values for selected column
+		var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+			{ detail: alpha_clusters[color_by_col] });
+        document.body.dispatchEvent(alphaEvent);
+
 	}
 	
 	module.setup = function ()
@@ -71,7 +80,7 @@ define ("dac-alpha-buttons", ["slycat-web-client", "jquery", "dac-request-data",
 			},
 			function ()
 			{
-				alert ("Server failure: could not load variable meta-data.");
+				dialog.ajax_error("Server failure: could not load variable meta data.")("","","");
 			}
 		);
 		
@@ -84,7 +93,7 @@ define ("dac-alpha-buttons", ["slycat-web-client", "jquery", "dac-request-data",
 			},
 			function ()
 			{
-				alert ("Server failure: could not load alpha cluster values.");
+			    dialog.ajax_error("Server failure: could not alpha cluster values.")("","","");
 			}
 		);
 		
