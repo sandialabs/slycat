@@ -4,8 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("dac-table", ["dac-request-data", "dac-manage-selections", "dac-plots", 
-	"jquery", "d3"], function(request, selections, plots, $, d3)
+define("dac-table", ["dac-request-data", "dac-manage-selections",
+	"jquery", "d3"], function(request, selections, $, d3)
 {
 	// public functions will be returned via the module variable
 	var module = {};
@@ -43,11 +43,8 @@ define("dac-table", ["dac-request-data", "dac-manage-selections", "dac-plots",
 	}
 	
 	// load grid data and set up colors for selections
-	module.setup = function (propagate_table_selections)
+	module.setup = function ()
 	{
-
-		// register "listener" in main routine
-		scatter_plot_selection_callback = propagate_table_selections;
 		
 		// display using slickgrid in the dac-table.js file
 		$.when (request.get_table_metadata("dac-datapoints-meta"),
@@ -138,15 +135,15 @@ define("dac-table", ["dac-request-data", "dac-manage-selections", "dac-plots",
 			selections.zero_sel();
 			selections.update_sel(row_ids[0]);
 		}	
-		
-		// update table colors
-		module.select_rows();
-		
-		// add these to selection in scatter plot
-		scatter_plot_selection_callback();
-	
-		// update time series plots
-		plots.update_plots(selections.sel_1(), selections.sel_2());
+
+		// throw update selection event
+
+		// fire selection change event
+		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+					                         sel_1: selections.sel_1(),
+					                         sel_2: selections.sel_2(),
+					                         active_sel: []} });
+        document.body.dispatchEvent(selectionEvent);
 		
 	}
 	

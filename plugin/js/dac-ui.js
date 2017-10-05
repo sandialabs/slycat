@@ -95,7 +95,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					            COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL);
 
 				            // set up table (propagate selections through to scatter plot)
-				            metadata_table.setup(function () { scatter_plot.draw(); });
+				            metadata_table.setup();
 
                         // not complete -- set up display window and poll
                         } else {
@@ -128,14 +128,19 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     // custom event for change in selection 1, selection 2, active selection
     function selections_changed (new_selections)
     {
+        // update scatter plot
+        scatter_plot.draw();
+
         // update selections in time series plot
         plots.update_plots (new_selections.detail.sel_1, new_selections.detail.sel_2);
 
 		// update table - select corresponding rows (assumes they are stored in manage_selections.js)
 		metadata_table.select_rows();
 
-		// jump to top row in table for current selection
-		metadata_table.jump_to (new_selections.detail.active_sel);
+		// jump to top row in table for current selection (if there is one)
+		if (new_selections.detail.active_sel.length > 0) {
+		    metadata_table.jump_to (new_selections.detail.active_sel);
+		}
     }
 
     // custom event for difference calculation
