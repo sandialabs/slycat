@@ -59,6 +59,7 @@ class Agent(agent.Agent):
             "jid": command["command"]
         }
         try:
+            # /job_log.txt
             results["output"], results["errors"] = self.run_remote_command("sacct -j %s --format=jobname,state" % results["jid"])
             myset = [line.split() for line in results["output"]]
             for _ in myset:
@@ -149,7 +150,16 @@ class Agent(agent.Agent):
         with open(tmp_file.name, 'r') as myfile:
             data = myfile.read().replace('\n', '')
         results["temp_file"] = data
-        results["output"], results["errors"] = self.run_remote_command("sbatch %s" % tmp_file.name)
+        self.run_remote_command("chmod 755 %s" % tmp_file.name)
+        print "starting"
+        print tmp_file.name
+        try:
+            print (".%s &> /dev/null &" % tmp_file.name)
+            self.run_remote_command("sh %s &> /dev/null &" % tmp_file.name)
+        except Exception as e:
+            print sys.exc_info()
+            e.message
+        print "running"
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
