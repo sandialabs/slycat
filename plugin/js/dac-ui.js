@@ -74,6 +74,12 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                             // set up alpha slider value change event
                             document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
 
+                            // set up selection change event
+                            document.body.addEventListener("DACSelectionsChanged", selections_changed);
+
+                            // set up difference calculation event
+                            document.body.addEventListener("DACDifferenceComputed", difference_computed);
+
                         	// set up the alpha sliders
 				            alpha_sliders.setup (ALPHA_STEP);
 
@@ -117,6 +123,26 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
         // update MDS scatter plot
         scatter_plot.update(new_alpha_values.detail);
+    }
+
+    // custom event for change in selection 1, selection 2, active selection
+    function selections_changed (new_selections)
+    {
+        // update selections in time series plot
+        plots.update_plots (new_selections.detail.sel_1, new_selections.detail.sel_2);
+
+		// update table - select corresponding rows (assumes they are stored in manage_selections.js)
+		metadata_table.select_rows();
+
+		// jump to top row in table for current selection
+		metadata_table.jump_to (new_selections.detail.active_sel);
+    }
+
+    // custom event for difference calculation
+    function difference_computed (diff_values)
+    {
+        // show first three most different plots
+        plots.change_selections(diff_values.detail);
     }
 
 });

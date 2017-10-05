@@ -8,9 +8,9 @@
 // S. Martin
 // 1/27/2015
 
-define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data", 
-	"dac-plots", "dac-table", "dac-manage-selections", "jquery", "d3", "URI"],
-	function(client, request, plots, metadata_table, selections, $, d3, URI) {
+define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
+    "dac-request-data", "dac-manage-selections", "jquery", "d3", "URI"],
+	function(client, dialog, request, selections, $, d3, URI) {
 	
 	// public functions will be returned via the module variable
 	var module = {};
@@ -127,7 +127,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 			},
 			function ()
 			{
-				alert ("Server failure: could not load MDS coords.");
+				dialog.ajax_error ("Server failure: could not load MDS coords.")("","","");
 			}
 		);
 		
@@ -151,7 +151,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 			},
 			function()
 			{
-				alert("Server failure: could not load color by data.");
+				dialog.ajax_error ("Server failure: could not load color by data.")("","","");
 			}
 		);
 	}
@@ -297,7 +297,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 				},
 			error: function ()
 				{
-					alert('Server failure: could not update MDS coords.');
+					dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
 				}
 				
 		});
@@ -311,14 +311,16 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 		if (selections.len_sel_1() <= 1 &&
 			selections.len_sel_2() <= 1)
 		{
-			alert('Please make two (nontrivial) selections before computing the difference.');
+			dialog.ajax_error
+			('Please make sure both red and blue selections have two or more points before computing the difference.')
+			("","","");
 			return;
 		}
 		
 		// add dummy -1 to enforce passing arrays
 		var sel_1 = selections.sel_1().concat(-1);
 		var sel_2 = selections.sel_2().concat(-1);
-				
+
 		// call server to compute Fisher values for time series
 		client.get_model_command(
 		{
@@ -328,18 +330,22 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 			parameters: [sel_1, sel_2],
 			success: function (result)
 				{
-					
+
 					// compute Fisher's discriminant for each time series separately
 					var fisher_disc = result["fisher_disc"];
 					
 					// sort Fisher's discriminant values and adjust plot order
 					var fisher_inds = sort_indices(fisher_disc);
-					plots.change_selections(fisher_inds);
-					
+
+					// fire difference event
+		            var differenceEvent = new CustomEvent("DACDifferenceComputed",
+		                                                  { detail: fisher_inds });
+                    document.body.dispatchEvent(differenceEvent);
+
 				},
 			error: function ()
 				{
-					alert("Server failure: could not compute Fisher's discriminant.");
+					dialog.ajax_error("Server failure: could not compute Fisher's discriminant.")("","","");
 				}
 		});
 
@@ -423,19 +429,13 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 						},
 						function ()
 						{
-							alert('Server failure: could not load color by data column.');
+							dialog.ajax_error ('Server failure: could not load color by data column.')("","","");
 						}
 					);
 				}
 				
 			});
 				
-	}
-	
-	// expose color by selection column index
-	module.color_by_selection = function()
-	{
-		return curr_color_by_sel;
 	}
 	
 	// set callback for selection 1,2, or zoom radio buttons
@@ -600,16 +600,13 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 					d3.select(this).call(d3.event.target);
 				};
 		};
-		
-		// update time series plots
-		plots.update_plots(selections.sel_1(), selections.sel_2());
-		
-		// update table - select corresponding rows
-		metadata_table.select_rows();
-		
-		// jump to top row in table for current selection
-		metadata_table.jump_to(selection);
 
+		// fire selection change event
+		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+					                         sel_1: selections.sel_1(),
+					                         sel_2: selections.sel_2(),
+					                         active_sel: selection} });
+        document.body.dispatchEvent(selectionEvent);
 	}
 	
 	// select an individual point
@@ -623,13 +620,13 @@ define ("dac-scatter-plot", ["slycat-web-client", "dac-request-data",
 		
 		// re-draw scatter plot
 		draw_points();
-		
-		// update time series and table
-		plots.update_plots(selections.sel_1(), selections.sel_2());
-		metadata_table.select_rows();
-		
-		// jump to item just selected
-		metadata_table.jump_to([i]);
+
+		// fire selection change event
+		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+					                         sel_1: selections.sel_1(),
+					                         sel_2: selections.sel_2(),
+					                         active_sel: [i]} });
+        document.body.dispatchEvent(selectionEvent);
 	}
 		
 	return module;

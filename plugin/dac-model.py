@@ -718,21 +718,21 @@ def register_slycat_plugin(context):
         sel_1 = numpy.array([int(value) for value in kwargs["0"] if int(value) >= 0])
         sel_2 = numpy.array([int(value) for value in kwargs["1"] if int(value) >= 0])
 
-        # get number of distance matrices (same as number of alpha values)
-    	alpha_values = slycat.web.server.get_model_parameter (
-    	   database, model, "dac-alpha-parms")
-    	
+        # get number of alpha values using array metadata
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
+        num_vars = len(meta_dist)
+
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
-        for i in range(len(alpha_values)):
+        for i in range(num_vars):
             dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data (
             	database, model, "dac-var-dist", "%s/0/..." % i))))
             	
         # calculate Fisher's discriminant for each variable
         num_sel_1 = len(sel_1)
         num_sel_2 = len(sel_2)
-        fisher_disc = numpy.zeros(len(alpha_values))
-        for i in range(len(alpha_values)):
+        fisher_disc = numpy.zeros(num_vars)
+        for i in range(num_vars):
             sx2 = numpy.sum(numpy.square(dist_mats[i][sel_1,:][:,sel_1])) / (2 * num_sel_1)
             sy2 = numpy.sum(numpy.square(dist_mats[i][sel_2,:][:,sel_2])) / (2 * num_sel_2)
             uxuy2 = (numpy.sum(numpy.square(dist_mats[i][sel_1,:][:,sel_2])) / 
