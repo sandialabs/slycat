@@ -49,7 +49,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         path:null,
         selection: [],
         progress: ko.observable(null),
-        progress_status: ko.observable(''),
     });
 
     // DAC generic parsers
@@ -104,7 +103,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         // set PTS parameter defaults
         component.csv_min_size = 10;
-        component.min_num_dig = 1;
+        component.min_num_dig = 3;
 
         client.post_project_models({
         pid: component.project._id(),
@@ -578,9 +577,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // this function starts the upload process for the CSV/META format
     component.upload_pts_format = function() {
 
-        // if already uploaded data, do not re-upload
-        if (csv_meta_upload == true) {
+        // check PTS parse parameters
+        var csv_parm = Math.round(Number(component.csv_min_size));
+        var dig_parm = Math.round(Number(component.min_num_dig));
+        if (csv_parm < 2 || dig_parm < 1) {
 
+            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameter must be >= 1.")("","","");
+
+        } else if (csv_meta_upload == true) {
+
+            // if already uploaded data, do not re-upload
             component.tab(3);
 
         } else {
@@ -608,8 +614,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         parser: "dac-zip-file-parser",
                         progress: component.browser_zip_file.progress,
                         progress_increment: 100,
-                        progress_final: 100,
-                        progress_status: component.browser_zip_file.progress_status,
                         success: function(){
 
                                 // do not re-upload files
@@ -626,7 +630,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                                 $('.pts-browser-continue').toggleClass("disabled", false);
                             }
                     };
-                    dac_file_uploader.uploadFile(fileObject);
+                    fileUploader.uploadFile(fileObject);
 
                 } else {
                     dialog.ajax_error("Please select a file with the .zip extension.")("","","");
@@ -636,203 +640,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 dialog.ajax_error("Please select PTS CSV/META .zip file.")("","","");
             }
         }
-    };
-
-    // process button stops after processing finished
-    component.process_pts_format_stop = function () {
-
-        // set process continue to stop
-        process_continue = false;
-
-        // process pts data
-        process_pts_format();
-
-    };
-
-    // continue buttons goes to next tab after processing
-    component.process_pts_format_continue = function () {
-
-        // set process to continue
-        process_continue = true;
-
-        // process pts data
-        if (already_processed) {
-
-            // skip ahead to next wizard screen
-            $(".pts-process-continue").toggleClass("disabled", true);
-            assign_pref_defaults();
-
-        } else {
-
-            process_pts_format();
-        }
-
-    };
-
-    // after data is uploaded we can test the processing by examining
-    // the log file, if desired
-    var process_pts_format = function () {
-
-        // check PTS parse parameters
-        var csv_parm = Math.round(Number(component.csv_min_size));
-        var dig_parm = Math.round(Number(component.min_num_dig));
-        if (csv_parm < 2 || dig_parm < 3) {
-
-            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameter must be >= 3.")("","","");
-
-        } else {
-
-            // disable both process and continue buttons
-            $(".pts-process-continue").toggleClass("disabled", true);
-
-            // push initial progress indicator to database
-            client.put_model_parameter({
-                mid: component.model._id(),
-                aid: "dac-polling-progress",
-                value: ["Parsing ...", 10],
-                success: function () {
-
-                    // start polling
-                    poll_pts_parse();
-
-                    // call server to transform data
-                    client.get_model_command({
-                        mid: component.model._id(),
-                        type: "DAC",
-                        command: "parse_pts_data",
-                        parameters: [csv_parm, dig_parm]
-
-                        // note: success and errors are handled by polling
-                    })
-
-                },
-                error: function () {
-                    dialog.ajax_error("Error starting PTS parsing.")("","","");
-                    $('.pts-process-continue').toggleClass("disabled", false);
-                }
-            });
-        };
-    };
-
-    // this function polls the "dac-poll-progress" variable while
-    // the server is parsing the pts data
-    function poll_pts_parse () {
-
-        console.log ("Polling PTS parser.");
-
-        // constants for timeouts
-        var ONE_MINUTE = 60000;
-        var ONE_SECOND = 1000;
-
-        // waits 1 minute past last successful progress update
-        var endTime = Number(new Date()) + ONE_MINUTE;
-
-        // polling interval is 1 second
-        var interval = ONE_SECOND;
-
-        // poll database for artifact "dac-poll-progress"
-        (function pts_poll() {
-
-            client.get_model_parameter(
-	        {
-	            mid: component.model._id(),
-      	        aid: "dac-polling-progress",
-		        success: function (result)
-		        {
-
-                    // set progress bar to show we are parsing files
-
-                    // update text box if parsing
-                    if (result[0] == "Parsing ..." || result[0] == "Computing ...") {
-
-                        // get parse error log
-                        client.get_model_parameter(
-		                {
-			                mid: component.model._id(),
-      		                aid: "dac-parse-log",
-			                success: function (result)
-				            {
-					            // show log in text box
-                                $('#dac-wizard-process-results').val(result[1]);
-                            }
-                        })
-                    }
-
-		            if (result[0] == "Done") {
-
-		                // done uploading to database
-                        component.parse_progress(100);
-                        component.parse_progress_status('');
-
-                        // when done uploading, we pass number vars in second
-                        // position of the polling progress indicator
-                        num_vars = result[1];
-
-                        // get parse error log
-                        client.get_model_parameter(
-		                {
-			                mid: component.model._id(),
-      		                aid: "dac-parse-log",
-			                success: function (result)
-				            {
-					            // show log in text box
-                                $('#dac-wizard-process-results').val(result[1]);
-
-                                // if nothing was processed then alert user
-                                if (result[0] == "No Data") {
-
-                                    dialog.ajax_error("Parser could not find any usable PTS data.  Please try different parameters, or restart wizard and select more files.")
-                                        ("","","");
-                                    $(".pts-process-continue").toggleClass("disabled", false);
-
-                                } else {
-
-                                    // keep track that data was successfully processed
-                                    already_processed = true;
-
-                                    // continue onto next stage, if desired
-                                    if (process_continue) {
-                                        assign_pref_defaults();
-                                    } else {
-                                        $(".pts-process-continue").toggleClass("disabled", false);
-                                    }
-
-                                };
-				            },
-			                error: function () {
-			                    dialog.ajax_error("Server error retrieving parse results.")("","","");
-			                    $('.pts-process-continue').toggleClass('disabled', false);
-			                }
-		                });
-
-		            } else {
-
-                        // update progress bar
-                        component.parse_progress(result[1]);
-                        component.parse_progress_status(result[0]);
-
-		                // reset timeout and continue
-                        endTime = Number(new Date()) + ONE_MINUTE;
-                        window.setTimeout(pts_poll, interval);
-		            }
-		        },
-		        error: function () {
-
-                    if (Number(new Date()) < endTime) {
-
-		                // continue, do not reset timer
-                        window.setTimeout(pts_poll, interval);
-
-                    } else {
-
-                        // give up
-                        dialog.ajax_error("Server error parsing PTS data.")("","","");
-                        $(".pts-process-continue").toggleClass("disabled", false);
-
-                    }
-		        }
-	        });
-	    })();
     };
 
     // wizard finish model code

@@ -116,7 +116,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                         // not complete -- set up display window and poll
                         } else {
 
-                            console.log ("Not done processing.");
+                            dialog.ajax_error ("Not done loading model ...")("","","");
 
                         }
 		            },
