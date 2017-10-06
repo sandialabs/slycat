@@ -17,35 +17,25 @@ define ("dac-alpha-sliders", ["jquery", "slycat-dialog", "dac-request-data"],
 	var alpha_values = [];
 	var alpha_order = [];
 	
-	module.setup = function (ALPHA_STEP)
+	module.setup = function (ALPHA_STEP, num_alpha, names_alpha)
 	{
-		// load up alpha names, alpha values, and alpha order
-		$.when(request.get_table_metadata("dac-variables-meta"),
-		   	   request.get_table("dac-variables-meta")).then(
-			function (variables_metadata, variables_data)
-			{
 
-				// sort out the information we need
-				alpha_num = variables_metadata[0]["row-count"];
-				alpha_names = variables_data[0]["data"][0];
+		// sort out the information we need
+		alpha_num = num_alpha;
+		alpha_names = names_alpha;
 
-				// initialize alpha slider values to all 1 and order to 1 ... n
-				for (i = 0; i < alpha_num; i++) {
-                    alpha_values.push(1.0);
-                    alpha_order.push(i);
-                }
+		// initialize alpha slider values to all 1 and order to 1 ... n
+		for (i = 0; i < alpha_num; i++) {
+            alpha_values.push(1.0);
+            alpha_order.push(i);
+        }
 			
-				// write out list of sliders to html file
-				display_alpha_sliders.bind($("#dac-alpha-sliders"))(ALPHA_STEP);
+		// write out list of sliders to html file
+		display_alpha_sliders.bind($("#dac-alpha-sliders"))(ALPHA_STEP);
 			
-				// make sliders sortable
-				$("#dac-alpha-sliders").sortable();	
-			},
-			function ()
-			{
-			    dialog.ajax_error("Server error: could not load variable meta data.")("","","");
-			}
-		);
+		// make sliders sortable
+		$("#dac-alpha-sliders").sortable();
+
 	}
 
 	// populate alpha sliders with relevant labels, in order, and with values

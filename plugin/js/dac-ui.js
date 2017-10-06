@@ -80,22 +80,38 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                             // set up difference calculation event
                             document.body.addEventListener("DACDifferenceComputed", difference_computed);
 
-                        	// set up the alpha sliders
-				            alpha_sliders.setup (ALPHA_STEP);
+                            // load all relevant data and set up panels
+                            $.when(request.get_table_metadata("dac-variables-meta"),
+		   	                       request.get_table("dac-variables-meta"),
+		   	                       request.get_table_metadata("dac-datapoints-meta"),
+			                       request.get_table("dac-datapoints-meta")).then(
+		   	                    function (variables_meta, variables, data_table_meta, data_table)
+		   	                    {
 
-				            // set up the alpha buttons
-				            alpha_buttons.setup ();
+		   	                        // set up the alpha sliders
+				                    alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
+				                                         variables[0]["data"][0]);
 
-				            // set up the time series plots
-				            plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS);
+				                    // set up the alpha buttons
+				                    alpha_buttons.setup (variables_meta["row-count"]);
 
-				            // set up the MDS scatter plot
-				            scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					            POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-					            COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL);
+				                    // set up the time series plots
+				                    plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
+				                                variables_meta, variables);
 
-				            // set up table (propagate selections through to scatter plot)
-				            metadata_table.setup();
+				                    // set up the MDS scatter plot
+				                    scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
+					                    POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
+					                    COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta);
+
+				                    // set up table (propagate selections through to scatter plot)
+				                    metadata_table.setup(data_table_meta, data_table);
+
+		   	                    },
+		   	                    function () {
+		   	                        dialog.ajax_error ("Server error: could not load initial data.")("","","");
+		   	                    });
+
 
                         // not complete -- set up display window and poll
                         } else {

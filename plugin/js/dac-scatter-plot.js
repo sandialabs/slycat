@@ -57,7 +57,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	// initial setup: read in MDS coordinates & plot
 	module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER, 
 		POINT_COLOR, POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-		COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL)
+		COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, datapoints_meta)
 	{
 	
 		// set the maximum number of points to animate, maximum zoom factor
@@ -132,28 +132,19 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		);
 		
 		// set up color by selection
-		$.when(request.get_table_metadata("dac-datapoints-meta")).then(
-			function(datapoints_meta)
-			{
-				
-				// look for columns with numbers for color by menu
-				for (var i = 0; i < datapoints_meta["column-count"]; i++)
-				{
-					if (datapoints_meta["column-types"][i] == "float64") {
-						color_by_cols.push(i);
-						color_by_names.push(datapoints_meta["column-names"][i]);
-					};
-				};
-				
-				// populate pull down menu
-				display_pull_down.bind($("#dac-scatter-select"))();
 
-			},
-			function()
-			{
-				dialog.ajax_error ("Server failure: could not load color by data.")("","","");
-			}
-		);
+		// look for columns with numbers for color by menu
+		for (var i = 0; i < datapoints_meta["column-count"]; i++)
+		{
+			if (datapoints_meta["column-types"][i] == "float64") {
+				color_by_cols.push(i);
+				color_by_names.push(datapoints_meta["column-names"][i]);
+			};
+		};
+				
+		// populate pull down menu
+		display_pull_down.bind($("#dac-scatter-select"))();
+
 	}
 	
 	// toggle shift key flag

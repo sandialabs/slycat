@@ -68,21 +68,11 @@ function(client, dialog, $, request, selections) {
 
 	}
 	
-	module.setup = function ()
+	module.setup = function (num_sliders)
 	{
 	
 		// determine number of alpha sliders
-		$.when(request.get_table_metadata("dac-variables-meta")).then(
-			function (variables_metadata)
-			{
-				// save number of sliders for later
-				alpha_num = variables_metadata["row-count"];
-			},
-			function ()
-			{
-				dialog.ajax_error("Server failure: could not load variable meta data.")("","","");
-			}
-		);
+        alpha_num = num_sliders;
 		
 		// load up cluster alpha values
 		$.when (request.get_array("dac-alpha-clusters", 0)).then(

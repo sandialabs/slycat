@@ -4,8 +4,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("dac-table", ["dac-request-data", "dac-manage-selections",
-	"jquery", "d3"], function(request, selections, $, d3)
+define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections",
+	"jquery", "d3"], function(dialog, request, selections, $, d3)
 {
 	// public functions will be returned via the module variable
 	var module = {};
@@ -43,72 +43,60 @@ define("dac-table", ["dac-request-data", "dac-manage-selections",
 	}
 	
 	// load grid data and set up colors for selections
-	module.setup = function ()
+	module.setup = function (metadata, data)
 	{
-		
-		// display using slickgrid in the dac-table.js file
-		$.when (request.get_table_metadata("dac-datapoints-meta"),
-			request.get_table("dac-datapoints-meta")).then(
-			function (metadata, data)
-			{
 
-				// get number of rows and columns in data table
-				var num_rows = data[0]["data"][0].length;				
-				var num_cols = data[0]["data"].length;
+		// get number of rows and columns in data table
+		var num_rows = data[0]["data"][0].length;
+		var num_cols = data[0]["data"].length;
 				
-				// set up slick grid column names
-				table_metadata = metadata[0];
-				for (var i = 0; i != num_cols; i++) {
-					grid_columns.push(make_column(i));
-				}
+		// set up slick grid column names
+		table_metadata = metadata[0];
+		for (var i = 0; i != num_cols; i++) {
+			grid_columns.push(make_column(i));
+		}
 				
-				// produce a vector of sequential id for table rows and a zero vector
-				var row_id = [];
-				var zero_vec = [];
-				for (var i = 0; i != num_rows; i++) {
-					row_id.push(i);
-					zero_vec.push(0);
-				}
+		// produce a vector of sequential id for table rows and a zero vector
+		var row_id = [];
+		var zero_vec = [];
+		for (var i = 0; i != num_rows; i++) {
+			row_id.push(i);
+			zero_vec.push(0);
+		}
 				
-				// add two columns to data, unique id and selection mode
-				data[0]["data"].push(row_id);
-				data[0]["data"].push(zero_vec);
-				grid_rows = d3.transpose(data[0]["data"]);
+		// add two columns to data, unique id and selection mode
+		data[0]["data"].push(row_id);
+		data[0]["data"].push(zero_vec);
+		grid_rows = d3.transpose(data[0]["data"]);
 
-				// set up slick grid
-				data_view = new Slick.Data.DataView();
-				grid_view = new Slick.Grid("#dac-datapoints-table", data_view, 
-							          grid_columns, grid_options);
+		// set up slick grid
+		data_view = new Slick.Data.DataView();
+		grid_view = new Slick.Grid("#dac-datapoints-table", data_view,
+							        grid_columns, grid_options);
 				
-				// keep track of shift or meta key
-				grid_view.onClick.subscribe(key_flip);
+		// keep track of shift or meta key
+		grid_view.onClick.subscribe(key_flip);
 				
-				// set table data (second to last column is ids)
-				data_view.setItems(grid_rows, num_cols);
+		// set table data (second to last column is ids)
+		data_view.setItems(grid_rows, num_cols);
 				
-				// set up row selection
-				grid_view.setSelectionModel (new Slick.RowSelectionModel());
-				grid_view.onSelectedRowsChanged.subscribe(row_selected);				
+		// set up row selection
+		grid_view.setSelectionModel (new Slick.RowSelectionModel());
+		grid_view.onSelectedRowsChanged.subscribe(row_selected);
 				
-				// helpers for grid to respond to data_view changes
-				data_view.onRowCountChanged.subscribe(change_rows);
-				data_view.onRowsChanged.subscribe(change_cols);
+		// helpers for grid to respond to data_view changes
+		data_view.onRowCountChanged.subscribe(change_rows);
+		data_view.onRowsChanged.subscribe(change_cols);
   				
-  				// update meta data function to accomodate multiple selection classes
-  				data_view.getItemMetadata = color_rows(data_view.getItemMetadata);
+  		// update meta data function to accomodate multiple selection classes
+  		data_view.getItemMetadata = color_rows(data_view.getItemMetadata);
   				
-  				// add sorting
-  				grid_view.onSort.subscribe(col_sort);
+  		// add sorting
+  		grid_view.onSort.subscribe(col_sort);
   				
-				// fit table into container
-				module.resize();		
-				
-			},
-			function ()
-			{
-				alert("Could not load meta data table.");
-			}
-		);
+		// fit table into container
+		module.resize();
+
 	}
 
 	// toggle shift key flag

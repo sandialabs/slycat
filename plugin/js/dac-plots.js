@@ -64,7 +64,8 @@ function(dialog, request, $, d3)
 	var y_label = [];
 	
 	// set up initial private variables, user interface
-	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS)
+	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
+	                         variables_metadata, variables_data)
 	{
 	
 		// set ui constants
@@ -81,102 +82,90 @@ function(dialog, request, $, d3)
 		plot_adjustments.x_tick_freq = PLOT_ADJUSTMENTS.X_TICK_FREQ;
 		plot_adjustments.y_tick_freq = PLOT_ADJUSTMENTS.Y_TICK_FREQ;
 	
-		// read in meta data, populate pull down menus,
-		// and initialize d3 plots
-		$.when(request.get_table_metadata("dac-variables-meta"),
-		   	   request.get_table("dac-variables-meta")).then(
-			function (variables_metadata, variables_data, plot_order)
-			{
+		// populate pull down menus and initialize d3 plots
 
-				// sort out the variable metadata we need
-				num_plots = variables_metadata[0]["row-count"];
-				plot_name = variables_data[0]["data"][0];
-				x_axis_name = variables_data[0]["data"][1];
-				y_axis_name = variables_data[0]["data"][2];
-				plot_type = variables_data[0]["data"][3];
+		// sort out the variable metadata we need
+		num_plots = variables_metadata[0]["row-count"];
+		plot_name = variables_data[0]["data"][0];
+		x_axis_name = variables_data[0]["data"][1];
+		y_axis_name = variables_data[0]["data"][2];
+		plot_type = variables_data[0]["data"][3];
 				
-				// init plot order (repeated if not enough plots)
-				for (i = 0; i < Math.min(num_plots,3); i++) {
-				    plots_selected.push(i);
-				}
+		// init plot order (repeated if not enough plots)
+		for (i = 0; i < Math.min(num_plots,3); i++) {
+		    plots_selected.push(i);
+		}
 
-				// remove unused plot pull downs
-				for (i = num_plots; i < 3; i++) {
-				    $("#dac-select-plot-" + (i+1)).remove();
-				}
+		// remove unused plot pull downs
+		for (i = num_plots; i < 3; i++) {
+		    $("#dac-select-plot-" + (i+1)).remove();
+		}
 
-				// load up matrices for time series that we're looking at
-				for (i = 0; i < Math.min(num_plots,3); i++) {
+		// load up matrices for time series that we're looking at
+		for (i = 0; i < Math.min(num_plots,3); i++) {
 
-				    $.when(request.get_array("dac-time-points", plots_selected[i]),
-					       request.get_array("dac-var-data", plots_selected[i])).then(
-					    function (time_values, time_vars) {
+		    $.when(request.get_array("dac-time-points", plots_selected[i]),
+			       request.get_array("dac-var-data", plots_selected[i])).then(
+				function (time_values, time_vars) {
 
-						    // save data as likely candidates for viewing later
-						    plots_selected_time.push(time_values[0]);
-						    plots_selected_data.push(time_vars[0]);
+			        // save data as likely candidates for viewing later
+					plots_selected_time.push(time_values[0]);
+					plots_selected_data.push(time_vars[0]);
 
-					    },
-					    function ()
-					    {
-						    dialog.ajax_error('Server failure: could not load plot data.')("","","");
-					    }
-				    );
-				}
+				},
+				function ()
+			    {
+					dialog.ajax_error('Server failure: could not load plot data.')("","","");
+			    });
+		}
 
-				// initialize plots as d3 plots
-				for (var i = 0; i < Math.min(num_plots,3); ++i) {
+		// initialize plots as d3 plots
+		for (var i = 0; i < Math.min(num_plots,3); ++i) {
 				
-					// populate pull down menu
-					display_plot_pull_down.bind($("#dac-select-plot-" + (i+1)))(i);
+			// populate pull down menu
+			display_plot_pull_down.bind($("#dac-select-plot-" + (i+1)))(i);
 					
-					// actual plot
-					plot[i] = d3.select("#dac-plot-" + (i+1));
+			// actual plot
+			plot[i] = d3.select("#dac-plot-" + (i+1));
 					
-					// d3 scale (init to empty domain)
-					x_scale[i] = d3.scale.linear().domain([null,null]);
-					y_scale[i] = d3.scale.linear().domain([null,null]);
+			// d3 scale (init to empty domain)
+			x_scale[i] = d3.scale.linear().domain([null,null]);
+			y_scale[i] = d3.scale.linear().domain([null,null]);
 					
-					// d3 axes
-					x_axis[i] = d3.svg.axis().scale(x_scale[i]).orient("bottom");
-					y_axis[i] = d3.svg.axis().scale(y_scale[i]).orient("left");
+			// d3 axes
+			x_axis[i] = d3.svg.axis().scale(x_scale[i]).orient("bottom");
+			y_axis[i] = d3.svg.axis().scale(y_scale[i]).orient("left");
 					
-					// append axes to plot
-					plot[i].append("g")
-						   .attr("class", "x axis");
-					plot[i].append("g")
-						   .attr("class", "y axis")
-						   .attr("transform", "translate(" + 
-						   		(plot_adjustments.padding_left + 
-						   		plot_adjustments.y_label_padding) + ",0)");
+			// append axes to plot
+			plot[i].append("g")
+				.attr("class", "x axis");
+			plot[i].append("g")
+				.attr("class", "y axis")
+				.attr("transform", "translate(" +
+					(plot_adjustments.padding_left +
+					 plot_adjustments.y_label_padding) + ",0)");
 					
-					// clip rectangle for zooming
-					plot[i].append("defs").append("svg:clipPath")
-						.attr("id", "clip")
-						.append("svg:rect")
-						.attr("id", "clip-rect")
-						.attr("x", plot_adjustments.padding_left
-								   + plot_adjustments.y_label_padding)
-						.attr("y", plot_adjustments.padding_top);
+			// clip rectangle for zooming
+			plot[i].append("defs").append("svg:clipPath")
+				.attr("id", "clip")
+				.append("svg:rect")
+				.attr("id", "clip-rect")
+				.attr("x", plot_adjustments.padding_left
+						 + plot_adjustments.y_label_padding)
+				.attr("y", plot_adjustments.padding_top);
 					
-					// axis labels		
-					x_label[i] = plot[i].append("text")
-		  						     	.attr("text-anchor", "end")
-					y_label[i] = plot[i].append("text")
-										.attr("text-anchor", "end")
-										.attr("transform", "rotate(-90)");
+			// axis labels
+			x_label[i] = plot[i].append("text")
+		  						.attr("text-anchor", "end")
+			y_label[i] = plot[i].append("text")
+								.attr("text-anchor", "end")
+								.attr("transform", "rotate(-90)");
 	   
-				}
+		}
 				
-				// set up initial size, axis labels, etc.
-				module.draw();
-				
-			},
-			function ()
-			{
-				dialog.ajax_error ("Server failure: could not load plot meta-data.")("","","");
-			}
-		);
+		// set up initial size, axis labels, etc.
+		module.draw();
+
 	}
 	
 	// populate pull down menu i in {0,1,2} with plot names
