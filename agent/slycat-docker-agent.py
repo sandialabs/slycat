@@ -21,6 +21,7 @@ import subprocess
 import sys
 import tempfile
 import agent
+import threading
 
 
 class Agent(agent.Agent):
@@ -60,12 +61,7 @@ class Agent(agent.Agent):
         }
         try:
             # /job_log.txt
-            results["output"], results["errors"] = self.run_remote_command("sacct -j %s --format=jobname,state" % results["jid"])
-            myset = [line.split() for line in results["output"]]
-            for _ in myset:
-                if "slycat-tmp" in _:
-                    results["output"] = _[1]
-                    break
+            results["output"], results["errors"] = ("COMPLETE", "COMPLETE")
         except OSError as e:
             sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
             sys.stdout.flush()
@@ -112,18 +108,21 @@ class Agent(agent.Agent):
         f.write("#SBATCH --nodes=%s\n" % nnodes)
         f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
         f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-        f.write("ipython profile create")
-        f.write("echo \"Creating profile ${profile}\"\n")
-        f.write("ipcontroller --ip='*' &\n")
-        f.write("ipcluster start -n 4 &")
+        f.write("echo \"RUNNING\" > job_log.txt\n")
+        # f.write("ipython profile create\n")
+        # f.write("echo \"Creating profile ${profile}\"\n")
+        # f.write("ipcontroller --ip='*' &\n")
+        # f.write("ipcluster start -n 4&\n")
         f.write("echo \"Launching controller\"\n")
+        f.write("echo \"RUNNING\" > job_log.txt\n")
         f.write("sleep 1m\n")
         f.write("echo \"Launching job\"\n")
         for c in fn:
-            f.write("%s\n" % c)
-        f.write("pkill -f ipcontroller \n")
-        f.write("pkill -f ipcluster \n")
-        f.write("pkill -f python \n")
+            f.write("%s >> outfile.txt\n" % c)
+        f.write("echo \"COMPLETE\" > job_log.txt\n")
+        # f.write("pkill -f ipcontroller \n")
+        # f.write("pkill -f ipcluster \n")
+        # f.write("pkill -f python \n")
         f.close()
 
     def run_function(self, command):
@@ -151,15 +150,20 @@ class Agent(agent.Agent):
             data = myfile.read().replace('\n', '')
         results["temp_file"] = data
         self.run_remote_command("chmod 755 %s" % tmp_file.name)
-        print "starting"
-        print tmp_file.name
+        # print "starting"
+        # print tmp_file.name
         try:
-            print (".%s &> /dev/null &" % tmp_file.name)
-            self.run_remote_command("sh %s &> /dev/null &" % tmp_file.name)
+            # print (".%s &> /dev/null" % tmp_file.name)
+            # p = Process(target=self.run_remote_command, args=(("sh %s >> outfile.txt" % tmp_file.name),))
+            # p.start()
+            t = threading.Thread(target=self.run_remote_command, args=("sh %s &>/dev/null &; disown" % tmp_file.name,))
+            t.start()
+            results["errors"] = None
+            results["output"] = "1234567 aids"
         except Exception as e:
             print sys.exc_info()
             e.message
-        print "running"
+        # print "running"
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
