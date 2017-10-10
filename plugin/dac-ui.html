@@ -7,7 +7,11 @@ S. Martin
 
 <div id="dac-model" style="-webkit-flex:1; flex:1;">
 
-	<div class="ui-layout-center">
+	<div id="dac-progress-feedback" style="margin: 20px;">Hi Shawn, you can put all your progress HTML code here.</div>
+
+	<!-- <div id="dac-model"> -->
+
+	<div class="ui-layout-center dac-model-content">
 		
 		<div class="ui-layout-center">
 
@@ -63,14 +67,14 @@ S. Martin
 		
 		<div class="ui-layout-west">
 		
-			<!-- Alpha Sliders --->
+			<!-- Alpha Sliders -->
 			<div class="ui-layout-center">
 				<ul id="dac-alpha-sliders"></ul>
 			</div>
 			
 			<div class="ui-layout-south">
 		
-				<!-- Alpha Buttons --->			
+				<!-- Alpha Buttons -->			
 				<div class="bootstrap-styles" id="dac-alpha-buttons">
 					<button type="button" class="btn btn-default"
 						    id="dac-alpha-zero-button">0</button>
@@ -85,9 +89,9 @@ S. Martin
 		
 	</div>
 	
-	<div class="ui-layout-east" id="dac-plots">
+	<div class="ui-layout-east dac-model-content" id="dac-plots">
 	
-		<!-- Times Series Plots --->
+		<!-- Times Series Plots -->
 		<select class="dac-select" id="dac-select-plot-1"></select>
 		<svg class="dac-plot" id="dac-plot-1"></svg>
 
@@ -98,5 +102,6 @@ S. Martin
 		<svg class="dac-plot" id="dac-plot-3"></svg>
 
 	</div>
+	<!-- </div> -->
 	
 </div>

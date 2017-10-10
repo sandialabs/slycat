@@ -60,16 +60,19 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"])
 				};
 
-				// set up jQuery layout for user interface
-				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
-					SCATTER_BUTTONS_HEIGHT);
-
 	            // check to see if server computations are complete
 	            $.when (request.get_parameters("dac-polling-progress")).then (
 	                function (progress) {
 
 	                    // complete -- assign alpha parms, order, and var plot order
 	                    if (progress[0] == "Done") {
+
+	                    	// Remove progress element from DOM
+	                    	$('#dac-progress-feedback').remove();
+
+	                    	// set up jQuery layout for user interface
+							layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
+								SCATTER_BUTTONS_HEIGHT);
 
                             // set up alpha slider value change event
                             document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
@@ -109,14 +112,17 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 		   	                    },
 		   	                    function () {
+		   	                    	// Hide model and show progress content pane.
 		   	                        dialog.ajax_error ("Server error: could not load initial data.")("","","");
 		   	                    });
 
 
                         // not complete -- set up display window and poll
                         } else {
+                        	// Hide content panes since we will be showing progress UI instead
+	                    	$('.dac-model-content').hide();
 
-                            dialog.ajax_error ("Not done loading model ...")("","","");
+                            //dialog.ajax_error ("Not done loading model ...")("","","");
 
                         }
 		            },
