@@ -2198,11 +2198,12 @@ def get_time_series_names(hostname, path, **kwargs):
             column_types.append("string")
     rows = rows[1:]  # removes first row (header)
 
+    file_extensions = {".csv", ".dat", ".prn", "csv", "dat", "prn"}
     response_time_series_names = []
     for i, val in enumerate(rows[0]):
         if column_types[i] is "string":
             file_ext = val[len(rows[1][i]) - 3:]
-            if file_ext == "csv" or file_ext == "dat" or file_ext == "prn":
+            if file_ext in file_extensions:
                 response_time_series_names.append(column_names[i])
     if len(response_time_series_names) >= 1:
         return response_time_series_names
