@@ -220,9 +220,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			
 			return outline_width;
 		});
-		
-			
-			
+
 		// fill in points
 		if (curr_color_by_col.length > 0) {
 			scatter_points.attr("fill", function(d,i) {

@@ -19,6 +19,7 @@ function(client, dialog, $, request, selections) {
 	// zero out all alpha sliders
 	var zero_button_callback = function ()
 	{
+
 		// create zero array
 		var zero_array = new Array(alpha_num);
 		for (var i = 0; i != alpha_num; ++i) {
@@ -70,7 +71,7 @@ function(client, dialog, $, request, selections) {
 	
 	module.setup = function (num_sliders)
 	{
-	
+
 		// determine number of alpha sliders
         alpha_num = num_sliders;
 		

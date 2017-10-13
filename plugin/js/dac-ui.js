@@ -96,7 +96,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 				                                         variables[0]["data"][0]);
 
 				                    // set up the alpha buttons
-				                    alpha_buttons.setup (variables_meta["row-count"]);
+				                    alpha_buttons.setup (variables_meta[0]["row-count"]);
 
 				                    // set up the time series plots
 				                    plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
@@ -105,7 +105,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 				                    // set up the MDS scatter plot
 				                    scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
 					                    POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-					                    COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta);
+					                    COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
 
 				                    // set up table (propagate selections through to scatter plot)
 				                    metadata_table.setup(data_table_meta, data_table);
