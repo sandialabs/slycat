@@ -58,11 +58,11 @@ def register_slycat_plugin(context):
 
     def fail_model(mid, message):
         """
-    Update the model as failed.
-
-    :param mid:     model ID
-    :param message: reason for the model failure
-    """
+        Update the model as failed.
+    
+        :param mid:     model ID
+        :param message: reason for the model failure
+        """
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", mid)
         slycat.web.server.update_model(database, model, state="finished", result="failed",
@@ -70,12 +70,12 @@ def register_slycat_plugin(context):
 
     def page_html(database, model):
         """
-    Add the HTML representation of the model to the context object.
-
-    :param database:
-    :param model:
-    :return: HTML render for the model
-    """
+        Add the HTML representation of the model to the context object.
+    
+        :param database:
+        :param model:
+        :return: HTML render for the model
+        """
         import pystache
 
         context = dict()
@@ -89,15 +89,15 @@ def register_slycat_plugin(context):
 
     def get_remote_file(sid, hostname, username, password, filename):
         """
-    Utility function to fetch remote files.
-
-    :param sid:      session ID
-    :param hostname:
-    :param username:
-    :param password:
-    :param filename: Full path for the requested file
-    :return: tuple with session ID and file content
-    """
+        Utility function to fetch remote files.
+    
+        :param sid:      session ID
+        :param hostname:
+        :param username:
+        :param password:
+        :param filename: Full path for the requested file
+        :return: tuple with session ID and file content
+        """
         try:
             data = slycat.web.server.get_remote_file(sid, filename)
         except:
@@ -107,19 +107,19 @@ def register_slycat_plugin(context):
 
     def compute(database, model, sid, uid, workdir, hostname, username, password):
         """
-    Computes the Time Series model. It fetches the necessary files from a
-    remote server that were computed by the slycat-agent-compute-timeseries.py
-    script.
-
-    :param database:
-    :param model:
-    :param sid:      session ID
-    :param uid:      user ID
-    :param workdir:
-    :param hostname:
-    :param username:
-    :param password:
-    """
+        Computes the Time Series model. It fetches the necessary files from a
+        remote server that were computed by the slycat-agent-compute-timeseries.py
+        script.
+    
+        :param database:
+        :param model:
+        :param sid:      session ID
+        :param uid:      user ID
+        :param workdir:
+        :param hostname:
+        :param username:
+        :param password:
+        """
         workdir += "/slycat/pickle"  # route to the slycat directory
         try:
             database = slycat.web.server.database.couchdb.connect()
