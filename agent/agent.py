@@ -159,6 +159,15 @@ class Agent(object):
         sys.stdout.flush()
 
     def set_user_config(self, command):
+        """
+        writes config into ~/.slycatrc file of the user
+        :param command: incoming json format should be 
+        {
+        action:"action",
+        command:{config:{section_key:{option_key:"value"}...}}
+        }
+        :return: 
+        """
         results = {
             "ok": True,
             "errors": ""
