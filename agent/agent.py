@@ -418,7 +418,6 @@ class Agent(object):
                     self.log.error("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
-                print e
                 sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
                 sys.stdout.flush()
 
