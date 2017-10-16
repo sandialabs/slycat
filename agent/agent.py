@@ -164,21 +164,20 @@ class Agent(object):
             "errors": ""
         }
         config = command["command"]["config"]
-
         rc = os.path.expanduser('~') + "/.slycatrc"
-        rc_file = open(rc, "w+")
-        parser = ConfigParser.RawConfigParser()
 
-        for section_key in config:
-            if not parser.has_section(section_key):
-                parser.add_section(section_key)
-            section = config[section_key]
-            for option_key in section:
-                if not str(section[option_key]) == "":
-                    parser.set(section_key, option_key, "\"%s\"" % section[option_key])
-
-        parser.write(rc_file)
-        rc_file.close()
+        with open(rc, "w+") as rc_file:
+            rc_file.seek(0)
+            rc_file.truncate()
+            parser = ConfigParser.RawConfigParser()
+            for section_key in config:
+                if not parser.has_section(section_key):
+                    parser.add_section(section_key)
+                section = config[section_key]
+                for option_key in section:
+                    if not str(section[option_key]) == "":
+                        parser.set(section_key, option_key, "\"%s\"" % section[option_key])
+            parser.write(rc_file)
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
@@ -339,6 +338,10 @@ class Agent(object):
         sys.stdout.flush()
 
     def run(self):
+        """
+        format {action:action, command: command}
+        :return: 
+        """
         self.log.info("\n")
         self.log.info("*agent started*")
         # Parse and sanity-check command-line arguments.
@@ -415,6 +418,7 @@ class Agent(object):
                     self.log.error("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
+                print e
                 sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
                 sys.stdout.flush()
 
