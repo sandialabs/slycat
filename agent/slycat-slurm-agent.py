@@ -150,14 +150,16 @@ class Agent(agent.Agent):
         time_minutes = command["command"]["time_minutes"]
         time_seconds = command["command"]["time_seconds"]
         fn = command["command"]["fn"]
+        working_dir = command["command"]["working_dir"]
         # uid = command["command"]["uid"]
 
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
         with open(tmp_file.name, 'r') as myfile:
             data = myfile.read().replace('\n', '')
+        results["working_dir"] = working_dir
         results["temp_file"] = data
         results["output"], results["errors"] = self.run_remote_command("sbatch %s" % tmp_file.name)
 
