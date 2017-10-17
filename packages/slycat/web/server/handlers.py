@@ -2092,8 +2092,10 @@ def job_time(nodes, tasks, size):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def set_user_config(hostname):
+    # TODO add user config mapping
     sid = get_sid(hostname)
     config = cherrypy.request.json["config"]
+    cherrypy.log.error("user_config %s" % config)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.set_user_config(config)
 

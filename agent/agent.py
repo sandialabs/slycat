@@ -131,7 +131,7 @@ class Agent(object):
 
     def get_user_config(self):
         """
-        writes the users config as json 
+        reads the users config as json 
         {results:{config:{}, "ok":bool, errors:"string errors message"}}
         :return: 
         """
