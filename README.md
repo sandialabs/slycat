@@ -48,7 +48,7 @@ Slycat will automatically restart to pick up any new changes.
 `docker stop slycat`
 4. And start it back up:  
 `docker start slycat`  
-(don't run the `docker run` command from step 2 again, it's only required the first time you start Slycat)
+(don't run the `docker run` command from step 3 again, it's only required the first time you start Slycat)
 
 
 # Slower Start
