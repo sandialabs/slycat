@@ -40,7 +40,7 @@ Also, your browser will probably notify you of a privacy issue because we provid
 The password is `slycat`
 5. Once inside your container, you can update the Slycat source code like so:  
     a. `cd ~/src/slycat`  
-    b. `git pull`
+    b. `git pull`  
 Slycat will automatically restart to pick up any new changes.
 6. To exit your container:  
 `exit`
