@@ -161,7 +161,10 @@ class Agent(agent.Agent):
         fn = command["command"]["fn"]
         # uid = command["command"]["uid"]
         working_dir = command["command"]["working_dir"]
-
+        try:
+            self.run_remote_command("mkdir %s" % working_dir)
+        except Exception:
+            pass
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,

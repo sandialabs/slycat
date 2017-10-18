@@ -440,7 +440,7 @@ class Session(object):
         def compute_timeseries(fn_id, params, working_dir):
             arr = list(ipython_parallel_setup_arr)
 
-            hdf5_dir = working_dir + "/hdf5/"
+            hdf5_dir = working_dir + "hdf5/"
             pickle_dir = working_dir + "pickle/"
 
             if params["timeseries_type"] == "csv":
@@ -500,7 +500,10 @@ class Session(object):
         stdin, stdout, stderr = self._agent
         hash_dir_name = uuid.uuid4().hex
         # everything up to the hashed working directory
-        work_dir = fn_params["workdir"] + "/slycat/" + hash_dir_name + "/"
+        if fn_params["workdir"][-1] == '/':
+            work_dir = fn_params["workdir"] + "slycat/" + hash_dir_name + "/"
+        else:
+            work_dir = fn_params["workdir"] + "/slycat/" + hash_dir_name + "/"
         payload = {
             "action": "run-function",
             "command": {
