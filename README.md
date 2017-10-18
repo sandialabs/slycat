@@ -12,7 +12,9 @@ For installation, tutorials, and developer documentation, go to http://slycat.re
 
 # Slycat Demo
 You can try out slycat at https://myslycat.com
+
 Username: slycat
+
 Password: slycat
 
 The data in this demo instance of Slycat is erased on a regular basis, so please don't upload anything you intend to keep.
@@ -35,12 +37,18 @@ docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/s
 ssh slycat@localhost -p 2222
 ```
 
+1. Download and install [Docker](http://www.docker.com).
 1. Pull the Slycat container with the following command:
+
 `docker pull slycat/slycat-developer`
 2. Get Slycat™ running on localhost:
+
 `docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer`
 (that's one long command, not two separate ones)
 3. Visit your local instance of Slycat at <https://localhost>
+You can log in with any username as long as the password is the same as the username. For example:
+Username: slycat
+Password: slycat
 Your browser will probably notify you of a potential privacy issue because we provide a self-signed certificate. You can proceed anyway.
 4. You can ssh to your local slycat container:
 `ssh slycat@localhost -p 2222`
