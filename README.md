@@ -13,8 +13,7 @@ For installation, tutorials, and developer documentation, go to http://slycat.re
 # Slycat Demo
 You can try out slycat at https://myslycat.com
 
-Username: slycat
-
+Username: slycat  
 Password: slycat
 
 The data in this demo instance of Slycat is erased on a regular basis, so please don't upload anything you intend to keep.
@@ -26,37 +25,26 @@ A github repo of sample data that can be used by slycat.
 
 ## Run from docker hub image (fastest way to start playing with slycat)
 
-* install [Docker](http://www.docker.com)
-```bash
-docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer
-```
-* log into slycat in your browser at localhost and play around! https://localhost/login/slycat-login.html
-* for logging into this quick container the only requirement is username = pasword
-* root user:pass is slycat:slycat for the container
-```bash
-ssh slycat@localhost -p 2222
-```
-
 1. Download and install [Docker](http://www.docker.com).
 1. Pull the Slycat image with the following command:  
 `docker pull slycat/slycat-developer`
-2. Get Slycat™ running on localhost:  
+2. Get Slycat running on localhost:  
 `docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer`  
 3. Visit your local instance of Slycat at <https://localhost>  
 You can log in with any username as long as the password is the same as the username. For example:  
 Username: slycat  
 Password: slycat  
-Your browser will probably notify you of a potential privacy issue because we provide a self-signed certificate. You can proceed anyway.
+Also, your browser will probably notify you of a potential privacy issue because we provide a self-signed certificate. You can proceed anyway.
 4. You can ssh to your local slycat container:  
 `ssh slycat@localhost -p 2222`  
 The password is `slycat`
-5. Once inside your instance, you can update the Slycat source code like so:
+5. Once inside your container, you can update the Slycat source code like so:
     a. `cd ~/src/slycat`
     b. `git pull`
 Slycat will automatically restart to pick up any new changes.
-6. To exit your instance:  
+6. To exit your container:  
 `exit`
-3. Once you're out of your instance, you can stop Slycat:  
+3. Once you're out of your container, you can stop Slycat:  
 `docker stop slycat`
 4. And start it back up:  
 `docker start slycat`  
