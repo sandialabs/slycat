@@ -141,8 +141,9 @@ class Agent(agent.Agent):
         time_seconds = command["command"]["time_seconds"]
         fn = command["command"]["fn"]
         # uid = command["command"]["uid"]
+        working_dir = command["command"]["working_dir"]
 
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
@@ -158,6 +159,7 @@ class Agent(agent.Agent):
             # p.start()
             t = threading.Thread(target=self.run_remote_command, args=("sh %s &>/dev/null &; disown" % tmp_file.name,))
             t.start()
+            results["working_dir"] = working_dir
             results["errors"] = None
             results["output"] = "1234567 aids"
         except Exception as e:
