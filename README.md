@@ -34,12 +34,12 @@ A github repo of sample data that can be used by slycat.
 You can log in with any username as long as the password is the same as the username. For example:  
 Username: slycat  
 Password: slycat  
-Also, your browser will probably notify you of a potential privacy issue because we provide a self-signed certificate. You can proceed anyway.
+Also, your browser will probably notify you of a privacy issue because we provide a self-signed certificate. You can proceed anyway.
 4. You can ssh to your local slycat container:  
 `ssh slycat@localhost -p 2222`  
 The password is `slycat`
-5. Once inside your container, you can update the Slycat source code like so:
-    a. `cd ~/src/slycat`
+5. Once inside your container, you can update the Slycat source code like so:  
+    a. `cd ~/src/slycat`  
     b. `git pull`
 Slycat will automatically restart to pick up any new changes.
 6. To exit your container:  
