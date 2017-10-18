@@ -10,6 +10,13 @@ This is Slycat - a web-based ensemble analysis and visualization platform, creat
 
 For installation, tutorials, and developer documentation, go to http://slycat.readthedocs.org
 
+# Slycat Demo
+You can try out slycat at [https://myslycat.com]
+Username: slycat
+Password: slycat
+
+The data in this demo instance of Slycat is erased on a regular basis, so please don't upload anything you intend to keep.
+
 # [Slycat-data](https://github.com/sandialabs/slycat-data)
 A github repo of sample data that can be used by slycat
 
