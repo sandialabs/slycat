@@ -38,11 +38,10 @@ ssh slycat@localhost -p 2222
 ```
 
 1. Download and install [Docker](http://www.docker.com).
-1. Pull the Slycat container with the following command:  
+1. Pull the Slycat image with the following command:  
 `docker pull slycat/slycat-developer`
 2. Get Slycat™ running on localhost:  
 `docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer`  
-(that's one long command, not two separate ones)
 3. Visit your local instance of Slycat at <https://localhost>  
 You can log in with any username as long as the password is the same as the username. For example:  
 Username: slycat  
