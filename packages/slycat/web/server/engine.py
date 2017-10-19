@@ -280,7 +280,7 @@ def start(root_path, config_file):
   # wsgi: this is the ldap fn to lookup a username and rtn/cache uid, name, email
   directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
   if directory_type not in manager.directories.keys():
-    slycat.email.send_error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory.type)
+    slycat.email.send_error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory_type)
     raise Exception("No directory plugin for type: %s" % directory_type)
   directory_args = configuration["slycat-web-server"]["directory"].get("args", [])
   directory_kwargs = configuration["slycat-web-server"]["directory"].get("kwargs", {})
