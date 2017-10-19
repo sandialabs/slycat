@@ -7,5 +7,6 @@ setup(
   name = "slycat",
   version = "1.1.0",
   package_dir = {"" : "packages"},
-  packages = find_packages("packages", exclude=[]),
+  packages = find_packages("packages", exclude=[], install_requires=['cherrypy'], install_requires=['numpy'],
+                           install_requires=['cpickle'], install_requires=['cpickle'])
 )
