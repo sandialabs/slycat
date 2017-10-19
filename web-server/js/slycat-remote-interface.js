@@ -33,6 +33,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       vm.retain_hdf5 = ko.observable(false);
 
       vm.jid = ko.observable(-1);
+      vm.working_directory = ko.observable('');
       vm.agent_function = ko.observable(params.agent_function === undefined ? '' : params.agent_function);
       vm.agent_function_params = params.agent_function_params === undefined ? {} :  params.agent_function_params;
       vm.on_submit_callback = params.on_submit_callback;
@@ -240,6 +241,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           type: vm.model_type,
           command: "checkjob",
           parameters: {
+            working_directory: vm.working_directory(),
             jid: vm.jid(),
             fn: vm.agent_function(),
             hostname: vm.remote.hostname(),
@@ -303,6 +305,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
               vm.on_submit_callback();
 
             vm.jid(results.jid);
+            vm.working_directory(results.working_dir)
             server_checkjob(uid);
           },
           error: function(request, status, reason_phrase) {

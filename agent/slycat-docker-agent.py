@@ -61,7 +61,7 @@ class Agent(agent.Agent):
         }
         try:
             # /job_log.txt
-            results["output"], results["errors"] = ("COMPLETE", "COMPLETE")
+            results["output"], results["errors"] = ("COMPLETED", "COMPLETED")
         except OSError as e:
             sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
             sys.stdout.flush()
