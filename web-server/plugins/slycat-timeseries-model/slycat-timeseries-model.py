@@ -283,20 +283,16 @@ def register_slycat_plugin(context):
 
             if state == "FAILED" or state == "UNKNOWN" or state == "NOTQUEUED":
                 cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
-                retry_counter = retry_counter - 1
 
-                if retry_counter == 0:
-                    cherrypy.log.error("Job %s has failed" % jid)
-                    fail_model(mid, "Job %s has failed." % jid)
-                    stop_event.set()
-                    break
+            if retry_counter == 0:
+                cherrypy.log.error("Job %s has failed" % jid)
+                fail_model(mid, "Job %s has failed." % jid)
+                stop_event.set()
+                break
 
-                # in case something went wrong and still willing to try, wait for 30
-                # seconds and try another check
-                time.sleep(30)
-
+            retry_counter = retry_counter - 1
             # waits 5 seconds in between each status check
-            time.sleep(5)
+            time.sleep(10)
 
     # TODO verb, type and command might be obsolete
     # TODO this function needs to be migrated to the implementation of the computation interface
