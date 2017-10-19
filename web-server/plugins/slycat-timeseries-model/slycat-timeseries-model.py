@@ -43,7 +43,7 @@ def register_slycat_plugin(context):
         cherrypy.response.headers["content-type"] = "application/json"
         return json.dumps(columns)
 
-    def finish(database, model):
+    def finish(model_id):
         """
         Update the model in the databse as successfully completed.
 
@@ -51,7 +51,7 @@ def register_slycat_plugin(context):
         :param model:
         """
         database = slycat.web.server.database.couchdb.connect()
-        model = database.get("model", model["_id"])
+        model = database.get("model", model_id)
         """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
         slycat.web.server.update_model(database, model, state="finished", result="succeeded",
                                        finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
@@ -105,7 +105,7 @@ def register_slycat_plugin(context):
             data = slycat.web.server.get_remote_file(sid, filename)
         return sid, data
 
-    def compute(database, model, sid, uid, workdir, hostname, username, password):
+    def compute(model_id, sid, uid, workdir, hostname, username, password):
         """
         Computes the Time Series model. It fetches the necessary files from a
         remote server that were computed by the slycat-agent-compute-timeseries.py
@@ -123,7 +123,7 @@ def register_slycat_plugin(context):
         workdir += "/slycat/pickle"  # route to the slycat directory
         try:
             database = slycat.web.server.database.couchdb.connect()
-            model = database.get("model", model["_id"])
+            model = database.get("model", model_id)
             model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
             slycat.web.server.update_model(database, model)
 
@@ -332,9 +332,9 @@ def register_slycat_plugin(context):
             Callback for a successful remote job completion. It computes the model
             and successfully completes it.
             """
-            compute(database, model, sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
+            compute(model["_id"], sid, uid, fn_params["workdir"], kwargs["hostname"], kwargs["username"],
                     kwargs["password"])
-            finish(database, model)
+            finish(model["_id"])
 
         # give some time for the job to be remotely started before starting its
         # checks.
