@@ -110,8 +110,7 @@ def register_slycat_plugin(context):
         remote server that were computed by the slycat-agent-compute-timeseries.py
         script.
     
-        :param database:
-        :param model:
+        :param model_id: uid for the model in the database
         :param sid:      session ID
         :param uid:      user ID
         :param workdir:
