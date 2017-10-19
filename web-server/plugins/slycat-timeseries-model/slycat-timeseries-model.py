@@ -12,7 +12,7 @@ def register_slycat_plugin(context):
     import re
     try:
         import cpickle as pickle
-    except:
+    except ImportError:
         import pickle
 
     def media_columns(database, model, verb, type, command, **kwargs):
