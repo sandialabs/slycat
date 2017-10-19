@@ -321,10 +321,11 @@ def register_slycat_plugin(context):
         fn = kwargs["fn"]
         fn_params = kwargs["fn_params"]
         uid = kwargs["uid"]
-        slycat.web.server.put_model_parameter(database, model, "working_directory", fn_params["workdir"], input=False)
-        slycat.web.server.put_model_parameter(database, model, "hostname", kwargs["hostname"], input=False)
-        slycat.web.server.put_model_parameter(database, model, "sid", sid, input=False)
-        slycat.web.server.put_model_parameter(database, model, "pickle_uid", uid, input=False)
+        model_params = [("working_directory", fn_params["workdir"]), ("hostname", kwargs["hostname"]), ("sid", sid), ("pickle_uid", uid)]
+        for _ in model_params:
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", model["_id"])
+            slycat.web.server.put_model_parameter(database, model, _[0], _[1], input=False)
         def callback():
             """
             Callback for a successful remote job completion. It computes the model
