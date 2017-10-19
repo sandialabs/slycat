@@ -430,10 +430,10 @@ class Session(object):
                 arr.append(
                     "python $SLYCAT_HOME/agent/slycat-agent-create-image-distance-matrix.py"
                     " --distance-measure %s --distance-column \"%s\" \"%s\" "
-                    "~/slycat_%s_%s_%s_distance_matrix.csv " % (
+                    "~/slycat_%s_%s_%s_distance_matrix.csv  --profile ${profile}" % (
                         function_id, image_columns_name, params["input"], image_columns_name, uid, function_id))
                 # uncomment this line for local development
-                # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv" % (f, c, params["input"], c, uid, f))
+                # arr.append("python slycat-agent-create-image-distance-matrix.py --distance-measure %s --distance-column \"%s\" \"%s\" ~/slycat_%s_%s_%s_distance_matrix.csv --profile ${profile}" % (f, c, params["input"], c, uid, f))
 
             return arr
 
@@ -469,22 +469,22 @@ class Session(object):
                 arr.append(
                     "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py "
                     "\"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s"
-                    " --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s" % (
+                    " --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
                         hdf5_dir, params["timeseries_name"], params["cluster_sample_count"],
                         params["cluster_sample_type"],
                         params["cluster_type"], params["cluster_metric"], pickle_dir, uid))
                 # uncomment this line for local development
-                # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+                # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["timeseries_name"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
             else:
                 # uncomment this line for production
                 arr.append(
                     "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py "
                     "\"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s"
-                    " --cluster-metric %s --workdir \"%s\" --hash %s" % (
+                    " --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
                         hdf5_dir, params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"],
                         params["cluster_metric"], pickle_dir, uid))
                 # uncomment this line for local development
-                # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
+                # arr.append("python slycat-agent-compute-timeseries.py \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (params["output_directory"], params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"], params["cluster_metric"], params["workdir"], uid))
 
             return arr
 
