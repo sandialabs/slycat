@@ -540,7 +540,7 @@ class Session(object):
         else:
             jid = -1
 
-        return {"jid": jid, "working_dir":response["working_dir"], "errors": response["errors"]}
+        return {"jid": jid, "working_dir": response["working_dir"], "errors": response["errors"]}
 
     def launch(self, command):
         """
