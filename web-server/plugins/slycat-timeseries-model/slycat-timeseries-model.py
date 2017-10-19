@@ -47,8 +47,7 @@ def register_slycat_plugin(context):
         """
         Update the model in the databse as successfully completed.
 
-        :param database:
-        :param model:
+        :param model_id: uid of the model
         """
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model_id)
