@@ -133,11 +133,12 @@ def register_slycat_plugin(context):
 
                 sid = slycat.web.server.get_model_parameter(database, model, "sid")
                 uid = slycat.web.server.get_model_parameter(database, model, "pickle_uid")
-                workdir = slycat.web.server.get_model_parameter(database, model, "working_directory")
-                workdir = workdir + "pickle"
+                workdir_raw = slycat.web.server.get_model_parameter(database, model, "working_directory")
+                workdir = workdir_raw + "pickle"
                 hostname = slycat.web.server.get_model_parameter(database, model, "hostname")
                 username = slycat.web.server.get_model_parameter(database, model, "username")
-                cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s pass:%s" % (sid, uid, workdir, hostname, username, password))
+                cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s pass:%s" % (
+                sid, uid, workdir, hostname, username, password))
                 sid, inputs = get_remote_file(sid, hostname, username, password,
                                               "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
                 inputs = pickle.loads(inputs)
@@ -156,7 +157,8 @@ def register_slycat_plugin(context):
                                                               [attributes_data[attribute]])
 
                 clusters = json.loads(
-                    slycat.web.server.get_remote_file(sid, "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
+                    slycat.web.server.get_remote_file(sid,
+                                                      "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
                 clusters_file = json.JSONDecoder().decode(clusters["file"])
                 timeseries_count = json.JSONDecoder().decode(clusters["timeseries_count"])
 
@@ -170,7 +172,8 @@ def register_slycat_plugin(context):
                                                                  workdir, uid, file_name))
                     file_cluster_attr = json.loads(file_cluster_data)
                     slycat.web.server.post_model_file(model["_id"], True, sid,
-                                                      "%s/slycat_timeseries_%s/file_cluster_%s.out" % (workdir, uid, file_name),
+                                                      "%s/slycat_timeseries_%s/file_cluster_%s.out" % (
+                                                      workdir, uid, file_name),
                                                       file_cluster_attr["aid"], file_cluster_attr["parser"])
 
                     database = slycat.web.server.database.couchdb.connect()
@@ -209,6 +212,11 @@ def register_slycat_plugin(context):
                         except:
                             cherrypy.log.error("failed on index: %s" % index)
                             pass
+                # TODO add remove dir command by uncommenting below
+                # payload = {
+                #     "action": "run_remote_command",
+                #     "command": ("rm -rf %s" % workdir_raw)
+                # }
             except cherrypy._cperror.HTTPError as e:
                 running = True
                 cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
@@ -340,11 +348,13 @@ def register_slycat_plugin(context):
         fn = kwargs["fn"]
         fn_params = kwargs["fn_params"]
         uid = kwargs["uid"]
-        model_params = [("working_directory", kwargs["working_directory"]), ("username", kwargs["username"]), ("hostname", kwargs["hostname"]), ("sid", sid), ("pickle_uid", uid)]
+        model_params = [("working_directory", kwargs["working_directory"]), ("username", kwargs["username"]),
+                        ("hostname", kwargs["hostname"]), ("sid", sid), ("pickle_uid", uid)]
         for _ in model_params:
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", model["_id"])
             slycat.web.server.put_model_parameter(database, model, _[0], _[1], input=False)
+
         def callback():
             """
             Callback for a successful remote job completion. It computes the model
