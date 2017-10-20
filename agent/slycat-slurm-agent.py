@@ -153,7 +153,7 @@ class Agent(agent.Agent):
         working_dir = command["command"]["working_dir"]
         # uid = command["command"]["uid"]
         try:
-            self.run_remote_command("mkdir %s" % working_dir)
+            self.run_remote_command("mkdir -p %s" % working_dir)
         except Exception:
             pass
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
