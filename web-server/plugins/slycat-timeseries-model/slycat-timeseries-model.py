@@ -212,6 +212,7 @@ def register_slycat_plugin(context):
                         except:
                             cherrypy.log.error("failed on index: %s" % index)
                             pass
+                # TODO add finished to the model state
                 # TODO add remove dir command by uncommenting below
                 # payload = {
                 #     "action": "run_remote_command",
