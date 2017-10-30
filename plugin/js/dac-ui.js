@@ -12,11 +12,15 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
          plots, metadata_table, $, d3, URI)
 {
 
+    // process pts progress bar
+    //var parse_progress = ko.observable(null);
+    //var parse_progress_status = ko.observable("");
+
 	// load ui parameters and initialize dial-a-cluser layout
 	$.when (request.get_parameters("dac-ui-parms")).then(
 			function (ui_parms)
 			{
-    
+
     			// the step size for the alpha slider (varies from 0 to 1)
     			var ALPHA_STEP = parseFloat(ui_parms["ALPHA_STEP"]);
     
@@ -63,6 +67,8 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 	            // check to see if server computations are complete
 	            $.when (request.get_parameters("dac-polling-progress")).then (
 	                function (progress) {
+
+                        console.log(progress);
 
 	                    // complete -- assign alpha parms, order, and var plot order
 	                    if (progress[0] == "Done") {
@@ -119,8 +125,21 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
                         // not complete -- set up display window and poll
                         } else {
+
                         	// Hide content panes since we will be showing progress UI instead
 	                    	$('.dac-model-content').hide();
+
+                            console.log("Progress Status");
+
+                            // get status update out progress
+                            /*$.when (request.get_parameters("dac-polling-progress")).then (
+	                            function (progress) {
+	                                console.log(progress[0]);
+	                                console.log(progress[1]);
+
+                                    parse_progress = progress[1];
+                                },
+                            });*/
 
                             //dialog.ajax_error ("Not done loading model ...")("","","");
 

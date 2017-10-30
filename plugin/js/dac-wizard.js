@@ -71,10 +71,6 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var process_continue = false;
     var already_processed = false;
 
-    // process pts progress bar
-    component.parse_progress = ko.observable(null);
-    component.parse_progress_status = ko.observable("");
-
     // ordering and locations of .var, .time, and .dist files
     var var_file_inds = [];
     var time_file_inds = [];
@@ -601,36 +597,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                 if (file_ext == 'zip') {
 
-                    // now go on to uploading and parsing
-                    $('.pts-browser-continue').toggleClass("disabled", true);
+                    // do not re-upload files
+                    csv_meta_upload = true;
 
-                    console.log("Uploading file: " + file.name);
-
-                    var fileObject ={
-                        pid: component.project._id(),
-                        mid: component.model._id(),
-                        file: file,
-                        aids: ["dac-pts-zip", 0],
-                        parser: "dac-zip-file-parser",
-                        progress: component.browser_zip_file.progress,
-                        progress_increment: 100,
-                        success: function(){
-
-                                // do not re-upload files
-                                csv_meta_upload = true;
-
-                                $('.pts-browser-continue').toggleClass("disabled", false);
-                                component.tab(3);
-
-                            },
-                        error: function(){
-                            dialog.ajax_error(
-                                "There was a problem parsing the file: " + file)
-                                ("","","");
-                                $('.pts-browser-continue').toggleClass("disabled", false);
-                            }
-                    };
-                    fileUploader.uploadFile(fileObject);
+                    // go to model naming
+                    component.tab(3);
 
                 } else {
                     dialog.ajax_error("Please select a file with the .zip extension.")("","","");
@@ -664,7 +635,53 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 client.post_model_finish({
                 mid: component.model._id(),
                 success: function() {
-                    component.go_to_model();
+
+                        // for pts format we launch a thread to do the work
+                        if (component.dac_format() == "pts") {
+
+                            // turn off continue button
+                            $(".dac-launch-thread").toggleClass("disabled", true);
+
+                            // upload zip file
+                            var file = component.browser_zip_file.selection()[0];
+                            console.log("Uploading file: " + file.name);
+
+                            // get csv and number digitizer parameters
+                            var csv_parm = Math.round(Number(component.csv_min_size));
+                            var dig_parm = Math.round(Number(component.min_num_dig));
+
+                            // pass # csv files and digitizers via aids
+                            var fileObject ={
+                                pid: component.project._id(),
+                                mid: component.model._id(),
+                                file: file,
+                                aids: [csv_parm, dig_parm],
+                                parser: "dac-zip-file-parser",
+                                progress: component.browser_zip_file.progress,
+                                progress_increment: 100,
+                                success: function(){
+
+                                        // turn on continue button
+                                        $(".dac-launch-thread").toggleClass("disabled", false);
+
+                                        // go to model
+                                        component.go_to_model();
+
+                                    },
+                                error: function(){
+                                    dialog.ajax_error(
+                                        "There was a problem uploading the file: " + file)
+                                        ("","","");
+                                        $('.pts-browser-continue').toggleClass("disabled", false);
+                                    }
+                                };
+                            fileUploader.uploadFile(fileObject);
+
+                        } else {
+
+                            // for dac-gen format we go directly to the model
+                            component.go_to_model();
+                        }
                     }
                 });
             },

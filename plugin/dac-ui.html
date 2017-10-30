@@ -9,7 +9,29 @@ S. Martin
 
 	<div id="dac-progress-feedback" style="margin: 20px;">
 
-		Hi Shawn, you can put all your progress HTML code here.
+		Data is being processed for the model ...
+
+		<div style="margin-top: 20px; margin-left: 15px">
+          <label>Process Results:</label>
+          <textarea class="form-control" rows="15" readonly id="dac-wizard-process-results">
+          </textarea>
+        </div>
+
+		<div style="margin-top: 20px; margin-left: 15px">
+            <div class="progress"> <!-- data-bind="visible: parse_progress() != undefined && parse_progress() > 0"-->
+                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    data-bind="
+                        attr: {'aria-valuenow' : parse_progress},
+                        style: {'width' : parse_progress() + '%'},
+                        text: parse_progress_status,
+                    ">
+                    Parsing...
+                </div>
+            </div>
+        </div>
+
 
 	</div>
 

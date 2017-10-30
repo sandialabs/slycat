@@ -13,7 +13,6 @@ def register_slycat_plugin(context):
     import os
     import slycat.web.server
     import numpy
-    from scipy import optimize
     import imp
     import cherrypy
 
@@ -53,28 +52,10 @@ def register_slycat_plugin(context):
         for i in range(num_vars):
             var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-var-dist", "%s/0/..." % i)))
-
-            # scale distance matric by maximum, unless maximum is zero
-            coords_scale = numpy.amax(var_dist_i)
-            if coords_scale < numpy.finfo(float).eps:
-                coords_scale = 1.0
-
-            var_dist_i = var_dist_i/coords_scale
             var_dist.append(var_dist_i)
 
-        # assume initial alpha values are all one
-        alpha_values = [1.0] * num_vars
-
-        # compute MDS coordinates assuming alpha = 1 for scaling
-        full_mds_coords = dac.compute_coords(var_dist, numpy.ones(len(alpha_values)))
-        full_mds_coords = full_mds_coords[0][:, 0:3]
-
-        # compute preliminary coordinates
-        unscaled_mds_coords = dac.compute_coords(var_dist, numpy.array(alpha_values))
-        unscaled_mds_coords = unscaled_mds_coords[0][:, 0:3]
-
-        # scale using full coordinates
-        mds_coords = dac.scale_coords(unscaled_mds_coords, full_mds_coords)
+        # compute initial MDS coordinates
+        mds_coords, full_mds_coords = dac.init_coords(var_dist)
 
         # compute alpha cluster parameters
         # --------------------------------
@@ -91,55 +72,11 @@ def register_slycat_plugin(context):
         for i in range(num_meta_cols):
             meta_column_types.append (metadata_cols[i]['type'])
 
-        # number of time series (data points)
-        num_time_series = metadata[0]["shape"][0]
-
         # get actual metadata
         meta_columns = slycat.web.server.get_model_arrayset_data (database, model, "dac-datapoints-meta", "0/.../...")
 
-        # form a matrix with each distance matrix as a column (this is U matrix)
-        all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars))
-        for i in range(num_vars):
-            all_dist_mat[:,i] = numpy.squeeze(numpy.reshape(var_dist[i],
-                (num_time_series * num_time_series,1)))
-
-        # for each quantitative meta variable, compute distances as columns (V matrices)
-        prop_dist_mats = []    # store as a list of numpy columns
-        num_meta_cols = len(meta_column_types)
-        for i in range(num_meta_cols):
-            if meta_column_types[i] == "float64":
-
-                # compute pairwise distance matrix for property i
-                prop_dist_mat_i = numpy.absolute(
-                    numpy.transpose(numpy.tile(meta_columns[i],
-                    (num_time_series,1))) - numpy.tile(meta_columns[i],
-                    (num_time_series,1)))
-                prop_dist_vec_i = numpy.squeeze(numpy.reshape(prop_dist_mat_i,
-                    (num_time_series * num_time_series,1)))
-
-                # make sure we don't divide by 0
-                prop_dist_vec_max_i = numpy.amax(prop_dist_vec_i)
-                if prop_dist_vec_max_i <= numpy.finfo(float).eps:
-                    prop_dist_vec_max_i = 1.0
-                prop_dist_mats.append(prop_dist_vec_i/prop_dist_vec_max_i)
-
-            else:
-                prop_dist_mats.append(0)
-
-        # compute NNLS cluster button alpha values, if more than one data point
-        alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
-        if num_time_series > 1:
-            for i in range(num_meta_cols):
-                if meta_column_types[i] == "float64":
-
-                    beta_i = optimize.nnls(all_dist_mat, prop_dist_mats[i])
-                    alpha_i = numpy.sqrt(beta_i[0])
-
-                    # again don't divide by zero
-                    alpha_max_i = numpy.amax(alpha_i)
-                    if alpha_max_i <= numpy.finfo(float).eps:
-                        alpha_max_i = 1
-                    alpha_cluster_mat[i,:] = alpha_i/alpha_max_i
+        # compute alpha cluster values for NNLS cluster button
+        alpha_cluster_mat = dac.compute_alpha_clusters (var_dist, meta_columns, meta_column_types)
 
         # upload computations to slycat server
         # ------------------------------------
