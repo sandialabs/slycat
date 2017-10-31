@@ -93,7 +93,7 @@
             </ul>
           </div>
           <div class="btn-group nav-bookmarks" 
-            data-bind="visible: model_id() || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0))">
+            data-bind="visible: (model_id() && model_create_wizards().length) || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0))">
             <button type="button" class="btn btn-xs btn-primary dropdown-toggle" data-toggle="dropdown">
               Bookmarks <span class="caret"/>
             </button>
@@ -111,7 +111,8 @@
               <!-- ko foreach: saved_model_bookmarks -->
                 <li class="slycat-clickable">
                   <a class="bookmark-link" data-bind="attr: {href:uri}">
-                    <span>
+                    <!-- Showing bookmark controls to writers and administrators, not to readers -->
+                    <span data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'">
                       <button type="button" class="btn btn-xs btn-warning bookmark-edit" 
                         data-bind="click: $parent.edit_saved_bookmark">
                         <span class="fa fa-pencil"></span>
@@ -137,7 +138,8 @@
               <!-- ko foreach: saved_project_bookmarks -->
                 <li class="slycat-clickable">
                   <a class="bookmark-link" data-bind="attr: {href:uri}">
-                    <span>
+                    <!-- Showing bookmark controls to writers and administrators, not to readers -->
+                    <span data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'">
                       <!-- <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_saved_bookmark"><span class="fa fa-pencil"></span></button> -->
                       <button type="button" class="btn btn-xs btn-danger bookmark-delete" title="Delete bookmark"
                         data-bind="click: $parent.delete_saved_bookmark">
