@@ -226,14 +226,44 @@ define("slycat-navbar", ["slycat-server-root", "slycat-web-client", "slycat-dial
         };
       };
 
-      var create_wizards = component.wizards.filter(filter_by_action("create"));
+      // var create_wizards = component.wizards.filter(filter_by_action("create"));
+      var create_wizards = component.wizards.filter(filter_by_action("create", function(wizard)
+      {
+        // Readers are prevented from creating anything at the model or project level
+        if(component.relation() === "reader" && (wizard.require.context() === "model" ||  wizard.require.context() === "project"))
+        {
+          return false;
+        }
+        else
+        {
+          return true;
+        }
+      }));
       var edit_wizards = component.wizards.filter(filter_by_action("edit", function(wizard)
       {
+        // Editing is permitted only to administrators. Also to writers at the model level.
         return component.relation() === "administrator" ||
           (component.relation() === "writer" && wizard.require.context() === "model");
       }));
+      // var edit_wizards = component.wizards.filter(filter_by_action("edit"));
       var info_wizards = component.wizards.filter(filter_by_action("info"));
-      var delete_wizards = component.wizards.filter(filter_by_action("delete"));
+      var delete_wizards = component.wizards.filter(filter_by_action("delete", function(wizard)
+      {
+        // Writers and readers are prevented from deleting projects
+        if(wizard.require.context() === "project" && (component.relation() === "writer" || component.relation() === "reader"))
+        {
+          return false;
+        }
+        // Readers are prevented from deleting models
+        else if(wizard.require.context() === "model" && component.relation() === "reader")
+        {
+          return false;
+        }
+        else
+        {
+          return true;
+        }
+      }));
 
       var global_wizard_filter = function(wizard)
       {
