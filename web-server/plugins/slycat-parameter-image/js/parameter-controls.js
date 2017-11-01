@@ -168,7 +168,7 @@ $.widget("parameter_image.controls",
       ;
 
     this.video_sync_button = $("\
-        <button class='btn btn-default btn-xs' data-toggle='button' title='Sync Videos'> \
+        <button class='btn btn-default btn-xs' data-toggle='button'> \
           <span class='fa fa-video-camera' aria-hidden='true'></span> \
         </button> \
       ")
@@ -176,7 +176,9 @@ $.widget("parameter_image.controls",
         self.options["video-sync"] = !$(this).hasClass('active');
         self._respond_open_images_changed();
         self.element.trigger("video-sync", !$(this).hasClass('active'));
+        this.title = self.options["video-sync"] ? 'Unsync videos' : 'Sync videos';
       })
+      .attr('title', self.options["video-sync"] ? 'Unsync videos' : 'Sync videos')
       .appendTo(self.video_sync_button_wrapper)
       ;
 
