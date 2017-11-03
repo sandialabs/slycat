@@ -14,87 +14,89 @@ import cherrypy
 import abc
 import uuid
 import slycat.email
+import couchdb
 
 class Database:
-  """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
-  def __init__(self, database):
-    self._database = database
+    """interface for the database"""
 
-  @abc.abstractmethod
-  def __getitem__(self, *arguments, **keywords):
-    return self._database.__getitem__(*arguments, **keywords)
+    def __init__(self, database):
+        self._database = database
 
-  @abc.abstractmethod
-  def changes(self, *arguments, **keywords):
-    return self._database.changes(*arguments, **keywords)
+    @abc.abstractmethod
+    def __getitem__(self, *arguments, **keywords):
+        return self._database.__getitem__(*arguments, **keywords)
 
-  @abc.abstractmethod
-  def delete(self, *arguments, **keywords):
-      """
-      delete a document from the database
-      :param arguments: 
-      :param keywords: 
-      :return: status of the deletion
-      """
-    pass
+    @abc.abstractmethod
+    def delete(self, *arguments, **keywords):
+        """
+        delete a document from the database
+        :param arguments: 
+        :param keywords: 
+        :return: status of the deletion
+        """
+        pass
 
-  @abc.abstractmethod
-  def get_attachment(self, *arguments, **keywords):
-    return self._database.get_attachment(*arguments, **keywords)
+    @abc.abstractmethod
+    def get_attachment(self, *arguments, **keywords):
+        return self._database.get_attachment(*arguments, **keywords)
 
-  @abc.abstractmethod
-  def put_attachment(self, *arguments, **keywords):
-    return self._database.put_attachment(*arguments, **keywords)
+    @abc.abstractmethod
+    def put_attachment(self, *arguments, **keywords):
+        return self._database.put_attachment(*arguments, **keywords)
 
-  @abc.abstractmethod
-  def save(self, *arguments, **keywords):
-    try:
-      return self._database.save(*arguments, **keywords)
-    except couchdb.http.ServerError as e:
-      slycat.email.send_error("slycat.web.server.database.couchdb.py save", "%s %s" % (e.message[0], e.message[1][1]))
-      raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
+    @abc.abstractmethod
+    def save(self, *arguments, **keywords):
+        try:
+            return self._database.save(*arguments, **keywords)
+        except couchdb.http.ServerError as e:
+            slycat.email.send_error("slycat.web.server.database.couchdb.py save",
+                                    "%s %s" % (e.message[0], e.message[1][1]))
+            raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
 
-  @abc.abstractmethod
-  def view(self, *arguments, **keywords):
-    return self._database.view(*arguments, **keywords)
+    @abc.abstractmethod
+    def view(self, *arguments, **keywords):
+        return self._database.view(*arguments, **keywords)
 
-  @abc.abstractmethod
-  def scan(self, path, **keywords):
-    for row in self.view(path, include_docs=True, **keywords):
-      document = row["doc"]
-      yield document
+    @abc.abstractmethod
+    def scan(self, path, **keywords):
+        for row in self.view(path, include_docs=True, **keywords):
+            document = row["doc"]
+            yield document
 
-  @abc.abstractmethod
-  def get(self, type, id):
-    try:
-      document = self[id]
-    except couchdb.client.http.ResourceNotFound:
-      raise cherrypy.HTTPError(404)
-    if document["type"] != type:
-      slycat.email.send_error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404 document type %s is different than input type: %s" % (document["type"], type))
-      raise cherrypy.HTTPError(404)
-    return document
+    @abc.abstractmethod
+    def get(self, type, id):
+        try:
+            document = self[id]
+        except couchdb.client.http.ResourceNotFound:
+            raise cherrypy.HTTPError(404)
+        if document["type"] != type:
+            slycat.email.send_error("slycat.web.server.database.couchdb.py get",
+                                    "cherrypy.HTTPError 404 document type %s is different than input type: %s" % (
+                                    document["type"], type))
+            raise cherrypy.HTTPError(404)
+        return document
 
-  @abc.abstractmethod
-  def write_file(self, document, content, content_type):
-    fid = uuid.uuid4().hex
-    self.put_attachment(document, content, filename=fid, content_type=content_type)
-    return fid
+    @abc.abstractmethod
+    def write_file(self, document, content, content_type):
+        fid = uuid.uuid4().hex
+        self.put_attachment(document, content, filename=fid, content_type=content_type)
+        return fid
 
-  def __repr__(self):
-    """
-    adding this so we can use the cache decorator
-    :return:
-    """
-    return "<slycat.web.server.database.couchdb.Database instance>"
+    def __repr__(self):
+        """
+        adding this so we can use the cache decorator
+        :return:
+        """
+        return "<slycat.web.server.database.couchdb.Database instance>"
+
 
 def connect():
-  """Connect to a CouchDB database.
+    """Connect to a CouchDB database.
 
-  Returns
-  -------
-  database : :class:`slycat.web.server.database.couchdb.Database`
-  """
-  server = couchdb.client.Server(url=cherrypy.tree.apps[""].config["slycat"]["couchdb-host"])
-  database = Database(server[cherrypy.tree.apps[""].config["slycat"]["couchdb-database"]])
-  return database
+    Returns
+    -------
+    database : :class:`slycat.web.server.database.couchdb.Database`
+    """
+    server = couchdb.client.Server(url=cherrypy.tree.apps[""].config["slycat"]["couchdb-host"])
+    database = Database(server[cherrypy.tree.apps[""].config["slycat"]["couchdb-database"]])
+    return database
