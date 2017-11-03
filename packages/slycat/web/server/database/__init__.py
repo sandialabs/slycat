@@ -24,7 +24,13 @@ class Database:
 
     @abc.abstractmethod
     def __getitem__(self, *arguments, **keywords):
-        return self._database.__getitem__(*arguments, **keywords)
+        """
+        returns an item base on an ID being passed
+        :param arguments: 
+        :param keywords: 
+        :return: 
+        """
+        pass
 
     @abc.abstractmethod
     def delete(self, *arguments, **keywords):
@@ -38,56 +44,81 @@ class Database:
 
     @abc.abstractmethod
     def get_attachment(self, *arguments, **keywords):
-        return self._database.get_attachment(*arguments, **keywords)
+        """
+        get attachment from the database
+        :param arguments: 
+        :param keywords: 
+        :return: 
+        """
+        pass
 
     @abc.abstractmethod
     def put_attachment(self, *arguments, **keywords):
-        return self._database.put_attachment(*arguments, **keywords)
+        """
+        put an item in the database
+        :param arguments: 
+        :param keywords: 
+        :return: 
+        """
+        pass
 
     @abc.abstractmethod
     def save(self, *arguments, **keywords):
-        try:
-            return self._database.save(*arguments, **keywords)
-        except couchdb.http.ServerError as e:
-            slycat.email.send_error("slycat.web.server.database.couchdb.py save",
-                                    "%s %s" % (e.message[0], e.message[1][1]))
-            raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
+        """
+        save change to database, generally as a json doc
+        :param arguments: 
+        :param keywords: 
+        :return: 
+        """
+        pass
 
+    # TODO: find all occurances and rework loggic to move away from this
     @abc.abstractmethod
     def view(self, *arguments, **keywords):
-        return self._database.view(*arguments, **keywords)
-
+        """
+        deprecated needs to be scrubbed from the code
+        :param arguments: 
+        :param keywords: 
+        :return: 
+        """
+        pass
     @abc.abstractmethod
     def scan(self, path, **keywords):
-        for row in self.view(path, include_docs=True, **keywords):
-            document = row["doc"]
-            yield document
+        """
+        given a db scan for all docs with a certain field
+        :param path: 
+        :param keywords: 
+        :return: 
+        """
+        pass
 
     @abc.abstractmethod
     def get(self, type, id):
-        try:
-            document = self[id]
-        except couchdb.client.http.ResourceNotFound:
-            raise cherrypy.HTTPError(404)
-        if document["type"] != type:
-            slycat.email.send_error("slycat.web.server.database.couchdb.py get",
-                                    "cherrypy.HTTPError 404 document type %s is different than input type: %s" % (
-                                    document["type"], type))
-            raise cherrypy.HTTPError(404)
-        return document
+        """
+        get document based on the type and id given
+        :param type: 
+        :param id: 
+        :return: 
+        """
+        pass
 
     @abc.abstractmethod
     def write_file(self, document, content, content_type):
-        fid = uuid.uuid4().hex
-        self.put_attachment(document, content, filename=fid, content_type=content_type)
-        return fid
+        """
+        add attachemnt to the database
+        :param document: 
+        :param content: 
+        :param content_type: 
+        :return: 
+        """
+        pass
 
     def __repr__(self):
         """
         adding this so we can use the cache decorator
         :return:
         """
-        return "<slycat.web.server.database.couchdb.Database instance>"
+        return "<slycat.web.server.database.Database instance>"
 
 
 def connect():
