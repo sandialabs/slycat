@@ -1,0 +1,89 @@
+<div class="bootstrap-styles" style="justify-content:center;">
+  <div class="form-group">
+  <div class="card">
+    <h1 class="title">Run Remote Command</h1>
+    <form>
+      <div class="input-container" class="form-group" style=".input-container{height: 300px !important;width: 400px;}">
+        <label for="command">Enter a remote command</label>
+        <textarea class="form-control" id="command" required="required" rows="20">
+{
+    "scripts": [
+        {
+            "script_name": "script_name",
+            "parameters": [
+                {
+                    "key": "value"
+                }
+            ]
+        }
+    ],
+    "hpc": {
+        "is_hpc_job": true,
+        "hpc_params": [
+            {
+                "key": "value"
+            }
+        ]
+    }
+}
+        </textarea>
+      </div>
+      <div class="input-container" class="form-group" style=".input-container{height: 300px !important;width: 400px;}">
+        <label for="command">response</label>
+        <textarea class="form-control" id="response" required="required" rows="10">
+        </textarea>
+      </div>
+    </form>
+    <div class="button-container">
+      <button class="btn btn-default" id="go">GO</button>
+    </div>
+    <div class="button-container">
+      <button class="btn btn-default" id="prettyPrint">Pretty Print</button>
+    </div>
+  </div>
+  </div>
+</div>
+  <script type="text/javascript">
+    require(["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
+    {
+      function prettyPrint() {
+        try {
+          var ugly = document.getElementById('command').value;
+          var obj = JSON.parse(ugly);
+          document.getElementById('command').value = JSON.stringify(obj, undefined, 4);
+        } catch (e)
+        {
+          // no opp.
+        }
+      }
+
+      function run_remote_command()
+      {
+        command = JSON.parse(document.getElementById("command").value);
+        //TODO: add post call for username and password
+        console.log("calling webservice with");
+
+        var payload = {"command": command};
+        $.ajax(
+        {
+          contentType: "application/json",
+          type: "POST",
+          url: URI(server_root + "remotes/localhost/post-remote-command"),
+          success: function(result)
+          {
+            document.getElementById('response').value = JSON.stringify(result);
+          },
+          error: function(request, status, reason_phrase)
+          {
+            window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+            console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+          },
+          data: JSON.stringify(payload)
+        });
+
+        console.log("done")
+      }
+      document.getElementById("prettyPrint").addEventListener("click", prettyPrint, false);
+      document.getElementById("go").addEventListener("click", run_remote_command, false);
+    });
+  </script>

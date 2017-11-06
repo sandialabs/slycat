@@ -2123,6 +2123,16 @@ def run_agent_function(hostname):
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
+def post_remote_command(hostname):
+    # sid = get_sid(hostname)
+    command = cherrypy.request.json["command"]
+    return command
+    # with slycat.web.server.remote.get_session(sid) as session:
+    #     return session.run_agent_function(command)
+
+
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
 def post_remote_browse(hostname, path):
     sid = get_sid(hostname)
     file_reject = re.compile(

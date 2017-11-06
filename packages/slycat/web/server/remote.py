@@ -488,42 +488,44 @@ class Session(object):
 
             return arr
 
-        def agent_functions(fn_id, params, working_dir=None):
-            # agent_function is a placeholder for the future:
-            # it will contain the logic for different type of agent functions
-            # depending on the function identifier.
-            if fn_id == "timeseries-model":
-                return compute_timeseries(fn_id, params, working_dir)
-            else:
-                return create_distance_matrix(fn_id, params)
+    def run_remote_command(self, command):
+        """
+        
+        :param self: 
+        :param command: 
+        {
+            "scripts":
+            [{
+                "script_name":"script_name",
+                "parameters": [{key:value},...]
+            },...]
+            "hpc":
+            {
+                "is_hpc_job":bol, 
+                "parameters":[{key:value},...]
+            }
+        }
+        :return: {"msg":"message from the agent", "error": boolean}
+        """
+        # check for an agent if none available die
+        if self._agent is None:
+            cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+                                    "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
+            raise cherrypy.HTTPError(404, "no Slycat agent present on remote host.")
 
+        # get the name of our slycat module on the hpc
+        command["module-name"] = None
+        if "module-name" in slycat.web.server.config["slycat-web-server"]:
+            command["module-name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
         stdin, stdout, stderr = self._agent
-        hash_dir_name = uuid.uuid4().hex
-        # everything up to the hashed working directory
-        if fn_params["workdir"][-1] == '/':
-            work_dir = fn_params["workdir"] + "slycat/" + hash_dir_name + "/"
-        else:
-            work_dir = fn_params["workdir"] + "/slycat/" + hash_dir_name + "/"
         payload = {
             "action": "run-function",
-            "command": {
-                "module_name": module_name,
-                "wckey": wckey,
-                "nnodes": nnodes,
-                "partition": partition,
-                "ntasks_per_node": ntasks_per_node,
-                "time_hours": time_hours,
-                "time_minutes": time_minutes,
-                "time_seconds": time_seconds,
-                "fn": agent_functions(fn, fn_params, working_dir=work_dir),
-                "uid": uid,
-                "working_dir": work_dir
-            }
+            "command": command
         }
         cherrypy.log.error("writing msg: %s" % json.dumps(payload))
         stdin.write("%s\n" % json.dumps(payload))
         stdin.flush()
-
         response = json.loads(stdout.readline())
         cherrypy.log.error("response msg: %s" % response)
         if not response["ok"]:
@@ -531,16 +533,10 @@ class Session(object):
             cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
             slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 400 %s" % response["message"])
-            raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
+            raise cherrypy.HTTPError(status=400,
+                                     message="run_agent_function response was not ok: %s" % command["module-name"])
 
-        # parses out the job ID
-        arr = [int(s) for s in response["output"].split() if s.isdigit()]
-        if len(arr) > 0:
-            jid = arr[0]
-        else:
-            jid = -1
-
-        return {"jid": jid, "working_dir": response["working_dir"], "errors": response["errors"]}
+        return {"message": response["message"], "error": not response["ok"]}
 
     def launch(self, command):
         """
