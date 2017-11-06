@@ -65,6 +65,7 @@ var bodyLayout = $("#timeseries-model").layout({
   north :
   {
     size: 28,
+    resizable: false,
     resizeWhileDragging : false,
   },
   west :

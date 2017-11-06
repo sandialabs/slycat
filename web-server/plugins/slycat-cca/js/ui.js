@@ -246,6 +246,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     north:
     {
       size: 28,
+      resizable: false,
     },
     west:
     {
