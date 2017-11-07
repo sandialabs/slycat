@@ -1,9 +1,9 @@
-<div class="bootstrap-styles" style="justify-content:center;">
+<div class="bootstrap-styles" style="width: 75%;margin: auto;text-align: center">
   <div class="form-group">
     <h1 class="title">Run Remote Command</h1>
     <form>
-      <div class="input-container" class="form-group" style=".input-container{height: 300px !important;width: 400px;}">
-        <label for="command">Enter a remote command</label>
+      <div class="input-container" class="form-group">
+        <label for="command">::Enter a remote command::</label>
         <textarea class="form-control" id="command" required="required" rows="20">
 {
     "scripts": [
@@ -27,33 +27,31 @@
 }
         </textarea>
       </div>
-      <div class="input-container" class="form-group" style=".input-container{height: 300px !important;width: 400px;}">
-        <label for="command">response</label>
+      <div class="input-container" class="form-group">
+        <label for="command">Response:</label>
         <textarea class="form-control" id="response" required="required" rows="15"></textarea>
       </div>
     </form>
-    <div class="button-container">
-      <button class="btn btn-default" id="go">GO</button>
-    </div>
-    <div class="button-container">
-      <button class="btn btn-default" id="prettyPrint">Pretty Print</button>
+    <div class="btn-group" role="group" aria-label="Basic example">
+          <button class="btn btn-lg btn-primary" id="go">GO</button>
+          <button class="btn btn-lg btn-default" id="prettyPrint">Pretty Print</button>
     </div>
     <form>
     <div class="form-group">
-      <label for="pwd">Hostname:</label>
+      <label for="hostname">Hostname:</label>
       <input type="text" class="form-control" value="localhost" id="hostname">
     </div>
     <div class="form-group">
-      <label for="usr">Username:</label>
+      <label for="username">Username:</label>
       <input type="text" class="form-control" value="slycat" id="username">
     </div>
     <div class="form-group">
-      <label for="pwd">Password:</label>
+      <label for="password">Password:</label>
       <input type="password" class="form-control" value="slycat" id="password">
     </div>
     </form>
     <div class="button-container">
-      <button class="btn btn-default" id="getSession">get session</button>
+      <button class="btn btn-lg btn-primary" id="getSession">Get session</button>
     </div>
   </div>
 </div>
@@ -73,8 +71,7 @@
 
       function run_remote_command()
       {
-        command = JSON.parse(document.getElementById("command").value);
-        var payload = {"command": command};
+        var payload = {"command": JSON.parse($('#command').val())};
         $.ajax(
         {
           contentType: "application/json",
@@ -88,8 +85,6 @@
           {
               document.getElementById('response').value = "error response from server:\n" + "error request:"
                   + JSON.stringify(request) + "\n\n status: " + status + "\n\n reason: " + reason_phrase;
-//            window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
-//            console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
           },
           data: JSON.stringify(payload)
         });
