@@ -28,11 +28,38 @@ class Agent(agent.Agent):
     """
 
     """
+
+    def __init__(self):
+        """
+        add the list of scripts we want to be able to call
+        """
+        agent.Agent.__init__(self)
+        self.scripts.append({
+            "name": "test",
+            "path": "/home/slycat/src/slycat/agent/test_run_remote_command.py",
+            "description": "this is a test script for building testing and launching scripts",
+            "parameters": [
+                {
+                    "name": "number",
+                    "description": "the number you want printed by the test script",
+                    "example": "python test_run_remote_command.py --number 2",
+                    "type": "integer"
+                }
+            ]
+        })
+
     def run_remote_command(self, command):
         results = {
             "message": "ran the remote command",
             "ok": True,
-            "command": command["command"]
+            "command": command["command"],
+            "available_scripts": [
+                {
+                    "name": script["name"],
+                    "description": script["description"],
+                    "parameters": script["parameters"]
+                }
+                for script in self.scripts]
         }
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
