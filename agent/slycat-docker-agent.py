@@ -29,13 +29,13 @@ class Agent(agent.Agent):
 
     """
 
-    def run_remote_command(self, command):
+    def run_shell_command(self, command):
         command = command.split(' ')
         p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return p.communicate()
 
     def launch(self, command):
-        output = self.run_remote_command(command["command"])
+        output = self.run_shell_command(command["command"])
         results = {
             "ok": True,
             "command": command["command"],
@@ -45,7 +45,7 @@ class Agent(agent.Agent):
         sys.stdout.flush()
 
     def submit_batch(self, command):
-        output = self.run_remote_command(command["command"])
+        output = self.run_shell_command(command["command"])
         results = {
             "ok": True,
             "filename": command["command"],
@@ -69,7 +69,7 @@ class Agent(agent.Agent):
         sys.stdout.flush()
 
     def cancel_job(self, command):
-        output = self.run_remote_command("scancel %s" % command["command"]) # command is jid here
+        output = self.run_shell_command("scancel %s" % command["command"]) # command is jid here
         results = {
             "ok": True,
             "jid": command["command"],
@@ -88,7 +88,7 @@ class Agent(agent.Agent):
         path = command["command"]["path"]
         f = path + "slurm-%s.out" % results["jid"]
         if os.path.isfile(f):
-            results["output"], results["errors"] = self.run_remote_command("cat %s" % f)
+            results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
         else:
             results["output"] = "see errors"
             results["errors"] = "the file %s does not exist." % f
@@ -125,6 +125,14 @@ class Agent(agent.Agent):
         # f.write("pkill -f python \n")
         f.close()
 
+    def remote_command(self, command):
+        """
+        command to be run on the remote machine
+        :param command: json command
+        :return: 
+        """
+        pass
+
     def run_function(self, command):
         results = {
             "ok": True,
@@ -143,7 +151,7 @@ class Agent(agent.Agent):
         # uid = command["command"]["uid"]
         working_dir = command["command"]["working_dir"]
         try:
-            self.run_remote_command("mkdir -p %s" % working_dir)
+            self.run_shell_command("mkdir -p %s" % working_dir)
         except Exception:
             pass
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
@@ -153,14 +161,14 @@ class Agent(agent.Agent):
         with open(tmp_file.name, 'r') as myfile:
             data = myfile.read().replace('\n', '')
         results["temp_file"] = data
-        self.run_remote_command("chmod 755 %s" % tmp_file.name)
+        self.run_shell_command("chmod 755 %s" % tmp_file.name)
         # print "starting"
         # print tmp_file.name
         try:
             # print (".%s &> /dev/null" % tmp_file.name)
-            # p = Process(target=self.run_remote_command, args=(("sh %s >> outfile.txt" % tmp_file.name),))
+            # p = Process(target=self.run_shell_command, args=(("sh %s >> outfile.txt" % tmp_file.name),))
             # p.start()
-            t = threading.Thread(target=self.run_remote_command, args=("sh %s &>/dev/null &; disown" % tmp_file.name,))
+            t = threading.Thread(target=self.run_shell_command, args=("sh %s &>/dev/null &; disown" % tmp_file.name,))
             t.start()
             results["working_dir"] = working_dir
             results["errors"] = None

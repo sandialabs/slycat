@@ -28,7 +28,7 @@ class Agent(agent.Agent):
 
     """
 
-    def run_remote_command(self, command):
+    def run_shell_command(self, command):
         command = command.split(' ')
         p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return p.communicate()
@@ -39,7 +39,7 @@ class Agent(agent.Agent):
             "command": command["command"]
         }
 
-        results["output"], results["errors"] = self.run_remote_command(command["command"])
+        results["output"], results["errors"] = self.run_shell_command(command["command"])
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -51,7 +51,7 @@ class Agent(agent.Agent):
             "output": -1
         }
 
-        results["output"], results["errors"] = self.run_remote_command("qsub %s" % results["filename"])
+        results["output"], results["errors"] = self.run_shell_command("qsub %s" % results["filename"])
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -62,7 +62,7 @@ class Agent(agent.Agent):
             "jid": command["command"]
         }
 
-        results["output"], results["errors"] = self.run_remote_command("qstat $PBS_JOBID")
+        results["output"], results["errors"] = self.run_shell_command("qstat $PBS_JOBID")
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -73,7 +73,7 @@ class Agent(agent.Agent):
             "jid": command["command"]
         }
 
-        results["output"], results["errors"] = self.run_remote_command(
+        results["output"], results["errors"] = self.run_shell_command(
             "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
 
         sys.stdout.write("%s\n" % json.dumps(results))
@@ -88,7 +88,7 @@ class Agent(agent.Agent):
         path = command["command"]["path"]
         f = path + "slurm-%s.out" % results["jid"]
         if os.path.isfile(f):
-            results["output"], results["errors"] = self.run_remote_command("cat %s" % f)
+            results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
         else:
             results["output"] = "see errors"
             results["errors"] = "the file %s does not exist." % f
@@ -162,7 +162,7 @@ class Agent(agent.Agent):
         # uid = command["command"]["uid"]
         working_dir = command["command"]["working_dir"]
         try:
-            self.run_remote_command("mkdir -p %s" % working_dir)
+            self.run_shell_command("mkdir -p %s" % working_dir)
         except Exception:
             pass
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
@@ -173,7 +173,7 @@ class Agent(agent.Agent):
             data = myfile.read().replace('\n', '')
         results["working_dir"] = working_dir
         results["temp_file"] = data
-        results["output"], results["errors"] = self.run_remote_command("qsub %s" % tmp_file.name)
+        results["output"], results["errors"] = self.run_shell_command("qsub %s" % tmp_file.name)
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
