@@ -8,17 +8,17 @@
 {
     "scripts": [
         {
-            "script_name": "script_name",
+            "name": "test",
             "parameters": [
                 {
-                    "key": "value"
+                    "number": 2
                 }
             ]
         }
     ],
     "hpc": {
-        "is_hpc_job": true,
-        "hpc_params": [
+        "is_hpc_job": false,
+        "parameters": [
             {
                 "key": "value"
             }
@@ -79,12 +79,12 @@
           url: URI(server_root + "remotes/"+$('#hostname').val()+"/post-remote-command"),
           success: function(result)
           {
-            $('#response').val(JSON.stringify(result));
+            $('#response').val(JSON.stringify(result, undefined, 4));
           },
           error: function(request, status, reason_phrase)
           {
               document.getElementById('response').value = "error response from server:\n" + "error request:"
-                  + JSON.stringify(request) + "\n\n status: " + status + "\n\n reason: " + reason_phrase;
+                  + JSON.stringify(request, undefined, 4) + "\n\n status: " + status + "\n\n reason: " + reason_phrase;
           },
           data: JSON.stringify(payload)
         });
@@ -98,7 +98,7 @@
           username: $('#username').val(),
           password: $('#password').val(),
           success: function(response) {
-              document.getElementById('response').value = "host session made sid:" + JSON.stringify(response);
+              document.getElementById('response').value = "host session made sid:" + JSON.stringify(response, undefined, 2);
           },
           error: function(request, status, reason_phrase) {
               window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
