@@ -2130,6 +2130,26 @@ def run_agent_function(hostname):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_remote_command(hostname):
+    """
+    
+    :param hostname: name of the hpc host
+    :return: {
+        "message": a message that is supplied by the agent,
+        "command": an echo of the command 
+        that was sent to the server and the agent,
+        "error": boolean describing if there was an agent error,
+        "available_scripts": [{                    
+            "name": script_name,
+            "description": script_description,
+            "parameters": [{
+                "name": parameter_name as string,
+                "description": description of the param string,
+                "example":example usage string,
+                "type": field type eg string, int...
+            }]
+        }]list of available scripts from the agent
+    }
+    """
     sid = get_sid(hostname)
     command = cherrypy.request.json["command"]
     with slycat.web.server.remote.get_session(sid) as session:
