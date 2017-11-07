@@ -45,15 +45,15 @@ class Agent(object):
     log.addHandler(logging.FileHandler('slycat-agent.log'))
     log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
 
-    # @abc.abstractmethod
-    # def run_remote_command(self, command):
-    #     """
-    #     run a predefine script on hpc. could potentially be
-    #     an hpc batch job such as slurm or pbs.
-    #     :param command: json command
-    #     :return:
-    #     """
-    #     pass
+    @abc.abstractmethod
+    def run_remote_command(self, command):
+        """
+        run a predefine script on hpc. could potentially be
+        an hpc batch job such as slurm or pbs.
+        :param command: json command
+        :return:
+        """
+        pass
 
     @abc.abstractmethod
     def run_shell_command(self, command):

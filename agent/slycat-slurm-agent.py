@@ -27,6 +27,13 @@ class Agent(agent.Agent):
     """
 
     """
+    def run_remote_command(self, command):
+        results = {
+            "ok": True,
+            "command": command["command"]
+        }
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
 
     def run_shell_command(self, command):
         command = command.split(' ')
