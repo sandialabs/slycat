@@ -1943,6 +1943,7 @@ def post_remotes():
     username = cherrypy.request.json["username"]
     hostname = cherrypy.request.json["hostname"]
     password = cherrypy.request.json["password"]
+    msg = ""
     agent = cherrypy.request.json.get("agent", None)
     sid = slycat.web.server.remote.create_session(hostname, username, password, agent)
     '''
@@ -1964,7 +1965,8 @@ def post_remotes():
         database.save(session)
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
-    return {"sid": sid, "status": True, "msg": ""}
+        msg = "login could not save session for remote host"
+    return {"sid": sid, "status": True, "msg": msg}
 
 
 @cherrypy.tools.json_out(on=True)
@@ -2124,11 +2126,10 @@ def run_agent_function(hostname):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_remote_command(hostname):
-    # sid = get_sid(hostname)
+    sid = get_sid(hostname)
     command = cherrypy.request.json["command"]
-    return command
-    # with slycat.web.server.remote.get_session(sid) as session:
-    #     return session.run_agent_function(command)
+    with slycat.web.server.remote.get_session(sid) as session:
+        return session.run_remote_command(command)
 
 
 @cherrypy.tools.json_in(on=True)
