@@ -42,8 +42,13 @@ class Agent(object):
     _log_lock = threading.Lock()
     log = logging.getLogger()
     log.setLevel(logging.INFO)
+
     log.addHandler(logging.FileHandler('slycat-agent.log'))
     log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
+
+    def __init__(self):
+        self.scripts = []
+        self.hpc = {}
 
     @abc.abstractmethod
     def run_remote_command(self, command):
