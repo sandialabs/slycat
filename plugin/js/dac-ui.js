@@ -12,33 +12,93 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
          plots, metadata_table, $, d3, URI)
 {
 
-    // process pts progress bar
-    //var parse_progress = ko.observable(null);
-    //var parse_progress_status = ko.observable("");
+    var mid = URI(window.location).segment(-1);
 
-	// load ui parameters and initialize dial-a-cluser layout
-	$.when (request.get_parameters("dac-ui-parms")).then(
+    // poll for "dac-polling-progress" artifact then launch model
+
+    // constants for timeouts
+    var ONE_MINUTE = 60000;
+    var ONE_SECOND = 1000;
+
+    // waits 1 minute past last successful progress update
+    var endTime = Number(new Date()) + ONE_MINUTE;
+
+    // polling interval is 1 second
+    var interval = ONE_SECOND;
+
+    // poll database for artifact "dac-poll-progress"
+    (function poll() {
+
+        client.get_model_parameter(
+        {
+            mid: mid,
+            aid: "dac-polling-progress",
+            success: function (result)
+            {
+
+                console.log(result);
+
+                if (result[0] == "Done") {
+
+                    // done uploading to database
+                    launch_model();
+
+                } else if (result[0] = "Error") {
+
+                    dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
+                    launch_model()
+
+                } else {
+
+                    // reset time out and continue
+                    endTime = Number(new Date()) + ONE_MINUTE;
+                    window.setTimeout(poll, interval);
+                }
+            },
+            error: function () {
+
+                if (Number(new Date()) < endTime) {
+
+                    // continue, do not reset timer
+                    window.setTimeout(poll, interval);
+
+                } else {
+
+                    // give up
+                    launch_model();
+
+                }
+            }
+        });
+    })();
+
+    // setup and launch model
+    function launch_model ()
+    {
+
+    	// load ui parameters and initialize dial-a-cluser layout
+	    $.when (request.get_parameters("dac-ui-parms")).then(
 			function (ui_parms)
 			{
 
     			// the step size for the alpha slider (varies from 0 to 1)
     			var ALPHA_STEP = parseFloat(ui_parms["ALPHA_STEP"]);
-    
+
     			// default width for the alpha sliders (in pixels)
     			var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
-    
+
     			// default height of alpha buttons (in pixels)
     			var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
-	
+
 				// number of points over which to stop animation
 				var MAX_POINTS_ANIMATE = parseInt(ui_parms["MAX_POINTS_ANIMATE"]);
-	
+
 				// border around scatter plot (fraction of 1)
 				var SCATTER_BORDER = parseFloat(ui_parms["SCATTER_BORDER"]);
-	
+
 				// scatter button toolbar height
 				var SCATTER_BUTTONS_HEIGHT = parseInt(ui_parms["SCATTER_BUTTONS_HEIGHT"]);
-	
+
 				// scatter plot colors (css/d3 named colors)
 				var POINT_COLOR = ui_parms["POINT_COLOR"];
 				var POINT_SIZE = parseInt(ui_parms["POINT_SIZE"]);
@@ -49,7 +109,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 				var COLOR_BY_HIGH = ui_parms["COLOR_BY_HIGH"];
 				var OUTLINE_NO_SEL = parseInt(ui_parms["OUTLINE_NO_SEL"]);
 				var OUTLINE_SEL = parseInt(ui_parms["OUTLINE_SEL"]);
-				
+
 				// pixel adjustments for d3 time series plots
 				var PLOT_ADJUSTMENTS = {
 					PLOTS_PULL_DOWN_HEIGHT: parseInt(ui_parms["PLOTS_PULL_DOWN_HEIGHT"]),
@@ -64,97 +124,62 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"])
 				};
 
-	            // check to see if server computations are complete
-	            $.when (request.get_parameters("dac-polling-progress")).then (
-	                function (progress) {
 
-                        console.log(progress);
+	            // Remove progress element from DOM
+	            $('#dac-progress-feedback').remove();
 
-	                    // complete -- assign alpha parms, order, and var plot order
-	                    if (progress[0] == "Done") {
+	            // set up jQuery layout for user interface
+				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
+							  SCATTER_BUTTONS_HEIGHT);
 
-	                    	// Remove progress element from DOM
-	                    	$('#dac-progress-feedback').remove();
+                // set up alpha slider value change event
+                document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
 
-	                    	// set up jQuery layout for user interface
-							layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
-								SCATTER_BUTTONS_HEIGHT);
+                // set up selection change event
+                document.body.addEventListener("DACSelectionsChanged", selections_changed);
 
-                            // set up alpha slider value change event
-                            document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);
+                // set up difference calculation event
+                document.body.addEventListener("DACDifferenceComputed", difference_computed);
 
-                            // set up selection change event
-                            document.body.addEventListener("DACSelectionsChanged", selections_changed);
+                // load all relevant data and set up panels
+                $.when(request.get_table_metadata("dac-variables-meta"),
+		   	           request.get_table("dac-variables-meta"),
+		   	           request.get_table_metadata("dac-datapoints-meta"),
+			           request.get_table("dac-datapoints-meta")).then(
+		   	           function (variables_meta, variables, data_table_meta, data_table)
+		   	                {
 
-                            // set up difference calculation event
-                            document.body.addEventListener("DACDifferenceComputed", difference_computed);
-
-                            // load all relevant data and set up panels
-                            $.when(request.get_table_metadata("dac-variables-meta"),
-		   	                       request.get_table("dac-variables-meta"),
-		   	                       request.get_table_metadata("dac-datapoints-meta"),
-			                       request.get_table("dac-datapoints-meta")).then(
-		   	                    function (variables_meta, variables, data_table_meta, data_table)
-		   	                    {
-
-		   	                        // set up the alpha sliders
-				                    alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
+		   	                    // set up the alpha sliders
+				                alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
 				                                         variables[0]["data"][0]);
 
-				                    // set up the alpha buttons
-				                    alpha_buttons.setup (variables_meta[0]["row-count"]);
+				                // set up the alpha buttons
+				                alpha_buttons.setup (variables_meta[0]["row-count"]);
 
-				                    // set up the time series plots
-				                    plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
-				                                variables_meta, variables);
+				                // set up the time series plots
+				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
+				                            variables_meta, variables);
 
-				                    // set up the MDS scatter plot
-				                    scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					                    POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-					                    COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
+				                // set up the MDS scatter plot
+				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
+					                POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
+					                COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
 
-				                    // set up table (propagate selections through to scatter plot)
-				                    metadata_table.setup(data_table_meta, data_table);
+				                // set up table (propagate selections through to scatter plot)
+				                metadata_table.setup(data_table_meta, data_table);
 
-		   	                    },
-		   	                    function () {
-		   	                    	// Hide model and show progress content pane.
-		   	                        dialog.ajax_error ("Server error: could not load initial data.")("","","");
-		   	                    });
+		   	                },
+		   	                function () {
+		   	                    dialog.ajax_error ("Server error: could not load initial data.")("","","");
+		   	                });
 
-
-                        // not complete -- set up display window and poll
-                        } else {
-
-                        	// Hide content panes since we will be showing progress UI instead
-	                    	$('.dac-model-content').hide();
-
-                            console.log("Progress Status");
-
-                            // get status update out progress
-                            /*$.when (request.get_parameters("dac-polling-progress")).then (
-	                            function (progress) {
-	                                console.log(progress[0]);
-	                                console.log(progress[1]);
-
-                                    parse_progress = progress[1];
-                                },
-                            });*/
-
-                            //dialog.ajax_error ("Not done loading model ...")("","","");
-
-                        }
-		            },
-		            function () {
-    		            dialog.ajax_error ("Server failure: could not load DAC pre-processing data.")("","","");
-    		        }
-		        );
 			},
 			function ()
 			{
 				dialog.ajax_error ("Server failure: could not load UI parameters.")("","","");
 			}
-	);
+	    );
+    }
 
     // custom event for change in alpha slider values
     function alpha_values_changed (new_alpha_values)

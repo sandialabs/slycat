@@ -155,7 +155,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     MIN_NUM_DIG = int(aids[1])
 
     # push progress for wizard polling to database
-    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Progress", 0])
+    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
 
     # treat uploaded file as bitstream
     file_like_object = io.BytesIO(files[0])
@@ -186,6 +186,8 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                     csv_files.append(zip_file)
                     csv_no_ext.append(tail.split(".")[0])
                 else:
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                         ["Error", "CSV files must have .csv extension"])
                     raise Exception("CSV files must have .csv extension.")
 
         elif head == "META":
@@ -198,11 +200,15 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                     meta_files.append(zip_file)
                     meta_no_ext.append(tail.split(".")[0])
                 else:
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                         ["Error", "META files must have .ini extension"])
                     raise Exception("META files must have .ini extension.")
 
         else:
 
             # not CSV or META file
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Error", "unexpected file (not CSV/META) found in .zip file"])
             raise Exception("Unexpected file (not CSV/META) found in .zip file.")
 
     # check that CSV and META files have a one-to-one correspondence
@@ -217,11 +223,15 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                 meta_order.append(meta_no_ext.index(csv_file))
 
             else:
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                      ["Error", "CSV and META files do not match"])
                 raise Exception("CSV and META files do not match.")
 
     else:
 
         # different number of CSV and META files
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Error", "PTS .zip file must have same number of CSV and META files"])
         raise Exception("PTS .zip file must have same number of CSV and META files.")
 
     # re-order meta files to match csv files
@@ -274,7 +284,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # push progress for wizard polling to database
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Progress", 50.0 * i / (2.0 * num_files)])
+                                                  ["Extracting ...", 10.0 + 40.0 * i / num_files])
 
             # extract csv file from archive and parse
             cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
@@ -332,9 +342,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             file_name.append(files_no_ext[i])
 
             # update read progress
-            progress = (i+1.0)/len(files_no_ext)*10.0 + 10.0
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                     ["Parsing ...", progress])
+                                                     ["Extracting ...", 10.0 + 40.0 * i / num_files])
 
         # close archive
         zip_ref.close()
@@ -342,8 +351,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         # look for unique test-op ids (these are the rows in the metadata table)
         uniq_test_op, uniq_test_op_clusts = numpy.unique(test_op_id, return_inverse = True)
 
-        # loaded CSV/META data (20%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 20])
+        # loaded CSV/META data (50%)
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 50.0])
 
         cherrypy.log.error("DAC: screening for consistent digitizer IDs.")
 
@@ -422,8 +431,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         cherrypy.log.error("DAC: constructing meta data table and variable/time matrices.")
 
-        # screened CSV/META data (10%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 25])
+        # screened CSV/META data (55%)
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 55.0])
 
         # construct meta data table and variable/time dictionaries
         meta_column_names = table_keys
@@ -555,7 +564,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
                 # distance computations progress
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Computing ...", (j+1.0)/len(test_inds) * 15.0 + 25.0])
+                                                      ["Computing ...", (i + 1.0)/len(test_inds) * 15.0 + 55.0])
 
                 # create pairwise distance matrix
                 dist_i = spatial.distance.pdist(variable_i)
@@ -611,7 +620,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         # -----------------------------------
 
         # starting uploads (30%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Uploading ...", 40])
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Uploading ...", 70.0])
 
         # push error log to database
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
@@ -658,7 +667,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # progress bar update
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Uploading ...", (i+1.0)/num_vars * 20.0 + 40.0])
+                                                  ["Uploading ...", (i + 1.0)/num_vars * 10.0 + 70.0])
 
         # create variable matrices on server
         slycat.web.server.put_model_arrayset(database, model, "dac-var-data")
@@ -678,7 +687,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # progress bar update
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Uploading ...", (i+1.0)/num_vars * 20.0 + 60.0])
+                                                  ["Uploading ...", (i + 1.0)/num_vars * 10.0 + 80.0])
 
         # create distance matrices on server
         slycat.web.server.put_model_arrayset(database, model, "dac-var-dist")
@@ -699,7 +708,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # progress bar update
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Uploading ...", (i+1.0)/num_vars * 10.0 + 80.0])
+                                                  ["Uploading ...", (i + 1.0)/num_vars * 10.0 + 90.0])
 
         # create array for MDS coordinates
         slycat.web.server.put_model_arrayset(database, model, "dac-mds-coords")
