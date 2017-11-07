@@ -2131,7 +2131,8 @@ def run_agent_function(hostname):
 @cherrypy.tools.json_out(on=True)
 def post_remote_command(hostname):
     """
-    
+    run a remote command from the list of pre-registered commands
+    that are located on a remote agent.
     :param hostname: name of the hpc host
     :return: {
         "message": a message that is supplied by the agent,
