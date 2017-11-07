@@ -40,7 +40,7 @@ class Agent(agent.Agent):
             "description": "this is a test script for building testing and launching scripts",
             "parameters": [
                 {
-                    "name": "number",
+                    "name": "--number",
                     "description": "the number you want printed by the test script",
                     "example": "python test_run_remote_command.py --number 2",
                     "type": "integer"
@@ -49,10 +49,25 @@ class Agent(agent.Agent):
         })
 
     def run_remote_command(self, command):
+        command = command["command"]
+        run_command = "python "
+        for command_script in command["scripts"]:
+            for agent_script in self.scripts:
+                if command_script["name"] == agent_script["name"]:
+                    run_command += str(agent_script["path"])
+                    run_command += " "
+                    for parameter in command_script["parameters"]:
+                        run_command += str(parameter["name"])
+                        run_command += " "
+                        run_command += str(parameter["value"])
+        command["run_command"] = run_command
+        output = self.run_shell_command(run_command)
         results = {
             "message": "ran the remote command",
             "ok": True,
-            "command": command["command"],
+            "command": command,
+            "output": output[0],
+            "errors": output[1],
             "available_scripts": [
                 {
                     "name": script["name"],

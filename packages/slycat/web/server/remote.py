@@ -543,13 +543,15 @@ class Session(object):
             slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 400 %s" % response["message"])
             raise cherrypy.HTTPError(status=400,
-                                     message="run_agent_function response was not ok: %s" % command["module-name"])
+                                     message="run_agent_function response was not ok: %s" % response["message"])
 
         return {
             "message": response["message"],
             "error": not response["ok"],
             "command": response["command"],
-            "available_scripts": response["available_scripts"]
+            "available_scripts": response["available_scripts"],
+            "output": response["errors"],
+            "errors": response["output"]
         }
 
     def launch(self, command):
