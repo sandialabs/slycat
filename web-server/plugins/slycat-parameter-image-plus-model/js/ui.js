@@ -97,7 +97,8 @@ $("#parameter-image-plus-layout").layout(
 {
   north:
   {
-    size: 28
+    size: 28,
+    resizable: false,
   },
   center:
   {

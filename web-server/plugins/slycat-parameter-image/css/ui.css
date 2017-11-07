@@ -420,8 +420,8 @@ rights in this software.
   left: 0px;
 }
 #scatterplot .media-layer .download-button {
-  top: 3px;
-  left: 20px;
+  top: 0px;
+  left: 16px;
   position: absolute;
   width: 16px;
   height: 16px;
@@ -429,6 +429,10 @@ rights in this software.
   font-size: 12px;
   color: black;
   text-decoration: none !important;
+  background-color: white;
+  padding-left: 4px;
+  padding-top: 3px;
+  padding-right: 16px;
 }
 #scatterplot .media-layer .reload-button {
   position: absolute;
