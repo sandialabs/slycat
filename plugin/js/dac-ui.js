@@ -7,16 +7,22 @@
 
 define("dac-model", ["slycat-web-client", "slycat-dialog", "dac-layout", "dac-request-data",
                      "dac-alpha-sliders", "dac-alpha-buttons", "dac-scatter-plot", "dac-plots",
-					 "dac-table", "jquery", "d3", "URI", "domReady!"],
+					 "dac-table", "jquery", "d3", "URI", "knockout", "domReady!"],
 function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_plot,
-         plots, metadata_table, $, d3, URI)
+         plots, metadata_table, $, d3, URI, ko)
 {
 
+    // outside accessible information goes in module
+    var module = {};
+
+    // progress indicator
+    module.parse_progress = ko.observable(null);
+    module.parse_progress_status = ko.observable(null);
+
+    // model id from address bar
     var mid = URI(window.location).segment(-1);
 
-    // poll for "dac-polling-progress" artifact then launch model
-
-    // constants for timeouts
+    // constants for polling timeouts
     var ONE_MINUTE = 60000;
     var ONE_SECOND = 1000;
 
@@ -43,12 +49,15 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                     // done uploading to database
                     launch_model();
 
-                } else if (result[0] = "Error") {
+                } else if (result[0] == "Error") {
 
                     dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
                     launch_model()
 
                 } else {
+
+                    // update progress and output log
+
 
                     // reset time out and continue
                     endTime = Number(new Date()) + ONE_MINUTE;
@@ -215,5 +224,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
         // show first three most different plots
         plots.change_selections(diff_values.detail);
     }
+
+    return module;
 
 });
