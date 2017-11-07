@@ -529,7 +529,7 @@ class Session(object):
             command["module-name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
         stdin, stdout, stderr = self._agent
         payload = {
-            "action": "run-function",
+            "action": "run-remote-command",
             "command": command
         }
         cherrypy.log.error("writing msg: %s" % json.dumps(payload))
@@ -545,7 +545,7 @@ class Session(object):
             raise cherrypy.HTTPError(status=400,
                                      message="run_agent_function response was not ok: %s" % command["module-name"])
 
-        return {"message": response["message"], "error": not response["ok"]}
+        return {"message": response["message"], "error": not response["ok"], "command": response["command"]}
 
     def launch(self, command):
         """

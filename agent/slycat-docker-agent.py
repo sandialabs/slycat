@@ -30,6 +30,7 @@ class Agent(agent.Agent):
     """
     def run_remote_command(self, command):
         results = {
+            "message": "ran the remote command",
             "ok": True,
             "command": command["command"]
         }

@@ -428,6 +428,8 @@ class Agent(object):
                     self.get_job_output(command)
                 elif action == "run-function":
                     self.run_function(command)
+                elif action == "run-remote-command":
+                    self.run_remote_command(command)
                 elif action == "cancel-job":
                     self.cancel_job(command)
                 elif action == "get-user-config":
