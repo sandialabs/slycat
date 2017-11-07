@@ -490,19 +490,28 @@ class Session(object):
 
     def run_remote_command(self, command):
         """
+        run a remote command from an HPC source runnning a slycat
+        agent. the command could be things such as starting an hpc
+        script or batch job or something as simple as moving files.
+        the only requirement is that the script is in our list of 
+        trusted scripts.
+        
+        this_func()->calls agent_command_func()->which runs_shell_command()
+        -> which launches_script()-> sends_response_to_agent()->sends_response_to_server()
+        ->sends_status_response_to_client()
         
         :param self: 
-        :param command: 
+        :param command: json form of a command to be run
         {
-            "scripts":
+            "scripts": //pre defined scripts that are registerd with the server
             [{
-                "script_name":"script_name",
-                "parameters": [{key:value},...]
+                "script_name":"script_name", // key for the script lookup 
+                "parameters": [{key:value},...] // params that are fed to the script
             },...]
-            "hpc":
+            "hpc": // these are the hpc commands that may be add for thing such as slurm
             {
-                "is_hpc_job":bol, 
-                "parameters":[{key:value},...]
+                "is_hpc_job":bol, // determins if this should be run as an hpc job
+                "parameters":[{key:value},...] // things such as number of nodes
             }
         }
         :return: {"msg":"message from the agent", "error": boolean}
