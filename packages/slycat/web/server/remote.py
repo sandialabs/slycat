@@ -545,7 +545,12 @@ class Session(object):
             raise cherrypy.HTTPError(status=400,
                                      message="run_agent_function response was not ok: %s" % command["module-name"])
 
-        return {"message": response["message"], "error": not response["ok"], "command": response["command"]}
+        return {
+            "message": response["message"],
+            "error": not response["ok"],
+            "command": response["command"],
+            "available_scripts": response["available_scripts"]
+        }
 
     def launch(self, command):
         """
