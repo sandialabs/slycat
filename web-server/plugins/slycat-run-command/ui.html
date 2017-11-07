@@ -1,6 +1,5 @@
 <div class="bootstrap-styles" style="justify-content:center;">
   <div class="form-group">
-  <div class="card">
     <h1 class="title">Run Remote Command</h1>
     <form>
       <div class="input-container" class="form-group" style=".input-container{height: 300px !important;width: 400px;}">
@@ -30,8 +29,7 @@
       </div>
       <div class="input-container" class="form-group" style=".input-container{height: 300px !important;width: 400px;}">
         <label for="command">response</label>
-        <textarea class="form-control" id="response" required="required" rows="10">
-        </textarea>
+        <textarea class="form-control" id="response" required="required" rows="15"></textarea>
       </div>
     </form>
     <div class="button-container">
@@ -40,15 +38,31 @@
     <div class="button-container">
       <button class="btn btn-default" id="prettyPrint">Pretty Print</button>
     </div>
-  </div>
+    <form>
+    <div class="form-group">
+      <label for="pwd">Hostname:</label>
+      <input type="text" class="form-control" value="localhost" id="hostname">
+    </div>
+    <div class="form-group">
+      <label for="usr">Username:</label>
+      <input type="text" class="form-control" value="slycat" id="username">
+    </div>
+    <div class="form-group">
+      <label for="pwd">Password:</label>
+      <input type="password" class="form-control" value="slycat" id="password">
+    </div>
+    </form>
+    <div class="button-container">
+      <button class="btn btn-default" id="getSession">get session</button>
+    </div>
   </div>
 </div>
   <script type="text/javascript">
-    require(["slycat-server-root", "jquery", "URI"], function(server_root, $, URI)
+    require(["slycat-server-root", "jquery", "URI", "slycat-web-client"], function(server_root, $, URI, client)
     {
       function prettyPrint() {
         try {
-          var ugly = document.getElementById('command').value;
+          var ugly = $('#command').val();
           var obj = JSON.parse(ugly);
           document.getElementById('command').value = JSON.stringify(obj, undefined, 4);
         } catch (e)
@@ -60,30 +74,60 @@
       function run_remote_command()
       {
         command = JSON.parse(document.getElementById("command").value);
-        //TODO: add post call for username and password
-        console.log("calling webservice with");
-
         var payload = {"command": command};
         $.ajax(
         {
           contentType: "application/json",
           type: "POST",
-          url: URI(server_root + "remotes/localhost/post-remote-command"),
+          url: URI(server_root + "remotes/"+$('#hostname').val()+"/post-remote-command"),
           success: function(result)
           {
-            document.getElementById('response').value = JSON.stringify(result);
+            $('#response').val(JSON.stringify(result));
           },
           error: function(request, status, reason_phrase)
           {
-            window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
-            console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+              document.getElementById('response').value = "error response from server:\n" + "error request:"
+                  + JSON.stringify(request) + "\n\n status: " + status + "\n\n reason: " + reason_phrase;
+//            window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+//            console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
           },
           data: JSON.stringify(payload)
         });
 
-        console.log("done")
+      }
+
+      function post_session()
+      {
+        client.post_remotes({
+          hostname: $('#hostname').val(),
+          username: $('#username').val(),
+          password: $('#password').val(),
+          success: function(response) {
+              document.getElementById('response').value = "host session made sid:" + JSON.stringify(response);
+          },
+          error: function(request, status, reason_phrase) {
+              window.alert("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+              console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+          }
+        });
+      }
+
+      function get_session() {
+        client.get_session_status(
+          {
+            hostname: $('#hostname').val(),
+            success: function (message) {
+                document.getElementById('response').value = "host session found";
+            },
+            error: function (request, status, reason_phrase) {
+                document.getElementById('response').value = "no session found";
+                post_session();
+            }
+          }
+        );
       }
       document.getElementById("prettyPrint").addEventListener("click", prettyPrint, false);
       document.getElementById("go").addEventListener("click", run_remote_command, false);
+      document.getElementById("getSession").addEventListener("click", get_session, false);
     });
   </script>
