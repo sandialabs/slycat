@@ -490,7 +490,7 @@ class Session(object):
 
     def run_remote_command(self, command):
         """
-        run a remote command from an HPC source runnning a slycat
+        run a remote command from an HPC source running a slycat
         agent. the command could be things such as starting an hpc
         script or batch job or something as simple as moving files.
         the only requirement is that the script is in our list of 
