@@ -57,7 +57,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 } else {
 
                     // update progress and output log
-
+                    $("#dac_processing_progress_bar").width(result[1] + "%");
+                    $("#dac_processing_progress_bar").text(result[0]);
+                    $("#dac_processing_textarea").text("Hello Shawn!");
 
                     // reset time out and continue
                     endTime = Number(new Date()) + ONE_MINUTE;

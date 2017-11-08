@@ -4,6 +4,10 @@
   	font-size: 100%;
 }
 
+.dac-model-content {
+	display: none;
+}
+
 /* no border for sliding bars */
 .ui-layout-pane
 {

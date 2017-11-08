@@ -7,35 +7,27 @@ S. Martin
 
 <div id="dac-model" style="-webkit-flex:1; flex:1;">
 
-	<div id="dac-progress-feedback" style="margin: 20px;">
+	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px;">
 
-		Data is being processed for the model ...
+		<label>Data is being processed for the model.</label>
 
-		<div style="margin-top: 20px; margin-left: 15px">
-          <label>Process Results:</label>
-          <textarea class="form-control" rows="15" readonly id="dac-wizard-process-results">
-          </textarea>
-        </div>
-
-		<div style="margin-top: 20px; margin-left: 15px">
+		<div style="margin-top: 20px;">
             <div class="progress"> <!-- data-bind="visible: parse_progress() != undefined && parse_progress() > 0"-->
-                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                <div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
                     aria-valuemin="0"
                     aria-valuemax="100"
-                    data-bind="
-                        attr: {'aria-valuenow' : parse_progress},
-                        style: {'width' : parse_progress() + '%'},
-                        text: parse_progress_status,
-                    ">
-                    Parsing...
+                    >
                 </div>
             </div>
         </div>
 
+		<div style="margin-top: 20px;">
+          <label>Process Results:</label>
+          <textarea id="dac_processing_textarea" class="form-control" rows="15" readonly id="dac-wizard-process-results">
+          </textarea>
+        </div>
 
 	</div>
-
-	<!-- <div id="dac-model"> -->
 
 	<div class="ui-layout-center dac-model-content">
 		
