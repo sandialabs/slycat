@@ -383,7 +383,7 @@ class Agent(object):
         # Let the caller know we're ready to handle commands.
         sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Ready."}))
         sys.stdout.flush()
-
+        import traceback
         while True:
             # format: {"action":"action"}
             # Read the next command from caller.
@@ -445,7 +445,8 @@ class Agent(object):
                     self.log.error("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
-                sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
+
+                sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
                 sys.stdout.flush()
 
 
