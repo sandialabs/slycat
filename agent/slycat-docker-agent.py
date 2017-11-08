@@ -43,7 +43,9 @@ class Agent(agent.Agent):
                     "name": "--number",
                     "description": "the number you want printed by the test script",
                     "example": "python test_run_remote_command.py --number 2",
-                    "type": "integer"
+                    "type": "integer",
+                    "required": False,
+                    "default": 1
                 }
             ]
         })
