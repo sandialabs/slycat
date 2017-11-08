@@ -1113,8 +1113,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     var  add_resize_handle = function(fh) {
-      fh.append("span")
-        .attr("class", "resize-handle frame-icon")
+      fh.append("i")
+        .attr("class", "resize-handle frame-button fa fa-expand fa-rotate-90")
+        .attr("aria-hidden", "true")
+        .attr("title", "Resize")
         .call(
           d3.behavior.drag()
             .on('drag', handlers["resize"])
@@ -1126,9 +1128,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     };
 
     var add_pin_button = function(fh) {
-      fh.append("span")
-        .attr('class', 'pin-button frame-icon')
+      fh.append("i")
+        .attr('class', 'pin-button frame-button fa fa-thumb-tack')
         .attr('title', 'Pin')
+        .attr("aria-hidden", "true")
         .on("mousedown", handlers["stop_event"])
         .on("mouseup", handlers["stop_event"])
         .on("click", handlers["pin"]);
@@ -1137,7 +1140,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var add_download_button = function(fh, uri, filename) {
       fh.append("a")
         .attr('href', uri)
-        .attr('class', 'fa fa-download download-button')
+        .attr('class', 'download-button frame-button fa fa-download')
         .attr('title', 'Download media file')
         .attr('download', filename)
         .on("mousedown", handlers["stop_event"])
@@ -1185,9 +1188,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         )
         .on("mousedown", handlers["frame_mousedown"]);
 
+      var frame_overlay = frame_html.append("div")
+        .attr("class", "frame_overlay")
+        ;
+
       // Create a close button ...
-      var close_button_html = frame_html.append("span")
-        .attr("class", "close-button frame-icon")
+      var close_button_html = frame_html.append("i")
+        .attr("class", "close-button frame-button fa fa-times")
+        .attr("aria-hidden", "true")
+        .attr("title", "Close")
         .on("mousedown", handlers["stop_event"])
         .on("mouseup", handlers["stop_event"])
         .on("click", handlers["close"]);
