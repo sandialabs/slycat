@@ -773,6 +773,8 @@ rights in this software.
   font-size: 13px;
   padding: 1px 5px;
   margin-top: -1px;
+}
+.slycat-category-filter .category-button div {
   text-overflow: ellipsis;
   overflow: hidden;
 }
