@@ -251,7 +251,7 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
                   type: "GET",
                   url : server_root + "models/" + vm.model_id() + "/arraysets/data-table/metadata?unique=0/" + targetFilter.index() + "/...",
                   success : function(result) {
-                     _(result.unique[0].values[0]).sort().each(function(c) { targetFilter.categories.push({value: ko.observable(c), selected: ko.observable(true)}); }).value(); // selected by default
+                     _(result.unique[0].values[0]).sort().each(function(c) { targetFilter.categories.push({value: ko.observable(c), selected: ko.observable(true), fresh: ko.observable(false)}); }).value(); // selected by default
                     // Bookmark once all unique values are set
                     self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
                   },
