@@ -9,23 +9,20 @@ S. Martin
 
 	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px;">
 
-		<label>Data is being processed for the model.</label>
+		<label>Data is being processed for the model:</label>
+			<div class="progress">
+				<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
+					 aria-valuemin="0"
+					 aria-valuemax="100">
+				</div>
+			</div>
 
-		<div style="margin-top: 20px;">
-            <div class="progress"> <!-- data-bind="visible: parse_progress() != undefined && parse_progress() > 0"-->
-                <div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    >
-                </div>
-            </div>
-        </div>
 
-		<div style="margin-top: 20px;">
-          <label>Process Results:</label>
-          <textarea id="dac_processing_textarea" class="form-control" rows="15" readonly id="dac-wizard-process-results">
-          </textarea>
-        </div>
+		<label>Process Results:</label>
+			<div style="margin-top: 0px;">
+	          <textarea id="dac_processing_textarea" rows="20" class="form-control" readonly>
+    	      </textarea>
+			</div>
 
 	</div>
 

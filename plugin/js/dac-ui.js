@@ -12,12 +12,13 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
          plots, metadata_table, $, d3, URI, ko)
 {
 
-    // outside accessible information goes in module
-    var module = {};
+    // height of slycat header/progress bar
+    var SLYCAT_PROGRESS_HEADER = 200;
+    var MIN_PROGRESS_TEXT_HEIGHT = 200;
 
-    // progress indicator
-    module.parse_progress = ko.observable(null);
-    module.parse_progress_status = ko.observable(null);
+    // set text area height to fill window
+    $("#dac_processing_textarea").height(Math.max($(window).height() - SLYCAT_PROGRESS_HEADER,
+                                                  MIN_PROGRESS_TEXT_HEIGHT));
 
     // model id from address bar
     var mid = URI(window.location).segment(-1);
@@ -42,8 +43,6 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
             success: function (result)
             {
 
-                console.log(result);
-
                 if (result[0] == "Done") {
 
                     // done uploading to database
@@ -59,7 +58,13 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                     // update progress and output log
                     $("#dac_processing_progress_bar").width(result[1] + "%");
                     $("#dac_processing_progress_bar").text(result[0]);
-                    $("#dac_processing_textarea").text("Hello Shawn!");
+
+                    // request error log
+                    $.when(request.get_parameters("dac-parse-log")).then(
+                        function(error_log)
+                        {
+                            $("#dac_processing_textarea").text(error_log[1]);
+                        });
 
                     // reset time out and continue
                     endTime = Number(new Date()) + ONE_MINUTE;
@@ -226,7 +231,5 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
         // show first three most different plots
         plots.change_selections(diff_values.detail);
     }
-
-    return module;
 
 });

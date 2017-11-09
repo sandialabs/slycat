@@ -284,7 +284,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # push progress for wizard polling to database
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Extracting ...", 10.0 + 40.0 * i / num_files])
+                                                  ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
 
             # extract csv file from archive and parse
             cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
@@ -343,7 +343,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # update read progress
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                     ["Extracting ...", 10.0 + 40.0 * i / num_files])
+                                                     ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
 
         # close archive
         zip_ref.close()
@@ -564,7 +564,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
                 # distance computations progress
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Computing ...", (i + 1.0)/len(test_inds) * 15.0 + 55.0])
+                                                      ["Computing ...", (i + 1.0)/len(dig_id_keys) * 10.0 + 55.0])
 
                 # create pairwise distance matrix
                 dist_i = spatial.distance.pdist(variable_i)
