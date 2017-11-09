@@ -21,7 +21,8 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
         });
       };
 
-      this.toggle = function(category) {
+      this.toggle = function(category, event) {
+        event.target.classList.add('fresh');
         if(category.selected())
         {
           category.selected(false);
@@ -31,6 +32,10 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
           category.selected(true);
         }
       };
+
+      this.mouseOut = function(category, event) {
+        event.target.classList.remove('fresh');;
+      }
 
       self.style = ko.pureComputed(function()
       {
