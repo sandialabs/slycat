@@ -567,6 +567,7 @@ rights in this software.
   background-color: black;
   border: 1px solid black;
   height: auto;
+  padding-bottom: 20px;
 }
 #scatterplot .image-frame.html img {
   display: block;
@@ -577,7 +578,6 @@ rights in this software.
 }
 #scatterplot .image-frame.html video {
   display: block;
-  margin: 20px 0;
   width: 100%;
   height: auto;
 }
@@ -926,10 +926,11 @@ a {
 }
 .image-frame .download-link
 {
-  margin: 20px;
+  padding: 20px;
   display: block;
   text-align: center;
   word-break: break-all;
+  background-color: white;
 }
 #video-controls .video-sync-time {
   width: 75px;
