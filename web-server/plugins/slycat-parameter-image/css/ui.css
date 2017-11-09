@@ -797,11 +797,13 @@ rights in this software.
 }
 .slycat-category-filter .category-button:hover {
   cursor: pointer;
-  background-color: #cccccc;
-}
-.slycat-category-filter .category-button.active:hover {
   background-color: #78f;
   border-color: #78f;
+  color: #333;
+}
+.slycat-category-filter .category-button.active:hover {
+  background-color: #cccccc;
+  border-color: #cccccc;
 }
 .slycat-category-select {
   /*max-width: 70px;*/
