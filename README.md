@@ -1,7 +1,6 @@
 # Slycat
 [![TravisCI](https://travis-ci.org/sandialabs/slycat.svg?branch=master)](https://travis-ci.org/sandialabs/slycat)
 [![Coverage Status](https://coveralls.io/repos/github/sandialabs/slycat/badge.svg?branch=master)](https://coveralls.io/github/sandialabs/slycat?branch=master)
-[![Documentation Status](https://readthedocs.org/projects/slycat/badge/?version=latest)](http://slycat.readthedocs.io/en/latest/?badge=latest)
 [![Code Climate](https://codeclimate.com/github/sandialabs/slycat/badges/gpa.svg)](https://codeclimate.com/github/sandialabs/slycat)
 [![Stories in Ready](https://badge.waffle.io/sandialabs/slycat.svg?label=ready&title=Ready)](http://waffle.io/sandialabs/slycat)
 
