@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import traceback
 import uuid
 import abc
 import logging
@@ -42,7 +43,6 @@ class Agent(object):
     _log_lock = threading.Lock()
     log = logging.getLogger()
     log.setLevel(logging.INFO)
-
     log.addHandler(logging.FileHandler('slycat-agent.log'))
     log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
 
@@ -367,6 +367,7 @@ class Agent(object):
         format {action:action, command: command}
         :return: 
         """
+        debug = False
         self.log.info("\n")
         self.log.info("*agent started*")
         # Parse and sanity-check command-line arguments.
@@ -383,7 +384,7 @@ class Agent(object):
         # Let the caller know we're ready to handle commands.
         sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Ready."}))
         sys.stdout.flush()
-        import traceback
+
         while True:
             # format: {"action":"action"}
             # Read the next command from caller.
@@ -404,6 +405,9 @@ class Agent(object):
                 if "action" not in command:
                     self.log.error("Missing action for command: %s" % command)
                     raise Exception("Missing action.")
+                if "debug" in command:
+                    if command["debug"] is True:
+                        debug = True
 
                 action = command["action"]
                 self.log.info("command: %s" % command)
@@ -445,8 +449,10 @@ class Agent(object):
                     self.log.error("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
-
-                sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
+                if debug:
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
+                else:
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
                 sys.stdout.flush()
 
 
