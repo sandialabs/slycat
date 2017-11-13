@@ -21,8 +21,7 @@ function(client, dialog, $, d3, URI)
 	// private variables
 	// -----------------
 
-    // maximum time points to plot (for subsampling)
-    var MAX_TIME_POINTS = 200;
+    var max_time_points = null;
 
 	// model ID
 	var mid = URI(window.location).segment(-1);
@@ -71,7 +70,7 @@ function(client, dialog, $, d3, URI)
 	
 	// set up initial private variables, user interface
 	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
-	                         variables_metadata, variables_data)
+	                         MAX_TIME_POINTS, variables_metadata, variables_data)
 	{
 	
 		// set ui constants
@@ -87,7 +86,10 @@ function(client, dialog, $, d3, URI)
 		plot_adjustments.label_opacity = PLOT_ADJUSTMENTS.LABEL_OPACITY;
 		plot_adjustments.x_tick_freq = PLOT_ADJUSTMENTS.X_TICK_FREQ;
 		plot_adjustments.y_tick_freq = PLOT_ADJUSTMENTS.Y_TICK_FREQ;
-	
+
+	    // set maximum resolution for plotting
+	    max_time_points = MAX_TIME_POINTS;
+
 		// populate pull down menus and initialize d3 plots
 
 		// sort out the variable metadata we need
@@ -114,7 +116,7 @@ function(client, dialog, $, d3, URI)
             mid: mid,
             type: "DAC",
             command: "subsample_time_var",
-            parameters: [plots_selected[0], MAX_TIME_POINTS, "-Inf", "Inf"],
+            parameters: [plots_selected[0], max_time_points, "-Inf", "Inf"],
             success: function (result)
             {
                 // save data for viewing later
@@ -126,7 +128,7 @@ function(client, dialog, $, d3, URI)
                     mid: mid,
                     type: "DAC",
                     command: "subsample_time_var",
-                    parameters: [plots_selected[1], MAX_TIME_POINTS, "-Inf", "Inf"],
+                    parameters: [plots_selected[1], max_time_points, "-Inf", "Inf"],
                     success: function (result)
                     {
                         plots_selected_time.push(result["time_points"]);
@@ -137,7 +139,7 @@ function(client, dialog, $, d3, URI)
                             mid: mid,
                             type: "DAC",
                             command: "subsample_time_var",
-                            parameters: [plots_selected[2], MAX_TIME_POINTS, "-Inf", "Inf"],
+                            parameters: [plots_selected[2], max_time_points, "-Inf", "Inf"],
                             success: function (result)
                             {
                                 plots_selected_time.push(result["time_points"]);
@@ -241,7 +243,7 @@ function(client, dialog, $, d3, URI)
                     mid: mid,
                     type: "DAC",
                     command: "subsample_time_var",
-                    parameters: [plots_selected[select_id], MAX_TIME_POINTS, "-Inf", "Inf"],
+                    parameters: [plots_selected[select_id], max_time_points, "-Inf", "Inf"],
                     success: function (result)
                     {
 
@@ -508,7 +510,7 @@ function(client, dialog, $, d3, URI)
                     mid: mid,
                     type: "DAC",
                     command: "subsample_time_var",
-                    parameters: [plots_selected[plot_id], MAX_TIME_POINTS, extent[0][0], extent[1][0]],
+                    parameters: [plots_selected[plot_id], max_time_points, extent[0][0], extent[1][0]],
                     success: function (result)
                         {
                             // update with higher resolution data
@@ -536,7 +538,7 @@ function(client, dialog, $, d3, URI)
                 mid: mid,
                 type: "DAC",
                 command: "subsample_time_var",
-                parameters: [plots_selected[plot_id], MAX_TIME_POINTS, "-Inf", "Inf"],
+                parameters: [plots_selected[plot_id], max_time_points, "-Inf", "Inf"],
                 success: function (result)
                 {
                     // refresh with lowest resolution data

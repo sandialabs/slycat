@@ -20,6 +20,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     $("#dac_processing_textarea").height(Math.max($(window).height() - SLYCAT_PROGRESS_HEADER,
                                                   MIN_PROGRESS_TEXT_HEIGHT));
 
+    // maximum number of points to display for plots
+    var MAX_TIME_POINTS = 200;
+
     // model id from address bar
     var mid = URI(window.location).segment(-1);
 
@@ -137,7 +140,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					Y_LABEL_PADDING: parseInt(ui_parms["Y_LABEL_PADDING"]),
 					LABEL_OPACITY: parseFloat(ui_parms["LABEL_OPACITY"]),
 					X_TICK_FREQ: parseInt(ui_parms["X_TICK_FREQ"]),
-					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"])
+					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"]),
 				};
 
 
@@ -174,7 +177,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
-				                            variables_meta, variables);
+				                            MAX_TIME_POINTS, variables_meta, variables);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
