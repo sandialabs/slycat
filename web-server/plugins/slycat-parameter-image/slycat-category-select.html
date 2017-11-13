@@ -1,6 +1,11 @@
 <div class="slycat-category-filter" data-bind="style:style">
   <div data-bind="foreach: categories" class="slycat-category-select" role="group" style="position: relative">
-    <div class="category-button" data-bind="text: value, css: { active: selected }, click: $parent.toggle">
+    <div class="category-button" data-bind="
+    	css: { active: selected }, 
+    	click: $parent.toggle, 
+    	event: { mouseout: $parent.mouseOut, mouseover: $parent.mouseOver, }, 
+    	">
+    	<div data-bind="text: value"><div>
     </div>
   </div>
 </div>
