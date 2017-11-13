@@ -21,7 +21,8 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
         });
       };
 
-      this.toggle = function(category) {
+      this.toggle = function(category, event) {
+        event.currentTarget.classList.add('fresh');
         if(category.selected())
         {
           category.selected(false);
@@ -31,6 +32,21 @@ require(["slycat-server-root", "knockout", "knockout-mapping", "lodash"], functi
           category.selected(true);
         }
       };
+
+      this.mouseOut = function(category, event) {
+        event.currentTarget.classList.remove('fresh');
+      }
+
+      this.mouseOver = function(category, event) {
+        var ele = event.currentTarget;
+        var child = ele.firstElementChild;
+        var title = "";
+        if(child.clientWidth < child.scrollWidth)
+        {
+          title = category.value();
+        }
+        ele.title = title;
+      }
 
       self.style = ko.pureComputed(function()
       {

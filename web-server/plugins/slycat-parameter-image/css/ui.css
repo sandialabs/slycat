@@ -773,8 +773,16 @@ rights in this software.
   font-size: 13px;
   padding: 1px 5px;
   margin-top: -1px;
+}
+.slycat-category-filter .category-button div {
   text-overflow: ellipsis;
   overflow: hidden;
+}
+.slycat-category-filter .category-button.fresh:hover
+{
+  border-color: #cfcfcf;
+  background-color: #e7e7e7;
+  color: #8f8f8f;
 }
 .auto-width .slycat-category-filter .category-button {
   padding-right: 30px;
@@ -788,7 +796,9 @@ rights in this software.
   border-bottom-width: 1px;
   border-radius: 0 0 3px 3px;
 }
-.slycat-category-filter .category-button.active {
+.slycat-category-filter .category-button.active,
+ .slycat-category-filter .category-button.active.fresh:hover
+{
   background-color: #abf;
   border-color: #97A3FE;
   color: #333;
@@ -797,11 +807,14 @@ rights in this software.
 }
 .slycat-category-filter .category-button:hover {
   cursor: pointer;
-  background-color: #cccccc;
-}
-.slycat-category-filter .category-button.active:hover {
   background-color: #78f;
   border-color: #78f;
+  color: #333;
+}
+.slycat-category-filter .category-button.active:hover {
+  background-color: #cccccc;
+  border-color: #cccccc;
+  color: #8f8f8f;
 }
 .slycat-category-select {
   /*max-width: 70px;*/
