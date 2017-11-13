@@ -681,7 +681,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                 dict(name="column", end=int(data_mat.shape[1]))]
             attributes = [dict(name="value", type="float64")]
 
-            # upload to slycat as seperate arrays
+            # upload to slycat as separate arrays
             slycat.web.server.put_model_array(database, model, "dac-var-data", i, attributes, dimensions)
             slycat.web.server.put_model_arrayset_data(database, model, "dac-var-data", "%s/0/..." % i, [data_mat])
 

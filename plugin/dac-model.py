@@ -16,15 +16,18 @@ def register_slycat_plugin(context):
     import imp
     import cherrypy
 
+
     def finish(database, model):
         slycat.web.server.update_model(database, model,
 		    state="finished", result="succeeded",
 		    finished=datetime.datetime.utcnow().isoformat(),
 		    progress=1.0, message="")
 
+
     def page_html(database, model):
         return open(os.path.join(os.path.dirname(__file__), 
                     "dac-ui.html"), "r").read()
+
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
         """
@@ -124,6 +127,7 @@ def register_slycat_plugin(context):
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
 
+
     # computes new MDS coordinate representation using alpha values
     def update_mds_coords(database, model, verb, type, command, **kwargs):
 
@@ -152,6 +156,7 @@ def register_slycat_plugin(context):
 
         # return JSON matrix of coordinates to client
         return json.dumps({"mds_coords": scaled_mds_coords.tolist()})
+
 
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
@@ -198,6 +203,65 @@ def register_slycat_plugin(context):
     	return json.dumps({"fisher_disc": fisher_disc.tolist()})
 
 
+    # sub-samples time and variable data from database and pushes to "dac-sub-time-points"
+    # and "dac-sub-var-data"
+    def subsample_time_var (database, model, verb, type, command, **kwargs):
+
+        # get input parameters
+
+        # variable number in database
+        database_ind = int(kwargs["0"])
+
+        # number of samples to return in subsample
+        num_subsample = int(kwargs["1"])
+
+        # range of sames (x-value)
+        if kwargs["2"] == "-Inf":
+            x_min = -float("Inf")
+        else:
+            x_min = float(kwargs["2"])
+
+        if kwargs["3"] == "Inf":
+            x_max = float("Inf")
+        else:
+            x_max = float(kwargs["3"])
+
+        # load time points and data from database
+        time_points = slycat.web.server.get_model_arrayset_data (
+            database, model, "dac-time-points", "%s/0/..." % database_ind)[0]
+        var_data = slycat.web.server.get_model_arrayset_data (
+            database, model, "dac-var-data", "%s/0/..." % database_ind)[0]
+
+        # find indices within user selected range
+        range_inds = numpy.where((time_points >= x_min) & (time_points <= x_max))[0]
+
+        # add indices just before and just after user selected range
+        if range_inds[0] > 0:
+            range_inds = numpy.insert(range_inds, 0, range_inds[0]-1)
+        if range_inds[-1] < (len(time_points)-1):
+            range_inds = numpy.append(range_inds, range_inds[-1]+1)
+
+        # compute step size for subsample
+        num_samples = len(range_inds)
+        subsample_stepsize = int(numpy.ceil(float(num_samples) / float(num_subsample)))
+        sub_inds = range_inds[0::subsample_stepsize]
+
+        # add in last index, if not already present
+        if sub_inds[-1] != range_inds[-1]:
+            sub_inds = numpy.append(sub_inds, range_inds[-1])
+
+        # get subsamples
+        time_points_subsample = time_points[sub_inds]
+        var_data_subsample = var_data[:,sub_inds]
+
+        # return data using content function
+        def content():
+            yield json.dumps({"time_points": time_points_subsample.tolist(),
+                              "var_data": var_data_subsample.tolist()})
+
+        return content()
+
+
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords', 
         os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
@@ -208,6 +272,7 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "update_mds_coords", update_mds_coords)
     context.register_model_command("GET", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
+    context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
 
     # registry css resources with slycat
     context.register_page_bundle("DAC", "text/css", [

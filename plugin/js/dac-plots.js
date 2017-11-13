@@ -11,8 +11,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("dac-plots", ["slycat-dialog", "dac-request-data", "jquery", "d3"],
-function(dialog, request, $, d3)
+define("dac-plots", ["slycat-web-client", "slycat-dialog", "jquery", "d3", "URI"],
+function(client, dialog, $, d3, URI)
 {
 
 	// public functions (or variables)
@@ -20,7 +20,13 @@ function(dialog, request, $, d3)
 	
 	// private variables
 	// -----------------
-	
+
+    // maximum time points to plot (for subsampling)
+    var MAX_TIME_POINTS = 200;
+
+	// model ID
+	var mid = URI(window.location).segment(-1);
+
 	// current plots being shown (indices & data)
 	var plots_selected = [];
 	var plots_selected_time = [];	// a vector of time values for plot {0,1,2}
@@ -92,32 +98,66 @@ function(dialog, request, $, d3)
 		plot_type = variables_data[0]["data"][3];
 				
 		// init plot order (repeated if not enough plots)
-		for (i = 0; i < Math.min(num_plots,3); i++) {
+		for (var i = 0; i < Math.min(num_plots,3); i++) {
 		    plots_selected.push(i);
 		}
 
 		// remove unused plot pull downs
-		for (i = num_plots; i < 3; i++) {
+		for (var i = num_plots; i < 3; i++) {
 		    $("#dac-select-plot-" + (i+1)).remove();
 		}
 
 		// load up matrices for time series that we're looking at
-		for (i = 0; i < Math.min(num_plots,3); i++) {
+		// (nested calls to make sure we load matrices in order)
+		if (0 < Math.min(num_plots,3)) {client.get_model_command({
 
-		    $.when(request.get_array("dac-time-points", plots_selected[i]),
-			       request.get_array("dac-var-data", plots_selected[i])).then(
-				function (time_values, time_vars) {
+            mid: mid,
+            type: "DAC",
+            command: "subsample_time_var",
+            parameters: [plots_selected[0], MAX_TIME_POINTS, "-Inf", "Inf"],
+            success: function (result)
+            {
+                // save data for viewing later
+                plots_selected_time.push(result["time_points"]);
+                plots_selected_data.push(result["var_data"]);
 
-			        // save data as likely candidates for viewing later
-					plots_selected_time.push(time_values[0]);
-					plots_selected_data.push(time_vars[0]);
+                if (1 < Math.min(num_plots,3)) {client.get_model_command({
 
-				},
-				function ()
-			    {
-					dialog.ajax_error('Server failure: could not load plot data.')("","","");
-			    });
-		}
+                    mid: mid,
+                    type: "DAC",
+                    command: "subsample_time_var",
+                    parameters: [plots_selected[1], MAX_TIME_POINTS, "-Inf", "Inf"],
+                    success: function (result)
+                    {
+                        plots_selected_time.push(result["time_points"]);
+                        plots_selected_data.push(result["var_data"]);
+
+                        if (2 < Math.min(num_plots,3)) {client.get_model_command({
+
+                            mid: mid,
+                            type: "DAC",
+                            command: "subsample_time_var",
+                            parameters: [plots_selected[2], MAX_TIME_POINTS, "-Inf", "Inf"],
+                            success: function (result)
+                            {
+                                plots_selected_time.push(result["time_points"]);
+                                plots_selected_data.push(result["var_data"]);
+                            },
+                            error: function () {
+                                dialog.ajax_error ('Server failure: could not load plot data (3).')("","","");
+                            }
+                        })};
+                    },
+                    error: function () {
+                        dialog.ajax_error ('Server failure: could not load plot data (2).')("","","");
+                    }
+                })};
+            },
+            error: function ()
+            {
+                dialog.ajax_error ('Server failure: could not plot data (1).')("","","");
+            }
+        })};
 
 		// initialize plots as d3 plots
 		for (var i = 0; i < Math.min(num_plots,3); ++i) {
@@ -167,7 +207,7 @@ function(dialog, request, $, d3)
 		module.draw();
 
 	}
-	
+
 	// populate pull down menu i in {0,1,2} with plot names
 	function display_plot_pull_down (i)
 	{
@@ -191,30 +231,35 @@ function(dialog, request, $, d3)
 				var select_id_str = this.id;
 				var select_id = Number(select_id_str.split("-").pop()) - 1;
 				var select_value = Number(this.value);
-				
+
 				// change value of selection
 				plots_selected[select_id] = select_value;
 				
 				// request new data from server
-				$.when(request.get_array("dac-time-points", plots_selected[select_id]),
-					   request.get_array("dac-var-data", plots_selected[select_id])).then(
-					function (time_values, time_vars)
-					{
-						// save data new data
-						plots_selected_time[select_id] = time_values[0];
-						plots_selected_data[select_id] = time_vars[0];
-												
-						// update d3 data in plot
-						update_data(select_id);
-										
-						// update newly selected plot
-						draw_plot(select_id);						
-					},
-					function ()
-					{
-					    dialog.ajax_error ("Server failure: could not load plot data.")("","","");
-					}
-				);
+                client.get_model_command(
+                {
+                    mid: mid,
+                    type: "DAC",
+                    command: "subsample_time_var",
+                    parameters: [plots_selected[select_id], MAX_TIME_POINTS, "-Inf", "Inf"],
+                    success: function (result)
+                    {
+
+                        // save new data
+                        plots_selected_time[select_id] = result["time_points"];
+                        plots_selected_data[select_id] = result["var_data"];
+
+                        // update d3 data in plot
+                        update_data(select_id);
+
+                        // update newly selected plot
+                        draw_plot(select_id);
+                    },
+                    error: function ()
+                    {
+                        dialog.ajax_error ('Server failure: could not load plot data.')("","","");
+                    }
+                });
 			});
 		
 	}
@@ -439,28 +484,76 @@ function(dialog, request, $, d3)
 	{
 		// get current plot index
 		var plot_id_str = this.parentNode.id;
-		var i = Number(plot_id_str.split("-").pop()) - 1;
-		
+		var plot_id = Number(plot_id_str.split("-").pop()) - 1;
+
 		// find zoomed area
 		var extent = d3.event.target.extent();
-						
-		// reset scale (assumed nothing zoomed)
-		set_default_domain(i);
-							   			
-		// was it an empty zoom?
-		if (extent[0][0] != extent[1][0] &&
-			extent[0][1] != extent[1][1])
-			{
-				// user did zoom in on something, so reset window
-				x_scale[i].domain([extent[0][0], extent[1][0]]);
-				y_scale[i].domain([extent[0][1], extent[1][1]]);	
-			}
 
 		// remove gray selection box
 		d3.event.target.clear();
 		d3.select(this).call(d3.event.target);
-			
-		draw_plot(i);
+
+		// was it an valid zoom?
+		if (extent[0][0] != extent[1][0] &&
+			extent[0][1] != extent[1][1])
+			{
+
+				// user did zoom in on something, so reset window
+				x_scale[plot_id].domain([extent[0][0], extent[1][0]]);
+				y_scale[plot_id].domain([extent[0][1], extent[1][1]]);
+
+			    // call server to get new subsample
+                client.get_model_command(
+                {
+                    mid: mid,
+                    type: "DAC",
+                    command: "subsample_time_var",
+                    parameters: [plots_selected[plot_id], MAX_TIME_POINTS, extent[0][0], extent[1][0]],
+                    success: function (result)
+                        {
+                            // update with higher resolution data
+                            plots_selected_time[plot_id] = result["time_points"];
+                            plots_selected_data[plot_id] = result["var_data"];
+
+                            // update data for d3
+                            update_data(plot_id);
+
+                            // re-draw plot
+                            draw_plot(plot_id);
+                        },
+                    error: function ()
+                        {
+                            dialog.ajax_error ('Server failure: could not subsample variable data.')("","","");
+                        }
+
+                });
+
+		} else {  // reset zoom
+
+            // reload data for full scale
+            client.get_model_command(
+            {
+                mid: mid,
+                type: "DAC",
+                command: "subsample_time_var",
+                parameters: [plots_selected[plot_id], MAX_TIME_POINTS, "-Inf", "Inf"],
+                success: function (result)
+                {
+                    // refresh with lowest resolution data
+                    plots_selected_time[plot_id] = result["time_points"];
+                    plots_selected_data[plot_id] = result["var_data"];
+
+                    // update d3 data in plot
+                    update_data(plot_id);
+
+                    // reset scale
+                    set_default_domain(plot_id);
+
+                    // re-draw plot
+                    draw_plot(plot_id);
+                }
+            });
+		};
 	};	
 	
 	// update selections (and data) for all plots
