@@ -20,4 +20,4 @@ script:
   - docker ps -a
   - docker exec -i slycat bash -c "service slycat-web-server status"
 #  - docker exec -i slycat bash -c "cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks|rest-api)\" /home/slycat/src/slycat/features/"
-  - docker exec -i slycat bash -c "su slycat -c \"cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks)\" /home/slycat/src/slycat/features/ \""
+  - docker exec -i slycat bash -c "su slycat -c \"cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages;behave -i '(agent|hyperchunks)' /home/slycat/src/slycat/features/ \""
