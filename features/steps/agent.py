@@ -16,7 +16,7 @@ import time
 
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 data_dir = os.path.join(root_dir, "features/data/agent")
-slycat_agent = os.path.join(root_dir, "agent", "slycat-slurm-agent.py")
+slycat_agent = os.path.join(root_dir, "agent", "slycat-docker-agent.py")
 
 @given(u'a running Slycat agent')
 def step_impl(context):

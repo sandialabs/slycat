@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import traceback
 import uuid
 import abc
 import logging
@@ -351,6 +352,7 @@ class Agent(object):
         format {action:action, command: command}
         :return: 
         """
+        debug = False
         self.log.info("\n")
         self.log.info("*agent started*")
         # Parse and sanity-check command-line arguments.
@@ -388,6 +390,9 @@ class Agent(object):
                 if "action" not in command:
                     self.log.error("Missing action for command: %s" % command)
                     raise Exception("Missing action.")
+                if "debug" in command:
+                    if command["debug"] is True:
+                        debug = True
 
                 action = command["action"]
                 self.log.info("command: %s" % command)
@@ -427,7 +432,10 @@ class Agent(object):
                     self.log.error("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
-                sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
+                if debug:
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
+                else:
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
                 sys.stdout.flush()
 
 
