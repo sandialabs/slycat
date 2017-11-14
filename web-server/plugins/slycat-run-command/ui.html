@@ -84,8 +84,13 @@
           },
           error: function(request, status, reason_phrase)
           {
-              document.getElementById('response').value = "error response from server:\n" + "error request:"
-                  + JSON.stringify(request, undefined, 4) + "\n\n status: " + status + "\n\n reason: " + reason_phrase;
+              console.log( "status:" + request.status);
+              if(request.status === 400){
+                  document.getElementById('response').value = "status: " + status + "\n\nmessage: " + request.getResponseHeader('X-Slycat-Message');
+              }else {
+                  document.getElementById('response').value = "error response from server:\n" + "error request:"
+                      + JSON.stringify(request, undefined, 4) + "\n\n status: " + request.status + "\n\n reason: " + reason_phrase;
+              }
           },
           data: JSON.stringify(payload)
         });
