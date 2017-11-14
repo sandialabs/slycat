@@ -256,6 +256,7 @@ function(client, dialog, $, d3, URI)
 
                         // update newly selected plot
                         draw_plot(select_id);
+
                     },
                     error: function ()
                     {
@@ -326,19 +327,13 @@ function(client, dialog, $, d3, URI)
 				   		 plot_adjustments.padding_bottom -
 				   		 plot_adjustments.x_label_padding) + ")");
 			y_axis[i].ticks(num_y_ticks);
-			
-			// set (or re-set) zoom brushing
-			plot[i].selectAll("g.brush").remove();
-			plot[i].append("g")
-				   .attr("class", "brush")
-				   .call(d3.svg.brush()
-				   .x(x_scale[i])
-				   .y(y_scale[i])
-				   .on("brushend", zoom));
-				   
-			// draw actual plot
+
+            // update data, if necessary
+            update_data(i);
+
+		    // draw actual plot
 			draw_plot(i);
-			
+
 		}
 	}
 	
@@ -388,7 +383,17 @@ function(client, dialog, $, d3, URI)
 			           
 			// update data (only Curve data is implemented so far)
 			if ($.trim(plot_type[plots_selected[i]]) == 'Curve') {
-								
+
+				// set (or re-set) zoom brushing
+			    plot[i].selectAll("g.brush").remove();
+			    plot[i].append("g")
+				       .attr("class", "brush")
+				       .call(d3.svg.brush()
+				       .x(x_scale[i])
+				       .y(y_scale[i])
+				       .on("brushend", zoom));
+
+				// set selectable curves (note brush is under selection)
 				plot[i].selectAll(".curve")
 					   .data(generate_curve_data(i))
 					   .attr("class", "curve")
@@ -396,8 +401,9 @@ function(client, dialog, $, d3, URI)
 					   .append("path")
 					   .attr("class", "curve")
 					   .attr("stroke", function(d) { return sel_color[d[0][2]]; })
-					   .attr("fill", "none");
-					   			
+					   .attr("fill", "none")
+					   .on("click", select_curve);
+
 			} else {
 				dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
 			};
@@ -452,14 +458,16 @@ function(client, dialog, $, d3, URI)
 	// generate a d3 style version of the data for a selection of curves,
 	// which is an array of arrays of curves, where each curve is an (x,y,c) array
 	// where x,y is position and c is color
+	// NOTE: in the second position we now push the curve id for use by the selection
+	// routines (all the rest are stil color)
 	function generate_curve_data (i)
 	{
-			
+
 		// make array of indices into selection colors
 		var sel_1_color = [];
 		var sel_2_color = [];
 		for (var j = 0; j < plots_selected_time[i].length; j++) {
-			sel_1_color.push(0);
+		    sel_1_color.push(0);
 			sel_2_color.push(1);
 		}
 					  
@@ -500,10 +508,6 @@ function(client, dialog, $, d3, URI)
 			extent[0][1] != extent[1][1])
 			{
 
-				// user did zoom in on something, so reset window
-				x_scale[plot_id].domain([extent[0][0], extent[1][0]]);
-				y_scale[plot_id].domain([extent[0][1], extent[1][1]]);
-
 			    // call server to get new subsample
                 client.get_model_command(
                 {
@@ -519,6 +523,10 @@ function(client, dialog, $, d3, URI)
 
                             // update data for d3
                             update_data(plot_id);
+
+                            // user did zoom in on something, so reset window
+				            x_scale[plot_id].domain([extent[0][0], extent[1][0]]);
+				            y_scale[plot_id].domain([extent[0][1], extent[1][1]]);
 
                             // re-draw plot
                             draw_plot(plot_id);
@@ -545,11 +553,8 @@ function(client, dialog, $, d3, URI)
                     plots_selected_time[plot_id] = result["time_points"];
                     plots_selected_data[plot_id] = result["var_data"];
 
-                    // update d3 data in plot
+                    // update d3 data in plot (scale is automatically reset)
                     update_data(plot_id);
-
-                    // reset scale
-                    set_default_domain(plot_id);
 
                     // re-draw plot
                     draw_plot(plot_id);
@@ -557,18 +562,37 @@ function(client, dialog, $, d3, URI)
             });
 		};
 	};	
-	
+
+	// user clicked on a curve
+	function select_curve (d,i)
+	{
+	    // find index of curve selected
+	    var curve_id = null;
+        if (d[0][2] == 0) {
+
+            // we're in selection 1
+            curve_id = selection_1[i];
+
+        } else {
+
+            // we're in selection 2
+            curve_id = selection_2[i - selection_1.length];
+
+        }
+
+        // jump to curve selected in table
+        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+					                         active_sel: [curve_id]} });
+        document.body.dispatchEvent(selectionEvent);
+
+	}
+
 	// update selections (and data) for all plots
 	module.update_plots = function (new_sel_1, new_sel_2)
 	{
 		// update selections
 		selection_1 = new_sel_1;
 		selection_2 = new_sel_2;
-		
-		// update plot data (all plots have changed)
-		for (i = 0; i < Math.min(num_plots,3); i++) {
-		    update_data(i);
-		}
 		
 		// re-draw all plots
 		module.draw();

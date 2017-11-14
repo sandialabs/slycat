@@ -21,7 +21,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                                                   MIN_PROGRESS_TEXT_HEIGHT));
 
     // maximum number of points to display for plots
-    var MAX_TIME_POINTS = 200;
+    var MAX_TIME_POINTS = 150;
 
     // model id from address bar
     var mid = URI(window.location).segment(-1);
@@ -157,6 +157,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 // set up selection change event
                 document.body.addEventListener("DACSelectionsChanged", selections_changed);
 
+                // set up active selection change event
+                document.body.addEventListener("DACActiveSelectionChanged", active_selection_changed);
+
                 // set up difference calculation event
                 document.body.addEventListener("DACDifferenceComputed", difference_computed);
 
@@ -213,6 +216,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     // custom event for change in selection 1, selection 2, active selection
     function selections_changed (new_selections)
     {
+
         // update scatter plot
         scatter_plot.draw();
 
@@ -224,8 +228,15 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 		// jump to top row in table for current selection (if there is one)
 		if (new_selections.detail.active_sel.length > 0) {
-		    metadata_table.jump_to (new_selections.detail.active_sel);
+		    active_selection_changed ({detail: {active_sel: new_selections.detail.active_sel}});
 		}
+    }
+
+    // custom event for jumping to an individual selection in the table
+    function active_selection_changed (active_selection)
+    {
+        // jump to top row in table for current selection
+        metadata_table.jump_to (active_selection.detail.active_sel);
     }
 
     // custom event for difference calculation
