@@ -370,6 +370,10 @@ $.widget("parameter_image.table",
       self.data.invalidate();
       self.grid.invalidate();
     }
+    else if(key == "jump_to_simulation")
+    {
+      self.grid.scrollRowToTop(value);
+    }
   },
 
   _set_selected_x: function()

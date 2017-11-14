@@ -1112,7 +1112,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
     }
 
-    var  add_resize_handle = function(fh) {
+    var add_resize_handle = function(fh) {
       fh.append("i")
         .attr("class", "resize-handle frame-button fa fa-expand fa-rotate-90")
         .attr("aria-hidden", "true")
@@ -1151,6 +1151,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var add_jump_button = function(fh, index) {
       var container = fh.append("span")
         .attr("class", "jump-button frame-button")
+        .on("click", handlers["jump"]);
         ;
 
       container.append("span")
@@ -1162,13 +1163,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       container.append("i")
         .attr('class', 'table-button jump-button frame-button fa fa-table')
-        .attr('title', 'Jump to row in table')
+        .attr('title', 'Jump to row ' + index + ' in table')
         .attr("aria-hidden", "true")
         ;
 
       container.append("i")
         .attr('class', 'arrow-button jump-button frame-button fa fa-arrow-right')
-        .attr('title', 'Jump to row in table')
+        .attr('title', 'Jump to row ' + index + ' in table')
         .attr("aria-hidden", "true")
         ;
     };
@@ -1349,7 +1350,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var frame;
         self.state = "resizing";
         frame = d3.select(this.closest(".image-frame"));
-        d3.selectAll([frame, d3.select("#scatterplot").node()]).classed("", true);
+        // Add resizing class to scatterplot to use CSS to keep cursor as arrow while resizing
+        d3.select("#scatterplot").classed("resizing", true);
 
         if (frame.classed("hover-image")) {
           self.opening_image = null;
@@ -1423,7 +1425,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         video_sync_time_changed(self);
       }),
       jump: (function(){
-
+        var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
+        self.element.trigger("jump_to_simulation", index);
       }),
     }
 
@@ -1632,6 +1635,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
         container.appendChild(viewer);
         ko.applyBindings({}, container);
+
+        $(window).trigger('resize');
       }
       else {
         // We don't support this file type, so just create a download link
@@ -1671,7 +1676,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._adjust_leader_line(frame_html);
 
       // Create a resize handle
-      add_resize_handle(footer);
+      add_resize_handle(frame_html);
 
       // Create a pin button ...
       add_pin_button(footer);

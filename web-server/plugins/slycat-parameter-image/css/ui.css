@@ -437,10 +437,13 @@ rights in this software.
   padding: 3px 4px;
 }
 .frame-button.pin-button {
-  padding: 4px 4px;
+  padding: 4px 22px 4px 4px;
 }
 .frame-button.resize-handle {
-  padding: 4px 3px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 2px 3px;
 }
 .frame-button.resize-handle:hover {
   cursor: nwse-resize;
