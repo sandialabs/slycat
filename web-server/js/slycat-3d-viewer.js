@@ -284,7 +284,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
     }
 
     if (renderer)
-      renderer.setSize(w - borders, h - headerHeight - statsHeight);
+      renderer.setSize(w - borders, h - headerHeight - statsHeight - 22);
   };
 
   /**

@@ -1148,6 +1148,31 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         ;
     };
 
+    var add_jump_button = function(fh, index) {
+      var container = fh.append("span")
+        .attr("class", "jump-button frame-button")
+        ;
+
+      container.append("span")
+        .attr('class', 'table-index jump-button frame-button')
+        .attr('title', 'Index of current media. Click to jump to row ' + index + ' in table.')
+        .attr("aria-hidden", "true")
+        .text(index)
+        ;
+
+      container.append("i")
+        .attr('class', 'table-button jump-button frame-button fa fa-table')
+        .attr('title', 'Jump to row in table')
+        .attr("aria-hidden", "true")
+        ;
+
+      container.append("i")
+        .attr('class', 'arrow-button jump-button frame-button fa fa-arrow-right')
+        .attr('title', 'Jump to row in table')
+        .attr("aria-hidden", "true")
+        ;
+    };
+
     var build_frame_html = function(img) {
       // Define a default size for every image.
       if(!img.width)
@@ -1188,12 +1213,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         )
         .on("mousedown", handlers["frame_mousedown"]);
 
-      var frame_overlay = frame_html.append("div")
-        .attr("class", "frame_overlay")
+      var footer = frame_html.append("div")
+        .attr("class", "frame-footer")
         ;
 
       // Create a close button ...
-      var close_button_html = frame_html.append("i")
+      var close_button_html = footer.append("i")
         .attr("class", "close-button frame-button fa fa-times")
         .attr("aria-hidden", "true")
         .attr("title", "Close")
@@ -1305,15 +1330,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         x = d3.event.x;
         y = d3.event.y;
         if (0 <= y && y <= self.options.height && 0 <= x && x <= self.options.width && x > min && y > min) {
-          frame = d3.select(this.parentNode);
+          frame = d3.select(this.closest(".image-frame"));
           var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
           var video = frame.attr("data-type") == "video";
           target_width = self._scale_width(ratio, x, y);
           target_height = self._scale_height(ratio, x, y);
-          if(video)
-          {
-            target_height += 40;
-          }
+          target_height += 20;
           frame.style({
             width: target_width + "px",
             height: target_height + "px"
@@ -1326,7 +1348,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       resize_start: (function() {
         var frame;
         self.state = "resizing";
-        frame = d3.select(this.parentNode);
+        frame = d3.select(this.closest(".image-frame"));
         d3.selectAll([frame, d3.select("#scatterplot").node()]).classed("", true);
 
         if (frame.classed("hover-image")) {
@@ -1339,7 +1361,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         d3.event.sourceEvent.stopPropagation();
       }),
       resize_end: (function() {
-        d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
+        d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
         self._sync_open_images();
         d3.event.sourceEvent.stopPropagation();
@@ -1348,7 +1370,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
         self.opening_image = null;
         clear_hover_timer(self);
-        frame = d3.select(d3.event.target.parentNode);
+        frame = d3.select(d3.event.target.closest(".image-frame"));
 
         // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
         // Alex is commenting it out and always assigning the open-image class to the frame instead.
@@ -1373,10 +1395,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
         target_width = self._scale_width(ratio, imageWidth, imageHeight);
         target_height = self._scale_height(ratio, imageWidth, imageHeight);
-        if(frame.attr("data-type") == "video")
-        {
-          target_height += 40;
-        }
+        // Adding 20 pixels to make room for the footer with buttons
+        target_height += 20;
         x = self._getDefaultXPosition(image.index, imageWidth);
         y = self._getDefaultYPosition(image.index, imageHeight);
 
@@ -1388,7 +1408,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         });
 
         if (isStl)
-          frame.style('height', imageHeight + 'px');
+          frame.style('height', (imageHeight + 20) + 'px');
 
         self._adjust_leader_line(frame);
         self._sync_open_images();
@@ -1401,7 +1421,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       seeked_video: (function(){
         video_sync_time_changed(self);
-      })
+      }),
+      jump: (function(){
+
+      }),
     }
 
     function video_sync_time_changed(self_passed)
@@ -1642,18 +1665,22 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       // Remove loading indicator image
       frame_html.select(".loading-image").remove();
+      var footer = frame_html.select(".frame-footer");
 
       // Adjust leader line
       self._adjust_leader_line(frame_html);
 
       // Create a resize handle
-      add_resize_handle(frame_html);
+      add_resize_handle(footer);
 
       // Create a pin button ...
-      add_pin_button(frame_html);
+      add_pin_button(footer);
 
       // Create a download button ...
-      add_download_button(frame_html, image_url, image.uri.split('/').pop());
+      add_download_button(footer, image_url, image.uri.split('/').pop());
+
+      // Create jump control
+      add_jump_button(footer, image.index);
 
       if(!image.no_sync)
         self._sync_open_images();

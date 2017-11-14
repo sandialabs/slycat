@@ -409,42 +409,57 @@ rights in this software.
   text-indent: -99999px;
   background-color: white;
 }
-#scatterplot .media-layer .frame_overlay {
+#scatterplot .media-layer .frame-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  height: 100%;
-  position: absolute;
-  display: none;
+  height: 20px;
 }
-
-#scatterplot .media-layer .frame-button {
-  position: absolute;
+.frame-button {
+  float: right;
   font-size: 14px;
-  color: #c8c8c8;
+  color: #c8c8c8 !important;
   padding: 2px 4px;
 }
-#scatterplot .media-layer .frame-button:hover {
-  color: white;
+.frame-button:hover {
+  color: white !important;
+  cursor: pointer;
 }
-#scatterplot .media-layer .download-button {
-  bottom: 0px;
-  left: 20px;
+.frame-button.download-button {
+  float: left;
   font-size: 12px;
   text-decoration: none !important;
+  padding: 5px 4px;
+}
+.frame-button.close-button {
+  float: left;
   padding: 3px 4px;
 }
-#scatterplot .media-layer .close-button {
-  bottom: 0px;
-  left: 0px;
-  padding: 3px 4px;
+.frame-button.pin-button {
+  padding: 4px 4px;
 }
-#scatterplot .media-layer .pin-button {
-  bottom: 0px;
-  right: 20px;
-  padding: 2px 4px;
+.frame-button.resize-handle {
+  padding: 4px 3px;
 }
-#scatterplot .media-layer .resize-handle {
-  bottom: 0px;
-  right: 0px;
+.frame-button.resize-handle:hover {
+  cursor: nwse-resize;
+}
+.frame-button.jump-button {
+  padding: 0;
+}
+.frame-button.table-index {
+  padding: 1px 15px 0px 2px;
+}
+.frame-button.table-button {
+  padding: 4px 2px 4px 0px;
+}
+.frame-button.arrow-button {
+  padding: 3px 0px 4px 4px;
+  font-size: 9px;
+}
+.frame-button.jump-button:hover * { 
+  color: white !important; 
 }
 
 #scatterplot .media-layer .reload-button {
@@ -459,14 +474,9 @@ rights in this software.
 {
   cursor: move;
 }
-#scatterplot .close-button:hover,
-#scatterplot .pin-button:hover
-{
-  cursor: pointer;
-}
 #scatterplot.resizing,
-#scatterplot.resizing .media-layer .image-frame,
-#scatterplot .resize-handle:hover {
+#scatterplot.resizing .media-layer .image-frame
+{
   cursor: nwse-resize !important;
 }
 #scatterplot g.open-image image.image {
@@ -943,7 +953,14 @@ a {
   display: block;
   text-align: center;
   word-break: break-all;
-  background-color: white;
+}
+.image-frame a.download-link
+{
+  color: #c8c8c8;
+}
+.image-frame a.download-link:hover
+{
+  color: white;
 }
 #video-controls .video-sync-time {
   width: 75px;
