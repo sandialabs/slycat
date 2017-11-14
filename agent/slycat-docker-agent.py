@@ -36,6 +36,7 @@ class Agent(agent.Agent):
         agent.Agent.__init__(self)
         self.scripts.append({
             "name": "test",
+            "exec_path": "/home/slycat/install/conda/bin/python",
             "path": "/home/slycat/src/slycat/agent/test_run_remote_command.py",
             "description": "this is a test script for building testing and launching scripts",
             "parameters": [
@@ -50,18 +51,34 @@ class Agent(agent.Agent):
             ]
         })
 
+    def get_script_run_string(self, command_script):
+        run_command = ''
+        for agent_script in self.scripts:
+            # we just found a match lets add it to the command that we are going to run
+            if command_script["name"] == agent_script["name"]:
+                run_command += str(agent_script["exec_path"])
+                run_command += " "
+                run_command += str(agent_script["path"])
+                run_command += " "
+                for parameter in command_script["parameters"]:
+                    run_command += str(parameter["name"])
+                    run_command += " "
+                    run_command += str(parameter["value"])
+                return run_command
+
     def run_remote_command(self, command):
         command = command["command"]
-        run_command = "python "
+        run_command = None
+        # get the command scripts that were sent to the agent
         for command_script in command["scripts"]:
-            for agent_script in self.scripts:
-                if command_script["name"] == agent_script["name"]:
-                    run_command += str(agent_script["path"])
-                    run_command += " "
-                    for parameter in command_script["parameters"]:
-                        run_command += str(parameter["name"])
-                        run_command += " "
-                        run_command += str(parameter["value"])
+            # compare the payload commands to the registered commands on the agent
+            run_command = self.get_script_run_string(command_script)
+        if run_command is None or run_command == "":
+            results = {"ok": False, "message": "could not create a run command did you register your script with "
+                                               "slycat?"}
+            sys.stdout.write("%s\n" % json.dumps(results))
+            sys.stdout.flush()
+            return
         command["run_command"] = run_command
         output = self.run_shell_command(run_command)
         results = {
@@ -123,7 +140,7 @@ class Agent(agent.Agent):
         sys.stdout.flush()
 
     def cancel_job(self, command):
-        output = self.run_shell_command("scancel %s" % command["command"]) # command is jid here
+        output = self.run_shell_command("scancel %s" % command["command"])  # command is jid here
         results = {
             "ok": True,
             "jid": command["command"],
