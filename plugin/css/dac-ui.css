@@ -64,6 +64,27 @@
 	text-align: right;
 }
 
+/* low resolution indicator */
+.dac-low-resolution-plot
+{
+    color: orange;
+    display: none;
+}
+
+/* full resolution indicator */
+.dac-full-resolution-plot
+{
+    color: green;
+}
+
+.dac-link-plots
+{
+    float:left;
+    margin: 6px 3px 0px 3px;
+    /*padding: 10px 0px;*/
+
+}
+
 /* margins around pull down menus */
 .dac-select
 {

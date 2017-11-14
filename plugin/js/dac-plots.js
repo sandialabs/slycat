@@ -221,10 +221,6 @@ function(client, dialog, $, d3, URI)
     function toggle_resolution (i, resolution)
     {
 
-        console.log("toggle resolution");
-        console.log(i);
-        console.log(resolution);
-
         if (resolution > 1) {
 
             // turn on low resolution warning/turn off full resolution

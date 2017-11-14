@@ -107,24 +107,36 @@ S. Martin
 	<div class="ui-layout-east dac-model-content" id="dac-plots">
 	
 		<!-- Times Series Plots -->
-		<i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:orange;display:none"
-		   title="Plots are low resolution" id="dac-low-resolution-plot-1"></i>
-		<i class="fa fa-check" aria-hidden="true" style="color:green"
-		   title="Plots are full resolution" id="dac-full-resolution-plot-1"></i>
+		<label class="dac-link-plots">
+			<input id="dac-link-plot-1" type="checkbox" value="">Link
+		</label>
+		<b id="dac-plots-not-displayed" style="color:red;display:none"
+		   title="You selected too many plots to display: not every plot in your selection is shown.">
+			All Plots Not Displayed</b>
+		<i class="fa fa-exclamation-triangle dac-low-resolution-plot" aria-hidden="true"
+		   title="Plots are Low Resolution" id="dac-low-resolution-plot-1"></i>
+		<i class="fa fa-check dac-full-resolution-plot" aria-hidden="true"
+		   title="Plots are Full Resolution" id="dac-full-resolution-plot-1"></i>
 		<select class="dac-select" id="dac-select-plot-1"></select>
 		<svg class="dac-plot" id="dac-plot-1"></svg>
 
-		<i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:orange;display:none"
-		   title="Plots are low resolution" id="dac-low-resolution-plot-2"></i>
-		<i class="fa fa-check" aria-hidden="true" style="color:green"
-		   title="Plots are full resolution" id="dac-full-resolution-plot-2"></i>
+		<label class="dac-link-plots">
+			<input id="dac-link-plot-2" type="checkbox" value="">Link
+		</label>
+		<i class="fa fa-exclamation-triangle dac-low-resolution-plot" aria-hidden="true"
+		   title="Plots are Low Resolution" id="dac-low-resolution-plot-2"></i>
+		<i class="fa fa-check dac-full-resolution-plot" aria-hidden="true"
+		   title="Plots are Full Resolution" id="dac-full-resolution-plot-2"></i>
 		<select class="dac-select" id="dac-select-plot-2"></select>
 		<svg class="dac-plot" id="dac-plot-2"></svg>
 
-		<i class="fa fa-exclamation-triangle" aria-hidden="true" style="color:orange;display:none"
-		   title="Plots are low resolution" id="dac-low-resolution-plot-3"></i>
-		<i class="fa fa-check" aria-hidden="true" style="color:green"
-		   title="Plots are full resolution" id="dac-full-resolution-plot-3"></i>
+		<label class="dac-link-plots">
+			<input id="dac-link-plot-3" type="checkbox" value="">Link
+		</label>
+		<i class="fa fa-exclamation-triangle dac-low-resolution-plot" aria-hidden="true"
+		   title="Plots are Low Resolution" id="dac-low-resolution-plot-3"></i>
+		<i class="fa fa-check dac-full-resolution-plot" aria-hidden="true"
+		   title="Plots are Full Resolution" id="dac-full-resolution-plot-3"></i>
 		<select class="dac-select" id="dac-select-plot-3"></select>
 		<svg class="dac-plot" id="dac-plot-3"></svg>
 
