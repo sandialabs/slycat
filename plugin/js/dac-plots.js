@@ -123,6 +123,9 @@ function(client, dialog, $, d3, URI)
                 plots_selected_time.push(result["time_points"]);
                 plots_selected_data.push(result["var_data"]);
 
+                // turn on low resolution warning/turn off full resolution
+                toggle_resolution (0, result["resolution"]);
+
                 if (1 < Math.min(num_plots,3)) {client.get_model_command({
 
                     mid: mid,
@@ -134,6 +137,8 @@ function(client, dialog, $, d3, URI)
                         plots_selected_time.push(result["time_points"]);
                         plots_selected_data.push(result["var_data"]);
 
+                        toggle_resolution (1, result["resolution"]);
+
                         if (2 < Math.min(num_plots,3)) {client.get_model_command({
 
                             mid: mid,
@@ -144,6 +149,8 @@ function(client, dialog, $, d3, URI)
                             {
                                 plots_selected_time.push(result["time_points"]);
                                 plots_selected_data.push(result["var_data"]);
+
+                                toggle_resolution (2, result["resolution"]);
                             },
                             error: function () {
                                 dialog.ajax_error ('Server failure: could not load plot data (3).')("","","");
@@ -210,6 +217,30 @@ function(client, dialog, $, d3, URI)
 
 	}
 
+    // toggle low/full resolution indicator for a plot
+    function toggle_resolution (i, resolution)
+    {
+
+        console.log("toggle resolution");
+        console.log(i);
+        console.log(resolution);
+
+        if (resolution > 1) {
+
+            // turn on low resolution warning/turn off full resolution
+            $("#dac-low-resolution-plot-" + (i+1).toString()).show();
+            $("#dac-full-resolution-plot-" + (i+1).toString()).hide();
+
+         } else {
+
+             // turn on low resolution warning/turn off full resolution
+            $("#dac-low-resolution-plot-" + (i+1).toString()).hide();
+            $("#dac-full-resolution-plot-" + (i+1).toString()).show();
+
+         }
+
+    }
+
 	// populate pull down menu i in {0,1,2} with plot names
 	function display_plot_pull_down (i)
 	{
@@ -250,6 +281,9 @@ function(client, dialog, $, d3, URI)
                         // save new data
                         plots_selected_time[select_id] = result["time_points"];
                         plots_selected_data[select_id] = result["var_data"];
+
+                        // toggle resolution indicator
+                        toggle_resolution (select_id, result["resolution"]);
 
                         // update d3 data in plot
                         update_data(select_id);
@@ -521,6 +555,9 @@ function(client, dialog, $, d3, URI)
                             plots_selected_time[plot_id] = result["time_points"];
                             plots_selected_data[plot_id] = result["var_data"];
 
+                            // toggle resolution indicator
+                            toggle_resolution (plot_id, result["resolution"]);
+
                             // update data for d3
                             update_data(plot_id);
 
@@ -552,6 +589,9 @@ function(client, dialog, $, d3, URI)
                     // refresh with lowest resolution data
                     plots_selected_time[plot_id] = result["time_points"];
                     plots_selected_data[plot_id] = result["var_data"];
+
+                    // toggle resolution indicator
+                    toggle_resolution (plot_id, result["resolution"]);
 
                     // update d3 data in plot (scale is automatically reset)
                     update_data(plot_id);

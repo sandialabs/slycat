@@ -257,7 +257,8 @@ def register_slycat_plugin(context):
         # return data using content function
         def content():
             yield json.dumps({"time_points": time_points_subsample.tolist(),
-                              "var_data": var_data_subsample.tolist()})
+                              "var_data": var_data_subsample.tolist(),
+                              "resolution": subsample_stepsize})
 
         return content()
 
