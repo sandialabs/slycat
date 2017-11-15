@@ -1352,11 +1352,21 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         // Add resizing class to scatterplot to use CSS to keep cursor as arrow while resizing
         d3.select("#scatterplot").classed("resizing", true);
 
-        if (frame.classed("hover-image")) {
+        if(frame.classed("hover-image")) 
+        {
           self.opening_image = null;
           clear_hover_timer(self);
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
+        }
+        else if(!frame.classed("selected"))
+        {
+          $(this.closest(".image-frame")).detach().appendTo(self.media_layer.node());
+          self.current_frame = null;
+          $(".open-image").removeClass("selected");
+          frame.classed("selected", true);
+          self.current_frame = Number(frame.attr("data-index"));
+          self._sync_open_images();
         }
 
         d3.event.sourceEvent.stopPropagation();
