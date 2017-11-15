@@ -973,3 +973,7 @@ a {
 {
   width: 22px;
 }
+.slick-cell.flashing {
+  border-width: 0px !important;
+  opacity: 0.5;
+}
