@@ -1294,28 +1294,27 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._sync_open_images();
       },
       close: (function() {
-        var frame = d3.select(d3.event.target.parentNode);
+        var frame = d3.select(d3.event.target.closest(".image-frame"));
         self._remove_image_and_leader_line(frame);
         self._sync_open_images();
         return false;
       }),
       frame_mousedown: function(){
         var target = d3.select(d3.event.target);
-        // Verify that click is on image, not something else like the close button
-        if (target.classed("image")) {
-          // Move this image to the top of the Z order ...
-          $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
-        } else if (target.classed("image-frame")) {
-          // Move this image to the top of the Z order ...
-          $(d3.event.target).detach().appendTo(self.media_layer.node());
-        } else if (target.classed('slycat-3d-btn-settings')) {
+        // Something special happens for STLs
+        if (target.classed('slycat-3d-btn-settings')) {
           d3.select('#slycat-3d-modal')
             .on('.drag', null)
             .call(nodrag);
         }
+        else
+        {
+          // Otherwise move this frame to the top of the Z order ...
+          $(d3.event.target.closest(".image-frame")).detach().appendTo(self.media_layer.node());
+        }
         self.current_frame = null;
         $(".open-image").removeClass("selected");
-        d3.select(d3.event.currentTarget).classed("selected", true);
+        d3.select(d3.event.currentTarget.closest(".image-frame")).classed("selected", true);
         self.current_frame = Number(d3.select(d3.event.currentTarget).attr("data-index"));
         self._sync_open_images();
       },
