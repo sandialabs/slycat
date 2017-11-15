@@ -21,7 +21,9 @@ function(client, dialog, $, d3, URI)
 	// private variables
 	// -----------------
 
+    // plot limits to ensure adequate speed/responsiveness
     var max_time_points = null;
+    var max_num_plots = null;
 
 	// model ID
 	var mid = URI(window.location).segment(-1);
@@ -70,7 +72,7 @@ function(client, dialog, $, d3, URI)
 	
 	// set up initial private variables, user interface
 	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
-	                         MAX_TIME_POINTS, variables_metadata, variables_data)
+	                         MAX_TIME_POINTS, MAX_NUM_PLOTS, variables_metadata, variables_data)
 	{
 	
 		// set ui constants
@@ -90,6 +92,9 @@ function(client, dialog, $, d3, URI)
 	    // set maximum resolution for plotting
 	    max_time_points = MAX_TIME_POINTS;
 
+        // set maximum number of plots (per selection)
+        max_num_plots = MAX_NUM_PLOTS;
+
 		// populate pull down menus and initialize d3 plots
 
 		// sort out the variable metadata we need
@@ -107,6 +112,10 @@ function(client, dialog, $, d3, URI)
 		// remove unused plot pull downs
 		for (var i = num_plots; i < 3; i++) {
 		    $("#dac-select-plot-" + (i+1)).remove();
+		    $("#dac-link-plot-" + (i+1)).remove();
+		    $("#dac-low-resolution-plot-" + (i+1)).remove();
+		    $("#dac-full-resolution-plot-" + (i+1)).remove();
+		    $("#dac-link-label-plot-" + (i+1)).remove();
 		}
 
 		// load up matrices for time series that we're looking at
@@ -396,6 +405,8 @@ function(client, dialog, $, d3, URI)
 		plot[i].selectAll("g.y.axis").call(y_axis[i])
 			   .selectAll(".domain").attr("clip-path",null);
 
+	    //
+
 	}
 	
 	// updates d3 stored data for plots
@@ -462,7 +473,7 @@ function(client, dialog, $, d3, URI)
 		var sel_min = Infinity;
 		
 		// update min and max for selection
-		for (var j = 0; j < selection.length; j++) {
+		for (var j = 0; j < Math.min(selection.length, max_num_plots); j++) {
 			sel_min = Math.min(sel_min, Math.min.apply(Math,
 				plots_selected_data[i][selection[j]]));
 		};
@@ -477,7 +488,7 @@ function(client, dialog, $, d3, URI)
 		var sel_max = -Infinity;
 		
 		// update min and max for selection
-		for (var j = 0; j < selection.length; j++) {
+		for (var j = 0; j < Math.min(selection.length, max_num_plots); j++) {
 			sel_max = Math.max(sel_max, Math.max.apply(Math,
 				plots_selected_data[i][selection[j]]));
 		};
@@ -503,14 +514,14 @@ function(client, dialog, $, d3, URI)
 					  
 		// make array of data for selection 1
 		var curve_data = [];
-		for (var j = 0; j < selection_1.length; j++) {
+		for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
 			curve_data.push(d3.transpose([plots_selected_time[i], 
 					  plots_selected_data[i][selection_1[j]],
 					  sel_1_color]));
 		};
 				
 		// add more data for selection 2
-		for (var j = 0; j < selection_2.length; j++) {
+		for (var j = 0; j < Math.min(selection_2.length, max_num_plots); j++) {
 			curve_data.push(d3.transpose([plots_selected_time[i], 
 					  plots_selected_data[i][selection_2[j]],
 					  sel_2_color]));
@@ -612,7 +623,7 @@ function(client, dialog, $, d3, URI)
         } else {
 
             // we're in selection 2
-            curve_id = selection_2[i - selection_1.length];
+            curve_id = selection_2[i - Math.min(selection_1.length, max_num_plots)];
 
         }
 
@@ -629,7 +640,27 @@ function(client, dialog, $, d3, URI)
 		// update selections
 		selection_1 = new_sel_1;
 		selection_2 = new_sel_2;
-		
+
+		// update plot limit indicator color
+		var limit_indicator_color = "green";
+		if ((selection_1.length > max_num_plots) & (selection_2.length > max_num_plots)) {
+		    limit_indicator_color = "purple";
+		} else if (selection_1.length > max_num_plots) {
+		    limit_indicator_color = "red";
+		} else if (selection_2.length > max_num_plots) {
+		    limit_indicator_color = "blue";
+		}
+
+		// update plot indicator icon
+		if (limit_indicator_color == "green") {
+		    $(".dac-plots-not-displayed").hide();
+		    $(".dac-plots-displayed").show();
+		} else {
+		    $(".dac-plots-displayed").hide();
+		    $(".dac-plots-not-displayed").css("color", limit_indicator_color);
+		    $(".dac-plots-not-displayed").show();
+		}
+
 		// re-draw all plots
 		module.draw();
 	}

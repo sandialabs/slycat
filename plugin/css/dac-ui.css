@@ -77,12 +77,23 @@
     color: green;
 }
 
+/* link check boxes for zooming */
 .dac-link-plots
 {
     float:left;
     margin: 6px 3px 0px 3px;
-    /*padding: 10px 0px;*/
+}
 
+/* warning for too many plots in selection */
+.dac-plots-not-displayed
+{
+    color: red;
+    display: none;
+}
+
+.dac-plots-displayed
+{
+    color: green;
 }
 
 /* margins around pull down menus */

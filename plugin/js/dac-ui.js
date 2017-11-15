@@ -23,6 +23,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     // maximum number of points to display for plots
     var MAX_TIME_POINTS = 150;
 
+    // maximum number of plots (per selection)
+    var MAX_NUM_PLOTS = 5;
+
     // model id from address bar
     var mid = URI(window.location).segment(-1);
 
@@ -54,7 +57,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 } else if (result[0] == "Error") {
 
                     dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
-                    launch_model()
+                    launch_model();
 
                 } else {
 
@@ -180,7 +183,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
-				                            MAX_TIME_POINTS, variables_meta, variables);
+				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, variables_meta, variables);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -193,12 +196,25 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 		   	                },
 		   	                function () {
 		   	                    dialog.ajax_error ("Server error: could not load initial data.")("","","");
+
+		   	                    // remove dac-plots so screen isn't so ugly
+		                        for (var i = 0; i < 3; i++) {
+		                            $("#dac-select-plot-" + (i+1)).remove();
+		                            $("#dac-link-plot-" + (i+1)).remove();
+		                            $("#dac-low-resolution-plot-" + (i+1)).remove();
+		                            $("#dac-full-resolution-plot-" + (i+1)).remove();
+		                            $("#dac-link-label-plot-" + (i+1)).remove();
+		                        };
+
 		   	                });
 
 			},
 			function ()
 			{
 				dialog.ajax_error ("Server failure: could not load UI parameters.")("","","");
+
+				// remove model leaving only blank screen
+				$("#dac-model").remove();
 			}
 	    );
     }

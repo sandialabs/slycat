@@ -604,9 +604,11 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                                                   ["No Data", "\n".join(parse_error_log)])
 
             # done polling
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", num_vars])
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Error", "no data could be imported"])
 
-            return json.dumps(["No Data", "0"])
+            # quit early
+            stop_event.set()
 
         # next compute initial MDS coordinates
         mds_coords, full_mds_coords = dac.init_coords(var_dist)

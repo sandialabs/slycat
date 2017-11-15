@@ -502,8 +502,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 		    NO_SEL_COLOR: 'gray',
 		    SELECTION_1_COLOR: 'red',
 		    SELECTION_2_COLOR: 'blue',
-		    COLOR_BY_LOW: 'yellow',
-		    COLOR_BY_HIGH: 'limegreen',
+		    COLOR_BY_LOW: 'white',
+		    COLOR_BY_HIGH: 'dimgray',
 		    OUTLINE_NO_SEL: 1,
 		    OUTLINE_SEL: 2,
 
