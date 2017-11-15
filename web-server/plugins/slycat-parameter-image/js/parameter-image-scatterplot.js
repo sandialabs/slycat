@@ -1154,13 +1154,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .on("click", handlers["jump"]);
         ;
 
-      container.append("span")
-        .attr('class', 'table-index jump-button frame-button')
-        .attr('title', 'Index of current media. Click to jump to row ' + index + ' in table.')
-        .attr("aria-hidden", "true")
-        .text(index)
-        ;
-
       container.append("i")
         .attr('class', 'table-button jump-button frame-button fa fa-table')
         .attr('title', 'Jump to row ' + index + ' in table')
@@ -1171,6 +1164,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr('class', 'arrow-button jump-button frame-button fa fa-arrow-right')
         .attr('title', 'Jump to row ' + index + ' in table')
         .attr("aria-hidden", "true")
+        ;
+        
+      container.append("span")
+        .attr('class', 'table-index jump-button frame-button')
+        .attr('title', 'Index of current media. Click to jump to row ' + index + ' in table.')
+        .attr("aria-hidden", "true")
+        .text(index)
         ;
     };
 

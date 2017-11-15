@@ -452,13 +452,13 @@ rights in this software.
   padding: 0;
 }
 .frame-button.table-index {
-  padding: 1px 15px 0px 2px;
+  padding: 0px 0px 0px 2px;
 }
 .frame-button.table-button {
-  padding: 4px 2px 4px 0px;
+  padding: 4px 15px 4px 0px;
 }
 .frame-button.arrow-button {
-  padding: 3px 0px 4px 4px;
+  padding: 3px 0px 4px 2px;
   font-size: 9px;
 }
 .frame-button.jump-button:hover * { 
