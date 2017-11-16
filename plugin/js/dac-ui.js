@@ -21,10 +21,10 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                                                   MIN_PROGRESS_TEXT_HEIGHT));
 
     // maximum number of points to display for plots
-    var MAX_TIME_POINTS = 150;
+    var MAX_TIME_POINTS = 500;
 
     // maximum number of plots (per selection)
-    var MAX_NUM_PLOTS = 5;
+    var MAX_NUM_PLOTS = 50;
 
     // model id from address bar
     var mid = URI(window.location).segment(-1);

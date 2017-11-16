@@ -30,8 +30,11 @@ function(client, dialog, $, d3, URI)
 
 	// current plots being shown (indices & data)
 	var plots_selected = [];
-	var plots_selected_time = [];	// a vector of time values for plot {0,1,2}
-	var plots_selected_data = [];	// a matrix of y-values for plot {0,1,2}
+	var plots_selected_time = new Array(3);	// a vector of time values for plot {0,1,2}
+	var plots_selected_data = new Array(3);	// a matrix of y-values for plot {0,1,2}
+
+    // linked plot check box values
+    var link_plots = [];
 
 	// meta data for plots
 	var num_plots = null;
@@ -109,6 +112,9 @@ function(client, dialog, $, d3, URI)
 		    plots_selected.push(i);
 		}
 
+        // initialize check boxes to all false
+        link_plots = [0, 0, 0];
+
 		// remove unused plot pull downs
 		for (var i = num_plots; i < 3; i++) {
 		    $("#dac-select-plot-" + (i+1)).remove();
@@ -118,71 +124,41 @@ function(client, dialog, $, d3, URI)
 		    $("#dac-link-label-plot-" + (i+1)).remove();
 		}
 
-		// load up matrices for time series that we're looking at
-		// (nested calls to make sure we load matrices in order)
-		if (0 < Math.min(num_plots,3)) {client.get_model_command({
+        // load up matrices for time series that we're looking at
+        for (var i = 0; i < Math.min(num_plots,3); i++) {
 
-            mid: mid,
-            type: "DAC",
-            command: "subsample_time_var",
-            parameters: [plots_selected[0], max_time_points, "-Inf", "Inf"],
-            success: function (result)
-            {
-                // save data for viewing later
-                plots_selected_time.push(result["time_points"]);
-                plots_selected_data.push(result["var_data"]);
+            // call up server for get data
+            client.get_model_command({
 
-                // turn on low resolution warning/turn off full resolution
-                toggle_resolution (0, result["resolution"]);
+                mid: mid,
+                type: "DAC",
+                command: "subsample_time_var",
+                parameters: [i, plots_selected[i], max_time_points, "-Inf", "Inf"],
+                success: function (result)
+                {
+                    // get plot_id (passed through to avoid mixing up array order
+                    // during asynchronous ajax calls
+                    var plot_id = result["plot_id"];
 
-                if (1 < Math.min(num_plots,3)) {client.get_model_command({
+                    // save data for viewing later
+                    plots_selected_time[plot_id] = result["time_points"];
+                    plots_selected_data[plot_id] = result["var_data"];
 
-                    mid: mid,
-                    type: "DAC",
-                    command: "subsample_time_var",
-                    parameters: [plots_selected[1], max_time_points, "-Inf", "Inf"],
-                    success: function (result)
-                    {
-                        plots_selected_time.push(result["time_points"]);
-                        plots_selected_data.push(result["var_data"]);
-
-                        toggle_resolution (1, result["resolution"]);
-
-                        if (2 < Math.min(num_plots,3)) {client.get_model_command({
-
-                            mid: mid,
-                            type: "DAC",
-                            command: "subsample_time_var",
-                            parameters: [plots_selected[2], max_time_points, "-Inf", "Inf"],
-                            success: function (result)
-                            {
-                                plots_selected_time.push(result["time_points"]);
-                                plots_selected_data.push(result["var_data"]);
-
-                                toggle_resolution (2, result["resolution"]);
-                            },
-                            error: function () {
-                                dialog.ajax_error ('Server failure: could not load plot data (3).')("","","");
-                            }
-                        })};
-                    },
-                    error: function () {
-                        dialog.ajax_error ('Server failure: could not load plot data (2).')("","","");
-                    }
-                })};
-            },
-            error: function ()
-            {
-                dialog.ajax_error ('Server failure: could not plot data (1).')("","","");
-            }
-        })};
+                    // turn on low resolution warning/turn off full resolution
+                    toggle_resolution (plot_id, result["resolution"]);
+                }
+            });
+        };
 
 		// initialize plots as d3 plots
 		for (var i = 0; i < Math.min(num_plots,3); ++i) {
 				
 			// populate pull down menu
 			display_plot_pull_down.bind($("#dac-select-plot-" + (i+1)))(i);
-					
+
+		    // bind to link check boxes
+		    link_check_box.bind($("#dac-link-plot-" + (i+1)))();
+
 			// actual plot
 			plot[i] = d3.select("#dac-plot-" + (i+1));
 					
@@ -247,7 +223,7 @@ function(client, dialog, $, d3, URI)
     }
 
 	// populate pull down menu i in {0,1,2} with plot names
-	function display_plot_pull_down (i)
+	function display_plot_pull_down(i)
 	{
 		this.empty();
 		
@@ -279,9 +255,13 @@ function(client, dialog, $, d3, URI)
                     mid: mid,
                     type: "DAC",
                     command: "subsample_time_var",
-                    parameters: [plots_selected[select_id], max_time_points, "-Inf", "Inf"],
+                    parameters: [select_id, plots_selected[select_id],
+                                 max_time_points, "-Inf", "Inf"],
                     success: function (result)
                     {
+
+                        // recover plot id from call
+                        var select_id = result["plot_id"];
 
                         // save new data
                         plots_selected_time[select_id] = result["time_points"];
@@ -305,7 +285,79 @@ function(client, dialog, $, d3, URI)
 			});
 		
 	}
-	
+
+	// call back for the link check boxes
+	function link_check_box()
+	{
+
+        // uncheck boxes, if checked
+        for (j = 0; j < Math.min(num_plots, 3); j ++) {
+            $("#dac-link-plot-" + (j+1).toString()).prop("checked", false);
+        };
+
+	    // called when user checks or unchecks a link box
+	    this.change(function () {
+
+	        // get check box state
+	        var check_id_str = this.id;
+	        var check_id = Number(check_id_str.split("-").pop()) - 1;
+	        var checked = this.checked;
+
+            // does the user want to link a plot?
+            if (!checked) {
+
+                // no -- unlink plot
+                link_plots[check_id] = 0;
+
+            } else {
+
+                // yes -- check compatibility with previously checked links
+                var compatible_link = true;
+                for (j = 0; j < Math.min(num_plots, 3); j++) {
+
+                    // only check axes that are linked
+                    if (link_plots[j] != 0) {
+
+                        // are axes same length?
+                        if (plots_selected_time[j].length == plots_selected_time[check_id].length) {
+
+                            // compute difference between time vectors
+                            var abs_diff = 0;
+                            for (k = 0; k < plots_selected_time[j].length; k++) {
+                                abs_diff = abs_diff + Math.abs(plots_selected_time[j][k] -
+                                            plots_selected_time[check_id][k]);
+                            }
+
+                            // are vectors different?
+                            if (abs_diff != 0) {
+                                compatible_link = false;
+                            }
+
+                        } else {
+                            compatible_link = false;
+                        }
+                    }
+                }
+
+                // is the link compatible with previous links?
+                if (compatible_link) {
+
+                    // yes -- add to list
+                    link_plots[check_id] = 1;
+
+                } else {
+
+                    // no -- uncheck box and alert user
+                    $("#dac-link-plot-" + (check_id+1).toString()).prop("checked", false);
+                    dialog.ajax_error("This plot cannot be linked to previous plots because the " +
+                                  "x-axes are incompatible.  This can sometimes occur if one plot is " +
+                                  "zoomed relative to another.")("","","");
+                }
+            }
+	    });
+
+	}
+
 	// update selections based on other input
 	module.change_selections = function(plot_selections)
 	{
@@ -544,71 +596,113 @@ function(client, dialog, $, d3, URI)
 		d3.event.target.clear();
 		d3.select(this).call(d3.event.target);
 
+        // make a list of plots to update
+        var plots_to_update = [0, 0, 0];
+        if (link_plots[plot_id] == 0) {
+
+            // zoomed plot is not linked
+            plots_to_update[plot_id] = 1;
+
+        } else {
+
+            // zoomed plot is linked
+            plots_to_update = link_plots;
+        }
+
 		// was it an valid zoom?
 		if (extent[0][0] != extent[1][0] &&
 			extent[0][1] != extent[1][1])
 			{
 
-			    // call server to get new subsample
-                client.get_model_command(
-                {
-                    mid: mid,
-                    type: "DAC",
-                    command: "subsample_time_var",
-                    parameters: [plots_selected[plot_id], max_time_points, extent[0][0], extent[1][0]],
-                    success: function (result)
+                // re-scale y-axis only for actual active plot
+                y_scale[plot_id].domain([extent[0][1], extent[1][1]]);
+
+                // update all linked plots
+                for (j = 0; j < 3; j++) {
+
+                    // should we update this plot?
+                    if (plots_to_update[j] == 1) {
+
+                        // yes -- call server to get new subsample
+                        client.get_model_command(
                         {
-                            // update with higher resolution data
+                            mid: mid,
+                            type: "DAC",
+                            command: "subsample_time_var",
+                            parameters: [j, plots_selected[j],
+                                         max_time_points, extent[0][0], extent[1][0]],
+                            success: function (result)
+                                {
+
+                                    // recover plot id
+                                    var plot_id = result["plot_id"];
+
+                                    // update with higher resolution data
+                                    plots_selected_time[plot_id] = result["time_points"];
+                                    plots_selected_data[plot_id] = result["var_data"];
+
+                                    // toggle resolution indicator
+                                    toggle_resolution (plot_id, result["resolution"]);
+
+                                    // update data for d3
+                                    update_data(plot_id);
+
+                                    // user did zoom in on something, so reset window
+                                    x_scale[plot_id].domain([extent[0][0], extent[1][0]]);
+
+                                    // re-draw plot
+                                    draw_plot(plot_id);
+
+                                },
+                            error: function ()
+                                {
+                                    dialog.ajax_error ('Server failure: could not subsample variable data.')("","","");
+                                }
+                        });
+                    }
+                }
+
+		} else {  // reset zoom
+
+            // reset all linked plots
+            for (j = 0; j < 3; j++) {
+
+                // is this a plot to be updated
+                if (plots_to_update[j] == 1) {
+
+                    // reload data for full scale
+                    client.get_model_command(
+                    {
+                        mid: mid,
+                        type: "DAC",
+                        command: "subsample_time_var",
+                        parameters: [j, plots_selected[j], max_time_points, "-Inf", "Inf"],
+                        success: function (result)
+                        {
+
+                            // recover plot id from call
+                            var plot_id = result["plot_id"];
+
+                            // refresh with lowest resolution data
                             plots_selected_time[plot_id] = result["time_points"];
                             plots_selected_data[plot_id] = result["var_data"];
 
                             // toggle resolution indicator
                             toggle_resolution (plot_id, result["resolution"]);
 
-                            // update data for d3
+                            // update d3 data in plot (scale is automatically reset)
                             update_data(plot_id);
-
-                            // user did zoom in on something, so reset window
-				            x_scale[plot_id].domain([extent[0][0], extent[1][0]]);
-				            y_scale[plot_id].domain([extent[0][1], extent[1][1]]);
 
                             // re-draw plot
                             draw_plot(plot_id);
-                        },
-                    error: function ()
-                        {
-                            dialog.ajax_error ('Server failure: could not subsample variable data.')("","","");
+
                         }
+                    });
 
-                });
-
-		} else {  // reset zoom
-
-            // reload data for full scale
-            client.get_model_command(
-            {
-                mid: mid,
-                type: "DAC",
-                command: "subsample_time_var",
-                parameters: [plots_selected[plot_id], max_time_points, "-Inf", "Inf"],
-                success: function (result)
-                {
-                    // refresh with lowest resolution data
-                    plots_selected_time[plot_id] = result["time_points"];
-                    plots_selected_data[plot_id] = result["var_data"];
-
-                    // toggle resolution indicator
-                    toggle_resolution (plot_id, result["resolution"]);
-
-                    // update d3 data in plot (scale is automatically reset)
-                    update_data(plot_id);
-
-                    // re-draw plot
-                    draw_plot(plot_id);
                 }
-            });
+            }
 		};
-	};	
+	};
 
 	// user clicked on a curve
 	function select_curve (d,i)

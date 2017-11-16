@@ -209,22 +209,25 @@ def register_slycat_plugin(context):
 
         # get input parameters
 
+        # first parameter is just passed along then echoed back as a result
+        plot_id = int(kwargs["0"])
+
         # variable number in database
-        database_ind = int(kwargs["0"])
+        database_ind = int(kwargs["1"])
 
         # number of samples to return in subsample
-        num_subsample = int(kwargs["1"])
+        num_subsample = int(kwargs["2"])
 
         # range of sames (x-value)
-        if kwargs["2"] == "-Inf":
+        if kwargs["3"] == "-Inf":
             x_min = -float("Inf")
         else:
-            x_min = float(kwargs["2"])
+            x_min = float(kwargs["3"])
 
-        if kwargs["3"] == "Inf":
+        if kwargs["4"] == "Inf":
             x_max = float("Inf")
         else:
-            x_max = float(kwargs["3"])
+            x_max = float(kwargs["4"])
 
         # load time points and data from database
         time_points = slycat.web.server.get_model_arrayset_data (
@@ -258,7 +261,8 @@ def register_slycat_plugin(context):
         def content():
             yield json.dumps({"time_points": time_points_subsample.tolist(),
                               "var_data": var_data_subsample.tolist(),
-                              "resolution": subsample_stepsize})
+                              "resolution": subsample_stepsize,
+                              "plot_id": plot_id})
 
         return content()
 
