@@ -4,7 +4,7 @@
     <form>
       <div class="input-container" class="form-group">
         <label for="command">::Enter a remote command::</label>
-        <textarea class="form-control" id="command" required="required" rows="10">
+        <textarea class="form-control" id="command" required="required" rows="10" style="resize: both">
         </textarea>
       </div>
     </form>
@@ -12,7 +12,7 @@
           <button class="btn btn-lg btn-primary" id="go">GO</button>
           <button class="btn btn-lg btn-default" id="prettyPrint">Pretty Print</button>
     </div>
-    <div class="btn-group" role="group" aria-label="Basic example">
+    <div class="btn-group" role="group" aria-label="Basic example" data-toggle="tooltip" data-placement="right" title="these are the scripts">
           <button class="btn btn-lg btn-primary" id="test">test</button>
           <button class="btn btn-lg btn-default" id="computeTimeSeries">compute time series</button>
     </div>
@@ -22,10 +22,11 @@
     <form>
       <div class="input-container" class="form-group">
         <label for="command">Response:</label>
-        <textarea class="form-control" id="response" required="required" rows="10"></textarea>
+        <textarea class="form-control" id="response" required="required" rows="10" style="resize: both"></textarea>
       </div>
     </form>
-    <form>
+    <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#demo">Show session info</button>
+    <form id="demo" class="collapse">
     <div class="form-group">
       <label for="hostname">Hostname:</label>
       <input type="text" class="form-control" value="localhost" id="hostname">
@@ -71,6 +72,34 @@
                 {
                     "name": "compute_timeseries",
                     "parameters": [
+                        {
+                            "name": "--directory",
+                            "value": "/home/slycat/src/slycat/web-client/500-times-series"
+                        },
+                        {
+                            "name": "--cluster-sample-count",
+                            "value": 50
+                        },
+                        {
+                            "name": "--cluster-sample-type",
+                            "value": "uniform-paa"
+                        },
+                        {
+                            "name": "--cluster-type",
+                            "value": "average"
+                        },
+                        {
+                            "name": "--cluster-metric",
+                            "value": "euclidean"
+                        },
+                        {
+                            "name": "--workdir",
+                            "value": "/home/slycat/workdir"
+                        },
+                        {
+                            "name": "--hash",
+                            "value": "1a2b3c4d5e6f"
+                        },
                     ]
                 }
             ],
@@ -82,7 +111,7 @@
                     }
                 ]
             }
-      };
+        };
       function prettyPrint() {
         try {
           var ugly = $('#command').val();
@@ -114,7 +143,7 @@
           {
               console.log( "status:" + request.status);
               if(request.status === 400){
-                  document.getElementById('response').value = "status: " + status + "\n\nmessage: " + request.getResponseHeader('X-Slycat-Message');
+                  document.getElementById('response').value = "status: " + request.status + "\n\nmessage: " + request.getResponseHeader('X-Slycat-Message');
               }else {
                   document.getElementById('response').value = "error response from server:\n" + "error request:"
                       + JSON.stringify(request, undefined, 4) + "\n\n status: " + request.status + "\n\n reason: " + reason_phrase;
@@ -156,9 +185,7 @@
         );
       }
       function set_command(name){
-          console.log(name);
           if(name === "test"){
-              console.log(name);
               document.getElementById('command').value = JSON.stringify(test_script_json);
           }
           else if(name === "computer_time_series"){
