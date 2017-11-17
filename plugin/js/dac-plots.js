@@ -362,39 +362,38 @@ function(client, dialog, $, d3, URI)
 	module.change_selections = function(plot_selections)
 	{
 
-	    console.log(plot_selections);
-	    
-        // if number of selections is less than number of plots, repeat last entry
-
-
-        // compute number of plots to show
-        var num_plots_to_show = Math.min(num_plots,3,plot_selections.length);
-        console.log(num_plots_to_show);
+        // change number of plots to match the number of selections
+        num_plots = Math.min(3,plot_selections.length);
 
 		// update selections/unhide plots if necessary
-		for (var i = 0; i < num_plots_to_show; ++i) {
-			$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();
+		for (var i = 0; i < Math.min(num_plots,3); ++i) {
 
 		    // everything is different so we also unlink the plots
 		    $("#dac-link-plot-" + (i+1).toString()).prop("checked", false);
 		    link_plots[i] = 0;
+
+		    // unhide everything (might have been previously hidden)
+		    $("#dac-plot-" + (i+1)).show();
+		    $("#dac-select-plot-" + (i+1)).show();
+		    $("#dac-link-plot-" + (i+1)).show();
+		    $("#dac-full-resolution-plot-" + (i+1)).show();
+		    $("#dac-link-label-plot-" + (i+1)).show();
+
+			$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();
+
 		}
 
 		// repeat last plots if user selected less than three
-		var last_selected = plot_selections.slice(-1)[0];
-        for (var i = num_plots_to_show; i < Math.min(num_plots,3); i++) {
+        for (var i = num_plots; i < 3; i++) {
 
-
-/*
             // hide dac-plots that don't exist in selection
+            $("#dac-plot-" + (i+1)).hide();
 		    $("#dac-select-plot-" + (i+1)).hide();
 		    $("#dac-link-plot-" + (i+1)).hide();
 		    $("#dac-low-resolution-plot-" + (i+1)).hide();
 		    $("#dac-full-resolution-plot-" + (i+1)).hide();
 		    $("#dac-link-label-plot-" + (i+1)).hide();
-*/
-            console.log("hide");
-            console.log(i);
+
         }
 
 	}
