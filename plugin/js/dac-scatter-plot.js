@@ -21,6 +21,10 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	// model ID
 	var mid = URI(window.location).segment(-1);
 
+    // difference button fisher ordering and current position
+    var fisher_order = null;
+    var fisher_pos = null;
+
 	// d3 variables for drawing MDS coords
 	var scatter_plot = null;
 	var scatter_points = null;
@@ -96,8 +100,11 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		$("#dac-scatter-button-zoom").on("click", 
 			function() { selections.set_sel_type(0); module.draw(); });
 		
-		// bind difference button to callback
+		// bind difference buttons to callback
+		$("#dac-previous-three-button").on("click", previous_three);
 		$("#dac-scatter-diff-button").on("click", diff_button);
+		$("#dac-next-three-button").on("click", next_three);
+
 		
 		$.when (request.get_array("dac-mds-coords", 0)).then(
 			function (mds_data)
@@ -291,13 +298,48 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				
 		});
 	}
-	
+
+	// previous three button
+	previous_three = function ()
+	{
+
+	    // compute previous position
+	    var prev_pos = fisher_pos - 3;
+
+	    // check that new position exists and fire event
+	    if ((prev_pos < fisher_order.length) && (prev_pos >= 0)) {
+
+            // fire new difference event
+            var differenceEvent = new CustomEvent("DACDifferenceComputed",
+                                                  {detail: fisher_order.slice(prev_pos)});
+
+            document.body.dispatchEvent(differenceEvent);
+
+            // enable next button
+            $("#dac-next-three-button").removeClass("disabled");
+
+            // update position in list
+            fisher_pos = prev_pos;
+
+            // check if there are any further positions
+            if (fisher_pos - 3 < 0) {
+
+                // if not, disable previous button
+                $("#dac-previous-three-button").addClass("disabled");
+            }
+	    }
+
+	}
+
 	// difference button
 	diff_button = function()
 	{
-		
+
+        // inactivate button
+        $("#dac-scatter-diff-button").prop("active", false);
+
 		// make sure there are two selections
-		if (selections.len_sel_1() <= 1 &&
+		if (selections.len_sel_1() <= 1 ||
 			selections.len_sel_2() <= 1)
 		{
 			dialog.ajax_error
@@ -326,6 +368,20 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					// sort Fisher's discriminant values and adjust plot order
 					var fisher_inds = sort_indices(fisher_disc);
 
+                    // save indices for previous/next three buttons
+                    fisher_order = fisher_inds;
+
+                    // save current position for previous/next three buttons
+                    fisher_pos = 0;
+
+                    // disable previous three button
+                    $("#dac-previous-three-button").addClass("disabled");
+
+                    // if we have more than three variable, enable next three button
+                    if (fisher_inds.length > 3) {
+                        $("#dac-next-three-button").removeClass("disabled");
+                    }
+
 					// fire difference event
 		            var differenceEvent = new CustomEvent("DACDifferenceComputed",
 		                                                  { detail: fisher_inds });
@@ -338,6 +394,37 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				}
 		});
 
+	}
+
+	// next three button
+	next_three = function ()
+	{
+
+	    // compute next position
+	    var next_pos = fisher_pos + 3;
+
+	    // check that next position exists and fire event
+	    if (next_pos < fisher_order.length) {
+
+            // fire new difference event
+            var differenceEvent = new CustomEvent("DACDifferenceComputed",
+                                                  {detail: fisher_order.slice(next_pos)});
+
+            document.body.dispatchEvent(differenceEvent);
+
+            // enable previous button
+            $("#dac-previous-three-button").removeClass("disabled");
+
+            // update position in list
+            fisher_pos = next_pos;
+
+            // check if there are any further positions
+            if (fisher_pos + 3 >= fisher_order.length) {
+
+                // if not, disable next button
+                $("#dac-next-three-button").addClass("disabled");
+            }
+	    }
 	}
 
 	// routine to return sort array and return indices

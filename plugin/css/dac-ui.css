@@ -32,6 +32,12 @@
 	display: inline-block;
 }
 
+/* difference buttons */
+{
+    margin: 3px 3px 3px 3px;
+    display: inline-block;
+}
+
 #dac-scatter-select
 {
 	margin: 6px 3px 3px 3px;

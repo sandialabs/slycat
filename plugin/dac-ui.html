@@ -53,12 +53,22 @@ S. Martin
 								value="zoom">Zoom</input>
 						</label>
         			</div>
-        			
-        			<button id="dac-scatter-diff-button"
+
+					<div class="btn-group" id="dac-difference-buttons">
+						<label id="dac-previous-three-button" class="btn btn-default btn-sm disabled"
+							   title="Previous three most different plots.">
+							<i class="fa fa-step-backward" aria-hidden="true"></i>
+						</label>
+						<label id="dac-scatter-diff-button" class="btn btn-default btn-sm"
 title="Order variable plots to maximize difference
-between selection 1 and selection 2."
-	        			type="button" class="btn btn-default btn-sm">Difference
-        			</button>
+between selection 1 and selection 2.">Difference
+						</label>
+						<label id="dac-next-three-button" class="btn btn-default btn-sm disabled"
+							   title="Next three most different plots.">
+							<i class="fa fa-step-forward" aria-hidden="true"></i>
+						</label>
+					</div>
+
         			
         			<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
         					
