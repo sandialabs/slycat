@@ -370,6 +370,23 @@ $.widget("parameter_image.table",
       self.data.invalidate();
       self.grid.invalidate();
     }
+    else if(key == "jump_to_simulation")
+    {
+      self.data.get_indices("sorted", [value], function(sorted_rows)
+      {
+        if(sorted_rows.length)
+        {
+          var rowIndex = Math.min.apply(Math, sorted_rows);
+          self.grid.scrollRowToTop(rowIndex);
+          // Get all the columns
+          self.grid.getColumns().forEach(function(col){
+            // Flash each cell
+            self.grid.flashCell(rowIndex, self.grid.getColumnIndex(col.id));
+          })
+        }
+
+      });
+    }
   },
 
   _set_selected_x: function()
