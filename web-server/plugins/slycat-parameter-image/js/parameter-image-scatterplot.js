@@ -10,8 +10,11 @@ rights in this software.
 define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash", "knockout"], function(server_root, d3, URI, remotes, _, ko)
 {
   var nodrag = d3.behavior.drag();
+
+  // Commenting this out Nov 20 1017 because I have no idea what it does and I rewrote much of the dragging code. If still no problems after a few months, just delete it.
   nodrag.on("dragstart", function() {
-    d3.event.sourceEvent.stopPropagation();
+    console.log("nodrag.on('dragstart'...");
+    // d3.event.sourceEvent.stopPropagation();
   });
 
   $.widget("parameter_image.scatterplot",
@@ -108,7 +111,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
-    $('.media-layer').delegate('*', 'mousedown', function(){return false;});
+    
+    // Stop propagation of mousedown event on all elements inside .media-layer
+    // to prevent "highlighting" points while dragging pins while moving or resizing them.
+    $('.media-layer').delegate('*', 'mousedown', function(event){
+      // console.log("media-layer's mousedown delegation handler function");
+      // Stopping proagation to prevent dragging of pins from selecting points.
+      event.stopPropagation();
+      // Preventing default browser action on mousedown because that causes the browser to "select" text and other elements by highlighting them.
+      event.preventDefault();
+    });
+
     self.svg = d3.select(self.element.get(0)).append("svg").style({
       "opacity": ".99",
       // "position": "absolute", // Setting position to absolute also brings the svg element in front of .media-layer but keeps .image-frames on top of everything
@@ -178,8 +191,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       )
       ;
 
+    // self.element is div#scatterplot here
     self.element.mousedown(function(e)
     {
+      // console.log("self.element.mousedown");
       e.preventDefault();
       output = e;
       self.start_drag = [self._offsetX(e), self._offsetY(e)];
@@ -1123,8 +1138,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .on('dragstart', handlers["resize_start"])
             .on('dragend', handlers["resize_end"])
         )
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"]);
     };
 
     var add_pin_button = function(fh) {
@@ -1132,8 +1145,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr('class', 'pin-button frame-button fa fa-thumb-tack')
         .attr('title', 'Pin')
         .attr("aria-hidden", "true")
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
         .on("click", handlers["pin"]);
     };
 
@@ -1143,8 +1154,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr('class', 'download-button frame-button fa fa-download')
         .attr('title', 'Download media file')
         .attr('download', filename)
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
         ;
     };
 
@@ -1208,11 +1217,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr("data-uri", img.uri)
         .call(
           d3.behavior.drag()
-            .on('drag', handlers["drag"])
-            .on("dragstart", handlers["drag_start"])
-            .on("dragend", handlers["drag_end"])
+            .on('drag', handlers["move"])
+            .on("dragstart", handlers["move_start"])
+            .on("dragend", handlers["move_end"])
         )
-        .on("mousedown", handlers["frame_mousedown"]);
+        .on("click", handlers["frame_click"])
+        ;
 
       var footer = frame_html.append("div")
         .attr("class", "frame-footer")
@@ -1223,9 +1233,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr("class", "close-button frame-button fa fa-times")
         .attr("aria-hidden", "true")
         .attr("title", "Close")
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
-        .on("click", handlers["close"]);
+        .on("click", handlers["close"])
+        ;
 
       // Create the leader line ...
       if("target_x" in img && "target_y" in img)
@@ -1255,10 +1264,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     };
 
     var handlers = {
-      stop_event: function() {
-        return false;
-      },
-      drag: (function() {
+      move: (function() {
+        // console.log("move");
+        self._move_frame_to_front(this);
         var theElement, transx, transy;
         if (within_svg(d3.event, self.options)) {
           theElement = d3.select(this);
@@ -1271,7 +1279,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           self._adjust_leader_line(theElement);
         }
       }),
-      drag_start: (function() {
+      move_start: (function() {
+        // console.log("move_start");
+        // Do not call _move_frame_to_front here on drag_start because it's called on mousedown and that causes problems (see note on _move_frame_to_front function)
+        // self._move_frame_to_front(this);
         var frame, sourceEventTarget;
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
@@ -1286,37 +1297,36 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             image.image_class = "open-image";
           }
         }
-
         d3.event.sourceEvent.stopPropagation();
       }),
-      drag_end: function() {
+      move_end: function() {
+        // console.log("move_end");
         self.state = "";
         self._sync_open_images();
       },
       close: (function() {
+        // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
         self._remove_image_and_leader_line(frame);
         self._sync_open_images();
-        return false;
       }),
-      frame_mousedown: function(){
+      frame_click: function(){
+        // console.log("frame_click");
         var target = d3.select(d3.event.target);
+        // Do nothing if close button was clicked
+        if(target.classed("close-button"))
+        {
+          return;
+        }
         // Something special happens for STLs
         if (target.classed('slycat-3d-btn-settings')) {
           d3.select('#slycat-3d-modal')
             .on('.drag', null)
             .call(nodrag);
         }
-        else
-        {
-          // Otherwise move this frame to the top of the Z order ...
-          $(d3.event.target.closest(".image-frame")).detach().appendTo(self.media_layer.node());
-        }
-        self.current_frame = null;
-        $(".open-image").removeClass("selected");
-        d3.select(d3.event.currentTarget.closest(".image-frame")).classed("selected", true);
-        self.current_frame = Number(d3.select(d3.event.currentTarget).attr("data-index"));
-        self._sync_open_images();
+        // Move the frame to the front. Do not run this on mousedown or mouseup, because it stops propagation
+        // of click events (and possibly others) in Chrome and Safari.
+        self._move_frame_to_front(this);
       },
       hover: (function() {
         clear_hover_timer(self);
@@ -1325,6 +1335,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         }), 1000);
       }),
       resize: (function() {
+        // console.log("resize");
+        self._move_frame_to_front(this.closest(".image-frame"));
         var frame, min, target_width, x, y;
         min = 50;
         x = d3.event.x;
@@ -1346,6 +1358,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         $(window).trigger('resize');
       }),
       resize_start: (function() {
+        // console.log("resize_start");
         var frame;
         self.state = "resizing";
         frame = d3.select(this.closest(".image-frame"));
@@ -1359,25 +1372,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
         }
-        else if(!frame.classed("selected"))
-        {
-          $(this.closest(".image-frame")).detach().appendTo(self.media_layer.node());
-          self.current_frame = null;
-          $(".open-image").removeClass("selected");
-          frame.classed("selected", true);
-          self.current_frame = Number(frame.attr("data-index"));
-          self._sync_open_images();
-        }
-
         d3.event.sourceEvent.stopPropagation();
       }),
       resize_end: (function() {
+        // console.log("resize_end");
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
         self._sync_open_images();
-        d3.event.sourceEvent.stopPropagation();
+        // d3.event.sourceEvent.stopPropagation();
       }),
       pin: (function() {
+        // console.log("pin event handler running");
         var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
         self.opening_image = null;
         clear_hover_timer(self);
@@ -1425,7 +1430,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._sync_open_images();
 
         $(window).trigger('resize');
-        return false;
       }),
       pause_video: (function(){
         video_sync_time_changed(self);
@@ -1434,6 +1438,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         video_sync_time_changed(self);
       }),
       jump: (function(){
+        // console.log("jump event handler running");
         var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
         self.element.trigger("jump_to_simulation", index);
       }),
@@ -1550,8 +1555,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .style({
             "display": "none",
           })
-          .on("mousedown", handlers["stop_event"])
-          .on("mouseup", handlers["stop_event"])
           .on("loadedmetadata", function(){
             // debugger;
             // console.log("video loaded metadata");
@@ -2045,6 +2048,29 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       .attr("x1", x1)
       .attr("y1", y1)
       ;
+  },
+
+  // Move the frame to the front. Do not run this on mousedown or mouseup, because it stops propagation
+  // of click events (and possibly others) in Chrome and Safari.
+  _move_frame_to_front: function(frame)
+  {
+    // console.log("_move_frame_to_front");
+    var self = this;
+    frame = $(frame);
+    if(!frame.hasClass("selected"))
+    {
+      // Detaching and appending (or insertAfter() or probably any other method of moving an element in the DOM) an element on mousedown
+      // breaks other event listeners in Chrome and Safari by stopping propagation. It's as if it calls stopImmediatePropagation()
+      // but probably what it's doing is thinking that since the element moved, there's no mouseup or click event fired after mousedown.
+      // I didn't test for mouseup, but tested moving an element on mousedown and following click events were never fired or propagated.
+      // frame.insertAfter($("div.image-frame:last-child"));
+      frame.detach().appendTo(self.media_layer.node());
+      self.current_frame = null;
+      $(".open-image").removeClass("selected");
+      frame.addClass("selected");
+      self.current_frame = Number(frame.data("index"));
+      self._sync_open_images();
+    }
   },
 
   _remove_image_and_leader_line: function(frame_html)

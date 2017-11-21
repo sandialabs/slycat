@@ -396,6 +396,14 @@ rights in this software.
 #controls #filter-selector {
   width: 90px;
 }
+/* Making text unselectable inside of the scatterplot because dragging usually is supposed to do other things,
+   like selecting points or moving pins. */
+#scatterplot {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 #scatterplot .media-layer .frame-icon,
 #sliders-pane .frame-icon
 {
@@ -593,6 +601,7 @@ rights in this software.
   display: block;
   width: 100%;
   height: auto;
+  cursor: auto;
 }
 #scatterplot .image-frame .loading-image {
   margin: auto;
