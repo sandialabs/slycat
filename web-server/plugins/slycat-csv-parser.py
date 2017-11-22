@@ -35,6 +35,12 @@ def parse_file(file):
     for column in zip(*rows):
         column_has_floats = False
 
+        column_is_empty = column.count("") == len(column)
+
+        if column_is_empty:
+            slycat.email.send_error("slycat-csv-parser.py", "An empty column was removed from your file.")
+            continue
+
         # start from 1 to avoid the column name
         for value in column[1:]:
             if isfloat(value):
