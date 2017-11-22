@@ -56,7 +56,10 @@ def parse_file(file):
     if len(attributes) < 1:
         slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
-
+    for attribute in attributes:
+        if attribute["name"] is "":
+            slycat.email.send_error("slycat-csv-parser.py parse_file", "Your file is missing a column header. A default header has been added for you.")
+            attribute["name"] = "Default"
     return attributes, dimensions, data
 
 
