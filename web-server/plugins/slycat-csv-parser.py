@@ -31,6 +31,7 @@ def parse_file(file):
     attributes = []
     dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(rows[1:])}]
     data = []
+    name_index = 0
     # go through the csv by column
     for column in zip(*rows):
         column_has_floats = False
@@ -64,8 +65,9 @@ def parse_file(file):
         raise Exception("File must contain at least one column.")
     for attribute in attributes:
         if attribute["name"] is "":
+            name_index += 1
             slycat.email.send_error("slycat-csv-parser.py parse_file", "Your file is missing a column header. A default header has been added for you.")
-            attribute["name"] = "Default"
+            attribute["name"] = "Default" + str(name_index)
     return attributes, dimensions, data
 
 
