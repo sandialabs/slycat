@@ -74,6 +74,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
   syncing_videos : [],
   pausing_videos : [],
+  playing_videos : [],
   current_frame : null,
 
   _create: function()
@@ -1617,6 +1618,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 this.currentTime = self.options["video-sync-time"];
               }
               handlers["pause_video"]();
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
             }
             // Do nothing if video was paused by system, just remove it from the paused videos list
             else
@@ -1624,7 +1628,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               self.pausing_videos.splice(pausing_index, 1);
             }
           })
-          .on("seeked", function(){
+          .on("seeked", function(event){
             // console.log("onseeked");
             var index = self.syncing_videos.indexOf(image.index);
             if(index < 0)
@@ -1632,6 +1636,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               self.options["video-sync-time"] = this.currentTime;
               handlers["seeked_video"]();
               pinVideo(self, this, image);
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
             }
             else
             {
@@ -1641,10 +1648,30 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .on("play", function(event){
             // console.log("onplay");
             pinVideo(self, this, image);
+
+            var playing_index = self.playing_videos.indexOf(image.index);
+            // If video was directly played by user
+            if(playing_index < 0)
+            {
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
+            }
+            // Do nothing if video was played by system, just remove it from the played videos list
+            else
+            {
+              self.playing_videos.splice(playing_index, 1);
+            }
+          })
+          .on("volumechange", function(event){
+            // Need to explicitly move the frame to the front when interacting with video controls because
+            // Chrome does not propagate any mouse events after controls are clicked.
+            self._move_frame_to_front(this.closest(".image-frame"));
           })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
         {
+          self.syncing_videos.push(image.index);
           video.property("currentTime", image.currentTime);
         }
 
@@ -2315,6 +2342,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     {
       $(".open-image video").each(function(index, video)
       {
+        self.playing_videos.push($(video.parentElement).data('index'));
         video.play();
       });
     }
@@ -2323,6 +2351,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
       if(video != null)
       {
+        self.playing_videos.push($(video.parentElement).data('index'));
         video.play();
       }
     }
