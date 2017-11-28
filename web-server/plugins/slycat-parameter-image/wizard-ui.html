@@ -73,6 +73,12 @@
           {name: 'Editable', type: 'bool'}
         ]
       "></slycat-table-ingestion>
+          <div data-bind="visible:single_star_warning() == true">
+* Your CSV contained an empty column header
+          </div>
+          <div data-bind="visible:plus_warning() == true">
+** Your CSV contained at least two duplicate headers
+          </div>
     </div>
 
     <div data-bind="visible:tab() == 5">

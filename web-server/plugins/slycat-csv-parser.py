@@ -31,7 +31,9 @@ def parse_file(file):
     attributes = []
     dimensions = [{"name": "row", "type": "int64", "begin": 0, "end": len(rows[1:])}]
     data = []
-    name_index = 0
+    default_name_index = 0
+    duplicate_name_index = 0
+    column_headers = []
     # go through the csv by column
     for column in zip(*rows):
         column_has_floats = False
@@ -50,6 +52,7 @@ def parse_file(file):
                     output_list = map(lambda x: 'NaN' if x == '' else x, column[1:])
                     data.append(numpy.array(output_list).astype("float64"))
                     attributes.append({"name": column[0], "type": "float64"})
+                    column_headers.append(column[0])
 
                 # could not convert something to a float defaulting to string
                 except Exception as e:
@@ -64,10 +67,13 @@ def parse_file(file):
         slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
     for attribute in attributes:
+        if column_headers.count(attribute["name"]) > 1:
+            duplicate_name_index += 1
+            attribute["name"] += str(duplicate_name_index) + " +"
         if attribute["name"] is "":
-            name_index += 1
-            slycat.email.send_error("slycat-csv-parser.py parse_file", "Your file is missing a column header. A default header has been added for you.")
-            attribute["name"] = "Default" + str(name_index)
+            default_name_index += 1
+            attribute["name"] = "Default" + "_" + str(default_name_index) + " *"
+
     return attributes, dimensions, data
 
 
