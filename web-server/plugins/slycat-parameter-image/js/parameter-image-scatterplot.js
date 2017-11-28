@@ -1231,7 +1231,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .on("dragstart", handlers["move_start"])
             .on("dragend", handlers["move_end"])
         )
-        .on("click", handlers["frame_click"])
+        .on("mousedown", handlers["frame_mousedown"])
         ;
 
       var footer = frame_html.append("div")
@@ -1276,7 +1276,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var handlers = {
       move: (function() {
         // console.log("move");
-        self._move_frame_to_front(this);
         var theElement, transx, transy;
         if (within_svg(d3.event, self.options)) {
           theElement = d3.select(this);
@@ -1291,8 +1290,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       move_start: (function() {
         // console.log("move_start");
-        // Do not call _move_frame_to_front here on drag_start because it's called on mousedown and that causes problems (see note on _move_frame_to_front function)
-        // self._move_frame_to_front(this);
         var frame, sourceEventTarget;
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
@@ -1307,7 +1304,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             image.image_class = "open-image";
           }
         }
-        d3.event.sourceEvent.stopPropagation();
       }),
       move_end: function() {
         // console.log("move_end");
@@ -1320,8 +1316,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._remove_image_and_leader_line(frame);
         self._sync_open_images();
       }),
-      frame_click: function(){
-        console.log("frame_click");
+      frame_mousedown: function(){
+        // console.log("frame_mousedown");
         var target = d3.select(d3.event.target);
         // Do nothing if close button was clicked because we don't want to shift focus to frame that's about to be closed
         if(target.classed("close-button"))
@@ -1334,8 +1330,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .on('.drag', null)
             .call(nodrag);
         }
-        // Move the frame to the front. Do not run this on mousedown or mouseup, because it stops propagation
-        // of click events (and possibly others) in Chrome and Safari.
+        // Move the frame to the front.
         self._move_frame_to_front(this);
       },
       hover: (function() {
@@ -1346,7 +1341,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       resize: (function() {
         // console.log("resize");
-        self._move_frame_to_front(this.closest(".image-frame"));
         var frame, min, target_width, x, y;
         min = 50;
         x = d3.event.x;
@@ -1369,6 +1363,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       resize_start: (function() {
         // console.log("resize_start");
+        // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this 
+        // event handler and that stops the mousedown handler from moving the frame to the front automatically.
+        self._move_frame_to_front(this.closest(".image-frame"));
         var frame;
         self.state = "resizing";
         frame = d3.select(this.closest(".image-frame"));
@@ -1382,6 +1379,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
         }
+        // Need to stopPropagation here otherwise the system thinks we are moving the frame and does that instead of resize
         d3.event.sourceEvent.stopPropagation();
       }),
       resize_end: (function() {
