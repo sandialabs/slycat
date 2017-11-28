@@ -1311,9 +1311,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._sync_open_images();
       }),
       frame_click: function(){
-        // console.log("frame_click");
+        console.log("frame_click");
         var target = d3.select(d3.event.target);
-        // Do nothing if close button was clicked
+        // Do nothing if close button was clicked because we don't want to shift focus to frame that's about to be closed
         if(target.classed("close-button"))
         {
           return;
@@ -1555,9 +1555,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .style({
             "display": "none",
           })
+          .on("mousedown", function(event){
+            // console.log("video onmousedown");
+          })
+          .on("click", function(event){
+            // console.log("video onclick");
+          })
           .on("loadedmetadata", function(){
             // debugger;
-            // console.log("video loaded metadata");
+            // console.log("onloadedmetadata");
             var width = this.videoWidth;
             var height = this.videoHeight;
             var ratio = width/height;
@@ -1584,9 +1590,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             }
           })
           .on("playing", function(){
+            // console.log("onplaying");
             self._sync_open_images();
           })
           .on("pause", function(){
+            // console.log("onpause");
             var pausing_index = self.pausing_videos.indexOf(image.index);
             // If video was directly paused by user, set a new video-sync-time and sync all other videos
             if(pausing_index < 0)
@@ -1609,6 +1617,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             }
           })
           .on("seeked", function(){
+            // console.log("onseeked");
             var index = self.syncing_videos.indexOf(image.index);
             if(index < 0)
             {
@@ -1621,7 +1630,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               self.syncing_videos.splice(index, 1);
             }
           })
-          .on("play", function(){
+          .on("play", function(event){
+            // console.log("onplay");
             pinVideo(self, this, image);
           })
           ;
