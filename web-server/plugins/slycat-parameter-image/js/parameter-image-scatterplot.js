@@ -69,6 +69,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       "video-sync" : false,
       "video-sync-time" : 0,
       frameLength : 1/25,
+      highest_z_index: 0,
     },
 
   syncing_videos : [],
@@ -1070,28 +1071,34 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var height = Number(self.svg.attr("height"));
 
     self.options.open_images = [];
-    $(".open-image").each(function(index, frame)
-    {
-      var frame = $(frame);
-      var open_element = {
-        index : Number(frame.attr("data-index")),
-        uri : frame.attr("data-uri"),
-        relx : Number(frame.attr("data-transx")) / width,
-        rely : Number(frame.attr("data-transy")) / height,
-        width : frame.outerWidth(),
-        height : frame.outerHeight(),
-        current_frame : frame.hasClass("selected"),
-      };
-      var video = frame.find('video')[0];
-      if(video != undefined)
-      {
-        var currentTime = video.currentTime;
-        open_element["currentTime"] = currentTime;
-        open_element["video"] = true;
-        open_element["playing"] = self._is_video_playing(video);
-      }
-      self.options.open_images.push(open_element);
-    });
+    
+    $(".open-image")
+      // Sort .open-images by their z-index
+      .sort(function(a, b){
+        return parseInt(a.style['z-index'], 10) - parseInt(b.style['z-index'], 10);
+      })
+      .each(function(index, frame){
+        var frame = $(frame);
+        var open_element = {
+          index : Number(frame.attr("data-index")),
+          uri : frame.attr("data-uri"),
+          relx : Number(frame.attr("data-transx")) / width,
+          rely : Number(frame.attr("data-transy")) / height,
+          width : frame.outerWidth(),
+          height : frame.outerHeight(),
+          current_frame : frame.hasClass("selected"),
+        };
+        var video = frame.find('video')[0];
+        if(video != undefined)
+        {
+          var currentTime = video.currentTime;
+          open_element["currentTime"] = currentTime;
+          open_element["video"] = true;
+          open_element["playing"] = self._is_video_playing(video);
+        }
+        self.options.open_images.push(open_element);
+      })
+      ;
 
     self.element.trigger("open-images-changed", [self.options.open_images]);
   },
@@ -1200,6 +1207,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         img.y = self._getDefaultYPosition(img.index, img.height);
       }
 
+      // Increment self.options.highest_z_index before assigning it
+      self.options.highest_z_index++;
+
       var frame_html = self.media_layer.append("div")
         .attr("data-uri", img.uri)
         .attr("data-transx", img.x)
@@ -1209,7 +1219,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           "top": img.y + "px",
           "width": img.width + "px",
           "height": img.height + "px",
-          "z-index": 1,
+          "z-index": self.options.highest_z_index,
         })
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
@@ -2074,10 +2084,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // but probably what it's doing is thinking that since the element moved, there's no mouseup or click event fired after mousedown.
       // I didn't test for mouseup, but tested moving an element on mousedown and following click events were never fired or propagated.
       // frame.insertAfter($("div.image-frame:last-child"));
-      frame.detach().appendTo(self.media_layer.node());
-      self.current_frame = null;
+      // frame.detach().appendTo(self.media_layer.node());
+      // November 2017, Alex stopped using frame.detach().appendTo() because of the above documented issues. Instead I switched to
+      // using z-index for a cleaner implementation that works better with event handlers.
+
+      // Increment highest_z_index and assign it to the current frame
+      self.options.highest_z_index++;
+      frame.css("z-index", self.options.highest_z_index);
+      frame.addClass("z_index_" + self.options.highest_z_index);
+
       $(".open-image").removeClass("selected");
       frame.addClass("selected");
+
       self.current_frame = Number(frame.data("index"));
       self._sync_open_images();
     }
