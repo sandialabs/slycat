@@ -127,6 +127,62 @@ class Agent(agent.Agent):
                 }
             ]
         })
+        self.scripts.append({
+            "name": "timeseries_to_hdf5",
+            "exec_path": "/home/slycat/install/conda/bin/python",
+            "path": "/home/slycat/src/slycat/agent/slycat-timeseries-to-hdf5.py",
+            "description": "Stage data to hdf5 format for Slycat computation.",
+            "parameters": [
+                {
+                    "name": "--output-directory",
+                    "description": "Output directory containing hdf5 files.",
+                    "example": "python slycat-timeseries-to-hdf5.py --output-directory /path/to/out_data-dir",
+                    "type": "string",
+                    "required": True,
+                    "default": None
+                },
+                {
+                    "name": "--id-column",
+                    "description": "Inputs file id column name. needs to be the first column in the csv",
+                    "example": "python slycat-timeseries-to-hdf5.py --id-column name",
+                    "type": "string",
+                    "required": False,
+                    "default": None
+                },
+                {
+                    "name": "--inputs-file",
+                    "description": "The name of the delimited text file containing input data.",
+                    "example": "python slycat-timeseries-to-hdf5.py --inputs-file /path/to/input/file",
+                    "type": "string",
+                    "required": True,
+                    "default": None
+                },
+                {
+                    "name": "--inputs-file-delimiter",
+                    "description": "Field delimiter.  By default, fields will be delimited with any whitespace except a newline.",
+                    "example": "python slycat-timeseries-to-hdf5.py --inputs-file-delimiter ,",
+                    "type": "string",
+                    "required": True,
+                    "default": None
+                },
+                {
+                    "name": "--parallel-jobs",
+                    "description": "Number of parallel jobs to run.",
+                    "example": "python slycat-timeseries-to-hdf5.py --parallel-jobs 4",
+                    "type": "int",
+                    "required": False,
+                    "default": "number of cores on the machine"
+                },
+                {
+                    "name": "--force",
+                    "description": "Overwrite existing data.",
+                    "example": "python slycat-timeseries-to-hdf5.py --force",
+                    "type": "bool",
+                    "required": False,
+                    "default": None
+                }
+            ]
+        })
 
     def get_script_run_string(self, command_script):
         run_command = ''

@@ -15,6 +15,7 @@
     <div class="btn-group" role="group" aria-label="Basic example" data-toggle="tooltip" data-placement="right" title="these are the scripts">
           <button class="btn btn-lg btn-primary" id="test">test</button>
           <button class="btn btn-lg btn-default" id="computeTimeSeries">compute time series</button>
+          <button class="btn btn-lg btn-default" id="timeseriesToHdf5">timeseries to hdf5</button>
     </div>
     <div class="btn-group" role="group">
       <button class="btn btn-lg btn-primary" id="getSession">Get session</button>
@@ -112,6 +113,39 @@
                 ]
             }
         };
+      var timeseries_to_hdf5_script_json = {
+            "scripts": [
+                {
+                    "name": "timeseries_to_hdf5",
+                    "parameters": [
+                        {
+                            "name": "--output-directory",
+                            "value": "/home/slycat/output"
+                        },
+                        {
+                            "name": "--inputs-file",
+                            "value": "/home/slycat/input"
+                        },
+                        {
+                            "name": "--inputs-file-delimiter",
+                            "value": ","
+                        },
+                        {
+                            "name": "--force",
+                            "value": ""
+                        }
+                    ]
+                }
+            ],
+            "hpc": {
+                "is_hpc_job": false,
+                "parameters": [
+                    {
+                        "key": "value"
+                    }
+                ]
+            }
+        };
       function prettyPrint() {
         try {
           var ugly = $('#command').val();
@@ -191,6 +225,9 @@
           else if(name === "computer_time_series"){
               document.getElementById('command').value = JSON.stringify(computer_time_series_script_json);
           }
+          else if(name === "timeseries_to_hdf5"){
+              document.getElementById('command').value = JSON.stringify(timeseries_to_hdf5_script_json);
+          }
           else {
               document.getElementById('command').value = "command does not match command in list of commands"
           }
@@ -200,5 +237,6 @@
       document.getElementById("getSession").addEventListener("click", get_session, false);
       document.getElementById("test").addEventListener("click", function(){set_command("test")}, false);
       document.getElementById("computeTimeSeries").addEventListener("click", function(){set_command("computer_time_series")}, false);
+      document.getElementById("timeseriesToHdf5").addEventListener("click", function(){set_command("timeseries_to_hdf5")}, false);
     });
   </script>
