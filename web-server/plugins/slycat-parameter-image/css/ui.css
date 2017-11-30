@@ -728,7 +728,7 @@ rights in this software.
 .slycat-pim-filter:hover .minMaxHighLow .low,
 .slycat-pim-filter:hover .minMaxHighLow .high
 {
-  z-index: 1;
+  z-index: 6;
 }
 .slycat-pim-filter .minMaxHighLow .low_precision
 {
