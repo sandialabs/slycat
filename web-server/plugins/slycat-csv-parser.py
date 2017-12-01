@@ -5,7 +5,7 @@ import slycat.email
 import slycat.web.server
 
 
-def parse_file(file):
+def parse_file(file, model, database):
     """
   parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
   and sets attributes (attributes)
@@ -20,7 +20,6 @@ def parse_file(file):
         except ValueError:
             return False
 
-    cherrypy.log.error("parsing:::::::")
     rows = [row for row in
             csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
                        quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
@@ -34,6 +33,11 @@ def parse_file(file):
     default_name_index = 0
     duplicate_name_index = 0
     column_headers = []
+    error_message = []
+    duplicate_headers = False
+    empty_headers = False
+    empty_column = False
+
     # go through the csv by column
     for column in zip(*rows):
         column_has_floats = False
@@ -41,7 +45,7 @@ def parse_file(file):
         column_is_empty = column.count("") == len(column)
 
         if column_is_empty:
-            slycat.email.send_error("slycat-csv-parser.py", "An empty column was removed from your file.")
+            empty_column = True
             continue
 
         # start from 1 to avoid the column name
@@ -62,17 +66,44 @@ def parse_file(file):
         if not column_has_floats:
             data.append(numpy.array(column[1:]))
             attributes.append({"name": column[0], "type": "string"})
+            column_headers.append(column[0])
 
     if len(attributes) < 1:
         slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
+
+    cherrypy.log.error("column headers")
+    cherrypy.log.error(str(column_headers))
     for attribute in attributes:
         if attribute["name"] is "":
             default_name_index += 1
-            attribute["name"] = "Default" + "_" + str(default_name_index) + " *"
+            attribute["name"] = "Default" + "_" + str(default_name_index)
+            empty_headers = True
         if column_headers.count(attribute["name"]) > 1:
             duplicate_name_index += 1
-            attribute["name"] += str(duplicate_name_index) + " +"
+            attribute["name"] += str(duplicate_name_index)
+            duplicate_headers = True
+
+    if empty_headers is True:
+        error_message.append(
+            "Your CSV file contained at least one blank column header. A default header has been added for you. \n")
+    if duplicate_headers is True:
+        error_message.append(
+            "Your CSV file contained at least two identical column headers. A number has been added to these headers to make them unique. \n")
+    if empty_column is True:
+        error_message.append(
+            "Your CSV file contained at least one empty column. This column has been removed for you. \n")
+
+    if error_message is not "":
+        cherrypy.log.error("Adding error_messages to the database.")
+        # model = database.get("models", mid)
+        slycat.web.server.put_model_parameter(database, model, "error-messages", error_message)
+        # database.save(model)
+    else:
+        slycat.web.server.put_model_parameter(database, model, "error-messages", "")
+
+    cherrypy.log.error("The error has been logged.")
+
 
     return attributes, dimensions, data
 
@@ -93,7 +124,7 @@ def parse(database, model, input, files, aids, **kwargs):
         slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
-    parsed = [parse_file(file) for file in files]
+    parsed = [parse_file(file, model, database) for file in files]
 
     array_index = int(kwargs.get("array", "0"))
     for (attributes, dimensions, data), aid in zip(parsed, aids):
