@@ -367,8 +367,12 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
           var textContent = "";
           if( $(event.target).hasClass("max-field") )
             textContent = this.max();
-          else
+          else if( $(event.target).hasClass("min-field") )
             textContent = this.min();
+          else if( $(event.target).hasClass("high_value") )
+            textContent = this.high();
+          else if( $(event.target).hasClass("low_value") )
+            textContent = this.low();
           $(event.target).toggleClass("editing", true);
           event.target.textContent = textContent;
           // console.log("maxMin has focus.");
@@ -431,8 +435,51 @@ define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-d
             }
             self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
           }
-            
           // console.log("maxMin lost focus.");
+        };
+        vm.highLowBlur = function(filter, event) {
+          var newValue = Number(event.target.textContent);
+          var max_limit, min_limit;
+          if( $(event.target).hasClass("high_value") )
+          {
+            max_limit = filter.max();
+            min_limit = filter.low();
+          }
+          else
+          {
+            max_limit = filter.high();
+            min_limit = filter.min();
+          }
+          if ( isNaN(newValue) || newValue > max_limit || newValue < min_limit )
+          {
+            // console.log("validation failed");
+            dialog.dialog({
+              title: isNaN(newValue) ? "Oops, Please Enter A Number" : "Oops, Number Outside Of Data Range",
+              message: "Please enter a number between " + min_limit + " and " + max_limit + ".",
+              buttons: [
+                {className: "btn-primary",  label:"OK"}
+              ],
+              callback: function(button)
+              {
+                if(button.label == "OK")
+                  $(event.target).focus();
+              },
+            });
+          }
+          else
+          {
+            $(event.target).toggleClass("editing", false);
+            if( $(event.target).hasClass("high_value") )
+            {
+              this.high(newValue);
+            }
+            else
+            {
+              this.low(newValue);
+            }
+            self.bookmarker.updateState( {"allFilters" : mapping.toJS(vm.allFilters())} );
+          }
+          // console.log("high or low lost focus.");
         };
         vm.maxMinMouseOver = function(filter, event) {
           $(event.target).toggleClass("hover", true);
