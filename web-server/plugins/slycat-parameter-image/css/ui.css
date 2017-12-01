@@ -726,7 +726,8 @@ rights in this software.
   left: 44px;
 }
 .slycat-pim-filter:hover .minMaxHighLow .low,
-.slycat-pim-filter:hover .minMaxHighLow .high
+.slycat-pim-filter:hover .minMaxHighLow .high,
+.slycat-pim-filter .minMaxHighLow .high_precision.editing
 {
   z-index: 6;
 }
@@ -740,6 +741,7 @@ rights in this software.
   visibility: hidden;
   padding-right: 5px;
   background-color: white;
+  position: relative;
 }
 /* Hide low precision label when... */
 /* Hovering over filter */
