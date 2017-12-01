@@ -10,8 +10,8 @@ This is Slycat - a web-based ensemble analysis and visualization platform, creat
 # Slycat Demo
 You can try out slycat at https://myslycat.com
 
-Username: slycat  
-Password: slycat
+Username: demo  
+Password: demo
 
 The data in this demo instance of Slycat is erased on a regular basis, so please don't upload anything you intend to keep.
 

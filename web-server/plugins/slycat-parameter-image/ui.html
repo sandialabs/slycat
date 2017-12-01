@@ -144,15 +144,23 @@ rights in this software.
               </div>
 
               <div class="high"
-                   data-bind="
-                              text: high().toPrecision(3).length > high().toExponential(2).length ? high().toExponential(2) : high().toPrecision(3),
-                              style: { top: ( $parent.sliderHeight() - (2 * $parent.thumb_length()) ) * ( (max() - high()) / (max() - min()) ) + 17 + (0.5 * $parent.thumb_length()) + 'px' }"
-                   >[max]</div>
+                   data-bind="style: { top: ( $parent.sliderHeight() - (2 * $parent.thumb_length()) ) * ( (max() - high()) / (max() - min()) ) + 17 + (0.5 * $parent.thumb_length()) + 'px' }">
+                <div class="low_precision" data-bind="text: high().toPrecision(3).length > high().toExponential(2).length ? high().toExponential(2) : high().toPrecision(3)">
+                  [max low precision]
+                </div>
+                <div class="high_precision" data-bind="text: high()">
+                  [max full precision]
+                </div>
+              </div>
               <div class="low"
-                   data-bind="
-                              text: low().toPrecision(3).length > low().toExponential(2).length ? low().toExponential(2) : low().toPrecision(3),
-                              style: { top: ( $parent.sliderHeight() - (2 * $parent.thumb_length()) ) * ( (max() - low()) / (max() - min()) ) + 17 + (1.5 * $parent.thumb_length()) + 'px' }"
-                   >[min]</div>
+                   data-bind="style: { top: ( $parent.sliderHeight() - (2 * $parent.thumb_length()) ) * ( (max() - low()) / (max() - min()) ) + 17 + (1.5 * $parent.thumb_length()) + 'px' }">
+                <div class="low_precision" data-bind="text: low().toPrecision(3).length > low().toExponential(2).length ? low().toExponential(2) : low().toPrecision(3)">
+                  [min low precision]
+                </div>
+                <div class="high_precision" data-bind="text: low()">
+                  [min full precision]
+                </div>
+              </div>
             </div>
             <slycat-range-slider
             params="

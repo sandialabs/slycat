@@ -28,6 +28,7 @@ rights in this software.
   -ms-user-select: none;
   user-select: none;
   shape-rendering: crispEdges;
+  cursor: default;
 }
 
 .x-axis path,
@@ -398,7 +399,10 @@ rights in this software.
 }
 /* Making text unselectable inside of the scatterplot because dragging usually is supposed to do other things,
    like selecting points or moving pins. */
-#scatterplot {
+#scatterplot,
+.slycat-pim-filter .varName,
+.category-filter .varName
+{
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
@@ -721,6 +725,29 @@ rights in this software.
   position: absolute;
   left: 44px;
 }
+.slycat-pim-filter:hover .minMaxHighLow .low,
+.slycat-pim-filter:hover .minMaxHighLow .high
+{
+  z-index: 6;
+}
+.slycat-pim-filter .minMaxHighLow .low_precision
+{
+  position: absolute;
+}
+.slycat-pim-filter .minMaxHighLow .high_precision
+{
+  visibility: hidden;
+  padding-right: 5px;
+  background-color: white;
+}
+.slycat-pim-filter:hover .minMaxHighLow .low_precision
+{
+  visibility: hidden;
+}
+.slycat-pim-filter:hover .minMaxHighLow .high_precision
+{
+  visibility: visible;
+}
 .slycat-pim-filter .minMaxHighLow .max
 {
   top: 3px;
@@ -771,6 +798,7 @@ rights in this software.
   top: 50%;
   font-size: 13px;
   font-weight: bold;
+  cursor: default;
 }
 
 .category-filter {
