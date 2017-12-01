@@ -108,7 +108,7 @@ class Connection(object):
     data = {"user_name":base64.encodestring(keywords.get("auth", ("", ""))[0]), "password":base64.encodestring(keywords.get("auth", ("", ""))[1])}
     # log.info("$$$$$$$$$$$$$ Requests Version ::::: " + requests.__version__)
     url = host + "/login"
-    print("url: %s" % url)
+    # print("url: %s" % url)
     self.host = host
     self.keywords = keywords
     self.session = requests.Session()
