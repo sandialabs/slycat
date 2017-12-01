@@ -733,6 +733,7 @@ rights in this software.
 .slycat-pim-filter .minMaxHighLow .low_precision
 {
   position: absolute;
+  top: 0;
 }
 .slycat-pim-filter .minMaxHighLow .high_precision
 {
@@ -740,11 +741,19 @@ rights in this software.
   padding-right: 5px;
   background-color: white;
 }
-.slycat-pim-filter:hover .minMaxHighLow .low_precision
+/* Hide low precision label when... */
+/* Hovering over filter */
+.slycat-pim-filter:hover .minMaxHighLow .low_precision,
+/* Editing high precision label */
+.slycat-pim-filter .minMaxHighLow .high_precision.editing ~ .low_precision
 {
   visibility: hidden;
 }
-.slycat-pim-filter:hover .minMaxHighLow .high_precision
+/* Show high precision label when... */
+/* Hovering over filter */
+.slycat-pim-filter:hover .minMaxHighLow .high_precision,
+/* Editing high precision label */
+.slycat-pim-filter .minMaxHighLow .high_precision.editing
 {
   visibility: visible;
 }
@@ -757,7 +766,11 @@ rights in this software.
 .slycat-pim-filter .max .edited,
 .slycat-pim-filter .min .edited,
 .slycat-pim-filter .max .hover,
-.slycat-pim-filter .min .hover
+.slycat-pim-filter .min .hover,
+.slycat-pim-filter .high .editing,
+.slycat-pim-filter .low .editing,
+.slycat-pim-filter .high .hover,
+.slycat-pim-filter .low .hover
 {
   background-color: #F0AD4E;
   border: 1px solid #CCC;
