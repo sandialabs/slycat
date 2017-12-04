@@ -63,6 +63,13 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
       vm.controlsZoomingSpeed = ko.observable(1.5);
       vm.controlsPanningSpeed = ko.observable(1);
       vm.controlsDynamicDampingFactor = ko.observable(0.3);
+
+      vm.rotating = ko.observable(false);
+      vm.rotate_x = ko.observable(false);
+      vm.rotate_y = ko.observable(true);
+      vm.rotate_z = ko.observable(false);
+
+      vm.displayStats = ko.observable(false);
       /** */
 
       var mid = params.mid || URI(window.location).segment(-1);
@@ -221,15 +228,32 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
         return false;
       });
 
-      $('.slycat-3d-btn-rotate', $container).on('click', function() {
-        onRotation.bind(this)(animation, container, renderer, scene, camera, mesh, controls, fps, ms);
+      vm.rotate = function(data, event) {
+        cancelAnimationFrame(animation.id);
+        if (!vm.rotating()) {
+          renderRotate(animation, container, renderer, scene, camera, mesh, controls, fps, ms, vm);
+        } else {
+          renderFixed(animation, renderer, scene, camera, controls, fps, ms);
+        }
+        // Toggle roation state
+        vm.rotating(!vm.rotating());
         return false;
-      });
+      }
 
-      $('.slycat-3d-stats-check', $container).on('change', function() {
-        toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'), isModel);
-      });
+      vm.toggleStats = function(data, event) {
+        toggleStats(container, viewer, renderer, camera, fps, ms, !vm.displayStats(), isModel);
+        vm.displayStats(!vm.displayStats());
+      }
 
+      vm.toggleX = function(data, event) {
+        vm.rotate_x(!vm.rotate_x());
+      }
+      vm.toggleY = function(data, event) {
+        vm.rotate_y(!vm.rotate_y());
+      }
+      vm.toggleZ = function(data, event) {
+        vm.rotate_z(!vm.rotate_z());
+      }
 
       $(window).on('resize', function() { resizeViewer(container, viewer, renderer, camera, isModel); });
     },
@@ -345,14 +369,14 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
    * @param  {Object} fps
    * @param  {Object} ms
    */
-  var renderRotate = function(animation, container, renderer, scene, camera, mesh, controls, fps, ms) {
+  var renderRotate = function(animation, container, renderer, scene, camera, mesh, controls, fps, ms, vm) {
     var rr = function() {
       controls.update();
       renderer.render(scene, camera);
 
-      var x = $('.slycat-3d-x-check', $(container)).is(':checked');
-      var y = $('.slycat-3d-y-check', $(container)).is(':checked');
-      var z = $('.slycat-3d-z-check', $(container)).is(':checked');
+      var x = vm.rotate_x();
+      var y = vm.rotate_y();
+      var z = vm.rotate_z();
 
       if (mesh && x) mesh.rotation.x -= 0.01;
       if (mesh && y) mesh.rotation.y -= 0.01;
@@ -365,28 +389,6 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
     };
 
     rr();
-  };
-
-  /**
-   * Function executed on click on the Rotate/Fixed button.
-   * @param  {Object} animation animation object with an 'id' attribute
-   * @param  {Object} container
-   * @param  {Object} renderer  reference to the rendered
-   * @param  {Object} scene     reference to the scene
-   * @param  {Object} camera    reference to the camera
-   * @param  {Object} mesh      reference to the mesh (i.e. geometry)
-   * @param  {Object} controls  reference to the controls
-   */
-  var onRotation = function(animation, container, renderer, scene, camera, mesh, controls, fps, ms) {
-    cancelAnimationFrame(animation.id);
-
-    if ($(this).text() === 'Rotate') {
-      renderRotate(animation, container, renderer, scene, camera, mesh, controls, fps, ms);
-      $(this).text('Fixed');
-    } else {
-      renderFixed(animation, renderer, scene, camera, controls, fps, ms);
-      $(this).text('Rotate');
-    }
   };
 
   /**
