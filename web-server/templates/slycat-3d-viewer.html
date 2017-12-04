@@ -1,15 +1,16 @@
-<div class="bootstrap-styles" style="padding: 10px 0 5px 10px; background-color: white;">
-  <button class="btn btn-warning btn-xs slycat-3d-btn-reset" style="margin-right: 15px;">Reset</button>
-
-  <input id="slycat-3d-x-check" type="checkbox"> x
-  <input id="slycat-3d-y-check" type="checkbox" checked="checked"> y
-  <input id="slycat-3d-z-check" type="checkbox"> z
-  <button class="btn btn-default btn-xs slycat-3d-btn-rotate" style="width: 70px; margin: 0px 15px 0px 5px;">Rotate</button>
+<div class="bootstrap-styles header-bar" style="padding: 10px 0 5px 10px; background-color: white;">
+  <button class="btn btn-warning btn-xs slycat-3d-btn-reset">Reset</button>
+  <button class="btn btn-default btn-xs slycat-3d-btn-settings" data-bind="click: run_settings">Settings</button>
+  <button class="btn btn-default btn-xs slycat-3d-btn-rotate">Rotate</button>
+  <label><input class="slycat-3d-x-check" type="checkbox"> x</label>
+  <label><input class="slycat-3d-y-check" type="checkbox" checked="checked"> y</label>
+  <label><input class="slycat-3d-z-check" type="checkbox"> z</label>
+  
 
   <!-- <button class="btn btn-default btn-xs slycat-3d-btn-settings" data-toggle="modal" data-target="#slycat-3d-modal">Settings</button> -->
-  <button class="btn btn-default btn-xs slycat-3d-btn-settings" data-bind="click: run_settings">Settings</button>
+  
 
-  <input id="slycat-3d-stats-check" type="checkbox" style="margin-left: 15px"> Display performance statistics
+  <label><input class="slycat-3d-stats-check" type="checkbox" style="margin-left: 15px"> Display performance statistics</label>
 
   <div class="slycat-3d-stats" style="display: none; float: right; margin-right: 25px;">
     Number of faces: <span id="slycat-3d-face3-number"></span>

@@ -226,7 +226,7 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
         return false;
       });
 
-      $('#slycat-3d-stats-check', $container).on('change', function() {
+      $('.slycat-3d-stats-check', $container).on('change', function() {
         toggleStats(container, viewer, renderer, camera, fps, ms, $(this).is(':checked'), isModel);
       });
 
@@ -350,9 +350,9 @@ define('slycat-3d-viewer', ['slycat-server-root', 'knockout', 'knockout-mapping'
       controls.update();
       renderer.render(scene, camera);
 
-      var x = $('#slycat-3d-x-check', $(container)).is(':checked');
-      var y = $('#slycat-3d-y-check', $(container)).is(':checked');
-      var z = $('#slycat-3d-z-check', $(container)).is(':checked');
+      var x = $('.slycat-3d-x-check', $(container)).is(':checked');
+      var y = $('.slycat-3d-y-check', $(container)).is(':checked');
+      var z = $('.slycat-3d-z-check', $(container)).is(':checked');
 
       if (mesh && x) mesh.rotation.x -= 0.01;
       if (mesh && y) mesh.rotation.y -= 0.01;
