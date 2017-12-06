@@ -26,7 +26,7 @@ A github repo of sample data that can be used by slycat.
 1. Pull the Slycat image with the following command:  
 `docker pull slycat/slycat-developer`
 2. Get Slycat running on localhost:  
-`docker run -p 2222:22 -p 80:80 -p 443:443 -p 5984:5984 -d --name slycat slycat/slycat-developer`  
+`docker run -p 2222:22 -p 80:80 -p 443:443 -d --name slycat slycat/slycat-developer`  
 3. Visit your local instance of Slycat at <https://localhost>  
 You can log in with any username as long as the password is the same as the username. For example:  
 Username: slycat  
