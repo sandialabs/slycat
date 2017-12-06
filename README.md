@@ -46,6 +46,7 @@ Slycat will automatically restart to pick up any new changes.
 4. And start it back up:  
 `docker start slycat`  
 (don't run the `docker run` command from step 3 again, it's only required the first time you start Slycat)
+5. Set up a firewall on the host machine if you are deploying Slycat. Port 2222 will be exposed on the host while the slycat-developer container is running. At the very least, use a firewall to block port 2222, since anyone will be able to ssh into your slycat-developer container using the same 'slycat' password as you. A better firewall configuration would block all ports except 80, 443, and 22 (or whichever port you use to ssh to the host).
 
 
 # Slower Start
