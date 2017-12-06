@@ -20,6 +20,15 @@ def parse_file(file, model, database):
         except ValueError:
             return False
 
+    invalid_csv = False  # CSV is completely missing a column header (it isn't just a blank string)
+    content = file.splitlines()
+    csv_reader = csv.reader(content)
+    headings = next(csv_reader)
+    first_line = next(csv_reader)
+
+    if len(headings) != len(first_line):
+        invalid_csv = True
+
     rows = [row for row in
             csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
                        quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
@@ -35,8 +44,8 @@ def parse_file(file, model, database):
     column_headers = []
     error_message = []
     duplicate_headers = False
-    empty_headers = False
-    empty_column = False
+    blank_headers = False  # Header with a blank string, i.e. ",,"
+    empty_column = False  # There was at least one empty column in the CSV
 
     # go through the csv by column
     for column in zip(*rows):
@@ -78,19 +87,22 @@ def parse_file(file, model, database):
         if attribute["name"] is "":
             default_name_index += 1
             attribute["name"] = "Default" + "_" + str(default_name_index)
-            empty_headers = True
+            blank_headers = True
         if column_headers.count(attribute["name"]) > 1:
             duplicate_name_index += 1
             attribute["name"] += str(duplicate_name_index)
             duplicate_headers = True
 
-    if empty_headers is True:
+    if invalid_csv is True:
+        error_message.append(
+            "Your CSV is invalid because it's missing at least one column header. Please CLOSE this wizard, fix the issue, then start a new wizard. \n")
+    elif blank_headers is True:
         error_message.append(
             "Your CSV file contained at least one blank column header. A default header has been added for you. \n")
-    if duplicate_headers is True:
+    elif duplicate_headers is True:
         error_message.append(
             "Your CSV file contained at least two identical column headers. A number has been added to these headers to make them unique. \n")
-    if empty_column is True:
+    elif empty_column is True:
         error_message.append(
             "Your CSV file contained at least one empty column. This column has been removed for you. \n")
 
