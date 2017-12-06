@@ -96,15 +96,16 @@ def parse_file(file, model, database):
     if invalid_csv is True:
         error_message.append(
             "Your CSV is invalid because it's missing at least one column header. Please CLOSE this wizard, fix the issue, then start a new wizard. \n")
-    elif blank_headers is True:
-        error_message.append(
-            "Your CSV file contained at least one blank column header. A default header has been added for you. \n")
-    elif duplicate_headers is True:
-        error_message.append(
-            "Your CSV file contained at least two identical column headers. A number has been added to these headers to make them unique. \n")
-    elif empty_column is True:
-        error_message.append(
-            "Your CSV file contained at least one empty column. This column has been removed for you. \n")
+    else:
+        if blank_headers is True:
+            error_message.append(
+                "Your CSV file contained at least one blank column header. A default header has been added for you. \n")
+        if duplicate_headers is True:
+            error_message.append(
+                "Your CSV file contained at least two identical column headers. A number has been added to these headers to make them unique. \n")
+        if empty_column is True:
+            error_message.append(
+                "Your CSV file contained at least one empty column. This column has been removed for you. \n")
 
     if error_message is not "":
         cherrypy.log.error("Adding error_messages to the database.")
