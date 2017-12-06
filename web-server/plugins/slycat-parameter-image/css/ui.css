@@ -1029,3 +1029,8 @@ a {
   border-width: 0px !important;
   opacity: 0.5;
 }
+
+slycat-3d-viewer .header-bar {
+  height: 37px;
+  white-space: nowrap;
+}
