@@ -12,14 +12,6 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
          plots, metadata_table, $, d3, URI, ko)
 {
 
-    // height of slycat header/progress bar
-    var SLYCAT_PROGRESS_HEADER = 200;
-    var MIN_PROGRESS_TEXT_HEIGHT = 200;
-
-    // set text area height to fill window
-    $("#dac_processing_textarea").height(Math.max($(window).height() - SLYCAT_PROGRESS_HEADER,
-                                                  MIN_PROGRESS_TEXT_HEIGHT));
-
     // maximum number of points to display for plots
     var MAX_TIME_POINTS = 500;
 
@@ -57,7 +49,6 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 } else if (result[0] == "Error") {
 
                     dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
-                    launch_model();
 
                 } else {
 
@@ -81,7 +72,21 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
                 if (Number(new Date()) < endTime) {
 
-                    // continue, do not reset timer
+                    // check model for existence of "dac-polling-progress" artifact
+                    client.get_model(
+                    {
+                        mid: mid,
+                        success: function (result)
+                        {
+                            // if "dac-polling-progress" doesn't exist it's an older model, just load it
+                            if (!("artifact:dac-polling-progress" in result))
+                            {
+                                launch_model();
+                            }
+                        }
+                    });
+
+                    // otherwise keep trying, do not reset timer
                     window.setTimeout(poll, interval);
 
                 } else {
@@ -204,6 +209,8 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 		                            $("#dac-low-resolution-plot-" + (i+1)).remove();
 		                            $("#dac-full-resolution-plot-" + (i+1)).remove();
 		                            $("#dac-link-label-plot-" + (i+1)).remove();
+		                            $("#dac-plots-displayed-" + (i+1)).remove();
+		                            $("#dac-plots-not-displayed-" + (i+1)).remove();
 		                        };
 
 		   	                });
@@ -241,6 +248,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 		// update table - select corresponding rows (assumes they are stored in manage_selections.js)
 		metadata_table.select_rows();
+
+        // show difference out of sync
+        scatter_plot.toggle_difference(false);
 
 		// jump to top row in table for current selection (if there is one)
 		if (new_selections.detail.active_sel.length > 0) {

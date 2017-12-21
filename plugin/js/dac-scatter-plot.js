@@ -25,6 +25,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
     var fisher_order = null;
     var fisher_pos = null;
 
+    // has the difference button ever been used?
+    var diff_button_used = null;
+
 	// d3 variables for drawing MDS coords
 	var scatter_plot = null;
 	var scatter_points = null;
@@ -105,7 +108,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		$("#dac-scatter-diff-button").on("click", diff_button);
 		$("#dac-next-three-button").on("click", next_three);
 
-		
+        // difference button has not yet been used
+        diff_button_used = false;
+
 		$.when (request.get_array("dac-mds-coords", 0)).then(
 			function (mds_data)
 			{
@@ -312,7 +317,6 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
             // fire new difference event
             var differenceEvent = new CustomEvent("DACDifferenceComputed",
                                                   {detail: fisher_order.slice(prev_pos)});
-
             document.body.dispatchEvent(differenceEvent);
 
             // enable next button
@@ -377,6 +381,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
                     // disable previous three button
                     $("#dac-previous-three-button").addClass("disabled");
 
+                    // difference button has been used (show as synced)
+                    module.toggle_difference(true);
+
                     // if we have more than three variable, enable next three button
                     if (fisher_inds.length > 3) {
                         $("#dac-next-three-button").removeClass("disabled");
@@ -409,7 +416,6 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
             // fire new difference event
             var differenceEvent = new CustomEvent("DACDifferenceComputed",
                                                   {detail: fisher_order.slice(next_pos)});
-
             document.body.dispatchEvent(differenceEvent);
 
             // enable previous button
@@ -424,6 +430,28 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
                 // if not, disable next button
                 $("#dac-next-three-button").addClass("disabled");
             }
+	    }
+	}
+
+	// toggle difference button indicator to show desired state
+	// true = synced, false = out of sync
+	module.toggle_difference = function (desired_state)
+	{
+
+	    if (desired_state == true) {
+
+	        // set difference indicator to synced
+	        $("#dac-selection-synced").show();
+	        $("#dac-selection-not-synced").hide();
+
+	        // difference button has been used
+	        diff_button_used = true;
+
+	    } else if (diff_button_used == true) {
+
+	        // set difference state to out of sync
+	        $("#dac-selection-synced").hide();
+	        $("#dac-selection-not-synced").show();
 	    }
 	}
 

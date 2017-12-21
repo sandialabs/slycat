@@ -72,6 +72,9 @@ function(client, dialog, $, d3, URI)
 	var y_axis = [];
 	var x_label = [];
 	var y_label = [];
+
+	// mouse-over line for plots
+	var mouse_over_line = [];
 	
 	// set up initial private variables, user interface
 	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
@@ -178,7 +181,7 @@ function(client, dialog, $, d3, URI)
 				.attr("transform", "translate(" +
 					(plot_adjustments.padding_left +
 					 plot_adjustments.y_label_padding) + ",0)");
-					
+
 			// clip rectangle for zooming
 			plot[i].append("defs").append("svg:clipPath")
 				.attr("id", "clip")
@@ -187,13 +190,30 @@ function(client, dialog, $, d3, URI)
 				.attr("x", plot_adjustments.padding_left
 						 + plot_adjustments.y_label_padding)
 				.attr("y", plot_adjustments.padding_top);
-					
+
+            // mouse-over line
+            mouse_over_line[i] = plot[i].append("line")
+                                        .attr("x1", plot_adjustments.padding_left +
+                                                    plot_adjustments.y_label_padding)
+                                        .attr("y1", $("#dac-plots").height()/3 -
+                                                    plot_adjustments.pull_down_height -
+                                                    plot_adjustments.padding_bottom -
+                                                    plot_adjustments.x_label_padding)
+                                        .attr("x2", plot_adjustments.padding_left +
+                                                    plot_adjustments.y_label_padding)
+                                        .attr("y2", plot_adjustments.padding_top)
+                                        .style("stroke", "black")
+                                        .style("fill", "none")
+                                        .style("display", "none");
+
 			// axis labels
 			x_label[i] = plot[i].append("text")
 		  						.attr("text-anchor", "end")
 			y_label[i] = plot[i].append("text")
 								.attr("text-anchor", "end")
 								.attr("transform", "rotate(-90)");
+
+
 	   
 		}
 				
@@ -383,7 +403,7 @@ function(client, dialog, $, d3, URI)
 
 		}
 
-		// repeat last plots if user selected less than three
+		// hide last plots if user selected less than three
         for (var i = num_plots; i < 3; i++) {
 
             // hide dac-plots that don't exist in selection
@@ -393,6 +413,8 @@ function(client, dialog, $, d3, URI)
 		    $("#dac-low-resolution-plot-" + (i+1)).hide();
 		    $("#dac-full-resolution-plot-" + (i+1)).hide();
 		    $("#dac-link-label-plot-" + (i+1)).hide();
+		    $("#dac-plots-displayed-" + (i+1)).hide();
+		    $("#dac-plots-not-displayed-" + (i+1)).hide();
 
         }
 
@@ -488,8 +510,6 @@ function(client, dialog, $, d3, URI)
 		plot[i].selectAll("g.y.axis").call(y_axis[i])
 			   .selectAll(".domain").attr("clip-path",null);
 
-	    //
-
 	}
 	
 	// updates d3 stored data for plots
@@ -508,14 +528,17 @@ function(client, dialog, $, d3, URI)
 			// update data (only Curve data is implemented so far)
 			if ($.trim(plot_type[plots_selected[i]]) == 'Curve') {
 
-				// set (or re-set) zoom brushing
+				// set (or re-set) zoom brushing & vertical line
 			    plot[i].selectAll("g.brush").remove();
 			    plot[i].append("g")
 				       .attr("class", "brush")
 				       .call(d3.svg.brush()
 				       .x(x_scale[i])
 				       .y(y_scale[i])
-				       .on("brushend", zoom));
+				       .on("brushend", zoom))
+				       .on("mouseover", vertical_line_start)
+				       .on("mousemove", vertical_line_move)
+				       .on("mouseout", vertical_line_end);
 
 				// set selectable curves (note brush is under selection)
 				plot[i].selectAll(".curve")
@@ -526,6 +549,7 @@ function(client, dialog, $, d3, URI)
 					   .attr("class", "curve")
 					   .attr("stroke", function(d) { return sel_color[d[0][2]]; })
 					   .attr("fill", "none")
+					   .attr("stroke-width", 1)
 					   .on("click", select_curve);
 
 			} else {
@@ -628,17 +652,7 @@ function(client, dialog, $, d3, URI)
 		d3.select(this).call(d3.event.target);
 
         // make a list of plots to update
-        var plots_to_update = [0, 0, 0];
-        if (link_plots[plot_id] == 0) {
-
-            // zoomed plot is not linked
-            plots_to_update[plot_id] = 1;
-
-        } else {
-
-            // zoomed plot is linked
-            plots_to_update = link_plots;
-        }
+        var plots_to_update = identify_plots_to_update(plot_id);
 
 		// was it an valid zoom?
 		if (extent[0][0] != extent[1][0] &&
@@ -739,6 +753,25 @@ function(client, dialog, $, d3, URI)
 		};
 	};
 
+    // get a list of plots to update, including linked plots
+    function identify_plots_to_update (i) {
+
+        // make a list of plots to update
+        var plots_to_update = [0, 0, 0];
+        if (link_plots[i] == 0) {
+
+            // zoomed plot is not linked
+            plots_to_update[i] = 1;
+
+        } else {
+
+            // zoomed plot is linked
+            plots_to_update = link_plots;
+        }
+
+        return plots_to_update;
+    }
+
 	// user clicked on a curve
 	function select_curve (d,i)
 	{
@@ -762,6 +795,78 @@ function(client, dialog, $, d3, URI)
         document.body.dispatchEvent(selectionEvent);
 
 	}
+
+    // user sitting over a plot
+    function vertical_line_start ()
+    {
+        // identify plot
+		var plot_id_str = this.parentNode.id;
+		var plot_id = Number(plot_id_str.split("-").pop()) - 1;
+
+        // identify x position in plot
+        var x_coord = d3.mouse(this)[0];
+
+        // make a list of plots to update
+        var plots_to_update = identify_plots_to_update(plot_id);
+
+        // update vertical lines for all linked plots
+        for (i=0; i<3; i++) {
+
+            if (plots_to_update[i] == 1) {
+
+                // update vertical line position and display
+                mouse_over_line[i].attr("x1", x_coord)
+                                  .attr("x2", x_coord)
+                                  .style("display", "inline");
+            }
+        }
+    }
+
+    // user moving over a plot
+    function vertical_line_move ()
+    {
+        // identify plot
+		var plot_id_str = this.parentNode.id;
+		var plot_id = Number(plot_id_str.split("-").pop()) - 1;
+
+        // identify x position in plot
+        var x_coord = d3.mouse(this)[0];
+
+        // make a list of plots to update
+        var plots_to_update = identify_plots_to_update(plot_id);
+
+        // update vertical lines for all linked plots
+        for (i=0; i<3; i++) {
+
+            if (plots_to_update[i] == 1) {
+
+                // reposition vertical line
+                mouse_over_line[i].attr("x1", x_coord)
+                                  .attr("x2", x_coord)
+            }
+        }
+    }
+
+    // user out of plot
+    function vertical_line_end ()
+    {
+        // identify plot
+		var plot_id_str = this.parentNode.id;
+		var plot_id = Number(plot_id_str.split("-").pop()) - 1;
+
+        // make a list of plots to update
+        var plots_to_update = identify_plots_to_update(plot_id);
+
+        // update vertical lines for all linked plots
+        for (i=0; i<3; i++) {
+
+            if (plots_to_update[i] == 1) {
+
+                // hide vertical line
+                mouse_over_line[i].style("display", "none");
+            }
+        }
+    }
 
 	// update selections (and data) for all plots
 	module.update_plots = function (new_sel_1, new_sel_2)

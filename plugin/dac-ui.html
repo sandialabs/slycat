@@ -9,7 +9,7 @@ S. Martin
 
 	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px;">
 
-		<label>Data is being processed for the model:</label>
+		<label>Data is being processed for the model (it is safe to close the browser):</label>
 			<div class="progress">
 				<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
 					 aria-valuemin="0"
@@ -57,7 +57,7 @@ S. Martin
 					<div class="btn-group" id="dac-difference-buttons">
 						<label id="dac-previous-three-button" class="btn btn-default btn-sm disabled"
 							   title="Previous three most different plots.">
-							<i class="fa fa-step-backward" aria-hidden="true"></i>
+							<i class="fa fa-chevron-left" aria-hidden="true"></i>
 						</label>
 						<label id="dac-scatter-diff-button" class="btn btn-default btn-sm"
 title="Order variable plots to maximize difference
@@ -65,10 +65,15 @@ between selection 1 and selection 2.">Difference
 						</label>
 						<label id="dac-next-three-button" class="btn btn-default btn-sm disabled"
 							   title="Next three most different plots.">
-							<i class="fa fa-step-forward" aria-hidden="true"></i>
+							<i class="fa fa-chevron-right" aria-hidden="true"></i>
 						</label>
 					</div>
-
+					<i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
+title="The difference calculation is
+out of sync with the current selection."> </i>
+					<i class="fa fa-refresh"  id="dac-selection-synced"
+title="The difference calculation is in
+sync with the current selection"> </i>
         			
         			<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
         					
@@ -130,8 +135,9 @@ title='Adjust sliders to optimize scatter plot for selected
 		<!-- Plot limiter indicator -->
 		<i class="fa fa-exclamation-triangle dac-plots-not-displayed"
 title="You selected too many plots to display:
-not every plot in your selection is shown."></i>
-		<i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."></i>
+not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i>
+		<i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
+			id="dac-plots-displayed-1"></i>
 
 		<!-- Low resolution indicator -->
 		<i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
@@ -150,8 +156,9 @@ not every plot in your selection is shown."></i>
 
 		<i class="fa fa-exclamation-triangle dac-plots-not-displayed"
 title="You selected too many plots to display:
-not every plot in your selection is shown."></i>
-		<i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."></i>
+not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i>
+		<i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
+			id="dac-plots-displayed-2"></i>
 
 		<i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
 		   title="Plots are low resolution." id="dac-low-resolution-plot-2"></i>
@@ -168,8 +175,9 @@ not every plot in your selection is shown."></i>
 
 		<i class="fa fa-exclamation-triangle dac-plots-not-displayed"
 title="You selected too many plots to display:
-not every plot in your selection is shown."></i>
-		<i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."></i>
+not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i>
+		<i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
+			id="dac-plots-displayed-3"></i>
 
 		<i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
 		   title="Plots are low resolution." id="dac-low-resolution-plot-3"></i>

@@ -517,7 +517,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 			Y_LABEL_PADDING: 13,
 			LABEL_OPACITY: 0.2,
 			X_TICK_FREQ: 80,
-			Y_TICK_FREQ: 40
+			Y_TICK_FREQ: 40,
 
         };
 
@@ -676,6 +676,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                                     }
                                 };
                             fileUploader.uploadFile(fileObject);
+
+                            // show upload
+                            component.tab(2);
 
                         } else {
 

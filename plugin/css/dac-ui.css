@@ -38,6 +38,20 @@
     display: inline-block;
 }
 
+/* difference sync indicator */
+#dac-selection-synced
+{
+    color: green;
+    display: none;
+    vertical-align: center;
+}
+
+#dac-selection-not-synced
+{
+    color: orange;
+    display: none;
+}
+
 #dac-scatter-select
 {
 	margin: 6px 3px 3px 3px;
@@ -81,6 +95,7 @@
 .dac-full-resolution-plot
 {
     color: green;
+    display: none;
 }
 
 /* link check boxes for zooming */
@@ -100,6 +115,7 @@
 .dac-plots-displayed
 {
     color: green;
+    display: none;
 }
 
 /* margins around pull down menus */

@@ -158,9 +158,20 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
 
     # treat uploaded file as bitstream
-    file_like_object = io.BytesIO(files[0])
-    zip_ref = zipfile.ZipFile(file_like_object)
-    zip_files = zip_ref.namelist()
+    try:
+
+        file_like_object = io.BytesIO(files[0])
+        zip_ref = zipfile.ZipFile(file_like_object)
+        zip_files = zip_ref.namelist()
+
+    except Exception as e:
+
+        # couldn't open zip file, report to user
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Error", "couldn't read zip file (too large or corrupted)."])
+
+        # print error to cherrypy.log.error
+        cherrypy.log.error(traceback.format_exc())
 
     # loop through zip files and make a list of CSV/META files
 
