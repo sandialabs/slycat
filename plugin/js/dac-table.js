@@ -126,8 +126,6 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 
 		// fire selection change event
 		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
-					                         sel_1: selections.sel_1(),
-					                         sel_2: selections.sel_2(),
 					                         active_sel: []} });
         document.body.dispatchEvent(selectionEvent);
 		

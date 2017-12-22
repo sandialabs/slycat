@@ -7,9 +7,9 @@
 
 define("dac-model", ["slycat-web-client", "slycat-dialog", "dac-layout", "dac-request-data",
                      "dac-alpha-sliders", "dac-alpha-buttons", "dac-scatter-plot", "dac-plots",
-					 "dac-table", "jquery", "d3", "URI", "knockout", "domReady!"],
+					 "dac-table", "dac-manage-selections", "jquery", "d3", "URI", "knockout", "domReady!"],
 function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_plot,
-         plots, metadata_table, $, d3, URI, ko)
+         plots, metadata_table, selections, $, d3, URI, ko)
 {
 
     // maximum number of points to display for plots
@@ -240,17 +240,21 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     function selections_changed (new_selections)
     {
 
+        // re-order selection order randomly
+        // (to prevent always showing 1st part of long selection)
+        selections.shuffle();
+
         // update scatter plot
         scatter_plot.draw();
 
+        // show difference out of sync
+        scatter_plot.toggle_difference(false);
+
         // update selections in time series plot
-        plots.update_plots (new_selections.detail.sel_1, new_selections.detail.sel_2);
+        plots.update_plots();
 
 		// update table - select corresponding rows (assumes they are stored in manage_selections.js)
 		metadata_table.select_rows();
-
-        // show difference out of sync
-        scatter_plot.toggle_difference(false);
 
 		// jump to top row in table for current selection (if there is one)
 		if (new_selections.detail.active_sel.length > 0) {

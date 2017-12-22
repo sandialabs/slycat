@@ -11,8 +11,8 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("dac-plots", ["slycat-web-client", "slycat-dialog", "jquery", "d3", "URI"],
-function(client, dialog, $, d3, URI)
+define("dac-plots", ["slycat-web-client", "slycat-dialog", "dac-manage-selections", "jquery", "d3", "URI"],
+function(client, dialog, selections, $, d3, URI)
 {
 
 	// public functions (or variables)
@@ -36,16 +36,16 @@ function(client, dialog, $, d3, URI)
     // linked plot check box values
     var link_plots = [];
 
+    // plot resolution & number displayed indicators (-1 do not show)
+    var plot_resolution = [];       // resolution as returned by server
+    var plot_sel_displayed = [];    // 0 green (all shown), 1 not green (some not shown)
+
 	// meta data for plots
 	var num_plots = null;
 	var plot_name = null;
 	var x_axis_name = null;
 	var y_axis_name = null;
 	var plot_type = null;
-	
-	// current points being plotted
-	var selection_1 = [];
-	var selection_2 = [];
 	
 	// colors for plots
 	var sel_color = [];
@@ -118,10 +118,16 @@ function(client, dialog, $, d3, URI)
         // initialize check boxes to all false
         link_plots = [0, 0, 0];
 
+        // initialize full resolution and all displayed (do not show)
+        plot_sel_displayed = [-1, -1, -1];
+        plot_resolution = [-1, -1, -1];
+
 		// remove unused plot pull downs
 		for (var i = num_plots; i < 3; i++) {
 		    $("#dac-select-plot-" + (i+1)).remove();
 		    $("#dac-link-plot-" + (i+1)).remove();
+		    $("#dac-plots-displayed-" + (i+1)).remove();
+		    $("#dac-plots-not-displayed-" + (i+1).remove());
 		    $("#dac-low-resolution-plot-" + (i+1)).remove();
 		    $("#dac-full-resolution-plot-" + (i+1)).remove();
 		    $("#dac-link-label-plot-" + (i+1)).remove();
@@ -149,6 +155,9 @@ function(client, dialog, $, d3, URI)
 
                     // turn on low resolution warning/turn off full resolution
                     toggle_resolution (plot_id, result["resolution"]);
+
+                    // update current resolution
+                    plot_resolution[plot_id] = result["resolution"];
                 }
             });
         };
@@ -226,17 +235,23 @@ function(client, dialog, $, d3, URI)
     function toggle_resolution (i, resolution)
     {
 
-        if (resolution > 1) {
+        if (resolution == -1) {
+
+            // do not show resolution indicator
+            $("#dac-low-resolution-plot-" + (i+1)).hide();
+            $("#dac-full-resolution-plot-" + (i+1)).hide();
+
+        } else if (resolution > 1) {
 
             // turn on low resolution warning/turn off full resolution
-            $("#dac-low-resolution-plot-" + (i+1).toString()).show();
-            $("#dac-full-resolution-plot-" + (i+1).toString()).hide();
+            $("#dac-low-resolution-plot-" + (i+1)).show();
+            $("#dac-full-resolution-plot-" + (i+1)).hide();
 
          } else {
 
-             // turn on low resolution warning/turn off full resolution
-            $("#dac-low-resolution-plot-" + (i+1).toString()).hide();
-            $("#dac-full-resolution-plot-" + (i+1).toString()).show();
+             // turn off low resolution warning/turn on full resolution
+            $("#dac-low-resolution-plot-" + (i+1)).hide();
+            $("#dac-full-resolution-plot-" + (i+1)).show();
 
          }
 
@@ -289,6 +304,9 @@ function(client, dialog, $, d3, URI)
 
                         // toggle resolution indicator
                         toggle_resolution (select_id, result["resolution"]);
+
+                        // update resolution
+                        plot_resolution[select_id] = result["resolution"];
 
                         // update d3 data in plot
                         update_data(select_id);
@@ -396,7 +414,7 @@ function(client, dialog, $, d3, URI)
 		    $("#dac-plot-" + (i+1)).show();
 		    $("#dac-select-plot-" + (i+1)).show();
 		    $("#dac-link-plot-" + (i+1)).show();
-		    $("#dac-full-resolution-plot-" + (i+1)).show();
+		    toggle_resolution (i, plot_resolution[i]);
 		    $("#dac-link-label-plot-" + (i+1)).show();
 
 			$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();
@@ -520,7 +538,7 @@ function(client, dialog, $, d3, URI)
 		plot[i].selectAll(".curve").remove();
 		
 		// generate new data for each selection	
-		if ((selection_1.length > 0) || (selection_2.length > 0)) {			
+		if ((selections.len_sel_1() > 0) || (selections.len_sel_2() > 0)) {
 			
 			// update scale domain
 			set_default_domain(i);
@@ -567,10 +585,10 @@ function(client, dialog, $, d3, URI)
 						   Math.max.apply(Math, plots_selected_time[i])]);
 			
 		// update y-axis domain
-		y_scale[i].domain([Math.min(sel_min(i, selection_1),
-						            sel_min(i, selection_2)),
-						   Math.max(sel_max(i, selection_1),
-						   			sel_max(i, selection_2))]);
+		y_scale[i].domain([Math.min(sel_min(i, selections.sel_1()),
+						            sel_min(i, selections.sel_2())),
+						   Math.max(sel_max(i, selections.sel_1()),
+						   			sel_max(i, selections.sel_2()))]);
 	}
 	
 	// returns min for a curve selection
@@ -602,7 +620,24 @@ function(client, dialog, $, d3, URI)
 		
 		return sel_max;	
 	}
-	
+
+	// call to server to subsample data, both by row and column
+	function refresh_curve_data (i)
+	{
+	    // get rows of data for selection 1
+	    if (selections.len_sel_1() > max_num_plots) {
+
+	        // if selection 1 is too long, get random subsample
+
+
+	    }
+
+
+	    console.log(selections.sel_1())
+
+
+	}
+
 	// generate a d3 style version of the data for a selection of curves,
 	// which is an array of arrays of curves, where each curve is an (x,y,c) array
 	// where x,y is position and c is color
@@ -618,7 +653,11 @@ function(client, dialog, $, d3, URI)
 		    sel_1_color.push(0);
 			sel_2_color.push(1);
 		}
-					  
+
+	    // get selections
+	    var selection_1 = selections.sel_1();
+	    var selection_2 = selections.sel_2();
+
 		// make array of data for selection 1
 		var curve_data = [];
 		for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
@@ -780,12 +819,12 @@ function(client, dialog, $, d3, URI)
         if (d[0][2] == 0) {
 
             // we're in selection 1
-            curve_id = selection_1[i];
+            curve_id = selections.sel_1()[i];
 
         } else {
 
             // we're in selection 2
-            curve_id = selection_2[i - Math.min(selection_1.length, max_num_plots)];
+            curve_id = selections.sel_2()[i - Math.min(selections.len_sel_1(), max_num_plots)];
 
         }
 
@@ -869,19 +908,19 @@ function(client, dialog, $, d3, URI)
     }
 
 	// update selections (and data) for all plots
-	module.update_plots = function (new_sel_1, new_sel_2)
+	module.update_plots = function ()
 	{
-		// update selections
-		selection_1 = new_sel_1;
-		selection_2 = new_sel_2;
+
+        console.log(selections.sel_1());
+        console.log(selections.sel_2());
 
 		// update plot limit indicator color
 		var limit_indicator_color = "green";
-		if ((selection_1.length > max_num_plots) & (selection_2.length > max_num_plots)) {
+		if ((selections.len_sel_1() > max_num_plots) & (selections.len_sel_2() > max_num_plots)) {
 		    limit_indicator_color = "purple";
-		} else if (selection_1.length > max_num_plots) {
+		} else if (selections.len_sel_1() > max_num_plots) {
 		    limit_indicator_color = "red";
-		} else if (selection_2.length > max_num_plots) {
+		} else if (selections.len_sel_2() > max_num_plots) {
 		    limit_indicator_color = "blue";
 		}
 

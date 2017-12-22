@@ -84,7 +84,7 @@ define ("dac-manage-selections", [], function() {
 			}
 		}
 	}
-	
+
 	// updates selection variables
 	module.update_sel = function(i)
 	{
@@ -115,6 +115,32 @@ define ("dac-manage-selections", [], function() {
 			}					
 		}
 	}
+
+	// put selections in random order
+	module.shuffle = function ()
+	{
+        selection_1 = shuffle(selection_1);
+        selection_2 = shuffle(selection_2);
+	}
+
+	// Fisher-Yates shuffle from bost.ocks.org
+	function shuffle(array) {
+    var m = array.length, t, i;
+
+        // While there remain elements to shuffle…
+        while (m) {
+
+            // Pick a remaining element…
+            i = Math.floor(Math.random() * m--);
+
+            // And swap it with the current element.
+            t = array[m];
+            array[m] = array[i];
+            array[i] = t;
+        }
+
+        return array;
+    }
 		
 	return module;
 	

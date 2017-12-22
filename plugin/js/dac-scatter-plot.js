@@ -707,8 +707,6 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 
 		// fire selection change event
 		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
-					                         sel_1: selections.sel_1(),
-					                         sel_2: selections.sel_2(),
 					                         active_sel: selection} });
         document.body.dispatchEvent(selectionEvent);
 	}
@@ -727,8 +725,6 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 
 		// fire selection change event
 		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
-					                         sel_1: selections.sel_1(),
-					                         sel_2: selections.sel_2(),
 					                         active_sel: [i]} });
         document.body.dispatchEvent(selectionEvent);
 	}
