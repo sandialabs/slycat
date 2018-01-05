@@ -33,12 +33,18 @@ function(client, dialog, selections, $, d3, URI)
 	var plots_selected_time = new Array(3);	// a vector of time values for plot {0,1,2}
 	var plots_selected_data = new Array(3);	// a matrix of y-values for plot {0,1,2}
 
+    // zoom scale for current plots
+    var plots_selected_zoom = new Array(3); // vectors with x-min, x-max for plot {0,1,2}
+
+    // plot resolution indicators (-1 do not show)
+    var plots_selected_resolution = [];     // resolution as returned by server
+
+    // number selected indicator (0 do not show)
+    var plots_selected_displayed = [];
+    var limit_indicator_color = null;
+
     // linked plot check box values
     var link_plots = [];
-
-    // plot resolution & number displayed indicators (-1 do not show)
-    var plot_resolution = [];       // resolution as returned by server
-    var plot_sel_displayed = [];    // 0 green (all shown), 1 not green (some not shown)
 
 	// meta data for plots
 	var num_plots = null;
@@ -110,17 +116,22 @@ function(client, dialog, selections, $, d3, URI)
 		y_axis_name = variables_data[0]["data"][2];
 		plot_type = variables_data[0]["data"][3];
 				
-		// init plot order (repeated if not enough plots)
+		// init plot order (up to number of plots available)
 		for (var i = 0; i < Math.min(num_plots,3); i++) {
 		    plots_selected.push(i);
 		}
 
-        // initialize check boxes to all false
-        link_plots = [0, 0, 0];
+        // initialize zoom level
+        for (var i = 0; i < 3; i++) {
+            plots_selected_zoom[i] = ["-Inf", "Inf"];
+        }
 
         // initialize full resolution and all displayed (do not show)
-        plot_sel_displayed = [-1, -1, -1];
-        plot_resolution = [-1, -1, -1];
+        plots_selected_displayed = [0, 0, 0];
+        plots_selected_resolution = [-1, -1, -1];
+
+        // initialize check boxes to all false
+        link_plots = [0, 0, 0];
 
 		// remove unused plot pull downs
 		for (var i = num_plots; i < 3; i++) {
@@ -132,35 +143,6 @@ function(client, dialog, selections, $, d3, URI)
 		    $("#dac-full-resolution-plot-" + (i+1)).remove();
 		    $("#dac-link-label-plot-" + (i+1)).remove();
 		}
-
-        // load up matrices for time series that we're looking at
-        for (var i = 0; i < Math.min(num_plots,3); i++) {
-
-            // call up server for get data
-            client.get_model_command({
-
-                mid: mid,
-                type: "DAC",
-                command: "subsample_time_var",
-                parameters: [i, plots_selected[i], max_time_points, "-Inf", "Inf"],
-                success: function (result)
-                {
-                    // get plot_id (passed through to avoid mixing up array order
-                    // during asynchronous ajax calls
-                    var plot_id = result["plot_id"];
-
-                    // save data for viewing later
-                    plots_selected_time[plot_id] = result["time_points"];
-                    plots_selected_data[plot_id] = result["var_data"];
-
-                    // turn on low resolution warning/turn off full resolution
-                    toggle_resolution (plot_id, result["resolution"]);
-
-                    // update current resolution
-                    plot_resolution[plot_id] = result["resolution"];
-                }
-            });
-        };
 
 		// initialize plots as d3 plots
 		for (var i = 0; i < Math.min(num_plots,3); ++i) {
@@ -231,32 +213,6 @@ function(client, dialog, selections, $, d3, URI)
 
 	}
 
-    // toggle low/full resolution indicator for a plot
-    function toggle_resolution (i, resolution)
-    {
-
-        if (resolution == -1) {
-
-            // do not show resolution indicator
-            $("#dac-low-resolution-plot-" + (i+1)).hide();
-            $("#dac-full-resolution-plot-" + (i+1)).hide();
-
-        } else if (resolution > 1) {
-
-            // turn on low resolution warning/turn off full resolution
-            $("#dac-low-resolution-plot-" + (i+1)).show();
-            $("#dac-full-resolution-plot-" + (i+1)).hide();
-
-         } else {
-
-             // turn off low resolution warning/turn on full resolution
-            $("#dac-low-resolution-plot-" + (i+1)).hide();
-            $("#dac-full-resolution-plot-" + (i+1)).show();
-
-         }
-
-    }
-
 	// populate pull down menu i in {0,1,2} with plot names
 	function display_plot_pull_down(i)
 	{
@@ -283,45 +239,11 @@ function(client, dialog, selections, $, d3, URI)
 
 				// change value of selection
 				plots_selected[select_id] = select_value;
-				
-				// request new data from server
-                client.get_model_command(
-                {
-                    mid: mid,
-                    type: "DAC",
-                    command: "subsample_time_var",
-                    parameters: [select_id, plots_selected[select_id],
-                                 max_time_points, "-Inf", "Inf"],
-                    success: function (result)
-                    {
 
-                        // recover plot id from call
-                        var select_id = result["plot_id"];
-
-                        // save new data
-                        plots_selected_time[select_id] = result["time_points"];
-                        plots_selected_data[select_id] = result["var_data"];
-
-                        // toggle resolution indicator
-                        toggle_resolution (select_id, result["resolution"]);
-
-                        // update resolution
-                        plot_resolution[select_id] = result["resolution"];
-
-                        // update d3 data in plot
-                        update_data(select_id);
-
-                        // update newly selected plot
-                        draw_plot(select_id);
-
-                    },
-                    error: function ()
-                    {
-                        dialog.ajax_error ('Server failure: could not load plot data.')("","","");
-                    }
-                });
+                // update newly selected plot
+                draw_plot(select_id);
 			});
-		
+
 	}
 
 	// call back for the link check boxes
@@ -414,8 +336,10 @@ function(client, dialog, selections, $, d3, URI)
 		    $("#dac-plot-" + (i+1)).show();
 		    $("#dac-select-plot-" + (i+1)).show();
 		    $("#dac-link-plot-" + (i+1)).show();
-		    toggle_resolution (i, plot_resolution[i]);
 		    $("#dac-link-label-plot-" + (i+1)).show();
+
+            // show display indicator
+            plots_selected_displayed[i] = 1;
 
 			$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();
 
@@ -490,48 +414,91 @@ function(client, dialog, selections, $, d3, URI)
 				   		 plot_adjustments.x_label_padding) + ")");
 			y_axis[i].ticks(num_y_ticks);
 
-            // update data, if necessary
-            update_data(i);
-
 		    // draw actual plot
 			draw_plot(i);
 
 		}
 	}
-	
-	// draw a plot with specific axis, labels, etc.
+
+	// this routine sets off the following actions:
+	// (1) refresh data from server, sub-sampled by row (selection) and column (resolution)
+	// (2) update data in d3
+	// (3) re-draw d3 plots
+	// (4) update indicators for plot
 	function draw_plot(i)
 	{
-			
-		// draw plots (if necessary re-draw)
-		if ($.trim(plot_type[plots_selected[i]]) == 'Curve') {
-			
-			plot[i].selectAll("path")
-				   .attr("d", d3.svg.line().interpolate("linear")
-				   			    .x(function(d) { return x_scale[i](d[0]); })
-				   			    .y(function(d) { return y_scale[i](d[1]); }))
-				   .attr("clip-path", "url(#clip)");
-				   				   			    		
-		} else {
 
-		    // note: this will never happen using the PTS wizard
-			dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
-		};
+        // first, we refresh the data
+        // since this is an ajax call, we only continue after the
+        // data has been retrieved
 
-		// label axes (if necessary re-draw)
-		x_label[i].text(x_axis_name[plots_selected[i]]);
-		y_label[i].text(y_axis_name[plots_selected[i]]);
+	    // get rows of data to pass to server
+	    var refresh_selections = [-2, -1];  // indicates empty python list
+	    var selection_1 = selections.sel_1();
+	    var selection_2 = selections.sel_2();
 
-		// draw axes (re-draws)
-		plot[i].selectAll("g.x.axis").call(x_axis[i])
-			   .selectAll(".domain").attr("clip-path",null);
-		plot[i].selectAll("g.y.axis").call(y_axis[i])
-			   .selectAll(".domain").attr("clip-path",null);
+	    // starting with selection 1, up to max number of plots
+	    for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
+	        refresh_selections.push (selection_1[j]);
+	    }
+
+	    // finishing with selection 2, up to max number of plots
+	    for (var j = 0; j < Math.min(selection_2.length, max_num_plots); j++) {
+	        refresh_selections.push (selection_2[j]);
+	    }
+
+        // if selection is non-empty show display indicator
+        if (refresh_selections.length == 2) {
+            plots_selected_displayed[i] = 0;
+        } else {
+            plots_selected_displayed[i] = 1;
+        }
+
+        // call to server to get subsampled data
+        client.get_model_command(
+        {
+            mid: mid,
+            type: "DAC",
+            command: "subsample_time_var",
+            parameters: [i, plots_selected[i], refresh_selections, max_time_points,
+                         plots_selected_zoom[i][0], plots_selected_zoom[i][1]],
+            success: function (result)
+            {
+                // recover plot id
+                var plot_id = result["plot_id"];
+
+                // save new data
+                plots_selected_time[plot_id] = result["time_points"];
+                plots_selected_data[plot_id] = result["var_data"];
+
+                // save resolution indicator (for null selection do not show indicator)
+                if (plots_selected_data[plot_id].length > 0)
+                {
+                    plots_selected_resolution[plot_id] = result["resolution"];
+                } else {
+                    plots_selected_resolution[plot_id] = -1;
+                }
+
+                // now update data in d3
+                update_data_d3(i);
+
+                // then re-draw d3 plot
+                draw_plot_d3(i);
+
+                // update indicators for this plot
+                update_indicators(i);
+
+            },
+            error: function ()
+            {
+                dialog.ajax_error ('Server failure: could not subsample variable data.')("","","");
+            }
+        });
 
 	}
-	
+
 	// updates d3 stored data for plots
-	function update_data(i)
+	function update_data_d3(i)
 	{
 						
 		// remove any data already present
@@ -539,7 +506,7 @@ function(client, dialog, selections, $, d3, URI)
 		
 		// generate new data for each selection	
 		if ((selections.len_sel_1() > 0) || (selections.len_sel_2() > 0)) {
-			
+
 			// update scale domain
 			set_default_domain(i);
 			           
@@ -583,59 +550,19 @@ function(client, dialog, selections, $, d3, URI)
 		// update x-axis domain
 		x_scale[i].domain([Math.min.apply(Math, plots_selected_time[i]),
 						   Math.max.apply(Math, plots_selected_time[i])]);
-			
+
+		// get y-axis min and max
+		var plot_min = Infinity;
+		var plot_max = -Infinity;
+		for (var j = 0; j < plots_selected_data[i].length; j++) {
+			plot_min = Math.min(plot_min, Math.min.apply(Math,
+				plots_selected_data[i][j]));
+			plot_max = Math.max(plot_max, Math.max.apply(Math,
+				plots_selected_data[i][j]));
+		};
+
 		// update y-axis domain
-		y_scale[i].domain([Math.min(sel_min(i, selections.sel_1()),
-						            sel_min(i, selections.sel_2())),
-						   Math.max(sel_max(i, selections.sel_1()),
-						   			sel_max(i, selections.sel_2()))]);
-	}
-	
-	// returns min for a curve selection
-	function sel_min (i, selection)
-	{
-		// set min largest possible value
-		var sel_min = Infinity;
-		
-		// update min and max for selection
-		for (var j = 0; j < Math.min(selection.length, max_num_plots); j++) {
-			sel_min = Math.min(sel_min, Math.min.apply(Math,
-				plots_selected_data[i][selection[j]]));
-		};
-		
-		return sel_min;	
-	}
-	
-	// returns max for a curve selection
-	function sel_max (i, selection)
-	{
-		// set min largest possible value
-		var sel_max = -Infinity;
-		
-		// update min and max for selection
-		for (var j = 0; j < Math.min(selection.length, max_num_plots); j++) {
-			sel_max = Math.max(sel_max, Math.max.apply(Math,
-				plots_selected_data[i][selection[j]]));
-		};
-		
-		return sel_max;	
-	}
-
-	// call to server to subsample data, both by row and column
-	function refresh_curve_data (i)
-	{
-	    // get rows of data for selection 1
-	    if (selections.len_sel_1() > max_num_plots) {
-
-	        // if selection 1 is too long, get random subsample
-
-
-	    }
-
-
-	    console.log(selections.sel_1())
-
-
+		y_scale[i].domain([plot_min, plot_max]);
 	}
 
 	// generate a d3 style version of the data for a selection of curves,
@@ -662,20 +589,108 @@ function(client, dialog, selections, $, d3, URI)
 		var curve_data = [];
 		for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
 			curve_data.push(d3.transpose([plots_selected_time[i], 
-					  plots_selected_data[i][selection_1[j]],
+					  plots_selected_data[i][j],
 					  sel_1_color]));
 		};
 				
 		// add more data for selection 2
 		for (var j = 0; j < Math.min(selection_2.length, max_num_plots); j++) {
 			curve_data.push(d3.transpose([plots_selected_time[i], 
-					  plots_selected_data[i][selection_2[j]],
+					  plots_selected_data[i][j + Math.min(selection_1.length, max_num_plots)],
 					  sel_2_color]));
 		}; 
 		
 		return curve_data;
 	}
-	
+
+	// draw a plot with specific axis, labels, etc.
+	function draw_plot_d3(i)
+	{
+
+		// draw plots (if necessary re-draw)
+		if ($.trim(plot_type[plots_selected[i]]) == 'Curve') {
+
+			plot[i].selectAll("path")
+				   .attr("d", d3.svg.line().interpolate("linear")
+				   			    .x(function(d) { return x_scale[i](d[0]); })
+				   			    .y(function(d) { return y_scale[i](d[1]); }))
+				   .attr("clip-path", "url(#clip)");
+
+		} else {
+
+		    // note: this will never happen using the PTS wizard
+			dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
+		};
+
+		// label axes (if necessary re-draw)
+		x_label[i].text(x_axis_name[plots_selected[i]]);
+		y_label[i].text(y_axis_name[plots_selected[i]]);
+
+		// draw axes (re-draws)
+		plot[i].selectAll("g.x.axis").call(x_axis[i])
+			   .selectAll(".domain").attr("clip-path",null);
+		plot[i].selectAll("g.y.axis").call(y_axis[i])
+			   .selectAll(".domain").attr("clip-path",null);
+
+	}
+
+    // update indicators for current plot
+    function update_indicators(i)
+    {
+        // update resolution indicator
+        toggle_resolution (i, plots_selected_resolution[i]);
+
+        // update selection max indicator
+        if (plots_selected_displayed[i] == 0)
+        {
+
+            // do not show display indicator
+            $("#dac-plots-displayed-" + (i+1)).hide();
+            $("#dac-plots-not-displayed-" + (i+1)).hide();
+
+        }
+        else if (limit_indicator_color == "green") {
+
+            // all plots displayed
+		    $("#dac-plots-not-displayed-" + (i+1)).hide();
+		    $("#dac-plots-displayed-" + (i+1)).show();
+
+		} else {
+
+		    // some plot not displayed
+		    $("#dac-plots-displayed-" + (i+1)).hide();
+		    $("#dac-plots-not-displayed-" + (i+1)).css("color", limit_indicator_color);
+		    $("#dac-plots-not-displayed-" + (i+1)).show();
+
+		}
+    }
+
+    // toggle low/full resolution indicator for a plot
+    function toggle_resolution (i, resolution)
+    {
+
+        if (resolution == -1) {
+
+            // do not show resolution indicator
+            $("#dac-low-resolution-plot-" + (i+1)).hide();
+            $("#dac-full-resolution-plot-" + (i+1)).hide();
+
+        } else if (resolution > 1) {
+
+            // turn on low resolution warning/turn off full resolution
+            $("#dac-low-resolution-plot-" + (i+1)).show();
+            $("#dac-full-resolution-plot-" + (i+1)).hide();
+
+         } else {
+
+             // turn off low resolution warning/turn on full resolution
+            $("#dac-low-resolution-plot-" + (i+1)).hide();
+            $("#dac-full-resolution-plot-" + (i+1)).show();
+
+         }
+
+    }
+
 	// zoom handler call back
 	function zoom()
 	{
@@ -707,46 +722,12 @@ function(client, dialog, selections, $, d3, URI)
                     // should we update this plot?
                     if (plots_to_update[j] == 1) {
 
-                        // yes -- call server to get new subsample
-                        client.get_model_command(
-                        {
-                            mid: mid,
-                            type: "DAC",
-                            command: "subsample_time_var",
-                            parameters: [j, plots_selected[j],
-                                         max_time_points, extent[0][0], extent[1][0]],
-                            success: function (result)
-                                {
+                        // set zoom level
+                        plots_selected_zoom[j] = [extent[0][0], extent[1][0]];
 
-                                    // recover plot id
-                                    var plot_id = result["plot_id"];
+                        // re-draw plot
+                        draw_plot(j);
 
-                                    // update with higher resolution data
-                                    plots_selected_time[plot_id] = result["time_points"];
-                                    plots_selected_data[plot_id] = result["var_data"];
-
-                                    // toggle resolution indicator
-                                    toggle_resolution (plot_id, result["resolution"]);
-
-                                    // update data for d3
-                                    update_data(plot_id);
-
-                                    // user did zoom in on something, so reset window
-                                    if (plot_id == active_plot)
-                                    {
-                                        y_scale[plot_id].domain([extent[0][1], extent[1][1]]);
-                                    }
-                                    x_scale[plot_id].domain([extent[0][0], extent[1][0]]);
-
-                                    // re-draw plot
-                                    draw_plot(plot_id);
-
-                                },
-                            error: function ()
-                                {
-                                    dialog.ajax_error ('Server failure: could not subsample variable data.')("","","");
-                                }
-                        });
                     }
                 }
 
@@ -758,34 +739,11 @@ function(client, dialog, selections, $, d3, URI)
                 // is this a plot to be updated
                 if (plots_to_update[j] == 1) {
 
-                    // reload data for full scale
-                    client.get_model_command(
-                    {
-                        mid: mid,
-                        type: "DAC",
-                        command: "subsample_time_var",
-                        parameters: [j, plots_selected[j], max_time_points, "-Inf", "Inf"],
-                        success: function (result)
-                        {
+                    // re-set plot to full scale
+                    plots_selected_zoom[j] = ["-Inf", "Inf"];
 
-                            // recover plot id from call
-                            var plot_id = result["plot_id"];
-
-                            // refresh with lowest resolution data
-                            plots_selected_time[plot_id] = result["time_points"];
-                            plots_selected_data[plot_id] = result["var_data"];
-
-                            // toggle resolution indicator
-                            toggle_resolution (plot_id, result["resolution"]);
-
-                            // update d3 data in plot (scale is automatically reset)
-                            update_data(plot_id);
-
-                            // re-draw plot
-                            draw_plot(plot_id);
-
-                        }
-                    });
+                    // re-draw plot
+                    draw_plot(j);
 
                 }
             }
@@ -907,31 +865,18 @@ function(client, dialog, selections, $, d3, URI)
         }
     }
 
-	// update selections (and data) for all plots
+	// update data/plots
 	module.update_plots = function ()
 	{
 
-        console.log(selections.sel_1());
-        console.log(selections.sel_2());
-
 		// update plot limit indicator color
-		var limit_indicator_color = "green";
+		limit_indicator_color = "green";
 		if ((selections.len_sel_1() > max_num_plots) & (selections.len_sel_2() > max_num_plots)) {
 		    limit_indicator_color = "purple";
 		} else if (selections.len_sel_1() > max_num_plots) {
 		    limit_indicator_color = "red";
 		} else if (selections.len_sel_2() > max_num_plots) {
 		    limit_indicator_color = "blue";
-		}
-
-		// update plot indicator icon
-		if (limit_indicator_color == "green") {
-		    $(".dac-plots-not-displayed").hide();
-		    $(".dac-plots-displayed").show();
-		} else {
-		    $(".dac-plots-displayed").hide();
-		    $(".dac-plots-not-displayed").css("color", limit_indicator_color);
-		    $(".dac-plots-not-displayed").show();
 		}
 
 		// re-draw all plots

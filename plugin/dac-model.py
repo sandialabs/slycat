@@ -215,25 +215,44 @@ def register_slycat_plugin(context):
         # variable number in database
         database_ind = int(kwargs["1"])
 
-        # number of samples to return in subsample
-        num_subsample = int(kwargs["2"])
+        # rows of matrix to subsample
+        rows = kwargs["2"]
 
-        # range of sames (x-value)
-        if kwargs["3"] == "-Inf":
+        # remove first two entries (padding to correctly pass an array to python from js)
+        rows.pop(0)
+        rows.pop(0)
+
+        # number of samples to return in subsample
+        num_subsample = int(kwargs["3"])
+
+        # range of samples (x-value)
+        if kwargs["4"] == "-Inf":
             x_min = -float("Inf")
         else:
-            x_min = float(kwargs["3"])
+            x_min = float(kwargs["4"])
 
-        if kwargs["4"] == "Inf":
+        if kwargs["5"] == "Inf":
             x_max = float("Inf")
         else:
-            x_max = float(kwargs["4"])
+            x_max = float(kwargs["5"])
 
         # load time points and data from database
         time_points = slycat.web.server.get_model_arrayset_data (
             database, model, "dac-time-points", "%s/0/..." % database_ind)[0]
-        var_data = slycat.web.server.get_model_arrayset_data (
-            database, model, "dac-var-data", "%s/0/..." % database_ind)[0]
+
+        # get desired rows of variable data from database
+        var_data = []
+        num_rows = len(rows)
+        for i in range(0, num_rows):
+            if i == 0:
+                first_slice = slycat.web.server.get_model_arrayset_data (
+                    database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[0]))[0]
+                num_cols = len(first_slice)
+                var_data = numpy.zeros((num_rows, num_cols))
+                var_data[0,:] = first_slice
+            else:
+                var_data[i,:] = slycat.web.server.get_model_arrayset_data (
+                database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[i]))[0]
 
         # find indices within user selected range
         range_inds = numpy.where((time_points >= x_min) & (time_points <= x_max))[0]
@@ -255,12 +274,15 @@ def register_slycat_plugin(context):
 
         # get subsamples
         time_points_subsample = time_points[sub_inds]
-        var_data_subsample = var_data[:,sub_inds]
+        if len(var_data) > 0:
+            var_data_subsample = var_data[:,sub_inds].tolist()
+        else:
+            var_data_subsample = []
 
         # return data using content function
         def content():
             yield json.dumps({"time_points": time_points_subsample.tolist(),
-                              "var_data": var_data_subsample.tolist(),
+                              "var_data": var_data_subsample,
                               "resolution": subsample_stepsize,
                               "plot_id": plot_id})
 

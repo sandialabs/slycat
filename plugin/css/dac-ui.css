@@ -108,7 +108,6 @@
 /* warning for too many plots in selection */
 .dac-plots-not-displayed
 {
-    color: red;
     display: none;
 }
 
