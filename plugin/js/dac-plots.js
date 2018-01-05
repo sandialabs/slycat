@@ -549,8 +549,6 @@ function(client, dialog, selections, $, d3, URI)
 	// set default scale for curves
 	function set_default_domain(i)
 	{
-	    console.log(plots_selected_zoom_x[i]);
-	    console.log(plots_selected_zoom_y[i]);
 
 		// update x-axis domain
 		if (plots_selected_zoom_x[i][0] == "-Inf" || plots_selected_zoom_x[i][1] == "Inf") {
@@ -748,10 +746,6 @@ function(client, dialog, selections, $, d3, URI)
 
                         // set zoom level (all linked same x)
                         plots_selected_zoom_x[j] = [extent[0][0], extent[1][0]];
-
-                        console.log(j);
-                        console.log(active_plot);
-                        console.log([extent[0][1], extent[1][1]]);
 
                         // actual zoomed area might have a different y
                         if (j == active_plot) {
