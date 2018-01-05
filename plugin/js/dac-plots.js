@@ -34,7 +34,8 @@ function(client, dialog, selections, $, d3, URI)
 	var plots_selected_data = new Array(3);	// a matrix of y-values for plot {0,1,2}
 
     // zoom scale for current plots
-    var plots_selected_zoom = new Array(3); // vectors with x-min, x-max for plot {0,1,2}
+    var plots_selected_zoom_x = new Array(3); // vectors with x-min, x-max for plot {0,1,2}
+    var plots_selected_zoom_y = new Array(3); // vectors with y-min, y-max for plot {0,1,2}
 
     // plot resolution indicators (-1 do not show)
     var plots_selected_resolution = [];     // resolution as returned by server
@@ -123,7 +124,8 @@ function(client, dialog, selections, $, d3, URI)
 
         // initialize zoom level
         for (var i = 0; i < 3; i++) {
-            plots_selected_zoom[i] = ["-Inf", "Inf"];
+            plots_selected_zoom_x[i] = ["-Inf", "Inf"];
+            plots_selected_zoom_y[i] = ["-Inf", "Inf"];
         }
 
         // initialize full resolution and all displayed (do not show)
@@ -461,7 +463,7 @@ function(client, dialog, selections, $, d3, URI)
             type: "DAC",
             command: "subsample_time_var",
             parameters: [i, plots_selected[i], refresh_selections, max_time_points,
-                         plots_selected_zoom[i][0], plots_selected_zoom[i][1]],
+                         plots_selected_zoom_x[i][0], plots_selected_zoom_x[i][1]],
             success: function (result)
             {
                 // recover plot id
@@ -547,22 +549,44 @@ function(client, dialog, selections, $, d3, URI)
 	// set default scale for curves
 	function set_default_domain(i)
 	{
+	    console.log(plots_selected_zoom_x[i]);
+	    console.log(plots_selected_zoom_y[i]);
+
 		// update x-axis domain
-		x_scale[i].domain([Math.min.apply(Math, plots_selected_time[i]),
-						   Math.max.apply(Math, plots_selected_time[i])]);
+		if (plots_selected_zoom_x[i][0] == "-Inf" || plots_selected_zoom_x[i][1] == "Inf") {
+
+		    // undetermined scale, must look at data
+		    x_scale[i].domain([Math.min.apply(Math, plots_selected_time[i]),
+						       Math.max.apply(Math, plots_selected_time[i])]);
+		} else {
+
+		    // scale already known
+		    x_scale[i].domain(plots_selected_zoom_x[i]);
+
+		}
 
 		// get y-axis min and max
-		var plot_min = Infinity;
-		var plot_max = -Infinity;
-		for (var j = 0; j < plots_selected_data[i].length; j++) {
-			plot_min = Math.min(plot_min, Math.min.apply(Math,
-				plots_selected_data[i][j]));
-			plot_max = Math.max(plot_max, Math.max.apply(Math,
-				plots_selected_data[i][j]));
-		};
+		if (plots_selected_zoom_y[i][0] == "-Inf" || plots_selected_zoom_y[i][1] == "Inf") {
 
-		// update y-axis domain
-		y_scale[i].domain([plot_min, plot_max]);
+		    // undetermined scale, look at data
+            var plot_min = Infinity;
+            var plot_max = -Infinity;
+            for (var j = 0; j < plots_selected_data[i].length; j++) {
+                plot_min = Math.min(plot_min, Math.min.apply(Math,
+                    plots_selected_data[i][j]));
+                plot_max = Math.max(plot_max, Math.max.apply(Math,
+                    plots_selected_data[i][j]));
+            };
+
+            // set scale
+            y_scale[i].domain([plot_min, plot_max]);
+
+		} else {
+
+		    // known scale
+		    y_scale[i].domain(plots_selected_zoom_y[i]);
+
+		}
 	}
 
 	// generate a d3 style version of the data for a selection of curves,
@@ -722,8 +746,17 @@ function(client, dialog, selections, $, d3, URI)
                     // should we update this plot?
                     if (plots_to_update[j] == 1) {
 
-                        // set zoom level
-                        plots_selected_zoom[j] = [extent[0][0], extent[1][0]];
+                        // set zoom level (all linked same x)
+                        plots_selected_zoom_x[j] = [extent[0][0], extent[1][0]];
+
+                        console.log(j);
+                        console.log(active_plot);
+                        console.log([extent[0][1], extent[1][1]]);
+
+                        // actual zoomed area might have a different y
+                        if (j == active_plot) {
+                            plots_selected_zoom_y[j] = [extent[0][1], extent[1][1]];
+                        }
 
                         // re-draw plot
                         draw_plot(j);
@@ -740,7 +773,8 @@ function(client, dialog, selections, $, d3, URI)
                 if (plots_to_update[j] == 1) {
 
                     // re-set plot to full scale
-                    plots_selected_zoom[j] = ["-Inf", "Inf"];
+                    plots_selected_zoom_x[j] = ["-Inf", "Inf"];
+                    plots_selected_zoom_y[j] = ["-Inf", "Inf"];
 
                     // re-draw plot
                     draw_plot(j);
