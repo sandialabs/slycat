@@ -2116,7 +2116,6 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Increment highest_z_index and assign it to the current frame
       self.options.highest_z_index++;
       frame.css("z-index", self.options.highest_z_index);
-      frame.addClass("z_index_" + self.options.highest_z_index);
 
       $(".open-image").removeClass("selected");
       frame.addClass("selected");
