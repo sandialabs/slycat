@@ -57,6 +57,23 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
       });
     };
 
+    component.get_error_messages = function() {
+      client.get_model_parameter({
+          mid: component.model._id(),
+          aid: "error-messages",
+          success: function(errors) {
+            var error_messages = "";
+            if (errors.length >= 1) {
+              for (var i = 0; i < errors.length; i++) {
+                error_messages += (errors[i] + "\n");
+              }
+              alert(error_messages);
+            }
+          },
+          error: dialog.ajax_error("There was error retrieving the error messages."),
+      });
+    };
+
     // Create a model as soon as the dialog loads. We rename, change description and marking later.
     component.create_model();
 
@@ -109,6 +126,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                   tooltip: ""
                 });
               mapping.fromJS(attributes, component.attributes);
+              component.get_error_messages();
               component.tab(4);
               $('.browser-continue').toggleClass("disabled", false);
             }

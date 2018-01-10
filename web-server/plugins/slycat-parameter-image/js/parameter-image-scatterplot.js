@@ -10,8 +10,11 @@ rights in this software.
 define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash", "knockout"], function(server_root, d3, URI, remotes, _, ko)
 {
   var nodrag = d3.behavior.drag();
+
+  // Commenting this out Nov 20 1017 because I have no idea what it does and I rewrote much of the dragging code. If still no problems after a few months, just delete it.
   nodrag.on("dragstart", function() {
-    d3.event.sourceEvent.stopPropagation();
+    console.log("nodrag.on('dragstart'...");
+    // d3.event.sourceEvent.stopPropagation();
   });
 
   $.widget("parameter_image.scatterplot",
@@ -54,8 +57,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       canvas_selected_square_border_size : 2,
       pinned_width : 200,
       pinned_height : 200,
-      pinned_stl_width: 600,
-      pinned_stl_height: 600,
+      pinned_stl_width: 200,
+      pinned_stl_height: 200,
       hover_time : 250,
       image_cache : {},
       video_file_extensions : [
@@ -66,10 +69,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       "video-sync" : false,
       "video-sync-time" : 0,
       frameLength : 1/25,
+      highest_z_index: 0,
     },
 
   syncing_videos : [],
   pausing_videos : [],
+  playing_videos : [],
   current_frame : null,
 
   _create: function()
@@ -108,7 +113,17 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
-    $('.media-layer').delegate('*', 'mousedown', function(){return false;});
+    
+    // Stop propagation of mousedown event on all elements inside .media-layer
+    // to prevent "highlighting" points while dragging pins while moving or resizing them.
+    $('.media-layer').delegate('*', 'mousedown', function(event){
+      // console.log("media-layer's mousedown delegation handler function");
+      // Stopping proagation to prevent dragging of pins from selecting points.
+      event.stopPropagation();
+      // Preventing default browser action on mousedown because that causes the browser to "select" text and other elements by highlighting them.
+      event.preventDefault();
+    });
+
     self.svg = d3.select(self.element.get(0)).append("svg").style({
       "opacity": ".99",
       // "position": "absolute", // Setting position to absolute also brings the svg element in front of .media-layer but keeps .image-frames on top of everything
@@ -178,8 +193,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       )
       ;
 
+    // self.element is div#scatterplot here
     self.element.mousedown(function(e)
     {
+      // console.log("self.element.mousedown");
       e.preventDefault();
       output = e;
       self.start_drag = [self._offsetX(e), self._offsetY(e)];
@@ -1055,28 +1072,34 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var height = Number(self.svg.attr("height"));
 
     self.options.open_images = [];
-    $(".open-image").each(function(index, frame)
-    {
-      var frame = $(frame);
-      var open_element = {
-        index : Number(frame.attr("data-index")),
-        uri : frame.attr("data-uri"),
-        relx : Number(frame.attr("data-transx")) / width,
-        rely : Number(frame.attr("data-transy")) / height,
-        width : frame.outerWidth(),
-        height : frame.outerHeight(),
-        current_frame : frame.hasClass("selected"),
-      };
-      var video = frame.find('video')[0];
-      if(video != undefined)
-      {
-        var currentTime = video.currentTime;
-        open_element["currentTime"] = currentTime;
-        open_element["video"] = true;
-        open_element["playing"] = self._is_video_playing(video);
-      }
-      self.options.open_images.push(open_element);
-    });
+    
+    $(".open-image")
+      // Sort .open-images by their z-index
+      .sort(function(a, b){
+        return parseInt(a.style['z-index'], 10) - parseInt(b.style['z-index'], 10);
+      })
+      .each(function(index, frame){
+        var frame = $(frame);
+        var open_element = {
+          index : Number(frame.attr("data-index")),
+          uri : frame.attr("data-uri"),
+          relx : Number(frame.attr("data-transx")) / width,
+          rely : Number(frame.attr("data-transy")) / height,
+          width : frame.outerWidth(),
+          height : frame.outerHeight(),
+          current_frame : frame.hasClass("selected"),
+        };
+        var video = frame.find('video')[0];
+        if(video != undefined)
+        {
+          var currentTime = video.currentTime;
+          open_element["currentTime"] = currentTime;
+          open_element["video"] = true;
+          open_element["playing"] = self._is_video_playing(video);
+        }
+        self.options.open_images.push(open_element);
+      })
+      ;
 
     self.element.trigger("open-images-changed", [self.options.open_images]);
   },
@@ -1112,36 +1135,59 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }
     }
 
-    var  add_resize_handle = function(fh) {
-      fh.append("span")
-        .attr("class", "resize-handle frame-icon")
+    var add_resize_handle = function(fh) {
+      fh.append("i")
+        .attr("class", "resize-handle frame-button fa fa-expand fa-rotate-90")
+        .attr("aria-hidden", "true")
+        .attr("title", "Resize")
         .call(
           d3.behavior.drag()
             .on('drag', handlers["resize"])
             .on('dragstart', handlers["resize_start"])
             .on('dragend', handlers["resize_end"])
         )
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"]);
     };
 
     var add_pin_button = function(fh) {
-      fh.append("span")
-        .attr('class', 'pin-button frame-icon')
+      fh.append("i")
+        .attr('class', 'pin-button frame-button fa fa-thumb-tack')
         .attr('title', 'Pin')
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
+        .attr("aria-hidden", "true")
         .on("click", handlers["pin"]);
     };
 
     var add_download_button = function(fh, uri, filename) {
       fh.append("a")
         .attr('href', uri)
-        .attr('class', 'fa fa-download download-button')
+        .attr('class', 'download-button frame-button fa fa-download')
         .attr('title', 'Download media file')
         .attr('download', filename)
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
+        ;
+    };
+
+    var add_jump_button = function(fh, index) {
+      var container = fh.append("span")
+        .attr("class", "jump-button frame-button")
+        .on("click", handlers["jump"]);
+        ;
+
+      container.append("i")
+        .attr('class', 'table-button jump-button frame-button fa fa-table')
+        .attr('title', 'Jump to row ' + index + ' in table')
+        .attr("aria-hidden", "true")
+        ;
+
+      container.append("i")
+        .attr('class', 'arrow-button jump-button frame-button fa fa-arrow-right')
+        .attr('title', 'Jump to row ' + index + ' in table')
+        .attr("aria-hidden", "true")
+        ;
+        
+      container.append("span")
+        .attr('class', 'table-index jump-button frame-button')
+        .attr('title', 'Index of current media. Click to jump to row ' + index + ' in table.')
+        .attr("aria-hidden", "true")
+        .text(index)
         ;
     };
 
@@ -1162,6 +1208,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         img.y = self._getDefaultYPosition(img.index, img.height);
       }
 
+      // Increment self.options.highest_z_index before assigning it
+      self.options.highest_z_index++;
+
       var frame_html = self.media_layer.append("div")
         .attr("data-uri", img.uri)
         .attr("data-transx", img.x)
@@ -1170,8 +1219,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           "left": img.x + "px",
           "top": img.y + "px",
           "width": img.width + "px",
-          "height": img.height + "px",
-          "z-index": 1,
+          "height": img.height + 20 + "px",
+          "z-index": self.options.highest_z_index,
         })
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
@@ -1179,18 +1228,24 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         .attr("data-uri", img.uri)
         .call(
           d3.behavior.drag()
-            .on('drag', handlers["drag"])
-            .on("dragstart", handlers["drag_start"])
-            .on("dragend", handlers["drag_end"])
+            .on('drag', handlers["move"])
+            .on("dragstart", handlers["move_start"])
+            .on("dragend", handlers["move_end"])
         )
-        .on("mousedown", handlers["frame_mousedown"]);
+        .on("mousedown", handlers["frame_mousedown"])
+        ;
+
+      var footer = frame_html.append("div")
+        .attr("class", "frame-footer")
+        ;
 
       // Create a close button ...
-      var close_button_html = frame_html.append("span")
-        .attr("class", "close-button frame-icon")
-        .on("mousedown", handlers["stop_event"])
-        .on("mouseup", handlers["stop_event"])
-        .on("click", handlers["close"]);
+      var close_button_html = footer.append("i")
+        .attr("class", "close-button frame-button fa fa-times")
+        .attr("aria-hidden", "true")
+        .attr("title", "Close")
+        .on("click", handlers["close"])
+        ;
 
       // Create the leader line ...
       if("target_x" in img && "target_y" in img)
@@ -1220,10 +1275,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     };
 
     var handlers = {
-      stop_event: function() {
-        return false;
-      },
-      drag: (function() {
+      move: (function() {
+        // console.log("move");
         var theElement, transx, transy;
         if (within_svg(d3.event, self.options)) {
           theElement = d3.select(this);
@@ -1236,7 +1289,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           self._adjust_leader_line(theElement);
         }
       }),
-      drag_start: (function() {
+      move_start: (function() {
+        // console.log("move_start");
         var frame, sourceEventTarget;
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
@@ -1251,38 +1305,34 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             image.image_class = "open-image";
           }
         }
-
-        d3.event.sourceEvent.stopPropagation();
       }),
-      drag_end: function() {
+      move_end: function() {
+        // console.log("move_end");
         self.state = "";
         self._sync_open_images();
       },
       close: (function() {
-        var frame = d3.select(d3.event.target.parentNode);
+        // console.log("close click");
+        var frame = d3.select(d3.event.target.closest(".image-frame"));
         self._remove_image_and_leader_line(frame);
         self._sync_open_images();
-        return false;
       }),
       frame_mousedown: function(){
+        // console.log("frame_mousedown");
         var target = d3.select(d3.event.target);
-        // Verify that click is on image, not something else like the close button
-        if (target.classed("image")) {
-          // Move this image to the top of the Z order ...
-          $(d3.event.target.parentNode).detach().appendTo(self.media_layer.node());
-        } else if (target.classed("image-frame")) {
-          // Move this image to the top of the Z order ...
-          $(d3.event.target).detach().appendTo(self.media_layer.node());
-        } else if (target.classed('slycat-3d-btn-settings')) {
+        // Do nothing if close button was clicked because we don't want to shift focus to frame that's about to be closed
+        if(target.classed("close-button"))
+        {
+          return;
+        }
+        // Something special happens for STLs
+        if (target.classed('slycat-3d-btn-settings')) {
           d3.select('#slycat-3d-modal')
             .on('.drag', null)
             .call(nodrag);
         }
-        self.current_frame = null;
-        $(".open-image").removeClass("selected");
-        d3.select(d3.event.currentTarget).classed("selected", true);
-        self.current_frame = Number(d3.select(d3.event.currentTarget).attr("data-index"));
-        self._sync_open_images();
+        // Move the frame to the front.
+        self._move_frame_to_front(this);
       },
       hover: (function() {
         clear_hover_timer(self);
@@ -1291,20 +1341,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         }), 1000);
       }),
       resize: (function() {
+        // console.log("resize");
         var frame, min, target_width, x, y;
         min = 50;
         x = d3.event.x;
         y = d3.event.y;
         if (0 <= y && y <= self.options.height && 0 <= x && x <= self.options.width && x > min && y > min) {
-          frame = d3.select(this.parentNode);
+          frame = d3.select(this.closest(".image-frame"));
           var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
           var video = frame.attr("data-type") == "video";
           target_width = self._scale_width(ratio, x, y);
           target_height = self._scale_height(ratio, x, y);
-          if(video)
-          {
-            target_height += 40;
-          }
+          target_height += 20;
           frame.style({
             width: target_width + "px",
             height: target_height + "px"
@@ -1315,31 +1363,39 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         $(window).trigger('resize');
       }),
       resize_start: (function() {
+        // console.log("resize_start");
+        // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this 
+        // event handler and that stops the mousedown handler from moving the frame to the front automatically.
+        self._move_frame_to_front(this.closest(".image-frame"));
         var frame;
         self.state = "resizing";
-        frame = d3.select(this.parentNode);
-        d3.selectAll([frame, d3.select("#scatterplot").node()]).classed("", true);
+        frame = d3.select(this.closest(".image-frame"));
+        // Add resizing class to scatterplot to use CSS to keep cursor as arrow while resizing
+        d3.select("#scatterplot").classed("resizing", true);
 
-        if (frame.classed("hover-image")) {
+        if(frame.classed("hover-image")) 
+        {
           self.opening_image = null;
           clear_hover_timer(self);
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
         }
-
+        // Need to stopPropagation here otherwise the system thinks we are moving the frame and does that instead of resize
         d3.event.sourceEvent.stopPropagation();
       }),
       resize_end: (function() {
-        d3.selectAll([this.parentNode, d3.select("#scatterplot").node()]).classed("resizing", false);
+        // console.log("resize_end");
+        d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
         self._sync_open_images();
-        d3.event.sourceEvent.stopPropagation();
+        // d3.event.sourceEvent.stopPropagation();
       }),
       pin: (function() {
+        // console.log("pin event handler running");
         var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
         self.opening_image = null;
         clear_hover_timer(self);
-        frame = d3.select(d3.event.target.parentNode);
+        frame = d3.select(d3.event.target.closest(".image-frame"));
 
         // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
         // Alex is commenting it out and always assigning the open-image class to the frame instead.
@@ -1364,10 +1420,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
         target_width = self._scale_width(ratio, imageWidth, imageHeight);
         target_height = self._scale_height(ratio, imageWidth, imageHeight);
-        if(frame.attr("data-type") == "video")
-        {
-          target_height += 40;
-        }
+        // Adding 20 pixels to make room for the footer with buttons
+        target_height += 20;
         x = self._getDefaultXPosition(image.index, imageWidth);
         y = self._getDefaultYPosition(image.index, imageHeight);
 
@@ -1379,20 +1433,24 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         });
 
         if (isStl)
-          frame.style('height', imageHeight + 'px');
+          frame.style('height', (imageHeight + 20) + 'px');
 
         self._adjust_leader_line(frame);
         self._sync_open_images();
 
         $(window).trigger('resize');
-        return false;
       }),
       pause_video: (function(){
         video_sync_time_changed(self);
       }),
       seeked_video: (function(){
         video_sync_time_changed(self);
-      })
+      }),
+      jump: (function(){
+        // console.log("jump event handler running");
+        var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
+        self.element.trigger("jump_to_simulation", index);
+      }),
     }
 
     function video_sync_time_changed(self_passed)
@@ -1506,11 +1564,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           .style({
             "display": "none",
           })
-          .on("mousedown", handlers["stop_event"])
-          .on("mouseup", handlers["stop_event"])
+          .on("mousedown", function(event){
+            // console.log("video onmousedown");
+          })
+          .on("click", function(event){
+            // console.log("video onclick");
+          })
           .on("loadedmetadata", function(){
             // debugger;
-            // console.log("video loaded metadata");
+            // console.log("onloadedmetadata");
             var width = this.videoWidth;
             var height = this.videoHeight;
             var ratio = width/height;
@@ -1537,9 +1599,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             }
           })
           .on("playing", function(){
+            // console.log("onplaying");
             self._sync_open_images();
           })
           .on("pause", function(){
+            // console.log("onpause");
             var pausing_index = self.pausing_videos.indexOf(image.index);
             // If video was directly paused by user, set a new video-sync-time and sync all other videos
             if(pausing_index < 0)
@@ -1554,6 +1618,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 this.currentTime = self.options["video-sync-time"];
               }
               handlers["pause_video"]();
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
             }
             // Do nothing if video was paused by system, just remove it from the paused videos list
             else
@@ -1561,25 +1628,50 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
               self.pausing_videos.splice(pausing_index, 1);
             }
           })
-          .on("seeked", function(){
+          .on("seeked", function(event){
+            // console.log("onseeked");
             var index = self.syncing_videos.indexOf(image.index);
             if(index < 0)
             {
               self.options["video-sync-time"] = this.currentTime;
               handlers["seeked_video"]();
               pinVideo(self, this, image);
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
             }
             else
             {
               self.syncing_videos.splice(index, 1);
             }
           })
-          .on("play", function(){
+          .on("play", function(event){
+            // console.log("onplay");
             pinVideo(self, this, image);
+
+            var playing_index = self.playing_videos.indexOf(image.index);
+            // If video was directly played by user
+            if(playing_index < 0)
+            {
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
+            }
+            // Do nothing if video was played by system, just remove it from the played videos list
+            else
+            {
+              self.playing_videos.splice(playing_index, 1);
+            }
+          })
+          .on("volumechange", function(event){
+            // Need to explicitly move the frame to the front when interacting with video controls because
+            // Chrome does not propagate any mouse events after controls are clicked.
+            self._move_frame_to_front(this.closest(".image-frame"));
           })
           ;
         if(image.currentTime != undefined && image.currentTime > 0)
         {
+          self.syncing_videos.push(image.index);
           video.property("currentTime", image.currentTime);
         }
 
@@ -1600,6 +1692,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
         container.appendChild(viewer);
         ko.applyBindings({}, container);
+
+        $(window).trigger('resize');
       }
       else {
         // We don't support this file type, so just create a download link
@@ -1633,6 +1727,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
       // Remove loading indicator image
       frame_html.select(".loading-image").remove();
+      var footer = frame_html.select(".frame-footer");
 
       // Adjust leader line
       self._adjust_leader_line(frame_html);
@@ -1641,10 +1736,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       add_resize_handle(frame_html);
 
       // Create a pin button ...
-      add_pin_button(frame_html);
+      add_pin_button(footer);
 
       // Create a download button ...
-      add_download_button(frame_html, image_url, image.uri.split('/').pop());
+      add_download_button(footer, image_url, image.uri.split('/').pop());
+
+      // Create jump control
+      add_jump_button(footer, image.index);
 
       if(!image.no_sync)
         self._sync_open_images();
@@ -1997,6 +2095,36 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       ;
   },
 
+  // Move the frame to the front. Do not run this on mousedown or mouseup, because it stops propagation
+  // of click events (and possibly others) in Chrome and Safari.
+  _move_frame_to_front: function(frame)
+  {
+    // console.log("_move_frame_to_front");
+    var self = this;
+    frame = $(frame);
+    if(!frame.hasClass("selected"))
+    {
+      // Detaching and appending (or insertAfter() or probably any other method of moving an element in the DOM) an element on mousedown
+      // breaks other event listeners in Chrome and Safari by stopping propagation. It's as if it calls stopImmediatePropagation()
+      // but probably what it's doing is thinking that since the element moved, there's no mouseup or click event fired after mousedown.
+      // I didn't test for mouseup, but tested moving an element on mousedown and following click events were never fired or propagated.
+      // frame.insertAfter($("div.image-frame:last-child"));
+      // frame.detach().appendTo(self.media_layer.node());
+      // November 2017, Alex stopped using frame.detach().appendTo() because of the above documented issues. Instead I switched to
+      // using z-index for a cleaner implementation that works better with event handlers.
+
+      // Increment highest_z_index and assign it to the current frame
+      self.options.highest_z_index++;
+      frame.css("z-index", self.options.highest_z_index);
+
+      $(".open-image").removeClass("selected");
+      frame.addClass("selected");
+
+      self.current_frame = Number(frame.data("index"));
+      self._sync_open_images();
+    }
+  },
+
   _remove_image_and_leader_line: function(frame_html)
   {
     var self = this;
@@ -2213,6 +2341,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     {
       $(".open-image video").each(function(index, video)
       {
+        self.playing_videos.push($(video.parentElement).data('index'));
         video.play();
       });
     }
@@ -2221,6 +2350,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       var video = $(".open-image[data-index='" + self.current_frame + "'] video").get(0);
       if(video != null)
       {
+        self.playing_videos.push($(video.parentElement).data('index'));
         video.play();
       }
     }

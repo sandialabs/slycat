@@ -673,6 +673,14 @@ function setup_scatterplot()
       $("#controls").controls("option", "video-sync-time", video_sync_time);
       video_sync_time_changed(video_sync_time);
     });
+
+    // Jumping to simulation ...
+    $("#scatterplot").bind("jump_to_simulation", function(event, index)
+    {
+      // Alerts the table
+      $("#table").table("option", "jump_to_simulation", parseInt(index));
+      video_sync_time_changed(video_sync_time);
+    });
   }
 }
 

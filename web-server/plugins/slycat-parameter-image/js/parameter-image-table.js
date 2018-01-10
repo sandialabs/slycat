@@ -28,6 +28,7 @@ $.widget("parameter_image.table",
     "image-variable" : null,
     "x-variable" : null,
     "y-variable" : null,
+    x_y_variables : {x: null, y: null},
     colorscale : null,
     hidden_simulations : [],
   },
@@ -35,6 +36,11 @@ $.widget("parameter_image.table",
   _create: function()
   {
     var self = this;
+
+    // Initialize x_y_variables object
+    self.options.x_y_variables.x = self.options['x-variable'];
+    self.options.x_y_variables.y = self.options['y-variable'];
+
 
     function value_formatter(value)
     {
@@ -149,6 +155,7 @@ $.widget("parameter_image.table",
       outputs : self.options.outputs,
       indexOfIndex : self.options.metadata["column-count"]-1,
       hidden_simulations : self.options.hidden_simulations,
+      x_y_variables : self.options.x_y_variables,
       });
 
     self.trigger_row_selection = true;
@@ -228,6 +235,9 @@ $.widget("parameter_image.table",
         button.cssClass = 'icon-x-on';
         button.command = '';
         button.tooltip = 'Current x variable';
+        self.options['x-variable'] = column.id;
+        self.options.x_y_variables.x = column.id;
+        grid.invalidate();
         self.element.trigger("x-selection-changed", column.id);
       }
       else if(command == "y-on")
@@ -244,6 +254,9 @@ $.widget("parameter_image.table",
         button.cssClass = 'icon-y-on';
         button.command = '';
         button.tooltip = 'Current y variable';
+        self.options['y-variable'] = column.id;
+        self.options.x_y_variables.y = column.id;
+        grid.invalidate();
         self.element.trigger("y-selection-changed", column.id);
       }
     });
@@ -347,11 +360,13 @@ $.widget("parameter_image.table",
     else if(key == "x-variable")
     {
       self.options[key] = value;
+      self.options.x_y_variables.x = value;
       self._set_selected_x();
     }
     else if(key == "y-variable")
     {
       self.options[key] = value;
+      self.options.x_y_variables.y = value;
       self._set_selected_y();
     }
     else if(key == "image-variable")
@@ -369,6 +384,23 @@ $.widget("parameter_image.table",
       self.options[key] = value;
       self.data.invalidate();
       self.grid.invalidate();
+    }
+    else if(key == "jump_to_simulation")
+    {
+      self.data.get_indices("sorted", [value], function(sorted_rows)
+      {
+        if(sorted_rows.length)
+        {
+          var rowIndex = Math.min.apply(Math, sorted_rows);
+          self.grid.scrollRowToTop(rowIndex);
+          // Get all the columns
+          self.grid.getColumns().forEach(function(col){
+            // Flash each cell
+            self.grid.flashCell(rowIndex, self.grid.getColumnIndex(col.id));
+          })
+        }
+
+      });
     }
   },
 
@@ -390,6 +422,7 @@ $.widget("parameter_image.table",
         self.grid.updateColumnHeader(self.columns[i].id);
       }
     }
+    self.grid.invalidate();
   },
 
   _set_selected_y: function()
@@ -410,6 +443,7 @@ $.widget("parameter_image.table",
         self.grid.updateColumnHeader(self.columns[i].id);
       }
     }
+    self.grid.invalidate();
   },
 
   _set_selected_image: function()
@@ -476,6 +510,7 @@ $.widget("parameter_image.table",
     self.indexOfIndex = parameters.indexOfIndex;
     self.hidden_simulations = parameters.hidden_simulations;
     self.ranked_indices = {};
+    self.x_y_variables = parameters.x_y_variables;
 
     self.pages = {};
     self.pages_in_progress = {};
@@ -563,13 +598,15 @@ $.widget("parameter_image.table",
       }
 
       var row = this.getItem(index);
+      // self.analysis_columns are the inputs and the outputs
       var column_end = self.analysis_columns.length;
       var cssClasses = "";
-      for(var i=0; i != column_end; i++) {
-        if(row[ self.analysis_columns[i] ]==null) {
-          cssClasses += "nullRow ";
-        }
+      // Add a hiddenRow class if the row has a null value in the currently assigned x or y variable
+      if(row[self.x_y_variables.x] == null || row[self.x_y_variables.y] == null)
+      {
+        cssClasses += "hiddenRow ";
       }
+      // Add a hiddenRow class if the row index is in the list of hidden_simulations
       if( $.inArray( row[self.indexOfIndex], self.hidden_simulations ) != -1 ) {
         cssClasses += "hiddenRow ";
       }

@@ -39,6 +39,7 @@ USER root
 RUN chown slycat:slycat /home/slycat/.condarc
 USER slycat
 RUN /home/slycat/install/conda/bin/conda config --set ssl_verify false
+RUN /home/slycat/install/conda/bin/conda update --yes python
 RUN /home/slycat/install/conda/bin/conda update --yes conda
 RUN /home/slycat/install/conda/bin/conda install --yes h5py ipython paramiko pip Pillow scipy scikit-image tornado
 RUN /home/slycat/install/conda/bin/pip install --no-use-wheel CouchDB

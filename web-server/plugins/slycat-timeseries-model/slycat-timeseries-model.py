@@ -137,8 +137,8 @@ def register_slycat_plugin(context):
                 workdir = workdir_raw + "pickle"
                 hostname = slycat.web.server.get_model_parameter(database, model, "hostname")
                 username = slycat.web.server.get_model_parameter(database, model, "username")
-                cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s pass:%s" % (
-                sid, uid, workdir, hostname, username, password))
+                cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s" % (
+                sid, uid, workdir, hostname, username))
                 sid, inputs = get_remote_file(sid, hostname, username, password,
                                               "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
                 inputs = pickle.loads(inputs)

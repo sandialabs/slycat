@@ -57,8 +57,8 @@
               <input type="checkbox"
                 data-bind="
                   attr: { 
-                    name: variable.name()+name, 
-                    value: 'true' 
+                    name: $parentContext.$index() + variable.name() + name, 
+                    value: 'true',
                   },
                   checked: variable[name]
                   "
@@ -77,8 +77,8 @@
                 <input type="radio"
                   data-bind="
                     attr: { 
-                      name: variable.name()+$parent.name, 
-                      value: $data
+                      name: $parentContext.$parentContext.$index() + variable.name() + $parent.name, 
+                      value: $data,
                     },
                     checked: variable[$parent.name],
                     disable: variable.disabled()
