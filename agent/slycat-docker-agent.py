@@ -233,7 +233,10 @@ class Agent(agent.Agent):
 
     def run_shell_command(self, command):
         command = command.split(' ')
-        # print command
+        for _ in command:
+            if _ == "":
+                command.remove("")
+        print command
         p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return p.communicate()
 
