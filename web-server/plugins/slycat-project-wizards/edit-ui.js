@@ -22,9 +22,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       success: function(user){ component.user(user); }
     })
 
-    component.selecting_key = function(test, whatKey){
-        if(whatKey.keyCode == 13){
-                whatKey.preventDefault();
+    //Suppress default key binding if "Enter" key is pressed
+    component.selecting_key = function(metadata, event){
+        if(event.keyCode == 13){
+                event.preventDefault();
             }
         else {
           return true;
