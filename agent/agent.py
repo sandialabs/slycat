@@ -33,6 +33,7 @@ import uuid
 import abc
 import logging
 import ConfigParser
+import glob
 
 session_cache = {}
 
@@ -51,6 +52,7 @@ class Agent(object):
     def __init__(self):
         self.scripts = []
         self.hpc = {}
+        self.json_paths = []
 
     @abc.abstractmethod
     def run_remote_command(self, command):
@@ -369,7 +371,7 @@ class Agent(object):
         format {action:action, command: command}
         :return: 
         """
-        debug = False
+        debug = True
         self.log.info("\n")
         self.log.info("*agent started*")
         # Parse and sanity-check command-line arguments.
@@ -378,11 +380,17 @@ class Agent(object):
                             help="Fail immediately on startup.  Obviously, this is for testing.")
         parser.add_argument("--fail-exit", default=False, action="store_true",
                             help="Fail during exit.  Obviously, this is for testing.")
+        parser.add_argument('--json', action='append', default=[], help='path to json files dirs')
         arguments = parser.parse_args()
 
         if arguments.fail_startup:
             exit(-1)
-
+        if len(arguments.json) > 0:
+            self.json_paths = arguments.json
+            for path in self.json_paths:
+                for _ in glob.glob(path + "/*.js"):
+                    with open(_) as in_file:
+                        self.scripts.append(json.load(in_file))
         # Let the caller know we're ready to handle commands.
         sys.stdout.write("%s\n" % json.dumps({"ok": True, "message": "Ready."}))
         sys.stdout.flush()
