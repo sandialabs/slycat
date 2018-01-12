@@ -22,6 +22,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       success: function(user){ component.user(user); }
     })
 
+    component.selecting_key = function(test, whatKey){
+        if(whatKey.keyCode == 13){
+                whatKey.preventDefault();
+            }
+        else {
+          return true;
+        }
+    }
+
     component.add_project_member = function()
     {
       client.get_user(
