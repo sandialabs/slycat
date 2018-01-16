@@ -26,15 +26,14 @@ A github repo of sample data that can be used by slycat.
 1. Pull the Slycat image with the following command:  
 `docker pull slycat/slycat-developer`
 2. Get Slycat running on localhost:  
-`docker run -p 2222:22 -p 80:80 -p 443:443 -d --name slycat slycat/slycat-developer`  
+`docker run -p 80:80 -p 443:443 -d --name slycat slycat/slycat-developer`  
 3. Visit your local instance of Slycat at <https://localhost>  
 You can log in with any username as long as the password is the same as the username. For example:  
 Username: slycat  
 Password: slycat  
 Also, your browser will probably notify you of a privacy issue because we provide a self-signed certificate. You can proceed anyway.
-4. You can ssh to your local slycat container:  
-`ssh slycat@localhost -p 2222`  
-The password is `slycat`
+4. You can get into your local slycat container:  
+`docker exec -u slycat -it slycat bash`  
 5. Once inside your container, you can update the Slycat source code like so:  
     a. `cd ~/src/slycat`  
     b. `git pull`  
@@ -46,7 +45,7 @@ Slycat will automatically restart to pick up any new changes.
 4. And start it back up:  
 `docker start slycat`  
 (don't run the `docker run` command from step 3 again, it's only required the first time you start Slycat)
-5. Set up a firewall on the host machine if you are deploying Slycat. Port 2222 will be exposed on the host while the slycat-developer container is running. At the very least, use a firewall to block port 2222, since anyone will be able to ssh into your slycat-developer container using the same 'slycat' password as you. A better firewall configuration would block all ports except 80, 443, and 22 (or whichever port you use to ssh to the host).
+5. Set up a firewall on the host machine if you are deploying Slycat. A good firewall configuration would block all ports except 80, 443, and 22 (or whichever port you use to ssh to the host).
 
 
 # Slower Start
