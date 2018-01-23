@@ -23,18 +23,30 @@ def register_slycat_plugin(context):
                                     "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 
-        # wsgi: apache can probably handle ssl decrypt can reduce to http
-        # we need to parse the current url so we can do an https redirect
-        # cherrypy will redirect http by default :(
         current_url = urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
 
         # Require a secure connection.
         # Get the client ip, which might be forwarded by a proxy.
         remote_ip = slycat.web.server.check_https_get_remote_ip()
 
-        auth_user = cherrypy.request.headers.get("Authuser")
-        #cherrypy.log.error("++ std-auth running for %s at %s" % (auth_user, remote_ip))
+        # header username field parsing
+        hdr_val = slycat.web.server.config["slycat-web-server"]["auth-parse"]["header-key"]
+        delim = slycat.web.server.config["slycat-web-server"]["auth-parse"]["delimeter"]
+        username_idx = slycat.web.server.config["slycat-web-server"]["auth-parse"]["username-index"]
 
+        # get the username
+        try:
+            auth_user = cherrypy.request.headers.get(hdr_val).split(delim)[username_idx]
+        except:
+            raise cherrypy.HTTPError("407 Proxy Authentication Required: Slycat could not parse an authorized username.")
+
+        # validate that header auth parsing returns a plausible username
+        if len(auth_user) > 0 and isinstance(auth_user, basestring):  # tests for str and unicode
+        #if len(auth_user) > 0 and isinstance(auth_user, str):        # python 3 version
+            pass
+        else:
+            raise cherrypy.HTTPError("407 Proxy Authentication Required: Slycat did not receive a valid username string.")
+        
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
             sid = cherrypy.request.cookie["slycatauth"].value
@@ -72,14 +84,10 @@ def register_slycat_plugin(context):
             # there was no session time to authenticate
             if session is None:
                 cherrypy.log.error("++ no session found redirecting %s to SSO_session" % remote_ip)
-                slycat.web.server.create_single_sign_on_session(remote_ip, auth_user)
-                # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
-
                 # Successful authentication, create a session and return.
-                # return
+                slycat.web.server.create_single_sign_on_session(remote_ip, auth_user)
         else:
             cherrypy.log.error("++ no cookie found redirecting %s to SSO_session" % remote_ip)
             slycat.web.server.create_single_sign_on_session(remote_ip, auth_user)
-            # raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/login2/slycat-login.html?from=" + current_url.geturl().replace("http:", "https:"), 307)
 
-    context.register_tool("slycat-single-sign-on-authentication", "on_start_resource", authenticate)
+    context.register_tool("slycat-authTest", "on_start_resource", authenticate)
