@@ -3,7 +3,7 @@ Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
-define("slycat-cca-controls", ["slycat-server-root", "slycat-dialog"], function(server_root, dialog) {
+define("slycat-cca-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse"], function(server_root, dialog, _, Papa) {
 $.widget("cca.controls",
 {
 
@@ -123,34 +123,28 @@ $.widget("cca.controls",
   {
     // Note that array.data is column-major:  array.data[0][*] is the first column
     var self = this;
-    var selectionList = sl || [];
-    var numRows = array[0].length;
-    var numCols = array.length;
-    var rowMajorOutput = "";
-    var r, c, value;
-    // add the headers
-    for(c=0; c<numCols; c++) {
-      rowMajorOutput += self.options.metadata["column-names"][c] + ",";
+    
+    // Converting data array from column major to row major
+    var rowMajorData = _.zip(...array);
+
+    // If we have a selection list, remove everything but those elements from the data array
+    if(sl != undefined && sl.length > 0)
+    {
+      // sl is in the order the user selected the rows, so sort it.
+      // We want to end up with rows in the same order as in the original data.
+      sl.sort();
+      // Only keep elements at the indexes specified in sl
+      rowMajorData = _.at(rowMajorData, sl);
     }
-    rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
-    rowMajorOutput += "\n";
-    // add the data
-    for(r=0; r<numRows; r++) {
-      if(selectionList.length == 0 || selectionList.indexOf(r) > -1)
-      {
-        for(c=0; c<numCols; c++) {
-          value = array[c][r];
-          if(value === null)
-          {
-            value = NaN;
-          }
-          rowMajorOutput += value + ",";
-        }
-        rowMajorOutput = rowMajorOutput.slice(0, -1); //rmv last comma
-        rowMajorOutput += "\n";
-      }
-    }
-    return rowMajorOutput;
+
+    // Creating an array of column headers by removing the last one, which is the Index that does not exist in the data
+    var headers = self.options.metadata["column-names"].slice(0, -1);
+    // Adding headers as first element in array of data rows
+    rowMajorData.unshift(headers);
+
+    // Creating CSV from data array
+    var csv = Papa.unparse(rowMajorData);
+    return csv;
   },
 
   _set_color_variables: function()
