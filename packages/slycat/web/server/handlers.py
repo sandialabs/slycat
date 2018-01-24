@@ -2157,6 +2157,13 @@ def post_remote_command(hostname):
         return session.run_remote_command(command)
 
 
+@cherrypy.tools.json_out(on=True)
+def get_remote_job_status(hostname, jid):
+    sid = get_sid(hostname)
+    with slycat.web.server.remote.get_session(sid) as session:
+        return session.get_remote_job_status(jid)
+
+
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_remote_browse(hostname, path):

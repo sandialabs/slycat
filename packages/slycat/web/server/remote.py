@@ -551,8 +551,46 @@ class Session(object):
             "command": response["command"],
             "available_scripts": response["available_scripts"],
             "output": response["errors"],
-            "errors": response["output"]
+            "errors": response["output"],
+            "jid": response["jid"]
         }
+
+    def get_remote_job_status(self, jid):
+        """
+        check of the status of a job running on an agent with a hostanemd session
+        :param jid: job id
+        :return: 
+        """
+        command = {"jid": jid}
+        # check for an agent if none available die
+        if self._agent is None:
+            cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
+            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+                                    "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
+            raise cherrypy.HTTPError(404, "no Slycat agent present on remote host.")
+
+        # get the name of our slycat module on the hpc
+        command["module-name"] = None
+        if "module-name" in slycat.web.server.config["slycat-web-server"]:
+            command["module-name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
+        stdin, stdout, stderr = self._agent
+        payload = {
+            "action": "check-agent-job",
+            "command": command
+        }
+        cherrypy.log.error("writing msg: %s" % json.dumps(payload))
+        stdin.write("%s\n" % json.dumps(payload))
+        stdin.flush()
+        response = json.loads(stdout.readline())
+        cherrypy.log.error("response msg: %s" % response)
+        if not response["ok"]:
+            cherrypy.response.headers["x-slycat-message"] = response["message"]
+            cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
+            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+                                    "cherrypy.HTTPError 400 %s" % response["message"])
+            raise cherrypy.HTTPError(status=400,
+                                     message="run_agent_function response was not ok: %s" % response["message"])
+        return response
 
     def launch(self, command):
         """
