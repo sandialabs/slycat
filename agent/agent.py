@@ -65,9 +65,11 @@ class Agent(object):
         pass
 
     @abc.abstractmethod
-    def run_shell_command(self, command):
+    def run_shell_command(self, command, jid=0, log_to_file=False):
         """
         command to be run on the remote machine
+        :param log_to_file: bool for logging
+        :param jid: job id
         :param command: json command
         :return: 
         """
@@ -95,6 +97,15 @@ class Agent(object):
     def checkjob(self, command):
         """
         check a job's status on a remote machine
+        :param command: json command
+        :return: 
+        """
+        pass
+
+    @abc.abstractmethod
+    def check_agent_job(self, command):
+        """
+        check an agents job status on a remote machine
         :param command: json command
         :return: 
         """
@@ -385,9 +396,11 @@ class Agent(object):
 
         if arguments.fail_startup:
             exit(-1)
+        # look for json configuration for hpc system and load it
         if len(arguments.json) > 0:
             self.json_paths = arguments.json
             for path in self.json_paths:
+                # load all .js files in the directory given
                 for _ in glob.glob(path + "/*.js"):
                     with open(_) as in_file:
                         self.scripts.append(json.load(in_file))
@@ -439,6 +452,8 @@ class Agent(object):
                     self.video_status(command)
                 elif action == "launch":
                     self.launch(command)
+                elif action == "check-agent-job":
+                    self.check_agent_job(command)
                 elif action == "submit-batch":
                     self.submit_batch(command)
                 elif action == "checkjob":

@@ -18,8 +18,9 @@ import sys
 import tempfile
 import agent
 import threading
-
-
+import traceback
+import logging
+import random
 class Agent(agent.Agent):
     """
 
@@ -30,6 +31,7 @@ class Agent(agent.Agent):
         add the list of scripts we want to be able to call
         """
         agent.Agent.__init__(self)
+        self._status_list = ["[STARTED]", "[RUNNING]", "[FINISHED]", "[FAILED]", "[UNKNOWN]"]
 
     def get_script_run_string(self, command_script):
         run_command = ''
@@ -60,10 +62,20 @@ class Agent(agent.Agent):
             sys.stdout.flush()
             return
         command["run_command"] = run_command
-        output = self.run_shell_command(run_command)
+        # if "background_task" in command and command["background_task"]:
+        output = ["running task in background", "running task in background"]
+        jid = random.randint(10000000, 99999999)
+        try:
+            background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
+            background_thread.start()
+        except Exception as e:
+            output[0] = traceback.format_exc()
+        # else:
+        #     output = self.run_shell_command(run_command)
         results = {
             "message": "ran the remote command",
             "ok": True,
+            "jid": jid,
             "command": command,
             "output": output[0],
             "errors": output[1],
@@ -78,14 +90,67 @@ class Agent(agent.Agent):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
-    def run_shell_command(self, command):
-        command = command.split(' ')
-        for _ in command:
-            if _ == "":
-                command.remove("")
-        # print command
-        p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return p.communicate()
+    def create_job_logger(self, jid):
+        """
+        returns a logging function with the jid.log as the file name
+        :param jid: job id
+        :return: 
+        """
+        log = logging.getLogger()
+        log.setLevel(logging.INFO)
+        log.addHandler(logging.FileHandler(str(jid) + '.log'))
+        return lambda msg: log.log(logging.INFO, msg)
+
+    def run_shell_command(self, command, jid=0, log_to_file=False):
+        # create log file in the users directory for later polling
+        log = self.create_job_logger(jid)
+        try:
+            if log_to_file:
+                log("[STARTED]")
+            command = command.split(' ')
+
+            # remove empty list values
+            for _ in command:
+                if _ == "":
+                    command.remove("")
+            # open process to run script
+            p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if log_to_file:
+                log("[RUNNING]")
+            # execute script
+            value = p.communicate()
+            if log_to_file:
+                log(str(value))
+                log("[FINISHED]")
+                return value
+            else:
+                return value
+        except Exception as e:
+            log("[FAILED]")
+            # print traceback.format_exc()
+
+    def check_agent_job(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]["jid"],
+            "status": "[UNKNOWN]",
+            "status_list": self._status_list
+        }
+        try:
+            with open(str(command["command"]["jid"])+'.log') as log_file:
+                for line in log_file:
+                    if line.strip(' \t\n\r') in self._status_list:
+                        results["status"] = line.strip(' \t\n\r')
+        except IOError:
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "file not found: job id log file is "
+                                                                          "probably missung"}))
+            sys.stdout.flush()
+        except Exception as e:
+            self.log.log(logging.INFO, traceback.format_exc())
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
+            sys.stdout.flush()
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
 
     def launch(self, command):
         output = self.run_shell_command(command["command"])
