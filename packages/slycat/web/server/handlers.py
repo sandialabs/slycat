@@ -79,6 +79,7 @@ def js_bundle():
                                                                                   "js/knockout.mapping.js",
                                                                                   "js/knockout-projections.js",
                                                                                   "js/knockstrap.js",
+                                                                                  "js/papaparse.min.js",
                                                                                   "js/slycat-server-root.js",
                                                                                   "js/slycat-server-ispasswordrequired.js",
                                                                                   "js/slycat-bookmark-manager.js",

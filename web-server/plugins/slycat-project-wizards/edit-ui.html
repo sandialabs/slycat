@@ -9,7 +9,7 @@
     <div class="form-group">
       <label for="slycat-edit-project-name" class="col-sm-2 control-label">Name</label>
       <div class="col-sm-10">
-        <input id="slycat-edit-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:modified.name"></input>
+        <input id="slycat-edit-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:modified.name, event:{ keypress: selecting_key}"></input>
       </div>
     </div>
     <div class="form-group">
@@ -30,7 +30,7 @@
             </select>
           </div>
           <div class="col-sm-6">
-            <input type="text" class="form-control" data-bind="value:new_user" placeholder="Username">
+            <input type="text" class="form-control" data-bind="value:new_user, event:{ keypress: selecting_key}" placeholder="Username">
           </div>
           <div class="col-sm-2">
             <button class="btn btn-default" type="button" data-bind="click:add_project_member">Add</button>

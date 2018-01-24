@@ -22,6 +22,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "knockout", 
       success: function(user){ component.user(user); }
     })
 
+    //Suppress default key binding if "Enter" key is pressed
+    component.selecting_key = function(metadata, event){
+        if(event.keyCode == 13){
+                event.preventDefault();
+            }
+        else {
+          return true;
+        }
+    }
+
     component.add_project_member = function()
     {
       client.get_user(

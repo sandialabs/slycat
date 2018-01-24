@@ -348,8 +348,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     var selection = self.options.selection;
     var hidden_simulations = self.options.hidden_simulations;
 
-    self.options.filtered_indices = _.difference(self._cloneArrayBuffer(indices).filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), hidden_simulations);
-    self.options.filtered_selection = _.difference(selection.filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), hidden_simulations);
+    self.options.filtered_indices = _.difference(
+      self._cloneArrayBuffer(indices).filter((element, index, array) => self._validateValue(x[index]) && self._validateValue(y[index]) ), 
+      hidden_simulations
+    );
+
+    self.options.filtered_selection = _.difference(
+      selection.filter((element, index, array) => self._validateValue(x[element]) && self._validateValue(y[element]) ), 
+      hidden_simulations
+    );
   },
 
   // Filters source values by removing hidden_simulations
