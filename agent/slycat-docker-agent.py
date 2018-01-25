@@ -31,22 +31,6 @@ class Agent(agent.Agent):
         add the list of scripts we want to be able to call
         """
         agent.Agent.__init__(self)
-        self._status_list = ["[STARTED]", "[RUNNING]", "[FINISHED]", "[FAILED]", "[UNKNOWN]"]
-
-    def get_script_run_string(self, command_script):
-        run_command = ''
-        for agent_script in self.scripts:
-            # we just found a match lets add it to the command that we are going to run
-            if command_script["name"] == agent_script["name"]:
-                run_command += str(agent_script["exec_path"])
-                run_command += " "
-                run_command += str(agent_script["path"])
-                for parameter in command_script["parameters"]:
-                    run_command += " "
-                    run_command += str(parameter["name"])
-                    run_command += " "
-                    run_command += str(parameter["value"])
-                return run_command
 
     def run_remote_command(self, command):
         command = command["command"]
@@ -65,6 +49,7 @@ class Agent(agent.Agent):
         # if "background_task" in command and command["background_task"]:
         output = ["running task in background", "running task in background"]
         jid = random.randint(10000000, 99999999)
+        run_command += " --log_file " + str(jid) + ".log"
         try:
             background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
             background_thread.start()
@@ -90,20 +75,10 @@ class Agent(agent.Agent):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
-    def create_job_logger(self, jid):
-        """
-        returns a logging function with the jid.log as the file name
-        :param jid: job id
-        :return: 
-        """
-        log = logging.getLogger()
-        log.setLevel(logging.INFO)
-        log.addHandler(logging.FileHandler(str(jid) + '.log'))
-        return lambda msg: log.log(logging.INFO, msg)
-
     def run_shell_command(self, command, jid=0, log_to_file=False):
         # create log file in the users directory for later polling
-        log = self.create_job_logger(jid)
+        if log_to_file:
+            log = self.create_job_logger(jid)
         try:
             if log_to_file:
                 log("[STARTED]")
@@ -127,6 +102,7 @@ class Agent(agent.Agent):
                 return value
         except Exception as e:
             log("[FAILED]")
+            return ["FAILED", "FAILED"]
             # print traceback.format_exc()
 
     def check_agent_job(self, command):

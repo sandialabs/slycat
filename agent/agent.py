@@ -53,6 +53,7 @@ class Agent(object):
         self.scripts = []
         self.hpc = {}
         self.json_paths = []
+        self._status_list = ["[STARTED]", "[RUNNING]", "[FINISHED]", "[FAILED]", "[UNKNOWN]"]
 
     @abc.abstractmethod
     def run_remote_command(self, command):
@@ -159,6 +160,38 @@ class Agent(object):
         :return: 
         """
         pass
+
+    def get_script_run_string(self, command_script):
+        """
+        takes a command json and creates a string that can be
+        run
+        :param command_script: json representation of a command_script
+        :return: 
+        """
+        run_command = ''
+        for agent_script in self.scripts:
+            # we just found a match lets add it to the command that we are going to run
+            if command_script["name"] == agent_script["name"]:
+                run_command += str(agent_script["exec_path"])
+                run_command += " "
+                run_command += str(agent_script["path"])
+                for parameter in command_script["parameters"]:
+                    run_command += " "
+                    run_command += str(parameter["name"])
+                    run_command += " "
+                    run_command += str(parameter["value"])
+                return run_command
+
+    def create_job_logger(self, jid):
+        """
+        returns a logging function with the jid.log as the file name
+        :param jid: job id
+        :return: 
+        """
+        log = logging.getLogger()
+        log.setLevel(logging.INFO)
+        log.addHandler(logging.FileHandler(str(jid) + '.log'))
+        return lambda msg: log.log(logging.INFO, msg)
 
     def get_user_config(self):
         """
