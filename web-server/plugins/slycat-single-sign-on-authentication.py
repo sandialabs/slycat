@@ -90,4 +90,4 @@ def register_slycat_plugin(context):
             cherrypy.log.error("++ no cookie found redirecting %s to SSO_session" % remote_ip)
             slycat.web.server.create_single_sign_on_session(remote_ip, auth_user)
 
-    context.register_tool("slycat-authTest", "on_start_resource", authenticate)
+    context.register_tool("slycat-single-sign-on-authentication", "on_start_resource", authenticate)
