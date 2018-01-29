@@ -8,5 +8,5 @@ setup(
   version = "1.1.0",
   package_dir = {"" : "packages"},
   packages = find_packages("packages", exclude=[]),
-  install_requires=['cherrypy', 'numpy', 'cPickle']
+  install_requires=['cherrypy', 'numpy']
 )
