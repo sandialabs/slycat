@@ -120,11 +120,14 @@ def register_slycat_plugin(context):
         """
         # workdir += "/slycat/pickle"  # route to the slycat directory
         running = True
-        tries = 10
+        tries = 1000
         while running:
             running = False
+            tries = tries - 1
             if tries <= 0:
-                raise Exception("exceded max number of tries")
+                fail_model(model_id, "Exceeded max number of tries to pull data over to the server.")
+                cherrypy.log.error("[TIMESERIES] Exceeded max number of tries.")
+                raise Exception("[TIMESERIES] Exceeded max number of tries")
             try:
                 database = slycat.web.server.database.couchdb.connect()
                 model = database.get("model", model_id)
@@ -224,7 +227,6 @@ def register_slycat_plugin(context):
                 cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
                 cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
                 time.sleep(15)
-                tries = tries - 1
             except Exception as e:
                 fail_model(model_id, "Timeseries model compute exception: %s" % sys.exc_info()[0])
                 cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
@@ -247,7 +249,15 @@ def register_slycat_plugin(context):
         cherrypy.request.headers["x-forwarded-for"] = request_from
         retry_counter = 5
 
-        while True:
+        tries = 10000
+        running = True
+
+        while running:
+            tries = tries - 1
+            if tries <= 0:
+                running = False
+                cherrypy.log.error("[TIMESERIES] Check job tries exceeded max number.")
+                fail_model(mid, "Check job tries exceeded max number")
             try:
                 response = slycat.web.server.checkjob(sid, jid)
             except Exception as e:
@@ -266,7 +276,7 @@ def register_slycat_plugin(context):
                     raise Exception("An error occurred while checking on a remote job: %s" % jid)
 
                 response = {"status": {"state": "ERROR"}}
-                time.sleep(60)
+                time.sleep(15)
 
             state = response["status"]["state"]
             cherrypy.log.error("checkjob %s returned with status %s" % (jid, state))
