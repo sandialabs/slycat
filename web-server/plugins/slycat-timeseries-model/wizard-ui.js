@@ -266,7 +266,6 @@ define(['slycat-server-root', 'slycat-web-client', 'slycat-dialog', 'slycat-mark
             component.remote.progress_status("Finished");
             component.remote.progress(100);
             component.timeseries_names(JSON.parse(response))
-            console.log(component.timeseries_names());
             component.tab(4);
           },
           error: function(request, status, reason_phrase) {
