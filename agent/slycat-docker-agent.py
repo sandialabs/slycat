@@ -31,7 +31,8 @@ class Agent(agent.Agent):
         add the list of scripts we want to be able to call
         """
         agent.Agent.__init__(self)
-
+    def get_hpc_run_string(self, command):
+        pass
     def run_remote_command(self, command):
         command = command["command"]
         run_command = None
@@ -50,11 +51,18 @@ class Agent(agent.Agent):
         output = ["running task in background", "running task in background"]
         jid = random.randint(10000000, 99999999)
         run_command += " --log_file " + str(jid) + ".log"
-        try:
-            background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
-            background_thread.start()
-        except Exception as e:
-            output[0] = traceback.format_exc()
+        if command["hpc"]["is_hpc_job"]:
+            output = ["running batch job", "running batch job"]
+            _string = ""
+            for _ in command["hpc"]["parameters"]:
+                _string = str(_.keys()[0]) + str(_[_.keys()[0]]) + _string
+            output = [_string, _string]
+        else:
+            try:
+                background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
+                background_thread.start()
+            except Exception as e:
+                output[0] = traceback.format_exc()
         # else:
         #     output = self.run_shell_command(run_command)
         results = {
