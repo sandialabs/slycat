@@ -70,7 +70,7 @@ rights in this software.
   bottom: 0px;
   left: 0px;
   cursor: pointer;
-  background: #DBD9EB url(images/sort-dendrogram.png) no-repeat center center;;
+  background: #DBD9EB url(images/sort-dendrogram.png) no-repeat center center;
   padding: 4px;
   margin: 0 0 5px 18px;
   height: 17px;
@@ -82,6 +82,14 @@ rights in this software.
   background: #7767B0 url(images/sort-dendrogram-selected.png) no-repeat center center;
   color: #FFFFFF;
   cursor: default;
+}
+
+#dendrogram-pane #dendrogram-controls 
+{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  margin: 5px 0 0px 18px;
 }
 
 #dendrogram-viewer .node .glyph circle
