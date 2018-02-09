@@ -677,6 +677,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                                 };
                             fileUploader.uploadFile(fileObject);
 
+                            // show message
+                            $("#dac-do-not-close-browser").show();
+
                             // show upload
                             component.tab(2);
 
