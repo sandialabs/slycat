@@ -64,6 +64,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	var curr_color_by_col = [];
 	var color_by_cols = [-1];
 	var color_by_names = ["Do Not Color"];
+	var color_by_type = [];
 	
 	// initial setup: read in MDS coordinates & plot
 	module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER, 
@@ -151,13 +152,18 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		
 		// set up color by selection
 
-		// look for columns with numbers for color by menu
+		// look for columns with numbers/strings for color by menu
 		for (var i = 0; i < datapoints_meta["column-count"]; i++)
 		{
-			if (datapoints_meta["column-types"][i] == "float64") {
+
+            // we accept number and string data
+			if ((datapoints_meta["column-types"][i] == "float64") ||
+			    (datapoints_meta["column-types"][i] == "string")) {
+			    color_by_type.push(datapoints_meta["column-types"][i]);
 				color_by_cols.push(i);
 				color_by_names.push(datapoints_meta["column-names"][i]);
 			};
+
 		};
 				
 		// populate pull down menu
@@ -573,9 +579,31 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					$.when(request.get_table("dac-datapoints-meta")).then(
 						function (data)
 						{
-							// get selected column from data base
-							curr_color_by_col = data["data"][select_col];
-													
+						    // check for string data
+						    if (color_by_type[select_col] == "string") {
+
+						        // use alphabetical order by number to color
+
+						        // get string data
+						        var color_by_string_data = data["data"][select_col];
+
+						        // get unique sorted string data
+						        var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
+
+                                // get indices or original string data in the unique sorted string data
+                                curr_color_by_col = [];
+                                for (i=0; i < color_by_string_data.length; i++) {
+                                    curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
+                                }
+
+
+						    } else {
+
+                                // get selected column from data base (number data)
+                                curr_color_by_col = data["data"][select_col];
+
+						    }
+
 							// get max and min of appropriate column in metadata table
 							var max_color_val = d3.max(curr_color_by_col);
 							var min_color_val = d3.min(curr_color_by_col);
