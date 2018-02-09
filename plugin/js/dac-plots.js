@@ -56,7 +56,8 @@ function(client, dialog, selections, $, d3, URI)
 	
 	// colors for plots
 	var sel_color = [];
-	
+	var focus_color = null;
+
 	// pixel adjustments for d3 time series plots
 	var plot_adjustments = {
 		pull_down_height: null,
@@ -84,13 +85,14 @@ function(client, dialog, selections, $, d3, URI)
 	var mouse_over_line = [];
 	
 	// set up initial private variables, user interface
-	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
+	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 	                         MAX_TIME_POINTS, MAX_NUM_PLOTS, variables_metadata, variables_data)
 	{
 	
 		// set ui constants
 		sel_color.push(SELECTION_1_COLOR);
 		sel_color.push(SELECTION_2_COLOR);
+		focus_color = SEL_FOCUS_COLOR;
 		plot_adjustments.pull_down_height = PLOT_ADJUSTMENTS.PLOTS_PULL_DOWN_HEIGHT;
 		plot_adjustments.padding_top = PLOT_ADJUSTMENTS.PADDING_TOP;
 		plot_adjustments.padding_bottom = PLOT_ADJUSTMENTS.PADDING_BOTTOM;
@@ -116,7 +118,7 @@ function(client, dialog, selections, $, d3, URI)
 		x_axis_name = variables_data[0]["data"][1];
 		y_axis_name = variables_data[0]["data"][2];
 		plot_type = variables_data[0]["data"][3];
-				
+
 		// init plot order (up to number of plots available)
 		for (var i = 0; i < Math.min(num_plots,3); i++) {
 		    plots_selected.push(i);
@@ -238,6 +240,14 @@ function(client, dialog, selections, $, d3, URI)
 				var select_id_str = this.id;
 				var select_id = Number(select_id_str.split("-").pop()) - 1;
 				var select_value = Number(this.value);
+
+                // unlink plot
+                $("#dac-link-plot-" + (select_id+1).toString()).prop("checked", false);
+                link_plots[select_id] = 0;
+
+                // unzoom plot
+                plots_selected_zoom_x[select_id] = ["-Inf", "Inf"];
+                plots_selected_zoom_y[select_id] = ["-Inf", "Inf"];
 
 				// change value of selection
 				plots_selected[select_id] = select_value;
@@ -400,7 +410,17 @@ function(client, dialog, selections, $, d3, URI)
 				.attr("height", height - plot_adjustments.padding_bottom
 									   - plot_adjustments.x_label_padding
 									   - plot_adjustments.padding_top);
-				
+			// update mouse-over line plot limits
+            mouse_over_line[i].attr("x1", plot_adjustments.padding_left +
+                                          plot_adjustments.y_label_padding)
+                              .attr("y1", $("#dac-plots").height()/3 -
+                                          plot_adjustments.pull_down_height -
+                                          plot_adjustments.padding_bottom -
+                                          plot_adjustments.x_label_padding)
+                              .attr("x2", plot_adjustments.padding_left +
+                                          plot_adjustments.y_label_padding)
+                              .attr("y2", plot_adjustments.padding_top);
+
 			// change x axis label positions
 			x_label[i].attr("x", width - plot_adjustments.padding_right)
 				      .attr("y", height - plot_adjustments.x_label_padding);
@@ -505,7 +525,10 @@ function(client, dialog, selections, $, d3, URI)
 						
 		// remove any data already present
 		plot[i].selectAll(".curve").remove();
-		
+
+		// remove focus curve if present
+		plot[i].selectAll(".focus").remove();
+
 		// generate new data for each selection	
 		if ((selections.len_sel_1() > 0) || (selections.len_sel_2() > 0)) {
 
@@ -535,9 +558,28 @@ function(client, dialog, selections, $, d3, URI)
 					   .append("path")
 					   .attr("class", "curve")
 					   .attr("stroke", function(d) { return sel_color[d[0][2]]; })
-					   .attr("fill", "none")
 					   .attr("stroke-width", 1)
+					   .attr("fill", "none")
 					   .on("click", select_curve);
+
+			    // draw focus curve (on top of other curves) if data is available
+			    if ((selections.focus() != null) &&
+			        (focus_curve_ind() != -1)) {
+
+			        // draw focus curve
+			        plot[i].selectAll(".focus")
+			               .data([d3.transpose([plots_selected_time[i],
+			                                    plots_selected_data[i][focus_curve_ind()]])])
+			               .attr("class", "focus")
+			               .enter()
+			               .append("path")
+			               .attr("class", "focus")
+			               .attr("stroke", focus_color)
+			               .attr("stroke-width", 2)
+			               .attr("fill", "none")
+			               .on("click", deselect_curve);
+
+			    }
 
 			} else {
 				dialog.ajax_error ('Only "Curve" type plots are implemented.')("","","");
@@ -797,9 +839,10 @@ function(client, dialog, selections, $, d3, URI)
         return plots_to_update;
     }
 
-	// user clicked on a curve
+	// user hovered over a curve
 	function select_curve (d,i)
 	{
+
 	    // find index of curve selected
 	    var curve_id = null;
         if (d[0][2] == 0) {
@@ -814,11 +857,55 @@ function(client, dialog, selections, $, d3, URI)
 
         }
 
-        // jump to curve selected in table
+        // highlight selected curve in other views
         var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
-					                         active_sel: [curve_id]} });
+					                         active_sel: curve_id,
+					                         active: true} });
         document.body.dispatchEvent(selectionEvent);
 
+	}
+
+	// user left curve
+	function deselect_curve (d,i)
+	{
+
+	    // dehighlight selected curve
+        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+					                         active_sel: null,
+					                         active: true} });
+        document.body.dispatchEvent(selectionEvent);
+
+	}
+
+	// find local index of curve in focus
+	function focus_curve_ind ()
+	{
+	    // get index of curve in focus
+	    var curve_in_focus = selections.focus();
+
+	    // return local index of curve
+	    var curve_in_focus_ind = -1;
+
+	    // find curve index, if not null
+	    var ind_sel_1 = selections.in_sel_1(curve_in_focus);
+	    var ind_sel_2 = selections.in_sel_2(curve_in_focus);
+	    if (ind_sel_1 != -1) {
+
+	        // check to make sure curve is in dataset
+	        if (ind_sel_1 < max_num_plots) {
+	            curve_in_focus_ind = ind_sel_1;
+	        }
+
+	    } else if (ind_sel_2 != -1) {
+
+	        // check to make sure curve is in dataset
+	        if (ind_sel_2 < max_num_plots) {
+	            curve_in_focus_ind = ind_sel_2 + Math.min(max_num_plots, selections.len_sel_1());
+	        }
+
+	    }
+
+	    return curve_in_focus_ind;
 	}
 
     // user sitting over a plot
@@ -906,6 +993,15 @@ function(client, dialog, selections, $, d3, URI)
 		} else if (selections.len_sel_2() > max_num_plots) {
 		    limit_indicator_color = "blue";
 		}
+
+        // unzoom plots (leave linked)
+        for (i=0; i < num_plots; i++) {
+
+            // unzoom plots
+            plots_selected_zoom_x[i] = ["-Inf", "Inf"];
+            plots_selected_zoom_y[i] = ["-Inf", "Inf"];
+
+        }
 
 		// re-draw all plots
 		module.draw();

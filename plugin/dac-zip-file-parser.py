@@ -559,7 +559,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             else:
 
                 # populate variables.meta table
-                meta_vars.append([name_i, units_i, time_units_i, plot_type_i])
+                meta_vars.append([name_i, time_units_i, units_i, plot_type_i])
 
                 # push time vector to list of time vectors
                 time_i.sort()

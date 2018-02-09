@@ -18,6 +18,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     // maximum number of plots (per selection)
     var MAX_NUM_PLOTS = 50;
 
+    // focus selection color
+    var FOCUS_COLOR = "black";
+
     // model id from address bar
     var mid = URI(window.location).segment(-1);
 
@@ -187,12 +190,12 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 				                alpha_buttons.setup (variables_meta[0]["row-count"]);
 
 				                // set up the time series plots
-				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, PLOT_ADJUSTMENTS,
+				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, variables_meta, variables);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					                POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
+					                POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR,
 					                COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
 
 				                // set up table (propagate selections through to scatter plot)
@@ -244,6 +247,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
         // (to prevent always showing 1st part of long selection)
         selections.shuffle();
 
+        // update focus since selection changed
+        selections.update_focus();
+
         // update scatter plot
         scatter_plot.draw();
 
@@ -257,16 +263,28 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 		metadata_table.select_rows();
 
 		// jump to top row in table for current selection (if there is one)
-		if (new_selections.detail.active_sel.length > 0) {
-		    active_selection_changed ({detail: {active_sel: new_selections.detail.active_sel}});
-		}
+		//metadata_table.jump_to (new_selections.detail.active_sel);
     }
 
     // custom event for jumping to an individual selection in the table
     function active_selection_changed (active_selection)
     {
-        // jump to top row in table for current selection
-        metadata_table.jump_to (active_selection.detail.active_sel);
+        // update new active selection
+        selections.set_focus(active_selection.detail.active_sel);
+
+        // re-draw curves to show active selection
+        plots.draw();
+
+        // highlight in scatter plot
+        scatter_plot.draw();
+
+        // re-draw rows in table
+        metadata_table.select_rows();
+
+        // jump to focus, unless it was a defocus event
+        if (active_selection.detail.active_sel != null) {
+            metadata_table.jump_to ([active_selection.detail.active_sel]);
+        }
     }
 
     // custom event for difference calculation

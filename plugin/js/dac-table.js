@@ -26,9 +26,7 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
     	enableColumnReorder: false,
     	multiSelect: false
   	};
-	
-	// call back for modifying scatter plot selections
-	var scatter_plot_selection_callback = null;
+
 	
 	// populate slick grid's column metadata
 	function make_column(column_index)
@@ -75,20 +73,20 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 							        grid_columns, grid_options);
 				
 		// keep track of shift or meta key
-		grid_view.onClick.subscribe(key_flip);
+		grid_view.onClick.subscribe(one_row_selected);
 				
 		// set table data (second to last column is ids)
 		data_view.setItems(grid_rows, num_cols);
 				
 		// set up row selection
 		grid_view.setSelectionModel (new Slick.RowSelectionModel());
-		grid_view.onSelectedRowsChanged.subscribe(row_selected);
+		//grid_view.onSelectedRowsChanged.subscribe(row_selected);
 				
 		// helpers for grid to respond to data_view changes
 		data_view.onRowCountChanged.subscribe(change_rows);
 		data_view.onRowsChanged.subscribe(change_cols);
-  				
-  		// update meta data function to accomodate multiple selection classes
+
+  		// update meta data function to accommodate multiple selection classes
   		data_view.getItemMetadata = color_rows(data_view.getItemMetadata);
   				
   		// add sorting
@@ -99,25 +97,31 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 
 	}
 
-	// toggle shift key flag
-	function key_flip(e) {
+	// single row selection
+	function one_row_selected(e, args) {
+
+	    // pass along shift/meta key information
 		selections.key_flip(e.shiftKey, e.metaKey);
+
+		// convert row clicked to data table row
+		var data_clicked = convert_row_ids([args.row])[0];
+
+        // check if row is already selected
+        // update selection and/or focus
+        selections.update_sel_focus(data_clicked);
+
 	}
 	
-	// slick grid row selected on click
+	// slick grid row selected on click (for multiple rows)
 	function row_selected (e, args)
 	{
 		
 		// get rows selected
 		var rows = grid_view.getSelectedRows();
-		
-		// change grid ids to data ids
-		var row_ids = [];
-		for (var i = 0; i < rows.length; i++) {
-			var item = data_view.getItem(rows[i]);
-			row_ids.push(item[item.length-2]);			
-		}
-		
+
+		// convert to table ids
+        var row_ids = convert_row_ids(rows);
+
 		// add selections (unless in zoom mode)
 		if (selections.sel_type() > 0) {
 			selections.zero_sel();
@@ -130,7 +134,22 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
         document.body.dispatchEvent(selectionEvent);
 		
 	}
-	
+
+	// converts selected row id to table row id (in case table is sorted)
+	function convert_row_ids(rows)
+	{
+
+		// change grid ids to data ids
+		var row_ids = [];
+		for (var i = 0; i < rows.length; i++) {
+			var item = data_view.getItem(rows[i]);
+			row_ids.push(item[item.length-2]);
+		}
+
+		return row_ids;
+
+	}
+
 	// slick grid change in rows
 	function change_rows (e, args) 
 	{
@@ -147,6 +166,7 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
   	
   	// override slick grid meta data method to color rows according to selection
   	function color_rows(old_metadata) {
+
   		return function(row) {
   			var item = this.getItem(row);
   			var meta = old_metadata(row) || {};
@@ -163,6 +183,8 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
   					meta.cssClasses = 'selection-1';
   				} else if (item[num_cols-1] == 2) {
   					meta.cssClasses = 'selection-2';
+  				} else if (item[num_cols-1] == 3) {
+  				    meta.cssClasses = 'focus-selection';
   				} else {
   					meta.cssClasses = 'no-selection';
   				}
@@ -170,6 +192,7 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
   			
   			return meta;
   		}
+
   	}
   	
   	// slick grid column sort
@@ -206,25 +229,35 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 		curr_sel_type = new_sel_type;
 	}
 	
-	// highlight rows for selections in the scatter plot pane
+	// highlight rows for selections
 	module.select_rows = function ()
 	{
 
 		// update selection indices
 		var new_sel_1 = selections.sel_1();
 		var new_sel_2 = selections.sel_2();
-		
+		var new_focus = selections.focus();
+
 		// generate vector of data view with new selections
 		var sel_vec = [];
 		var num_rows = data_view.getLength();
 		for (var i = 0; i != num_rows; i++) {
 			sel_vec.push(0);
 		}
+
+		// mark selection 1
 		for (var i = 0; i != new_sel_1.length; i++) {
 			sel_vec[new_sel_1[i]] = 1;
 		}
+
+		// mark selection 2
 		for (var i = 0; i != new_sel_2.length; i++) {
 			sel_vec[new_sel_2[i]] = 2;
+		}
+
+		// mark focus, if present
+		if (new_focus != null) {
+		    sel_vec[new_focus] = 3;
 		}
 		
 		// temporarily turn off table rendering
@@ -243,7 +276,6 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 			
 			// put row back in table
 			data_view.updateItem(i, item);
-			
 		}
 
 		// turn table re-draw back on
@@ -268,7 +300,7 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 			}
 			
 			// now scroll to first selected row
-			grid_view.scrollRowToTop(first_sel);
+			grid_view.scrollRowIntoView(first_sel);
 		}
 		
 	}

@@ -16,6 +16,11 @@ define ("dac-manage-selections", [], function() {
 	var curr_sel_type = null;	
 	var selection_1 = [];
 	var selection_2 = [];
+
+	// focus selection (index into data, or null if nothing in focus)
+	var focus = null;
+
+	// shift or meta key pressed
 	var shift_key_pressed = false;
 
 	// get selection type
@@ -41,7 +46,19 @@ define ("dac-manage-selections", [], function() {
 	{
 		return selection_2;
 	}
-	
+
+	// set focus selection
+	module.set_focus = function(i)
+	{
+	    focus = i;
+	}
+
+	// get focus selection
+	module.focus = function()
+	{
+	    return focus;
+	}
+
 	// is index i in selection 1?
 	// return index or -1 if absent
 	module.in_sel_1 = function(i)
@@ -55,7 +72,21 @@ define ("dac-manage-selections", [], function() {
 	{
 		return selection_2.indexOf(i);
 	}
-	
+
+	// is index i in any selection?
+	// return true or false
+	module.in_sel = function(i)
+	{
+	    if ((selection_1.indexOf(i) == -1) &&
+	        (selection_2.indexOf(i) == -1)) {
+
+	        return false;
+	    } else {
+
+	        return true;
+	    }
+	}
+
 	// return length selection 1
 	module.len_sel_1 = function()
 	{
@@ -114,6 +145,76 @@ define ("dac-manage-selections", [], function() {
 				selection_1.splice(sel_1_ind, 1);
 			}					
 		}
+	}
+
+    // update selection accounting for focus
+    module.update_sel_focus = function(i)
+    {
+
+        // if there are no selections at all (of either type), we add to selection
+        if (((curr_sel_type == 1) &&
+             (selection_1.length == 0)) ||
+            ((curr_sel_type == 2) &&
+             (selection_2.length == 0))) {
+
+            // add to selection
+            module.update_sel(i);
+
+            // selection has been changed
+            var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+					                             active_sel: [i]} });
+            document.body.dispatchEvent(selectionEvent);
+
+
+        } else {
+
+            // otherwise, we test for shift/meta key before adding to selection
+            if (shift_key_pressed) {
+
+                // update selection
+                module.update_sel(i);
+
+                // fire selection change event
+		        var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+					                                 active_sel: [i]} });
+                document.body.dispatchEvent(selectionEvent);
+
+            } else {
+
+                // in the last case we test for a focus event
+                if (module.in_sel(i)) {
+
+                    // focus or de-focus?
+                    if (focus == i) {
+
+                        // de-focus through all panes
+                        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+                                                 active_sel: null,
+                                                 active: true} });
+                        document.body.dispatchEvent(selectionEvent);
+
+                    } else {
+
+                        // fire active selection (focus) event on current point
+                        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+                                                 active_sel: i,
+                                                 active: true} });
+                        document.body.dispatchEvent(selectionEvent);
+                    }
+
+                }
+            }
+        }
+
+    }
+
+	// update focus if selection is done changing
+	module.update_focus = function()
+	{
+	    // if focus is not in selection, set to null
+	    if (!module.in_sel(focus)) {
+	        focus = null;
+	    }
 	}
 
 	// put selections in random order
