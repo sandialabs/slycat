@@ -115,7 +115,6 @@ define("slycat-color-switcher", ["d3"], function(d3)
           "colors":
           [
             d3.rgb(0, 0, 255),
-            d3.rgb(0, 255, 0),
             d3.rgb(0, 255, 255),
             d3.rgb(255, 255, 0),
             d3.rgb(255, 0, 0),
@@ -130,7 +129,6 @@ define("slycat-color-switcher", ["d3"], function(d3)
           "colors":
           [
             d3.rgb(0, 0, 255),
-            d3.rgb(0, 255, 0),
             d3.rgb(0, 255, 255),
             d3.rgb(255, 255, 0),
             d3.rgb(255, 0, 0),
