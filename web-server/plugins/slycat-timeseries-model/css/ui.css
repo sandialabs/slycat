@@ -64,7 +64,7 @@ rights in this software.
 }
 
 /* dendrogram styles */
-#dendrogram-pane #dendrogram-sort-control 
+/*#dendrogram-pane #dendrogram-sort-control 
 {
   position: absolute;
   bottom: 0px;
@@ -82,7 +82,7 @@ rights in this software.
   background: #7767B0 url(images/sort-dendrogram-selected.png) no-repeat center center;
   color: #FFFFFF;
   cursor: default;
-}
+}*/
 
 #dendrogram-pane #dendrogram-controls 
 {

@@ -69,17 +69,19 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
 
   	  self.container.selectAll("g").remove();
 
-      self.sortControl = $('<div id="dendrogram-sort-control"></div>')
-        .appendTo('#dendrogram-pane')
-        .click(function() {
-          if(!$(this).hasClass("selected")){
+      self.sortButton = $('#dendrogram-controls button.sort')
+        .click(function(){
+          console.log("This button is currently active (pressed):" + $(this).hasClass("active"));
+          if(!$(this).hasClass("active")){
             self.options.dendrogram_sort_order = true;
             self._set_dendrogram_sort_order_state();
             self.element.trigger("sort-by-dendrogram-order");
           }
         })
         ;
+
       this._set_dendrogram_sort_order_state();
+
 
   	  var vis = self.container.append("svg:g")
         .attr("transform", "translate(" + padding + "," + padding + ")")
@@ -817,10 +819,13 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
     _set_dendrogram_sort_order_state: function()
     {
       var self = this;
-      self.sortControl
+      self.sortButton
         .attr("title", function(index, attr){return self.options.dendrogram_sort_order ? "Inputs are sorted in dendrogram order" : "Sort inputs in dendrogram order"})
-        .toggleClass("selected", self.options.dendrogram_sort_order)
+        .attr("aria-pressed", function(index, attr){return self.options.dendrogram_sort_order ? "true" : "false"})
+        .toggleClass("active", self.options.dendrogram_sort_order)
+        .prop("disabled", self.options.dendrogram_sort_order)
         ;
+      console.log("Just toggled the active class to: " + self.options.dendrogram_sort_order);
     },
 
     resize_canvas: function()
