@@ -259,8 +259,8 @@ function setup_page()
         colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
         // Set sort variable and order
-        sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : undefined;
-        sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : undefined;
+        sort_variable = bookmark["sort-variable"] != undefined ? bookmark["sort-variable"] : undefined;
+        sort_order = bookmark["sort-order"] != undefined ? bookmark["sort-order"] : undefined;
 
         // Set collapsed, expanded, and selected nodes
         collapsed_nodes = [];
