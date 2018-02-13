@@ -71,7 +71,7 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
 
       self.sortButton = $('#dendrogram-controls button.sort')
         .click(function(){
-          console.log("This button is currently active (pressed):" + $(this).hasClass("active"));
+          // console.log("This button is currently active (pressed):" + $(this).hasClass("active"));
           if(!$(this).hasClass("active")){
             self.options.dendrogram_sort_order = true;
             self._set_dendrogram_sort_order_state();
@@ -80,7 +80,11 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         })
         ;
 
-      this._set_dendrogram_sort_order_state();
+      self.outputsButtonLabel = $('#dendrogram-controls button.outputs .buttonLabel');
+      self.outputs_items = $('#dendrogram-controls ul.outputs');
+
+      self._set_dendrogram_sort_order_state();
+      self._set_outputs();
 
 
   	  var vis = self.container.append("svg:g")
@@ -825,7 +829,37 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         .toggleClass("active", self.options.dendrogram_sort_order)
         .prop("disabled", self.options.dendrogram_sort_order)
         ;
-      console.log("Just toggled the active class to: " + self.options.dendrogram_sort_order);
+      // console.log("Just toggled the active class to: " + self.options.dendrogram_sort_order);
+    },
+
+    _set_outputs: function()
+    {
+      var self = this;
+      self.outputs_items.empty();
+      for(var i = 0; i < self.options.clusters.length; i++) {
+        $("<li role='presentation'>")
+          .toggleClass("active", self.options["cluster"] == i)
+          .attr("data-cluster", i)
+          .appendTo(self.outputs_items)
+          .append(
+            $('<a role="menuitem" tabindex="-1">')
+              .html(self.options.clusters[i])
+              .click(function()
+              {
+                var menu_item = $(this).parent();
+                if(menu_item.hasClass("active"))
+                  return false;
+
+                self.outputs_items.find("li").removeClass("active");
+                menu_item.addClass("active");
+
+                self.options.cluster = menu_item.attr("data-cluster");
+                self.element.trigger("cluster-changed", menu_item.attr("data-cluster"));
+              })
+          )
+          ;
+      }
+      self.outputsButtonLabel.text(self.options.clusters[self.options["cluster"]]);
     },
 
     resize_canvas: function()

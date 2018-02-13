@@ -403,12 +403,8 @@ function setup_widgets()
     // Changes to the cluster selection ...
     $("#controls").bind("cluster-changed", function(event, cluster)
     {
-      // Log changes to the cluster selection ...
+      // Handle changes to the cluster selection ...
       selected_cluster_changed(cluster);
-      // Changing the cluster updates the table variable selection ...
-      $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
-      $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
-      update_waveform_dendrogram_table_legend_on_selected_variable_changed();
     });
 
     // Changes to the waveform color ...
@@ -627,6 +623,13 @@ function setup_widgets()
     $("#dendrogram-viewer").bind("sort-by-dendrogram-order", function(event){
       $("#table").table("option", "sort-variable", null);
     });
+
+    // Changes to the cluster selection ...
+    $("#dendrogram-viewer").bind("cluster-changed", function(event, cluster)
+    {
+      // Handle changes to the cluster selection ...
+      selected_cluster_changed(cluster);
+    });
   }
 }
 
@@ -672,6 +675,11 @@ function selected_cluster_changed(cluster)
   // Changing the cluster updates the dendrogram and waveformplot ...
   update_dendrogram(cluster_index);
   update_waveformplot(cluster_index);
+
+  // Changing the cluster updates the table variable selection ...
+  $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
+  $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
+  update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
   $.ajax(
   {

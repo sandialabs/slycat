@@ -28,21 +28,6 @@ $.widget("timeseries.controls",
     var self = this;
     var general_controls = $("#general-controls", this.element);
 
-    this.outputs_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(general_controls)
-      ;
-    this.outputs_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="outputs-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Outputs"> \
-        Outputs \
-        <span class="caret"></span> \
-      </button> \
-      ')
-      .appendTo(self.outputs_control)
-      ;
-    this.outputs_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="outputs-dropdown">')
-      .appendTo(self.outputs_control)
-      ;
-
     this.color_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(general_controls)
       ;
@@ -127,7 +112,6 @@ $.widget("timeseries.controls",
     //   self._set_clusters();
     // }
     self._set_color_variables();
-    self._set_outputs();
   },
 
 
@@ -227,35 +211,6 @@ $.widget("timeseries.controls",
     var self = this;
     self.color_items.find("li").removeClass("active");
     self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
-  },
-
-  _set_outputs: function()
-  {
-    var self = this;
-    this.outputs_items.empty();
-    for(var i = 0; i < this.options.clusters.length; i++) {
-      $("<li role='presentation'>")
-        .toggleClass("active", self.options["cluster"] == i)
-        .attr("data-cluster", i)
-        .appendTo(self.outputs_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(this.options.clusters[i])
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
-
-              self.outputs_items.find("li").removeClass("active");
-              menu_item.addClass("active");
-
-              self.options.cluster = menu_item.attr("data-cluster");
-              self.element.trigger("cluster-changed", menu_item.attr("data-cluster"));
-            })
-        )
-        ;
-    }
   },
 
   // Clones an ArrayBuffer or Array
