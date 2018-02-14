@@ -26,7 +26,8 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
       color_scale: null,
       data_table_index_array: null,
       dendrogram_sort_order: true,
-      highlight: []
+      highlight: [],
+      image_columns : [],
     },
 
     _create: function()

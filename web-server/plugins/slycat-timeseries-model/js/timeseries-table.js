@@ -27,6 +27,7 @@ define("slycat-timeseries-table", ["d3"], function(d3)
       waveform_indexes : [],
       selection : null,
       row_count : null,
+      image_columns : [],
     },
 
     _create: function()

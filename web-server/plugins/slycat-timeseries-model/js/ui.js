@@ -55,6 +55,8 @@ var legend_ready = false;
 
 var selected_waveform_indexes = null;
 
+var image_columns = null; // This holds the media columns
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout and forms.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +119,7 @@ function doPoll() {
       cluster_bin_count = model["artifact:cluster-bin-count"];
       cluster_bin_type = model["artifact:cluster-bin-type"];
       cluster_type = model["artifact:cluster-type"];
+      image_columns = model["artifact:image-columns"];
         // If the model isn't ready or failed, we're done.
       if(model["state"] == "waiting" || model["state"] == "running") {
         show_checkjob();
@@ -396,6 +399,7 @@ function setup_widgets()
       color_variables: color_variables,
       "color-variable" : selected_column[cluster_index],
       "selection" : selected_waveform_indexes[parseInt(cluster_index, 10)],
+      image_columns : image_columns,
     };
 
     $("#controls").controls(controls_options);
@@ -503,7 +507,7 @@ function setup_widgets()
   if( 
       !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null && colorscale !== null
       && selected_column !== null && selected_column_type !== null && selected_column_min !== null && selected_column_max !== null
-      && sort_variable !== null && sort_order !== null
+      && sort_variable !== null && sort_order !== null && image_columns !== null
     )
   {
     table_ready = true;
@@ -522,6 +526,7 @@ function setup_widgets()
       "row-selection" : selected_simulations,
       "sort-variable" : sort_variable,
       "sort-order" : sort_order,
+      image_columns : image_columns,
     };
 
     $("#table").table(table_options);
