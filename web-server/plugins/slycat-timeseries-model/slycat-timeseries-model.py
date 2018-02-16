@@ -362,9 +362,10 @@ def register_slycat_plugin(context):
         model_params = [("working_directory", kwargs["working_directory"]), ("username", kwargs["username"]),
                         ("hostname", kwargs["hostname"]), ("sid", sid), ("pickle_uid", uid)]
         for _ in model_params:
-            database = slycat.web.server.database.couchdb.connect()
-            model = database.get("model", model["_id"])
-            slycat.web.server.put_model_parameter(database, model, _[0], _[1], input=False)
+            with slycat.web.server.database.couchdb.db_lock:
+                database = slycat.web.server.database.couchdb.connect()
+                model = database.get("model", model["_id"])
+                slycat.web.server.put_model_parameter(database, model, _[0], _[1], input=False)
 
         def callback():
             """
