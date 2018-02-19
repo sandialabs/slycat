@@ -85,18 +85,23 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                             if (!("artifact:dac-polling-progress" in result))
                             {
                                 launch_model();
+                            } else {
+
+                                // otherwise keep trying, do not reset timer
+                                window.setTimeout(poll, interval);
+
                             }
+                        },
+                        error: function ()
+                        {
+                            // couldn't even load model? -- give up
+                            launch_model();
                         }
                     });
 
-                    // otherwise keep trying, do not reset timer
-                    window.setTimeout(poll, interval);
-
                 } else {
-
-                    // give up
+                    // all else fails -- give up
                     launch_model();
-
                 }
             }
         });
