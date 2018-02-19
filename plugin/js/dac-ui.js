@@ -268,7 +268,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 		metadata_table.select_rows();
 
 		// jump to top row in table for current selection (if there is one)
-		//metadata_table.jump_to (new_selections.detail.active_sel);
+		metadata_table.jump_to (new_selections.detail.active_sel);
     }
 
     // custom event for jumping to an individual selection in the table
