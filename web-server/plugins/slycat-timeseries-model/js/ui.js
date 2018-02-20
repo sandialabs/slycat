@@ -4,7 +4,7 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-define("slycat-timeseries-model", ["slycat-server-root", "slycat-bookmark-manager", "slycat-dialog", "knockout", "URI", "slycat-timeseries-controls", "domReady!"], function(server_root, bookmark_manager, dialog, ko, URI)
+define("slycat-timeseries-model", ["slycat-server-root", 'slycat-web-client', "slycat-bookmark-manager", "slycat-dialog", "knockout", "URI", "slycat-timeseries-controls", "domReady!"], function(server_root, client, bookmark_manager, dialog, ko, URI)
 {
   ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
 
@@ -54,6 +54,8 @@ var table_ready = false;
 var legend_ready = false;
 
 var selected_waveform_indexes = null;
+
+var image_columns = null; // This holds the media columns
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup page layout and forms.
@@ -117,11 +119,43 @@ function doPoll() {
       cluster_bin_count = model["artifact:cluster-bin-count"];
       cluster_bin_type = model["artifact:cluster-bin-type"];
       cluster_type = model["artifact:cluster-type"];
-        // If the model isn't ready or failed, we're done.
+      // If the model isn't ready or failed, we're done.
       if(model["state"] == "waiting" || model["state"] == "running") {
         show_checkjob();
         setTimeout(doPoll, 15000);
         return;
+      }
+
+      // Check if model has the image-columns artifact and create one if it doesn't
+      if(!model.hasOwnProperty("artifact:image-columns"))
+      {
+        // Find media columns
+        console.log("This model has no artifact:image-columns");
+        client.get_model_command({
+          mid: model._id,
+          type: "timeseries",
+          command: "media-columns",
+          success: function(media_columns) {
+            // console.log("here are the media_columns: " + media_columns);
+            client.put_model_parameter({
+              mid: model._id,
+              aid: "image-columns",
+              value: media_columns,
+              input: true,
+              success: function() {
+                // console.log("successfully saved image-columns");
+                image_columns = media_columns;
+              }
+            });
+          },
+          error: function(error) {
+            console.log("error getting model command");
+          }
+        });
+      }
+      else
+      {
+        image_columns = model["artifact:image-columns"];
       }
 
       $('.slycat-job-checker').remove();
@@ -243,7 +277,8 @@ function setup_page()
         color_variables = [];
         for(var i = 0; i < table_metadata["column-count"]; i++)
         {
-          color_variables.push(i);
+          if(image_columns != undefined && image_columns.indexOf(i) == -1)
+            color_variables.push(i);
         }
         // Move index column to top
         color_variables.unshift(color_variables.pop());
@@ -259,8 +294,8 @@ function setup_page()
         colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
         // Set sort variable and order
-        sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : undefined;
-        sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : undefined;
+        sort_variable = bookmark["sort-variable"] != undefined ? bookmark["sort-variable"] : undefined;
+        sort_order = bookmark["sort-order"] != undefined ? bookmark["sort-order"] : undefined;
 
         // Set collapsed, expanded, and selected nodes
         collapsed_nodes = [];
@@ -396,6 +431,7 @@ function setup_widgets()
       color_variables: color_variables,
       "color-variable" : selected_column[cluster_index],
       "selection" : selected_waveform_indexes[parseInt(cluster_index, 10)],
+      image_columns : image_columns,
     };
 
     $("#controls").controls(controls_options);
@@ -403,12 +439,8 @@ function setup_widgets()
     // Changes to the cluster selection ...
     $("#controls").bind("cluster-changed", function(event, cluster)
     {
-      // Log changes to the cluster selection ...
+      // Handle changes to the cluster selection ...
       selected_cluster_changed(cluster);
-      // Changing the cluster updates the table variable selection ...
-      $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
-      $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
-      update_waveform_dendrogram_table_legend_on_selected_variable_changed();
     });
 
     // Changes to the waveform color ...
@@ -507,7 +539,7 @@ function setup_widgets()
   if( 
       !table_ready && bookmark && table_metadata && cluster_index !== null && selected_simulations !== null && colormap !== null && colorscale !== null
       && selected_column !== null && selected_column_type !== null && selected_column_min !== null && selected_column_max !== null
-      && sort_variable !== null && sort_order !== null
+      && sort_variable !== null && sort_order !== null && image_columns !== null
     )
   {
     table_ready = true;
@@ -526,6 +558,7 @@ function setup_widgets()
       "row-selection" : selected_simulations,
       "sort-variable" : sort_variable,
       "sort-order" : sort_order,
+      image_columns : image_columns,
     };
 
     $("#table").table(table_options);
@@ -627,6 +660,13 @@ function setup_widgets()
     $("#dendrogram-viewer").bind("sort-by-dendrogram-order", function(event){
       $("#table").table("option", "sort-variable", null);
     });
+
+    // Changes to the cluster selection ...
+    $("#dendrogram-viewer").bind("cluster-changed", function(event, cluster)
+    {
+      // Handle changes to the cluster selection ...
+      selected_cluster_changed(cluster);
+    });
   }
 }
 
@@ -672,6 +712,11 @@ function selected_cluster_changed(cluster)
   // Changing the cluster updates the dendrogram and waveformplot ...
   update_dendrogram(cluster_index);
   update_waveformplot(cluster_index);
+
+  // Changing the cluster updates the table variable selection ...
+  $("#table").table("option", "variable-selection", [selected_column[cluster_index]]);
+  $("#controls").controls("option", "color-variable", selected_column[cluster_index]);
+  update_waveform_dendrogram_table_legend_on_selected_variable_changed();
 
   $.ajax(
   {
