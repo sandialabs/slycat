@@ -138,11 +138,11 @@ $.widget("parameter_image.table",
     
     self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId", cell_formatter));
     for(var i in self.options.inputs)
-      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput", cell_formatter));
+      self.columns.push(make_column(self.options.inputs[i],  "headerInput",  "rowInput",  cell_formatter));
     for(var i in self.options.outputs)
       self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput", cell_formatter));
     for(var i in self.options.others)
-      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther", cell_formatter));
+      self.columns.push(make_column(self.options.others[i],  "headerOther",  "rowOther",  cell_formatter));
 
     self.data = new self._data_provider({
       server_root : self.options["server-root"],

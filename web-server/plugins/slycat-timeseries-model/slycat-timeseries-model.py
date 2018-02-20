@@ -31,11 +31,11 @@ def register_slycat_plugin(context):
         search = numpy.vectorize(lambda x: bool(expression.search(x)))
 
         columns = []
-        metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", "0")["arrays"][0]
+        metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "inputs", "0")["arrays"][0]
         for index, attribute in enumerate(metadata["attributes"]):
             if attribute["type"] != "string":
                 continue
-            column = slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index)
+            column = slycat.web.server.get_model_arrayset_data(database, model, "inputs", "0/%s/..." % index)
             if not numpy.any(search(column)):
                 continue
             columns.append(index)
@@ -394,6 +394,9 @@ def register_slycat_plugin(context):
     context.register_page("timeseries", page_html)
 
     context.register_page_bundle("timeseries", "text/css", [
+        os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
+        os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
+        os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
         os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
         os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
         os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
@@ -423,6 +426,18 @@ def register_slycat_plugin(context):
         # os.path.join(os.path.dirname(__file__), "js/ui.js"),
     ])
     context.register_page_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
+
+    # Register jquery-ui images
+    images = [
+        # for stickies
+        'ui-bg_flat_0_aaaaaa_40x100.png',
+        'ui-icons_222222_256x240.png',
+        'ui-bg_highlight-soft_75_cccccc_1x100.png',
+        'ui-bg_flat_75_ffffff_40x100.png',
+        'ui-bg_glass_75_e6e6e6_1x400.png',
+    ]
+    for image in images:
+        context.register_page_resource("timeseries", image, os.path.join(os.path.dirname(__file__), "images", image))
 
     devs = [
         # "js/parameter-image-dendrogram.js",

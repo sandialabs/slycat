@@ -51,7 +51,7 @@ define("slycat-timeseries-table", ["d3"], function(d3)
 
     	function make_column(column_index, header_class, cell_class)
       {
-        return {
+        var column = {
           id : column_index,
           field : column_index,
           name : self.options.metadata["column-names"][column_index],
@@ -71,12 +71,31 @@ define("slycat-timeseries-table", ["d3"], function(d3)
             ]
           }
         };
+
+        // Special options for image columns
+        if( self.options.image_columns.indexOf(column_index) > -1 ) {
+          column.headerCssClass += " headerImage";
+        }
+
+        return column;
       }
 
       self.columns = [];
-      self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId")); // Last column is added as simid
-      for(var i = 0; i < self.options.metadata["column-count"]-1; i++) // rest of columns are added as inputs
-        self.columns.push(make_column(i, "headerInput", "rowInput"));
+      var header_class, cell_class;
+      // Last column is added as simid
+      self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
+      // rest of columns are added as inputs, except for media columns which are added as other
+      for(var i = 0; i < self.options.metadata["column-count"]-1; i++)
+      {
+        header_class = "headerInput";
+        cell_class = "rowInput";
+        if(self.options.image_columns.indexOf(i) > -1)
+        {
+          header_class = "headerOther";
+          cell_class = "rowOther";
+        }
+        self.columns.push(make_column(i, header_class, cell_class));
+      }
     },
 
     resize_canvas: function()
@@ -277,7 +296,9 @@ define("slycat-timeseries-table", ["d3"], function(d3)
 
             self.grid.onHeaderClick.subscribe(function (e, args)
             {
-              if(!self._array_equal([args.column.field], self.options["variable-selection"]))
+              if(!self._array_equal([args.column.field], self.options["variable-selection"]) &&
+                 self.options.image_columns.indexOf(args.column.field) == -1
+                )
               {
                 self.options["variable-selection"] = [args.column.field];
                 // self._color_variables(self.options["variable-selection"]);
