@@ -26,7 +26,8 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
       color_scale: null,
       data_table_index_array: null,
       dendrogram_sort_order: true,
-      highlight: []
+      highlight: [],
+      image_columns : [],
     },
 
     _create: function()
@@ -79,7 +80,13 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
           }
         })
         ;
-      this._set_dendrogram_sort_order_state();
+
+      self.outputsButtonLabel = $('#dendrogram-controls button.outputs .buttonLabel');
+      self.outputs_items = $('#dendrogram-controls ul.outputs');
+
+      self._set_dendrogram_sort_order_state();
+      self._set_outputs();
+
 
   	  var vis = self.container.append("svg:g")
         .attr("transform", "translate(" + padding + "," + padding + ")")
@@ -821,6 +828,36 @@ define("slycat-timeseries-dendrogram", ["d3"], function(d3)
         .attr("title", function(index, attr){return self.options.dendrogram_sort_order ? "Inputs are sorted in dendrogram order" : "Sort inputs in dendrogram order"})
         .toggleClass("selected", self.options.dendrogram_sort_order)
         ;
+    },
+
+    _set_outputs: function()
+    {
+      var self = this;
+      self.outputs_items.empty();
+      for(var i = 0; i < self.options.clusters.length; i++) {
+        $("<li role='presentation'>")
+          .toggleClass("active", self.options["cluster"] == i)
+          .attr("data-cluster", i)
+          .appendTo(self.outputs_items)
+          .append(
+            $('<a role="menuitem" tabindex="-1">')
+              .html(self.options.clusters[i])
+              .click(function()
+              {
+                var menu_item = $(this).parent();
+                if(menu_item.hasClass("active"))
+                  return false;
+
+                self.outputs_items.find("li").removeClass("active");
+                menu_item.addClass("active");
+
+                self.options.cluster = menu_item.attr("data-cluster");
+                self.element.trigger("cluster-changed", menu_item.attr("data-cluster"));
+              })
+          )
+          ;
+      }
+      self.outputsButtonLabel.text(self.options.clusters[self.options["cluster"]]);
     },
 
     resize_canvas: function()
