@@ -80,16 +80,15 @@ RUN cd /home/slycat; wget --no-check-certificate https://github.com/mozilla/geck
 
 USER root
 RUN cd /home/slycat; cp geckodriver /usr/bin/geckodriver
-
-USER slycat
-
-RUN cd /home/slycat/src/slycat; git pull
-# put the appropriate web server config in place
 RUN rm /etc/slycat/run-slycat.sh
 RUN rm /etc/slycat/web-server-config.ini
-
+# put the appropriate web server config in place
 RUN ln -s /home/slycat/src/slycat/docker/slycat-developer/web-server-config.ini /etc/slycat/web-server-config.ini
 RUN ln -s /home/slycat/src/slycat/docker/slycat-developer/run-slycat.sh /etc/slycat/run-slycat.sh
+
+USER slycat
+RUN cd /home/slycat/src/slycat; git pull
+
 # Configure vim and setup useful aliases.
 RUN echo "alias vi=vim" >> /home/slycat/.bash
 ADD .vimrc /home/slycat/.vimrc
@@ -100,5 +99,5 @@ RUN echo "alias testslycat=\"behave -i \\\"(agent|hyperchunks|rest-api)\\\" /hom
 
 
 USER root
-RUN chmod -r 750 /etc/slycat
+RUN chmod -R 750 /etc/slycat
 RUN chown --recursive root:slycat /etc/slycat/

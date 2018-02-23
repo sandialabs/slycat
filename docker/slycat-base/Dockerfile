@@ -35,7 +35,6 @@ RUN /home/slycat/install/conda/bin/conda config --set ssl_verify false
 RUN /home/slycat/install/conda/bin/conda update --yes python
 RUN /home/slycat/install/conda/bin/conda update --yes conda
 RUN /home/slycat/install/conda/bin/conda install --yes pip
-#RUN /home/slycat/install/conda/bin/conda install --yes paramiko Pillow scipy scikit-image
 RUN /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org -U pip
 RUN /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org CouchDB
 RUN /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org setuptools_scm h5py ipython paramiko Pillow scipy scikit-image
@@ -82,6 +81,6 @@ RUN chown slycat:slycat /var/log/slycat
 EXPOSE 443
 COPY web-server-config.ini /etc/slycat/
 COPY run-slycat.sh /etc/slycat/
-RUN chmod -r 750 /etc/slycat
+RUN chmod -R 750 /etc/slycat
 RUN chown --recursive root:slycat /etc/slycat/
 CMD /etc/slycat/run-slycat.sh
