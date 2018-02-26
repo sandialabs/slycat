@@ -1,4 +1,8 @@
-/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
+/*
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+*/
 
 define("slycat-timeseries-model", ["slycat-server-root", 'slycat-web-client', "slycat-bookmark-manager", "slycat-dialog", "knockout", "URI", "slycat-timeseries-controls", "domReady!"], function(server_root, client, bookmark_manager, dialog, ko, URI)
 {
@@ -111,6 +115,50 @@ function doPoll() {
     success : function(result)
     {
       model = result;
+      bookmarker = bookmark_manager.create(model.project, model._id);
+      cluster_bin_count = model["artifact:cluster-bin-count"];
+      cluster_bin_type = model["artifact:cluster-bin-type"];
+      cluster_type = model["artifact:cluster-type"];
+      // If the model isn't ready or failed, we're done.
+      if(model["state"] == "waiting" || model["state"] == "running") {
+        show_checkjob();
+        setTimeout(doPoll, 15000);
+        return;
+      }
+
+      // Check if model has the image-columns artifact and create one if it doesn't
+      if(!model.hasOwnProperty("artifact:image-columns"))
+      {
+        // Find media columns
+        // console.log("This model has no artifact:image-columns");
+        client.get_model_command({
+          mid: model._id,
+          type: "timeseries",
+          command: "media-columns",
+          success: function(media_columns) {
+            // console.log("here are the media_columns: " + media_columns);
+            client.put_model_parameter({
+              mid: model._id,
+              aid: "image-columns",
+              value: media_columns,
+              input: true,
+              success: function() {
+                // console.log("successfully saved image-columns");
+                image_columns = media_columns;
+              }
+            });
+          },
+          error: function(error) {
+            console.log("error getting model command");
+          }
+        });
+      }
+      else
+      {
+        image_columns = model["artifact:image-columns"];
+      }
+
+      $('.slycat-job-checker').remove();
       // If the model isn't ready or failed, we're done.
       if(model["state"] === "closed" && model["result"] === null)
       {
