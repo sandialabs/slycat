@@ -1,3 +1,5 @@
+.. _GettingStarted:
+
 Getting Started
 ---------------
 Slycat™ is accessed through a web browser from your desktop computer.  Slycat™ currently supports Firefox, Chrome, and Safari browsers.  We do not support Internet Explorer.    
