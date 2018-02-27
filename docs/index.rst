@@ -52,7 +52,7 @@ Documentation:
 .. toctree::
   :maxdepth: 2
 
-  user-manual.rst
+  manual/user-manual.rst
   design.rst
   tutorial.rst
   setup-clients.rst
