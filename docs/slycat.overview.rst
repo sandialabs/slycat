@@ -9,7 +9,7 @@ The Slycat™ system integrates data management, scalable analysis, and visualiz
 
 Within Slycat™, data and visual analysis are organized around projects, which are shared by a project team.  Project members are explicitly added, each with a designated set of permissions. Although users sign-in to access Slycat™, individual accounts are not maintained.  Instead, authentication is used to determine project access.  Within projects, Slycat™ models capture analysis results and enable data exploration through various visual representations.  Although for scientists each simulation run is a model of real-world phenomena given certain conditions, we use the term model to refer to our modeling of the ensemble data, not the physics.  Different model types often provide complementary perspectives on data features when analyzing the same data set.  Each model visualizes data at several levels of abstraction, allowing the user to range from viewing the ensemble holistically to accessing numeric parameter values for a single run.  Bookmarks provide a mechanism for sharing results, enabling interesting model states to be labeled and saved.
 
-GettingStarted.rst
+:ref:`GettingStarted`
 
 Slycat™ Navbar
 --------------
