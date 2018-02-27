@@ -4,6 +4,8 @@
 
 service sshd start
 sleep 2
+service rsyslog stop
+sleep 2
 service rsyslog start
 service couchdb start
 sleep 2
