@@ -24,6 +24,8 @@ only be two buttons: *Create* and *Info*.
 Editing Projects
 ================
 
+.. image:: Figure4.png
+
 Clicking on the yellow *Edit* button on a project page and selecting *Edit Project* from the dropdown list provides a means to 
 change the project *Name, Description,* or project *Members*.  An *Edit Project* popup will appear with the current project 
 information (Figure 6).  In a newly created project, the membership list consists solely of the project creator assigned the role 
