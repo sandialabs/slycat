@@ -7,7 +7,8 @@ bookmarks for models within that project.
 Project Creation
 ================
 
-Projects are created by clicking the green *Create* button on the main Projects page and selecting *New Project* from the dropdown 
+Projects are created by clicking the green <span style="color:green">*Create*</span> button on the main Projects page 
+and selecting *New Project* from the dropdown 
 that appears.  A dialog will pop up, providing editable regions for you to enter a *Name* and an optional *Description*.  This
 brief text field allows you to provide more detailed comments or notes beyond the project name.  Clicking the *Finish* button in 
 the lower right corner creates the project and takes you to the newly created project page; clicking the *Cancel* button in 
