@@ -73,8 +73,10 @@ icon become a hand with a pointing finger, and the tooltip *Close* appears.  Cli
 the two adjacent regions.  It collapses the region that is closer to the edge of the browser window.  Clicking a second time on 
 that same divider (now positioned along the edge of the model visualization) will restore the previous layout.
 
-Download Data Table 
+Download Data Table |Download|
 ===================
+
+.. |Download| image:: DownloadIcon.png
 
 Since data tables are at the core of each model type, all models provide a table download operation.  The download can take one 
 of several forms: download the entire table, download only selected items, or download only visible items.  As will be described 
