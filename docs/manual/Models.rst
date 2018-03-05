@@ -103,9 +103,12 @@ bundled scatterplot background color and color palette for mapping numeric value
 Below the Navbar on the model page, there is an additional row of model-specific buttons.  To change the current color theme, 
 click the *Colors* button.  As shown in Figure 9, there are four color themes available in the dropdown:  *Night, Day, Rainbow 
 Night,* and *Rainbow Day*.  *Night* is the default choice.  *Night* has a gray background and uses a diverging palette that maps 
-low values to blue and high values to red, transitioning through white for values in the middle of the range [7].  *Day* has a 
+low values to blue and high values to red, transitioning through white for values in the middle of the range [#]_.  *Day* has a 
 white background and a similar blue to red mapping, though the palette is slightly shifted to transition through gray instead of 
 white to enable you to distinguish points in the middle of the range from the background.  *Rainbow Night* has a gray background 
 and a conventional rainbow palette.  *Rainbow Day* has a white background and a conventional rainbow palette.  Although we 
 provide *Rainbow* themes, we discourage their use since color order in the middle of the range is not intuitive.  
 
+.. rubric:: Footnotes
+
+.. [#] Moreland, K., Diverging Color Maps for Scientific Visualization.  Advances in Visual Computing, vol. 5876, pp. 92-103.  Springer, Berlin (2009).
