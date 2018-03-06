@@ -10,6 +10,7 @@ def register_slycat_plugin(context):
     import sys
     import numpy
     import re
+    import couchdb
     try:
         import cpickle as pickle
     except ImportError:
@@ -362,10 +363,21 @@ def register_slycat_plugin(context):
         model_params = [("working_directory", kwargs["working_directory"]), ("username", kwargs["username"]),
                         ("hostname", kwargs["hostname"]), ("sid", sid), ("pickle_uid", uid)]
         for _ in model_params:
-            with slycat.web.server.database.couchdb.db_lock:
-                database = slycat.web.server.database.couchdb.connect()
-                model = database.get("model", model["_id"])
-                slycat.web.server.put_model_parameter(database, model, _[0], _[1], input=False)
+            pushed = False
+            tries = 10
+            while not pushed:
+                with slycat.web.server.database.couchdb.db_lock:
+                    try:
+                        database = slycat.web.server.database.couchdb.connect()
+                        model = database.get("model", model["_id"])
+                        slycat.web.server.put_model_parameter(database, model, _[0], _[1], input=False)
+                        pushed = True
+                    except couchdb.http.ResourceConflict:
+                        pushed = False
+                        cherrypy.log.error("resource conflict eception in param push")
+                        time.sleep(1)
+                    if tries == 0:
+                        raise Exception("failed to update model with params")
 
         def callback():
             """

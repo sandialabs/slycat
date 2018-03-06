@@ -985,8 +985,8 @@ def put_model_parameter(mid, aid):
 
     value = require_json_parameter("value")
     input = require_boolean_json_parameter("input")
-
-    slycat.web.server.put_model_parameter(database, model, aid, value, input)
+    with slycat.web.server.database.couchdb.db_lock:
+        slycat.web.server.put_model_parameter(database, model, aid, value, input)
 
 
 def delete_model_parameter(mid, aid):
