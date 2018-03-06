@@ -31,8 +31,8 @@ def mix(a, b, amount):
 # @cache_it
 def evaluate(hdf5_array, expression, expression_type, expression_level=0):
     """Evaluate a hyperchunk expression."""
-    cherrypy.log.error("%sEvaluating %s expression: %s" % (
-        "  " * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))
+    # cherrypy.log.error("%sEvaluating %s expression: %s" % (
+    #     "  " * expression_level, expression_type, slycat.hyperchunks.tostring(expression)))
     if isinstance(expression, int):
         return expression
     elif isinstance(expression, float):
