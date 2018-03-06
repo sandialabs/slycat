@@ -32,3 +32,6 @@ icon.  To delete a bookmark, click on its red trashcan.
 
 .. image:: Figure11.png
 **Figure 11: Example of a** *Create Saved Bookmark* **dialog.**
+
+Note that changes to the *View Regions* are not currently preserved in bookmarks.  Consequently, when the layout has been modified prior 
+to the model being bookmarked, visualizing the *Bookmark* will render the model using the default *View Regions* layout.
