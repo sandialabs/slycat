@@ -1280,9 +1280,9 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
-    cherrypy.log.error("looking for unique in results")
+    # cherrypy.log.error("looking for unique in results")
     if "unique" in results:
-        cherrypy.log.error("found unique in results: " )
+        # cherrypy.log.error("found unique in results: " )
         cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         cherrypy.log.error("type:")
         cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
