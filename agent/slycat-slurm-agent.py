@@ -212,7 +212,6 @@ class Agent(agent.Agent):
         f.write("#SBATCH --nodes=%s\n" % nnodes)
         f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
         f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-        f.write("source /etc/profile.d/modules.sh\n")
         f.write("module load %s\n" % module_name)
         f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)\n")
         f.write("echo \"Creating profile ${profile}\"\n")
