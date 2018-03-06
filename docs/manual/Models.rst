@@ -27,7 +27,7 @@ covered below).  Model creation can be aborted at any stage by clicking the *X* 
 
 
 .. image:: Figure7.png
-**Figure 7: *Create* dropdown list of model choices, as seen from a project page.**
+**Figure 7:** *Create* **dropdown list of model choices, as seen from a project page.**
 
 Editing Models
 ==============
@@ -38,7 +38,7 @@ model *Name, Description,* and *Marking*.  A *Name Model* dialog will popup with
 the operation.
 
 .. image:: Figure8.png
-**Figure 8: *Edit* dropdown list, as seen from a model page.**
+**Figure 8:** *Edit* **dropdown list, as seen from a model page.**
 
 Reset Model
 ===========
@@ -98,7 +98,7 @@ green columns are associated with input variables, lavender designates output va
 colored (they are rendered using an off-white).
 
 .. image:: Figure9.png
-**Figure 9: Dropdown list of color theme choices from the *Colors* button.**
+**Figure 9: Dropdown list of color theme choices from the** *Colors* **button.**
 
 Slycat™ provides a set of predefined color themes, which are individually assigned to each model.  A color theme consists of a 
 bundled scatterplot background color and color palette for mapping numeric values to color-coded objects in Slycat™ views.  
