@@ -33,7 +33,7 @@ of *Administrator*.  The username of the creator will be shown within a red butt
 red is used for an *Administrator*) at the bottom.
 
 .. image:: Figure6.png
-**Figure 6: *Edit Project* dialog allows you to change the project name, add or change a description, and add, remove, or 
+**Figure 6:** *Edit Project* **dialog allows you to change the project name, add or change a description, and add, remove, or 
 change the roles of project members.**
 
 There are three different roles that project members can have: *Reader, Writer,* and *Administrator*, whose buttons are color-coded 
