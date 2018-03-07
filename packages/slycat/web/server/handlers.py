@@ -71,6 +71,8 @@ def js_bundle():
                                                                                   "js/slycat-curl-config.js",
                                                                                   # Load this immediately following curl to configure it.
                                                                                   "js/uri.min.js",
+                                                                                  "js/react.development.js",
+                                                                                  "js/react-dom.development.js",
                                                                                   "js/jquery-2.1.1.min.js",
                                                                                   "js/lodash.min.js",
                                                                                   "js/slycat-lodash-wrap.js",
