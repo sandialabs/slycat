@@ -21,7 +21,7 @@ RUN openssl req -x509 -new -nodes -key /root-ca.key -days 365 -out /root-ca.cert
 # Generate a self-signed certificate
 RUN openssl genrsa -out /web-server.key 2048
 RUN openssl req -new -key /web-server.key -out /web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost"
-RUN openssl x509 -req -in /web-server.csr -CA /root-ca.cert -CAkey /root-ca.key -CAcreateserial -out web-server.cert -days 365
+RUN openssl x509 -req -sha256 -in /web-server.csr -CA /root-ca.cert -CAkey /root-ca.key -CAcreateserial -out /web-server.cert -days 1825
 
 RUN cat /web-server.key /web-server.cert > /etc/slycat/combined.cer; chgrp slycat /etc/slycat/combined.cer; chmod 440 /etc/slycat/combined.cer
 # Add our private CA to the system-wide list of certificate authorities, so push scripts will trust the web-server.
