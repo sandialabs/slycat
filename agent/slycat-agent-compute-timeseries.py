@@ -18,7 +18,7 @@ import argparse
 import collections
 import datetime
 import h5py
-import IPython.parallel
+import ipyparallel
 import itertools
 import json
 import numpy
@@ -58,7 +58,7 @@ if arguments.cluster_sample_count < 1:
 _numSamples = arguments.cluster_sample_count
 
 try:
-  pool = IPython.parallel.Client(profile=arguments.profile)[:]
+  pool = ipyparallel.Client(profile=arguments.profile)[:]
 except:
   raise Exception("A running IPython parallel cluster is required to run this script.")
 
