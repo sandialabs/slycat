@@ -33,8 +33,15 @@ coefficients are considered difficult to interpret and may hide certain redundan
 the canonical loadings, also known as the structure coefficients. The structure coefficients are generally preferred over the canonical 
 coefficients because they are more closely related to the original variables.  The structure coefficients are given by the correlations 
 between the canonical variables and the original variables (e.g. corr (**a**\ :sup:`T`\ *X*, *X*) and 
-corr (**a**\ :sup:`T`\ *Y*, *Y*))).  These are calculated using Pearson’s correlation between each column of *X* or *Y* and the 
+corr (**a**\ :sup:`T`\ *Y*, *Y*)).  These are calculated using Pearson’s correlation between each column of *X* or *Y* and the 
 corresponding canonical variable.  
+
+.. toctree::
+  :maxdepth: 3
+  
+  CarsExampleData.rst
+  CreatingCCAModel.rst
+  CCAModelVis.rst
 
 .. rubric:: Footnotes
 
