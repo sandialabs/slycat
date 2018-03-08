@@ -121,14 +121,14 @@ def register_slycat_plugin(context):
         """
         # workdir += "/slycat/pickle"  # route to the slycat directory
         running = True
-        tries = 1000
+        tries = 100
         while running:
-            running = False
             tries = tries - 1
             if tries <= 0:
+                running = False
                 fail_model(model_id, "Exceeded max number of tries to pull data over to the server.")
                 cherrypy.log.error("[TIMESERIES] Exceeded max number of tries.")
-                raise Exception("[TIMESERIES] Exceeded max number of tries")
+                break
             try:
                 database = slycat.web.server.database.couchdb.connect()
                 model = database.get("model", model_id)
@@ -170,6 +170,7 @@ def register_slycat_plugin(context):
                                                   "%s/slycat_timeseries_%s/file_clusters.out" % (workdir, uid),
                                                   clusters["aid"], clusters["parser"])
                 # TODO this can become multi processored
+                cherrypy.log.error("Pulling timeseries computed data")
                 for file_name in clusters_file:
                     sid, file_cluster_data = get_remote_file(sid, hostname, username, password,
                                                              "%s/slycat_timeseries_%s/file_cluster_%s.json" % (
@@ -201,7 +202,7 @@ def register_slycat_plugin(context):
                                                                     workdir, uid, file_name))
                     waveform_values_array = pickle.loads(waveform_values_data)
 
-                    cherrypy.log.error("timeseries_count=%s" % timeseries_count)
+                    # cherrypy.log.error("timeseries_count=%s" % timeseries_count)
 
                     # TODO this can become multi processored
                     for index in range(int(timeseries_count)):
@@ -216,6 +217,8 @@ def register_slycat_plugin(context):
                         except:
                             cherrypy.log.error("failed on index: %s" % index)
                             pass
+                running = False
+                cherrypy.log.error("finnished Pulling timeseries computed data")
                 # TODO add finished to the model state
                 # TODO add remove dir command by uncommenting below
                 # payload = {
@@ -223,16 +226,15 @@ def register_slycat_plugin(context):
                 #     "command": ("rm -rf %s" % workdir_raw)
                 # }
             except cherrypy._cperror.HTTPError as e:
-                running = True
                 cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
                 cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
                 cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
                 time.sleep(15)
             except Exception as e:
-                fail_model(model_id, "Timeseries model compute exception: %s" % sys.exc_info()[0])
                 cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
                 cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
                 cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
+                fail_model(model_id, "Timeseries model compute exception: %s" % sys.exc_info()[0])
 
     # TODO this function needs to be migrated to the implementation of the computation interface
     def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
