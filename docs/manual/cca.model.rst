@@ -11,7 +11,7 @@ analysis, since they contribute no differentiating information.  CCA cannot hand
 Slycat™ will remove rows from the analysis if any of the values in either the input or output variable sets include such data.  However, 
 if the bad values are only in columns that are not analysis variables, the row will be used.
 
-For a concise description of CCA, we need the following definitions.  Given *n* samples (*n* rows in the table), the input variables (presumed to be independent) will be referred to as the set *X* = {**x** 1, …, **x** n} and the output (dependent) variables as the set *Y* = {**y** 1, …, **y** n}.  Each vector **x** i has *p* 1 components and each vector **y** j has *p* 2 components.  CCA attempts to find projections **a** and **b** such that *R* 2 = corr (**a** T *X*, **b** T *Y*) is maximized, where corr (•,•) denotes the standard Pearson correlation. 
+For a concise description of CCA, we need the following definitions.  Given *n* samples (*n* rows in the table), the input variables (presumed to be independent) will be referred to as the set *X* = {**x**\ :sub:`1`\ , …, **x**\ :sub:`n`\ } and the output (dependent) variables as the set *Y* = {**y**\ :sub:`1`\ , …, **y**\ :sub:`n`\ }.  Each vector **x**\ :sub:`i` has *p*\ :sub:`1` components and each vector **y**\ :sub:`j` has *p*\ :sub:`2` components.  CCA attempts to find projections **a** and **b** such that *R*\ :sup:`2` = corr (**a** T *X*, **b** T *Y*) is maximized, where corr (•,•) denotes the standard Pearson correlation. 
 
 .. rubric:: Footnotes
 
