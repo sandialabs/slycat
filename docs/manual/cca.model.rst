@@ -21,13 +21,14 @@ correlation.
 The vectors **a**\ :sup:`T`\ *X* and **b**\ :sup:`T`\ *Y* are known as the first pair of canonical variables.  Further pairs of 
 canonical variables are orthogonal and ordered by decreasing importance. In addition to the canonical variables, the *R*\ :sup:`2` value 
 for each variable pair is obtained, and various statistics can be computed to determine the significance of the correlation. A common 
-statistic used in this context is the p-value associated with Wilks’ *λ* [6].  Slycat™ provides both *R*\ :sup:`2` and p-values for each 
-canonical component as part of the Correlation View (see Figure 23 below).  Note that these statistics assume that the data is normally 
-distributed.  If your data does not follow a normal distribution, be aware that these statistics will be suspect and adjust your 
-interpretation of the results accordingly.
+statistic used in this context is the p-value associated with Wilks’ *λ* [#]_.  Slycat™ provides both *R*\ :sup:`2` and p-values for 
+each canonical component as part of the Correlation View (see Figure 23 below).  Note that these statistics assume that the data is 
+normally distributed.  If your data does not follow a normal distribution, be aware that these statistics will be suspect and adjust 
+your interpretation of the results accordingly.
 
 .. rubric:: Footnotes
 
-.. [#] Hotelling, H., Relations Between Two Sets of Variates.  Biometrika, 28, 321-377 (1936).
-.. [#] Adams, B.M., Ebeida, M.S., Eldred, M.S., Jakeman, J.D., Swiler, L.P., Bohnhoff, W.J., Dalbey,K.R., Eddy, J.P., Hu, K.T., Vigil, D.M., Bauman, L.E., and Hough, P.D., Dakota, a multilevel parallel object-oriented framework for design optimization, parameter estimation, uncertainty quantification, and sensitivity analysis: Version 5.3.1 user’s manual. Tech. Rep. SAND2010-2183, Sandia National Laboratories (2013).
-.. [#] Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., ParaView Catalyst: Enabling In Situ Data Analysis and Visualization, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).
+.. [#] Hotelling, H., Relations Between Two Sets of Variates.  *Biometrika*, 28, 321-377 (1936).
+.. [#] Adams, B.M., Ebeida, M.S., Eldred, M.S., Jakeman, J.D., Swiler, L.P., Bohnhoff, W.J., Dalbey,K.R., Eddy, J.P., Hu, K.T., Vigil, D.M., Bauman, L.E., and Hough, P.D., *Dakota, a multilevel parallel object-oriented framework for design optimization, parameter estimation, uncertainty quantification, and sensitivity analysis: Version 5.3.1 user’s manual*. Tech. Rep. SAND2010-2183, Sandia National Laboratories (2013).
+.. [#] Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., *ParaView Catalyst: Enabling In Situ Data Analysis and Visualization*, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).
+.. [#] Krzanowski, W. J., *Principles of Multivariate Analysis.  A User’s Perspective*.  Oxford University Press, London (1988).
