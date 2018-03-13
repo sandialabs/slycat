@@ -986,8 +986,18 @@ def put_model_parameter(mid, aid):
     value = require_json_parameter("value")
     input = require_boolean_json_parameter("input")
     with slycat.web.server.database.couchdb.db_lock:
-        slycat.web.server.put_model_parameter(database, model, aid, value, input)
+        try:
+            slycat.web.server.put_model_parameter(database, model, aid, value, input)
+        except Exception:
+            time.sleep(1)
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", mid)
+            project = database.get("project", model["project"])
+            slycat.web.server.authentication.require_project_writer(project)
 
+            value = require_json_parameter("value")
+            input = require_boolean_json_parameter("input")
+            slycat.web.server.put_model_parameter(database, model, aid, value, input)
 
 def delete_model_parameter(mid, aid):
     """

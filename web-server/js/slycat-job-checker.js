@@ -62,19 +62,8 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         vm.output(vm.output() + '\n' + 'Please reload the page to check job ' + vm.jid() + '\'s status.');
       };
       var get_job_output = function() {
-        client.get_job_output({
-          hostname: vm.remote.hostname(),
-          jid: vm.jid(),
-          path: '',
-          success: function(results) {
-            if (results.errors)
-              vm.output(vm.output() + '\n' + '[Error] Could not read the job ID=' + vm.jid() + ' output: ' + results.errors);
-            else
-              vm.output(vm.output() + '\n' + 'The output for job ID=' + vm.jid() + ' is:\n\n' + results.output);
-
-            vm.output(vm.output() + '\n\n' + 'Please reload to view model.');
-          }
-        });
+        vm.output(vm.output() + '\n\n' + 'Please reload to view model.');
+        window.location.reload(true);
       };
 
       var repeated_state = function(state) {

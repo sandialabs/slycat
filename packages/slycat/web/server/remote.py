@@ -1163,7 +1163,6 @@ def get_session(sid):
       Session object that encapsulates the connection to a remote host.
     """
     client = cherrypy.request.headers.get("x-forwarded-for")
-
     with session_cache_lock:
         _expire_session(sid)
 
@@ -1171,6 +1170,47 @@ def get_session(sid):
             session = session_cache[sid]
             # Only the originating client can access a session.
             if client != session.client:
+                cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (
+                    client, session.username, session.hostname, session.client))
+                del session_cache[sid]
+                slycat.email.send_error("slycat.web.server.remote.py get_session",
+                                        "cherrypy.HTTPError 404: client %s attempted to "
+                                        "access remote session for %s@%s from %s" % (
+                                            client, session.username, session.hostname, session.client))
+                raise cherrypy.HTTPError("404")
+
+        if sid not in session_cache:
+            raise cherrypy.HTTPError("404 not a session")
+
+        session = session_cache[sid]
+        session._accessed = datetime.datetime.utcnow()
+        return session
+
+
+def get_session_server(client, sid):
+    """
+    Return a cached remote session.
+
+    If the session has timed-out or doesn't exist, raises a 404 exception.
+
+    Parameters
+    ----------
+    sid : string
+      Unique session identifier returned by :func:`slycat.web.server.remote.create_session`.
+
+    Returns
+    -------
+    session : :class:`slycat.web.server.remote.Session`
+      Session object that encapsulates the connection to a remote host.
+      :param client:
+    """
+    with session_cache_lock:
+        _expire_session(sid)
+
+        if sid in session_cache:
+            session = session_cache[sid]
+            # Only the originating client can access a session.
+            if client != session.username:
                 cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (
                     client, session.username, session.hostname, session.client))
                 del session_cache[sid]

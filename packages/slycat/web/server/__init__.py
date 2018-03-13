@@ -483,17 +483,41 @@ def get_remote_file(sid, path):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path)
 
+def get_remote_file_server(client, sid, path):
+    """Returns the content of a file from a remote system.
 
-def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, **kwargs):
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  path : string
+    Path for the requested file
+
+  Returns
+  -------
+  content : string
+    Content of the requested file
+  """
+    with slycat.web.server.remote.get_session_server(client, sid) as session:
+        return session.get_file(path)
+
+
+def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None, client=None, **kwargs):
     if input is None:
         slycat.email.send_error("slycat.web.server.__init__.py put_model_file", "Required input parameter is missing.")
         raise Exception("Required input parameter is missing.")
 
     if path is not None and sid is not None:
-        with slycat.web.server.remote.get_session(sid) as session:
-            filename = "%s@%s:%s" % (session.username, session.hostname, path)
-            # TODO verify that the file exists first...
-            file = session.sftp.file(path).read()
+        if client is not None:
+            with slycat.web.server.remote.get_session_server(client, sid) as session:
+                filename = "%s@%s:%s" % (session.username, session.hostname, path)
+                # TODO verify that the file exists first...
+                file = session.sftp.file(path).read()
+        else:
+            with slycat.web.server.remote.get_session(sid) as session:
+                filename = "%s@%s:%s" % (session.username, session.hostname, path)
+                # TODO verify that the file exists first...
+                file = session.sftp.file(path).read()
     else:
         slycat.email.send_error("slycat.web.server.__init__.py post_model_file", "Must supply path and sid parameters.")
         raise Exception("Must supply path and sid parameters.")
