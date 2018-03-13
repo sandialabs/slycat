@@ -1,6 +1,7 @@
 define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-root', 'URI', 'slycat-web-client', 'slycat-dialog'], function(ko, mapping, server_root, URI, client, dialog) {
   ko.components.register('slycat-job-checker', {
     viewModel: function(params) {
+      var model = { _id: URI(window.location).segment(-1) };
       var vm = this;
       vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false });
       vm.remote.focus.extend({ notify: 'always'  });
@@ -54,6 +55,12 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         vm.output(vm.output() + '\n' + 'Please reload the page to check job ' + vm.jid() + '\'s status.');
       };
 
+      vm.cancel_pull = function() {
+        vm.remote.password('');
+        console.log("cancel");
+        $('#slycat-pull-job-connect-modal').modal('hide');
+        vm.output(vm.output() + '\n' + 'Please reload the page to check job ' + vm.jid() + '\'s status.');
+      };
       var get_job_output = function() {
         client.get_job_output({
           hostname: vm.remote.hostname(),
@@ -110,6 +117,59 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         });
       };
 
+      vm.pullDataFromHpc = function() {
+        console.log("1");
+        vm.remote.enable(false);
+        vm.remote.status_type('info');
+        vm.remote.status('Connecting...');
+        if(vm.remote.session_exists())
+        {
+          console.log("got session");
+          vm.remote.enable(true);
+          vm.remote.status_type(null);
+          vm.remote.status(null);
+          $('#slycat-pull-job-connect-modal').modal('hide');
+          vm.pullHPCData();
+        }
+        else{
+            client.post_remotes({
+              hostname: vm.remote.hostname(),
+              username: vm.remote.username(),
+              password: vm.remote.password(),
+              success: function(sid) {
+                vm.remote.session_exists(true);
+                vm.remote.sid(sid);
+                vm.remote.enable(true);
+                vm.remote.status_type(null);
+                vm.remote.status(null);
+                $('#slycat-pull-job-connect-modal').modal('hide');
+                vm.checkjob();
+              },
+              error: function(request, status, reason_phrase) {
+                $('#slycat-job-checker-cancel').attr('disabled');
+                vm.remote.enable(true);
+                vm.remote.status_type('danger');
+                vm.remote.status(reason_phrase);
+                vm.remote.focus('password');
+              }
+            });
+        }
+      };
+      vm.pullHPCData = function() {
+        console.log("2");
+		client.get_model_command({
+          mid: model._id,
+          type: "timeseries",
+          command: "pull_data",
+          success: function(results) {
+            vm.output(vm.output() + '\n' + 'started pull status :' + results.errors);
+          },
+          error: function(request, status, reason_phrase) {
+            vm.output(vm.output() + '\n' + 'pull status: ' + status + ' :' + reason_phrase);
+          }
+        });
+      };
+
       vm.checkjob = function() {
         previous_state = '';
         iid = setInterval(routine, 1000);
@@ -124,6 +184,13 @@ define('slycat-job-checker', ['knockout', 'knockout-mapping', 'slycat-server-roo
         e.stopPropagation();
 
         $('#slycat-job-checker-connect-modal').modal();
+      });
+
+      $('#slycat-job-pull').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $('#slycat-pull-job-connect-modal').modal();
       });
 
 	  $('#slycat-job-checker-clear').on('click', function(e) {

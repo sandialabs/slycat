@@ -120,7 +120,7 @@ function doPoll() {
       cluster_bin_type = model["artifact:cluster-bin-type"];
       cluster_type = model["artifact:cluster-type"];
       // If the model isn't ready or failed, we're done.
-      if(model["state"] == "waiting" || model["state"] == "running") {
+      if(model["state"] === "waiting" || model["state"] === "running") {
         show_checkjob();
         setTimeout(doPoll, 15000);
         return;

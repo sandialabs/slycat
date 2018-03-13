@@ -251,7 +251,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
 def get_model_parameter(database, model, aid):
     key = "artifact:%s" % aid
     if key not in model:
-        slycat.email.send_error("slycat.web.server.__init__.py get_model_parameter", "Unknown artifact: %s" % aid)
+        # slycat.email.send_error("slycat.web.server.__init__.py get_model_parameter", "Unknown artifact: %s" % aid)
         raise KeyError("Unknown artifact: %s" % aid)
     return model["artifact:" + aid]
 
