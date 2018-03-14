@@ -13,7 +13,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 {
 
     // maximum number of points to display for plots
-    var MAX_TIME_POINTS = 50;
+    var MAX_TIME_POINTS = 500;
 
     // maximum number of plots (per selection)
     var MAX_NUM_PLOTS = 50;

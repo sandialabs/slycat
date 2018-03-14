@@ -12,7 +12,7 @@ define ("dac-manage-selections", [], function() {
 	// public functions will be returned via the module variable
 	var module = {};
 	
-	// current selections and type (0 = zoom, 1 = selection_1, 2 = selection_2)
+	// current selections and type (0 = zoom, 1 = selection_1, 2 = selection_2, 3 = subset)
 	var curr_sel_type = null;	
 	var selection_1 = [];
 	var selection_2 = [];

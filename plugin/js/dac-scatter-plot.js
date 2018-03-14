@@ -107,6 +107,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			function() { selections.set_sel_type(1); module.draw() });
 		$("#dac-scatter-button-sel-2").on("click", 
 			function() { selections.set_sel_type(2); module.draw(); });
+		$("#dac-scatter-button-subset").on("click",
+		    function() { selections.set_sel_type(3); module.draw(); })
 		$("#dac-scatter-button-zoom").on("click", 
 			function() { selections.set_sel_type(0); module.draw(); });
 		
@@ -191,8 +193,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		scatter_plot.attr("width", width)
 			.attr("height", height);
 		
-		// brush has to be under points for selection, but on top for zoom
-		if (selections.sel_type() == 0) {
+		// brush has to be under points for selection, but on top for zoom, subset
+		if (selections.sel_type() == 0 || selections.sel_type() == 3) {
 			draw_points();
 			sel_zoom_buttons();
 		} else {
@@ -626,10 +628,10 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				
 	}
 	
-	// set callback for selection 1,2, or zoom radio buttons
+	// set callback for selection 1,2, subset or zoom radio buttons
 	sel_zoom_buttons = function()
 	{
-	
+
 		// clear up any old selection/zooming
 		scatter_plot.selectAll("g.brush").remove();
 		
@@ -644,9 +646,19 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					.y(y_scale)
 					.on("brushend", zoom));
 					
+		} else if (selections.sel_type() == 3) {
+
+		    // set up subset selection
+		    scatter_plot.append("g")
+				.attr("class", "brush")
+				.call(d3.svg.brush()
+					.x(x_scale)
+					.y(y_scale)
+					.on("brushend", subset));
+
 		} else {
 		
-			// otherwise enable selection
+			// otherwise enable normal selection
 			scatter_plot.append("g")
 				.attr("class", "brush")
 				.call(d3.svg.brush()
@@ -696,7 +708,15 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			};
 				
 	};
-	
+
+    // get subset for future analysis
+	function subset ()
+	{
+
+	    console.log("subset");
+
+	}
+
 	// selection brush handler call back
 	function sel_brush()
 	{
