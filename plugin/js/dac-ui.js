@@ -13,7 +13,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 {
 
     // maximum number of points to display for plots
-    var MAX_TIME_POINTS = 500;
+    var MAX_TIME_POINTS = 50;
 
     // maximum number of plots (per selection)
     var MAX_NUM_PLOTS = 50;
@@ -263,7 +263,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 		metadata_table.select_rows();
 
 		// jump to top row in table for current selection (if there is one)
-		//metadata_table.jump_to (new_selections.detail.active_sel);
+		metadata_table.jump_to (new_selections.detail.active_sel);
     }
 
     // custom event for jumping to an individual selection in the table

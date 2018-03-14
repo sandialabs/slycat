@@ -618,6 +618,16 @@ function(client, dialog, selections, $, d3, URI)
                     plots_selected_data[i][j]));
             };
 
+            // if lower limit was non-infinite reset to finite value
+            if (plots_selected_zoom_y[i][0] != "-Inf") {
+                plot_min = plots_selected_zoom_y[i][0];
+            }
+
+            // if upper limit was non-infinite reset to finite value
+            if (plots_selected_zoom_y[i][1] != "Inf") {
+                plot_max = plots_selected_zoom_y[i][1];
+            }
+
             // set scale
             y_scale[i].domain([plot_min, plot_max]);
 
@@ -791,7 +801,24 @@ function(client, dialog, selections, $, d3, URI)
 
                         // actual zoomed area might have a different y
                         if (j == active_plot) {
-                            plots_selected_zoom_y[j] = [extent[0][1], extent[1][1]];
+
+                            // check if user zoomed to lower edge of y-scale
+                            var lower_edge = extent[0][1];
+                            if (lower_edge == y_scale[j].domain()[0]) {
+
+                                // change to -Inf to get any new data from zooming at higher resolution
+                                lower_edge = "-Inf";
+                            }
+
+                            // check if user zoomed to upper edge of y-scale
+                            var upper_edge = extent[1][1];
+                            if (upper_edge == y_scale[j].domain()[1]) {
+
+                                // change to Inf to get new data
+                                upper_edge = "Inf";
+                            }
+
+                            plots_selected_zoom_y[j] = [lower_edge, upper_edge];
                         }
 
                         // re-draw plot
