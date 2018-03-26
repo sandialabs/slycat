@@ -1,0 +1,19 @@
+{
+  "name": "slycat-login-react",
+  "homepage": "https://localhost/login-react/build",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-scripts": "1.1.1",
+    "source-map-explorer": "^1.5.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "analyze": "source-map-explorer build/static/js/main.*",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
