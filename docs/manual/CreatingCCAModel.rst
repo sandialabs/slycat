@@ -7,6 +7,9 @@ formats, Excel can be used to create CSV files from most common table formats.  
 separately in a post-processing step, they will need to be integrated with the inputs into a single file prior to model creation.  
 In a CSV file, we expect to see only a single row of header information consisting of the column names.
 
+.. image:: Figure14.png 
+**Figure 14: Popup dialog in the CCA model creation wizard.**
+
 From your project page, click on the green *Create* button and select *New CCA Model* from the dropdown list.  A dialog for walking 
 you through the process will then pop up, as shown in Figure 14.  The first page of the model creation wizard identifies whether 
 the table is located on the local machine or whether the data is held on a remote machine.  Select *Local* or *Remote*, followed by 
