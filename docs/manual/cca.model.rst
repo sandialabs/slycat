@@ -39,7 +39,7 @@ corresponding canonical variable.
 .. toctree::
   :maxdepth: 3
   
-  CarsExampleData.rst
+  CarsExample.rst
   CreatingCCAModel.rst
   CCAModelVis.rst
 
