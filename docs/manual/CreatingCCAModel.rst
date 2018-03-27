@@ -53,7 +53,15 @@ and click the *Go* button;
 .. image:: Figure18.png 
 **Figure 18: File path field in remote file browser.**
 
-or (2) move up and down the directory hierarchy by clicking on folders in the list.  Clicking on (the folder labeled ‘..’ in the file list), or on the *Up Directory* button (to the right of the file path) moves you up a level in the hierarchy, while clicking on a named folder moves you down a level.  Once you are in the directory that contains your table data, click on the file to select it.  Ensure that the format shown in the *Filetype* dropdown matches the selected file’s type, then click *Continue* to read the file.  Note, you can change your mind and read the table from your *Local* host by clicking the *Back* button to return to the previous page.
+or (2) move up and down the directory hierarchy by clicking on folders in the list.  Clicking on |UpFolder| (the folder labeled 
+‘..’ in the file list), or on the *Up Directory* button |UpDirectory| (to the right of the file path) moves you up a level in 
+the hierarchy, while clicking on a named folder moves you down a level.  Once you are in the directory that contains your table 
+data, click on the file to select it.  Ensure that the format shown in the *Filetype* dropdown matches the selected file’s type, 
+then click *Continue* to read the file.  Note, you can change your mind and read the table from your *Local* host by clicking 
+the *Back* button to return to the previous page.
+
+.. |UpDirectory| image:: UpDirectory.png
+.. |UpFolder| image:: UpFolder.png
 
 .. rubric:: Footnotes
 
