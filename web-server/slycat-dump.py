@@ -40,6 +40,12 @@ os.makedirs(arguments.output_dir)
 if arguments.all:
   arguments.project_id = set(arguments.project_id + [row["id"] for row in couchdb.view("slycat/projects")])
 
+logging.info("Dumping bookmarks")
+for bookmark in couchdb.view("project-bookmarks"):
+  json.dump(bookmark, open(os.path.join(arguments.output_dir, "bookmark-%s.json" % bookmark["_id"]), "w"))
+logging.info("Done with bookmarks")
+
+
 for project_id in arguments.project_id:
   logging.info("Dumping project %s", project_id)
   project = couchdb.get(project_id, attachments=True)

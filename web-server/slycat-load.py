@@ -64,3 +64,12 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
   if not os.path.exists(os.path.dirname(destination)):
     os.makedirs(os.path.dirname(destination))
   shutil.copy(source, destination)
+
+# Load bookmarks ...
+for source in glob.glob(os.path.join(arguments.input_dir, "boomark-*.json")):
+  logging.info("Loading boomark %s", source)
+  boomark = json.load(open(source))
+  del boomark["_rev"]
+  if arguments.force and boomark["_id"] in couchdb:
+    del couchdb[boomark["_id"]]
+  couchdb.save(boomark)
