@@ -66,6 +66,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         'uvs','uvvs','uvv','uvvv','dvb','fvt','mxu','m4u','pyv','uvu','uvvu','viv','webm','f4v','fli','flv','m4v','mkv','mk3d','mks','mng','asf','asx','vob','wm','wmv','wmx','wvx','avi',
         'movie','smv','ice',
       ],
+      link_protocols : ['http','https'],
       "video-sync" : false,
       "video-sync-time" : 0,
       frameLength : 1/25,
@@ -1494,13 +1495,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       frame_html = build_frame_html(image);
     }
 
-    // If the image is already in the cache, display it.
-    if (image.uri in self.options.image_cache) {
-      console.log("Displaying image " + image.uri + " from cache...");
-      var url_creator = window.URL || window.webkitURL;
-      var blob = self.options.image_cache[image.uri];
-      var image_url = url_creator.createObjectURL(blob);
-
+    // If the URI is a web URL (http or https)
+    var uri = URI(image.uri);
+    var link = self.options.link_protocols.indexOf(uri.protocol()) > -1;
+    var already_cached = image.uri in self.options.image_cache;
+    if(link || already_cached)
+    {
       // Define a default size for every image.
       if(image.width === undefined) {
         image.width = self.options.pinned_width;
@@ -1523,212 +1523,243 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
 
-      if(blob.type.indexOf('image/') == 0) {
-        // Create the html image ...
-        var htmlImage = frame_html
-          .append("img")
-          .attr("class", "image resize")
-          .attr("src", image_url)
-          .attr("data-ratio", image.width / image.height)
-          .style({
-            "display": "none",
-          })
-          ;
-        // Due to a Firefox bug where the load event handler is fired more than once, resulting in the image sometimes
-        // growing in size when clicked (github issue #698 https://github.com/sandialabs/slycat/issues/698),
-        // Alex is ensuring that it will only be executed once with the jQuery one() function.
-        $(htmlImage.node()).one("load", function(){
-            // Get the actual image dimensions
-            // console.log("about to get actual image dimensions");
-            var width = this.naturalWidth;
-            var height = this.naturalHeight;
-            var ratio = width/height;
-            var target_width = self._scale_width(ratio, image.width, image.height);
-            // Adjust dimensions of frame now that we know the dimensions of the image
-            frame_html
-              .attr("data-width", width)
-              .attr("data-height", height)
-              .attr("data-ratio", ratio)
-              .style({
-                "width": target_width + "px",
-                "height": "auto",
-              })
-              ;
-            htmlImage
-              .style({
-                "display": "block",
-              });
-            self._adjust_leader_line(frame_html);
-        });
-      } else if(blob.type.indexOf('video/') == 0) {
-        // Create the video ...
-        var video = frame_html
-          .append("video")
-          .attr("data-uri", image.uri)
-          .attr("src", image_url)
-          .attr("controls", true)
-          .attr("loop", true)
-          .style({
-            "display": "none",
-          })
-          .on("mousedown", function(event){
-            // console.log("video onmousedown");
-          })
-          .on("click", function(event){
-            // console.log("video onclick");
-          })
-          .on("loadedmetadata", function(){
-            // debugger;
-            // console.log("onloadedmetadata");
-            var width = this.videoWidth;
-            var height = this.videoHeight;
-            var ratio = width/height;
-            var target_width = self._scale_width(ratio, image.width, image.height);
-            // Remove dimensions from parent frame to have it size to image
-            frame_html
-              .attr("data-width", width)
-              .attr("data-height", height)
-              .attr("data-ratio", ratio)
-              .attr("data-type", "video")
-              .style({
-                "width": target_width + "px",
-                "height": "auto",
-              });
-            video
-              .style({
-                "display": "block",
-              });
-            self._adjust_leader_line(frame_html);
-            if(self.options["video-sync"] && this.currentTime != self.options["video-sync-time"])
-            {
-              self.syncing_videos.push(image.index);
-              this.currentTime = self.options["video-sync-time"];
-            }
-          })
-          .on("playing", function(){
-            // console.log("onplaying");
-            self._sync_open_images();
-          })
-          .on("pause", function(){
-            // console.log("onpause");
-            var pausing_index = self.pausing_videos.indexOf(image.index);
-            // If video was directly paused by user, set a new video-sync-time and sync all other videos
-            if(pausing_index < 0)
-            {
-              self.options["video-sync-time"] = this.currentTime;
-              // Due to a Firefox bug, I need to set the paused video's time to it's currentTime because
-              // Firefox pauses it a frame or two past where it claims the video is. Only need to do this
-              // when video sync is off because when it's on, all videos, including current one, have their
-              // currentTime updated.
-              if(!self.options["video-sync"])
-              {
-                this.currentTime = self.options["video-sync-time"];
-              }
-              handlers["pause_video"]();
-              // Need to explicitly move the frame to the front when interacting with video controls because
-              // Chrome does not propagate any mouse events after controls are clicked.
-              self._move_frame_to_front(this.closest(".image-frame"));
-            }
-            // Do nothing if video was paused by system, just remove it from the paused videos list
-            else
-            {
-              self.pausing_videos.splice(pausing_index, 1);
-            }
-          })
-          .on("seeked", function(event){
-            // console.log("onseeked");
-            var index = self.syncing_videos.indexOf(image.index);
-            if(index < 0)
-            {
-              self.options["video-sync-time"] = this.currentTime;
-              handlers["seeked_video"]();
-              pinVideo(self, this, image);
-              // Need to explicitly move the frame to the front when interacting with video controls because
-              // Chrome does not propagate any mouse events after controls are clicked.
-              self._move_frame_to_front(this.closest(".image-frame"));
-            }
-            else
-            {
-              self.syncing_videos.splice(index, 1);
-            }
-          })
-          .on("play", function(event){
-            // console.log("onplay");
-            pinVideo(self, this, image);
-
-            var playing_index = self.playing_videos.indexOf(image.index);
-            // If video was directly played by user
-            if(playing_index < 0)
-            {
-              // Need to explicitly move the frame to the front when interacting with video controls because
-              // Chrome does not propagate any mouse events after controls are clicked.
-              self._move_frame_to_front(this.closest(".image-frame"));
-            }
-            // Do nothing if video was played by system, just remove it from the played videos list
-            else
-            {
-              self.playing_videos.splice(playing_index, 1);
-            }
-          })
-          .on("volumechange", function(event){
-            // Need to explicitly move the frame to the front when interacting with video controls because
-            // Chrome does not propagate any mouse events after controls are clicked.
-            self._move_frame_to_front(this.closest(".image-frame"));
-          })
-          ;
-        if(image.currentTime != undefined && image.currentTime > 0)
-        {
-          self.syncing_videos.push(image.index);
-          video.property("currentTime", image.currentTime);
-        }
-
-      }
-      else if(isStl)
+      // If the URL is a web link, create a link to open it in a new window
+      if(link)
       {
-        var container = frame_html[0][0];
-        var viewer = document.createElement('slycat-3d-viewer');
-
-        var ps = document.createAttribute('params')
-        // var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
-        var stl_uri = image_url;
-        ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
-        var s = document.createAttribute('style');
-        s.value = 'width: 100%; height: 100%;';
-        viewer.setAttributeNode(ps);
-        viewer.setAttributeNode(s);
-
-        container.appendChild(viewer);
-        ko.applyBindings({}, container);
-
-        $(window).trigger('resize');
-      }
-      else {
-        // We don't support this file type, so just create a download link
-        console.log("creating download link");
+        // Create a "open in new window" link for http or https URLs
+        console.log("This is a web link.")
+        
         frame_html
           .style({
-            "width": "200px",
-            "height": "200px",
+            "width": image.width + "px",
+            "height": image.height + "px",
           });
         self._adjust_leader_line(frame_html);
         var download = frame_html
           .append("a")
-          .attr("href", image_url)
-          .attr("class", "download-link")
-          .attr("download", "download")
-          .text("Download " + image.uri)
+          .attr("href", uri)
+          .attr("class", "open-link")
+          .attr("target", "_blank")
+          .text(image.uri)
           ;
       }
 
-      function pinVideo(self, video)
-      {
-        var frame = d3.select(video.parentElement);
+      // Otherwise if the image is already in the cache, display it.
+      else if (already_cached) {
+        console.log("Displaying image " + image.uri + " from cache...");
+        var url_creator = window.URL || window.webkitURL;
+        var blob = self.options.image_cache[image.uri];
+        var image_url = url_creator.createObjectURL(blob);
 
-        if (frame.classed("hover-image")) {
-          self.opening_image = null;
-          clear_hover_timer(self);
-          frame.classed("hover-image", false).classed("open-image", true);
-          image.image_class = "open-image";
+        if(blob.type.indexOf('image/') == 0) {
+          // Create the html image ...
+          var htmlImage = frame_html
+            .append("img")
+            .attr("class", "image resize")
+            .attr("src", image_url)
+            .attr("data-ratio", image.width / image.height)
+            .style({
+              "display": "none",
+            })
+            ;
+          // Due to a Firefox bug where the load event handler is fired more than once, resulting in the image sometimes
+          // growing in size when clicked (github issue #698 https://github.com/sandialabs/slycat/issues/698),
+          // Alex is ensuring that it will only be executed once with the jQuery one() function.
+          $(htmlImage.node()).one("load", function(){
+              // Get the actual image dimensions
+              // console.log("about to get actual image dimensions");
+              var width = this.naturalWidth;
+              var height = this.naturalHeight;
+              var ratio = width/height;
+              var target_width = self._scale_width(ratio, image.width, image.height);
+              // Adjust dimensions of frame now that we know the dimensions of the image
+              frame_html
+                .attr("data-width", width)
+                .attr("data-height", height)
+                .attr("data-ratio", ratio)
+                .style({
+                  "width": target_width + "px",
+                  "height": "auto",
+                })
+                ;
+              htmlImage
+                .style({
+                  "display": "block",
+                });
+              self._adjust_leader_line(frame_html);
+          });
+        } else if(blob.type.indexOf('video/') == 0) {
+          // Create the video ...
+          var video = frame_html
+            .append("video")
+            .attr("data-uri", image.uri)
+            .attr("src", image_url)
+            .attr("controls", true)
+            .attr("loop", true)
+            .style({
+              "display": "none",
+            })
+            .on("mousedown", function(event){
+              // console.log("video onmousedown");
+            })
+            .on("click", function(event){
+              // console.log("video onclick");
+            })
+            .on("loadedmetadata", function(){
+              // debugger;
+              // console.log("onloadedmetadata");
+              var width = this.videoWidth;
+              var height = this.videoHeight;
+              var ratio = width/height;
+              var target_width = self._scale_width(ratio, image.width, image.height);
+              // Remove dimensions from parent frame to have it size to image
+              frame_html
+                .attr("data-width", width)
+                .attr("data-height", height)
+                .attr("data-ratio", ratio)
+                .attr("data-type", "video")
+                .style({
+                  "width": target_width + "px",
+                  "height": "auto",
+                });
+              video
+                .style({
+                  "display": "block",
+                });
+              self._adjust_leader_line(frame_html);
+              if(self.options["video-sync"] && this.currentTime != self.options["video-sync-time"])
+              {
+                self.syncing_videos.push(image.index);
+                this.currentTime = self.options["video-sync-time"];
+              }
+            })
+            .on("playing", function(){
+              // console.log("onplaying");
+              self._sync_open_images();
+            })
+            .on("pause", function(){
+              // console.log("onpause");
+              var pausing_index = self.pausing_videos.indexOf(image.index);
+              // If video was directly paused by user, set a new video-sync-time and sync all other videos
+              if(pausing_index < 0)
+              {
+                self.options["video-sync-time"] = this.currentTime;
+                // Due to a Firefox bug, I need to set the paused video's time to it's currentTime because
+                // Firefox pauses it a frame or two past where it claims the video is. Only need to do this
+                // when video sync is off because when it's on, all videos, including current one, have their
+                // currentTime updated.
+                if(!self.options["video-sync"])
+                {
+                  this.currentTime = self.options["video-sync-time"];
+                }
+                handlers["pause_video"]();
+                // Need to explicitly move the frame to the front when interacting with video controls because
+                // Chrome does not propagate any mouse events after controls are clicked.
+                self._move_frame_to_front(this.closest(".image-frame"));
+              }
+              // Do nothing if video was paused by system, just remove it from the paused videos list
+              else
+              {
+                self.pausing_videos.splice(pausing_index, 1);
+              }
+            })
+            .on("seeked", function(event){
+              // console.log("onseeked");
+              var index = self.syncing_videos.indexOf(image.index);
+              if(index < 0)
+              {
+                self.options["video-sync-time"] = this.currentTime;
+                handlers["seeked_video"]();
+                pinVideo(self, this, image);
+                // Need to explicitly move the frame to the front when interacting with video controls because
+                // Chrome does not propagate any mouse events after controls are clicked.
+                self._move_frame_to_front(this.closest(".image-frame"));
+              }
+              else
+              {
+                self.syncing_videos.splice(index, 1);
+              }
+            })
+            .on("play", function(event){
+              // console.log("onplay");
+              pinVideo(self, this, image);
+
+              var playing_index = self.playing_videos.indexOf(image.index);
+              // If video was directly played by user
+              if(playing_index < 0)
+              {
+                // Need to explicitly move the frame to the front when interacting with video controls because
+                // Chrome does not propagate any mouse events after controls are clicked.
+                self._move_frame_to_front(this.closest(".image-frame"));
+              }
+              // Do nothing if video was played by system, just remove it from the played videos list
+              else
+              {
+                self.playing_videos.splice(playing_index, 1);
+              }
+            })
+            .on("volumechange", function(event){
+              // Need to explicitly move the frame to the front when interacting with video controls because
+              // Chrome does not propagate any mouse events after controls are clicked.
+              self._move_frame_to_front(this.closest(".image-frame"));
+            })
+            ;
+          if(image.currentTime != undefined && image.currentTime > 0)
+          {
+            self.syncing_videos.push(image.index);
+            video.property("currentTime", image.currentTime);
+          }
+
+        }
+        else if(isStl)
+        {
+          var container = frame_html[0][0];
+          var viewer = document.createElement('slycat-3d-viewer');
+
+          var ps = document.createAttribute('params')
+          // var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
+          var stl_uri = image_url;
+          ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
+          var s = document.createAttribute('style');
+          s.value = 'width: 100%; height: 100%;';
+          viewer.setAttributeNode(ps);
+          viewer.setAttributeNode(s);
+
+          container.appendChild(viewer);
+          ko.applyBindings({}, container);
+
+          $(window).trigger('resize');
+        }
+        else {
+          // We don't support this file type, so just create a download link for files
+          // or a "open in new window" link for http or https URLs
+          console.log("blob.type is: " + blob.type)
+          console.log("creating download link");
+          frame_html
+            .style({
+              "width": "200px",
+              "height": "200px",
+            });
+          self._adjust_leader_line(frame_html);
+          var download = frame_html
+            .append("a")
+            .attr("href", image_url)
+            .attr("class", "download-link")
+            .attr("download", "download")
+            .text("Download " + image.uri)
+            ;
+        }
+
+        function pinVideo(self, video)
+        {
+          var frame = d3.select(video.parentElement);
+
+          if (frame.classed("hover-image")) {
+            self.opening_image = null;
+            clear_hover_timer(self);
+            frame.classed("hover-image", false).classed("open-image", true);
+            image.image_class = "open-image";
+          }
         }
       }
 
@@ -1745,8 +1776,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // Create a pin button ...
       add_pin_button(footer);
 
-      // Create a download button ...
-      add_download_button(footer, image_url, image.uri.split('/').pop());
+      // Create a download button for non-links ...
+      if(!link)
+        add_download_button(footer, image_url, image.uri.split('/').pop());
 
       // Create jump control
       add_jump_button(footer, image.index);
@@ -1757,11 +1789,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._open_images(images.slice(1), true);
 
       return;
+
     }
 
     // If we don't have a session for the image hostname, create one.
-    var uri = URI(image.uri);
-
     var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
 
     console.log("Attempting to load image from server-side cache...");

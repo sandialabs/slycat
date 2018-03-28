@@ -427,6 +427,7 @@ rights in this software.
   left: 0;
   width: 100%;
   height: 20px;
+  background: black;
 }
 .frame-button {
   float: right;
@@ -593,6 +594,7 @@ rights in this software.
   border: 1px solid black;
   height: auto;
   padding-bottom: 20px;
+  overflow: hidden;
 }
 #scatterplot .image-frame.html img {
   display: block;
@@ -1002,18 +1004,21 @@ a {
   max-height: 500px;
   overflow-y: auto;
 }
-.image-frame .download-link
+.image-frame .download-link,
+.image-frame .open-link
 {
   padding: 20px;
   display: block;
   text-align: center;
   word-break: break-all;
 }
-.image-frame a.download-link
+.image-frame a.download-link,
+.image-frame a.open-link
 {
   color: #c8c8c8;
 }
-.image-frame a.download-link:hover
+.image-frame a.download-link:hover,
+.image-frame a.open-link:hover
 {
   color: white;
 }
