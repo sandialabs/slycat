@@ -7,7 +7,9 @@ formats, Excel can be used to create CSV files from most common table formats.  
 separately in a post-processing step, they will need to be integrated with the inputs into a single file prior to model creation.  
 In a CSV file, we expect to see only a single row of header information consisting of the column names.
 
-.. image:: Figure14.png 
+.. image:: Figure14.png
+   :scale: 75
+   :align: center
 **Figure 14: Popup dialog in the CCA model creation wizard.**
 
 From your project page, click on the green *Create* button and select *New CCA Model* from the dropdown list.  A dialog for walking 
@@ -25,10 +27,14 @@ the *Browse* button, as shown in Figure 16.  Depending on the format of the sele
 *Dakota tabular* from the *Filetype* dropdown, followed by *Continue* to read the file.  Note, you can change your mind and read 
 the table from a *Remote* host by clicking the *Back* button to return to the previous page.
 
-.. image:: Figure15.png 
+.. image:: Figure15.png
+   :scale: 75
+   :align: center
 **Figure 15: Local file upload dialog in CCA model creation wizard.**
 
-.. image:: Figure16.png 
+.. image:: Figure16.png
+   :scale: 75
+   :align: center
 **Figure 16: Selected file, table.csv, shown in CCA model creation dialog.**
 
 Remote Files
@@ -41,7 +47,9 @@ the default host for the next time.  *Username* defaults to the username that yo
 field can be manually edited if desired.  Finally, enter your *Password* and click the *Continue* button in the lower right to 
 connect to the remote host.
 
-.. image:: Figure17.png 
+.. image:: Figure17.png
+   :scale: 75
+   :align: center
 **Figure 17: Remote system login for table ingestion in CCA model creation wizard.**
 
 Once you are connected, the model creation wizard will display a remote file browser.  If you have previously accessed this 
@@ -50,7 +58,9 @@ directory will be the machine’s root directory.  There are two methods for nav
 your data: (1) if you know the full directory path, type it directly into the field at the top of the page (shown in Figure 18) 
 and click the *Go* button;
 
-.. image:: Figure18.png 
+.. image:: Figure18.png
+   :scale: 75
+   :align: center
 **Figure 18: File path field in remote file browser.**
 
 or (2) move up and down the directory hierarchy by clicking on folders in the list.  Clicking on |UpFolder| (the folder labeled 
