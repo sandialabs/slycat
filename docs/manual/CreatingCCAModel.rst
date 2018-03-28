@@ -8,6 +8,10 @@ separately in a post-processing step, they will need to be integrated with the i
 In a CSV file, we expect to see only a single row of header information consisting of the column names.
 
 .. image:: Figure14.png 
+   :width: 301
+   :height: 166
+   :scale: 50
+   :align: center
 **Figure 14: Popup dialog in the CCA model creation wizard.**
 
 From your project page, click on the green *Create* button and select *New CCA Model* from the dropdown list.  A dialog for walking 
@@ -26,6 +30,7 @@ the *Browse* button, as shown in Figure 16.  Depending on the format of the sele
 the table from a *Remote* host by clicking the *Back* button to return to the previous page.
 
 .. image:: Figure15.png 
+   :align: center
 **Figure 15: Local file upload dialog in CCA model creation wizard.**
 
 .. image:: Figure16.png 
