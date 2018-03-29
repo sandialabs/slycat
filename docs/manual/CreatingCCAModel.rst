@@ -115,7 +115,7 @@ variables.
    :scale: 75
    :align: center
    
-   **Figure 20: Click on the |AllOnIcon| icon beneath Output to label the highlighted variables as outputs.**
+   **Figure 20: Click on the** |AllOnIcon| **icon beneath Output to label the highlighted variables as outputs.**
 
 .. figure:: Figure21.png
    :scale: 75
