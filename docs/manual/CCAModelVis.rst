@@ -1,7 +1,7 @@
 CCA Model Visualization
 -----------------------
 
-As shown in Figure 23, visualization of a CCA model consists of three linked views, each providing a different level of 
+As shown below, visualization of a CCA model consists of three linked views, each providing a different level of 
 abstraction.  The most abstract level is the *Correlation View*, where each column displays the structure coefficients for 
 one of the canonical components.  The scatterplot in the *Simulation View* shows how well each individual run is described by 
 the correlations found in the ensemble overall.  The least abstract view is the *Variable Table*, which provides the raw data 
@@ -12,7 +12,7 @@ in the upper left, the midrange view in the upper right, and the lowest level vi
 .. figure:: Figure23.png
    :align: center
    
-   **Figure 23: CCA model of cars data set displaying the first canonical component.**
+   **CCA model of cars data set displaying the first canonical component.**
 
 .. toctree::
   :maxdepth: 3
