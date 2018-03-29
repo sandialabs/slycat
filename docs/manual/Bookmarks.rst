@@ -34,6 +34,7 @@ modify the name of a bookmark, click on the yellow pencil icon.  To delete a boo
    **Figure 10:** *Bookmarks* **dropdown, including one previously saved bookmark.**
 
 .. figure:: Figure11.png
+   :scale: 75
    :align: center
    
    **Figure 11: Example of a** *Create Saved Bookmark* **dialog.**
