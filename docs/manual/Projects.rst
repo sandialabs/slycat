@@ -7,7 +7,8 @@ bookmarks for models within that project.
 Project Creation
 ================
 
-.. image:: Figure3.png
+.. figure:: Figure3.png
+   :align: center
 
 Projects are created by clicking the green *Create* button on the main Projects page and selecting *New Project* 
 from the dropdown that appears.  A dialog will pop up, providing editable regions for you to enter a *Name* and an 
@@ -24,7 +25,8 @@ only be two buttons: *Create* and *Info*.
 Editing Projects
 ================
 
-.. image:: Figure4.png
+.. figure:: Figure4.png
+   :align: center
 
 Clicking on the yellow *Edit* button on a project page and selecting *Edit Project* from the dropdown list provides a means to 
 change the project *Name, Description,* or project *Members*.  An *Edit Project* popup will appear with the current project 
@@ -32,8 +34,10 @@ information (Figure 6).  In a newly created project, the membership list consist
 of *Administrator*.  The username of the creator will be shown within a red button (buttons are color-coded according to role and 
 red is used for an *Administrator*) at the bottom.
 
-.. image:: Figure6.png
-**Figure 6:** *Edit Project* **dialog allows you to change the project name, add or change a description, and add, remove, or 
+.. figure:: Figure6.png
+   :align: center
+   
+   **Figure 6:** *Edit Project* **dialog allows you to change the project name, add or change a description, and add, remove, or 
 change the roles of project members.**
 
 There are three different roles that project members can have: *Reader, Writer,* and *Administrator*, whose buttons are color-coded 
