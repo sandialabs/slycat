@@ -1,6 +1,14 @@
 "use strict";
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 /*
 Copyright 2013, Sandia Corporation. Under the terms of Contract
@@ -9,14 +17,95 @@ rights in this software.
 */
 
 define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse", "react.development", "react-dom.development"], function (server_root, dialog, _, Papa, React, ReactDOM) {
+  var ControlsBar = function (_React$Component) {
+    _inherits(ControlsBar, _React$Component);
 
-  console.log("first line of slycat-parameter-image-controls");
+    function ControlsBar() {
+      _classCallCheck(this, ControlsBar);
 
-  ReactDOM.render(React.createElement(
-    "strong",
-    { className: "greeting" },
-    "Hello, this is React!"
-  ), document.getElementById('react-controls'));
+      return _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).apply(this, arguments));
+    }
+
+    _createClass(ControlsBar, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          ControlsGroup,
+          { id: "scatterplot-controls" },
+          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", title: "Change X Axis Variable", items: this.props.x_axis_dropdown })
+        );
+      }
+    }]);
+
+    return ControlsBar;
+  }(React.Component);
+
+  var ControlsGroup = function (_React$Component2) {
+    _inherits(ControlsGroup, _React$Component2);
+
+    function ControlsGroup() {
+      _classCallCheck(this, ControlsGroup);
+
+      return _possibleConstructorReturn(this, (ControlsGroup.__proto__ || Object.getPrototypeOf(ControlsGroup)).apply(this, arguments));
+    }
+
+    _createClass(ControlsGroup, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          "div",
+          { id: this.props.id, className: "btn-group btn-group-xs" },
+          this.props.children
+        );
+      }
+    }]);
+
+    return ControlsGroup;
+  }(React.Component);
+
+  var ControlsDropdown = function (_React$Component3) {
+    _inherits(ControlsDropdown, _React$Component3);
+
+    function ControlsDropdown() {
+      _classCallCheck(this, ControlsDropdown);
+
+      return _possibleConstructorReturn(this, (ControlsDropdown.__proto__ || Object.getPrototypeOf(ControlsDropdown)).apply(this, arguments));
+    }
+
+    _createClass(ControlsDropdown, [{
+      key: "render",
+      value: function render() {
+        var optionItems = this.props.items.map(function (item) {
+          return React.createElement(
+            "li",
+            { role: "presentation", "data-xvariable": item.key, key: item.key, className: item.active ? 'active' : '' },
+            React.createElement(
+              "a",
+              { role: "menuitem", tabIndex: "-1" },
+              item.name
+            )
+          );
+        });
+        return React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(
+            "button",
+            { className: "btn btn-default dropdown-toggle", type: "button", id: this.props.id, "data-toggle": "dropdown", "aria-expanded": "true", title: this.props.title },
+            "X Axis\xA0",
+            React.createElement("span", { className: "caret" })
+          ),
+          React.createElement(
+            "ul",
+            { id: "x-axis-switcher", className: "dropdown-menu", role: "menu", "aria-labelledby": "x-axis-dropdown" },
+            optionItems
+          )
+        );
+      }
+    }]);
+
+    return ControlsDropdown;
+  }(React.Component);
 
   $.widget("parameter_image.controls", {
     options: {
@@ -48,6 +137,60 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
     _create: function _create() {
       var self = this;
+
+      var x_axis_dropdown_items = [];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = this.options.x_variables[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var x_variable = _step.value;
+
+          x_axis_dropdown_items.push({
+            key: x_variable,
+            active: self.options["x-variable"] == x_variable,
+            name: self.options.metadata['column-names'][x_variable]
+          });
+          // $("<li role='presentation'>")
+          //   .toggleClass("active", self.options["x-variable"] == self.options.x_variables[i])
+          //   .attr("data-xvariable", this.options.x_variables[i])
+          //   .appendTo(self.x_items)
+          //   .append(
+          //     $('<a role="menuitem" tabindex="-1">')
+          //       .html(this.options.metadata['column-names'][this.options.x_variables[i]])
+          //       .click(function()
+          //       {
+          //         var menu_item = $(this).parent();
+          //         if(menu_item.hasClass("active"))
+          //           return false;
+
+          //         self.x_items.find("li").removeClass("active");
+          //         menu_item.addClass("active");
+
+          //         self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
+          //       })
+          //   )
+          //   ;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      var controls_bar = React.createElement(ControlsBar, { x_axis_dropdown: x_axis_dropdown_items });
+      ReactDOM.render(controls_bar, document.getElementById('react-controls'));
+
       var scatterplot_controls = $("#scatterplot-controls", this.element);
       var selection_controls = $("#selection-controls", this.element);
       var video_controls = $("#video-controls", this.element);

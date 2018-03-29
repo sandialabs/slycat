@@ -6,17 +6,47 @@ rights in this software.
 
 define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse", "react.development", "react-dom.development"], function(server_root, dialog, _, Papa, React, ReactDOM) {
 
-  console.log("first line of slycat-parameter-image-controls");
-  
-  ReactDOM.render(
-    <strong className="greeting">Hello, this is React!</strong>,
-    document.getElementById('react-controls')
-  );
+class ControlsBar extends React.Component {
+  render() {
+    return (
+      <ControlsGroup id="scatterplot-controls">
+        <ControlsDropdown id="x-axis-dropdown" title="Change X Axis Variable" items={this.props.x_axis_dropdown} />
+      </ControlsGroup>
+    );
+  }
+}
 
+class ControlsGroup extends React.Component {
+  render() {
+    return (
+      <div id={this.props.id} className="btn-group btn-group-xs">
+        {this.props.children}
+      </div>
+    );
+  }
+}
 
-
-
-
+class ControlsDropdown extends React.Component {
+  render() {
+    let optionItems = this.props.items.map((item) => 
+      <li role='presentation' data-xvariable={item.key} key={item.key} className={item.active ? 'active' : ''}>
+        <a role="menuitem" tabIndex="-1">
+          {item.name}
+        </a>
+      </li>);
+    return (
+      <React.Fragment>
+      <button className="btn btn-default dropdown-toggle" type="button" id={this.props.id} data-toggle="dropdown" aria-expanded="true" title={this.props.title}>
+        X Axis&nbsp;
+        <span className="caret"></span>
+      </button>
+      <ul id="x-axis-switcher" className="dropdown-menu" role="menu" aria-labelledby="x-axis-dropdown">
+        {optionItems}
+      </ul>
+      </React.Fragment>
+    );
+  }
+}
 
 $.widget("parameter_image.controls",
 {
@@ -51,6 +81,42 @@ $.widget("parameter_image.controls",
   _create: function()
   {
     var self = this;
+
+    const x_axis_dropdown_items = [];
+    for(let x_variable of this.options.x_variables) {
+      x_axis_dropdown_items.push({
+        key: x_variable, 
+        active: self.options["x-variable"] == x_variable,
+        name: self.options.metadata['column-names'][x_variable]
+      });
+      // $("<li role='presentation'>")
+      //   .toggleClass("active", self.options["x-variable"] == self.options.x_variables[i])
+      //   .attr("data-xvariable", this.options.x_variables[i])
+      //   .appendTo(self.x_items)
+      //   .append(
+      //     $('<a role="menuitem" tabindex="-1">')
+      //       .html(this.options.metadata['column-names'][this.options.x_variables[i]])
+      //       .click(function()
+      //       {
+      //         var menu_item = $(this).parent();
+      //         if(menu_item.hasClass("active"))
+      //           return false;
+
+      //         self.x_items.find("li").removeClass("active");
+      //         menu_item.addClass("active");
+
+      //         self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
+      //       })
+      //   )
+      //   ;
+    }
+
+    const controls_bar = <ControlsBar x_axis_dropdown={x_axis_dropdown_items} />;
+    ReactDOM.render(
+      controls_bar,
+      document.getElementById('react-controls')
+    );
+
     var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
     var video_controls = $("#video-controls", this.element);
