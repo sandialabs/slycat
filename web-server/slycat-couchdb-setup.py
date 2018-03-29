@@ -13,7 +13,10 @@ parser.add_argument("--database", default="slycat", help="Specify the database n
 parser.add_argument("--error-log", default="-", help="Error log filename, or '-' for stderr.  Default: %(default)s")
 parser.add_argument("--error-log-count", type=int, default=100, help="Maximum number of error log files.  Default: %(default)s")
 parser.add_argument("--error-log-size", type=int, default=10000000, help="Maximum size of error log files.  Default: %(default)s")
-parser.add_argument("--host", default="http://localhost:5984", help="CouchDB server.  Default: %(default)s")
+parser.add_argument("--host", default="localhost", help="CouchDB server.  Default: %(default)s")
+parser.add_argument("--port", default="5984", help="CouchDB port.  Default: %(default)s")
+parser.add_argument("--admin", default="", help="CouchDB admin user.  Default: %(default)s")
+parser.add_argument("--password", default="", help="CouchDB admin password.  Default: %(default)s")
 arguments = parser.parse_args()
 
 error_log = logging.getLogger("error")
@@ -28,9 +31,16 @@ error_log.handlers[-1].setFormatter(logging.Formatter(fmt="%(asctime)s  %(messag
 class log(object):
   error = logging.getLogger("error").info
 
+# assuming CouchDB initialization from local process to local server
+creds = ""
+if arguments.admin != "":
+  creds = arguments.admin + ":" + arguments.password + "@"
+
+serverURL = "http://" + creds + arguments.host + ":" + arguments.port + "/"
+
 while True:
   try:
-    server = couchdb.Server(arguments.host)
+    server = couchdb.Server(serverURL)
     version = server.version()
     break
   except:
