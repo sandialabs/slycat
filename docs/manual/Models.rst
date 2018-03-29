@@ -26,8 +26,10 @@ specific to the selected model will step you through entering the necessary info
 covered below).  Model creation can be aborted at any stage by clicking the *X* button in the upper right corner of the popup.
 
 
-.. image:: Figure7.png
-**Figure 7:** *Create* **dropdown list of model choices, as seen from a project page.**
+.. figure:: Figure7.png
+   :align: center
+   
+   **Figure 7:** *Create* **dropdown list of model choices, as seen from a project page.**
 
 Editing Models
 ==============
@@ -37,8 +39,10 @@ model *Name, Description,* and *Marking*.  A *Name Model* dialog will popup with
 *Save Changes* to modify the model description on the server, or click the *X* button in the upper right of the popup to abort 
 the operation.
 
-.. image:: Figure8.png
-**Figure 8:** *Edit* **dropdown list, as seen from a model page.**
+.. figure:: Figure8.png
+   :align: center
+   
+   **Figure 8:** *Edit* **dropdown list, as seen from a model page.**
 
 Reset Model
 ===========
@@ -97,8 +101,10 @@ Color is used extensively in Slycat™ to encode information of various types.  
 green columns are associated with input variables, lavender designates output variables, and unspecified variables are not 
 colored (they are rendered using an off-white).
 
-.. image:: Figure9.png
-**Figure 9: Dropdown list of color theme choices from the** *Colors* **button.**
+.. figure:: Figure9.png
+   :align: center
+   
+   **Figure 9: Dropdown list of color theme choices from the** *Colors* **button.**
 
 Slycat™ provides a set of predefined color themes, which are individually assigned to each model.  A color theme consists of a 
 bundled scatterplot background color and color palette for mapping numeric values to color-coded objects in Slycat™ views.  
