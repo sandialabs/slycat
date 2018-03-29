@@ -1,13 +1,13 @@
 Variable Table
 --------------
-The *Variable Table* provides access to the original numeric variable values for each simulation run.  It is essentially an 
-interactive version of the original table data, where each column represents a single variable and each row contains the 
-variable values for a single ensemble member.  Within the table, the cell backgrounds take on one of four color-encodings: 
-input variables are green, outputs are lavender, non-designated variables are white, and the elements of the selected variable 
-are individually colored by their value using the current color map (see Color Themes).  Coloring table elements by value 
-highlights the selected color-coding variable, while concurrently providing color correspondence between rows and scatterplot 
-points.  The interactive capabilities of the table include: sorting within columns, column (variable) selection, and row 
-(simulation) selection.
+The *Variable Table* at the bottom of Figure 23 provides access to the original numeric variable values for each simulation 
+run.  It is essentially an interactive version of the original table data, where each column represents a single variable 
+and each row contains the variable values for a single ensemble member.  Within the table, the cell backgrounds take on one 
+of four color-encodings: input variables are green, outputs are lavender, non-designated variables are white, and the elements 
+of the selected variable are individually colored by their value using the current color map (see Color Themes).  Coloring 
+table elements by value highlights the selected color-coding variable, while concurrently providing color correspondence 
+between rows and scatterplot points.  The interactive capabilities of the table include: sorting within columns, column 
+(variable) selection, and row (simulation) selection.
 
 .. figure:: Figure23.png
    :align: center
