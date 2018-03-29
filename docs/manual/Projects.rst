@@ -35,10 +35,10 @@ of *Administrator*.  The username of the creator will be shown within a red butt
 red is used for an *Administrator*) at the bottom.
 
 .. figure:: Figure6.png
+   :scale: 75
    :align: center
    
-   **Figure 6:** *Edit Project* **dialog allows you to change the project name, add or change a description, and add, remove, or 
-change the roles of project members.**
+   **Figure 6:** *Edit Project* **dialog allows you to change the project name, add or change a description, and add, remove, or change the roles of project members.**
 
 There are three different roles that project members can have: *Reader, Writer,* and *Administrator*, whose buttons are color-coded 
 blue, yellow, and red, respectively.  *Readers* can view all data in a project, but they cannot create new models, modify existing 
