@@ -12,7 +12,7 @@ the table from a *Remote* host by clicking the *Back* button to return to the pr
    :scale: 75
    :align: center
    
-   **Figure 15: Local file upload dialog in CCA model creation wizard.**
+   **Figure 15: Local file upload dialog (with no file selected) in CCA model creation wizard.**
 
 .. figure:: Figure16.png
    :scale: 75
