@@ -109,13 +109,13 @@ category to set the radio buttons for the group, as shown in Figure 21.  Since C
 you can also use it to calculate correlations between multiple inputs and a single output, or between any two individual 
 variables.  
 
+.. |AllOnIcon| image:: AllOnIcon.png
+
 .. figure:: Figure20.png
    :scale: 75
    :align: center
    
    **Figure 20: Click on the |AllOnIcon| icon beneath Output to label the highlighted variables as outputs.**
-
-.. |AllOnIcon| image:: AllOnIcon.png
 
 .. figure:: Figure21.png
    :scale: 75
