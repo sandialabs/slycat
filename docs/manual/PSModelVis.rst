@@ -7,7 +7,7 @@ representation of the ensemble members and their value distributions within the 
 *Variable Table* provides the raw data values contained in the original table file.  Changes made to the plot or the table will 
 cause corresponding changes in the other.  
 
-.. figure:: Figure27.png
+.. figure:: Figure27B.png
    :scale: 100
    :align: center
    
