@@ -19,6 +19,13 @@ reveals the poor quality of the result (all points would be on the diagonal in a
    
    **Figure 24: CCA model of Cars data set displaying the second canonical component.**
 
+
+Legend
+======
+To the right of the scatterplot is the *Legend*.  The *Legend* is in its own view, which can be resized or closed altogether.  
+The *Legend* displays information about the current color-coding variable, including its name, range of values, and the mapping 
+between values and colors.  The color palette is defined by the current theme (see Color Themes).
+
 Color-Coding Points
 ===================
 The first time a model is rendered, the points are colored by their index number.  There are three mechanisms for changing the 
@@ -28,16 +35,10 @@ changing the variable selected for color mapping will lead to changes in all thr
 highlighting the newly selected variable’s row in the bar chart, recoloring the scatterplot using the new variable’s values, 
 coloring the cell backgrounds in its table column, returning the cell backgrounds of the previously selected variable’s column 
 to its default color (green, lavender, or white depending on its type), and relabeling and redefining the value range in the 
-*Legend* (see below).  Note that the table may include variables that are not present in the *Correlation View*, columns that 
+*Legend*.  Note that the table may include variables that are not present in the *Correlation View*, columns that 
 are neither inputs nor outputs.  These columns are drawn on the right end of the table against white backgrounds.  These provide 
 additional color-coding options (numeric variables only), however, the bar chart will not be highlighted because it only 
 includes variables passed to CCA.
-
-Legend
-======
-To the right of the scatterplot is the *Legend*.  The *Legend* is in its own view, which can be resized or closed altogether.  
-The *Legend* displays information about the current color-coding variable, including its name, range of values, and the mapping 
-between values and colors.  The color palette is defined by the current theme (see Color Themes).
 
 Selecting Points
 ================
