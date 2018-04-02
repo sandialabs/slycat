@@ -25,7 +25,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       var _this = _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).call(this, props));
 
-      _this.state = { x_variable: 1 };
+      _this.state = { x_variable: _this.props.x_variable };
       // This binding is necessary to make `this` work in the callback
       _this.set_x_variable = _this.set_x_variable.bind(_this);
       return _this;
@@ -34,6 +34,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsBar, [{
       key: "set_x_variable",
       value: function set_x_variable(key, e) {
+        // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
+        if (key == this.state.x_variable) return;
         // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
         // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
         this.setState(function (prevState, props) {
@@ -41,6 +43,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             x_variable: key
           };
         });
+        // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
+        this.props.element.trigger("x-selection-changed", key);
       }
     }, {
       key: "render",
@@ -171,26 +175,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             key: x_variable,
             name: self.options.metadata['column-names'][x_variable]
           });
-          // $("<li role='presentation'>")
-          //   .toggleClass("active", self.options["x-variable"] == self.options.x_variables[i])
-          //   .attr("data-xvariable", this.options.x_variables[i])
-          //   .appendTo(self.x_items)
-          //   .append(
-          //     $('<a role="menuitem" tabindex="-1">')
-          //       .html(this.options.metadata['column-names'][this.options.x_variables[i]])
-          //       .click(function()
-          //       {
-          //         var menu_item = $(this).parent();
-          //         if(menu_item.hasClass("active"))
-          //           return false;
-
-          //         self.x_items.find("li").removeClass("active");
-          //         menu_item.addClass("active");
-
-          //         self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
-          //       })
-          //   )
-          //   ;
         }
       } catch (err) {
         _didIteratorError = true;
@@ -207,8 +191,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var controls_bar = React.createElement(ControlsBar, { x_axis_dropdown: x_axis_dropdown_items });
-      ReactDOM.render(controls_bar, document.getElementById('react-controls'));
+      var controls_bar = React.createElement(ControlsBar, { x_axis_dropdown: x_axis_dropdown_items, x_variable: self.options["x-variable"], element: self.element });
+      self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
 
       var scatterplot_controls = $("#scatterplot-controls", this.element);
       var selection_controls = $("#selection-controls", this.element);
@@ -216,15 +200,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       this.video_controls = video_controls;
       var playback_controls = $("#playback-controls", this.element);
       this.playback_controls = playback_controls;
-
-      this.x_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(scatterplot_controls);
-      this.x_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="x-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change X Axis Variable"> \
-        X Axis \
-        <span class="caret"></span> \
-      </button> \
-      ').appendTo(self.x_control);
-      this.x_items = $('<ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="x-axis-dropdown">').appendTo(self.x_control);
 
       this.y_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(scatterplot_controls);
       this.y_button = $('\
@@ -408,7 +383,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       // {
       //   self._set_clusters();
       // }
-      self._set_x_variables();
       self._set_y_variables();
       self._set_image_variables();
       self._set_color_variables();
@@ -474,23 +448,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       // Creating CSV from data array
       var csv = Papa.unparse(rowMajorData);
       return csv;
-    },
-
-    _set_x_variables: function _set_x_variables() {
-      var self = this;
-
-      this.x_items.empty();
-      for (var i = 0; i < this.options.x_variables.length; i++) {
-        $("<li role='presentation'>").toggleClass("active", self.options["x-variable"] == self.options.x_variables[i]).attr("data-xvariable", this.options.x_variables[i]).appendTo(self.x_items).append($('<a role="menuitem" tabindex="-1">').html(this.options.metadata['column-names'][this.options.x_variables[i]]).click(function () {
-          var menu_item = $(this).parent();
-          if (menu_item.hasClass("active")) return false;
-
-          self.x_items.find("li").removeClass("active");
-          menu_item.addClass("active");
-
-          self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
-        }));
-      }
     },
 
     _set_y_variables: function _set_y_variables() {
@@ -675,8 +632,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
     _set_selected_x: function _set_selected_x() {
       var self = this;
-      self.x_items.find("li").removeClass("active");
-      self.x_items.find('li[data-xvariable="' + self.options["x-variable"] + '"]').addClass("active");
+      self.ControlsBarComponent.setState({ x_variable: Number(self.options["x-variable"]) });
     },
 
     _set_selected_y: function _set_selected_y() {
@@ -824,8 +780,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self._set_selected_color();
       } else if (key == "image_variables") {
         self._set_image_variables();
-      } else if (key == 'x_variables') {
-        self._set_x_variables();
       } else if (key == 'y_variables') {
         self._set_y_variables();
       } else if (key == 'color_variables') {

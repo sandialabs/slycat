@@ -9,17 +9,22 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {x_variable: 1};
+    this.state = {x_variable: this.props.x_variable};
     // This binding is necessary to make `this` work in the callback
     this.set_x_variable = this.set_x_variable.bind(this);
   }
 
   set_x_variable(key, e) {
+    // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
+    if(key == this.state.x_variable)
+      return;
     // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
     // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
     this.setState((prevState, props) => ({
       x_variable: key
     }));
+    // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
+    this.props.element.trigger("x-selection-changed", key);
   }
 
   render() {
@@ -107,30 +112,10 @@ $.widget("parameter_image.controls",
         key: x_variable, 
         name: self.options.metadata['column-names'][x_variable]
       });
-      // $("<li role='presentation'>")
-      //   .toggleClass("active", self.options["x-variable"] == self.options.x_variables[i])
-      //   .attr("data-xvariable", this.options.x_variables[i])
-      //   .appendTo(self.x_items)
-      //   .append(
-      //     $('<a role="menuitem" tabindex="-1">')
-      //       .html(this.options.metadata['column-names'][this.options.x_variables[i]])
-      //       .click(function()
-      //       {
-      //         var menu_item = $(this).parent();
-      //         if(menu_item.hasClass("active"))
-      //           return false;
-
-      //         self.x_items.find("li").removeClass("active");
-      //         menu_item.addClass("active");
-
-      //         self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
-      //       })
-      //   )
-      //   ;
     }
 
-    const controls_bar = <ControlsBar x_axis_dropdown={x_axis_dropdown_items} />;
-    ReactDOM.render(
+    const controls_bar = <ControlsBar x_axis_dropdown={x_axis_dropdown_items} x_variable={self.options["x-variable"]} element={self.element} />;
+    self.ControlsBarComponent = ReactDOM.render(
       controls_bar,
       document.getElementById('react-controls')
     );
@@ -141,21 +126,6 @@ $.widget("parameter_image.controls",
     this.video_controls = video_controls;
     var playback_controls = $("#playback-controls", this.element);
     this.playback_controls = playback_controls;
-
-    this.x_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(scatterplot_controls)
-      ;
-    this.x_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="x-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change X Axis Variable"> \
-        X Axis \
-        <span class="caret"></span> \
-      </button> \
-      ')
-      .appendTo(self.x_control)
-      ;
-    this.x_items = $('<ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="x-axis-dropdown">')
-      .appendTo(self.x_control)
-      ;
 
     this.y_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -420,7 +390,6 @@ $.widget("parameter_image.controls",
     // {
     //   self._set_clusters();
     // }
-    self._set_x_variables();
     self._set_y_variables();
     self._set_image_variables();
     self._set_color_variables();
@@ -494,35 +463,6 @@ $.widget("parameter_image.controls",
     // Creating CSV from data array
     var csv = Papa.unparse(rowMajorData);
     return csv;
-  },
-
-  _set_x_variables: function()
-  {
-    var self = this;
-
-    this.x_items.empty();
-    for(var i = 0; i < this.options.x_variables.length; i++) {
-      $("<li role='presentation'>")
-        .toggleClass("active", self.options["x-variable"] == self.options.x_variables[i])
-        .attr("data-xvariable", this.options.x_variables[i])
-        .appendTo(self.x_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(this.options.metadata['column-names'][this.options.x_variables[i]])
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
-
-              self.x_items.find("li").removeClass("active");
-              menu_item.addClass("active");
-
-              self.element.trigger("x-selection-changed", menu_item.attr("data-xvariable"));
-            })
-        )
-        ;
-    }
   },
 
   _set_y_variables: function()
@@ -814,8 +754,7 @@ $.widget("parameter_image.controls",
   _set_selected_x: function()
   {
     var self = this;
-    self.x_items.find("li").removeClass("active");
-    self.x_items.find('li[data-xvariable="' + self.options["x-variable"] + '"]').addClass("active");
+    self.ControlsBarComponent.setState({x_variable: Number(self.options["x-variable"])});
   },
 
   _set_selected_y: function()
@@ -992,10 +931,6 @@ $.widget("parameter_image.controls",
     else if(key == "image_variables")
     {
       self._set_image_variables();
-    }
-    else if(key == 'x_variables')
-    {
-      self._set_x_variables();
     }
     else if(key == 'y_variables')
     {
