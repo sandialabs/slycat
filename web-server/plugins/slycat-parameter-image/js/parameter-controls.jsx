@@ -27,10 +27,25 @@ class ControlsGroup extends React.Component {
 }
 
 class ControlsDropdown extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {x_variable: 1};
+    // This binding is necessary to make `this` work in the callback
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick(key, e) {
+    // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
+    // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
+    this.setState((prevState, props) => ({
+      x_variable: key
+    }));
+  }
+
   render() {
     let optionItems = this.props.items.map((item) => 
-      <li role='presentation' data-xvariable={item.key} key={item.key} className={item.active ? 'active' : ''}>
-        <a role="menuitem" tabIndex="-1">
+      <li role='presentation' data-xvariable={item.key} key={item.key} className={item.key == this.state.x_variable ? 'active' : ''}>
+        <a role="menuitem" tabIndex="-1" onClick={(e) => this.handleClick(item.key, e)}>
           {item.name}
         </a>
       </li>);
@@ -86,7 +101,6 @@ $.widget("parameter_image.controls",
     for(let x_variable of this.options.x_variables) {
       x_axis_dropdown_items.push({
         key: x_variable, 
-        active: self.options["x-variable"] == x_variable,
         name: self.options.metadata['column-names'][x_variable]
       });
       // $("<li role='presentation'>")

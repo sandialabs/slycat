@@ -66,22 +66,42 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
   var ControlsDropdown = function (_React$Component3) {
     _inherits(ControlsDropdown, _React$Component3);
 
-    function ControlsDropdown() {
+    function ControlsDropdown(props) {
       _classCallCheck(this, ControlsDropdown);
 
-      return _possibleConstructorReturn(this, (ControlsDropdown.__proto__ || Object.getPrototypeOf(ControlsDropdown)).apply(this, arguments));
+      var _this3 = _possibleConstructorReturn(this, (ControlsDropdown.__proto__ || Object.getPrototypeOf(ControlsDropdown)).call(this, props));
+
+      _this3.state = { x_variable: 1 };
+      // This binding is necessary to make `this` work in the callback
+      _this3.handleClick = _this3.handleClick.bind(_this3);
+      return _this3;
     }
 
     _createClass(ControlsDropdown, [{
+      key: "handleClick",
+      value: function handleClick(key, e) {
+        // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
+        // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
+        this.setState(function (prevState, props) {
+          return {
+            x_variable: key
+          };
+        });
+      }
+    }, {
       key: "render",
       value: function render() {
+        var _this4 = this;
+
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", "data-xvariable": item.key, key: item.key, className: item.active ? 'active' : '' },
+            { role: "presentation", "data-xvariable": item.key, key: item.key, className: item.key == _this4.state.x_variable ? 'active' : '' },
             React.createElement(
               "a",
-              { role: "menuitem", tabIndex: "-1" },
+              { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
+                  return _this4.handleClick(item.key, e);
+                } },
               item.name
             )
           );
@@ -149,7 +169,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
           x_axis_dropdown_items.push({
             key: x_variable,
-            active: self.options["x-variable"] == x_variable,
             name: self.options.metadata['column-names'][x_variable]
           });
           // $("<li role='presentation'>")
