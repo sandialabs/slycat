@@ -20,19 +20,35 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
   var ControlsBar = function (_React$Component) {
     _inherits(ControlsBar, _React$Component);
 
-    function ControlsBar() {
+    function ControlsBar(props) {
       _classCallCheck(this, ControlsBar);
 
-      return _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).apply(this, arguments));
+      var _this = _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).call(this, props));
+
+      _this.state = { x_variable: 1 };
+      // This binding is necessary to make `this` work in the callback
+      _this.set_x_variable = _this.set_x_variable.bind(_this);
+      return _this;
     }
 
     _createClass(ControlsBar, [{
+      key: "set_x_variable",
+      value: function set_x_variable(key, e) {
+        // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
+        // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
+        this.setState(function (prevState, props) {
+          return {
+            x_variable: key
+          };
+        });
+      }
+    }, {
       key: "render",
       value: function render() {
         return React.createElement(
           ControlsGroup,
           { id: "scatterplot-controls" },
-          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", title: "Change X Axis Variable", items: this.props.x_axis_dropdown })
+          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", title: "Change X Axis Variable", items: this.props.x_axis_dropdown, set_x_variable: this.set_x_variable, x_variable: this.state.x_variable })
         );
       }
     }]);
@@ -69,26 +85,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     function ControlsDropdown(props) {
       _classCallCheck(this, ControlsDropdown);
 
-      var _this3 = _possibleConstructorReturn(this, (ControlsDropdown.__proto__ || Object.getPrototypeOf(ControlsDropdown)).call(this, props));
-
-      _this3.state = { x_variable: 1 };
-      // This binding is necessary to make `this` work in the callback
-      _this3.handleClick = _this3.handleClick.bind(_this3);
-      return _this3;
+      return _possibleConstructorReturn(this, (ControlsDropdown.__proto__ || Object.getPrototypeOf(ControlsDropdown)).call(this, props));
     }
 
     _createClass(ControlsDropdown, [{
-      key: "handleClick",
-      value: function handleClick(key, e) {
-        // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
-        // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
-        this.setState(function (prevState, props) {
-          return {
-            x_variable: key
-          };
-        });
-      }
-    }, {
       key: "render",
       value: function render() {
         var _this4 = this;
@@ -96,11 +96,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", "data-xvariable": item.key, key: item.key, className: item.key == _this4.state.x_variable ? 'active' : '' },
+            { role: "presentation", key: item.key, className: item.key == _this4.props.x_variable ? 'active' : '' },
             React.createElement(
               "a",
               { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
-                  return _this4.handleClick(item.key, e);
+                  return _this4.props.set_x_variable(item.key, e);
                 } },
               item.name
             )

@@ -7,10 +7,25 @@ rights in this software.
 define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse", "react.development", "react-dom.development"], function(server_root, dialog, _, Papa, React, ReactDOM) {
 
 class ControlsBar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {x_variable: 1};
+    // This binding is necessary to make `this` work in the callback
+    this.set_x_variable = this.set_x_variable.bind(this);
+  }
+
+  set_x_variable(key, e) {
+    // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
+    // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
+    this.setState((prevState, props) => ({
+      x_variable: key
+    }));
+  }
+
   render() {
     return (
       <ControlsGroup id="scatterplot-controls">
-        <ControlsDropdown id="x-axis-dropdown" title="Change X Axis Variable" items={this.props.x_axis_dropdown} />
+        <ControlsDropdown id="x-axis-dropdown" title="Change X Axis Variable" items={this.props.x_axis_dropdown} set_x_variable={this.set_x_variable} x_variable={this.state.x_variable} />
       </ControlsGroup>
     );
   }
@@ -29,23 +44,12 @@ class ControlsGroup extends React.Component {
 class ControlsDropdown extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {x_variable: 1};
-    // This binding is necessary to make `this` work in the callback
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  handleClick(key, e) {
-    // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
-    // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
-    this.setState((prevState, props) => ({
-      x_variable: key
-    }));
   }
 
   render() {
     let optionItems = this.props.items.map((item) => 
-      <li role='presentation' data-xvariable={item.key} key={item.key} className={item.key == this.state.x_variable ? 'active' : ''}>
-        <a role="menuitem" tabIndex="-1" onClick={(e) => this.handleClick(item.key, e)}>
+      <li role='presentation' key={item.key} className={item.key == this.props.x_variable ? 'active' : ''}>
+        <a role="menuitem" tabIndex="-1" onClick={(e) => this.props.set_x_variable(item.key, e)}>
           {item.name}
         </a>
       </li>);
