@@ -13,9 +13,14 @@ cause corresponding changes in the other.
    
    **Parameter Space Model of cars data set with Scatterplot and Variable Table views, each providing a different level of abstraction.**
    
+As with the CCA Model Visualization example, we will be using the Cars data set in the following sections to illustrate some of 
+the Parameter Space Model features.  We will also be using the Taylor Anvil Impact Scenario (TAIS) ensemble, which includes image 
+data, to demonstrate some of the media-based functionality.  
+   
 .. toctree::
   :maxdepth: 3
   
+  TAISDataSet.rst
   ScatterplotView.rst
   PSVariableTable.rst
   
