@@ -12,7 +12,7 @@ in the upper left, the midrange view in the upper right, and the lowest level vi
 .. figure:: Figure23.png
    :align: center
    
-   **CCA model of cars data set displaying the first canonical component.**
+   **CCA model of cars data set with three linked views, each providing a different level of abstraction.  The Correlation View is in the upper left, the Simulation View and its associated Legend are in the upper right, and the Variable Table fills the bottom half.**
 
 .. toctree::
   :maxdepth: 3
