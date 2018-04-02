@@ -9,28 +9,32 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {x_variable: this.props.x_variable};
+    this.state = {
+      x_variable: this.props.x_variable,
+      y_variable: this.props.y_variable,
+    };
     // This binding is necessary to make `this` work in the callback
-    this.set_x_variable = this.set_x_variable.bind(this);
+    this.set_selected = this.set_selected.bind(this);
   }
 
-  set_x_variable(key, e) {
+  set_selected(state_label, key, trigger, e) {
     // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-    if(key == this.state.x_variable)
+    if(key == this.state[state_label])
       return;
     // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
     // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
-    this.setState((prevState, props) => ({
-      x_variable: key
-    }));
+    const obj = {};
+    obj[state_label] = key;
+    this.setState((prevState, props) => (obj));
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
-    this.props.element.trigger("x-selection-changed", key);
+    this.props.element.trigger(trigger, key);
   }
 
   render() {
     return (
       <ControlsGroup id="scatterplot-controls">
-        <ControlsDropdown id="x-axis-dropdown" title="Change X Axis Variable" items={this.props.x_axis_dropdown} set_x_variable={this.set_x_variable} x_variable={this.state.x_variable} />
+        <ControlsDropdown id="x-axis-dropdown" label="X Axis" title="Change X Axis Variable" state_label='x_variable' trigger='x-selection-changed' items={this.props.x_axis_dropdown} set_selected={this.set_selected} selected={this.state.x_variable} />
+        <ControlsDropdown id="y-axis-dropdown" label="Y Axis" title="Change Y Axis Variable" state_label='y_variable' trigger='y-selection-changed' items={this.props.y_axis_dropdown} set_selected={this.set_selected} selected={this.state.y_variable} />
       </ControlsGroup>
     );
   }
@@ -53,20 +57,22 @@ class ControlsDropdown extends React.Component {
 
   render() {
     let optionItems = this.props.items.map((item) => 
-      <li role='presentation' key={item.key} className={item.key == this.props.x_variable ? 'active' : ''}>
-        <a role="menuitem" tabIndex="-1" onClick={(e) => this.props.set_x_variable(item.key, e)}>
+      <li role='presentation' key={item.key} className={item.key == this.props.selected ? 'active' : ''}>
+        <a role="menuitem" tabIndex="-1" onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}>
           {item.name}
         </a>
       </li>);
     return (
       <React.Fragment>
-      <button className="btn btn-default dropdown-toggle" type="button" id={this.props.id} data-toggle="dropdown" aria-expanded="true" title={this.props.title}>
-        X Axis&nbsp;
-        <span className="caret"></span>
-      </button>
-      <ul id="x-axis-switcher" className="dropdown-menu" role="menu" aria-labelledby="x-axis-dropdown">
-        {optionItems}
-      </ul>
+      <div className="btn-group btn-group-xs">
+        <button className="btn btn-default dropdown-toggle" type="button" id={this.props.id} data-toggle="dropdown" aria-expanded="true" title={this.props.title}>
+          {this.props.label}&nbsp;
+          <span className="caret"></span>
+        </button>
+        <ul className="dropdown-menu" role="menu" aria-labelledby={this.props.id}>
+          {optionItems}
+        </ul>
+      </div>
       </React.Fragment>
     );
   }
@@ -114,7 +120,19 @@ $.widget("parameter_image.controls",
       });
     }
 
-    const controls_bar = <ControlsBar x_axis_dropdown={x_axis_dropdown_items} x_variable={self.options["x-variable"]} element={self.element} />;
+    const y_axis_dropdown_items = [];
+    for(let y_variable of this.options.y_variables) {
+      y_axis_dropdown_items.push({
+        key: y_variable, 
+        name: self.options.metadata['column-names'][y_variable]
+      });
+    }
+
+    const controls_bar = <ControlsBar element={self.element}
+      x_axis_dropdown={x_axis_dropdown_items} x_variable={self.options["x-variable"]} 
+      y_axis_dropdown={y_axis_dropdown_items} y_variable={self.options["y-variable"]}  
+    />;
+
     self.ControlsBarComponent = ReactDOM.render(
       controls_bar,
       document.getElementById('react-controls')
@@ -126,21 +144,6 @@ $.widget("parameter_image.controls",
     this.video_controls = video_controls;
     var playback_controls = $("#playback-controls", this.element);
     this.playback_controls = playback_controls;
-
-    this.y_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(scatterplot_controls)
-      ;
-    this.y_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="y-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Y Axis Variable"> \
-        Y Axis \
-        <span class="caret"></span> \
-      </button> \
-      ')
-      .appendTo(self.y_control)
-      ;
-    this.y_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="y-axis-dropdown">')
-      .appendTo(self.y_control)
-      ;
 
     this.color_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(scatterplot_controls)
@@ -390,7 +393,6 @@ $.widget("parameter_image.controls",
     // {
     //   self._set_clusters();
     // }
-    self._set_y_variables();
     self._set_image_variables();
     self._set_color_variables();
     self._set_auto_scale();
@@ -463,35 +465,6 @@ $.widget("parameter_image.controls",
     // Creating CSV from data array
     var csv = Papa.unparse(rowMajorData);
     return csv;
-  },
-
-  _set_y_variables: function()
-  {
-    var self = this;
-
-    this.y_items.empty();
-    for(var i = 0; i < this.options.y_variables.length; i++) {
-      $("<li role='presentation'>")
-        .toggleClass("active", self.options["y-variable"] == self.options.y_variables[i])
-        .attr("data-yvariable", this.options.y_variables[i])
-        .appendTo(self.y_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(this.options.metadata['column-names'][this.options.y_variables[i]])
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
-
-              self.y_items.find("li").removeClass("active");
-              menu_item.addClass("active");
-
-              self.element.trigger("y-selection-changed", menu_item.attr("data-yvariable"));
-            })
-        )
-        ;
-    }
   },
 
   _set_image_variables: function()
@@ -760,8 +733,7 @@ $.widget("parameter_image.controls",
   _set_selected_y: function()
   {
     var self = this;
-    self.y_items.find("li").removeClass("active");
-    self.y_items.find('li[data-yvariable="' + self.options["y-variable"] + '"]').addClass("active");
+    self.ControlsBarComponent.setState({y_variable: Number(self.options["y-variable"])});
   },
 
   _set_selected_image: function()
@@ -931,10 +903,6 @@ $.widget("parameter_image.controls",
     else if(key == "image_variables")
     {
       self._set_image_variables();
-    }
-    else if(key == 'y_variables')
-    {
-      self._set_y_variables();
     }
     else if(key == 'color_variables')
     {

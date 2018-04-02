@@ -25,26 +25,29 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       var _this = _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).call(this, props));
 
-      _this.state = { x_variable: _this.props.x_variable };
+      _this.state = {
+        x_variable: _this.props.x_variable,
+        y_variable: _this.props.y_variable
+      };
       // This binding is necessary to make `this` work in the callback
-      _this.set_x_variable = _this.set_x_variable.bind(_this);
+      _this.set_selected = _this.set_selected.bind(_this);
       return _this;
     }
 
     _createClass(ControlsBar, [{
-      key: "set_x_variable",
-      value: function set_x_variable(key, e) {
+      key: "set_selected",
+      value: function set_selected(state_label, key, trigger, e) {
         // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-        if (key == this.state.x_variable) return;
+        if (key == this.state[state_label]) return;
         // That function will receive the previous state as the first argument, and the props at the time the update is applied as the second argument.
         // This format is favored because this.props and this.state may be updated asynchronously, you should not rely on their values for calculating the next state.
+        var obj = {};
+        obj[state_label] = key;
         this.setState(function (prevState, props) {
-          return {
-            x_variable: key
-          };
+          return obj;
         });
         // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
-        this.props.element.trigger("x-selection-changed", key);
+        this.props.element.trigger(trigger, key);
       }
     }, {
       key: "render",
@@ -52,7 +55,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         return React.createElement(
           ControlsGroup,
           { id: "scatterplot-controls" },
-          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", title: "Change X Axis Variable", items: this.props.x_axis_dropdown, set_x_variable: this.set_x_variable, x_variable: this.state.x_variable })
+          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", label: "X Axis", title: "Change X Axis Variable", state_label: "x_variable", trigger: "x-selection-changed", items: this.props.x_axis_dropdown, set_selected: this.set_selected, selected: this.state.x_variable }),
+          React.createElement(ControlsDropdown, { id: "y-axis-dropdown", label: "Y Axis", title: "Change Y Axis Variable", state_label: "y_variable", trigger: "y-selection-changed", items: this.props.y_axis_dropdown, set_selected: this.set_selected, selected: this.state.y_variable })
         );
       }
     }]);
@@ -100,11 +104,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", key: item.key, className: item.key == _this4.props.x_variable ? 'active' : '' },
+            { role: "presentation", key: item.key, className: item.key == _this4.props.selected ? 'active' : '' },
             React.createElement(
               "a",
               { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
-                  return _this4.props.set_x_variable(item.key, e);
+                  return _this4.props.set_selected(_this4.props.state_label, item.key, _this4.props.trigger, e);
                 } },
               item.name
             )
@@ -114,15 +118,20 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
           React.Fragment,
           null,
           React.createElement(
-            "button",
-            { className: "btn btn-default dropdown-toggle", type: "button", id: this.props.id, "data-toggle": "dropdown", "aria-expanded": "true", title: this.props.title },
-            "X Axis\xA0",
-            React.createElement("span", { className: "caret" })
-          ),
-          React.createElement(
-            "ul",
-            { id: "x-axis-switcher", className: "dropdown-menu", role: "menu", "aria-labelledby": "x-axis-dropdown" },
-            optionItems
+            "div",
+            { className: "btn-group btn-group-xs" },
+            React.createElement(
+              "button",
+              { className: "btn btn-default dropdown-toggle", type: "button", id: this.props.id, "data-toggle": "dropdown", "aria-expanded": "true", title: this.props.title },
+              this.props.label,
+              "\xA0",
+              React.createElement("span", { className: "caret" })
+            ),
+            React.createElement(
+              "ul",
+              { className: "dropdown-menu", role: "menu", "aria-labelledby": this.props.id },
+              optionItems
+            )
           )
         );
       }
@@ -191,7 +200,40 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var controls_bar = React.createElement(ControlsBar, { x_axis_dropdown: x_axis_dropdown_items, x_variable: self.options["x-variable"], element: self.element });
+      var y_axis_dropdown_items = [];
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = this.options.y_variables[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var y_variable = _step2.value;
+
+          y_axis_dropdown_items.push({
+            key: y_variable,
+            name: self.options.metadata['column-names'][y_variable]
+          });
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+            _iterator2.return();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      var controls_bar = React.createElement(ControlsBar, { element: self.element,
+        x_axis_dropdown: x_axis_dropdown_items, x_variable: self.options["x-variable"],
+        y_axis_dropdown: y_axis_dropdown_items, y_variable: self.options["y-variable"]
+      });
+
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
 
       var scatterplot_controls = $("#scatterplot-controls", this.element);
@@ -200,15 +242,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       this.video_controls = video_controls;
       var playback_controls = $("#playback-controls", this.element);
       this.playback_controls = playback_controls;
-
-      this.y_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(scatterplot_controls);
-      this.y_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="y-axis-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Y Axis Variable"> \
-        Y Axis \
-        <span class="caret"></span> \
-      </button> \
-      ').appendTo(self.y_control);
-      this.y_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="y-axis-dropdown">').appendTo(self.y_control);
 
       this.color_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(scatterplot_controls);
       this.color_button = $('\
@@ -383,7 +416,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       // {
       //   self._set_clusters();
       // }
-      self._set_y_variables();
       self._set_image_variables();
       self._set_color_variables();
       self._set_auto_scale();
@@ -448,23 +480,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       // Creating CSV from data array
       var csv = Papa.unparse(rowMajorData);
       return csv;
-    },
-
-    _set_y_variables: function _set_y_variables() {
-      var self = this;
-
-      this.y_items.empty();
-      for (var i = 0; i < this.options.y_variables.length; i++) {
-        $("<li role='presentation'>").toggleClass("active", self.options["y-variable"] == self.options.y_variables[i]).attr("data-yvariable", this.options.y_variables[i]).appendTo(self.y_items).append($('<a role="menuitem" tabindex="-1">').html(this.options.metadata['column-names'][this.options.y_variables[i]]).click(function () {
-          var menu_item = $(this).parent();
-          if (menu_item.hasClass("active")) return false;
-
-          self.y_items.find("li").removeClass("active");
-          menu_item.addClass("active");
-
-          self.element.trigger("y-selection-changed", menu_item.attr("data-yvariable"));
-        }));
-      }
     },
 
     _set_image_variables: function _set_image_variables() {
@@ -637,8 +652,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
     _set_selected_y: function _set_selected_y() {
       var self = this;
-      self.y_items.find("li").removeClass("active");
-      self.y_items.find('li[data-yvariable="' + self.options["y-variable"] + '"]').addClass("active");
+      self.ControlsBarComponent.setState({ y_variable: Number(self.options["y-variable"]) });
     },
 
     _set_selected_image: function _set_selected_image() {
@@ -780,8 +794,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self._set_selected_color();
       } else if (key == "image_variables") {
         self._set_image_variables();
-      } else if (key == 'y_variables') {
-        self._set_y_variables();
       } else if (key == 'color_variables') {
         self._set_color_variables();
       } else if (key == 'selection') {
