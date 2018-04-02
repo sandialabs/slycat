@@ -6,7 +6,7 @@ for the x-axis, y-axis, and point color-coding are interactively selected.  As w
 groups of points are selected within the plot (see Selecting Points), corresponding rows in the *Variable Table* are 
 simultaneously selected, and vice versa.  
 
-.. figure:: Figure27B.png
+.. figure:: Figure27B.PNG
    :scale: 100
    :align: center
    
