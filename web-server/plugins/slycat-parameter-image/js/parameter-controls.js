@@ -17,6 +17,9 @@ rights in this software.
 */
 
 define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse", "react.development", "react-dom.development"], function (server_root, dialog, _, Papa, React, ReactDOM) {
+
+  // TODO: Enable/disable the Pin item in the Selection Actions dropdown based on whether a media column is selected 
+
   var ControlsBar = function (_React$Component) {
     _inherits(ControlsBar, _React$Component);
 
@@ -27,7 +30,9 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       _this.state = {
         x_variable: _this.props.x_variable,
-        y_variable: _this.props.y_variable
+        y_variable: _this.props.y_variable,
+        color_variable: _this.props.color_variable,
+        media_variable: _this.props.media_variable
       };
       // This binding is necessary to make `this` work in the callback
       _this.set_selected = _this.set_selected.bind(_this);
@@ -55,8 +60,19 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         return React.createElement(
           ControlsGroup,
           { id: "scatterplot-controls" },
-          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", label: "X Axis", title: "Change X Axis Variable", state_label: "x_variable", trigger: "x-selection-changed", items: this.props.x_axis_dropdown, set_selected: this.set_selected, selected: this.state.x_variable }),
-          React.createElement(ControlsDropdown, { id: "y-axis-dropdown", label: "Y Axis", title: "Change Y Axis Variable", state_label: "y_variable", trigger: "y-selection-changed", items: this.props.y_axis_dropdown, set_selected: this.set_selected, selected: this.state.y_variable })
+          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", label: "X Axis", title: "Change X Axis Variable",
+            state_label: "x_variable", trigger: "x-selection-changed", items: this.props.x_axis_dropdown,
+            set_selected: this.set_selected, selected: this.state.x_variable }),
+          React.createElement(ControlsDropdown, { id: "y-axis-dropdown", label: "Y Axis", title: "Change Y Axis Variable",
+            state_label: "y_variable", trigger: "y-selection-changed", items: this.props.y_axis_dropdown,
+            set_selected: this.set_selected, selected: this.state.y_variable }),
+          React.createElement(ControlsDropdown, { id: "color-dropdown", label: "Point Color", title: "Change Point Color",
+            state_label: "color_variable", trigger: "color-selection-changed", items: this.props.color_variable_dropdown,
+            set_selected: this.set_selected, selected: this.state.color_variable }),
+          // Only show media dropdown if there are media columns (first is always None, so checking for more than 1)
+          this.props.media_variable_dropdown.length > 1 ? React.createElement(ControlsDropdown, { id: "image-dropdown", label: "Media Set", title: "Change Media Set Variable",
+            state_label: "media_variable", trigger: "images-selection-changed", items: this.props.media_variable_dropdown,
+            set_selected: this.set_selected, selected: this.state.media_variable }) : false
         );
       }
     }]);
@@ -229,9 +245,70 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
+      var color_variable_dropdown_items = [];
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = this.options.color_variables[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var color_variable = _step3.value;
+
+          color_variable_dropdown_items.push({
+            key: color_variable,
+            name: self.options.metadata['column-names'][color_variable]
+          });
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3.return) {
+            _iterator3.return();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      var media_variable_dropdown_items = [];
+      media_variable_dropdown_items.push({ key: -1, name: "None" });
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = this.options.image_variables[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var media_variable = _step4.value;
+
+          media_variable_dropdown_items.push({
+            key: media_variable,
+            name: self.options.metadata['column-names'][media_variable]
+          });
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
+
       var controls_bar = React.createElement(ControlsBar, { element: self.element,
         x_axis_dropdown: x_axis_dropdown_items, x_variable: self.options["x-variable"],
-        y_axis_dropdown: y_axis_dropdown_items, y_variable: self.options["y-variable"]
+        y_axis_dropdown: y_axis_dropdown_items, y_variable: self.options["y-variable"],
+        color_variable_dropdown: color_variable_dropdown_items, color_variable: self.options["color-variable"],
+        media_variable_dropdown: media_variable_dropdown_items, media_variable: self.options["image-variable"]
       });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
@@ -242,27 +319,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       this.video_controls = video_controls;
       var playback_controls = $("#playback-controls", this.element);
       this.playback_controls = playback_controls;
-
-      this.color_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(scatterplot_controls);
-      this.color_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Point Color"> \
-        Point Color \
-        <span class="caret"></span> \
-      </button> \
-      ').appendTo(self.color_control);
-
-      if (this.options.image_variables != null && this.options.image_variables.length > 0) {
-        this.image_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(scatterplot_controls);
-        this.image_button = $('\
-        <button class="btn btn-default dropdown-toggle" type="button" id="image-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Media Set Variable"> \
-          Media Set \
-          <span class="caret"></span> \
-        </button> \
-        ').appendTo(self.image_control);
-        this.image_items = $('<ul id="image-switcher" class="dropdown-menu" role="menu" aria-labelledby="image-dropdown">').appendTo(self.image_control);
-      }
-
-      this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">').appendTo(self.color_control);
 
       this.auto_scale_button = $("\
       <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
@@ -412,12 +468,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         });
       }
 
-      // if(self.options.clusters.length > 0)
-      // {
-      //   self._set_clusters();
-      // }
-      self._set_image_variables();
-      self._set_color_variables();
       self._set_auto_scale();
       self._set_selection_control();
       self._set_show_all();
@@ -480,49 +530,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       // Creating CSV from data array
       var csv = Papa.unparse(rowMajorData);
       return csv;
-    },
-
-    _set_image_variables: function _set_image_variables() {
-      var self = this;
-      if (this.options.image_variables != null && this.options.image_variables.length > 0) {
-        this.image_items.empty();
-        appendImageVariable(-1, 'None');
-        for (var i = 0; i < this.options.image_variables.length; i++) {
-          appendImageVariable(self.options.image_variables[i], self.options.metadata['column-names'][self.options.image_variables[i]]);
-        }
-      }
-
-      function appendImageVariable(index, label) {
-        $("<li role='presentation'>").toggleClass("active", self.options["image-variable"] == index).attr("data-imagevariable", index).appendTo(self.image_items).append($('<a role="menuitem" tabindex="-1">').html(label).click(function () {
-          var menu_item = $(this).parent();
-          if (menu_item.hasClass("active")) return false;
-
-          self.options["image-variable"] = menu_item.attr("data-imagevariable");
-
-          self.image_items.find("li").removeClass("active");
-          menu_item.addClass("active");
-
-          self.pin_item.toggleClass("disabled", self.options["image-variable"] == -1 || self.options["image-variable"] == null);
-
-          self.element.trigger("images-selection-changed", menu_item.attr("data-imagevariable"));
-        }));
-      }
-    },
-
-    _set_color_variables: function _set_color_variables() {
-      var self = this;
-      this.color_items.empty();
-      for (var i = 0; i < this.options.color_variables.length; i++) {
-        $("<li role='presentation'>").toggleClass("active", self.options["color-variable"] == self.options.color_variables[i]).attr("data-colorvariable", this.options.color_variables[i]).appendTo(self.color_items).append($('<a role="menuitem" tabindex="-1">').html(this.options.metadata['column-names'][this.options.color_variables[i]]).click(function () {
-          var menu_item = $(this).parent();
-          if (menu_item.hasClass("active")) return false;
-
-          self.color_items.find("li").removeClass("active");
-          menu_item.addClass("active");
-
-          self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-        }));
-      }
     },
 
     _set_auto_scale: function _set_auto_scale() {
@@ -657,17 +664,12 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
     _set_selected_image: function _set_selected_image() {
       var self = this;
-      if (self.options["image-variable"] != null && self.options.image_variables.length > 0) {
-        self.image_items.find("li").removeClass("active");
-        self.image_items.find('li[data-imagevariable="' + self.options["image-variable"] + '"]').addClass("active");
-      }
-      self.pin_item.toggleClass("disabled", this.options["image-variable"] == -1 || this.options["image-variable"] == null);
+      self.ControlsBarComponent.setState({ media_variable: Number(self.options["image-variable"]) });
     },
 
     _set_selected_color: function _set_selected_color() {
       var self = this;
-      self.color_items.find("li").removeClass("active");
-      self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
+      self.ControlsBarComponent.setState({ color_variable: Number(self.options["color-variable"]) });
     },
 
     _set_selection: function _set_selection() {
@@ -792,10 +794,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self._set_selected_image();
       } else if (key == "color-variable") {
         self._set_selected_color();
-      } else if (key == "image_variables") {
-        self._set_image_variables();
-      } else if (key == 'color_variables') {
-        self._set_color_variables();
       } else if (key == 'selection') {
         self._set_selection();
       } else if (key == 'hidden_simulations') {
