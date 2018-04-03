@@ -11,13 +11,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      auto_scale: this.props.auto_scale,
+    };
     for(let dropdown of this.props.dropdowns)
     {
       this.state[dropdown.state_label] = dropdown.selected;
     }
     // This binding is necessary to make `this` work in the callback
     this.set_selected = this.set_selected.bind(this);
+    this.set_auto_scale = this.set_auto_scale.bind(this);
   }
 
   set_selected(state_label, key, trigger, e) {
@@ -31,6 +34,14 @@ class ControlsBar extends React.Component {
     this.setState((prevState, props) => (obj));
     // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
     this.props.element.trigger(trigger, key);
+  }
+
+  set_auto_scale(e) {
+    this.setState((prevState, props) => {
+      const new_auto_scale = !prevState.auto_scale;
+      this.props.element.trigger("auto-scale", new_auto_scale);
+      return {auto_scale: new_auto_scale};
+    });
   }
 
   render() {
@@ -49,9 +60,14 @@ class ControlsBar extends React.Component {
     });
 
     return (
-      <ControlsGroup id="scatterplot-controls">
-        {dropdowns}
-      </ControlsGroup>
+      <React.Fragment>
+        <ControlsGroup id="scatterplot-controls">
+          {dropdowns}
+        </ControlsGroup>
+        <ControlsGroup id="selection-controls">
+          <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
+        </ControlsGroup>
+      </React.Fragment>
     );
   }
 }
@@ -59,7 +75,7 @@ class ControlsBar extends React.Component {
 class ControlsGroup extends React.Component {
   render() {
     return (
-      <div id={this.props.id} className="btn-group btn-group-xs">
+      <div id={this.props.id} className="btn-group btn-group-xs ControlsGroup">
         {this.props.children}
       </div>
     );
@@ -90,6 +106,20 @@ class ControlsDropdown extends React.Component {
         </ul>
       </div>
       </React.Fragment>
+    );
+  }
+}
+
+class ControlsButtonToggle extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <button className={'btn btn-default ' + (this.props.active ? 'active' : '')} data-toggle="button" title={this.props.title} aria-pressed={this.props.active} onClick={this.props.set_active_state}>
+        <span className={'fa ' + this.props.icon} aria-hidden="true"></span>
+      </button>
     );
   }
 }
@@ -198,30 +228,20 @@ $.widget("parameter_image.controls",
       },
     ];
 
-    const controls_bar = <ControlsBar element={self.element} dropdowns={dropdowns} />;
+    const controls_bar = <ControlsBar element={self.element} 
+      dropdowns={dropdowns}
+      auto_scale={self.options["auto-scale"]} />;
 
     self.ControlsBarComponent = ReactDOM.render(
       controls_bar,
       document.getElementById('react-controls')
     );
 
-    var scatterplot_controls = $("#scatterplot-controls", this.element);
     var selection_controls = $("#selection-controls", this.element);
     var video_controls = $("#video-controls", this.element);
     this.video_controls = video_controls;
     var playback_controls = $("#playback-controls", this.element);
     this.playback_controls = playback_controls;
-
-    this.auto_scale_button = $("\
-      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
-        <span class='fa fa-external-link' aria-hidden='true'></span> \
-      </button> \
-      ")
-      .click(function(){
-        self.element.trigger("auto-scale", !$(this).hasClass('active'));
-      })
-      .appendTo(selection_controls)
-      ;
 
     this.selection_control = $('<div class="btn-group btn-group-xs"></div>')
       .appendTo(selection_controls)
@@ -422,7 +442,6 @@ $.widget("parameter_image.controls",
       });
     }
 
-    self._set_auto_scale();
     self._set_selection_control();
     self._set_show_all();
     self._set_video_sync();
@@ -492,13 +511,6 @@ $.widget("parameter_image.controls",
     // Creating CSV from data array
     var csv = Papa.unparse(rowMajorData);
     return csv;
-  },
-
-  _set_auto_scale: function()
-  {
-    var self = this;
-    this.auto_scale_button.toggleClass("active", self.options["auto-scale"]);
-    this.auto_scale_button.attr("aria-pressed", self.options["auto-scale"]);
   },
 
   _set_video_sync: function()

@@ -28,7 +28,9 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       var _this = _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).call(this, props));
 
-      _this.state = {};
+      _this.state = {
+        auto_scale: _this.props.auto_scale
+      };
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -56,6 +58,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       }
 
       _this.set_selected = _this.set_selected.bind(_this);
+      _this.set_auto_scale = _this.set_auto_scale.bind(_this);
       return _this;
     }
 
@@ -75,24 +78,44 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         this.props.element.trigger(trigger, key);
       }
     }, {
+      key: "set_auto_scale",
+      value: function set_auto_scale(e) {
+        var _this2 = this;
+
+        this.setState(function (prevState, props) {
+          var new_auto_scale = !prevState.auto_scale;
+          _this2.props.element.trigger("auto-scale", new_auto_scale);
+          return { auto_scale: new_auto_scale };
+        });
+      }
+    }, {
       key: "render",
       value: function render() {
-        var _this2 = this;
+        var _this3 = this;
 
         var dropdowns = this.props.dropdowns.map(function (dropdown) {
           if (dropdown.items.length > 1) {
             return React.createElement(ControlsDropdown, { key: dropdown.id, id: dropdown.id, label: dropdown.label, title: dropdown.title,
               state_label: dropdown.state_label, trigger: dropdown.trigger, items: dropdown.items,
-              selected: dropdown.selected, set_selected: _this2.set_selected });
+              selected: dropdown.selected, set_selected: _this3.set_selected });
           } else {
             return false;
           }
         });
 
         return React.createElement(
-          ControlsGroup,
-          { id: "scatterplot-controls" },
-          dropdowns
+          React.Fragment,
+          null,
+          React.createElement(
+            ControlsGroup,
+            { id: "scatterplot-controls" },
+            dropdowns
+          ),
+          React.createElement(
+            ControlsGroup,
+            { id: "selection-controls" },
+            React.createElement(ControlsButtonToggle, { title: "Auto Scale", icon: "fa-external-link", active: this.state.auto_scale, set_active_state: this.set_auto_scale })
+          )
         );
       }
     }]);
@@ -114,7 +137,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       value: function render() {
         return React.createElement(
           "div",
-          { id: this.props.id, className: "btn-group btn-group-xs" },
+          { id: this.props.id, className: "btn-group btn-group-xs ControlsGroup" },
           this.props.children
         );
       }
@@ -135,16 +158,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsDropdown, [{
       key: "render",
       value: function render() {
-        var _this5 = this;
+        var _this6 = this;
 
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", key: item.key, className: item.key == _this5.props.selected ? 'active' : '' },
+            { role: "presentation", key: item.key, className: item.key == _this6.props.selected ? 'active' : '' },
             React.createElement(
               "a",
               { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
-                  return _this5.props.set_selected(_this5.props.state_label, item.key, _this5.props.trigger, e);
+                  return _this6.props.set_selected(_this6.props.state_label, item.key, _this6.props.trigger, e);
                 } },
               item.name
             )
@@ -174,6 +197,29 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     }]);
 
     return ControlsDropdown;
+  }(React.Component);
+
+  var ControlsButtonToggle = function (_React$Component4) {
+    _inherits(ControlsButtonToggle, _React$Component4);
+
+    function ControlsButtonToggle(props) {
+      _classCallCheck(this, ControlsButtonToggle);
+
+      return _possibleConstructorReturn(this, (ControlsButtonToggle.__proto__ || Object.getPrototypeOf(ControlsButtonToggle)).call(this, props));
+    }
+
+    _createClass(ControlsButtonToggle, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          "button",
+          { className: 'btn btn-default ' + (this.props.active ? 'active' : ''), "data-toggle": "button", title: this.props.title, "aria-pressed": this.props.active, onClick: this.props.set_active_state },
+          React.createElement("span", { className: 'fa ' + this.props.icon, "aria-hidden": "true" })
+        );
+      }
+    }]);
+
+    return ControlsButtonToggle;
   }(React.Component);
 
   $.widget("parameter_image.controls", {
@@ -356,24 +402,17 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         selected: self.options["image-variable"]
       }];
 
-      var controls_bar = React.createElement(ControlsBar, { element: self.element, dropdowns: dropdowns });
+      var controls_bar = React.createElement(ControlsBar, { element: self.element,
+        dropdowns: dropdowns,
+        auto_scale: self.options["auto-scale"] });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
 
-      var scatterplot_controls = $("#scatterplot-controls", this.element);
       var selection_controls = $("#selection-controls", this.element);
       var video_controls = $("#video-controls", this.element);
       this.video_controls = video_controls;
       var playback_controls = $("#playback-controls", this.element);
       this.playback_controls = playback_controls;
-
-      this.auto_scale_button = $("\
-      <button class='btn btn-default' data-toggle='button' title='Auto Scale'> \
-        <span class='fa fa-external-link' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("auto-scale", !$(this).hasClass('active'));
-      }).appendTo(selection_controls);
 
       this.selection_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(selection_controls);
       this.selection_button = $('\
@@ -515,7 +554,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         });
       }
 
-      self._set_auto_scale();
       self._set_selection_control();
       self._set_show_all();
       self._set_video_sync();
@@ -577,12 +615,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       // Creating CSV from data array
       var csv = Papa.unparse(rowMajorData);
       return csv;
-    },
-
-    _set_auto_scale: function _set_auto_scale() {
-      var self = this;
-      this.auto_scale_button.toggleClass("active", self.options["auto-scale"]);
-      this.auto_scale_button.attr("aria-pressed", self.options["auto-scale"]);
     },
 
     _set_video_sync: function _set_video_sync() {
