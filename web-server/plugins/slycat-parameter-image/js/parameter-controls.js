@@ -31,7 +31,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       _this.state = {
         auto_scale: _this.props.auto_scale,
         hidden_simulations: _this.props.hidden_simulations,
-        disable_hide_show: _this.props.disable_hide_show
+        disable_hide_show: _this.props.disable_hide_show,
+        open_images: _this.props.open_images
       };
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -62,6 +63,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       _this.set_selected = _this.set_selected.bind(_this);
       _this.set_auto_scale = _this.set_auto_scale.bind(_this);
       _this.set_show_all = _this.set_show_all.bind(_this);
+      _this.set_close_all = _this.set_close_all.bind(_this);
       return _this;
     }
 
@@ -97,12 +99,20 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         this.props.element.trigger("show-all");
       }
     }, {
+      key: "set_close_all",
+      value: function set_close_all(e) {
+        this.props.element.trigger("close-all");
+      }
+    }, {
       key: "render",
       value: function render() {
         var _this3 = this;
 
+        // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
         var show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
         var show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
+        // Disable close all button when there are no open frames
+        var close_all_disabled = this.state.open_images.length == 0;
         var dropdowns = this.props.dropdowns.map(function (dropdown) {
           if (dropdown.items.length > 1) {
             return React.createElement(ControlsDropdown, { key: dropdown.id, id: dropdown.id, label: dropdown.label, title: dropdown.title,
@@ -125,7 +135,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             ControlsGroup,
             { id: "selection-controls" },
             React.createElement(ControlsButtonToggle, { title: "Auto Scale", icon: "fa-external-link", active: this.state.auto_scale, set_active_state: this.set_auto_scale }),
-            React.createElement(ControlsButtonDisable, { label: "Show All", title: show_all_title, disabled: show_all_disabled, set_show_all: this.set_show_all })
+            React.createElement(ControlsButtonDisable, { label: "Show All", title: show_all_title, disabled: show_all_disabled, set_click: this.set_show_all }),
+            React.createElement(ControlsButtonDisable, { label: "Close All Pins", title: "", disabled: close_all_disabled, set_click: this.set_close_all })
           )
         );
       }
@@ -247,7 +258,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       value: function render() {
         return React.createElement(
           "button",
-          { className: "btn btn-default", type: "button", title: this.props.title, disabled: this.props.disabled, onClick: this.props.set_show_all },
+          { className: "btn btn-default", type: "button", title: this.props.title, disabled: this.props.disabled, onClick: this.props.set_click },
           this.props.label
         );
       }
@@ -440,7 +451,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         dropdowns: dropdowns,
         auto_scale: self.options["auto-scale"],
         hidden_simulations: self.options.hidden_simulations,
-        disable_hide_show: self.options.disable_hide_show
+        disable_hide_show: self.options.disable_hide_show,
+        open_images: self.options.open_images
       });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
@@ -459,10 +471,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       </button> \
       ').appendTo(self.selection_control);
       this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">').appendTo(self.selection_control);
-
-      this.close_all_button = $('<button type="button" class="btn btn-default">Close All Pins</button>').click(function () {
-        self.element.trigger("close-all");
-      }).appendTo(selection_controls);
 
       this.csv_button = $("\
       <button class='btn btn-default' title='Download Data Table'> \
@@ -821,8 +829,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       this.video_controls.add(this.playback_controls).toggle(any_video_open);
       // Disable playback controls when the current frame is no a video and sync videos is not toggled
       $('button', this.playback_controls).prop("disabled", !(self.options["video-sync"] || current_frame_video));
-      // Disable close all button when there are no open frames
-      this.close_all_button.prop("disabled", self.options.open_images.length == 0);
       // Enable play or pause based on what's playing
       if (self.options["video-sync"] && any_video_playing || !self.options["video-sync"] && current_frame_video_playing) {
         self.pause_button.show();
@@ -900,6 +906,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self.ControlsBarComponent.setState({ hidden_simulations: self.options.hidden_simulations.slice() });
       } else if (key == 'open_images') {
         self._respond_open_images_changed();
+        self.ControlsBarComponent.setState({ open_images: self.options.open_images.slice() });
       } else if (key == 'disable_hide_show') {
         self._set_hide_show_selection_status();
         self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });

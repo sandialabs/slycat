@@ -15,6 +15,7 @@ class ControlsBar extends React.Component {
       auto_scale: this.props.auto_scale,
       hidden_simulations: this.props.hidden_simulations,
       disable_hide_show: this.props.disable_hide_show,
+      open_images: this.props.open_images,
     };
     for(let dropdown of this.props.dropdowns)
     {
@@ -24,6 +25,7 @@ class ControlsBar extends React.Component {
     this.set_selected = this.set_selected.bind(this);
     this.set_auto_scale = this.set_auto_scale.bind(this);
     this.set_show_all = this.set_show_all.bind(this);
+    this.set_close_all = this.set_close_all.bind(this);
   }
 
   set_selected(state_label, key, trigger, e) {
@@ -51,9 +53,16 @@ class ControlsBar extends React.Component {
     this.props.element.trigger("show-all");
   }
 
+  set_close_all(e) {
+    this.props.element.trigger("close-all");
+  }
+
   render() {
+    // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
     const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
+    // Disable close all button when there are no open frames
+    const close_all_disabled = this.state.open_images.length == 0;
     const dropdowns = this.props.dropdowns.map((dropdown) => 
     {
       if(dropdown.items.length > 1)
@@ -75,7 +84,8 @@ class ControlsBar extends React.Component {
         </ControlsGroup>
         <ControlsGroup id="selection-controls">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
-          <ControlsButtonDisable label="Show All" title={show_all_title} disabled={show_all_disabled} set_show_all={this.set_show_all} />
+          <ControlsButtonDisable label="Show All" title={show_all_title} disabled={show_all_disabled} set_click={this.set_show_all} />
+          <ControlsButtonDisable label="Close All Pins" title="" disabled={close_all_disabled} set_click={this.set_close_all} />
         </ControlsGroup>
       </React.Fragment>
     );
@@ -141,7 +151,7 @@ class ControlsButtonDisable extends React.Component {
 
   render() {
     return (
-      <button className="btn btn-default" type="button" title={this.props.title} disabled={this.props.disabled} onClick={this.props.set_show_all}>{this.props.label}</button>
+      <button className="btn btn-default" type="button" title={this.props.title} disabled={this.props.disabled} onClick={this.props.set_click}>{this.props.label}</button>
     );
   }
 }
@@ -255,6 +265,7 @@ $.widget("parameter_image.controls",
       auto_scale={self.options["auto-scale"]} 
       hidden_simulations={self.options.hidden_simulations}
       disable_hide_show={self.options.disable_hide_show}
+      open_images={self.options.open_images}
     />;
 
     self.ControlsBarComponent = ReactDOM.render(
@@ -283,13 +294,6 @@ $.widget("parameter_image.controls",
       .appendTo(self.selection_control)
       ;
     
-    this.close_all_button = $('<button type="button" class="btn btn-default">Close All Pins</button>')
-      .click(function(){
-        self.element.trigger("close-all");
-      })
-      .appendTo(selection_controls)
-      ;
-
     this.csv_button = $("\
       <button class='btn btn-default' title='Download Data Table'> \
         <span class='fa fa-download' aria-hidden='true'></span> \
@@ -780,8 +784,6 @@ $.widget("parameter_image.controls",
     this.video_controls.add(this.playback_controls).toggle(any_video_open);
     // Disable playback controls when the current frame is no a video and sync videos is not toggled
     $('button', this.playback_controls).prop("disabled", !(self.options["video-sync"] || current_frame_video));
-    // Disable close all button when there are no open frames
-    this.close_all_button.prop("disabled", self.options.open_images.length == 0);
     // Enable play or pause based on what's playing
     if( (self.options["video-sync"] && any_video_playing) || (!self.options["video-sync"] && current_frame_video_playing) )
     {
@@ -880,6 +882,7 @@ $.widget("parameter_image.controls",
     else if(key == 'open_images')
     {
       self._respond_open_images_changed();
+      self.ControlsBarComponent.setState({open_images: self.options.open_images.slice()});
     }
     else if(key == 'disable_hide_show')
     {
