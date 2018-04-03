@@ -13,6 +13,8 @@ class ControlsBar extends React.Component {
     super(props);
     this.state = {
       auto_scale: this.props.auto_scale,
+      hidden_simulations: this.props.hidden_simulations,
+      disable_hide_show: this.props.disable_hide_show,
     };
     for(let dropdown of this.props.dropdowns)
     {
@@ -21,6 +23,7 @@ class ControlsBar extends React.Component {
     // This binding is necessary to make `this` work in the callback
     this.set_selected = this.set_selected.bind(this);
     this.set_auto_scale = this.set_auto_scale.bind(this);
+    this.set_show_all = this.set_show_all.bind(this);
   }
 
   set_selected(state_label, key, trigger, e) {
@@ -44,14 +47,20 @@ class ControlsBar extends React.Component {
     });
   }
 
+  set_show_all(e) {
+    this.props.element.trigger("show-all");
+  }
+
   render() {
-    let dropdowns = this.props.dropdowns.map((dropdown) => 
+    const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
+    const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
+    const dropdowns = this.props.dropdowns.map((dropdown) => 
     {
       if(dropdown.items.length > 1)
       {
         return (<ControlsDropdown key={dropdown.id} id={dropdown.id} label={dropdown.label} title={dropdown.title} 
           state_label={dropdown.state_label} trigger={dropdown.trigger} items={dropdown.items} 
-          selected={dropdown.selected} set_selected={this.set_selected} />);
+          selected={this.state[dropdown.state_label]} set_selected={this.set_selected} />);
       }
       else
       {
@@ -66,6 +75,7 @@ class ControlsBar extends React.Component {
         </ControlsGroup>
         <ControlsGroup id="selection-controls">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
+          <ControlsButtonDisable label="Show All" title={show_all_title} disabled={show_all_disabled} set_show_all={this.set_show_all} />
         </ControlsGroup>
       </React.Fragment>
     );
@@ -120,6 +130,18 @@ class ControlsButtonToggle extends React.Component {
       <button className={'btn btn-default ' + (this.props.active ? 'active' : '')} data-toggle="button" title={this.props.title} aria-pressed={this.props.active} onClick={this.props.set_active_state}>
         <span className={'fa ' + this.props.icon} aria-hidden="true"></span>
       </button>
+    );
+  }
+}
+
+class ControlsButtonDisable extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <button className="btn btn-default" type="button" title={this.props.title} disabled={this.props.disabled} onClick={this.props.set_show_all}>{this.props.label}</button>
     );
   }
 }
@@ -230,7 +252,10 @@ $.widget("parameter_image.controls",
 
     const controls_bar = <ControlsBar element={self.element} 
       dropdowns={dropdowns}
-      auto_scale={self.options["auto-scale"]} />;
+      auto_scale={self.options["auto-scale"]} 
+      hidden_simulations={self.options.hidden_simulations}
+      disable_hide_show={self.options.disable_hide_show}
+    />;
 
     self.ControlsBarComponent = ReactDOM.render(
       controls_bar,
@@ -256,13 +281,6 @@ $.widget("parameter_image.controls",
       ;
     this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">')
       .appendTo(self.selection_control)
-      ;
-
-    this.show_all_button = $('<button type="button" class="btn btn-default">Show All</button>')
-      .click(function(){
-        self.element.trigger("show-all");
-      })
-      .appendTo(selection_controls)
       ;
     
     this.close_all_button = $('<button type="button" class="btn btn-default">Close All Pins</button>')
@@ -443,7 +461,6 @@ $.widget("parameter_image.controls",
     }
 
     self._set_selection_control();
-    self._set_show_all();
     self._set_video_sync();
     self._set_video_sync_time();
     self._respond_open_images_changed();
@@ -724,18 +741,6 @@ $.widget("parameter_image.controls",
     self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
   },
 
-  _set_show_all: function()
-  {
-    var self = this,
-        noneHidden = this.options.hidden_simulations.length == 0,
-        titleText = 'Show All Hidden Scatterplot Points';
-    if(noneHidden || self.options.disable_hide_show) {
-      titleText = 'There are currently no hidden scatterplot points to show.';
-    }
-    this.show_all_button.prop("disabled", noneHidden || self.options.disable_hide_show);
-    this.show_all_button.attr("title", titleText);
-  },
-
   _respond_open_images_changed: function()
   {
     var self = this;
@@ -870,7 +875,7 @@ $.widget("parameter_image.controls",
     }
     else if(key == 'hidden_simulations')
     {
-      self._set_show_all();
+      self.ControlsBarComponent.setState({hidden_simulations: self.options.hidden_simulations.slice()});
     }
     else if(key == 'open_images')
     {
@@ -878,8 +883,8 @@ $.widget("parameter_image.controls",
     }
     else if(key == 'disable_hide_show')
     {
-      self._set_show_all();
       self._set_hide_show_selection_status();
+      self.ControlsBarComponent.setState({disable_hide_show: self.options.disable_hide_show});
     }
     else if(key == 'video-sync-time')
     {

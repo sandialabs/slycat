@@ -29,7 +29,9 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       var _this = _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).call(this, props));
 
       _this.state = {
-        auto_scale: _this.props.auto_scale
+        auto_scale: _this.props.auto_scale,
+        hidden_simulations: _this.props.hidden_simulations,
+        disable_hide_show: _this.props.disable_hide_show
       };
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -59,6 +61,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       _this.set_selected = _this.set_selected.bind(_this);
       _this.set_auto_scale = _this.set_auto_scale.bind(_this);
+      _this.set_show_all = _this.set_show_all.bind(_this);
       return _this;
     }
 
@@ -89,15 +92,22 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         });
       }
     }, {
+      key: "set_show_all",
+      value: function set_show_all(e) {
+        this.props.element.trigger("show-all");
+      }
+    }, {
       key: "render",
       value: function render() {
         var _this3 = this;
 
+        var show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
+        var show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
         var dropdowns = this.props.dropdowns.map(function (dropdown) {
           if (dropdown.items.length > 1) {
             return React.createElement(ControlsDropdown, { key: dropdown.id, id: dropdown.id, label: dropdown.label, title: dropdown.title,
               state_label: dropdown.state_label, trigger: dropdown.trigger, items: dropdown.items,
-              selected: dropdown.selected, set_selected: _this3.set_selected });
+              selected: _this3.state[dropdown.state_label], set_selected: _this3.set_selected });
           } else {
             return false;
           }
@@ -114,7 +124,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
           React.createElement(
             ControlsGroup,
             { id: "selection-controls" },
-            React.createElement(ControlsButtonToggle, { title: "Auto Scale", icon: "fa-external-link", active: this.state.auto_scale, set_active_state: this.set_auto_scale })
+            React.createElement(ControlsButtonToggle, { title: "Auto Scale", icon: "fa-external-link", active: this.state.auto_scale, set_active_state: this.set_auto_scale }),
+            React.createElement(ControlsButtonDisable, { label: "Show All", title: show_all_title, disabled: show_all_disabled, set_show_all: this.set_show_all })
           )
         );
       }
@@ -220,6 +231,29 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     }]);
 
     return ControlsButtonToggle;
+  }(React.Component);
+
+  var ControlsButtonDisable = function (_React$Component5) {
+    _inherits(ControlsButtonDisable, _React$Component5);
+
+    function ControlsButtonDisable(props) {
+      _classCallCheck(this, ControlsButtonDisable);
+
+      return _possibleConstructorReturn(this, (ControlsButtonDisable.__proto__ || Object.getPrototypeOf(ControlsButtonDisable)).call(this, props));
+    }
+
+    _createClass(ControlsButtonDisable, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          "button",
+          { className: "btn btn-default", type: "button", title: this.props.title, disabled: this.props.disabled, onClick: this.props.set_show_all },
+          this.props.label
+        );
+      }
+    }]);
+
+    return ControlsButtonDisable;
   }(React.Component);
 
   $.widget("parameter_image.controls", {
@@ -404,7 +438,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       var controls_bar = React.createElement(ControlsBar, { element: self.element,
         dropdowns: dropdowns,
-        auto_scale: self.options["auto-scale"] });
+        auto_scale: self.options["auto-scale"],
+        hidden_simulations: self.options.hidden_simulations,
+        disable_hide_show: self.options.disable_hide_show
+      });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
 
@@ -422,10 +459,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       </button> \
       ').appendTo(self.selection_control);
       this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">').appendTo(self.selection_control);
-
-      this.show_all_button = $('<button type="button" class="btn btn-default">Show All</button>').click(function () {
-        self.element.trigger("show-all");
-      }).appendTo(selection_controls);
 
       this.close_all_button = $('<button type="button" class="btn btn-default">Close All Pins</button>').click(function () {
         self.element.trigger("close-all");
@@ -555,7 +588,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       }
 
       self._set_selection_control();
-      self._set_show_all();
       self._set_video_sync();
       self._set_video_sync_time();
       self._respond_open_images_changed();
@@ -756,17 +788,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
     },
 
-    _set_show_all: function _set_show_all() {
-      var self = this,
-          noneHidden = this.options.hidden_simulations.length == 0,
-          titleText = 'Show All Hidden Scatterplot Points';
-      if (noneHidden || self.options.disable_hide_show) {
-        titleText = 'There are currently no hidden scatterplot points to show.';
-      }
-      this.show_all_button.prop("disabled", noneHidden || self.options.disable_hide_show);
-      this.show_all_button.attr("title", titleText);
-    },
-
     _respond_open_images_changed: function _respond_open_images_changed() {
       var self = this;
       var frame;
@@ -876,12 +897,12 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       } else if (key == 'selection') {
         self._set_selection();
       } else if (key == 'hidden_simulations') {
-        self._set_show_all();
+        self.ControlsBarComponent.setState({ hidden_simulations: self.options.hidden_simulations.slice() });
       } else if (key == 'open_images') {
         self._respond_open_images_changed();
       } else if (key == 'disable_hide_show') {
-        self._set_show_all();
         self._set_hide_show_selection_status();
+        self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
       } else if (key == 'video-sync-time') {
         self._set_video_sync_time();
       }
