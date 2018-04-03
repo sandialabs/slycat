@@ -13,9 +13,14 @@ define ("dac-manage-selections", [], function() {
 	var module = {};
 	
 	// current selections and type (0 = zoom, 1 = selection_1, 2 = selection_2, 3 = subset)
-	var curr_sel_type = null;	
+	var curr_sel_type = null;
+
+	// selections
 	var selection_1 = [];
 	var selection_2 = [];
+
+    // subset mask
+    var subset_mask = [];
 
 	// focus selection (index into data, or null if nothing in focus)
 	var focus = null;
@@ -46,6 +51,80 @@ define ("dac-manage-selections", [], function() {
 	{
 		return selection_2;
 	}
+
+    // set subset mask
+    module.update_subset = function(mask)
+    {
+        // set new subset mask
+        subset_mask = mask;
+
+        // remove non-subset items from selection 1, if required
+        var new_sel_1 = [];
+        for (var i = 0; i < selection_1.length; i++) {
+            if (subset_mask[selection_1[i]] == 1) {
+                new_sel_1.push(selection_1[i]);
+            }
+        }
+        selection_1 = new_sel_1;
+
+        // remove non-subset items from selection 2, if necessary
+        var new_sel_2 = [];
+        for (var i = 0; i < selection_2.length; i++) {
+            if (subset_mask[selection_2[i]] == 1) {
+                new_sel_2.push(selection_2[i]);
+            }
+        }
+        selection_2 = new_sel_2;
+
+        // remove focus selection, if necessary
+        if (focus != null) {
+            if (subset_mask[focus] == 0) {
+                focus = null;
+            }
+        }
+
+        // return non-empty selection, if present
+        if (selection_1.length > 0) {
+            return selection_1;
+        } else if (selection_2.length > 0) {
+            return selection_2;
+        } else {
+
+            // otherwise return subset indices
+            var subset_inds = [];
+            for (var i = 0; i < subset_mask.length; i++) {
+                if (subset_mask[i] == 1) {
+                    subset_inds.push(i);
+                }
+            }
+            return subset_inds;
+        }
+    }
+
+    // get subset mask
+    module.get_subset = function()
+    {
+        return subset_mask;
+    }
+
+    // get size of subset
+    module.subset_size = function()
+    {
+        var num_subset = 0;
+        for (var i = 0; i < mds_subset.length; i++) {
+            num_subset = num_subset + mds_subset[i];
+        }
+
+        return num_subset;
+    }
+
+
+
+    // check if an index is in the subset mask
+    module.in_subset = function(i)
+    {
+        return subset_mask[i];
+    }
 
 	// set focus selection
 	module.set_focus = function(i)
@@ -103,7 +182,13 @@ define ("dac-manage-selections", [], function() {
 	module.key_flip = function(shiftKey, metaKey) {
 		shift_key_pressed = shiftKey || metaKey;
 	}
-	
+
+	// get state of shift key
+	module.shift_key = function ()
+	{
+	    return shift_key_pressed;
+	}
+
 	// zero out current selection (unless shift key is down)
 	module.zero_sel = function()
 	{

@@ -106,10 +106,20 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 		// convert row clicked to data table row
 		var data_clicked = convert_row_ids([args.row])[0];
 
-        // check if row is already selected
-        // update selection and/or focus
-        selections.update_sel_focus(data_clicked);
+        // check if row is in the subset
+        if (selections.in_subset(data_clicked)) {
 
+            // make sure we are in a selection mode
+            if (selections.sel_type() == 1 ||
+                selections.sel_type() == 2) {
+
+                // check if row is already selected
+                // update selection and/or focus
+                selections.update_sel_focus(data_clicked);
+
+            }
+
+        }
 	}
 	
 	// slick grid row selected on click (for multiple rows)
@@ -185,6 +195,8 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
   					meta.cssClasses = 'selection-2';
   				} else if (item[num_cols-1] == 3) {
   				    meta.cssClasses = 'focus-selection';
+  				} else if (item[num_cols-1] == 4) {
+  				    meta.cssClasses = 'not-in-subset';
   				} else {
   					meta.cssClasses = 'no-selection';
   				}
@@ -237,6 +249,7 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 		var new_sel_1 = selections.sel_1();
 		var new_sel_2 = selections.sel_2();
 		var new_focus = selections.focus();
+        var subset_mask = selections.get_subset();
 
 		// generate vector of data view with new selections
 		var sel_vec = [];
@@ -258,6 +271,13 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 		// mark focus, if present
 		if (new_focus != null) {
 		    sel_vec[new_focus] = 3;
+		}
+
+		// mark if not in subset
+		for (var i = 0; i < subset_mask.length; i++) {
+		    if (!subset_mask[i]) {
+		        sel_vec[i] = 4;
+		    }
 		}
 		
 		// temporarily turn off table rendering

@@ -131,31 +131,35 @@ def register_slycat_plugin(context):
     # computes new MDS coordinate representation using alpha values
     def update_mds_coords(database, model, verb, type, command, **kwargs):
 
-        # convert kwargs into alpha values numpy array
-        alpha_dict = numpy.array([[int(key), float(value)] for 
-            (key,value) in kwargs.items()])
-        alpha_values = alpha_dict[numpy.argsort(alpha_dict[:,0]),1]
-        
+        # get alpha values and subset mask
+        alpha_values = numpy.array(kwargs["alpha"])
+        subset_mask = numpy.array(kwargs["subset"])
+        subset_view = numpy.array(kwargs["subset_view"])
+
+        cherrypy.log.error(str(subset_view))
+
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
         for i in range(len(alpha_values)):
             dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data (
             	database, model, "dac-var-dist", "%s/0/..." % i))))
-				       
+
         # get full MDS coordinate representation for scaling
         full_mds_coords = next(iter(slycat.web.server.get_model_arrayset_data (
 			database, model, "dac-full-mds-coords", "0/0/...")))
 
         # compute new MDS coords
-        mds_coords = dac.compute_coords(dist_mats, alpha_values)
-        mds_coords = mds_coords[0][:,0:3]
+        mds_coords = dac.compute_coords(dist_mats, alpha_values, subset_mask)
 
         # adjust MDS coords using full MDS scaling
         scaled_mds_coords = dac.scale_coords(mds_coords, 
-            full_mds_coords)
+            full_mds_coords[:,0:2], subset_mask)
 
-        # return JSON matrix of coordinates to client
-        return json.dumps({"mds_coords": scaled_mds_coords.tolist()})
+        # return data using content function
+        def content():
+            yield json.dumps({"mds_coords": scaled_mds_coords.tolist()})
+
+        return content()
 
 
     # computes Fisher's discriminant for selections 1 and 2 by the user
@@ -296,7 +300,7 @@ def register_slycat_plugin(context):
     # register plugin with slycat           
     context.register_model("DAC", finish)
     context.register_page("DAC", page_html)
-    context.register_model_command("GET", "DAC", "update_mds_coords", update_mds_coords)
+    context.register_model_command("POST", "DAC", "update_mds_coords", update_mds_coords)
     context.register_model_command("GET", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)

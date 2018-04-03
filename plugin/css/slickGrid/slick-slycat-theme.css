@@ -116,6 +116,10 @@ rights in this software.
     background-color: grey;
 }
 
+.slick-row.not-in-subset {
+    background-color: lightgrey;
+}
+
 /* selected text is white (dial-a-cluster) */
 .slick-row.selection-1 .slick-cell,
 .slick-row.selection-2 .slick-cell,

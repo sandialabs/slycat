@@ -15,8 +15,14 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	// public functions will be returned via the module variable
 	var module = {};
 	
-	// private variable containing MDS coordinates
+	// private variable containing MDS coordinates (2 dimensional)
 	var mds_coords = [];
+
+    // only use selected subset (binary mask, 0 = not in subset, 1 = in subset)
+    var mds_subset = [];
+
+    // current coordinates for subset view
+    var subset_extent = null;
 
 	// model ID
 	var mid = URI(window.location).segment(-1);
@@ -126,6 +132,12 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			
 				// input data into model
 				mds_coords = mds_data;
+
+                // set subset to full mds_coord set
+                for (i = 0; i < mds_coords.length; i++) {
+                    mds_subset.push(1);
+                }
+                selections.update_subset(mds_subset);
 
 				// init shift key detection
 				d3.select("body").on("keydown.brush", key_flip)
@@ -327,21 +339,23 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			        });
 	}
 	
-	// updates the MDS coords given new alpha values
+	// updates the MDS coords given new alpha values and/or subset
 	module.update = function (alpha_values)
 	{
-				
+
 		// call server to compute new coords
-		client.get_model_command(
+		client.post_sensitive_model_command(
 		{
 			mid: mid,
       		type: "DAC",
 			command: "update_mds_coords",
-			parameters: alpha_values,
+			parameters: {alpha: alpha_values,
+			             subset: selections.get_subset(),
+			             subset_view: subset_extent},
 			success: function (result)
 				{
 					// record new values in mds_coords
-					mds_coords = result["mds_coords"];
+					mds_coords = JSON.parse(result)["mds_coords"];
 					
 					// update the data in d3
 					scatter_plot.selectAll("circle")
@@ -713,8 +727,67 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	function subset ()
 	{
 
-	    console.log("subset");
+        // get subset selected
+		var extent = d3.event.target.extent();
 
+		// look for points that were selected
+		var selection = [];
+		for (var i = 0; i < mds_coords.length; i++)
+		{
+			if (extent[0][0] <= mds_coords[i][0] &&
+				mds_coords[i][0] < extent[1][0] &&
+				extent[0][1] <= mds_coords[i][1] &&
+				mds_coords[i][1] < extent[1][1])
+				{
+					// save current selection
+					selection.push(i);
+				};
+		};
+
+        // save current view extent for scaling
+        subset_extent = [x_scale.domain(), y_scale.domain()];
+
+        // separate into inclusion and exclusion based on shift key
+        if (!selections.shift_key())
+        {
+
+            // if nothing is included, we reset to all data
+            if (selection.length == 0) {
+                for (var i = 0; i < mds_coords.length; i++) {
+                    mds_subset[i] = 1;
+                }
+            } else {
+
+                // otherwise we include only the selection, and nothing else
+                for (var i = 0; i < mds_coords.length; i++) {
+                    mds_subset[i] = 0;
+                    if (selection.indexOf(i) != -1) {
+                        mds_subset[i] = 1;
+                    }
+
+                    // in this case, we scale to the new view
+                    subset_extent = extent;
+                }
+            }
+
+        } else {
+
+            // exclusions are additive
+            // meaning we do not necessarily include everything else
+            for (var i = 0; i < selection.length; i++) {
+                mds_subset[selection[i]] = 0;
+            }
+        }
+
+        // remove gray selection box
+        d3.event.target.clear();
+        d3.select(this).call(d3.event.target);
+
+        // fire subset changed event
+        var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
+					                         new_subset: mds_subset,
+					                         subset_view: subset_extent} });
+        document.body.dispatchEvent(subsetEvent);
 	}
 
 	// selection brush handler call back
@@ -803,11 +876,12 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					selections.update_sel(i);
 					selection.push(i);
 
-					// remove gray selection box
-					d3.event.target.clear();
-					d3.select(this).call(d3.event.target);
 				};
 		};
+
+        // remove gray selection box
+        d3.event.target.clear();
+        d3.select(this).call(d3.event.target);
 
 		// fire selection change event
 		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
