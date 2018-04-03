@@ -11,12 +11,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      x_variable: this.props.x_variable,
-      y_variable: this.props.y_variable,
-      color_variable: this.props.color_variable,
-      media_variable: this.props.media_variable,
-    };
+    this.state = {};
+    for(let dropdown of this.props.dropdowns)
+    {
+      this.state[dropdown.state_label] = dropdown.selected;
+    }
     // This binding is necessary to make `this` work in the callback
     this.set_selected = this.set_selected.bind(this);
   }
@@ -35,25 +34,23 @@ class ControlsBar extends React.Component {
   }
 
   render() {
+    let dropdowns = this.props.dropdowns.map((dropdown) => 
+    {
+      if(dropdown.items.length > 1)
+      {
+        return (<ControlsDropdown key={dropdown.id} id={dropdown.id} label={dropdown.label} title={dropdown.title} 
+          state_label={dropdown.state_label} trigger={dropdown.trigger} items={dropdown.items} 
+          selected={dropdown.selected} set_selected={this.set_selected} />);
+      }
+      else
+      {
+        return false;
+      }
+    });
+
     return (
       <ControlsGroup id="scatterplot-controls">
-        <ControlsDropdown id="x-axis-dropdown" label="X Axis" title="Change X Axis Variable" 
-          state_label='x_variable' trigger='x-selection-changed' items={this.props.x_axis_dropdown} 
-          set_selected={this.set_selected} selected={this.state.x_variable} />
-        <ControlsDropdown id="y-axis-dropdown" label="Y Axis" title="Change Y Axis Variable" 
-          state_label='y_variable' trigger='y-selection-changed' items={this.props.y_axis_dropdown} 
-          set_selected={this.set_selected} selected={this.state.y_variable} />
-        <ControlsDropdown id="color-dropdown"  label="Point Color" title="Change Point Color"     
-          state_label='color_variable' trigger='color-selection-changed' items={this.props.color_variable_dropdown} 
-          set_selected={this.set_selected} selected={this.state.color_variable} />
-        { // Only show media dropdown if there are media columns (first is always None, so checking for more than 1)
-          this.props.media_variable_dropdown.length > 1 ? (
-          <ControlsDropdown id="image-dropdown"  label="Media Set" title="Change Media Set Variable"     
-            state_label='media_variable' trigger='images-selection-changed' items={this.props.media_variable_dropdown} 
-            set_selected={this.set_selected} selected={this.state.media_variable} />
-        ) : (
-          false
-        )}
+        {dropdowns}
       </ControlsGroup>
     );
   }
@@ -105,13 +102,11 @@ $.widget("parameter_image.controls",
     model_name : null,
     aid : null,
     metadata : null,
-    // cluster_index : null,
     "x-variable" : null,
     "y-variable" : null,
     "image-variable" : null,
     "color-variable" : null,
     "auto-scale" : true,
-    // clusters : [],
     x_variables : [],
     y_variables : [],
     image_variables : [],
@@ -164,12 +159,46 @@ $.widget("parameter_image.controls",
       });
     }
 
-    const controls_bar = <ControlsBar element={self.element}
-      x_axis_dropdown={x_axis_dropdown_items} x_variable={self.options["x-variable"]} 
-      y_axis_dropdown={y_axis_dropdown_items} y_variable={self.options["y-variable"]} 
-      color_variable_dropdown={color_variable_dropdown_items} color_variable={self.options["color-variable"]}
-      media_variable_dropdown={media_variable_dropdown_items} media_variable={self.options["image-variable"]}
-    />;
+    const dropdowns = [
+      {
+        id: 'x-axis-dropdown',
+        label: 'X Axis',
+        title: 'Change X Axis Variable', 
+        state_label:'x_variable',
+        trigger: 'x-selection-changed',
+        items: x_axis_dropdown_items,
+        selected: self.options["x-variable"],
+      },
+      {
+        id: 'y-axis-dropdown',
+        label: 'Y Axis',
+        title: 'Change Y Axis Variable', 
+        state_label:'y_variable',
+        trigger: 'y-selection-changed',
+        items: y_axis_dropdown_items,
+        selected: self.options["y-variable"],
+      },
+      {
+        id: 'color-dropdown',
+        label: 'Point Color',
+        title: 'Change Point Color', 
+        state_label:'color_variable',
+        trigger: 'color-selection-changed',
+        items: color_variable_dropdown_items,
+        selected: self.options["color-variable"],
+      },
+      {
+        id: 'image-dropdown',
+        label: 'Media Set',
+        title: 'Change Media Set Variable', 
+        state_label:'media_variable',
+        trigger: 'images-selection-changed',
+        items: media_variable_dropdown_items,
+        selected: self.options["image-variable"],
+      },
+    ];
+
+    const controls_bar = <ControlsBar element={self.element} dropdowns={dropdowns} />;
 
     self.ControlsBarComponent = ReactDOM.render(
       controls_bar,

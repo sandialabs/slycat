@@ -28,13 +28,33 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       var _this = _possibleConstructorReturn(this, (ControlsBar.__proto__ || Object.getPrototypeOf(ControlsBar)).call(this, props));
 
-      _this.state = {
-        x_variable: _this.props.x_variable,
-        y_variable: _this.props.y_variable,
-        color_variable: _this.props.color_variable,
-        media_variable: _this.props.media_variable
-      };
-      // This binding is necessary to make `this` work in the callback
+      _this.state = {};
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = _this.props.dropdowns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var dropdown = _step.value;
+
+          _this.state[dropdown.state_label] = dropdown.selected;
+        }
+        // This binding is necessary to make `this` work in the callback
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
       _this.set_selected = _this.set_selected.bind(_this);
       return _this;
     }
@@ -57,22 +77,22 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     }, {
       key: "render",
       value: function render() {
+        var _this2 = this;
+
+        var dropdowns = this.props.dropdowns.map(function (dropdown) {
+          if (dropdown.items.length > 1) {
+            return React.createElement(ControlsDropdown, { key: dropdown.id, id: dropdown.id, label: dropdown.label, title: dropdown.title,
+              state_label: dropdown.state_label, trigger: dropdown.trigger, items: dropdown.items,
+              selected: dropdown.selected, set_selected: _this2.set_selected });
+          } else {
+            return false;
+          }
+        });
+
         return React.createElement(
           ControlsGroup,
           { id: "scatterplot-controls" },
-          React.createElement(ControlsDropdown, { id: "x-axis-dropdown", label: "X Axis", title: "Change X Axis Variable",
-            state_label: "x_variable", trigger: "x-selection-changed", items: this.props.x_axis_dropdown,
-            set_selected: this.set_selected, selected: this.state.x_variable }),
-          React.createElement(ControlsDropdown, { id: "y-axis-dropdown", label: "Y Axis", title: "Change Y Axis Variable",
-            state_label: "y_variable", trigger: "y-selection-changed", items: this.props.y_axis_dropdown,
-            set_selected: this.set_selected, selected: this.state.y_variable }),
-          React.createElement(ControlsDropdown, { id: "color-dropdown", label: "Point Color", title: "Change Point Color",
-            state_label: "color_variable", trigger: "color-selection-changed", items: this.props.color_variable_dropdown,
-            set_selected: this.set_selected, selected: this.state.color_variable }),
-          // Only show media dropdown if there are media columns (first is always None, so checking for more than 1)
-          this.props.media_variable_dropdown.length > 1 ? React.createElement(ControlsDropdown, { id: "image-dropdown", label: "Media Set", title: "Change Media Set Variable",
-            state_label: "media_variable", trigger: "images-selection-changed", items: this.props.media_variable_dropdown,
-            set_selected: this.set_selected, selected: this.state.media_variable }) : false
+          dropdowns
         );
       }
     }]);
@@ -115,16 +135,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsDropdown, [{
       key: "render",
       value: function render() {
-        var _this4 = this;
+        var _this5 = this;
 
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", key: item.key, className: item.key == _this4.props.selected ? 'active' : '' },
+            { role: "presentation", key: item.key, className: item.key == _this5.props.selected ? 'active' : '' },
             React.createElement(
               "a",
               { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
-                  return _this4.props.set_selected(_this4.props.state_label, item.key, _this4.props.trigger, e);
+                  return _this5.props.set_selected(_this5.props.state_label, item.key, _this5.props.trigger, e);
                 } },
               item.name
             )
@@ -162,13 +182,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       model_name: null,
       aid: null,
       metadata: null,
-      // cluster_index : null,
       "x-variable": null,
       "y-variable": null,
       "image-variable": null,
       "color-variable": null,
       "auto-scale": true,
-      // clusters : [],
       x_variables: [],
       y_variables: [],
       image_variables: [],
@@ -188,46 +206,17 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       var self = this;
 
       var x_axis_dropdown_items = [];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = this.options.x_variables[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var x_variable = _step.value;
-
-          x_axis_dropdown_items.push({
-            key: x_variable,
-            name: self.options.metadata['column-names'][x_variable]
-          });
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      var y_axis_dropdown_items = [];
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = this.options.y_variables[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var y_variable = _step2.value;
+        for (var _iterator2 = this.options.x_variables[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var x_variable = _step2.value;
 
-          y_axis_dropdown_items.push({
-            key: y_variable,
-            name: self.options.metadata['column-names'][y_variable]
+          x_axis_dropdown_items.push({
+            key: x_variable,
+            name: self.options.metadata['column-names'][x_variable]
           });
         }
       } catch (err) {
@@ -245,18 +234,18 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var color_variable_dropdown_items = [];
+      var y_axis_dropdown_items = [];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = this.options.color_variables[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var color_variable = _step3.value;
+        for (var _iterator3 = this.options.y_variables[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var y_variable = _step3.value;
 
-          color_variable_dropdown_items.push({
-            key: color_variable,
-            name: self.options.metadata['column-names'][color_variable]
+          y_axis_dropdown_items.push({
+            key: y_variable,
+            name: self.options.metadata['column-names'][y_variable]
           });
         }
       } catch (err) {
@@ -274,19 +263,18 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var media_variable_dropdown_items = [];
-      media_variable_dropdown_items.push({ key: -1, name: "None" });
+      var color_variable_dropdown_items = [];
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
       var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator4 = this.options.image_variables[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var media_variable = _step4.value;
+        for (var _iterator4 = this.options.color_variables[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var color_variable = _step4.value;
 
-          media_variable_dropdown_items.push({
-            key: media_variable,
-            name: self.options.metadata['column-names'][media_variable]
+          color_variable_dropdown_items.push({
+            key: color_variable,
+            name: self.options.metadata['column-names'][color_variable]
           });
         }
       } catch (err) {
@@ -304,12 +292,71 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var controls_bar = React.createElement(ControlsBar, { element: self.element,
-        x_axis_dropdown: x_axis_dropdown_items, x_variable: self.options["x-variable"],
-        y_axis_dropdown: y_axis_dropdown_items, y_variable: self.options["y-variable"],
-        color_variable_dropdown: color_variable_dropdown_items, color_variable: self.options["color-variable"],
-        media_variable_dropdown: media_variable_dropdown_items, media_variable: self.options["image-variable"]
-      });
+      var media_variable_dropdown_items = [];
+      media_variable_dropdown_items.push({ key: -1, name: "None" });
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = this.options.image_variables[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var media_variable = _step5.value;
+
+          media_variable_dropdown_items.push({
+            key: media_variable,
+            name: self.options.metadata['column-names'][media_variable]
+          });
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5.return) {
+            _iterator5.return();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      var dropdowns = [{
+        id: 'x-axis-dropdown',
+        label: 'X Axis',
+        title: 'Change X Axis Variable',
+        state_label: 'x_variable',
+        trigger: 'x-selection-changed',
+        items: x_axis_dropdown_items,
+        selected: self.options["x-variable"]
+      }, {
+        id: 'y-axis-dropdown',
+        label: 'Y Axis',
+        title: 'Change Y Axis Variable',
+        state_label: 'y_variable',
+        trigger: 'y-selection-changed',
+        items: y_axis_dropdown_items,
+        selected: self.options["y-variable"]
+      }, {
+        id: 'color-dropdown',
+        label: 'Point Color',
+        title: 'Change Point Color',
+        state_label: 'color_variable',
+        trigger: 'color-selection-changed',
+        items: color_variable_dropdown_items,
+        selected: self.options["color-variable"]
+      }, {
+        id: 'image-dropdown',
+        label: 'Media Set',
+        title: 'Change Media Set Variable',
+        state_label: 'media_variable',
+        trigger: 'images-selection-changed',
+        items: media_variable_dropdown_items,
+        selected: self.options["image-variable"]
+      }];
+
+      var controls_bar = React.createElement(ControlsBar, { element: self.element, dropdowns: dropdowns });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
 
