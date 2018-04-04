@@ -32,7 +32,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         auto_scale: _this.props.auto_scale,
         hidden_simulations: _this.props.hidden_simulations,
         disable_hide_show: _this.props.disable_hide_show,
-        open_images: _this.props.open_images
+        open_images: _this.props.open_images,
+        selection: _this.props.selection
       };
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -62,8 +63,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       _this.set_selected = _this.set_selected.bind(_this);
       _this.set_auto_scale = _this.set_auto_scale.bind(_this);
-      _this.set_show_all = _this.set_show_all.bind(_this);
-      _this.set_close_all = _this.set_close_all.bind(_this);
+      _this.trigger_show_all = _this.trigger_show_all.bind(_this);
+      _this.trigger_close_all = _this.trigger_close_all.bind(_this);
       return _this;
     }
 
@@ -94,13 +95,13 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         });
       }
     }, {
-      key: "set_show_all",
-      value: function set_show_all(e) {
+      key: "trigger_show_all",
+      value: function trigger_show_all(e) {
         this.props.element.trigger("show-all");
       }
     }, {
-      key: "set_close_all",
-      value: function set_close_all(e) {
+      key: "trigger_close_all",
+      value: function trigger_close_all(e) {
         this.props.element.trigger("close-all");
       }
     }, {
@@ -135,8 +136,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             ControlsGroup,
             { id: "selection-controls" },
             React.createElement(ControlsButtonToggle, { title: "Auto Scale", icon: "fa-external-link", active: this.state.auto_scale, set_active_state: this.set_auto_scale }),
-            React.createElement(ControlsButtonDisable, { label: "Show All", title: show_all_title, disabled: show_all_disabled, set_click: this.set_show_all }),
-            React.createElement(ControlsButtonDisable, { label: "Close All Pins", title: "", disabled: close_all_disabled, set_click: this.set_close_all })
+            React.createElement(ControlsButton, { label: "Show All", title: show_all_title, disabled: show_all_disabled, click: this.trigger_show_all }),
+            React.createElement(ControlsButton, { label: "Close All Pins", title: "", disabled: close_all_disabled, click: this.trigger_close_all }),
+            React.createElement(ControlsButtonDownloadDataTable, { selection: this.state.selection, hidden_simulations: this.state.hidden_simulations,
+              aid: this.props.aid, mid: this.props.mid, model_name: this.props.model_name, metadata: this.props.metadata,
+              indices: this.props.indices })
           )
         );
       }
@@ -244,27 +248,191 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsButtonToggle;
   }(React.Component);
 
-  var ControlsButtonDisable = function (_React$Component5) {
-    _inherits(ControlsButtonDisable, _React$Component5);
+  var ControlsButton = function (_React$Component5) {
+    _inherits(ControlsButton, _React$Component5);
 
-    function ControlsButtonDisable(props) {
-      _classCallCheck(this, ControlsButtonDisable);
+    function ControlsButton(props) {
+      _classCallCheck(this, ControlsButton);
 
-      return _possibleConstructorReturn(this, (ControlsButtonDisable.__proto__ || Object.getPrototypeOf(ControlsButtonDisable)).call(this, props));
+      return _possibleConstructorReturn(this, (ControlsButton.__proto__ || Object.getPrototypeOf(ControlsButton)).call(this, props));
     }
 
-    _createClass(ControlsButtonDisable, [{
+    _createClass(ControlsButton, [{
       key: "render",
       value: function render() {
         return React.createElement(
           "button",
-          { className: "btn btn-default", type: "button", title: this.props.title, disabled: this.props.disabled, onClick: this.props.set_click },
+          { className: "btn btn-default", type: "button", title: this.props.title, disabled: this.props.disabled, onClick: this.props.click },
+          this.props.icon && React.createElement("span", { className: 'fa ' + this.props.icon, "aria-hidden": "true" }),
           this.props.label
         );
       }
     }]);
 
-    return ControlsButtonDisable;
+    return ControlsButton;
+  }(React.Component);
+
+  var ControlsButtonDownloadDataTable = function (_React$Component6) {
+    _inherits(ControlsButtonDownloadDataTable, _React$Component6);
+
+    function ControlsButtonDownloadDataTable(props) {
+      _classCallCheck(this, ControlsButtonDownloadDataTable);
+
+      var _this9 = _possibleConstructorReturn(this, (ControlsButtonDownloadDataTable.__proto__ || Object.getPrototypeOf(ControlsButtonDownloadDataTable)).call(this, props));
+
+      _this9.handleClick = _this9.handleClick.bind(_this9);
+      return _this9;
+    }
+
+    _createClass(ControlsButtonDownloadDataTable, [{
+      key: "handleClick",
+      value: function handleClick(e) {
+        if (this.props.selection.length == 0 && this.props.hidden_simulations.length == 0) {
+          this._write_data_table();
+        } else {
+          this.openCSVSaveChoiceDialog();
+        }
+      }
+    }, {
+      key: "_write_data_table",
+      value: function _write_data_table(selectionList) {
+        var self = this;
+        $.ajax({
+          type: "POST",
+          url: server_root + "models/" + this.props.mid + "/arraysets/" + this.props.aid + "/data",
+          data: JSON.stringify({ "hyperchunks": "0/.../..." }),
+          contentType: "application/json",
+          success: function success(result) {
+            self._write_csv(self._convert_to_csv(result, selectionList), self.props.model_name + "_data_table.csv");
+          },
+          error: function error(request, status, reason_phrase) {
+            window.alert("Error retrieving data table: " + reason_phrase);
+          }
+        });
+      }
+    }, {
+      key: "_write_csv",
+      value: function _write_csv(csvData, defaultFilename) {
+        var blob = new Blob([csvData], {
+          type: "application/csv;charset=utf-8;"
+        });
+        var csvUrl = URL.createObjectURL(blob);
+        var link = document.createElement("a");
+        link.href = csvUrl;
+        link.style = "visibility:hidden";
+        link.download = defaultFilename || "slycatDataTable.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }, {
+      key: "_convert_to_csv",
+      value: function _convert_to_csv(array, sl) {
+        // Note that array.data is column-major:  array.data[0][*] is the first column
+        var self = this;
+
+        // Converting data array from column major to row major
+        var rowMajorData = _.zip.apply(_, _toConsumableArray(array));
+
+        // If we have a selection list, remove everything but those elements from the data array
+        if (sl != undefined && sl.length > 0) {
+          // sl is in the order the user selected the rows, so sort it.
+          // We want to end up with rows in the same order as in the original data.
+          sl.sort();
+          // Only keep elements at the indexes specified in sl
+          rowMajorData = _.at(rowMajorData, sl);
+        }
+
+        // Creating an array of column headers by removing the last one, which is the Index that does not exist in the data
+        var headers = this.props.metadata["column-names"].slice(0, -1);
+        // Adding headers as first element in array of data rows
+        rowMajorData.unshift(headers);
+
+        // Creating CSV from data array
+        var csv = Papa.unparse(rowMajorData);
+        return csv;
+      }
+    }, {
+      key: "openCSVSaveChoiceDialog",
+      value: function openCSVSaveChoiceDialog() {
+        var self = this;
+        var txt = "";
+        var buttons_save = [{ className: "btn-default", label: "Cancel" }, { className: "btn-primary", label: "Save Entire Table", icon_class: "fa fa-table" }];
+
+        if (this.props.selection.length > 0) {
+          txt += "You have " + this.props.selection.length + " rows selected. ";
+          buttons_save.splice(buttons_save.length - 1, 0, { className: "btn-primary", label: "Save Selected", icon_class: "fa fa-check" });
+        }
+        if (this.props.hidden_simulations.length > 0) {
+          var visibleRows = this.props.metadata['row-count'] - this.props.hidden_simulations.length;
+          txt += "You have " + visibleRows + " rows visible. ";
+          buttons_save.splice(buttons_save.length - 1, 0, { className: "btn-primary", label: "Save Visible", icon_class: "fa fa-eye" });
+        }
+
+        txt += "What would you like to do?";
+
+        dialog.dialog({
+          title: "Download Choices",
+          message: txt,
+          buttons: buttons_save,
+          callback: function callback(button) {
+            if (button.label == "Save Entire Table") self._write_data_table();else if (button.label == "Save Selected") self._write_data_table(self.props.selection);else if (button.label == "Save Visible") self._write_data_table(self._filterIndices());
+          }
+        });
+      }
+
+      // Remove hidden_simulations from indices
+
+    }, {
+      key: "_filterIndices",
+      value: function _filterIndices() {
+        var indices = this.props.indices;
+        var hidden_simulations = this.props.hidden_simulations;
+        var filtered_indices = this._cloneArrayBuffer(indices);
+        var length = indices.length;
+
+        // Remove hidden simulations and NaNs and empty strings
+        for (var i = length - 1; i >= 0; i--) {
+          var hidden = $.inArray(indices[i], hidden_simulations) > -1;
+          if (hidden) {
+            filtered_indices.splice(i, 1);
+          }
+        }
+
+        return filtered_indices;
+      }
+
+      // Clones an ArrayBuffer or Array
+
+    }, {
+      key: "_cloneArrayBuffer",
+      value: function _cloneArrayBuffer(source) {
+        // Array.apply method of turning an ArrayBuffer into a normal array is very fast (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
+        // if(source.length > 1)
+        // {
+        //   return Array.apply( [], source );
+        // }
+        // else if(source.length == 1)
+        // {
+        //   return [source[0]];
+        // }
+        // return [];
+
+        // For loop method is much shower (around 300ms for 250K) but works in WebKit. Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
+        var clone = [];
+        for (var i = 0; i < source.length; i++) {
+          clone.push(source[i]);
+        }
+        return clone;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        return React.createElement(ControlsButton, { icon: "fa-download", title: "Download Data Table", click: this.handleClick });
+      }
+    }]);
+
+    return ControlsButtonDownloadDataTable;
   }(React.Component);
 
   $.widget("parameter_image.controls", {
@@ -452,7 +620,13 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         auto_scale: self.options["auto-scale"],
         hidden_simulations: self.options.hidden_simulations,
         disable_hide_show: self.options.disable_hide_show,
-        open_images: self.options.open_images
+        open_images: self.options.open_images,
+        selection: self.options.selection,
+        mid: self.options.mid,
+        aid: self.options.aid,
+        model_name: self.options.model_name,
+        metadata: self.options.metadata,
+        indices: self.options.indices
       });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
@@ -471,18 +645,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       </button> \
       ').appendTo(self.selection_control);
       this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">').appendTo(self.selection_control);
-
-      this.csv_button = $("\
-      <button class='btn btn-default' title='Download Data Table'> \
-        <span class='fa fa-download' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        if (self.options.selection.length == 0 && self.options.hidden_simulations.length == 0) {
-          self._write_data_table();
-        } else {
-          openCSVSaveChoiceDialog();
-        }
-      }).appendTo(selection_controls);
 
       this.video_sync_button_wrapper = $("<span class='input-group-btn'></span>").appendTo(video_controls);
 
@@ -569,92 +731,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self.element.trigger("video-sync-time", val);
       }
 
-      function openCSVSaveChoiceDialog() {
-        var txt = "";
-        var buttons_save = [{ className: "btn-default", label: "Cancel" }, { className: "btn-primary", label: "Save Entire Table", icon_class: "fa fa-table" }];
-
-        if (self.options.selection.length > 0) {
-          txt += "You have " + self.options.selection.length + " rows selected. ";
-          buttons_save.splice(buttons_save.length - 1, 0, { className: "btn-primary", label: "Save Selected", icon_class: "fa fa-check" });
-        }
-        if (self.options.hidden_simulations.length > 0) {
-          var visibleRows = self.options.metadata['row-count'] - self.options.hidden_simulations.length;
-          txt += "You have " + visibleRows + " rows visible. ";
-          buttons_save.splice(buttons_save.length - 1, 0, { className: "btn-primary", label: "Save Visible", icon_class: "fa fa-eye" });
-        }
-
-        txt += "What would you like to do?";
-
-        dialog.dialog({
-          title: "Download Choices",
-          message: txt,
-          buttons: buttons_save,
-          callback: function callback(button) {
-            if (button.label == "Save Entire Table") self._write_data_table();else if (button.label == "Save Selected") self._write_data_table(self.options.selection);else if (button.label == "Save Visible") self._write_data_table(self._filterIndices());
-          }
-        });
-      }
-
       self._set_selection_control();
       self._set_video_sync();
       self._set_video_sync_time();
       self._respond_open_images_changed();
-    },
-
-    _write_data_table: function _write_data_table(selectionList) {
-      var self = this;
-      $.ajax({
-        type: "POST",
-        url: server_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
-        data: JSON.stringify({ "hyperchunks": "0/.../..." }),
-        contentType: "application/json",
-        success: function success(result) {
-          self._write_csv(self._convert_to_csv(result, selectionList), self.options.model_name + "_data_table.csv");
-        },
-        error: function error(request, status, reason_phrase) {
-          window.alert("Error retrieving data table: " + reason_phrase);
-        }
-      });
-    },
-
-    _write_csv: function _write_csv(csvData, defaultFilename) {
-      var blob = new Blob([csvData], {
-        type: "application/csv;charset=utf-8;"
-      });
-      var csvUrl = URL.createObjectURL(blob);
-      var link = document.createElement("a");
-      link.href = csvUrl;
-      link.style = "visibility:hidden";
-      link.download = defaultFilename || "slycatDataTable.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    },
-
-    _convert_to_csv: function _convert_to_csv(array, sl) {
-      // Note that array.data is column-major:  array.data[0][*] is the first column
-      var self = this;
-
-      // Converting data array from column major to row major
-      var rowMajorData = _.zip.apply(_, _toConsumableArray(array));
-
-      // If we have a selection list, remove everything but those elements from the data array
-      if (sl != undefined && sl.length > 0) {
-        // sl is in the order the user selected the rows, so sort it.
-        // We want to end up with rows in the same order as in the original data.
-        sl.sort();
-        // Only keep elements at the indexes specified in sl
-        rowMajorData = _.at(rowMajorData, sl);
-      }
-
-      // Creating an array of column headers by removing the last one, which is the Index that does not exist in the data
-      var headers = self.options.metadata["column-names"].slice(0, -1);
-      // Adding headers as first element in array of data rows
-      rowMajorData.unshift(headers);
-
-      // Creating CSV from data array
-      var csv = Papa.unparse(rowMajorData);
-      return csv;
     },
 
     _set_video_sync: function _set_video_sync() {
@@ -771,26 +851,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       }
     },
 
-    _set_selected_x: function _set_selected_x() {
-      var self = this;
-      self.ControlsBarComponent.setState({ x_variable: Number(self.options["x-variable"]) });
-    },
-
-    _set_selected_y: function _set_selected_y() {
-      var self = this;
-      self.ControlsBarComponent.setState({ y_variable: Number(self.options["y-variable"]) });
-    },
-
-    _set_selected_image: function _set_selected_image() {
-      var self = this;
-      self.ControlsBarComponent.setState({ media_variable: Number(self.options["image-variable"]) });
-    },
-
-    _set_selected_color: function _set_selected_color() {
-      var self = this;
-      self.ControlsBarComponent.setState({ color_variable: Number(self.options["color-variable"]) });
-    },
-
     _set_selection: function _set_selection() {
       var self = this;
       self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
@@ -846,46 +906,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       self.show_item.toggleClass("disabled", self.options.disable_hide_show);
     },
 
-    // Remove hidden_simulations from indices
-    _filterIndices: function _filterIndices() {
-      var self = this;
-      var indices = self.options.indices;
-      var hidden_simulations = self.options.hidden_simulations;
-      var filtered_indices = self._cloneArrayBuffer(indices);
-      var length = indices.length;
-
-      // Remove hidden simulations and NaNs and empty strings
-      for (var i = length - 1; i >= 0; i--) {
-        var hidden = $.inArray(indices[i], hidden_simulations) > -1;
-        if (hidden) {
-          filtered_indices.splice(i, 1);
-        }
-      }
-
-      return filtered_indices;
-    },
-
-    // Clones an ArrayBuffer or Array
-    _cloneArrayBuffer: function _cloneArrayBuffer(source) {
-      // Array.apply method of turning an ArrayBuffer into a normal array is very fast (around 5ms for 250K) but doesn't work in WebKit with arrays longer than about 125K
-      // if(source.length > 1)
-      // {
-      //   return Array.apply( [], source );
-      // }
-      // else if(source.length == 1)
-      // {
-      //   return [source[0]];
-      // }
-      // return [];
-
-      // For loop method is much shower (around 300ms for 250K) but works in WebKit. Might be able to speed things up by using ArrayBuffer.subarray() method to make smallery arrays and then Array.apply those.
-      var clone = [];
-      for (var i = 0; i < source.length; i++) {
-        clone.push(source[i]);
-      }
-      return clone;
-    },
-
     _setOption: function _setOption(key, value) {
       var self = this;
 
@@ -893,15 +913,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       this.options[key] = value;
 
       if (key == "x-variable") {
-        self._set_selected_x();
+        self.ControlsBarComponent.setState({ x_variable: Number(self.options["x-variable"]) });
       } else if (key == "y-variable") {
-        self._set_selected_y();
+        self.ControlsBarComponent.setState({ y_variable: Number(self.options["y-variable"]) });
       } else if (key == "image-variable") {
-        self._set_selected_image();
+        self.ControlsBarComponent.setState({ media_variable: Number(self.options["image-variable"]) });
       } else if (key == "color-variable") {
-        self._set_selected_color();
+        self.ControlsBarComponent.setState({ color_variable: Number(self.options["color-variable"]) });
       } else if (key == 'selection') {
         self._set_selection();
+        self.ControlsBarComponent.setState({ selection: self.options.selection.slice() });
       } else if (key == 'hidden_simulations') {
         self.ControlsBarComponent.setState({ hidden_simulations: self.options.hidden_simulations.slice() });
       } else if (key == 'open_images') {
