@@ -17,9 +17,6 @@ rights in this software.
 */
 
 define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse", "react.development", "react-dom.development"], function (server_root, dialog, _, Papa, React, ReactDOM) {
-
-  // TODO: Enable/disable the Pin item in the Selection Actions dropdown based on whether a media column is selected 
-
   var ControlsBar = function (_React$Component) {
     _inherits(ControlsBar, _React$Component);
 
@@ -65,6 +62,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       _this.set_auto_scale = _this.set_auto_scale.bind(_this);
       _this.trigger_show_all = _this.trigger_show_all.bind(_this);
       _this.trigger_close_all = _this.trigger_close_all.bind(_this);
+      _this.trigger_hide_selection = _this.trigger_hide_selection.bind(_this);
+      _this.trigger_hide_unselected = _this.trigger_hide_unselected.bind(_this);
+      _this.trigger_show_selection = _this.trigger_show_selection.bind(_this);
+      _this.trigger_pin_selection = _this.trigger_pin_selection.bind(_this);
       return _this;
     }
 
@@ -105,6 +106,42 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         this.props.element.trigger("close-all");
       }
     }, {
+      key: "trigger_hide_selection",
+      value: function trigger_hide_selection(e) {
+        if (!this.state.disable_hide_show) {
+          this.props.element.trigger("hide-selection", this.state.selection);
+        }
+        // The to prevent the drop-down from closing when clicking on a disabled item
+        // Unfortunately none of these work to stop the drop-down from closing. Looks like bootstrap's event is fired before this one.
+        // else {
+        //   e.nativeEvent.stopImmediatePropagation();
+        //   e.preventDefault();
+        //   e.stopPropagation();
+        //   return false;
+        // }
+      }
+    }, {
+      key: "trigger_hide_unselected",
+      value: function trigger_hide_unselected(e) {
+        if (!this.state.disable_hide_show) {
+          this.props.element.trigger("hide-unselected", this.state.selection);
+        }
+      }
+    }, {
+      key: "trigger_show_selection",
+      value: function trigger_show_selection(e) {
+        if (!this.state.disable_hide_show) {
+          this.props.element.trigger("show-selection", this.state.selection);
+        }
+      }
+    }, {
+      key: "trigger_pin_selection",
+      value: function trigger_pin_selection(e) {
+        if (!this.state.disable_hide_show) {
+          this.props.element.trigger("pin-selection", this.state.selection);
+        }
+      }
+    }, {
       key: "render",
       value: function render() {
         var _this3 = this;
@@ -114,6 +151,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         var show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
         // Disable close all button when there are no open frames
         var close_all_disabled = this.state.open_images.length == 0;
+        var disable_pin = !(this.state.media_variable && this.state.media_variable >= 0);
+        var hide_pin = !(this.props.media_variables.length > 0);
         var dropdowns = this.props.dropdowns.map(function (dropdown) {
           if (dropdown.items.length > 1) {
             return React.createElement(ControlsDropdown, { key: dropdown.id, id: dropdown.id, label: dropdown.label, title: dropdown.title,
@@ -136,6 +175,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             ControlsGroup,
             { id: "selection-controls" },
             React.createElement(ControlsButtonToggle, { title: "Auto Scale", icon: "fa-external-link", active: this.state.auto_scale, set_active_state: this.set_auto_scale }),
+            React.createElement(ControlsSelection, { trigger_hide_selection: this.trigger_hide_selection, trigger_hide_unselected: this.trigger_hide_unselected,
+              trigger_show_selection: this.trigger_show_selection, trigger_pin_selection: this.trigger_pin_selection,
+              disable_hide_show: this.state.disable_hide_show, disable_pin: disable_pin, hide_pin: hide_pin,
+              selection: this.state.selection, rating_variables: this.props.rating_variables, metadata: this.props.metadata,
+              element: this.props.element }),
             React.createElement(ControlsButton, { label: "Show All", title: show_all_title, disabled: show_all_disabled, click: this.trigger_show_all }),
             React.createElement(ControlsButton, { label: "Close All Pins", title: "", disabled: close_all_disabled, click: this.trigger_close_all }),
             React.createElement(ControlsButtonDownloadDataTable, { selection: this.state.selection, hidden_simulations: this.state.hidden_simulations,
@@ -149,8 +193,141 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsBar;
   }(React.Component);
 
-  var ControlsGroup = function (_React$Component2) {
-    _inherits(ControlsGroup, _React$Component2);
+  var ControlsSelection = function (_React$Component2) {
+    _inherits(ControlsSelection, _React$Component2);
+
+    function ControlsSelection(props) {
+      _classCallCheck(this, ControlsSelection);
+
+      return _possibleConstructorReturn(this, (ControlsSelection.__proto__ || Object.getPrototypeOf(ControlsSelection)).call(this, props));
+    }
+
+    _createClass(ControlsSelection, [{
+      key: "set_value",
+      value: function set_value(variable, variableIndex, value, alert) {
+        var self = this;
+        dialog.prompt({
+          title: "Set Values",
+          message: "Set values for " + variable + ":",
+          value: '',
+          alert: alert,
+          buttons: [{ className: "btn-default", label: "Cancel" }, { className: "btn-primary", label: "Apply" }],
+          callback: function callback(button, value) {
+            if (button.label == "Apply") {
+              var value = value().trim();
+              var numeric = self.props.metadata["column-types"][variableIndex] != "string";
+              var valueValid = value.length > 0;
+              if (valueValid && numeric && isNaN(Number(value))) {
+                valueValid = false;
+              }
+              if (valueValid) {
+                self.props.element.trigger("set-value", {
+                  selection: self.props.selection,
+                  variable: variableIndex,
+                  value: numeric ? value : '"' + value + '"'
+                });
+              } else {
+                var alert = "Please enter a value.";
+                if (numeric) alert = "Please enter a numeric value.";
+                self.set_value(variable, variableIndex, value, alert);
+              }
+            }
+          }
+        });
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        var _this5 = this;
+
+        var rating_variable_controls = this.props.rating_variables.map(function (rating_variable) {
+          return React.createElement(
+            React.Fragment,
+            { key: rating_variable },
+            React.createElement(
+              "li",
+              { role: "presentation", className: "dropdown-header" },
+              _this5.props.metadata['column-names'][rating_variable]
+            ),
+            React.createElement(
+              "li",
+              { role: "presentation" },
+              React.createElement(
+                "a",
+                { role: "menuitem", tabIndex: "-1",
+                  onClick: function onClick(e) {
+                    return _this5.set_value(_this5.props.metadata['column-names'][rating_variable], rating_variable, e);
+                  } },
+                "Set"
+              )
+            )
+          );
+        });
+        return React.createElement(
+          "div",
+          { className: "btn-group btn-group-xs" },
+          React.createElement(
+            "button",
+            { className: 'btn btn-default dropdown-toggle ' + (this.props.selection.length > 0 ? '' : 'disabled'),
+              type: "button", id: "selection-dropdown", "data-toggle": "dropdown", "aria-expanded": "true", title: "Perform Action On Selection" },
+            "Selection Action\xA0",
+            React.createElement("span", { className: "caret" })
+          ),
+          React.createElement(
+            "ul",
+            { id: "selection-switcher", className: "dropdown-menu", role: "menu", "aria-labelledby": "selection-dropdown" },
+            rating_variable_controls,
+            React.createElement(
+              "li",
+              { role: "presentation", className: "dropdown-header" },
+              "Scatterplot Points"
+            ),
+            React.createElement(
+              "li",
+              { role: "presentation", className: this.props.disable_hide_show ? 'disabled' : '' },
+              React.createElement(
+                "a",
+                { role: "menuitem", tabIndex: "-1", onClick: this.props.trigger_hide_selection },
+                "Hide"
+              )
+            ),
+            React.createElement(
+              "li",
+              { role: "presentation", className: this.props.disable_hide_show ? 'disabled' : '' },
+              React.createElement(
+                "a",
+                { role: "menuitem", tabIndex: "-1", onClick: this.props.trigger_hide_unselected },
+                "Hide Unselected"
+              )
+            ),
+            React.createElement(
+              "li",
+              { role: "presentation", className: this.props.disable_hide_show ? 'disabled' : '' },
+              React.createElement(
+                "a",
+                { role: "menuitem", tabIndex: "-1", onClick: this.props.trigger_show_selection },
+                "Show"
+              )
+            ),
+            !this.props.hide_pin && React.createElement(
+              "li",
+              { role: "presentation", className: this.props.disable_pin ? 'disabled' : '' },
+              React.createElement(
+                "a",
+                { role: "menuitem", tabIndex: "-1", onClick: this.props.trigger_pin_selection },
+                "Pin"
+              )
+            )
+          )
+        );
+      }
+    }]);
+
+    return ControlsSelection;
+  }(React.Component);
+
+  var ControlsGroup = function (_React$Component3) {
+    _inherits(ControlsGroup, _React$Component3);
 
     function ControlsGroup() {
       _classCallCheck(this, ControlsGroup);
@@ -172,8 +349,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsGroup;
   }(React.Component);
 
-  var ControlsDropdown = function (_React$Component3) {
-    _inherits(ControlsDropdown, _React$Component3);
+  var ControlsDropdown = function (_React$Component4) {
+    _inherits(ControlsDropdown, _React$Component4);
 
     function ControlsDropdown(props) {
       _classCallCheck(this, ControlsDropdown);
@@ -184,16 +361,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsDropdown, [{
       key: "render",
       value: function render() {
-        var _this6 = this;
+        var _this8 = this;
 
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", key: item.key, className: item.key == _this6.props.selected ? 'active' : '' },
+            { role: "presentation", key: item.key, className: item.key == _this8.props.selected ? 'active' : '' },
             React.createElement(
               "a",
               { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
-                  return _this6.props.set_selected(_this6.props.state_label, item.key, _this6.props.trigger, e);
+                  return _this8.props.set_selected(_this8.props.state_label, item.key, _this8.props.trigger, e);
                 } },
               item.name
             )
@@ -225,8 +402,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsDropdown;
   }(React.Component);
 
-  var ControlsButtonToggle = function (_React$Component4) {
-    _inherits(ControlsButtonToggle, _React$Component4);
+  var ControlsButtonToggle = function (_React$Component5) {
+    _inherits(ControlsButtonToggle, _React$Component5);
 
     function ControlsButtonToggle(props) {
       _classCallCheck(this, ControlsButtonToggle);
@@ -248,8 +425,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsButtonToggle;
   }(React.Component);
 
-  var ControlsButton = function (_React$Component5) {
-    _inherits(ControlsButton, _React$Component5);
+  var ControlsButton = function (_React$Component6) {
+    _inherits(ControlsButton, _React$Component6);
 
     function ControlsButton(props) {
       _classCallCheck(this, ControlsButton);
@@ -272,16 +449,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsButton;
   }(React.Component);
 
-  var ControlsButtonDownloadDataTable = function (_React$Component6) {
-    _inherits(ControlsButtonDownloadDataTable, _React$Component6);
+  var ControlsButtonDownloadDataTable = function (_React$Component7) {
+    _inherits(ControlsButtonDownloadDataTable, _React$Component7);
 
     function ControlsButtonDownloadDataTable(props) {
       _classCallCheck(this, ControlsButtonDownloadDataTable);
 
-      var _this9 = _possibleConstructorReturn(this, (ControlsButtonDownloadDataTable.__proto__ || Object.getPrototypeOf(ControlsButtonDownloadDataTable)).call(this, props));
+      var _this11 = _possibleConstructorReturn(this, (ControlsButtonDownloadDataTable.__proto__ || Object.getPrototypeOf(ControlsButtonDownloadDataTable)).call(this, props));
 
-      _this9.handleClick = _this9.handleClick.bind(_this9);
-      return _this9;
+      _this11.handleClick = _this11.handleClick.bind(_this11);
+      return _this11;
     }
 
     _createClass(ControlsButtonDownloadDataTable, [{
@@ -626,25 +803,17 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         aid: self.options.aid,
         model_name: self.options.model_name,
         metadata: self.options.metadata,
-        indices: self.options.indices
+        indices: self.options.indices,
+        media_variables: self.options.image_variables,
+        rating_variables: self.options.rating_variables
       });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
 
-      var selection_controls = $("#selection-controls", this.element);
       var video_controls = $("#video-controls", this.element);
       this.video_controls = video_controls;
       var playback_controls = $("#playback-controls", this.element);
       this.playback_controls = playback_controls;
-
-      this.selection_control = $('<div class="btn-group btn-group-xs"></div>').appendTo(selection_controls);
-      this.selection_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection"> \
-        Selection Action \
-        <span class="caret"></span> \
-      </button> \
-      ').appendTo(self.selection_control);
-      this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">').appendTo(self.selection_control);
 
       this.video_sync_button_wrapper = $("<span class='input-group-btn'></span>").appendTo(video_controls);
 
@@ -731,7 +900,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self.element.trigger("video-sync-time", val);
       }
 
-      self._set_selection_control();
       self._set_video_sync();
       self._set_video_sync_time();
       self._respond_open_images_changed();
@@ -746,114 +914,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _set_video_sync_time: function _set_video_sync_time() {
       var self = this;
       this.video_sync_time.val(self.options["video-sync-time"]);
-    },
-
-    _set_selection_control: function _set_selection_control() {
-      var self = this;
-      this.selection_items.empty();
-      // Add options for ratings
-      for (var i = 0; i < this.options.rating_variables.length; i++) {
-        var var_label = this.options.metadata['column-names'][this.options.rating_variables[i]];
-        $('<li role="presentation" class="dropdown-header"></li>').text(this.options.metadata['column-names'][this.options.rating_variables[i]]).appendTo(self.selection_items);
-        $("<li role='presentation'>").appendTo(self.selection_items).append($('<a role="menuitem" tabindex="-1">').html("Set").attr("data-value", this.options.rating_variables[i]).attr("data-label", "set").attr("data-variable", var_label).click(function () {
-          var menu_item = $(this).parent();
-          if (menu_item.hasClass("disabled")) return false;
-
-          openSetValueDialog(this.dataset.variable, this.dataset.value);
-        }));
-        // Disabling clear functionality for ratings since it causes problems with nulls
-        // $("<li role='presentation'>")
-        //   .appendTo(self.selection_items)
-        //   .append(
-        //     $('<a role="menuitem" tabindex="-1">')
-        //       .html("Clear")
-        //       .attr("data-value", this.options.rating_variables[i])
-        //       .attr("data-label", "clear")
-        //       .click(function()
-        //       {
-        //         var menu_item = $(this).parent();
-        //         if(menu_item.hasClass("disabled"))
-        //           return false;
-
-        //         openClearValueDialog(this.dataset.variable, this.dataset.value);
-        //       })
-        //   )
-        //   ;
-      }
-      // Finish with global actions
-      $('<li role="presentation" class="dropdown-header"></li>').text("Scatterplot Points").appendTo(self.selection_items);
-      self.hide_item = $("<li role='presentation'>").appendTo(self.selection_items).append($('<a role="menuitem" tabindex="-1">').html("Hide").attr("data-value", "hide").click(function () {
-        var menu_item = $(this).parent();
-        if (menu_item.hasClass("disabled")) return false;
-
-        self.element.trigger("hide-selection", self.options.selection);
-      }));
-      self.hide_unselected_item = $("<li role='presentation'>").appendTo(self.selection_items).append($('<a role="menuitem" tabindex="-1">').html("Hide Unselected").attr("data-value", "hide_unselected").click(function () {
-        var menu_item = $(this).parent();
-        if (menu_item.hasClass("disabled")) return false;
-
-        self.element.trigger("hide-unselected", self.options.selection);
-      }));
-      self.show_item = $("<li role='presentation'>").appendTo(self.selection_items).append($('<a role="menuitem" tabindex="-1">').html("Show").attr("data-value", "show").click(function () {
-        var menu_item = $(this).parent();
-        if (menu_item.hasClass("disabled")) return false;
-
-        self.element.trigger("show-selection", self.options.selection);
-      }));
-      self.pin_item = $("<li role='presentation'>").appendTo(self.selection_items).toggleClass("disabled", self.options["image-variable"] == -1 || self.options["image-variable"] == null).append($('<a role="menuitem" tabindex="-1">').html("Pin").attr("data-value", "pin").click(function () {
-        var menu_item = $(this).parent();
-        if (menu_item.hasClass("disabled")) return false;
-
-        self.element.trigger("pin-selection", self.options.selection);
-      }));
-
-      // Set state
-      self._set_selection();
-
-      function openSetValueDialog(variable, variableIndex, value, alert) {
-        dialog.prompt({
-          title: "Set Values",
-          message: "Set values for " + variable + ":",
-          value: value,
-          alert: alert,
-          buttons: [{ className: "btn-default", label: "Cancel" }, { className: "btn-primary", label: "Apply" }],
-          callback: function callback(button, value) {
-            if (button.label == "Apply") {
-              var value = value().trim();
-              var numeric = self.options.metadata["column-types"][variableIndex] != "string";
-              var valueValid = value.length > 0;
-              if (valueValid && numeric && isNaN(Number(value))) {
-                valueValid = false;
-              }
-              if (valueValid) {
-                self.element.trigger("set-value", {
-                  selection: self.options.selection,
-                  variable: variableIndex,
-                  value: numeric ? value : '"' + value + '"'
-                });
-              } else {
-                var alert = "Please enter a value.";
-                if (numeric) alert = "Please enter a numeric value.";
-                openSetValueDialog(variable, variableIndex, value, alert);
-              }
-            }
-          }
-        });
-      }
-      function openClearValueDialog(variable, variableIndex) {
-        dialog.confirm({
-          title: "Clear Values",
-          message: "Clear values for " + variable + "?",
-          ok: function ok() {
-            self.element.trigger("set-value", { selection: self.options.selection, variable: variableIndex, value: NaN });
-          }
-        });
-      }
-    },
-
-    _set_selection: function _set_selection() {
-      var self = this;
-      self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
     },
 
     _respond_open_images_changed: function _respond_open_images_changed() {
@@ -899,13 +959,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       }
     },
 
-    _set_hide_show_selection_status: function _set_hide_show_selection_status() {
-      var self = this;
-      self.hide_item.toggleClass("disabled", self.options.disable_hide_show);
-      self.hide_unselected_item.toggleClass("disabled", self.options.disable_hide_show);
-      self.show_item.toggleClass("disabled", self.options.disable_hide_show);
-    },
-
     _setOption: function _setOption(key, value) {
       var self = this;
 
@@ -921,7 +974,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       } else if (key == "color-variable") {
         self.ControlsBarComponent.setState({ color_variable: Number(self.options["color-variable"]) });
       } else if (key == 'selection') {
-        self._set_selection();
         self.ControlsBarComponent.setState({ selection: self.options.selection.slice() });
       } else if (key == 'hidden_simulations') {
         self.ControlsBarComponent.setState({ hidden_simulations: self.options.hidden_simulations.slice() });
@@ -929,7 +981,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self._respond_open_images_changed();
         self.ControlsBarComponent.setState({ open_images: self.options.open_images.slice() });
       } else if (key == 'disable_hide_show') {
-        self._set_hide_show_selection_status();
         self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
       } else if (key == 'video-sync-time') {
         self._set_video_sync_time();

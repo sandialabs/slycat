@@ -6,8 +6,6 @@ rights in this software.
 
 define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse", "react.development", "react-dom.development"], function(server_root, dialog, _, Papa, React, ReactDOM) {
 
-// TODO: Enable/disable the Pin item in the Selection Actions dropdown based on whether a media column is selected 
-
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
@@ -27,6 +25,10 @@ class ControlsBar extends React.Component {
     this.set_auto_scale = this.set_auto_scale.bind(this);
     this.trigger_show_all = this.trigger_show_all.bind(this);
     this.trigger_close_all = this.trigger_close_all.bind(this);
+    this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
+    this.trigger_hide_unselected = this.trigger_hide_unselected.bind(this);
+    this.trigger_show_selection = this.trigger_show_selection.bind(this);
+    this.trigger_pin_selection = this.trigger_pin_selection.bind(this);
   }
 
   set_selected(state_label, key, trigger, e) {
@@ -58,12 +60,46 @@ class ControlsBar extends React.Component {
     this.props.element.trigger("close-all");
   }
 
+  trigger_hide_selection(e) {
+    if(!this.state.disable_hide_show) {
+      this.props.element.trigger("hide-selection", this.state.selection);
+    }
+    // The to prevent the drop-down from closing when clicking on a disabled item
+    // Unfortunately none of these work to stop the drop-down from closing. Looks like bootstrap's event is fired before this one.
+    // else {
+    //   e.nativeEvent.stopImmediatePropagation();
+    //   e.preventDefault();
+    //   e.stopPropagation();
+    //   return false;
+    // }
+  }
+
+  trigger_hide_unselected(e) {
+    if(!this.state.disable_hide_show) {
+      this.props.element.trigger("hide-unselected", this.state.selection);
+    }
+  }
+
+  trigger_show_selection(e) {
+    if(!this.state.disable_hide_show) {
+      this.props.element.trigger("show-selection", this.state.selection);
+    }
+  }
+
+  trigger_pin_selection(e) {
+    if(!this.state.disable_hide_show) {
+      this.props.element.trigger("pin-selection", this.state.selection);
+    }
+  }
+
   render() {
     // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
     const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
     // Disable close all button when there are no open frames
     const close_all_disabled = this.state.open_images.length == 0;
+    const disable_pin = !(this.state.media_variable && this.state.media_variable >= 0);
+    const hide_pin = !(this.props.media_variables.length > 0);
     const dropdowns = this.props.dropdowns.map((dropdown) => 
     {
       if(dropdown.items.length > 1)
@@ -85,6 +121,11 @@ class ControlsBar extends React.Component {
         </ControlsGroup>
         <ControlsGroup id="selection-controls">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
+          <ControlsSelection trigger_hide_selection={this.trigger_hide_selection} trigger_hide_unselected={this.trigger_hide_unselected} 
+            trigger_show_selection={this.trigger_show_selection} trigger_pin_selection={this.trigger_pin_selection}
+            disable_hide_show={this.state.disable_hide_show} disable_pin={disable_pin} hide_pin={hide_pin}
+            selection={this.state.selection} rating_variables={this.props.rating_variables} metadata={this.props.metadata} 
+            element={this.props.element} />
           <ControlsButton label="Show All" title={show_all_title} disabled={show_all_disabled} click={this.trigger_show_all} />
           <ControlsButton label="Close All Pins" title="" disabled={close_all_disabled} click={this.trigger_close_all} />
           <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations} 
@@ -92,6 +133,87 @@ class ControlsBar extends React.Component {
             indices={this.props.indices} />
         </ControlsGroup>
       </React.Fragment>
+    );
+  }
+}
+
+class ControlsSelection extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  
+  set_value(variable, variableIndex, value, alert) {
+    var self = this;
+    dialog.prompt({
+      title: "Set Values",
+      message: "Set values for " + variable + ":",
+      value: '',
+      alert: alert,
+      buttons: [
+        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-primary",  label:"Apply"}
+      ],
+      callback: function(button, value)
+      {
+        if(button.label == "Apply")
+        {
+          var value = value().trim();
+          var numeric = self.props.metadata["column-types"][variableIndex] != "string";
+          var valueValid = value.length > 0;
+          if( valueValid && numeric && isNaN(Number(value)) ) {
+            valueValid = false;
+          }
+          if(valueValid) {
+            self.props.element.trigger("set-value", {
+              selection : self.props.selection,
+              variable : variableIndex,
+              value : numeric ? value : '"' + value + '"',
+            });
+          } else {
+            var alert = "Please enter a value.";
+            if(numeric)
+              alert = "Please enter a numeric value.";
+            self.set_value(variable, variableIndex, value, alert);
+          }
+        }
+      },
+    });
+  }
+
+  render() {
+    let rating_variable_controls = this.props.rating_variables.map((rating_variable) =>
+      <React.Fragment key={rating_variable}>
+        <li role="presentation" className="dropdown-header">{this.props.metadata['column-names'][rating_variable]}</li>
+        <li role='presentation'><a role="menuitem" tabIndex="-1" 
+          onClick={(e) => this.set_value(this.props.metadata['column-names'][rating_variable], rating_variable, e)}>Set</a></li>
+      </React.Fragment>
+    );
+    return (
+      <div className="btn-group btn-group-xs">
+        <button className={'btn btn-default dropdown-toggle ' + (this.props.selection.length > 0 ? '' : 'disabled')} 
+          type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection">
+          Selection Action&nbsp;
+          <span className="caret"></span>
+        </button>
+        <ul id="selection-switcher" className="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">
+          {rating_variable_controls}
+          <li role="presentation" className="dropdown-header">Scatterplot Points</li>
+          <li role='presentation' className={this.props.disable_hide_show ? 'disabled' : ''}>
+            <a role="menuitem" tabIndex="-1" onClick={this.props.trigger_hide_selection}>Hide</a>
+          </li>
+          <li role='presentation' className={this.props.disable_hide_show ? 'disabled' : ''}>
+            <a role="menuitem" tabIndex="-1" onClick={this.props.trigger_hide_unselected}>Hide Unselected</a>
+          </li>
+          <li role='presentation' className={this.props.disable_hide_show ? 'disabled' : ''}>
+            <a role="menuitem" tabIndex="-1" onClick={this.props.trigger_show_selection}>Show</a>
+          </li>
+          {!this.props.hide_pin &&
+            <li role='presentation' className={this.props.disable_pin ? 'disabled' : ''}>
+              <a role="menuitem" tabIndex="-1" onClick={this.props.trigger_pin_selection}>Pin</a>
+            </li>
+          }
+        </ul>
+      </div>
     );
   }
 }
@@ -441,6 +563,8 @@ $.widget("parameter_image.controls",
       model_name={self.options.model_name}
       metadata={self.options.metadata}
       indices={self.options.indices}
+      media_variables={self.options.image_variables}
+      rating_variables={self.options.rating_variables}
     />;
 
     self.ControlsBarComponent = ReactDOM.render(
@@ -448,26 +572,10 @@ $.widget("parameter_image.controls",
       document.getElementById('react-controls')
     );
 
-    var selection_controls = $("#selection-controls", this.element);
     var video_controls = $("#video-controls", this.element);
     this.video_controls = video_controls;
     var playback_controls = $("#playback-controls", this.element);
     this.playback_controls = playback_controls;
-
-    this.selection_control = $('<div class="btn-group btn-group-xs"></div>')
-      .appendTo(selection_controls)
-      ;
-    this.selection_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection"> \
-        Selection Action \
-        <span class="caret"></span> \
-      </button> \
-      ')
-      .appendTo(self.selection_control)
-      ;
-    this.selection_items = $('<ul id="selection-switcher" class="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">')
-      .appendTo(self.selection_control)
-      ;
 
     this.video_sync_button_wrapper = $("<span class='input-group-btn'></span>")
       .appendTo(video_controls)
@@ -586,7 +694,6 @@ $.widget("parameter_image.controls",
       self.element.trigger("video-sync-time", val);
     }
 
-    self._set_selection_control();
     self._set_video_sync();
     self._set_video_sync_time();
     self._respond_open_images_changed();
@@ -603,180 +710,6 @@ $.widget("parameter_image.controls",
   {
     var self = this;
     this.video_sync_time.val(self.options["video-sync-time"]);
-  },
-
-  _set_selection_control: function()
-  {
-    var self = this;
-    this.selection_items.empty();
-    // Add options for ratings
-    for(var i = 0; i < this.options.rating_variables.length; i++)
-    {
-      var var_label = this.options.metadata['column-names'][this.options.rating_variables[i]];
-      $('<li role="presentation" class="dropdown-header"></li>')
-        .text(this.options.metadata['column-names'][this.options.rating_variables[i]])
-        .appendTo(self.selection_items)
-        ;
-      $("<li role='presentation'>")
-        .appendTo(self.selection_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html("Set")
-            .attr("data-value", this.options.rating_variables[i])
-            .attr("data-label", "set")
-            .attr("data-variable", var_label)
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("disabled"))
-                return false;
-
-              openSetValueDialog(this.dataset.variable, this.dataset.value);
-            })
-        )
-        ;
-      // Disabling clear functionality for ratings since it causes problems with nulls
-      // $("<li role='presentation'>")
-      //   .appendTo(self.selection_items)
-      //   .append(
-      //     $('<a role="menuitem" tabindex="-1">')
-      //       .html("Clear")
-      //       .attr("data-value", this.options.rating_variables[i])
-      //       .attr("data-label", "clear")
-      //       .click(function()
-      //       {
-      //         var menu_item = $(this).parent();
-      //         if(menu_item.hasClass("disabled"))
-      //           return false;
-
-      //         openClearValueDialog(this.dataset.variable, this.dataset.value);
-      //       })
-      //   )
-      //   ;
-    }
-    // Finish with global actions
-    $('<li role="presentation" class="dropdown-header"></li>')
-      .text("Scatterplot Points")
-      .appendTo(self.selection_items)
-      ;
-    self.hide_item = $("<li role='presentation'>")
-      .appendTo(self.selection_items)
-      .append(
-        $('<a role="menuitem" tabindex="-1">')
-          .html("Hide")
-          .attr("data-value", "hide")
-          .click(function()
-          {
-            var menu_item = $(this).parent();
-            if(menu_item.hasClass("disabled"))
-              return false;
-
-            self.element.trigger("hide-selection", self.options.selection);
-          })
-      )
-      ;
-    self.hide_unselected_item = $("<li role='presentation'>")
-      .appendTo(self.selection_items)
-      .append(
-        $('<a role="menuitem" tabindex="-1">')
-          .html("Hide Unselected")
-          .attr("data-value", "hide_unselected")
-          .click(function()
-          {
-            var menu_item = $(this).parent();
-            if(menu_item.hasClass("disabled"))
-              return false;
-
-            self.element.trigger("hide-unselected", self.options.selection);
-          })
-      )
-      ;
-    self.show_item = $("<li role='presentation'>")
-      .appendTo(self.selection_items)
-      .append(
-        $('<a role="menuitem" tabindex="-1">')
-          .html("Show")
-          .attr("data-value", "show")
-          .click(function()
-          {
-            var menu_item = $(this).parent();
-            if(menu_item.hasClass("disabled"))
-              return false;
-
-            self.element.trigger("show-selection", self.options.selection);
-          })
-      )
-      ;
-    self.pin_item = $("<li role='presentation'>")
-      .appendTo(self.selection_items)
-      .toggleClass("disabled", self.options["image-variable"] == -1 || self.options["image-variable"] == null)
-      .append(
-        $('<a role="menuitem" tabindex="-1">')
-          .html("Pin")
-          .attr("data-value", "pin")
-          .click(function()
-          {
-            var menu_item = $(this).parent();
-            if(menu_item.hasClass("disabled"))
-              return false;
-
-            self.element.trigger("pin-selection", self.options.selection);
-          })
-      )
-      ;
-
-    // Set state
-    self._set_selection();
-
-    function openSetValueDialog(variable, variableIndex, value, alert){
-      dialog.prompt({
-        title: "Set Values",
-        message: "Set values for " + variable + ":",
-        value: value,
-        alert: alert,
-        buttons: [
-          {className: "btn-default", label:"Cancel"}, 
-          {className: "btn-primary",  label:"Apply"}
-        ],
-        callback: function(button, value)
-        {
-          if(button.label == "Apply")
-          {
-            var value = value().trim();
-            var numeric = self.options.metadata["column-types"][variableIndex] != "string";
-            var valueValid = value.length > 0;
-            if( valueValid && numeric && isNaN(Number(value)) ) {
-              valueValid = false;
-            }
-            if(valueValid) {
-              self.element.trigger("set-value", {
-                selection : self.options.selection,
-                variable : variableIndex,
-                value : numeric ? value : '"' + value + '"',
-              });
-            } else {
-              var alert = "Please enter a value.";
-              if(numeric)
-                alert = "Please enter a numeric value.";
-              openSetValueDialog(variable, variableIndex, value, alert);
-            }
-          }
-        },
-      });
-    }
-    function openClearValueDialog(variable, variableIndex){
-      dialog.confirm({
-        title: "Clear Values",
-        message: "Clear values for " + variable + "?",
-        ok: function(){ self.element.trigger("set-value", {selection : self.options.selection, variable : variableIndex, value : NaN}); },
-      });
-    }
-  },
-
-  _set_selection: function()
-  {
-    var self = this;
-    self.selection_button.toggleClass("disabled", this.options.selection.length == 0);
   },
 
   _respond_open_images_changed: function()
@@ -831,14 +764,6 @@ $.widget("parameter_image.controls",
     }
   },
 
-  _set_hide_show_selection_status: function()
-  {
-    var self = this;
-    self.hide_item.toggleClass("disabled", self.options.disable_hide_show);
-    self.hide_unselected_item.toggleClass("disabled", self.options.disable_hide_show);
-    self.show_item.toggleClass("disabled", self.options.disable_hide_show);
-  },
-
   _setOption: function(key, value)
   {
     var self = this;
@@ -864,7 +789,6 @@ $.widget("parameter_image.controls",
     }
     else if(key == 'selection')
     {
-      self._set_selection();
       self.ControlsBarComponent.setState({selection: self.options.selection.slice()});
     }
     else if(key == 'hidden_simulations')
@@ -878,7 +802,6 @@ $.widget("parameter_image.controls",
     }
     else if(key == 'disable_hide_show')
     {
-      self._set_hide_show_selection_status();
       self.ControlsBarComponent.setState({disable_hide_show: self.options.disable_hide_show});
     }
     else if(key == 'video-sync-time')
