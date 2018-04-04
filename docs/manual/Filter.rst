@@ -1,5 +1,5 @@
-Filter
-------
+Filtering
+---------
 
 There are two mutually exclusive mechanisms in the Parameter Space scatterplot for removing points from the view, filtering and 
 hiding selected points.  Once a filter is present, point hiding operations in the *Selection Action* dropdown are disabled.  If 
