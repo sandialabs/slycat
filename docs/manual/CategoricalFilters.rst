@@ -1,11 +1,17 @@
 Categorical Filters
 -------------------
 
-Initially, all filter buttons are on (visible values are colored blue), so all values are visible the first time that a filter 
-is instantiated.  Clicking a blue button sets its state to off, colors the button gray (hidden values are colored gray), hides 
-points with that value in the scatterplot, and grays/fades the corresponding rows in the table.  Buttons are toggles, so 
-clicking the button again restores that value’s point visibility in the plot and re-colors those rows in the table.  
+Initially, all filter buttons are on (visible values are colored blue, as shown below), so all values are visible the first 
+time that a filter is instantiated.  Clicking a blue button sets its state to off, colors the button gray (hidden values are 
+colored gray), hides points with that value in the scatterplot, and grays/fades the corresponding rows in the table.  Buttons 
+are toggles, so clicking the button again restores that value’s point visibility in the plot and re-colors those rows in the 
+table.  
 
+.. figure:: Figure30.png
+   :align: center
+   
+   **All filter values are initially visible the first time a filter is instantiated.**
+   
 In addition to individual buttons, group operations are also available through the three icons |FilterIcons| at the bottom of 
 the filter.  Use |AllOnIcon| to turn all buttons on, |AllOffIcon| to turn all buttons off, and |InvertIcon| to flip the states 
 of all buttons.  As an example of using group operations, imagine that you wanted to see only cars with 5-cylinder engines.  
