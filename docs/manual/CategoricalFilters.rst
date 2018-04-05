@@ -1,7 +1,7 @@
 Categorical Filters
 -------------------
 
-Initially, all filter buttons are on (visible values are colored blue, as shown below), so all values are visible the first 
+Initially, all filter buttons are on (visible values are colored blue), as shown below.  So all values are visible the first 
 time that a filter is instantiated.  Clicking a blue button sets its state to off, colors the button gray (hidden values are 
 colored gray), hides points with that value in the scatterplot, and grays/fades the corresponding rows in the table.  Buttons 
 are toggles, so clicking the button again restores that value’s point visibility in the plot and re-colors those rows in the 
