@@ -68,15 +68,18 @@ If you are within Sandia, we provide this custom version of the library on the c
 compatible movies as follows:
 
 ::
+
    > module load slycat
 
 If your images are PNGs, they must be first converted to JPG format (ffmpeg won’t complain about the input images being PNG, 
 but the movie that it generates won’t play).  If you already have JPG images, skip this step:
 
 ::
+
    > mogrify -format jpg myImageName.0*
 
 This last step generates the mp4.  Don’t forget to enclose the image path in single quotes:
 
 ::
+
    >  ffmpeg -pattern_type glob -i '/someDisk/someUser/someDirectoryPath/myImageName.0*.jpg' -force_key_frames 0.0,0.04,0.08 myMovieName.mp4
