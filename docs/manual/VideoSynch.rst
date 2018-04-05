@@ -35,6 +35,7 @@ appear to float above the other videos, such as the middle video in Figure 46.  
 the current value of the video’s elapsed playback time (note that this is not the same as the simulation time stamp for a 
 particular frame).  You can directly edit this field to align all videos to the frame that is closest to a specific time of 
 interest in the playback.
+
 .. |VideoSynchOn| image:: VideoSynchOn.png
 
 .. figure:: Figure46.png
