@@ -36,7 +36,16 @@ simulations.  Selecting *None* (the first choice in the dropdown list) disables 
    
    **Figure 39: Image viewer with close, download, index row, pinning, and resizing icons.**
    
-The viewer in Figure 39 shows the set of standard viewer icons in the strip across the bottom of the image.  From left to right, each viewer has a close icon |DeleteIcon2|, a download icon |DownloadIcon2|, an index row icon |GotoRowIcon|, a pinning icon |PinIcon|, and a resize icon |ResizeIcon|. Viewers remain visible while the mouse remains within the viewer boundaries.  Either clicking on the |PinIcon| icon, resizing, playing a movie, or moving the viewer acts to *pin* the viewer in the scatterplot.  A *pinned* viewer remains visible until your explicitly close it, either by clicking its |DeleteIcon2| icon, or by simultaneously closing all pinned views using the *Close All Pins* button (see Figure 28).   To simultaneously retrieve and pin media for a group of points, first select the points, then select pin in the *Selection Action* dropdown list.  Using the |PinIcon| icon within a viewer both *pins* and shrinks it to a standard thumbnail size.  For arbitrary viewer sizing, press and hold the left mouse button on the |ResizeIcon| icon while dragging the corner.  To download a copy of the media object to your local machine, click the |DownloadIcon2| icon.
+The viewer in Figure 39 shows the set of standard viewer icons in the strip across the bottom of the image.  From left to 
+right, each viewer has a close icon |DeleteIcon2|, a download icon |DownloadIcon2|, an index row icon |GotoRowIcon|, a 
+pinning icon |PinIcon|, and a resize icon |ResizeIcon|. Viewers remain visible while the mouse remains within the viewer 
+boundaries.  Either clicking on the |PinIcon| icon, resizing, playing a movie, or moving the viewer acts to *pin* the viewer 
+in the scatterplot.  A *pinned* viewer remains visible until your explicitly close it, either by clicking its |DeleteIcon2| 
+icon, or by simultaneously closing all pinned views using the *Close All Pins* button.   To simultaneously retrieve and pin 
+media for a group of points, first select the points, then select pin in the *Selection Action* dropdown list.  Using the 
+|PinIcon| icon within a viewer both *pins* and shrinks it to a standard thumbnail size.  For arbitrary viewer sizing, press 
+and hold the left mouse button on the |ResizeIcon| icon while dragging the corner.  To download a copy of the media object 
+to your local machine, click the |DownloadIcon2| icon.
 
 .. |DeleteIcon2| image:: DeleteIcon2.png
 .. |DownloadIcon2| image:: DownloadIcon2.png
@@ -46,3 +55,28 @@ The viewer in Figure 39 shows the set of standard viewer icons in the strip acro
 
 Note that Slycat™ video functionality is not available for all movie formats.  In fact, due to technical issues related to 
 our web-based delivery, videos must be created in a very specific way to be viewable in Slycat™.
+
+Video Source Files
+==================
+There is no standardized support for videos between browsers.  We have found that the h264 codec in combination with an mp4
+container format is compatible with Firefox, Chrome, and Safari on both Windows and Mac platforms.  In our testing, we have 
+found that initial key frames are frequently lost, rendering the following compressed frames useless.  This requires explicit 
+key frame forcing during movie creation.  We use the ffmpeg utility to convert images into videos.  Make sure that your 
+version of ffmpeg was built with the h264 library, since some versions of ffmpeg don’t include this codec by default.
+
+If you are within Sandia, we provide this custom version of the library on the cluster machines.  You can generate Slycat™ 
+compatible movies as follows:
+
+::
+   > module load slycat
+
+If your images are PNGs, they must be first converted to JPG format (ffmpeg won’t complain about the input images being PNG, 
+but the movie that it generates won’t play).  If you already have JPG images, skip this step:
+
+::
+   > mogrify -format jpg myImageName.0*
+
+This last step generates the mp4.  Don’t forget to enclose the image path in single quotes:
+
+::
+   >  ffmpeg -pattern_type glob -i '/someDisk/someUser/someDirectoryPath/myImageName.0*.jpg' -force_key_frames 0.0,0.04,0.08 myMovieName.mp4
