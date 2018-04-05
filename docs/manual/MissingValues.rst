@@ -21,4 +21,4 @@ icon acts as a toggle, so clicking |NULLIcon| will hide those points again.
 .. figure:: Figure36.png
    :align: center
    
-   **Figure 36: Filter plus missing-valued points.**
+   **Figure 36: Filtered values plus missing-valued points.**
