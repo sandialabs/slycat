@@ -45,4 +45,4 @@ reappear in the plot and their table rows will be re-colored.
   
   CategoricalFilters.rst
   ContinuousFilters.rst
-  
+  MissingValues.rst
