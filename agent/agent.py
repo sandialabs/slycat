@@ -425,7 +425,7 @@ class Agent(object):
         format {action:action, command: command}
         :return: 
         """
-        debug = True
+        debug = False
         self.log.info("\n")
         self.log.info("*agent started*")
         # Parse and sanity-check command-line arguments.
