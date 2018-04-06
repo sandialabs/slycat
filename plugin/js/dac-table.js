@@ -117,6 +117,12 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
                 // update selection and/or focus
                 selections.update_sel_focus(data_clicked);
 
+            // in zoom or subset mode, we can still do focus/de-focus
+            } else if (selections.sel_type() == 0 ||
+                       selections.sel_type() == 3 ) {
+
+                selections.change_focus(data_clicked);
+
             }
 
         }

@@ -267,27 +267,7 @@ define ("dac-manage-selections", [], function() {
             } else {
 
                 // in the last case we test for a focus event
-                if (module.in_sel(i)) {
-
-                    // focus or de-focus?
-                    if (focus == i) {
-
-                        // de-focus through all panes
-                        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
-                                                 active_sel: null,
-                                                 active: true} });
-                        document.body.dispatchEvent(selectionEvent);
-
-                    } else {
-
-                        // fire active selection (focus) event on current point
-                        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
-                                                 active_sel: i,
-                                                 active: true} });
-                        document.body.dispatchEvent(selectionEvent);
-                    }
-
-                }
+                module.change_focus(i);
             }
         }
 
@@ -300,6 +280,33 @@ define ("dac-manage-selections", [], function() {
 	    if (!module.in_sel(focus)) {
 	        focus = null;
 	    }
+	}
+
+	// focus or de-focus an individual
+	module.change_focus = function(i) {
+
+	    // check if individual is in selection
+        if (module.in_sel(i)) {
+
+            // focus or de-focus?
+            if (focus == i) {
+
+                // de-focus through all panes
+                var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+                                         active_sel: null,
+                                         active: true} });
+                document.body.dispatchEvent(selectionEvent);
+
+            } else {
+
+                // fire active selection (focus) event on current point
+                var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+                                         active_sel: i,
+                                         active: true} });
+                document.body.dispatchEvent(selectionEvent);
+            }
+
+        }
 	}
 
 	// put selections in random order

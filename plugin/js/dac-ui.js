@@ -307,6 +307,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
         // re-draw curves to show new selections
         plots.draw();
 
+        // re-draw scatter plot, before updating coordinates
+        scatter_plot.draw();
+
         // re-draw scatter plot, subset changed
         scatter_plot.update(alpha_sliders.get_alpha_values());
 

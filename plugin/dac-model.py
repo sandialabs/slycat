@@ -134,9 +134,8 @@ def register_slycat_plugin(context):
         # get alpha values and subset mask
         alpha_values = numpy.array(kwargs["alpha"])
         subset_mask = numpy.array(kwargs["subset"])
-        subset_view = numpy.array(kwargs["subset_view"])
-
-        cherrypy.log.error(str(subset_view))
+        subset_center = numpy.array(kwargs["subset_center"])
+        old_coords = numpy.array(kwargs["current_coords"])
 
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
@@ -149,11 +148,11 @@ def register_slycat_plugin(context):
 			database, model, "dac-full-mds-coords", "0/0/...")))
 
         # compute new MDS coords
-        mds_coords = dac.compute_coords(dist_mats, alpha_values, subset_mask)
+        mds_coords = dac.compute_coords(dist_mats, alpha_values, old_coords, subset_mask)
 
         # adjust MDS coords using full MDS scaling
         scaled_mds_coords = dac.scale_coords(mds_coords, 
-            full_mds_coords[:,0:2], subset_mask)
+            full_mds_coords[:,0:2], subset_mask, subset_center)
 
         # return data using content function
         def content():
@@ -164,10 +163,10 @@ def register_slycat_plugin(context):
 
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
-		    
+
         # convert kwargs into selections in two numpy arrays
-        sel_1 = numpy.array([int(value) for value in kwargs["0"] if int(value) >= 0])
-        sel_2 = numpy.array([int(value) for value in kwargs["1"] if int(value) >= 0])
+        sel_1 = numpy.array(kwargs["selection_1"])
+        sel_2 = numpy.array(kwargs["selection_2"])
 
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
@@ -301,7 +300,7 @@ def register_slycat_plugin(context):
     context.register_model("DAC", finish)
     context.register_page("DAC", page_html)
     context.register_model_command("POST", "DAC", "update_mds_coords", update_mds_coords)
-    context.register_model_command("GET", "DAC", "compute_fisher", compute_fisher)
+    context.register_model_command("POST", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
 

@@ -75,7 +75,7 @@ def cmdscale(D):
     return Y
 
 
-def compute_coords (dist_mats, alpha_values, subset):
+def compute_coords (dist_mats, alpha_values, old_coords, subset):
     """
     Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
     classical multidimensional scaling.
@@ -90,7 +90,7 @@ def compute_coords (dist_mats, alpha_values, subset):
     """
 
     # init distance matrix to size of subset
-    num_subset = np.sum(subset)
+    num_subset = int(np.sum(subset))
     full_dist_mat = np.zeros((num_subset,num_subset))
 
     # compute alpha-sum of distance matrices on subset
@@ -103,13 +103,13 @@ def compute_coords (dist_mats, alpha_values, subset):
     mds_subset_coords = cmdscale(np.sqrt(full_dist_mat))
 
     # if not in subset, assign coordinates of [0,0]
-    mds_coords = np.zeros((dist_mats[0].shape[0],2))
+    mds_coords = old_coords
     mds_coords[subset_inds,:] = mds_subset_coords
 
     return mds_coords
 
 
-def scale_coords (coords, full_coords, subset):
+def scale_coords (coords, full_coords, subset, center):
     """
     Adjusts coords (with 2 columns) so that the orientation is
     correlated with the full_coords and scaled by the scalar
@@ -128,28 +128,12 @@ def scale_coords (coords, full_coords, subset):
     subset_coords = coords[subset_inds,:]
     full_subset_coords = full_coords[subset_inds,:]
 
-    # flip reflections, if found
-    # first find most extreme examples in x, y directions previous coordinates
-    #max_full_x = np.argmax (full_subset_coords[:,0])
-    #max_full_y = np.argmax (full_subset_coords[:,1])
-
-    # check for a reflection in x
-    #if full_subset_coords[max_full_x,0] * subset_coords[max_full_x,0] < 0:
-
-        # flip reflection in x
-    #    subset_coords[:,0] = -subset_coords[:,0]
-    #    cherrypy.log.error("flipped x")
-
-    # check for reflection in y
-    #if full_subset_coords[max_full_y,1] * subset_coords[max_full_y,1] < 0:
-
-    #    # flip reflection in y
-    #    subset_coords[:,1] = -subset_coords[:,1]
-    #    cherrypy.log.error("flipped y")
-
+    # mean subtract full subset
+    full_subset_mean = np.mean(full_subset_coords, axis=0)
+    full_subset_coords_ms = full_subset_coords - full_subset_mean
 
     # use Kabsch algorithm to rotate coords in line with full_coords
-    corr_mat = np.dot(subset_coords.transpose(),full_subset_coords)
+    corr_mat = np.dot(subset_coords.transpose(),full_subset_coords_ms)
     u,s,v = np.linalg.svd(corr_mat)
     rot_mat = np.dot(v, u.transpose())
 
@@ -161,9 +145,8 @@ def scale_coords (coords, full_coords, subset):
     if coords_scale < np.finfo(float).eps:
         coords_scale = 1.0
 
-    # adjust so we have the least amount of sign changes
-    # and all values lie within box [0,1]^2
-    scaled_coords = rot_coords/(2.0*coords_scale) + 0.5
+    # scale to [0,1]^2
+    scaled_coords = rot_coords / (2.0 * coords_scale) + 0.5
 
     # set coords of anything not in subset to (-1,-1)
     num_coords = coords.shape[0]
@@ -172,12 +155,12 @@ def scale_coords (coords, full_coords, subset):
         if subset[i] == 0:
 
             # compute direction to move non-subset coord
-            move_dir = full_coords[i,:] - np.array([.5,.5])
+            move_dir = coords[i,:] - center
             norm_move_dir = np.linalg.norm(move_dir)
             if norm_move_dir == 0:
                 move_dir = np.array([-1,-1])
             else:
-                move_dir = np.array([.5,.5]) + 2.0 * move_dir/norm_move_dir
+                move_dir = center + 2.0 * move_dir/norm_move_dir
 
             # put somewhere beyond [0,1], but in the same direction from center
             new_coords[i,:] = move_dir
@@ -212,12 +195,14 @@ def init_coords (var_dist):
 
         var_dist[i] = var_dist[i] / coords_scale
 
-    # compute MDS coordinates assuming alpha = 1 for scaling, full subset
+    # compute MDS coordinates assuming alpha = 1 for scaling, full subset, full view
     subset_mask = np.ones(var_dist[0].shape[0])
-    full_mds_coords = compute_coords(var_dist, alpha_values, subset_mask)
+    old_coords = np.zeros((var_dist[0].shape[0], 2))
+    full_mds_coords = compute_coords(var_dist, alpha_values, old_coords, subset_mask)
 
     # scale using full coordinates
-    mds_coords = scale_coords(full_mds_coords, full_mds_coords, subset_mask)
+    subset_center = np.array([.5,.5])
+    mds_coords = scale_coords(full_mds_coords, full_mds_coords, subset_mask, subset_center)
 
     return mds_coords, full_mds_coords
 
