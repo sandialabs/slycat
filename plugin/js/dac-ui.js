@@ -179,6 +179,10 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 // set up difference calculation event
                 document.body.addEventListener("DACDifferenceComputed", difference_computed);
 
+                // set up subset change event
+                document.body.addEventListener("DACSubsetChanged", subset_changed);
+
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta"),
 		   	           request.get_table("dac-variables-meta"),
@@ -298,5 +302,30 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
         // show first three most different plots
         plots.change_selections(diff_values.detail);
     }
+
+    // user changed subset (can change selections as well)
+    function subset_changed (new_subset)
+    {
+        // update subset and selections
+        var jump_to = selections.update_subset (new_subset.detail.new_subset);
+
+        // re-draw curves to show new selections
+        plots.draw();
+
+        // re-draw scatter plot, before updating coordinates
+        scatter_plot.draw();
+
+        // re-draw scatter plot, subset changed
+        scatter_plot.update(alpha_sliders.get_alpha_values());
+
+        // re-draw rows in table
+        metadata_table.select_rows();
+
+        // jump to either selection or at least subset
+        if (jump_to.length > 0) {
+            metadata_table.jump_to (jump_to);
+        }
+    }
+
 
 });

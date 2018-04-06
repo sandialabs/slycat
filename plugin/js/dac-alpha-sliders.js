@@ -87,6 +87,13 @@ define ("dac-alpha-sliders", ["jquery", "slycat-dialog", "dac-request-data"],
 		}
 
 	}
+
+	// get alpha values
+	module.get_alpha_values = function ()
+	{
+	    return alpha_values;
+	}
+
 	return module;
 	
 });

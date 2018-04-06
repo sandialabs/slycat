@@ -15,8 +15,14 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	// public functions will be returned via the module variable
 	var module = {};
 	
-	// private variable containing MDS coordinates
+	// private variable containing MDS coordinates (2 dimensional)
 	var mds_coords = [];
+
+    // only use selected subset (binary mask, 0 = not in subset, 1 = in subset)
+    var mds_subset = [];
+
+    // current coordinates for subset view
+    var subset_center = [];
 
 	// model ID
 	var mid = URI(window.location).segment(-1);
@@ -107,6 +113,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			function() { selections.set_sel_type(1); module.draw() });
 		$("#dac-scatter-button-sel-2").on("click", 
 			function() { selections.set_sel_type(2); module.draw(); });
+		$("#dac-scatter-button-subset").on("click",
+		    function() { selections.set_sel_type(3); module.draw(); })
 		$("#dac-scatter-button-zoom").on("click", 
 			function() { selections.set_sel_type(0); module.draw(); });
 		
@@ -140,7 +148,17 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				color_scale = d3.scale.linear()
 					.range([color_by_low, color_by_high])
 					.interpolate(d3.interpolateRgb);
-				
+
+				// set subset to full mds_coord set
+                for (i = 0; i < mds_coords.length; i++) {
+                    mds_subset.push(1);
+                }
+                selections.update_subset(mds_subset);
+
+                // set center to middle of full view
+                subset_center = [.5, .5];
+
+                // finish
 				module.draw();
 											
 			},
@@ -191,14 +209,14 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		scatter_plot.attr("width", width)
 			.attr("height", height);
 		
-		// brush has to be under points for selection, but on top for zoom
-		if (selections.sel_type() == 0) {
-			draw_points();
+		// brush has to be under points for selection, subset, but on top for zoom
+		//if (selections.sel_type() == 0) {
+		//	draw_points();
+		//	sel_zoom_buttons();
+		//} else {
 			sel_zoom_buttons();
-		} else {
-			sel_zoom_buttons();
 			draw_points();
-		}
+		//}
 
 	}
 	
@@ -325,21 +343,24 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			        });
 	}
 	
-	// updates the MDS coords given new alpha values
+	// updates the MDS coords given new alpha values and/or subset
 	module.update = function (alpha_values)
 	{
-				
+
 		// call server to compute new coords
-		client.get_model_command(
+		client.post_sensitive_model_command(
 		{
 			mid: mid,
       		type: "DAC",
 			command: "update_mds_coords",
-			parameters: alpha_values,
+			parameters: {alpha: alpha_values,
+			             subset: selections.get_subset(),
+			             subset_center: subset_center,
+			             current_coords: mds_coords},
 			success: function (result)
 				{
 					// record new values in mds_coords
-					mds_coords = result["mds_coords"];
+					mds_coords = JSON.parse(result)["mds_coords"];
 					
 					// update the data in d3
 					scatter_plot.selectAll("circle")
@@ -413,23 +434,22 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			("","","");
 			return;
 		}
-		
-		// add dummy -1 to enforce passing arrays
-		var sel_1 = selections.sel_1().concat(-1);
-		var sel_2 = selections.sel_2().concat(-1);
 
 		// call server to compute Fisher values for time series
-		client.get_model_command(
+		var sel_1 = selections.sel_1();
+		var sel_2 = selections.sel_2();
+		client.post_sensitive_model_command(
 		{
 			mid: mid,
 			type: "DAC",
 			command: "compute_fisher",
-			parameters: [sel_1, sel_2],
+			parameters: {selection_1: sel_1,
+			             selection_2: sel_2},
 			success: function (result)
 				{
 
 					// compute Fisher's discriminant for each time series separately
-					var fisher_disc = result["fisher_disc"];
+					var fisher_disc = JSON.parse(result)["fisher_disc"];
 					
 					// sort Fisher's discriminant values and adjust plot order
 					var fisher_inds = sort_indices(fisher_disc);
@@ -626,10 +646,10 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				
 	}
 	
-	// set callback for selection 1,2, or zoom radio buttons
+	// set callback for selection 1,2, subset or zoom radio buttons
 	sel_zoom_buttons = function()
 	{
-	
+
 		// clear up any old selection/zooming
 		scatter_plot.selectAll("g.brush").remove();
 		
@@ -644,9 +664,19 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					.y(y_scale)
 					.on("brushend", zoom));
 					
+		} else if (selections.sel_type() == 3) {
+
+		    // set up subset selection
+		    scatter_plot.append("g")
+				.attr("class", "brush")
+				.call(d3.svg.brush()
+					.x(x_scale)
+					.y(y_scale)
+					.on("brushend", subset));
+
 		} else {
 		
-			// otherwise enable selection
+			// otherwise enable normal selection
 			scatter_plot.append("g")
 				.attr("class", "brush")
 				.call(d3.svg.brush()
@@ -696,7 +726,82 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			};
 				
 	};
-	
+
+    // get subset for future analysis
+	function subset ()
+	{
+
+        // get subset selected
+		var extent = d3.event.target.extent();
+
+		// look for points that were selected
+		var selection = [];
+		for (var i = 0; i < mds_coords.length; i++)
+		{
+			if (extent[0][0] <= mds_coords[i][0] &&
+				mds_coords[i][0] < extent[1][0] &&
+				extent[0][1] <= mds_coords[i][1] &&
+				mds_coords[i][1] < extent[1][1])
+				{
+					// save current selection
+					selection.push(i);
+				};
+		};
+
+        // save current center for scaling
+        var subset_extent = d3.transpose([x_scale.domain(), y_scale.domain()]);
+
+        // compute subset center
+        subset_center = [(subset_extent[0][0] + subset_extent[1][0])/2.0,
+                         (subset_extent[0][1] + subset_extent[1][1])/2.0];
+
+        // separate into inclusion and exclusion based on shift key
+        if (!selections.shift_key())
+        {
+
+            // if nothing is included, we reset to all data
+            if (selection.length == 0) {
+                for (var i = 0; i < mds_coords.length; i++) {
+                    mds_subset[i] = 1;
+                }
+            } else {
+
+                // otherwise we include only the selection, and nothing else
+                for (var i = 0; i < mds_coords.length; i++) {
+                    mds_subset[i] = 0;
+                    if (selection.indexOf(i) != -1) {
+                        mds_subset[i] = 1;
+                    }
+
+                    // in this case, we set the center to the subset view
+                    subset_center = [(extent[0][0] + extent[1][0])/2.0,
+                                     (extent[0][1] + extent[1][1])/2.0];
+
+                    // reset zoom to full screen
+		            x_scale.domain([0 - scatter_border, 1 + scatter_border]);
+		            y_scale.domain([0 - scatter_border, 1 + scatter_border]);
+                }
+            }
+
+        } else {
+
+            // exclusions are additive
+            // meaning we do not necessarily include everything else
+            for (var i = 0; i < selection.length; i++) {
+                mds_subset[selection[i]] = 0;
+            }
+        }
+
+        // remove gray selection box
+        d3.event.target.clear();
+        d3.select(this).call(d3.event.target);
+
+        // fire subset changed event
+        var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
+					                         new_subset: mds_subset} });
+        document.body.dispatchEvent(subsetEvent);
+	}
+
 	// selection brush handler call back
 	function sel_brush()
 	{
@@ -783,11 +888,12 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					selections.update_sel(i);
 					selection.push(i);
 
-					// remove gray selection box
-					d3.event.target.clear();
-					d3.select(this).call(d3.event.target);
 				};
 		};
+
+        // remove gray selection box
+        d3.event.target.clear();
+        d3.select(this).call(d3.event.target);
 
 		// fire selection change event
 		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
@@ -799,19 +905,65 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	function sel_individual (d,i)
 	{
 
-        // update focus and/or selection
-        selections.update_sel_focus(i);
+        // check for subset exclusion
+        if (selections.sel_type() == 3) {
+
+            exclude_individual(i);
+
+        // check for zoom mode
+        } else if (selections.sel_type() == 0) {
+
+            // potentially change focus
+            selections.change_focus(i);
+
+        // in selection mode
+        } else {
+
+            // update focus and/or selection
+            selections.update_sel_focus(i);
+        }
+
+	}
+
+	// perform subset exclusion (assuming we're in subset mode)
+	function exclude_individual (i) {
+
+        // check for shift key (to exclude a single point)
+        if (selections.shift_key()) {
+
+            // remove point from subset
+            mds_subset[i] = 0;
+
+            // fire subset changed event
+            var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
+                                                new_subset: mds_subset} });
+            document.body.dispatchEvent(subsetEvent);
+
+        // otherwise it's a focus event
+        } else {
+
+            selections.change_focus(i);
+        }
 
 	}
 
     // de-select currently focused point
     function defocus() {
 
-        // de-focus through all panes
-        var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
-                                 active_sel: null,
-                                 active: true} });
-        document.body.dispatchEvent(selectionEvent);
+        // check to see if we're in selection mode
+        if ((selections.sel_type() == 3) && selections.shift_key()) {
+
+            exclude_individual(selections.focus());
+
+        } else {
+
+            // de-focus through all panes
+            var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
+                                     active_sel: null,
+                                     active: true} });
+            document.body.dispatchEvent(selectionEvent);
+
+        }
 
     }
 
