@@ -3,6 +3,7 @@
 ## [v1.5.0](https://github.com/sandialabs/slycat/tree/v1.5.0) (2018-02-07)
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.4.0...v1.5.0)
 
+
 **Implemented enhancements:**
 
 - Update documentation to clarify security implications of docker port mapping [\#796](https://github.com/sandialabs/slycat/issues/796)
