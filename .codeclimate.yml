@@ -40,6 +40,11 @@ exclude_paths:
 - web-server/css/**/*
 - web-server/fonts/**/*
 - web-server/js/**/*
+- web-server/plugins/slycat-stl-model/*
+- web-server/plugins/slycat-stl-model/**/*
+- docker/**/*
+- **/slick.grid*
+- **/*jquery*
 - "**.md"
 - "**.yml"
 - "**.csv"
