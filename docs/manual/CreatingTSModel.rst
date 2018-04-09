@@ -18,7 +18,7 @@ The assumption is that time series data is large and difficult to move, so it wi
 where it was generated.  Consequently, we do not provide a Local option, as we do for other model types. 
 
 .. figure:: Figure49.png
-   :scale: 100
+   :scale: 75
    :align: center
    
    **Initial dialog screen in Timeseries model creation wizard.**
