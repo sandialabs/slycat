@@ -147,10 +147,10 @@ def register_slycat_plugin(context):
         full_mds_coords = next(iter(slycat.web.server.get_model_arrayset_data (
 			database, model, "dac-full-mds-coords", "0/0/...")))
 
-        # compute new MDS coords
-        mds_coords = dac.compute_coords(dist_mats, alpha_values, old_coords, subset_mask)
+        # compute new MDS coords (truncate coords for old models)
+        mds_coords = dac.compute_coords(dist_mats, alpha_values, old_coords[:,0:2], subset_mask)
 
-        # adjust MDS coords using full MDS scaling
+        # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords, 
             full_mds_coords[:,0:2], subset_mask, subset_center)
 
