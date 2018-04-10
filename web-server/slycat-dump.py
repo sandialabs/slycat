@@ -46,17 +46,13 @@ reference_ids = list(row["id"] for row in couchdb.view("slycat/references"))
 
 logging.info("Dumping bookmarks")
 for bookmark_id in bookmark_ids:
-    print bookmark_id
     bookmark = couchdb.get(bookmark_id, attachments=True)
-    print bookmark
     json.dump(bookmark, open(os.path.join(arguments.output_dir, "bookmark-%s.json" % bookmark["_id"]), "w"))
 logging.info("Done with bookmarks")
 
 logging.info("Dumping references")
 for reference_id in reference_ids:
-    print reference_id
     reference = couchdb.get(reference_id, attachments=True)
-    print reference
     json.dump(reference, open(os.path.join(arguments.output_dir, "reference-%s.json" % reference["_id"]), "w"))
 logging.info("Done with references")
 
