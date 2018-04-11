@@ -30,7 +30,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         hidden_simulations: _this.props.hidden_simulations,
         disable_hide_show: _this.props.disable_hide_show,
         open_images: _this.props.open_images,
-        selection: _this.props.selection
+        selection: _this.props.selection,
+        video_sync: _this.props.video_sync,
+        video_sync_time: _this.props.video_sync_time,
+        video_sync_time_value: _this.props.video_sync_time
       };
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -60,6 +63,9 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       _this.set_selected = _this.set_selected.bind(_this);
       _this.set_auto_scale = _this.set_auto_scale.bind(_this);
+      _this.set_video_sync = _this.set_video_sync.bind(_this);
+      _this.set_video_sync_time = _this.set_video_sync_time.bind(_this);
+      _this.set_video_sync_time_value = _this.set_video_sync_time_value.bind(_this);
       _this.trigger_show_all = _this.trigger_show_all.bind(_this);
       _this.trigger_close_all = _this.trigger_close_all.bind(_this);
       _this.trigger_hide_selection = _this.trigger_hide_selection.bind(_this);
@@ -93,6 +99,41 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
           var new_auto_scale = !prevState.auto_scale;
           _this2.props.element.trigger("auto-scale", new_auto_scale);
           return { auto_scale: new_auto_scale };
+        });
+      }
+    }, {
+      key: "set_video_sync",
+      value: function set_video_sync(e) {
+        var _this3 = this;
+
+        this.setState(function (prevState, props) {
+          var new_video_sync = !prevState.video_sync;
+          _this3.props.element.trigger("video-sync", new_video_sync);
+          return { video_sync: new_video_sync };
+        });
+      }
+    }, {
+      key: "set_video_sync_time",
+      value: function set_video_sync_time(value) {
+        var _this4 = this;
+
+        var new_video_sync_time = value;
+        this.setState(function (prevState, props) {
+          _this4.props.element.trigger("video-sync-time", value);
+          // Setting both video_sync_time, which tracks the validated video_sync_time, and 
+          // video_sync_time_value, which tracks the value of the input field and can contain invalidated data (letters, negatives, etc.)
+          return {
+            video_sync_time: value,
+            video_sync_time_value: value
+          };
+        });
+      }
+    }, {
+      key: "set_video_sync_time_value",
+      value: function set_video_sync_time_value(e) {
+        var new_video_sync_time = e.target.value;
+        this.setState(function (prevState, props) {
+          return { video_sync_time_value: new_video_sync_time };
         });
       }
     }, {
@@ -144,7 +185,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     }, {
       key: "render",
       value: function render() {
-        var _this3 = this;
+        var _this5 = this;
 
         // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
         var show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
@@ -157,7 +198,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
           if (dropdown.items.length > 1) {
             return React.createElement(ControlsDropdown, { key: dropdown.id, id: dropdown.id, label: dropdown.label, title: dropdown.title,
               state_label: dropdown.state_label, trigger: dropdown.trigger, items: dropdown.items,
-              selected: _this3.state[dropdown.state_label], set_selected: _this3.set_selected });
+              selected: _this5.state[dropdown.state_label], set_selected: _this5.set_selected });
           } else {
             return false;
           }
@@ -185,6 +226,17 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             React.createElement(ControlsButtonDownloadDataTable, { selection: this.state.selection, hidden_simulations: this.state.hidden_simulations,
               aid: this.props.aid, mid: this.props.mid, model_name: this.props.model_name, metadata: this.props.metadata,
               indices: this.props.indices })
+          ),
+          React.createElement(
+            ControlsGroup,
+            { id: "video-controls", "class": "input-group input-group-xs" },
+            React.createElement(ControlsVideo, { video_sync: this.state.video_sync, set_video_sync: this.set_video_sync, video_sync_time_value: this.state.video_sync_time_value,
+              set_video_sync_time_value: this.set_video_sync_time_value, set_video_sync_time: this.set_video_sync_time })
+          ),
+          React.createElement(
+            ControlsGroup,
+            { id: "playback-controls" },
+            React.createElement(ControlsPlayback, null)
           )
         );
       }
@@ -193,8 +245,90 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsBar;
   }(React.Component);
 
-  var ControlsSelection = function (_React$Component2) {
-    _inherits(ControlsSelection, _React$Component2);
+  var ControlsPlayback = function (_React$Component2) {
+    _inherits(ControlsPlayback, _React$Component2);
+
+    function ControlsPlayback(props) {
+      _classCallCheck(this, ControlsPlayback);
+
+      return _possibleConstructorReturn(this, (ControlsPlayback.__proto__ || Object.getPrototypeOf(ControlsPlayback)).call(this, props));
+    }
+
+    _createClass(ControlsPlayback, [{
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(ControlsButton, { title: "Jump to beginning", icon: "fa-fast-backward" }),
+          React.createElement(ControlsButton, { title: "Skip one frame back", icon: "fa-backward" }),
+          React.createElement(ControlsButton, { title: "Play", icon: "fa-play" }),
+          React.createElement(ControlsButton, { title: "Pause", icon: "fa-pause" }),
+          React.createElement(ControlsButton, { title: "Skip one frame forward", icon: "fa-forward" }),
+          React.createElement(ControlsButton, { title: "Jump to end", icon: "fa-fast-forward" })
+        );
+      }
+    }]);
+
+    return ControlsPlayback;
+  }(React.Component);
+
+  var ControlsVideo = function (_React$Component3) {
+    _inherits(ControlsVideo, _React$Component3);
+
+    function ControlsVideo(props) {
+      _classCallCheck(this, ControlsVideo);
+
+      var _this7 = _possibleConstructorReturn(this, (ControlsVideo.__proto__ || Object.getPrototypeOf(ControlsVideo)).call(this, props));
+
+      _this7.set_video_sync = _this7.set_video_sync.bind(_this7);
+      _this7.handleKeypressBlur = _this7.handleKeypressBlur.bind(_this7);
+      return _this7;
+    }
+
+    _createClass(ControlsVideo, [{
+      key: "set_video_sync",
+      value: function set_video_sync() {
+        this.props.set_video_sync();
+        // To Do: figure out what to do here that used to be done in _respond_open_images_changed()
+        // or remove this function entirely and just call this.props.set_video_sync() directly in the set_active_state attribute
+        // this._respond_open_images_changed();
+      }
+    }, {
+      key: "handleKeypressBlur",
+      value: function handleKeypressBlur(e) {
+        // Check if blur event (focusOut) or Enter key was presses
+        if (e.type == 'blur' || e.type == 'keypress' && e.which == 13) {
+          // Convert value to a floating point number and take its absolute value because videos can't have negative time
+          var val = Math.abs(parseFloat(e.target.value));
+          // Set value to 0 if previous conversion didn't result in a number
+          if (isNaN(val)) {
+            val = 0;
+          }
+          this.props.set_video_sync_time(val);
+        }
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        return React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(
+            "span",
+            { className: "input-group-btn" },
+            React.createElement(ControlsButtonToggle, { title: this.props.video_sync ? 'Unsync videos' : 'Sync videos', icon: "fa-video-camera", active: this.props.video_sync, set_active_state: this.set_video_sync })
+          ),
+          React.createElement("input", { type: "text", className: "form-control input-xs video-sync-time", placeholder: "Time", value: this.props.video_sync_time_value, onChange: this.props.set_video_sync_time_value, onBlur: this.handleKeypressBlur, onKeyPress: this.handleKeypressBlur })
+        );
+      }
+    }]);
+
+    return ControlsVideo;
+  }(React.Component);
+
+  var ControlsSelection = function (_React$Component4) {
+    _inherits(ControlsSelection, _React$Component4);
 
     function ControlsSelection(props) {
       _classCallCheck(this, ControlsSelection);
@@ -238,7 +372,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     }, {
       key: "render",
       value: function render() {
-        var _this5 = this;
+        var _this9 = this;
 
         var rating_variable_controls = this.props.rating_variables.map(function (rating_variable) {
           return React.createElement(
@@ -247,7 +381,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             React.createElement(
               "li",
               { role: "presentation", className: "dropdown-header" },
-              _this5.props.metadata['column-names'][rating_variable]
+              _this9.props.metadata['column-names'][rating_variable]
             ),
             React.createElement(
               "li",
@@ -256,7 +390,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
                 "a",
                 { role: "menuitem", tabIndex: "-1",
                   onClick: function onClick(e) {
-                    return _this5.set_value(_this5.props.metadata['column-names'][rating_variable], rating_variable, e);
+                    return _this9.set_value(_this9.props.metadata['column-names'][rating_variable], rating_variable, e);
                   } },
                 "Set"
               )
@@ -326,8 +460,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsSelection;
   }(React.Component);
 
-  var ControlsGroup = function (_React$Component3) {
-    _inherits(ControlsGroup, _React$Component3);
+  var ControlsGroup = function (_React$Component5) {
+    _inherits(ControlsGroup, _React$Component5);
 
     function ControlsGroup() {
       _classCallCheck(this, ControlsGroup);
@@ -340,7 +474,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       value: function render() {
         return React.createElement(
           "div",
-          { id: this.props.id, className: "btn-group btn-group-xs ControlsGroup" },
+          { id: this.props.id, className: (this.props.class ? this.props.class : "btn-group btn-group-xs") + " ControlsGroup" },
           this.props.children
         );
       }
@@ -349,8 +483,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsGroup;
   }(React.Component);
 
-  var ControlsDropdown = function (_React$Component4) {
-    _inherits(ControlsDropdown, _React$Component4);
+  var ControlsDropdown = function (_React$Component6) {
+    _inherits(ControlsDropdown, _React$Component6);
 
     function ControlsDropdown(props) {
       _classCallCheck(this, ControlsDropdown);
@@ -361,16 +495,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsDropdown, [{
       key: "render",
       value: function render() {
-        var _this8 = this;
+        var _this12 = this;
 
         var optionItems = this.props.items.map(function (item) {
           return React.createElement(
             "li",
-            { role: "presentation", key: item.key, className: item.key == _this8.props.selected ? 'active' : '' },
+            { role: "presentation", key: item.key, className: item.key == _this12.props.selected ? 'active' : '' },
             React.createElement(
               "a",
               { role: "menuitem", tabIndex: "-1", onClick: function onClick(e) {
-                  return _this8.props.set_selected(_this8.props.state_label, item.key, _this8.props.trigger, e);
+                  return _this12.props.set_selected(_this12.props.state_label, item.key, _this12.props.trigger, e);
                 } },
               item.name
             )
@@ -402,8 +536,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsDropdown;
   }(React.Component);
 
-  var ControlsButtonToggle = function (_React$Component5) {
-    _inherits(ControlsButtonToggle, _React$Component5);
+  var ControlsButtonToggle = function (_React$Component7) {
+    _inherits(ControlsButtonToggle, _React$Component7);
 
     function ControlsButtonToggle(props) {
       _classCallCheck(this, ControlsButtonToggle);
@@ -416,7 +550,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       value: function render() {
         return React.createElement(
           "button",
-          { className: 'btn btn-default ' + (this.props.active ? 'active' : ''), "data-toggle": "button", title: this.props.title, "aria-pressed": this.props.active, onClick: this.props.set_active_state },
+          { className: 'btn btn-default btn-xs ' + (this.props.active ? 'active' : ''), "data-toggle": "button", title: this.props.title, "aria-pressed": this.props.active, onClick: this.props.set_active_state },
           React.createElement("span", { className: 'fa ' + this.props.icon, "aria-hidden": "true" })
         );
       }
@@ -425,8 +559,8 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsButtonToggle;
   }(React.Component);
 
-  var ControlsButton = function (_React$Component6) {
-    _inherits(ControlsButton, _React$Component6);
+  var ControlsButton = function (_React$Component8) {
+    _inherits(ControlsButton, _React$Component8);
 
     function ControlsButton(props) {
       _classCallCheck(this, ControlsButton);
@@ -449,16 +583,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     return ControlsButton;
   }(React.Component);
 
-  var ControlsButtonDownloadDataTable = function (_React$Component7) {
-    _inherits(ControlsButtonDownloadDataTable, _React$Component7);
+  var ControlsButtonDownloadDataTable = function (_React$Component9) {
+    _inherits(ControlsButtonDownloadDataTable, _React$Component9);
 
     function ControlsButtonDownloadDataTable(props) {
       _classCallCheck(this, ControlsButtonDownloadDataTable);
 
-      var _this11 = _possibleConstructorReturn(this, (ControlsButtonDownloadDataTable.__proto__ || Object.getPrototypeOf(ControlsButtonDownloadDataTable)).call(this, props));
+      var _this15 = _possibleConstructorReturn(this, (ControlsButtonDownloadDataTable.__proto__ || Object.getPrototypeOf(ControlsButtonDownloadDataTable)).call(this, props));
 
-      _this11.handleClick = _this11.handleClick.bind(_this11);
-      return _this11;
+      _this15.handleClick = _this15.handleClick.bind(_this15);
+      return _this15;
     }
 
     _createClass(ControlsButtonDownloadDataTable, [{
@@ -805,7 +939,9 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         metadata: self.options.metadata,
         indices: self.options.indices,
         media_variables: self.options.image_variables,
-        rating_variables: self.options.rating_variables
+        rating_variables: self.options.rating_variables,
+        video_sync: self.options["video-sync"],
+        video_sync_time: self.options["video-sync-time"]
       });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
@@ -984,6 +1120,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
       } else if (key == 'video-sync-time') {
         self._set_video_sync_time();
+        self.ControlsBarComponent.setState({
+          video_sync_time: self.options['video-sync-time'],
+          video_sync_time_value: self.options['video-sync-time']
+        });
       }
     }
   });

@@ -15,6 +15,9 @@ class ControlsBar extends React.Component {
       disable_hide_show: this.props.disable_hide_show,
       open_images: this.props.open_images,
       selection: this.props.selection,
+      video_sync: this.props.video_sync,
+      video_sync_time: this.props.video_sync_time,
+      video_sync_time_value: this.props.video_sync_time,
     };
     for(let dropdown of this.props.dropdowns)
     {
@@ -23,6 +26,9 @@ class ControlsBar extends React.Component {
     // This binding is necessary to make `this` work in the callback
     this.set_selected = this.set_selected.bind(this);
     this.set_auto_scale = this.set_auto_scale.bind(this);
+    this.set_video_sync = this.set_video_sync.bind(this);
+    this.set_video_sync_time = this.set_video_sync_time.bind(this);
+    this.set_video_sync_time_value = this.set_video_sync_time_value.bind(this);
     this.trigger_show_all = this.trigger_show_all.bind(this);
     this.trigger_close_all = this.trigger_close_all.bind(this);
     this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
@@ -49,6 +55,34 @@ class ControlsBar extends React.Component {
       const new_auto_scale = !prevState.auto_scale;
       this.props.element.trigger("auto-scale", new_auto_scale);
       return {auto_scale: new_auto_scale};
+    });
+  }
+
+  set_video_sync(e) {
+    this.setState((prevState, props) => {
+      const new_video_sync = !prevState.video_sync;
+      this.props.element.trigger("video-sync", new_video_sync);
+      return {video_sync: new_video_sync};
+    });
+  }
+
+  set_video_sync_time(value) {
+    const new_video_sync_time = value;
+    this.setState((prevState, props) => {
+      this.props.element.trigger("video-sync-time", value);
+      // Setting both video_sync_time, which tracks the validated video_sync_time, and 
+      // video_sync_time_value, which tracks the value of the input field and can contain invalidated data (letters, negatives, etc.)
+      return  {
+                video_sync_time: value,
+                video_sync_time_value: value,
+              };
+    });
+  }
+
+  set_video_sync_time_value(e) {
+    const new_video_sync_time = e.target.value;
+    this.setState((prevState, props) => {
+      return {video_sync_time_value: new_video_sync_time};
     });
   }
 
@@ -132,6 +166,72 @@ class ControlsBar extends React.Component {
             aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata} 
             indices={this.props.indices} />
         </ControlsGroup>
+        <ControlsGroup id="video-controls" class="input-group input-group-xs">
+          <ControlsVideo video_sync={this.state.video_sync} set_video_sync={this.set_video_sync} video_sync_time_value={this.state.video_sync_time_value} 
+            set_video_sync_time_value={this.set_video_sync_time_value} set_video_sync_time={this.set_video_sync_time} />
+        </ControlsGroup>
+        <ControlsGroup id="playback-controls">
+          <ControlsPlayback />
+        </ControlsGroup>
+      </React.Fragment>
+    );
+  }
+}
+
+class ControlsPlayback extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        <ControlsButton title="Jump to beginning" icon="fa-fast-backward"  />
+        <ControlsButton title="Skip one frame back" icon="fa-backward"  />
+        <ControlsButton title="Play" icon="fa-play"  />
+        <ControlsButton title="Pause" icon="fa-pause"  />
+        <ControlsButton title="Skip one frame forward" icon="fa-forward"  />
+        <ControlsButton title="Jump to end" icon="fa-fast-forward"  />
+      </React.Fragment>
+    );
+  }
+}
+
+class ControlsVideo extends React.Component {
+  constructor(props) {
+    super(props);
+    this.set_video_sync = this.set_video_sync.bind(this);
+    this.handleKeypressBlur = this.handleKeypressBlur.bind(this);
+  }
+
+  set_video_sync() {
+    this.props.set_video_sync();
+    // To Do: figure out what to do here that used to be done in _respond_open_images_changed()
+    // or remove this function entirely and just call this.props.set_video_sync() directly in the set_active_state attribute
+    // this._respond_open_images_changed();
+  }
+
+  handleKeypressBlur(e) {
+    // Check if blur event (focusOut) or Enter key was presses
+    if(e.type == 'blur' || (e.type == 'keypress' && e.which == 13)) {
+      // Convert value to a floating point number and take its absolute value because videos can't have negative time
+      var val = Math.abs(parseFloat(e.target.value));
+      // Set value to 0 if previous conversion didn't result in a number
+      if(isNaN(val))
+      {
+        val = 0;
+      }
+      this.props.set_video_sync_time(val);
+    }
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        <span className='input-group-btn'>
+          <ControlsButtonToggle title={this.props.video_sync ? 'Unsync videos' : 'Sync videos'} icon="fa-video-camera" active={this.props.video_sync} set_active_state={this.set_video_sync} />
+        </span>
+        <input type='text' className='form-control input-xs video-sync-time' placeholder='Time' value={this.props.video_sync_time_value} onChange={this.props.set_video_sync_time_value} onBlur={this.handleKeypressBlur} onKeyPress={this.handleKeypressBlur} />
       </React.Fragment>
     );
   }
@@ -221,7 +321,7 @@ class ControlsSelection extends React.Component {
 class ControlsGroup extends React.Component {
   render() {
     return (
-      <div id={this.props.id} className="btn-group btn-group-xs ControlsGroup">
+      <div id={this.props.id} className={(this.props.class ? this.props.class : "btn-group btn-group-xs") + " ControlsGroup"}>
         {this.props.children}
       </div>
     );
@@ -263,7 +363,7 @@ class ControlsButtonToggle extends React.Component {
 
   render() {
     return (
-      <button className={'btn btn-default ' + (this.props.active ? 'active' : '')} data-toggle="button" title={this.props.title} aria-pressed={this.props.active} onClick={this.props.set_active_state}>
+      <button className={'btn btn-default btn-xs ' + (this.props.active ? 'active' : '')} data-toggle="button" title={this.props.title} aria-pressed={this.props.active} onClick={this.props.set_active_state}>
         <span className={'fa ' + this.props.icon} aria-hidden="true"></span>
       </button>
     );
@@ -565,6 +665,8 @@ $.widget("parameter_image.controls",
       indices={self.options.indices}
       media_variables={self.options.image_variables}
       rating_variables={self.options.rating_variables}
+      video_sync={self.options["video-sync"]}
+      video_sync_time={self.options["video-sync-time"]}
     />;
 
     self.ControlsBarComponent = ReactDOM.render(
@@ -807,6 +909,10 @@ $.widget("parameter_image.controls",
     else if(key == 'video-sync-time')
     {
       self._set_video_sync_time();
+      self.ControlsBarComponent.setState({
+        video_sync_time: self.options['video-sync-time'],
+        video_sync_time_value: self.options['video-sync-time'],
+      });
     }
   },
 });
