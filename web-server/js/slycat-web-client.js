@@ -476,7 +476,6 @@ define("slycat-web-client", ["slycat-server-root", "jquery", "URI"], function(se
     if(params.index)
       url += "?index=" + params.index;
 
-
 //    //other section
 //    var new_url = server_root + "models/" + params.mid + "/arraysets/" + params.aid +  "/metadata?arrays=" + (params.array || "0") + "%3b1&" +"statistics=0";
 ////    if(params.index)
