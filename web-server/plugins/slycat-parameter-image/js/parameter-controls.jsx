@@ -35,6 +35,12 @@ class ControlsBar extends React.Component {
     this.trigger_hide_unselected = this.trigger_hide_unselected.bind(this);
     this.trigger_show_selection = this.trigger_show_selection.bind(this);
     this.trigger_pin_selection = this.trigger_pin_selection.bind(this);
+    this.trigger_jump_to_start = this.trigger_jump_to_start.bind(this);
+    this.trigger_frame_back = this.trigger_frame_back.bind(this);
+    this.trigger_play = this.trigger_play.bind(this);
+    this.trigger_pause = this.trigger_pause.bind(this);
+    this.trigger_frame_forward = this.trigger_frame_forward.bind(this);
+    this.trigger_jump_to_end = this.trigger_jump_to_end.bind(this);
   }
 
   set_selected(state_label, key, trigger, e) {
@@ -126,6 +132,30 @@ class ControlsBar extends React.Component {
     }
   }
 
+  trigger_jump_to_start(e) {
+    this.props.element.trigger("jump-to-start");
+  }
+
+  trigger_frame_back(e) {
+    this.props.element.trigger("frame-back");
+  }
+
+  trigger_play(e) {
+    this.props.element.trigger("play");
+  }
+
+  trigger_pause(e) {
+    this.props.element.trigger("pause");
+  }
+
+  trigger_frame_forward(e) {
+    this.props.element.trigger("frame-forward");
+  }
+
+  trigger_jump_to_end(e) {
+    this.props.element.trigger("jump-to-end");
+  }
+
   render() {
     // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
     const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
@@ -171,7 +201,9 @@ class ControlsBar extends React.Component {
             set_video_sync_time_value={this.set_video_sync_time_value} set_video_sync_time={this.set_video_sync_time} />
         </ControlsGroup>
         <ControlsGroup id="playback-controls">
-          <ControlsPlayback />
+          <ControlsPlayback trigger_jump_to_start={this.trigger_jump_to_start} trigger_frame_back={this.trigger_frame_back} trigger_play={this.trigger_play}
+            trigger_pause={this.trigger_pause} trigger_frame_forward={this.trigger_frame_forward} trigger_jump_to_end={this.trigger_jump_to_end}
+          />
         </ControlsGroup>
       </React.Fragment>
     );
@@ -186,12 +218,12 @@ class ControlsPlayback extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <ControlsButton title="Jump to beginning" icon="fa-fast-backward"  />
-        <ControlsButton title="Skip one frame back" icon="fa-backward"  />
-        <ControlsButton title="Play" icon="fa-play"  />
-        <ControlsButton title="Pause" icon="fa-pause"  />
-        <ControlsButton title="Skip one frame forward" icon="fa-forward"  />
-        <ControlsButton title="Jump to end" icon="fa-fast-forward"  />
+        <ControlsButton title="Jump to beginning" icon="fa-fast-backward" click={this.props.trigger_jump_to_start} />
+        <ControlsButton title="Skip one frame back" icon="fa-backward" click={this.props.trigger_frame_back} />
+        <ControlsButton title="Play" icon="fa-play" click={this.props.trigger_play} />
+        <ControlsButton title="Pause" icon="fa-pause" click={this.props.trigger_pause} />
+        <ControlsButton title="Skip one frame forward" icon="fa-forward" click={this.props.trigger_frame_forward} />
+        <ControlsButton title="Jump to end" icon="fa-fast-forward" click={this.props.trigger_jump_to_end} />
       </React.Fragment>
     );
   }

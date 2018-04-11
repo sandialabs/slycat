@@ -72,6 +72,12 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       _this.trigger_hide_unselected = _this.trigger_hide_unselected.bind(_this);
       _this.trigger_show_selection = _this.trigger_show_selection.bind(_this);
       _this.trigger_pin_selection = _this.trigger_pin_selection.bind(_this);
+      _this.trigger_jump_to_start = _this.trigger_jump_to_start.bind(_this);
+      _this.trigger_frame_back = _this.trigger_frame_back.bind(_this);
+      _this.trigger_play = _this.trigger_play.bind(_this);
+      _this.trigger_pause = _this.trigger_pause.bind(_this);
+      _this.trigger_frame_forward = _this.trigger_frame_forward.bind(_this);
+      _this.trigger_jump_to_end = _this.trigger_jump_to_end.bind(_this);
       return _this;
     }
 
@@ -183,6 +189,36 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
     }, {
+      key: "trigger_jump_to_start",
+      value: function trigger_jump_to_start(e) {
+        this.props.element.trigger("jump-to-start");
+      }
+    }, {
+      key: "trigger_frame_back",
+      value: function trigger_frame_back(e) {
+        this.props.element.trigger("frame-back");
+      }
+    }, {
+      key: "trigger_play",
+      value: function trigger_play(e) {
+        this.props.element.trigger("play");
+      }
+    }, {
+      key: "trigger_pause",
+      value: function trigger_pause(e) {
+        this.props.element.trigger("pause");
+      }
+    }, {
+      key: "trigger_frame_forward",
+      value: function trigger_frame_forward(e) {
+        this.props.element.trigger("frame-forward");
+      }
+    }, {
+      key: "trigger_jump_to_end",
+      value: function trigger_jump_to_end(e) {
+        this.props.element.trigger("jump-to-end");
+      }
+    }, {
       key: "render",
       value: function render() {
         var _this5 = this;
@@ -236,7 +272,9 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
           React.createElement(
             ControlsGroup,
             { id: "playback-controls" },
-            React.createElement(ControlsPlayback, null)
+            React.createElement(ControlsPlayback, { trigger_jump_to_start: this.trigger_jump_to_start, trigger_frame_back: this.trigger_frame_back, trigger_play: this.trigger_play,
+              trigger_pause: this.trigger_pause, trigger_frame_forward: this.trigger_frame_forward, trigger_jump_to_end: this.trigger_jump_to_end
+            })
           )
         );
       }
@@ -260,12 +298,12 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         return React.createElement(
           React.Fragment,
           null,
-          React.createElement(ControlsButton, { title: "Jump to beginning", icon: "fa-fast-backward" }),
-          React.createElement(ControlsButton, { title: "Skip one frame back", icon: "fa-backward" }),
-          React.createElement(ControlsButton, { title: "Play", icon: "fa-play" }),
-          React.createElement(ControlsButton, { title: "Pause", icon: "fa-pause" }),
-          React.createElement(ControlsButton, { title: "Skip one frame forward", icon: "fa-forward" }),
-          React.createElement(ControlsButton, { title: "Jump to end", icon: "fa-fast-forward" })
+          React.createElement(ControlsButton, { title: "Jump to beginning", icon: "fa-fast-backward", click: this.props.trigger_jump_to_start }),
+          React.createElement(ControlsButton, { title: "Skip one frame back", icon: "fa-backward", click: this.props.trigger_frame_back }),
+          React.createElement(ControlsButton, { title: "Play", icon: "fa-play", click: this.props.trigger_play }),
+          React.createElement(ControlsButton, { title: "Pause", icon: "fa-pause", click: this.props.trigger_pause }),
+          React.createElement(ControlsButton, { title: "Skip one frame forward", icon: "fa-forward", click: this.props.trigger_frame_forward }),
+          React.createElement(ControlsButton, { title: "Jump to end", icon: "fa-fast-forward", click: this.props.trigger_jump_to_end })
         );
       }
     }]);
