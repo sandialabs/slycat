@@ -240,6 +240,59 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
           }
         });
 
+        // Video and playback controls
+        var any_video_open = false;
+        var any_video_playing = false;
+        var current_frame_video = false;
+        var current_frame_video_playing = false;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = this.state.open_images[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var open_media = _step2.value;
+
+            if (open_media.video) {
+              any_video_open = true;
+              if (open_media.current_frame) {
+                current_frame_video = true;
+                if (open_media.playing) {
+                  current_frame_video_playing = true;
+                  any_video_playing = true;
+                  break;
+                }
+              }
+              if (open_media.playing) {
+                any_video_playing = true;
+              }
+            }
+            // No need to keep searching if we found a video and the current frame is also a video
+            if (any_video_open && current_frame_video && any_video_playing && current_frame_video_playing) {
+              break;
+            }
+          }
+          // Disable playback controls when the current frame is not a video and sync videos is not toggled
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+              _iterator2.return();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+
+        var disabled_playback = !(this.state.video_sync || current_frame_video);
+        // Track if any video is playing when sync is on or if the current video is playing if sync is off
+        // This is used to decide if the play or the pause button is visible in the playback controls
+        var playing = this.state.video_sync && any_video_playing || !this.state.video_sync && current_frame_video_playing;
+
         return React.createElement(
           React.Fragment,
           null,
@@ -267,13 +320,16 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
             ControlsGroup,
             { id: "video-controls", "class": "input-group input-group-xs" },
             React.createElement(ControlsVideo, { video_sync: this.state.video_sync, set_video_sync: this.set_video_sync, video_sync_time_value: this.state.video_sync_time_value,
-              set_video_sync_time_value: this.set_video_sync_time_value, set_video_sync_time: this.set_video_sync_time })
+              set_video_sync_time_value: this.set_video_sync_time_value, set_video_sync_time: this.set_video_sync_time,
+              any_video_open: any_video_open
+            })
           ),
           React.createElement(
             ControlsGroup,
             { id: "playback-controls" },
             React.createElement(ControlsPlayback, { trigger_jump_to_start: this.trigger_jump_to_start, trigger_frame_back: this.trigger_frame_back, trigger_play: this.trigger_play,
-              trigger_pause: this.trigger_pause, trigger_frame_forward: this.trigger_frame_forward, trigger_jump_to_end: this.trigger_jump_to_end
+              trigger_pause: this.trigger_pause, trigger_frame_forward: this.trigger_frame_forward, trigger_jump_to_end: this.trigger_jump_to_end,
+              any_video_open: any_video_open, disabled: disabled_playback, playing: playing
             })
           )
         );
@@ -295,15 +351,15 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsPlayback, [{
       key: "render",
       value: function render() {
-        return React.createElement(
+        return !this.props.any_video_open ? null : React.createElement(
           React.Fragment,
           null,
-          React.createElement(ControlsButton, { title: "Jump to beginning", icon: "fa-fast-backward", click: this.props.trigger_jump_to_start }),
-          React.createElement(ControlsButton, { title: "Skip one frame back", icon: "fa-backward", click: this.props.trigger_frame_back }),
-          React.createElement(ControlsButton, { title: "Play", icon: "fa-play", click: this.props.trigger_play }),
-          React.createElement(ControlsButton, { title: "Pause", icon: "fa-pause", click: this.props.trigger_pause }),
-          React.createElement(ControlsButton, { title: "Skip one frame forward", icon: "fa-forward", click: this.props.trigger_frame_forward }),
-          React.createElement(ControlsButton, { title: "Jump to end", icon: "fa-fast-forward", click: this.props.trigger_jump_to_end })
+          React.createElement(ControlsButton, { title: "Jump to beginning", icon: "fa-fast-backward", disabled: this.props.disabled, click: this.props.trigger_jump_to_start }),
+          React.createElement(ControlsButton, { title: "Skip one frame back", icon: "fa-backward", disabled: this.props.disabled, click: this.props.trigger_frame_back }),
+          React.createElement(ControlsButton, { title: "Play", icon: "fa-play", hidden: this.props.playing, disabled: this.props.disabled, click: this.props.trigger_play }),
+          React.createElement(ControlsButton, { title: "Pause", icon: "fa-pause", hidden: !this.props.playing, disabled: this.props.disabled, click: this.props.trigger_pause }),
+          React.createElement(ControlsButton, { title: "Skip one frame forward", icon: "fa-forward", disabled: this.props.disabled, click: this.props.trigger_frame_forward }),
+          React.createElement(ControlsButton, { title: "Jump to end", icon: "fa-fast-forward", disabled: this.props.disabled, click: this.props.trigger_jump_to_end })
         );
       }
     }]);
@@ -319,20 +375,11 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
 
       var _this7 = _possibleConstructorReturn(this, (ControlsVideo.__proto__ || Object.getPrototypeOf(ControlsVideo)).call(this, props));
 
-      _this7.set_video_sync = _this7.set_video_sync.bind(_this7);
       _this7.handleKeypressBlur = _this7.handleKeypressBlur.bind(_this7);
       return _this7;
     }
 
     _createClass(ControlsVideo, [{
-      key: "set_video_sync",
-      value: function set_video_sync() {
-        this.props.set_video_sync();
-        // To Do: figure out what to do here that used to be done in _respond_open_images_changed()
-        // or remove this function entirely and just call this.props.set_video_sync() directly in the set_active_state attribute
-        // this._respond_open_images_changed();
-      }
-    }, {
       key: "handleKeypressBlur",
       value: function handleKeypressBlur(e) {
         // Check if blur event (focusOut) or Enter key was presses
@@ -349,13 +396,13 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     }, {
       key: "render",
       value: function render() {
-        return React.createElement(
+        return !this.props.any_video_open ? null : React.createElement(
           React.Fragment,
           null,
           React.createElement(
             "span",
             { className: "input-group-btn" },
-            React.createElement(ControlsButtonToggle, { title: this.props.video_sync ? 'Unsync videos' : 'Sync videos', icon: "fa-video-camera", active: this.props.video_sync, set_active_state: this.set_video_sync })
+            React.createElement(ControlsButtonToggle, { title: this.props.video_sync ? 'Unsync videos' : 'Sync videos', icon: "fa-video-camera", active: this.props.video_sync, set_active_state: this.props.set_video_sync })
           ),
           React.createElement("input", { type: "text", className: "form-control input-xs video-sync-time", placeholder: "Time", value: this.props.video_sync_time_value, onChange: this.props.set_video_sync_time_value, onBlur: this.handleKeypressBlur, onKeyPress: this.handleKeypressBlur })
         );
@@ -609,7 +656,7 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
     _createClass(ControlsButton, [{
       key: "render",
       value: function render() {
-        return React.createElement(
+        return this.props.hidden ? null : React.createElement(
           "button",
           { className: "btn btn-default", type: "button", title: this.props.title, disabled: this.props.disabled, onClick: this.props.click },
           this.props.icon && React.createElement("span", { className: 'fa ' + this.props.icon, "aria-hidden": "true" }),
@@ -814,46 +861,17 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       var self = this;
 
       var x_axis_dropdown_items = [];
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = this.options.x_variables[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var x_variable = _step2.value;
-
-          x_axis_dropdown_items.push({
-            key: x_variable,
-            name: self.options.metadata['column-names'][x_variable]
-          });
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2.return) {
-            _iterator2.return();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
-      var y_axis_dropdown_items = [];
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = this.options.y_variables[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var y_variable = _step3.value;
+        for (var _iterator3 = this.options.x_variables[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var x_variable = _step3.value;
 
-          y_axis_dropdown_items.push({
-            key: y_variable,
-            name: self.options.metadata['column-names'][y_variable]
+          x_axis_dropdown_items.push({
+            key: x_variable,
+            name: self.options.metadata['column-names'][x_variable]
           });
         }
       } catch (err) {
@@ -871,18 +889,18 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var color_variable_dropdown_items = [];
+      var y_axis_dropdown_items = [];
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
       var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator4 = this.options.color_variables[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var color_variable = _step4.value;
+        for (var _iterator4 = this.options.y_variables[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var y_variable = _step4.value;
 
-          color_variable_dropdown_items.push({
-            key: color_variable,
-            name: self.options.metadata['column-names'][color_variable]
+          y_axis_dropdown_items.push({
+            key: y_variable,
+            name: self.options.metadata['column-names'][y_variable]
           });
         }
       } catch (err) {
@@ -900,19 +918,18 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         }
       }
 
-      var media_variable_dropdown_items = [];
-      media_variable_dropdown_items.push({ key: -1, name: "None" });
+      var color_variable_dropdown_items = [];
       var _iteratorNormalCompletion5 = true;
       var _didIteratorError5 = false;
       var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator5 = this.options.image_variables[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var media_variable = _step5.value;
+        for (var _iterator5 = this.options.color_variables[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var color_variable = _step5.value;
 
-          media_variable_dropdown_items.push({
-            key: media_variable,
-            name: self.options.metadata['column-names'][media_variable]
+          color_variable_dropdown_items.push({
+            key: color_variable,
+            name: self.options.metadata['column-names'][color_variable]
           });
         }
       } catch (err) {
@@ -926,6 +943,36 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
         } finally {
           if (_didIteratorError5) {
             throw _iteratorError5;
+          }
+        }
+      }
+
+      var media_variable_dropdown_items = [];
+      media_variable_dropdown_items.push({ key: -1, name: "None" });
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = this.options.image_variables[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var media_variable = _step6.value;
+
+          media_variable_dropdown_items.push({
+            key: media_variable,
+            name: self.options.metadata['column-names'][media_variable]
+          });
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6.return) {
+            _iterator6.return();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
           }
         }
       }
@@ -983,154 +1030,6 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       });
 
       self.ControlsBarComponent = ReactDOM.render(controls_bar, document.getElementById('react-controls'));
-
-      var video_controls = $("#video-controls", this.element);
-      this.video_controls = video_controls;
-      var playback_controls = $("#playback-controls", this.element);
-      this.playback_controls = playback_controls;
-
-      this.video_sync_button_wrapper = $("<span class='input-group-btn'></span>").appendTo(video_controls);
-
-      this.video_sync_button = $("\
-        <button class='btn btn-default btn-xs' data-toggle='button'> \
-          <span class='fa fa-video-camera' aria-hidden='true'></span> \
-        </button> \
-      ").click(function () {
-        self.options["video-sync"] = !$(this).hasClass('active');
-        self._respond_open_images_changed();
-        self.element.trigger("video-sync", !$(this).hasClass('active'));
-        this.title = self.options["video-sync"] ? 'Unsync videos' : 'Sync videos';
-      }).attr('title', self.options["video-sync"] ? 'Unsync videos' : 'Sync videos').appendTo(self.video_sync_button_wrapper);
-
-      this.video_sync_time = $("\
-      <input type='text' class='form-control input-xs video-sync-time' placeholder='Time'> \
-      ").focusout(function () {
-        handleVideoSyncTimeChange(this);
-      }).keypress(function (e) {
-        if (e.which == 13) {
-          handleVideoSyncTimeChange(this);
-        }
-      }).appendTo(video_controls);
-
-      this.jump_to_start_button = $("\
-      <button class='btn btn-default' title='Jump to beginning'> \
-        <span class='fa fa-fast-backward' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("jump-to-start");
-      }).appendTo(playback_controls);
-
-      this.frame_back_button = $("\
-      <button class='btn btn-default' title='Skip one frame back'> \
-        <span class='fa fa-backward' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("frame-back");
-      }).appendTo(playback_controls);
-
-      this.play_button = $("\
-      <button class='btn btn-default play-button' title='Play'> \
-        <span class='fa fa-play' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("play");
-        $(this).hide();
-        self.pause_button.show();
-      }).appendTo(playback_controls);
-
-      this.pause_button = $("\
-      <button class='btn btn-default pause-button' title='Pause'> \
-        <span class='fa fa-pause' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("pause");
-        $(this).hide();
-        self.play_button.show();
-      }).hide().appendTo(playback_controls);
-
-      this.frame_forward = $("\
-      <button class='btn btn-default' title='Skip one frame forward'> \
-        <span class='fa fa-forward' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("frame-forward");
-      }).appendTo(playback_controls);
-
-      this.jump_to_end_button = $("\
-      <button class='btn btn-default' title='Jump to end'> \
-        <span class='fa fa-fast-forward' aria-hidden='true'></span> \
-      </button> \
-      ").click(function () {
-        self.element.trigger("jump-to-end");
-      }).appendTo(playback_controls);
-
-      function handleVideoSyncTimeChange(element) {
-        var val = parseFloat($(element).val());
-        if (isNaN(val)) {
-          val = 0;
-        }
-        $(element).val(val);
-        self.options["video-sync-time"] = val;
-        self.element.trigger("video-sync-time", val);
-      }
-
-      self._set_video_sync();
-      self._set_video_sync_time();
-      self._respond_open_images_changed();
-    },
-
-    _set_video_sync: function _set_video_sync() {
-      var self = this;
-      this.video_sync_button.toggleClass("active", self.options["video-sync"]);
-      this.video_sync_button.attr("aria-pressed", self.options["video-sync"]);
-    },
-
-    _set_video_sync_time: function _set_video_sync_time() {
-      var self = this;
-      this.video_sync_time.val(self.options["video-sync-time"]);
-    },
-
-    _respond_open_images_changed: function _respond_open_images_changed() {
-      var self = this;
-      var frame;
-      var any_video_open = false;
-      var any_video_playing = false;
-      var current_frame_video = false;
-      var current_frame_video_playing = false;
-      for (var i = 0; i < self.options.open_images.length; i++) {
-        frame = self.options.open_images[i];
-        if (frame.video) {
-          any_video_open = true;
-          if (frame.current_frame) {
-            current_frame_video = true;
-            if (frame.playing) {
-              current_frame_video_playing = true;
-              any_video_playing = true;
-              break;
-            }
-          }
-          if (frame.playing) {
-            any_video_playing = true;
-          }
-        }
-        // No need to keep searching if we found a video and the current frame is also a video
-        if (any_video_open && current_frame_video && any_video_playing && current_frame_video_playing) {
-          break;
-        }
-      }
-      // console.log("any_video_open: " + any_video_open + ", any_video_playing: " + any_video_playing + ", current_frame_video: " + current_frame_video + ", current_frame_video_playing: " + current_frame_video_playing);
-      // Hide / show video controls based on whether any videos are open
-      this.video_controls.add(this.playback_controls).toggle(any_video_open);
-      // Disable playback controls when the current frame is no a video and sync videos is not toggled
-      $('button', this.playback_controls).prop("disabled", !(self.options["video-sync"] || current_frame_video));
-      // Enable play or pause based on what's playing
-      if (self.options["video-sync"] && any_video_playing || !self.options["video-sync"] && current_frame_video_playing) {
-        self.pause_button.show();
-        self.play_button.hide();
-      } else {
-        self.pause_button.hide();
-        self.play_button.show();
-      }
     },
 
     _setOption: function _setOption(key, value) {
@@ -1152,12 +1051,10 @@ define("slycat-parameter-image-controls", ["slycat-server-root", "slycat-dialog"
       } else if (key == 'hidden_simulations') {
         self.ControlsBarComponent.setState({ hidden_simulations: self.options.hidden_simulations.slice() });
       } else if (key == 'open_images') {
-        self._respond_open_images_changed();
         self.ControlsBarComponent.setState({ open_images: self.options.open_images.slice() });
       } else if (key == 'disable_hide_show') {
         self.ControlsBarComponent.setState({ disable_hide_show: self.options.disable_hide_show });
       } else if (key == 'video-sync-time') {
-        self._set_video_sync_time();
         self.ControlsBarComponent.setState({
           video_sync_time: self.options['video-sync-time'],
           video_sync_time_value: self.options['video-sync-time']
