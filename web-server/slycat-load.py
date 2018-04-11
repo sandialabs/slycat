@@ -69,7 +69,7 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
 
 # Load bookmarks ...
 logging.info("Loading bookmarks")
-for source in glob.glob(os.path.join(arguments.input_dir, "boomark-*.json")):
+for source in glob.glob(os.path.join(arguments.input_dir, "bookmark-*.json")):
     boomark = json.load(open(source))
     del boomark["_rev"]
     if arguments.force and boomark["_id"] in couchdb:
