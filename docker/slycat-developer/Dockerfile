@@ -82,12 +82,11 @@ RUN chmod -R 750 /etc/slycat && \
 #RUN chown --recursive slycat:slycat /home/slycat/
     chown --recursive root:slycat /etc/slycat/ && \
     service couchdb start; sleep 2 && \
-    su slycat && \
     bash && \
     source /home/slycat/.bashrc && \
-    /home/slycat/install/conda/bin/python /home/slycat/src/slycat/web-server/slycat-couchdb-setup.py && \
-    /home/slycat/install/conda/bin/python /home/slycat/src/slycat/web-server/slycat-load.py --data-store /var/lib/slycat/data-store /home/slycat/src/slycat/docker/DB/ && \
-    exit && \
+    /home/slycat/install/conda/bin/python /home/slycat/src/slycat/web-server/slycat-couchdb-setup.py;sleep 2 && \
+    /home/slycat/install/conda/bin/python /home/slycat/src/slycat/web-server/slycat-load.py --data-store /var/lib/slycat/data-store /home/slycat/src/slycat/docker/DB/ ;sleep 4 && \
+    chown -R slycat:slycat /var/lib/slycat/data-store && \
     service couchdb stop; sleep 2
 
 ENTRYPOINT ["/bin/sh","/etc/slycat/run-slycat.sh"]
