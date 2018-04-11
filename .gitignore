@@ -27,7 +27,6 @@ web-server/config.ini
 
 *.iml
 *.image
-*.hdf5
 
 ## Directory-based project format:
 .idea/

@@ -68,15 +68,17 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
     shutil.copy(source, destination)
 
 # Load bookmarks ...
-for source in glob.glob(os.path.join(arguments.input_dir, "boomark-*.json")):
-    logging.info("Loading boomark %s", source)
+logging.info("Loading bookmarks")
+for source in glob.glob(os.path.join(arguments.input_dir, "bookmark-*.json")):
     boomark = json.load(open(source))
     del boomark["_rev"]
     if arguments.force and boomark["_id"] in couchdb:
         del couchdb[boomark["_id"]]
     couchdb.save(boomark)
+logging.info("Loading bookmarks Done")
 
 # Load bookmarks ...
+logging.info("Loading references")
 for source in glob.glob(os.path.join(arguments.input_dir, "reference-*.json")):
     logging.info("Loading references %s", source)
     reference = json.load(open(source))
@@ -84,3 +86,4 @@ for source in glob.glob(os.path.join(arguments.input_dir, "reference-*.json")):
     if arguments.force and reference["_id"] in couchdb:
         del couchdb[reference["_id"]]
     couchdb.save(reference)
+logging.info("Loading references Done")

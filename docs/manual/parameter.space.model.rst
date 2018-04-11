@@ -7,6 +7,7 @@ images, videos, and other media-based ensemble data.
 .. toctree::
   :maxdepth: 3
   
+  TAISDataSet.rst
   CreatingPSModel.rst
   PSModelVis.rst
   

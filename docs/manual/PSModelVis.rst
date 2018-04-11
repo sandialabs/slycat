@@ -20,7 +20,6 @@ data, to demonstrate some of the media-based functionality.
 .. toctree::
   :maxdepth: 3
   
-  TAISDataSet.rst
   ScatterplotView.rst
   PSVariableTable.rst
   
