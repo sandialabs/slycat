@@ -1526,9 +1526,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       // If the URL is a web link, create a link to open it in a new window
       if(link)
       {
-        // Create a "open in new window" link for http or https URLs
-        console.log("This is a web link.")
-        
+        // Create a "open in new window" link for http or https URLs        
         frame_html
           .style({
             "width": image.width + "px",
