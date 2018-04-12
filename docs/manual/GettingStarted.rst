@@ -24,5 +24,5 @@ At any level, clicking on the Slycat™ logo will return you to the main *Projec
 
 The first time that you access the Slycat™ website, your projects list will probably be empty, unless someone else has already 
 created a project and added you as a project member.  Since models cannot exist outside of a project, you must first create a 
-project (see `Project Creation`_) before you can create a model.  Project-specific information consists of the project name, 
+project (see :ref:`Project Creation`) before you can create a model.  Project-specific information consists of the project name, 
 a list of project members, a set of models, and a set of saved bookmarks for models within that project.
