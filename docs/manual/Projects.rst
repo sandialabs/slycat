@@ -6,7 +6,6 @@ bookmarks for models within that project.
 
 Project Creation
 ================
-.. _ProjectCreation
 
 .. figure:: Figure3.png
    :align: center
