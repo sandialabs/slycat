@@ -2,9 +2,11 @@
 const path = require('path');
 
 module.exports = {
-  entry: './web-server/plugins/slycat-parameter-image/js/parameter-controls.js',
+	// mode: 'production',
+	mode: 'development',
+  entry: './web-server/plugins/slycat-parameter-image/js/ui.js',
   output: {
-    filename: 'parameter-conrols.webpack.js',
+    filename: 'ui.webpack.js',
     path: path.resolve(__dirname, 'dist')
   },
   // This module enables Babel
