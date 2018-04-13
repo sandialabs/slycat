@@ -84,9 +84,9 @@ Download Data Table |Download|
 
 Since data tables are at the core of each model type, all models provide a table download operation.  The download can take one 
 of several forms: download the entire table, download only selected items, or download only visible items.  As will be described 
-later (see **Selecting Points and Filter**), selection and filtering can be used to divide the data into sets using two 
-approaches, either through highlighting or through visibility.  Highlighting and visibility are independently defined sets, so 
-selected items are not necessarily visible.
+later (see :ref:`selecting-points` and :ref:`filtering`), selection and filtering can be used to divide the data into sets using 
+two approaches, either through highlighting or through visibility.  Highlighting and visibility are independently defined sets, 
+so selected items are not necessarily visible.
 
 This functionality can be used to download a table or a table subset to your desktop, which can then be used to generate a new 
 model.  For example, if you had an ensemble where some of the runs failed to terminate properly, you could filter those runs out 
