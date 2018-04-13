@@ -40,6 +40,8 @@ are neither inputs nor outputs.  These columns are drawn on the right end of the
 additional color-coding options (numeric variables only), however, the bar chart will not be highlighted because it only 
 includes variables passed to CCA.
 
+.. _selecting-points:
+
 Selecting Points
 ================
 Points in the scatterplot may be selected through several mechanisms.  The simplest is to place the mouse cursor over a point 
