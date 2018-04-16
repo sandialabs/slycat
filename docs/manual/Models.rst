@@ -94,6 +94,7 @@ and download the subset of runs that finished correctly.  Then you could use tha
 runs are not biasing the analysis results.  Or alternately, you could download the subset that failed and use that table to 
 create a Parameter Space model to explore what the failures have in common.
 
+.. _color-themes:
 Color Themes
 ============
 
