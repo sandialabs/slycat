@@ -1,9 +1,9 @@
 # Slycat
-[![TravisCI](https://travis-ci.org/sandialabs/slycat.svg?branch=master)](https://travis-ci.org/sandialabs/slycat)
+<!--- [![TravisCI](https://travis-ci.org/sandialabs/slycat.svg?branch=master)](https://travis-ci.org/sandialabs/slycat)
 [![Coverage Status](https://coveralls.io/repos/github/sandialabs/slycat/badge.svg?branch=master)](https://coveralls.io/github/sandialabs/slycat?branch=master)
 [![Code Climate](https://codeclimate.com/github/sandialabs/slycat/badges/gpa.svg)](https://codeclimate.com/github/sandialabs/slycat)
 [![Stories in Ready](https://badge.waffle.io/sandialabs/slycat.svg?label=ready&title=Ready)](http://waffle.io/sandialabs/slycat)
-
+--->
 
 This is Slycat - a web-based ensemble analysis and visualization platform, created at [Sandia National Laboratories](http://www.sandia.gov).
 
