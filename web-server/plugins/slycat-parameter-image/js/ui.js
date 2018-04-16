@@ -1,4 +1,8 @@
-define("slycat-parameter-image-model", 
+/* Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
+define("slycat-parameter-image-model",
   ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", 
    "slycat-bookmark-manager", "slycat-dialog", "slycat-parameter-image-note-manager", 
    "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", 

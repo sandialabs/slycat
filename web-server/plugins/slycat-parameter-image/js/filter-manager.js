@@ -1,3 +1,7 @@
+/* Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
 define("slycat-parameter-image-filter-manager", ["slycat-server-root", "slycat-dialog", "lodash", "knockout", "knockout-mapping", "jquery"], function(server_root, dialog, _,  ko, mapping, $) {
 
   function FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns) {

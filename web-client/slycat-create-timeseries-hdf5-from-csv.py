@@ -1,7 +1,7 @@
 #!/bin/env python
-# Copyright 2014, Sandia Corporation. Under the terms of Contract
-# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-# rights in this software.
+# Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+# retains certain rights in this software.
 
 # Convert CSV files into HDF5 files for ingestion into timeseries model.
 # To be used in conjuction with the hdf5-to-timeseries-model script.

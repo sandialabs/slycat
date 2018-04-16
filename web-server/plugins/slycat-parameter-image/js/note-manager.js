@@ -1,3 +1,7 @@
+/* Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
 define("slycat-parameter-image-note-manager", ["slycat-server-root", "jquery", "lodash"], function(server_root, $, _) {
 
   function NoteManager(model_id, bookmarker, bookmark) {

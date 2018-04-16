@@ -1,9 +1,8 @@
 #!/bin/env python
 
-# Copyright 2013 Sandia Corporation. Under the terms of Contract
-# DE-AC04-94AL85000, there is a non-exclusive license for use of this work by
-# or on behalf of the U.S. Government. Export of this program may require a
-# license from the United States Government.
+# Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+# retains certain rights in this software.
 
 """
 test script

@@ -1,6 +1,6 @@
-# Copyright 2013, Sandia Corporation. Under the terms of Contract
-# DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-# rights in this software.
+# Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+# retains certain rights in this software.
 import os
 import hashlib
 import cPickle
