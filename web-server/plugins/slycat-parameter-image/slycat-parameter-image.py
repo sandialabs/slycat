@@ -112,9 +112,9 @@ def register_slycat_plugin(context):
     # "ui.js",
     #For development and debugging, comment out js here and load it dynamically inside model.
   ]
-  context.register_page_bundle("parameter-image", "text/javascript", [
-    os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
-    ])
+  # context.register_page_bundle("parameter-image", "text/javascript", [
+  #   os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
+  #   ])
 
   # Register CSS
   stylesheets = [
@@ -161,15 +161,18 @@ def register_slycat_plugin(context):
     context.register_page_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
 
   devs = [
-    "js/parameter-controls.js",
-    "js/parameter-image-table.js",
-    "js/parameter-image-scatterplot.js",
-    "js/ui.js",
+    # "js/parameter-controls.js",
+    # "js/parameter-image-table.js",
+    # "js/parameter-image-scatterplot.js",
+    # "../../../dist/ui_parameter_image.js",
     #"css/ui.css",
     "slycat-category-select.html",
   ]
   for dev in devs:
     context.register_page_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Register the webpack generated /dist/ui_parameter_image.js main JS file as js/ui_parameter_image.js (used in ui.html to load this main JS bundle)
+  context.register_page_resource("parameter-image", "js/ui_parameter_image.js", os.path.join(os.path.dirname(__file__), "../../../dist/ui_parameter_image.js"))
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image", "media-columns", media_columns)

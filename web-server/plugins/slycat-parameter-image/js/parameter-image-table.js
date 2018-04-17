@@ -2,7 +2,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
-define("slycat-parameter-image-table", ["d3"], function(d3) {
+define("slycat-parameter-image-table", 
+  [
+    "./d3.min",
+    "jquery-ui",
+  ], function(d3) {
 $.widget("parameter_image.table",
 {
   options:
@@ -564,7 +568,7 @@ $.widget("parameter_image.table",
             self.pages[page] = [];
             for(var i=0; i < data[0].length; i++)
             {
-              result = {};
+              let result = {};
               for(var j = column_begin; j != column_end; ++j)
               {
                 result[j] = data[j][i];

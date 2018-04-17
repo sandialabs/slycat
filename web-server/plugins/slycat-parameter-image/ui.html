@@ -6,10 +6,10 @@
   // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
   [
-    "js/parameter-controls.js",
-    "js/parameter-image-table.js",
-    "js/parameter-image-scatterplot.js",
-    "js/ui.js",
+    // "js/parameter-controls.js",
+    // "js/parameter-image-table.js",
+    // "js/parameter-image-scatterplot.js",
+    "js/ui_parameter_image.js",
   ].forEach(function(src) {
     var script = document.createElement('script');
     script.src = server_root + "resources/pages/parameter-image/" + src;

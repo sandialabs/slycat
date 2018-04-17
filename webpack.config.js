@@ -1,21 +1,29 @@
-// Webpack is not currently being used, but I'm leaving this in for the future
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
 	// mode: 'production',
 	mode: 'development',
-  entry: './web-server/plugins/slycat-parameter-image/js/ui.js',
+  entry: {
+    ui_parameter_image: './web-server/plugins/slycat-parameter-image/js/ui.js',
+  },
   output: {
-    filename: 'ui.webpack.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist')
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+  		jQuery: 'jquery'
+    })
+  ],
   // This module enables Babel
   module: {
 		rules: [
 			{ test: /\.js$/, 
 				exclude: /node_modules/, 
-				loader: "babel-loader"
+				loader: "babel-loader",
 			}
 		]
-	}
+	},
 };

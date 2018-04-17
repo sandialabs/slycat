@@ -3,20 +3,29 @@
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash", "knockout"], function(server_root, d3, URI, remotes, _, ko)
+define("slycat-parameter-image-scatterplot", 
+  [
+    "../../../js/slycat-server-root", 
+    "./d3.min", 
+    "urijs", 
+    "../../../js/slycat-remotes-webpack", 
+    "lodash", 
+    "knockout",
+    "jquery-ui",
+  ], function(server_root, d3, URI, remotes, _, ko)
 {
   var nodrag = d3.behavior.drag();
 
   // Commenting this out Nov 20 1017 because I have no idea what it does and I rewrote much of the dragging code. If still no problems after a few months, just delete it.
   nodrag.on("dragstart", function() {
-    console.log("nodrag.on('dragstart'...");
+    // console.log("nodrag.on('dragstart'...");
     // d3.event.sourceEvent.stopPropagation();
   });
-
   $.widget("parameter_image.scatterplot",
   {
     options:
     {
+      model : null,
       width : 300,
       height : 300,
       pick_distance : 3,
@@ -817,8 +826,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           square_size = self.options.canvas_square_size,
           border_width = self.options.canvas_square_border_size,
           half_border_width = border_width / 2,
-          fillWidth = fillHeight = square_size - (2 * border_width),
-          strokeWidth = strokeHeight = square_size - border_width;
+          fillWidth = square_size - (2 * border_width),
+          fillHeight = fillWidth,
+          strokeWidth = square_size - border_width,
+          strokeHeight = strokeWidth;
 
       // Draw points on canvas ...
       var time = Date;
@@ -866,7 +877,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           border_width = self.options.canvas_selected_square_border_size,
           half_border_width = border_width / 2,
           fillWidth = fillHeight = square_size - (2 * border_width),
-          strokeWidth = strokeHeight = square_size - border_width;
+          strokeWidth = square_size - border_width
+          strokeHeight = strokeWidth;
 
       canvas.clearRect(0, 0, self.canvas_selected.width, self.canvas_selected.height);
       canvas.strokeStyle = "black";
@@ -1128,7 +1140,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     var frame_html = null;
 
-    within_svg = function(e, options) {
+    let within_svg = function(e, options) {
       return 0 <= e.y && e.y <= options.height && 0 <= e.x && e.x <= options.width;
     }
 
@@ -1899,7 +1911,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     // If we don't have a session for the image hostname, create one.
-    var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
+    var cached_uri = URI(server_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
 
     console.log("Attempting to load image from server-side cache...");
     console.log("Loading image " + image.uri + " from server...");
@@ -1911,7 +1923,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     xhr.image = image;
-    xhr.open("GET", server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
+    xhr.open("GET", server_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
     xhr.responseType = "arraybuffer";
 
     xhr.onload = function(e){
@@ -1958,7 +1970,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
               xhr.image = image;
               //Double encode to avoid cherrypy's auto unencode in the controller
-              xhr.open("GET", server_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
+              xhr.open("GET", server_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
               xhr.responseType = "arraybuffer";
               xhr.onload = function(e) {
                 // If we get 404, the remote session no longer exists because it timed-out.
@@ -2102,11 +2114,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         xvalues = self.options.x,
         yvalues = self.options.y;
     for(var i = indices.length-1; i > -1; i-- ) {
-      index = indices[i];
-      x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
-      y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
-      x2 = x1 + size;
-      y2 = y1 + size;
+      let index = indices[i];
+      let x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
+      let y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
+      let x2 = x1 + size;
+      let y2 = y1 + size;
 
       if(x >= x1 && x <= x2 && y >= y1 && y <= y2)
       {

@@ -1,22 +1,46 @@
-/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
- DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
- retains certain rights in this software. */
+// import * as d3 from 'd3';
 
-define("slycat-parameter-image-model",
-  ["slycat-server-root", "lodash", "knockout", "knockout-mapping", "slycat-web-client", 
-   "slycat-bookmark-manager", "slycat-dialog", "slycat-parameter-image-note-manager", 
-   "slycat-parameter-image-filter-manager", "d3", "URI", "slycat-parameter-image-scatterplot", 
-   "slycat-parameter-image-controls", "slycat-parameter-image-table", "slycat-color-switcher", 
-   "domReady!"
+define("slycat-parameter-image-model", 
+  [
+    "../../../js/slycat-server-root", 
+    "lodash", 
+    "knockout", 
+    "knockout-mapping", 
+    "../../../js/slycat-web-client-webpack", 
+    "../../../js/slycat-bookmark-manager-webpack", 
+    "../../../js/slycat-dialog-webpack", 
+    "./note-manager", 
+    "./filter-manager", 
+    "./d3.min", 
+    "urijs", 
+    "./chunker.js",
+    // "jquery",
+    "./parameter-image-scatterplot", 
+    "./parameter-controls", 
+    "./parameter-image-table", 
+    "./color-switcher", 
+    "jquery-ui",
+    "./jquery.layout-latest.min",
+    "./jquery.scrollintoview.min.js",
+    "./jquery.event.drag-2.2.js",
+    "./slick.core.js",
+    "./slick.grid.js",
+    "./slick.rowselectionmodel.js",
+    "./slick.headerbuttons.js",
+    "./slick.autotooltips.js",
+    "./slick.slycateditors.js",
   ], 
   function(
-    server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI
+    server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI, chunker
   )
 {
+// Wait for document ready
+$( document ).ready(function() {
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
 
+var model = null;
 var model_id = URI(window.location).segment(-1);
 var input_columns = null;
 var output_columns = null;
@@ -348,7 +372,7 @@ function metadata_loaded()
     if("manually-hidden-simulations" in bookmark)
       manually_hidden_simulations = bookmark["manually-hidden-simulations"];
 
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model_id,
       aid : "data-table",
@@ -367,7 +391,7 @@ function metadata_loaded()
       error : artifact_missing
     });
 
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model_id,
       aid : "data-table",
@@ -402,7 +426,7 @@ function metadata_loaded()
     }
     else
     {
-      get_model_array_attribute({
+      chunker.get_model_array_attribute({
         server_root : server_root,
         mid : model_id,
         aid : "data-table",
@@ -607,6 +631,7 @@ function setup_scatterplot()
     $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
     $("#scatterplot").scatterplot({
+      model: model,
       indices: indices,
       x_label: table_metadata["column-names"][x_index],
       y_label: table_metadata["column-names"][y_index],
@@ -770,9 +795,9 @@ function setup_controls()
     });
 
     // Changing the value of a variable updates the database, table, and scatterplot ...
-    $("#controls").bind("set-value", function(event, arguments)
+    $("#controls").bind("set-value", function(event, props)
     {
-      writeData(arguments.selection, arguments.variable, arguments.value);
+      writeData(props.selection, props.variable, props.value);
       function writeData(selection, variable, value)
       {
         var hyperslices = "";
@@ -1073,7 +1098,7 @@ function images_selection_changed(variable)
 
 function update_v(variable)
 {
-  get_model_array_attribute({
+  chunker.get_model_array_attribute({
     server_root : server_root,
     mid : model_id,
     aid : "data-table",
@@ -1295,7 +1320,7 @@ function hidden_simulations_changed()
 
 function update_scatterplot_x(variable)
 {
-  get_model_array_attribute({
+  chunker.get_model_array_attribute({
     server_root : server_root,
     mid : model_id,
     aid : "data-table",
@@ -1315,7 +1340,7 @@ function update_scatterplot_x(variable)
 
 function update_scatterplot_y(variable)
 {
-  get_model_array_attribute({
+  chunker.get_model_array_attribute({
     server_root : server_root,
     mid : model_id,
     aid : "data-table",
@@ -1406,7 +1431,7 @@ function filters_changed(newValue)
 
   for(var i = 0; i < allFilters().length; i++)
   {
-    filter = allFilters()[i];
+    let filter = allFilters()[i];
     if(filter.active())
     {
       filter_var = 'a' + filter.index();
@@ -1507,5 +1532,5 @@ function filters_changed(newValue)
     update_widgets_when_hidden_simulations_change();
   }
 }
-
+});
 });
