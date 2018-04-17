@@ -1,4 +1,4 @@
-/* Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 define("slycat-linear-regression-demo-model", ["slycat-web-client", "knockout", "knockout-mapping", "d3", "URI", "domReady!"], function(client, ko, mapping, d3, URI)
 {
