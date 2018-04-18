@@ -2,86 +2,82 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define("slycat-dialog", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "jquery"], function(server_root, client, ko, mapping, $)
+import server_root from './slycat-server-root';
+import client from './slycat-web-client-webpack';
+import ko from 'knockout';
+import mapping from 'knockout-mapping';
+import template from '../templates/slycat-alert.html';
+import './bootstrap';
+
+export function dialog(params)
 {
-  var module = {};
-
-  module.dialog = function(params)
+  var component = {};
+  component.close = function(button)
   {
-    require(["text!" + server_root + "templates/slycat-alert.html"], function(template)
+    component.result = button;
+    component.container.children().modal("hide");
+  }
+  component.title = ko.observable(params.title || "Alert");
+  component.message = ko.observable(params.message || "");
+  component.input = ko.observable(params.input || false);
+  component.placeholder = ko.observable(params.placeholder || "");
+  component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
+  component.alert = ko.observable(params.alert || "");
+  component.buttons = params.buttons || [{className: "btn-default", label:"OK"}];
+  component.container = $($.parseHTML(template)).appendTo($("body"));
+  component.container.children().on("hidden.bs.modal", function()
+  {
+    component.container.remove();
+    if(params.callback)
+      params.callback(component.result, component.value);
+  });
+  ko.applyBindings(component, component.container.get(0));
+  component.container.children().modal("show");
+}
+
+export function prompt(params)
+{
+  module.dialog({
+    title: params.title || "Prompt",
+    message: params.message || "",
+    input: true,
+    value: params.value || "",
+    alert: params.alert || "",
+    buttons: params.buttons || [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
+    callback: params.callback,
+  });
+}
+
+export function confirm(params)
+{
+  module.dialog(
+  {
+    title: params.title || "Confirm",
+    message: params.message || "",
+    buttons: [{className: "btn-default", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
+    callback: function(button)
     {
-      var component = {};
-      component.close = function(button)
+      if(button.label == "OK")
       {
-        component.result = button;
-        component.container.children().modal("hide");
+        if(params.ok)
+          params.ok();
       }
-      component.title = ko.observable(params.title || "Alert");
-      component.message = ko.observable(params.message || "");
-      component.input = ko.observable(params.input || false);
-      component.placeholder = ko.observable(params.placeholder || "");
-      component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
-      component.alert = ko.observable(params.alert || "");
-      component.buttons = params.buttons || [{className: "btn-default", label:"OK"}];
-      component.container = $($.parseHTML(template)).appendTo($("body"));
-      component.container.children().on("hidden.bs.modal", function()
+      else
       {
-        component.container.remove();
-        if(params.callback)
-          params.callback(component.result, component.value);
-      });
-      ko.applyBindings(component, component.container.get(0));
-      component.container.children().modal("show");
-    });
-  }
+        if(params.cancel)
+          params.cancel();
+      }
+    }
+  });
+}
 
-  module.prompt = function(params)
-  {
-    module.dialog({
-      title: params.title || "Prompt",
-      message: params.message || "",
-      input: true,
-      value: params.value || "",
-      alert: params.alert || "",
-      buttons: params.buttons || [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
-      callback: params.callback,
-    });
-  }
-
-  module.confirm = function(params)
+export function ajax_error(message)
+{
+  return function(request, status, reason_phrase)
   {
     module.dialog(
     {
-      title: params.title || "Confirm",
-      message: params.message || "",
-      buttons: [{className: "btn-default", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
-      callback: function(button)
-      {
-        if(button.label == "OK")
-        {
-          if(params.ok)
-            params.ok();
-        }
-        else
-        {
-          if(params.cancel)
-            params.cancel();
-        }
-      }
+      message: message + " " + reason_phrase
     });
   }
-
-  module.ajax_error = function(message)
-  {
-    return function(request, status, reason_phrase)
-    {
-      module.dialog(
-      {
-        message: message + " " + reason_phrase
-      });
-    }
-  }
-
-  return module;
-});
-
+}

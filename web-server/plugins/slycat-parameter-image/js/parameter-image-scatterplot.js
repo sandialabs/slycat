@@ -204,11 +204,11 @@ define("slycat-parameter-image-scatterplot",
     {
       // console.log("self.element.mousedown");
       e.preventDefault();
-      output = e;
+      let output = e;
       self.start_drag = [self._offsetX(e), self._offsetY(e)];
-      s_d = self.start_drag;
+      let s_d = self.start_drag;
       self.end_drag = null;
-      s_e = self.start_drag;
+      let s_e = self.start_drag;
     });
 
     self.element.mousemove(function(e)

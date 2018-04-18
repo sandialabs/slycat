@@ -17,13 +17,17 @@ module.exports = {
   		jQuery: 'jquery'
     })
   ],
-  // This module enables Babel
   module: {
 		rules: [
+      // This enables Babel
 			{ test: /\.js$/, 
 				exclude: /node_modules/, 
 				loader: "babel-loader",
-			}
-		]
+			},
+      // This enables the html-loader, needed to load knockout .html templates
+      { test: /\.html$/, 
+        loader: 'html-loader' 
+      },
+		],
 	},
 };

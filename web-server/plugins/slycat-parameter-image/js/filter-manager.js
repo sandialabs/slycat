@@ -1,4 +1,8 @@
-define("slycat-parameter-image-filter-manager",
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
+define("slycat-parameter-image-filter-manager", 
   [
     "../../../js/slycat-server-root",
     "../../../js/slycat-dialog-webpack",
@@ -60,7 +64,9 @@ define("slycat-parameter-image-filter-manager",
 
   FilterManager.prototype.build_sliders = function(controls_ready) {
     var self = this;
-    if (!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics && (self.table_statistics.length == self.table_metadata["column-count"]) && self.other_columns) {
+    if(!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics
+      && (self.table_statistics.length == self.table_metadata["column-count"]) && self.other_columns)
+    {
       self.sliders_ready = true;
       $("#sliders-pane .load-status").css("display", "none");
 
@@ -368,18 +374,28 @@ define("slycat-parameter-image-filter-manager",
             return false;
           }
           else
+          {
             return true;
+          }
         };
         vm.maxMinFocus = function(filter, event) {
           var textContent = "";
           if( $(event.target).hasClass("max-field") )
+          {
             textContent = this.max();
+          }
           else if( $(event.target).hasClass("min-field") )
+          {
             textContent = this.min();
+          }
           else if( $(event.target).hasClass("high_value") )
+          {
             textContent = this.high();
+          }
           else if( $(event.target).hasClass("low_value") )
+          {
             textContent = this.low();
+          }
           $(event.target).toggleClass("editing", true);
           event.target.textContent = textContent;
           // console.log("maxMin has focus.");
@@ -469,7 +485,9 @@ define("slycat-parameter-image-filter-manager",
               callback: function(button)
               {
                 if(button.label == "OK")
+                {
                   $(event.target).focus();
+                }
               },
             });
           }
