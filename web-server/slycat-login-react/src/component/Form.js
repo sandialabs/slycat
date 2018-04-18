@@ -34,24 +34,33 @@ class Form extends Component {
         console.log('Username: ' + this.state.credentials.username);
         console.log('Password: ' + this.state.credentials.password);
 
-        $.ajax(
-            {
-                  contentType: "application/json",
-                  type: "POST",
-                  url: URI("/" + "login"),
-                  data: this.state.credentials.username,//json payload
-                  success: function(result)
-                  {
-                    console.log("success " + result);
-                    //window.location.replace("/");
-                    // window.location.replace(result.target);
-                  },
-                  error: function(request, status, reason_phrase)
-                  {
-                    console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
-                    // $("#signin-alert").show(200);
-                  }
-            });
+        fetch(URI("/" + "login"))
+            .then(function(response) {
+                // return response.json();
+                return response;
+        })
+            .then(function(myJson) {
+                console.log(myJson);
+        });
+
+        // $.ajax(
+        //     {
+        //           contentType: "application/json",
+        //           type: "POST",
+        //           url: URI("/" + "login"),
+        //           data: this.state.credentials.username,//json payload
+        //           success: function(result)
+        //           {
+        //             console.log("success " + result);
+        //             //window.location.replace("/");
+        //             // window.location.replace(result.target);
+        //           },
+        //           error: function(request, status, reason_phrase)
+        //           {
+        //             console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
+        //             // $("#signin-alert").show(200);
+        //           }
+        //     });
 
         event.preventDefault();
     }
