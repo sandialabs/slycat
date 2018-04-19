@@ -82,6 +82,7 @@ USER root
 RUN chmod -R 750 /etc/slycat && \
 #RUN chmod -R 750 /home/slycat/
 #RUN chown --recursive slycat:slycat /home/slycat/
+    chown -R slycat:slycat /home/slycat/ && \
     chown --recursive root:slycat /etc/slycat/ && \
     service couchdb start; sleep 2 && \
     bash && \
