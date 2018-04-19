@@ -1,3 +1,7 @@
+# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+# retains certain rights in this software.
+
 def register_slycat_plugin(context):
   badge = """
   <div style="border: 1px solid black; border-radius: 2px; background: repeating-linear-gradient(135deg, blue, blue 12.5%, white 12.5%, white 25%, red 25%, red 37.5%, white 37.5%, white 50%) top left fixed; background-size: 30px 30px; padding:3px;">

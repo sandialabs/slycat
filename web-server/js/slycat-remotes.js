@@ -1,3 +1,7 @@
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
 define("slycat-remotes", ["slycat-server-root", "slycat-web-client", "knockout", "knockout-mapping", "jquery", "slycat-server-ispasswordrequired"], function(server_root, client, ko, mapping, $, ispasswordrequired)
 {
   var module = {};

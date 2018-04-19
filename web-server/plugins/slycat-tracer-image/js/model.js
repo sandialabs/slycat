@@ -1,3 +1,7 @@
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
 define("Model", ["slycat-server-root", "slycat-dialog", "Movie", "slycat-bookmark-manager", "d3"], function(server_root, dialog, Movie, bookmark_manager, d3) {
   //TODO: Refactor. This should be a singleton.
   function Model(login) {

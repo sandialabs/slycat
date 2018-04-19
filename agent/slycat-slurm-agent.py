@@ -1,10 +1,8 @@
 #!/bin/env python
 
-# Copyright 2013, National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-# Under the terms of Contract DE-NA0003525 with NTESS,
-# the U.S. Government retains certain rights in this software.
-# Export of this program may require a
-# license from the United States Government.
+# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+# retains certain rights in this software.
 
 # External dependencies
 import PIL.Image

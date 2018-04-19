@@ -4,6 +4,8 @@ Projects
 Project-specific information consists of the project name, a list of project members, a set of models, and a set of saved 
 bookmarks for models within that project. 
 
+.. _project-creation:
+
 Project Creation
 ================
 

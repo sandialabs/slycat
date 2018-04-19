@@ -1,3 +1,7 @@
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
+
 define("ScatterPlot", ["slycat-server-root", "d3", "SelectorBrush"], function(server_root, d3, SelectorBrush) {
 
   function ScatterPlot(plot_id, grid_ref, scalar, grid_obj) {

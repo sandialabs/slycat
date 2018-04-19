@@ -1,8 +1,4 @@
-/*
-Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.
-*/
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 define("slycat-parameter-image-plus-model", ["slycat-server-root", "slycat-web-client", "slycat-bookmark-manager", "slycat-dialog", "knockout", "d3", "URI", "domReady!"], function(server_root, client, bookmark_manager, dialog, ko, d3, URI)
 {

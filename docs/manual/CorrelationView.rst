@@ -45,6 +45,6 @@ visible and can be clicked without needing to expand the component.
 Clicking on a row in the bar chart selects that variable for color-coding the points in the *Simulation View* (i.e. each 
 simulation point is color-coded according to its value for that variable).  The variable row is highlighted by darkening the 
 background color and changing the font color to white.  The color palette, shown in the *Legend* alongside the value range for 
-the color-coding variable, corresponds to the currently selected theme (see Color Themes).  This same color-coding is applied 
-to the cell backgrounds of this column of the *Variable Table*, as is demonstrated by the *Weight* column in both Figure 23 
-and Figure 24. 
+the color-coding variable, corresponds to the currently selected theme (see :ref:`color-themes`).  This same color-coding is 
+applied to the cell backgrounds of this column of the *Variable Table*, as is demonstrated by the *Weight* column in both 
+Figure 23 and Figure 24. 

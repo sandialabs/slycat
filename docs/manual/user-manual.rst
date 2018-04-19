@@ -8,3 +8,4 @@ User Manual
    cca.model.rst
    parameter.space.model.rst
    timeseries.model.rst
+   Acknowledgements.rst
