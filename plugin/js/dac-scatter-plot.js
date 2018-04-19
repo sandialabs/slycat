@@ -697,8 +697,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		var extent = d3.event.target.extent();
 						
 		// reset scale (assumed nothing zoomed)
-		x_scale.domain([0 - scatter_border, 1 + scatter_border]);
-		y_scale.domain([0 - scatter_border, 1 + scatter_border]);
+		module.reset_zoom();
 						
 		for (var i = 0; i < mds_coords.length; i++)
 			{
@@ -755,6 +754,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
         subset_center = [(subset_extent[0][0] + subset_extent[1][0])/2.0,
                          (subset_extent[0][1] + subset_extent[1][1])/2.0];
 
+        // default to leave zoom alone
+        var reset_zoom = false;
+
         // separate into inclusion and exclusion based on shift key
         if (!selections.shift_key())
         {
@@ -778,8 +780,10 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
                                      (extent[0][1] + extent[1][1])/2.0];
 
                     // reset zoom to full screen
-		            x_scale.domain([0 - scatter_border, 1 + scatter_border]);
-		            y_scale.domain([0 - scatter_border, 1 + scatter_border]);
+		            //x_scale.domain([0 - scatter_border, 1 + scatter_border]);
+		            //y_scale.domain([0 - scatter_border, 1 + scatter_border]);
+		            reset_zoom = true;
+
                 }
             }
 
@@ -798,9 +802,18 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 
         // fire subset changed event
         var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
-					                         new_subset: mds_subset} });
+					                         new_subset: mds_subset,
+					                         zoom: reset_zoom} });
         document.body.dispatchEvent(subsetEvent);
 	}
+
+    // reset zoom, accessable to ui controller
+    module.reset_zoom = function ()
+    {
+        // reset zoom to full screen
+		x_scale.domain([0 - scatter_border, 1 + scatter_border]);
+		y_scale.domain([0 - scatter_border, 1 + scatter_border]);
+    }
 
 	// selection brush handler call back
 	function sel_brush()

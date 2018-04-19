@@ -315,6 +315,11 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
         // re-draw scatter plot, before updating coordinates
         scatter_plot.draw();
 
+        // reset zoom, if necessary
+        if (new_subset.detail.zoom) {
+            scatter_plot.reset_zoom();
+        }
+
         // re-draw scatter plot, subset changed
         scatter_plot.update(alpha_sliders.get_alpha_values());
 
