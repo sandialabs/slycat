@@ -10,12 +10,6 @@ install:
 #  - docker exec -i slycat "/bin/bash"
   - docker exec -i slycat bash -c "cd /home/slycat/src/slycat; git fetch --all; git reset --hard origin/master"
   - docker exec -i slycat bash -c "sudo service slycat-web-server stop; sudo service slycat-web-server start; sudo service slycat-web-server cleanup"
-  - docker exec -i slycat bash -c "cd /home/slycat; wget https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz"
-  - docker exec -i slycat bash -c "cd /home/slycat; tar xf geckodriver-v0.11.1-linux64.tar.gz"
-  - docker exec -i slycat bash -c "cd /home/slycat; cp geckodriver /usr/bin/geckodriver"
-#  - docker exec -i slycat bash -c "cd /home/slycat; mv geckodriver /usr/bin/wires"
-  - docker exec -i slycat bash -c "cd /home/slycat; export PATH=/usr/bin:$PATH"
-#  - docker exec -i slycat bash -c "cd; export PATH=/home/slycat/install/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin;export PYTHONPATH=/home/slycat/src/slycat/packages; behave -i \"(agent|hyperchunks|rest-api)\" /home/slycat/src/slycat/features/"
 script:
   - docker ps -a
   - docker exec -i slycat bash -c "service slycat-web-server status"

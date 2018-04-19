@@ -22,24 +22,27 @@ RUN yum install -y yum-plugin-ovl && \
     useradd -u 500 -g 500 slycat && \
     mkdir /etc/slycat && \
     chgrp slycat /etc/slycat && \
-    chmod g+w /etc/slycat && \
+    chmod g+w /etc/slycat&& \
 # slycat's environment, directories, and files
     su slycat && \
     mkdir -p /home/slycat/src/python && \
     mkdir /home/slycat/install && \
     echo "export PATH=/home/slycat/install/conda/bin:$PATH" >> /home/slycat/.bashrc && \
     echo "export PYTHONPATH=/home/slycat/src/slycat/packages" >> /home/slycat/.bashrc && \
+    su slycat && \
     cd /home/slycat/src/python && \
     wget -nv --no-check-certificate http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh && \
     chmod u+x miniconda.sh; ./miniconda.sh -b -p /home/slycat/install/conda && \
     /home/slycat/install/conda/bin/conda config --set ssl_verify false && \
     /home/slycat/install/conda/bin/conda update --yes python && \
     /home/slycat/install/conda/bin/conda update --yes conda && \
-    /home/slycat/install/conda/bin/conda install --yes pip && \
-    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org -U pip && \
-    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org CouchDB setuptools_scm h5py ipython paramiko Pillow scipy scikit-image "pyparsing>=2.0.3" pystache routes ipyparallel pyzmq sklearn opencv-python && \
-    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org cherrypy && \
+    /home/slycat/install/conda/bin/conda install --yes pip&& \
+    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org -U pip && \
+    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org CouchDB setuptools_scm h5py ipython paramiko Pillow scipy scikit-image "pyparsing>=2.0.3" pystache routes ipyparallel pyzmq sklearn opencv-python
+RUN /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org --ignore-installed cherrypy
+
 # checkout the slycat, dial-a-cluster
+RUN su slycat && \
     cd /home/slycat/src && \
     git config --global http.sslVerify false && \
 #RUN cd /home/slycat/src;GIT_TRACE=1 GIT_CURL_VERBOSE=1 git clone https://github.com/sandialabs/slycat.git

@@ -8,7 +8,7 @@ COPY run-slycat.sh /etc/slycat/
 # add machine uuid
 RUN dbus-uuidgen > /var/lib/dbus/machine-id && \
 # add developer python packages
-    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org nose selenium pyvirtualdisplay && \
+    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org nose selenium pyvirtualdisplay && \
 # assign a password to root and slycat
     echo 'root:slycat' | chpasswd; echo 'slycat:slycat' | chpasswd && \
 # Generate a private certificate authority.
@@ -48,25 +48,27 @@ RUN dbus-uuidgen > /var/lib/dbus/machine-id && \
     /usr/sbin/usermod -a -G wheel slycat && \
     sed -e 's/^# %wheel\tALL=(ALL)\tALL$/%wheel\tALL=(ALL)\tALL/' -i /etc/sudoers && \
     cd /usr/bin && \
-    ln -s /home/slycat/install/conda/bin/pip pip && \
-    su slycat && \
+    ln -s /home/slycat/install/conda/bin/pip pip
+
+RUN su slycat && \
     cd /home/slycat && \
-    wget --no-check-certificate https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz; tar xf geckodriver-v0.11.1-linux64.tar.gz && \
-    exit && \
-    cd /home/slycat && \
+    wget --no-check-certificate https://github.com/mozilla/geckodriver/releases/download/v0.11.1/geckodriver-v0.11.1-linux64.tar.gz; tar xf geckodriver-v0.11.1-linux64.tar.gz
+
+RUN cd /home/slycat && \
     cp geckodriver /usr/bin/geckodriver && \
+    ls /usr/bin | grep geckodriver && \
 #RUN rm /etc/slycat/run-slycat.sh
 #RUN rm /etc/slycat/web-server-config.ini
 # put the appropriate web server config in place
 #RUN ln -s /home/slycat/src/slycat/docker/slycat-developer/web-server-config.ini /etc/slycat/web-server-config.ini
 #RUN ln -s /home/slycat/src/slycat/docker/slycat-developer/run-slycat.sh /etc/slycat/run-slycat.sh
-    cd /home/slycat/src/slycat&& \
+    cd /home/slycat/src/slycat && \
     git pull && \
 # Configure vim and setup useful aliases.
-    echo "alias vi=vim" >> /home/slycat/.bash&& \
+    echo "alias vi=vim" >> /home/slycat/.bash && \
 # Setup useful git defaults.
     HOME=/home/slycat git config --global color.ui true && \
-    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org behave && \
+    /home/slycat/install/conda/bin/pip install --trusted-host pypi.python.org --trusted-host pypi.org --trusted-host files.pythonhosted.org behave && \
     echo "alias testslycat=\"behave -i \\\"(agent|hyperchunks|rest-api)\\\" /home/slycat/src/slycat/features/\"" >> /home/slycat/.bashrc
 
 ADD .vimrc /home/slycat/.vimrc
