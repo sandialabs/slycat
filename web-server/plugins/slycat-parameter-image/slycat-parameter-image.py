@@ -62,13 +62,13 @@ def register_slycat_plugin(context):
     import json
     import pystache
 
-    # if "global_bundle" not in model:
-    #     database = slycat.web.server.database.couchdb.connect()
-    #     model = database.get("model", model["_id"])
-    #     model["global_bundle"] = False
-    #     database.save(model)
-    #     database = slycat.web.server.database.couchdb.connect()
-    #     model = database.get("model", model["_id"])
+    if "global_bundle" not in model:
+        database = slycat.web.server.database.couchdb.connect()
+        model = database.get("model", model["_id"])
+        model["global_bundle"] = False
+        database.save(model)
+        database = slycat.web.server.database.couchdb.connect()
+        model = database.get("model", model["_id"])
 
     context = dict()
     context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
