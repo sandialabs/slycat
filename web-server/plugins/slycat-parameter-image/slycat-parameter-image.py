@@ -70,7 +70,6 @@ def register_slycat_plugin(context):
     #     database = slycat.web.server.database.couchdb.connect()
     #     model = database.get("model", model["_id"])
 
-    model["global_bundle"] = False #TODO remove when global bundel is no longer needed for the application
     context = dict()
     context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
     context["_id"] = model["_id"]
