@@ -62,14 +62,6 @@ def register_slycat_plugin(context):
     import json
     import pystache
 
-    if "global_bundle" not in model:
-        database = slycat.web.server.database.couchdb.connect()
-        model = database.get("model", model["_id"])
-        model["global_bundle"] = False
-        database.save(model)
-        database = slycat.web.server.database.couchdb.connect()
-        model = database.get("model", model["_id"])
-
     context = dict()
     context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
     context["_id"] = model["_id"]
@@ -170,6 +162,9 @@ def register_slycat_plugin(context):
   ]
   for dev in devs:
     context.register_page_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
+
+  # Set the global_js_bundle flag to tell slycat not to emit the global JS file
+  context.set_global_js_bundle("parameter-image", False)
 
   # Register the webpack generated /dist/ui_parameter_image.js main JS file as js/ui_parameter_image.js (used in ui.html to load this main JS bundle)
   context.register_page_resource("parameter-image", "js/ui_parameter_image.js", os.path.join(os.path.dirname(__file__), "../../../dist/ui_parameter_image.js"))

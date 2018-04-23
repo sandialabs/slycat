@@ -26,7 +26,7 @@ class Manager(object):
     self.tools = {}
     self.wizard_resources = {}
     self.wizards = {}
-    self.utilities = {}
+    self.global_js_bundle = {}
 
   def _load_directory(self, plugin_directory):
     try:
@@ -70,6 +70,18 @@ class Manager(object):
         except Exception as e:
           import traceback
           cherrypy.log.error(traceback.format_exc())
+
+  def set_global_js_bundle(self, type, global_js_bundle_flag):
+    """Set flag for global JS bundle
+    """
+    if type not in self.pages:
+      slycat.email.send_error("slycat.web.server.plugin.py set_global_js_bundle", "Unknown page type: %s." % type)
+      raise Exception("Unknown page type: %s." % type)
+    if type not in self.global_js_bundle:
+      self.global_js_bundle[type] = global_js_bundle_flag
+
+    cherrypy.log.error("Set global_js_bundle to '%s' for '%s' models." % (global_js_bundle_flag, type))
+    
 
   def register_directory(self, type, init, user):
     """Register a new directory type.
@@ -150,21 +162,6 @@ class Manager(object):
     cherrypy.log.error("  as /resources/pages/%s/%s" % (type, key))
 
     return key
-
-  def register_utility(self, command, handler):
-    """Register a server utility handler.
-    Parameters
-    ----------
-    command: string, required
-      Unique command name.
-    handler: callable, required
-      Input args vary with utility.
-    """
-    if command in self.utilities:
-      raise Exception("Utility command '%s' has already been registered." % command)
-
-    self.utilities[command] = handler
-    cherrypy.log.error("Registered server utility '%s'." % command)
 
   def register_model_command(self, verb, type, command, handler):
     """Register a custom request handler.

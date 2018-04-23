@@ -558,10 +558,19 @@ def get_model(mid, **kwargs):
         mtype = model.get("model-type", None)
         ptype = kwargs.get("ptype", None)
         cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
+        context = {}
+
+        # Setting slycat_model_page and whether global JS bundle is emitted based on global_js_bundle flag set by model plugin when it registers.
+        slycat_model_page = 'slycat-model-page.html'
+        if mtype in slycat.web.server.plugin.manager.global_js_bundle and slycat.web.server.plugin.manager.global_js_bundle[mtype] == False:
+            slycat_model_page = 'slycat-model-page-webpack.html'
+            cherrypy.log.error("Global bundle will NOT be emitted for '%s'." % (mtype))
+        else:
+            context["slycat-js-bundle"] = js_bundle()
+            cherrypy.log.error("Global bundle will be emitted for '%s'." % (mtype))
 
         marking = slycat.web.server.plugin.manager.markings[model["marking"]]
-
-        context = {}
+        
         context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
         context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking[
             "page-before"]
@@ -577,12 +586,6 @@ def get_model(mid, **kwargs):
 
         context["slycat-css-bundle"] = css_bundle()
 
-        if "global_bundle" in model:
-            if not model["global_bundle"]:
-                context["slycat-js-bundle"] = None
-        else:
-            context["slycat-js-bundle"] = js_bundle()
-
         context["slycat-model-type"] = mtype
 
         if mtype not in slycat.web.server.plugin.manager.models.keys():
@@ -590,7 +593,7 @@ def get_model(mid, **kwargs):
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
         <p>No plugin available for model type \u201c%s\u201d.</p>
       </div>""" % mtype
-            return slycat.web.server.template.render("slycat-model-page.html", context)
+            return slycat.web.server.template.render(slycat_model_page, context)
 
         if ptype is None:
             ptype = slycat.web.server.plugin.manager.models[mtype]["ptype"]
@@ -600,7 +603,7 @@ def get_model(mid, **kwargs):
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
         <p>No plugin available for page type \u201c%s\u201d.</p>
       </div>""" % ptype
-            return slycat.web.server.template.render("slycat-model-page.html", context)
+            return slycat.web.server.template.render(slycat_model_page, context)
 
         context["slycat-page-type"] = ptype
         context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
@@ -612,7 +615,7 @@ def get_model(mid, **kwargs):
                                                  slycat.web.server.plugin.manager.page_bundles[ptype].items() if
                                                  content_type == "text/javascript"]
 
-        return slycat.web.server.template.render("slycat-model-page.html", context)
+        return slycat.web.server.template.render(slycat_model_page, context)
 
 
 def model_command(mid, type, command, **kwargs):

@@ -1,43 +1,40 @@
 // import * as d3 from 'd3';
 
-define("slycat-parameter-image-model", 
-  [
-    "../../../js/slycat-server-root", 
-    "lodash", 
-    "knockout", 
-    "knockout-mapping", 
-    "../../../js/slycat-web-client-webpack", 
-    "../../../js/slycat-bookmark-manager-webpack", 
-    "../../../js/slycat-dialog-webpack", 
-    "./note-manager", 
-    "./filter-manager", 
-    "./d3.min", 
-    "urijs", 
-    "./chunker",
-    "./parameter-image-scatterplot", 
-    "./parameter-controls", 
-    "./parameter-image-table", 
-    "./color-switcher", 
-    "jquery-ui",
-    "./jquery.layout-latest.min",
-    "./jquery.scrollintoview.min",
-    "./jquery.event.drag-2.2",
-    "./slick.core",
-    "./slick.grid",
-    "./slick.rowselectionmodel",
-    "./slick.headerbuttons",
-    "./slick.autotooltips",
-    "./slick.slycateditors",
-    "../../../js/slycat-range-slider-webpack", 
-    "./category-select",
-    "../../../js/bootstrap",
-  ], 
-  function(
-    server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI, chunker
-  )
-{
+import server_root from  "../../../js/slycat-server-root";
+import _ from "lodash";
+import ko from "knockout";
+import mapping from "knockout-mapping";
+import client from "../../../js/slycat-web-client-webpack";
+import bookmark_manager from "../../../js/slycat-bookmark-manager-webpack";
+import dialog from "../../../js/slycat-dialog-webpack";
+import NoteManager from "./note-manager";
+import FilterManager from  "./filter-manager";
+import d3 from "./d3.min";
+import URI from "urijs";
+import * as chunker from "./chunker";
+import "./parameter-image-scatterplot";
+import "./parameter-controls";
+import "./parameter-image-table";
+import "./color-switcher";
+import "jquery-ui";
+import "./jquery.layout-latest.min";
+import "./jquery.scrollintoview.min";
+import "./jquery.event.drag-2.2";
+import "./slick.core";
+import "./slick.grid";
+import "./slick.rowselectionmodel";
+import "./slick.headerbuttons";
+import "./slick.autotooltips";
+import "./slick.slycateditors";
+import "../../../js/slycat-range-slider-webpack"; 
+import "./category-select";
+import "../../../js/bootstrap";
+import * as slycat_model_main from "../../../js/slycat-model-main-webpack";
+
 // Wait for document ready
 $( document ).ready(function() {
+
+slycat_model_main.start();
 //////////////////////////////////////////////////////////////////////////////////////////
 // Setup global variables.
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1534,5 +1531,4 @@ function filters_changed(newValue)
     update_widgets_when_hidden_simulations_change();
   }
 }
-});
 });
