@@ -10,11 +10,15 @@ rights in this software.
   <head>
     <meta charset="utf-8"/>
     <link id="slycat-server-root" href="{{slycat-server-root}}">
+    {{#slycat-css-bundle}}
     <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
+    {{/slycat-css-bundle}}
     {{#slycat-page-css-bundles}}
       <link rel="stylesheet" href="{{slycat-server-root}}resources/pages/{{slycat-page-type}}/{{bundle}}" type="text/css">
     {{/slycat-page-css-bundles}}
-    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    {{#slycat-js-bundle}}
+      <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
+    {{/slycat-js-bundle}}
     {{#slycat-page-js-bundles}}
       <script src="{{slycat-server-root}}resources/pages/{{slycat-page-type}}/{{bundle}}" type="text/javascript"></script>
     {{/slycat-page-js-bundles}}
