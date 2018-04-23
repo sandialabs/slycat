@@ -29,6 +29,7 @@ import "./slick.slycateditors";
 import "../../../js/slycat-range-slider-webpack"; 
 import "./category-select";
 import "../../../js/bootstrap";
+import "../../../js/slycat-navbar-webpack"
 import * as slycat_model_main from "../../../js/slycat-model-main-webpack";
 
 // Wait for document ready
