@@ -62,6 +62,15 @@ def register_slycat_plugin(context):
     import json
     import pystache
 
+    # if "global_bundle" not in model:
+    #     database = slycat.web.server.database.couchdb.connect()
+    #     model = database.get("model", model["_id"])
+    #     model["global_bundle"] = False
+    #     database.save(model)
+    #     database = slycat.web.server.database.couchdb.connect()
+    #     model = database.get("model", model["_id"])
+
+    model["global_bundle"] = False #TODO remove when global bundel is no longer needed for the application
     context = dict()
     context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
     context["_id"] = model["_id"]
