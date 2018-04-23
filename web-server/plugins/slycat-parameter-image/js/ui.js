@@ -14,7 +14,6 @@ define("slycat-parameter-image-model",
     "./d3.min", 
     "urijs", 
     "./chunker",
-    // "jquery",
     "./parameter-image-scatterplot", 
     "./parameter-controls", 
     "./parameter-image-table", 
@@ -30,7 +29,8 @@ define("slycat-parameter-image-model",
     "./slick.autotooltips",
     "./slick.slycateditors",
     "../../../js/slycat-range-slider-webpack", 
-    "./category-select"
+    "./category-select",
+    "../../../js/bootstrap",
   ], 
   function(
     server_root, _, ko, mapping, client, bookmark_manager, dialog, NoteManager, FilterManager, d3, URI, chunker

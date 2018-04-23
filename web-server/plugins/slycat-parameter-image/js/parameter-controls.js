@@ -10,7 +10,7 @@ define('slycat-parameter-image-controls',
     'papaparse',
     'react',
     'react-dom',
-    'jquery-ui'
+    'jquery-ui',
   ], function(server_root, dialog, _, Papa, React, ReactDOM) {
 
     class ControlsBar extends React.Component {

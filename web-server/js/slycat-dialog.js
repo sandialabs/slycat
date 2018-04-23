@@ -7,7 +7,6 @@ import client from './slycat-web-client-webpack';
 import ko from 'knockout';
 import mapping from 'knockout-mapping';
 import template from '../templates/slycat-alert.html';
-import './bootstrap';
 
 export function dialog(params)
 {
