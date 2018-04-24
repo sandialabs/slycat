@@ -48,13 +48,12 @@ class Agent(agent.Agent):
         output = ["running task in background", "running task in background"]
         jid = random.randint(10000000, 99999999)
         run_command += " --log_file " + str(jid) + ".log"
+        #TODO: if hpc >> jid.log
         try:
             background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
             background_thread.start()
         except Exception as e:
             output[0] = traceback.format_exc()
-        # else:
-        #     output = self.run_shell_command(run_command)
         results = {
             "message": "ran the remote command",
             "ok": True,
