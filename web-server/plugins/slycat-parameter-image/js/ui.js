@@ -6,7 +6,7 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import client from "../../../js/slycat-web-client-webpack";
 import bookmark_manager from "../../../js/slycat-bookmark-manager-webpack";
-import dialog from "../../../js/slycat-dialog-webpack";
+import * as dialog from "../../../js/slycat-dialog-webpack";
 import NoteManager from "./note-manager";
 import FilterManager from  "./filter-manager";
 import d3 from "./d3.min";
