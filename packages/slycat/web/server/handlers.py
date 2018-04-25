@@ -91,7 +91,7 @@ def js_bundle():
                                                                                   "js/slycat_file_uploader_factory.js",
                                                                                     "js/slycat-dialog.js",
                                                                                   "js/slycat-markings.js",
-                                                                                  "js/slycat-nag.js",
+                                                                                    "js/slycat-nag.js",
                                                                                   "js/slycat-parsers.js",
                                                                                   # Used by wizards
                                                                                   "js/slycat-model-controls.js",
@@ -110,8 +110,8 @@ def js_bundle():
                                                                                   "js/slycat-projects-main.js",
                                                                                   "js/slycat-project-main.js",
                                                                                     "js/slycat-model-main.js",
-                                                                                  # Seems to only affect /web-server/templates/slycat-navbar.html
-                                                                                  "js/slycat-resizing-modals.js",
+                                                                                    # Seems to only affect /web-server/templates/slycat-navbar.html
+                                                                                    "js/slycat-resizing-modals.js",
                                                                                   # Used by wizards
                                                                                   "js/slycat-table-ingestion.js",
                                                                                     "js/slycat-3d-viewer.js",

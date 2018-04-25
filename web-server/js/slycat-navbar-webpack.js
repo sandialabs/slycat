@@ -4,20 +4,21 @@
 
 import server_root from "./slycat-server-root";
 import client from "./slycat-web-client-webpack";
-import dialog from "./slycat-dialog-webpack";
+import * as dialog from "./slycat-dialog-webpack";
 import model_names from "./slycat-model-names-webpack";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import "./knockout-projections"
 import ispasswordrequired from "./slycat-server-ispasswordrequired-webpack";
 import "./slycat-resizing-modals-webpack";
+import "./slycat-nag-webpack";
 import slycatNavbar from '../templates/slycat-navbar.html';
 
 ko.components.register("slycat-navbar",
 {
   viewModel: function(params)
   {
-    var refreshTimer = setInterval(checkCookie,60000)
+    var refreshTimer = setInterval(checkCookie,60000);
 
     function checkCookie(){
       var myCookie = getCookie("slycattimeout");

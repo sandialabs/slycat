@@ -36,7 +36,7 @@ export function dialog(params)
 
 export function prompt(params)
 {
-  module.dialog({
+  this.dialog({
     title: params.title || "Prompt",
     message: params.message || "",
     input: true,
@@ -49,7 +49,7 @@ export function prompt(params)
 
 export function confirm(params)
 {
-  module.dialog(
+  this.dialog(
   {
     title: params.title || "Confirm",
     message: params.message || "",
@@ -74,7 +74,7 @@ export function ajax_error(message)
 {
   return function(request, status, reason_phrase)
   {
-    module.dialog(
+    this.dialog(
     {
       message: message + " " + reason_phrase
     });
