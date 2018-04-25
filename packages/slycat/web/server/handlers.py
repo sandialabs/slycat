@@ -568,6 +568,7 @@ def get_model(mid, **kwargs):
         # Setting slycat_model_page and whether global JS bundle is emitted based on global_js_bundle flag set by model plugin when it registers.
         slycat_model_page = 'slycat-model-page.html'
         if mtype in slycat.web.server.plugin.manager.global_js_bundle and slycat.web.server.plugin.manager.global_js_bundle[mtype] == False:
+            context["slycat-js-bundle"] = None
             slycat_model_page = 'slycat-model-page-webpack.html'
             cherrypy.log.error("Global bundle will NOT be emitted for '%s'." % (mtype))
         else:
