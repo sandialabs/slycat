@@ -5042,6 +5042,18 @@ textextensions@2:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/textextensions/-/textextensions-2.2.0.tgz#38ac676151285b658654581987a0ce1a4490d286"
 
+three-stl-loader@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/three-stl-loader/-/three-stl-loader-1.0.6.tgz#b66240f819300eee88928251937587c3fb4262c1"
+
+three-trackballcontrols@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/three-trackballcontrols/-/three-trackballcontrols-0.0.7.tgz#42cae1f6856d5f889eaae3a0e2fca9d214793e91"
+
+three@^0.92.0:
+  version "0.92.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.92.0.tgz#8d3d1f5af890e62da7f4cb45d20c09fa51057dcd"
+
 through2@^2.0.0, through2@^2.0.1:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/through2/-/through2-2.0.3.tgz#0004569b37c7c74ba39c43f3ced78d1ad94140be"

@@ -10,7 +10,8 @@ import * as remotes from "../../../js/slycat-remotes-webpack";
 import _ from "lodash";
 import ko from "knockout";
 import "jquery-ui";
-import "../../../js/slycat-login-controls-webpack"
+import "../../../js/slycat-login-controls-webpack";
+import "../../../js/slycat-3d-viewer-webpack";
 
 var nodrag = d3.behavior.drag();
 

@@ -111,8 +111,10 @@ def js_bundle():
                                                                                   "js/slycat-resizing-modals.js",
                                                                                   # Used by wizards
                                                                                   "js/slycat-table-ingestion.js",
-                                                                                  "js/slycat-3d-viewer.js",
+                                                                                    "js/slycat-3d-viewer.js",
+                                                                                  # Used by wizards
                                                                                   "js/slycat-remote-interface.js",
+                                                                                  # Seems to be only used in Parameter Image Plus and Timeseries
                                                                                   "js/slycat-job-checker.js"
                                                                               ])
     return js_bundle._bundle
