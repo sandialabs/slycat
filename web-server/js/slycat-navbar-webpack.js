@@ -10,6 +10,7 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import "./knockout-projections"
 import ispasswordrequired from "./slycat-server-ispasswordrequired-webpack";
+import "./slycat-resizing-modals-webpack";
 import slycatNavbar from '../templates/slycat-navbar.html';
 
 ko.components.register("slycat-navbar",

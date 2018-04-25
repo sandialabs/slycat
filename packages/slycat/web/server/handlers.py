@@ -93,6 +93,7 @@ def js_bundle():
                                                                                   "js/slycat-markings.js",
                                                                                   "js/slycat-nag.js",
                                                                                   "js/slycat-parsers.js",
+                                                                                  # Used by wizards
                                                                                   "js/slycat-model-controls.js",
                                                                                   "js/slycat-parser-controls.js",
                                                                                   "js/slycat-model-results.js",
@@ -102,12 +103,14 @@ def js_bundle():
                                                                                   "js/slycat-remote-browser.js",
                                                                                   "js/slycat-remote-controls.js",
                                                                                   "js/slycat-remotes.js",
-                                                                                  "js/slycat-login-controls.js",
+                                                                                    "js/slycat-login-controls.js",
                                                                                     "js/slycat-range-slider.js",
+                                                                                  # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
                                                                                   "js/slycat-page-main.js",
                                                                                   "js/slycat-projects-main.js",
                                                                                   "js/slycat-project-main.js",
                                                                                     "js/slycat-model-main.js",
+                                                                                  # Seems to only affect /web-server/templates/slycat-navbar.html
                                                                                   "js/slycat-resizing-modals.js",
                                                                                   # Used by wizards
                                                                                   "js/slycat-table-ingestion.js",
