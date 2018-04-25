@@ -1,8 +1,6 @@
-//Need to figure out what html tags you can use in JSX, because not all of the ones from slycat-login.html seem to work.
-
 import React, { Component } from 'react';
-import $ from 'jquery';
 import URI from 'urijs';
+import './namespaced-bootstrap.min.css';
 import './styles.css';
 
 class Form extends Component {
@@ -16,6 +14,7 @@ class Form extends Component {
         this.changeUsername = this.changeUsername.bind(this);
         this.changePassword = this.changePassword.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.b64EncodeUnicode = this.b64EncodeUnicode.bind(this);
     }
 
     changeUsername(event) {
@@ -30,18 +29,36 @@ class Form extends Component {
         this.setState({credentials: credentials});
     }
 
+    b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+}
+
     handleSubmit(event) {
         console.log('Username: ' + this.state.credentials.username);
         console.log('Password: ' + this.state.credentials.password);
 
-        fetch(URI("/" + "login"))
-            .then(function(response) {
-                // return response.json();
-                return response;
-        })
-            .then(function(myJson) {
-                console.log(myJson);
+        var user_name = this.b64EncodeUnicode(this.state.credentials.username);
+        var password = this.b64EncodeUnicode(this.state.credentials.password);
+
+        var url = URI("/" + "login");
+        var sendInfo = JSON.stringify({
+            "user_name": user_name,
+            "password": password,
+            "location": window.location
         });
+
+        fetch(url, {
+            credentials: 'same-origin',
+            method: 'POST',
+            body: sendInfo,
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            })
+        }).then(res => res.json())
+            .catch(error => console.error('Error:', error))
+            .then(response => window.location.replace(response.target));
 
         // $.ajax(
         //     {
@@ -68,15 +85,13 @@ class Form extends Component {
     render() {
         return (
             <form className="form-signin" onSubmit={this.handleSubmit}>
-                <label>
-                    Username
-                    <input type="text" value={this.state.credentials.username} onChange={this.changeUsername} />
-                </label>
-                <label>
-                    Password
-                    <input type="text" value={this.state.credentials.password} onChange={this.changePassword} />
-                </label>
-                <input type="submit" value="Submit" />
+                <label for="username" className="sr-only"></label>
+                <input id="username" className="form-control" placeholder="Username" type="text" value={this.state.credentials.username} onChange={this.changeUsername} />
+
+                <label for="password" className="sr-only"></label>
+                <input id="password" className="form-control" placeholder="Password" type="text" value={this.state.credentials.password} onChange={this.changePassword} />
+
+                <button className="btn btn-lg btn-primary btn-block" id="go" type="submit">Sign In </button>
             </form>
 
         );
