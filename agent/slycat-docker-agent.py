@@ -34,21 +34,25 @@ class Agent(agent.Agent):
     def run_remote_command(self, command):
         command = command["command"]
         run_command = None
+        run_commands = []
         # get the command scripts that were sent to the agent
+        jid = random.randint(10000000, 99999999)
         for command_script in command["scripts"]:
             # compare the payload commands to the registered commands on the agent
-            run_command = self.get_script_run_string(command_script)
-        if run_command is None or run_command == "":
+            if command_script != "":
+                run_command = self.get_script_run_string(command_script) + " --log_file " + str(jid) + ".log"
+                run_commands.append(self.get_script_run_string(command_script) + " --log_file " + str(jid) + ".log")
+        if run_command is None or run_command == "" or run_commands == []:
             results = {"ok": False, "message": "could not create a run command did you register your script with "
                                                "slycat?"}
             sys.stdout.write("%s\n" % json.dumps(results))
             sys.stdout.flush()
             return
-        command["run_command"] = run_command
+        command["run_command"] = run_commands
         # if "background_task" in command and command["background_task"]:
         output = ["running task in background", "running task in background"]
-        jid = random.randint(10000000, 99999999)
-        run_command += " --log_file " + str(jid) + ".log"
+
+
         if command["hpc"]["is_hpc_job"]:
             output = ["running batch job", "running batch job"]
             _string = ""
@@ -57,8 +61,12 @@ class Agent(agent.Agent):
             output = [_string, _string]
         else:
             try:
-                background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
-                background_thread.start()
+                log = self.create_job_logger(jid)
+                log("[COMMAND length] %s" % len(run_commands))
+                for command in run_commands:
+                    log("[COMMAND] %s" % command)
+                    background_thread = threading.Thread(target=self.run_shell_command, args=(command, jid, True,))
+                    background_thread.start()
             except Exception as e:
                 output[0] = traceback.format_exc()
         # else:
