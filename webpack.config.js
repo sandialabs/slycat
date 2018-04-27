@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const Visualizer = require('webpack-visualizer-plugin');
 
 module.exports = {
 	// mode: 'production',
@@ -15,7 +16,8 @@ module.exports = {
     new webpack.ProvidePlugin({
       $: 'jquery',
   		jQuery: 'jquery'
-    })
+    }),
+    new Visualizer(),
   ],
   module: {
 		rules: [
