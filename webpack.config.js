@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const Visualizer = require('webpack-visualizer-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
 	// mode: 'production',
@@ -17,7 +18,16 @@ module.exports = {
       $: 'jquery',
   		jQuery: 'jquery'
     }),
-    new Visualizer(),
+    new Visualizer({
+      filename: 'webpack-visualizer-stats.html'
+    }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      reportFilename: 'webpack-bundle-analyzer-report.html',
+      openAnalyzer: false,
+      generateStatsFile: true,
+      statsFilename: 'webpack-bundle-analyzer-stats.json',
+    }),
   ],
   module: {
 		rules: [
