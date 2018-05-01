@@ -1,6 +1,19 @@
 Slycat software resource and dependency list
 
 
+Potential Dependency Additions
+-Javascript-
+knockout.mapping         2.6.0   https://github.com/SteveSanderson/knockout.mapping
+uri                     1.19.1   https://medialize.github.io/URI.js/
+stats                       16   https://github.com/mrdoob/stats.js/blob/master/src/Stats.js
+three                   0.92.0   https://yarnpkg.com/en/package/three
+three-stl-loader         1.0.6   https://yarnpkg.com/en/package/three-stl-loader
+three-trackballcontrols  0.0.7   https://yarnpkg.com/en/package/three-trackballcontrols
+
+
+
+
+
 Software dependencies for:  Slycat Release 1.5.2
 
 -Python-
