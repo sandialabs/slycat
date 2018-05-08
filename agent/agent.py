@@ -159,8 +159,8 @@ class Agent(object):
         """
         pass
 
-    # @abc.abstractmethod
-    def get_hpc_run_string(self, command):
+    @abc.abstractmethod
+    def check_hpc_params(self, command):
         """
         takes a command json and creates a string that can be
         run hpc jobs

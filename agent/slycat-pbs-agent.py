@@ -30,31 +30,71 @@ class Agent(agent.Agent):
     """
 
     """
+    def __init__(self):
+        """
+        add the list of scripts we want to be able to call
+        """
+        agent.Agent.__init__(self)
+        self.command_list = ["module_name", "wckey", "nnodes", "partition", "ntasks_per_node",
+                             "time_hours", "time_minutes", "time_seconds", "working_dir"]
+
+    def check_hpc_params(self, command_dict):
+        for _ in self.command_list:
+            if _ not in command_dict:
+                raise Exception("missing %s hpc param" % _)
+
     def run_remote_command(self, command):
         command = command["command"]
-        run_command = None
+        run_commands = []
         # get the command scripts that were sent to the agent
+        jid = random.randint(10000000, 99999999)
         for command_script in command["scripts"]:
             # compare the payload commands to the registered commands on the agent
-            run_command = self.get_script_run_string(command_script)
-        if run_command is None or run_command == "":
+            if command_script != "":
+                run_commands.append(self.get_script_run_string(command_script) + " --log_file " + str(jid) + ".log")
+        if not run_commands:
             results = {"ok": False, "message": "could not create a run command did you register your script with "
                                                "slycat?"}
             sys.stdout.write("%s\n" % json.dumps(results))
             sys.stdout.flush()
             return
-        command["run_command"] = run_command
+        command["run_command"] = run_commands
         # if "background_task" in command and command["background_task"]:
         output = ["running task in background", "running task in background"]
-        jid = random.randint(10000000, 99999999)
-        run_command += " --log_file " + str(jid) + ".log"
-        try:
-            background_thread = threading.Thread(target=self.run_shell_command, args=(run_command, jid, True,))
-            background_thread.start()
-        except Exception as e:
-            output[0] = traceback.format_exc()
-        # else:
-        #     output = self.run_shell_command(run_command)
+
+        if command["hpc"]["is_hpc_job"]:
+            self.check_hpc_params(command["hpc"]["parameters"])
+            module_name = command["hpc"]["parameters"]["module_name"]
+            wckey = command["hpc"]["parameters"]["wckey"]
+            nnodes = command["hpc"]["parameters"]["nnodes"]
+            partition = command["hpc"]["parameters"]["partition"]
+            ntasks_per_node = command["hpc"]["parameters"]["ntasks_per_node"]
+            time_hours = command["hpc"]["parameters"]["time_hours"]
+            time_minutes = command["hpc"]["parameters"]["time_minutes"]
+            time_seconds = command["hpc"]["parameters"]["time_seconds"]
+            working_dir = command["hpc"]["parameters"]["working_dir"]
+            output = ["running batch job", "running batch job"]
+            try:
+                self.run_shell_command("mkdir -p %s" % working_dir)
+            except Exception as e:
+                output[0] = e.message
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
+            self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                                time_seconds, run_commands,
+                                tmp_file)
+            # with open(tmp_file.name, 'r') as myfile:
+            #     data = myfile.read().replace('\n', '')
+            output[0], output[1] = self.run_shell_command("sbatch %s" % tmp_file.name, jid, True)
+        else:
+            try:
+                log = self.create_job_logger(jid)
+                log("[COMMAND length] %s" % len(run_commands))
+                for command in run_commands:
+                    log("[COMMAND] %s" % command)
+                    background_thread = threading.Thread(target=self.run_shell_command, args=(command, jid, True,))
+                    background_thread.start()
+            except Exception as e:
+                output[0] = traceback.format_exc()
         results = {
             "message": "ran the remote command",
             "ok": True,
@@ -91,13 +131,13 @@ class Agent(agent.Agent):
             if log_to_file:
                 log("[RUNNING]")
             # execute script
-            value = p.communicate()
+            value1, value2 = p.communicate()
             if log_to_file:
-                log(str(value))
+                log(str(value1))
                 log("[FINISHED]")
-                return value
+                return value1, value2
             else:
-                return value
+                return value1, value2
         except Exception as e:
             log("[FAILED]")
             return ["FAILED", "FAILED"]
