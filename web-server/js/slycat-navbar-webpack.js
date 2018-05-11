@@ -13,6 +13,9 @@ import ispasswordrequired from "./slycat-server-ispasswordrequired-webpack";
 import "./slycat-resizing-modals-webpack";
 import "./slycat-nag-webpack";
 import slycatNavbar from '../templates/slycat-navbar.html';
+import slycat_edit_model from '../plugins/slycat-model-wizards/edit-ui-webpack';
+import slycat_delete_model from '../plugins/slycat-model-wizards/delete-ui-webpack';
+import slycat_apply_template from '../plugins/slycat-model-wizards/apply-template-ui-webpack';
 
 ko.components.register("slycat-navbar",
 {
@@ -216,11 +219,15 @@ ko.components.register("slycat-navbar",
         mapping.fromJS(wizards, component.wizards);
         for(var i = 0; i != wizards.length; ++i)
         {
-          ko.components.register(wizards[i].type,
-          {
-            require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
-          });
+          // ko.components.register(wizards[i].type,
+          // {
+          //   require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
+          // });
+          console.log("registering: " + wizards[i].type);
         }
+        ko.components.register('slycat-edit-model', slycat_edit_model);
+        ko.components.register('slycat-delete-model', slycat_delete_model);
+        ko.components.register('slycat-apply-template', slycat_apply_template);
       }
     });
 
