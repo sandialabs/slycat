@@ -21,6 +21,7 @@ import slycat_create_template from '../plugins/slycat-model-wizards/create-templ
 import slycat_info_model from '../plugins/slycat-model-wizards/info-ui-webpack';
 import slycat_reset_model from '../plugins/slycat-model-wizards/reset-ui-webpack';
 import remap_wizard from '../plugins/slycat-remap-wizard/remap-ui-webpack';
+import slycat_create_project from '../plugins/slycat-project-wizards/create-ui-webpack';
 
 ko.components.register("slycat-navbar",
 {
@@ -238,6 +239,7 @@ ko.components.register("slycat-navbar",
         ko.components.register('slycat-info-model', slycat_info_model);
         ko.components.register('slycat-reset-model', slycat_reset_model);
         ko.components.register('remap-wizard', remap_wizard);
+        ko.components.register('slycat-create-project', slycat_create_project);
       }
     });
 
