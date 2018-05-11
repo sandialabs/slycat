@@ -19,6 +19,7 @@ import slycat_apply_template from '../plugins/slycat-model-wizards/apply-templat
 import slycat_create_saved_bookmark from '../plugins/slycat-model-wizards/create-saved-bookmark-ui-webpack';
 import slycat_create_template from '../plugins/slycat-model-wizards/create-template-ui-webpack';
 import slycat_info_model from '../plugins/slycat-model-wizards/info-ui-webpack';
+import slycat_reset_model from '../plugins/slycat-model-wizards/reset-ui-webpack';
 
 ko.components.register("slycat-navbar",
 {
@@ -234,6 +235,7 @@ ko.components.register("slycat-navbar",
         ko.components.register('slycat-create-saved-bookmark', slycat_create_saved_bookmark);
         ko.components.register('slycat-create-template', slycat_create_template);
         ko.components.register('slycat-info-model', slycat_info_model);
+        ko.components.register('slycat-reset-model', slycat_reset_model);
       }
     });
 
