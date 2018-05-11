@@ -74,7 +74,7 @@ export function ajax_error(message)
 {
   return function(request, status, reason_phrase)
   {
-    this.dialog(
+    dialog(
     {
       message: message + " " + reason_phrase
     });
