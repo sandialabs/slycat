@@ -2,8 +2,8 @@
   "name": "slycat",
   "version": "1.0.0",
   "scripts": {
-    "build": "babel web-server -d web-server -w",
-    "start": "webpack --config webpack.config.js -w"
+    "dev":  "webpack --mode=development --config webpack.config.js -w",
+    "prod": "webpack --mode=production  --config webpack.config.js"
   },
   "main": "index.js",
   "repository": "git@github.com:sandialabs/slycat.git",

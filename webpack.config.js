@@ -4,8 +4,9 @@ const Visualizer = require('webpack-visualizer-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
+  // mode is now specified as a command line flag in package.json
 	// mode: 'production',
-	mode: 'development',
+	// mode: 'development',
   entry: {
     ui_parameter_image: './web-server/plugins/slycat-parameter-image/js/ui.js',
   },
