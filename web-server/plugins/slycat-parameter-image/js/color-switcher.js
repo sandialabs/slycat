@@ -2,6 +2,21 @@
 
 import d3 from "./d3.min";
 import "jquery-ui";
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import ControlsDropdown from './controls-dropdown';
+
+// class ColorSwitcherControls extends React.Component {
+//   constructor(props) {
+//     super(props);
+//   }
+//   render() {
+//     return(
+//               <ControlsDropdown key="Test" id="Test" label="Test" title="Test"
+//               state_label="Test" trigger="Test" items="Test"
+//               selected="Test" set_selected="Test" />
+//     );}
+// }
 
 $.widget("slycat.colorswitcher",
 {
@@ -9,10 +24,64 @@ $.widget("slycat.colorswitcher",
   {
     colormap : "day",
   },
-
   _create: function()
   {
     var self = this;
+
+    class ColorBar extends React.Component {
+        constructor(props) {
+            super(props);
+
+            this.state = {
+            selection: this.props.selection,
+          };
+
+            this.state[this.props.dropdown.state_label] = dropdown.selected;
+
+            this.set_selected = this.set_selected.bind(this);
+        }
+
+        set_selected(state_label, key, trigger, e) {
+        // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
+
+        if(key == this.state[state_label])
+        {
+          return;
+        }
+        // That function will receive the previous state as the first argument, and the props at the time the update is applied as the
+        // second argument. This format is favored because this.props and this.state may be updated asynchronously,
+        // you should not rely on their values for calculating the next state.
+        const obj = {};
+        obj[state_label] = key;
+        this.setState((prevState, props) => (obj));
+
+        // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
+        this.props.element.trigger(trigger, key);
+      }
+
+        render() {
+
+            return (
+                <ControlsDropdown key={this.props.dropdown[0].id} id={this.props.dropdown[0].id} label={this.props.dropdown[0].label} title={this.props.dropdown[0].title}
+                                  state_label={this.props.dropdown[0].state_label} trigger={this.props.dropdown[0].trigger}
+                                  items={this.props.dropdown[0].items}
+                                  selected={this.state[this.props.dropdown[0].state_label]} set_selected={this.set_selected}/>);
+        }
+    }
+
+    this.color_labels = [];
+    this.color_labels.push({
+      key: "night",
+      name: "Night"});
+    this.color_labels.push({
+      key: "day",
+      name: "Day"});
+    this.color_labels.push({
+      key: "rainbow night",
+      name: "Rainbow Night"});
+    this.color_labels.push({
+      key: "rainbow day",
+      name: "Rainbow Day"});
 
     this.color_maps =
     {
@@ -132,15 +201,15 @@ $.widget("slycat.colorswitcher",
       },
     };
 
-    this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true" title="Scatterplot Color Theme"> \
-          Colors \
-          <span class="caret"></span> \
-        </button>')
-      .appendTo(this.element)
-      ;
-    this.list = $('<ul class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
-      .appendTo(this.element)
-      ;
+    // this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true" title="Scatterplot Color Theme"> \
+    //       Colors \
+    //       <span class="caret"></span> \
+    //     </button>')
+    //   .appendTo(this.element)
+    //   ;
+    // this.list = $('<ul class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
+    //   .appendTo(this.element)
+    //   ;
     $.each(this.color_maps, function(key, value)
     {
       var gradient_data = self.get_gradient_data(key);
@@ -181,6 +250,23 @@ $.widget("slycat.colorswitcher",
         ;
     });
 
+    const dropdown = [
+                {
+                    id: 'color-switcher-dropdown',
+                    label: 'Colors',
+                    title: 'Colors',
+                    state_label: 'color',
+                    trigger: 'color_changed',
+                    items: this.color_labels,
+                    selected: self.options["colormap"],
+                }];
+
+    const color_bar = <ColorBar element={self.element}
+        dropdown={dropdown}
+        selection={self.options.selection}
+      />;
+
+    ReactDOM.render(color_bar, document.getElementById('color-switcher'));
   },
 
   _setOption: function(key, value)
@@ -292,4 +378,6 @@ $.widget("slycat.colorswitcher",
       columns[j].colorMap = this.get_color_scale(name, columns[j].columnMin, columns[j].columnMax);
     }
   }
+
+
 });
