@@ -223,14 +223,18 @@ ko.components.register("slycat-navbar",
         });
 
         mapping.fromJS(wizards, component.wizards);
-        for(var i = 0; i != wizards.length; ++i)
-        {
-          // ko.components.register(wizards[i].type,
-          // {
-          //   require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
-          // });
-          console.log("registering: " + wizards[i].type);
-        }
+        // Alex commenting out because automatically registering knockout components breaks under webpack.
+        // Webpack expects to package all modules at build time, while this approach tries to load modules at runtime.
+        // We need to come up with a new plugin architecture that supports webpack.
+        // For the time being, I am just manually registering the plugins that I know of below.
+        // for(var i = 0; i != wizards.length; ++i)
+        // {
+        //   ko.components.register(wizards[i].type,
+        //   {
+        //     require: component.server_root + "resources/wizards/" + wizards[i].type + "/ui.js"
+        //   });
+        //   console.log("registering: " + wizards[i].type);
+        // }
         ko.components.register('slycat-edit-model', slycat_edit_model);
         ko.components.register('slycat-delete-model', slycat_delete_model);
         ko.components.register('slycat-apply-template', slycat_apply_template);
