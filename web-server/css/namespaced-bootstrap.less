@@ -1,0 +1,6 @@
+// Need to import the bootstrap CSS, not LESS file, otherwise the namespacing doesn't work correctly on some selectors
+// For better explanation, see https://stackoverflow.com/questions/19793508/compiling-issue-in-bootstrap-3-with-namespace/19796985#19796985
+// and https://github.com/less/less.js/issues/1709#issuecomment-29707217
+.bootstrap-styles {
+  @import (less) url("~bootstrap/dist/css/bootstrap.css");
+}
