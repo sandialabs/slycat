@@ -568,14 +568,16 @@ def get_model(mid, **kwargs):
         cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
         context = {}
 
-        # Setting slycat_model_page and whether global JS bundle is emitted based on global_js_bundle flag set by model plugin when it registers.
+        # Setting slycat_model_page and whether global JS and CSS bundles are emitted based on global_bundles flag set by model plugin when it registers.
         slycat_model_page = 'slycat-model-page.html'
-        if mtype in slycat.web.server.plugin.manager.global_js_bundle and slycat.web.server.plugin.manager.global_js_bundle[mtype] == False:
+        if mtype in slycat.web.server.plugin.manager.global_bundles and slycat.web.server.plugin.manager.global_bundles[mtype] == False:
             context["slycat-js-bundle"] = None
+            context["slycat-css-bundle"] = None
             slycat_model_page = 'slycat-model-page-webpack.html'
             cherrypy.log.error("Global bundle will NOT be emitted for '%s'." % (mtype))
         else:
             context["slycat-js-bundle"] = js_bundle()
+            context["slycat-css-bundle"] = css_bundle()
             cherrypy.log.error("Global bundle will be emitted for '%s'." % (mtype))
 
         marking = slycat.web.server.plugin.manager.markings[model["marking"]]
@@ -592,8 +594,6 @@ def get_model(mid, **kwargs):
 
         context["slycat-project"] = project
         context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
-
-        context["slycat-css-bundle"] = css_bundle()
 
         context["slycat-model-type"] = mtype
 

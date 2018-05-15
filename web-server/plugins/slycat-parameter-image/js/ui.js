@@ -37,7 +37,7 @@ import "./slick.autotooltips";
 import "./slick.slycateditors";
 import "../../../js/slycat-range-slider-webpack"; 
 import "./category-select";
-import "../../../js/bootstrap";
+import "bootstrap";
 import "../../../js/slycat-navbar-webpack"
 import * as slycat_model_main from "../../../js/slycat-model-main-webpack";
 

@@ -26,7 +26,7 @@ class Manager(object):
     self.tools = {}
     self.wizard_resources = {}
     self.wizards = {}
-    self.global_js_bundle = {}
+    self.global_bundles = {}
 
   def _load_directory(self, plugin_directory):
     try:
@@ -71,16 +71,16 @@ class Manager(object):
           import traceback
           cherrypy.log.error(traceback.format_exc())
 
-  def set_global_js_bundle(self, type, global_js_bundle_flag):
+  def set_global_bundles(self, type, global_bundles_flag):
     """Set flag for global JS bundle
     """
     if type not in self.pages:
-      slycat.email.send_error("slycat.web.server.plugin.py set_global_js_bundle", "Unknown page type: %s." % type)
+      slycat.email.send_error("slycat.web.server.plugin.py set_global_bundles", "Unknown page type: %s." % type)
       raise Exception("Unknown page type: %s." % type)
-    if type not in self.global_js_bundle:
-      self.global_js_bundle[type] = global_js_bundle_flag
+    if type not in self.global_bundles:
+      self.global_bundles[type] = global_bundles_flag
 
-    cherrypy.log.error("Set global_js_bundle to '%s' for '%s' models." % (global_js_bundle_flag, type))
+    cherrypy.log.error("Set global_bundles to '%s' for '%s' models." % (global_bundles_flag, type))
     
 
   def register_directory(self, type, init, user):

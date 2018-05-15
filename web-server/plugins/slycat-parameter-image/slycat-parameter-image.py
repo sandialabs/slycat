@@ -108,64 +108,64 @@ def register_slycat_plugin(context):
   #   os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
   #   ])
 
-  # Register CSS
-  stylesheets = [
-    # "jquery-ui/jquery-ui.css",
-    # resizable and theme are already included in jquery-ui.css, so no need to include them again here
-    # "jquery-ui/jquery.ui.theme.css",
-    # "jquery-ui/jquery.ui.resizable.css",
-    # "stickies.css",
-    # "slick.grid.css",
-    # "slick-default-theme.css",
-    # "slick.headerbuttons.css",
-    # "slick-slycat-theme.css",
-    #
-    # "ui.css",
-    # "slycat-additions.css",
-    #For development and debugging, comment out css here and load it dynamically inside model.
-  ]
-  context.register_page_bundle("parameter-image", "text/css", [
-    os.path.join(os.path.dirname(__file__), "css", css) for css in stylesheets
-    ])
+  # # Register CSS
+  # stylesheets = [
+  #   # "jquery-ui/jquery-ui.css",
+  #   # resizable and theme are already included in jquery-ui.css, so no need to include them again here
+  #   # "jquery-ui/jquery.ui.theme.css",
+  #   # "jquery-ui/jquery.ui.resizable.css",
+  #   # "stickies.css",
+  #   # "slick.grid.css",
+  #   # "slick-default-theme.css",
+  #   # "slick.headerbuttons.css",
+  #   # "slick-slycat-theme.css",
+  #   #
+  #   # "ui.css",
+  #   # "slycat-additions.css",
+  #   #For development and debugging, comment out css here and load it dynamically inside model.
+  # ]
+  # context.register_page_bundle("parameter-image", "text/css", [
+  #   os.path.join(os.path.dirname(__file__), "css", css) for css in stylesheets
+  #   ])
 
   # Register images and other resources
-  images = [
-    "x-gray.png",
-    "x-light.png",
-    "y-gray.png",
-    "y-light.png",
-    "sort-asc-light.png",
-    "sort-asc-gray.png",
-    "sort-desc-light.png",
-    "sort-desc-gray.png",
-    "image-gray.png",
-    "image-light.png",
-    "stripe1.png",
-    "stripe2.png",
-    "pin.png",
-    "ajax-loader.gif",
-    # for stickies
-    'ui-icons_222222_256x240.png',
-    'ui-bg_highlight-soft_75_cccccc_1x100.png',
-    'ui-bg_flat_75_ffffff_40x100.png',
-    'ui-bg_glass_75_e6e6e6_1x400.png',
-  ]
-  for image in images:
-    context.register_page_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
+  # images = [
+  #   # "x-gray.png",
+  #   # "x-light.png",
+  #   # "y-gray.png",
+  #   # "y-light.png",
+  #   # "sort-asc-light.png",
+  #   # "sort-asc-gray.png",
+  #   # "sort-desc-light.png",
+  #   # "sort-desc-gray.png",
+  #   # "image-gray.png",
+  #   # "image-light.png",
+  #   # "stripe1.png",
+  #   # "stripe2.png",
+  #   # "pin.png",
+  #   # "ajax-loader.gif",
+  #   # # for stickies
+  #   # 'ui-icons_222222_256x240.png',
+  #   # 'ui-bg_highlight-soft_75_cccccc_1x100.png',
+  #   # 'ui-bg_flat_75_ffffff_40x100.png',
+  #   # 'ui-bg_glass_75_e6e6e6_1x400.png',
+  # ]
+  # for image in images:
+  #   context.register_page_resource("parameter-image", image, os.path.join(os.path.dirname(__file__), "img", image))
 
-  devs = [
-    # "js/parameter-controls.js",
-    # "js/parameter-image-table.js",
-    # "js/parameter-image-scatterplot.js",
-    # "../../../dist/ui_parameter_image.js",
-    #"css/ui.css",
-    "slycat-category-select.html",
-  ]
-  for dev in devs:
-    context.register_page_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
+  # devs = [
+  #   # "js/parameter-controls.js",
+  #   # "js/parameter-image-table.js",
+  #   # "js/parameter-image-scatterplot.js",
+  #   # "../../../dist/ui_parameter_image.js",
+  #   #"css/ui.css",
+  #   # "slycat-category-select.html",
+  # ]
+  # for dev in devs:
+  #   context.register_page_resource("parameter-image", dev, os.path.join(os.path.dirname(__file__), dev))
 
-  # Set the global_js_bundle flag to tell slycat not to emit the global JS file
-  context.set_global_js_bundle("parameter-image", False)
+  # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
+  context.set_global_bundles("parameter-image", False)
 
   # Register the webpack generated /dist/ui_parameter_image.js main JS file as js/ui_parameter_image.js (used in ui.html to load this main JS bundle)
   context.register_page_resource("parameter-image", "js/ui_parameter_image.js", os.path.join(os.path.dirname(__file__), "../../../dist/ui_parameter_image.js"))

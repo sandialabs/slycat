@@ -2,6 +2,11 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
+// Global css resources loaded here
+import "../css/namespaced-bootstrap.css";
+import "font-awesome/css/font-awesome.css";
+import "../css/slycat.css";
+
 import server_root from "./slycat-server-root";
 import client from "./slycat-web-client-webpack";
 import * as dialog from "./slycat-dialog-webpack";
@@ -22,6 +27,7 @@ import slycat_info_model from '../plugins/slycat-model-wizards/info-ui-webpack';
 import slycat_reset_model from '../plugins/slycat-model-wizards/reset-ui-webpack';
 import remap_wizard from '../plugins/slycat-remap-wizard/remap-ui-webpack';
 import slycat_create_project from '../plugins/slycat-project-wizards/create-ui-webpack';
+import "bootstrap";
 
 ko.components.register("slycat-navbar",
 {

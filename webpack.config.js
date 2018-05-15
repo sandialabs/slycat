@@ -55,11 +55,22 @@ module.exports = {
           {
             loader: 'url-loader',
             options: {
-              limit: 8192
+              // Disabling file size limit for now because we have no way of serving static resources outside of cherrypy yet.
+              // If the file is greater than the limit (in bytes) the file-loader is used by default and all query parameters are passed to it.
+              // limit: 8192
             }
           }
         ]
-      }
+      },
+      // This enabled the URL loader for loading fonts
+      { 
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
+        loader: "url-loader" 
+      },
+      { 
+        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
+        loader: "url-loader" 
+      },
 		],
 	},
 };
