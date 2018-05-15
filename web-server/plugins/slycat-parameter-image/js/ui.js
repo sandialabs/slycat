@@ -1,5 +1,8 @@
 // import * as d3 from 'd3';
 
+import ui_css from "../css/ui.css";
+import slycat_additions_css from "../css/slycat-additions.css";
+import jquery_ui_css from "../css/jquery-ui/jquery-ui.css";
 import server_root from "../../../js/slycat-server-root";
 import _ from "lodash";
 import ko from "knockout";

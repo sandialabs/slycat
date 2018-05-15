@@ -286,11 +286,11 @@
 }
 .icon-sort-off {
   border: 1px solid transparent;
-  background: transparent url(sort-asc-light.png) no-repeat center center;
+  background: transparent url(../img/sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
   border: 1px solid transparent !important;
-  background: transparent url(sort-asc-gray.png) no-repeat center center !important;
+  background: transparent url(../img/sort-asc-gray.png) no-repeat center center !important;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover
@@ -309,12 +309,12 @@
   top: 4px;
 }
 .slick-header-button.icon-image-off {
-  background: transparent url(image-light.png) no-repeat center center;
+  background: transparent url(../img/image-light.png) no-repeat center center;
 }
 .slick-header-button.icon-image-on,
 .slick-header-button.icon-image-off:hover
 {
-  background: transparent url(image-gray.png) no-repeat center center;
+  background: transparent url(../img/image-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off
@@ -323,12 +323,12 @@
   top: 4px;
 }
 .slick-header-button.icon-y-off {
-  background: transparent url(y-light.png) no-repeat center center;
+  background: transparent url(../img/y-light.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off:hover
 {
-  background: transparent url(y-gray.png) no-repeat center center;
+  background: transparent url(../img/y-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off
@@ -337,12 +337,12 @@
   top: 4px;
 }
 .slick-header-button.icon-x-off {
-  background: transparent url(x-light.png) no-repeat center center;
+  background: transparent url(../img/x-light.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off:hover
 {
-  background: transparent url(x-gray.png) no-repeat center center;
+  background: transparent url(../img/x-gray.png) no-repeat center center;
 }
 #page-title {
   padding-top: 5px;
@@ -413,7 +413,7 @@
   position: absolute;
   width: 16px;
   height: 16px;
-  background-image: url("ui-icons_222222_256x240.png");
+  background-image: url("../img/ui-icons_222222_256x240.png");
   background-repeat: no-repeat;
   display: block;
   overflow: hidden;
@@ -616,7 +616,7 @@
   right: 0;
   top: 0;
 
-  background-image: url("ajax-loader.gif");
+  background-image: url("../img/ajax-loader.gif");
   background-repeat: no-repeat;
   background-position: 50% 50%;
 }
@@ -941,7 +941,7 @@
   position: absolute;
   width: 16px;
   height: 16px;
-  background-image: url("ui-icons_222222_256x240.png");
+  background-image: url("../img/ui-icons_222222_256x240.png");
   background-repeat: no-repeat;
   display: block;
   overflow: hidden;

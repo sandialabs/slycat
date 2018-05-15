@@ -41,6 +41,23 @@ module.exports = {
       { test: /\.html$/, 
         loader: 'html-loader' 
       },
+      // This enables the style and css loaders, which are needed to load CSS files
+      {
+        test: /\.css$/,
+        use: [ 'style-loader', 'css-loader' ]
+      },
+      // This enabled the URL loader for loading images
+      {
+        test: /\.(png|jpg|gif|jp(e*)g|svg)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 8192
+            }
+          }
+        ]
+      }
 		],
 	},
 };

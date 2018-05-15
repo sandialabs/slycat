@@ -75,35 +75,35 @@ def register_slycat_plugin(context):
   context.register_page("parameter-image", page_html)
 
   # Register JS
-  javascripts = [
-    "jquery-ui-1.10.4.custom.min.js",
-    "jquery.layout-latest.min.js",
-    "d3.min.js",
-    #"jquery.mousewheel.js",
-    "jquery.scrollintoview.min.js",
-    "jquery.event.drag-2.2.js",
-    "slick.core.js",
-    "slick.grid.js",
-    "slick.rowselectionmodel.js",
-    "slick.headerbuttons.js",
-    "slick.autotooltips.js",
-    "slick.slycateditors.js",
-    "chunker.js",
-    "color-switcher.js",
-    "note-manager.js",
-    "filter-manager.js",
-    "category-select.js",
-    "stickies.core.js",
-    "three.min.js",
-    "STLLoader.js",
-    "stats.min.js",
-    "TrackballControls.js",
-    # "parameter-controls.js",
-    # "parameter-image-table.js",
-    # "parameter-image-scatterplot.js",
-    # "ui.js",
-    #For development and debugging, comment out js here and load it dynamically inside model.
-  ]
+  # javascripts = [
+  #   "jquery-ui-1.10.4.custom.min.js",
+  #   "jquery.layout-latest.min.js",
+  #   "d3.min.js",
+  #   #"jquery.mousewheel.js",
+  #   "jquery.scrollintoview.min.js",
+  #   "jquery.event.drag-2.2.js",
+  #   "slick.core.js",
+  #   "slick.grid.js",
+  #   "slick.rowselectionmodel.js",
+  #   "slick.headerbuttons.js",
+  #   "slick.autotooltips.js",
+  #   "slick.slycateditors.js",
+  #   "chunker.js",
+  #   "color-switcher.js",
+  #   "note-manager.js",
+  #   "filter-manager.js",
+  #   "category-select.js",
+  #   "stickies.core.js",
+  #   "three.min.js",
+  #   "STLLoader.js",
+  #   "stats.min.js",
+  #   "TrackballControls.js",
+  #   # "parameter-controls.js",
+  #   # "parameter-image-table.js",
+  #   # "parameter-image-scatterplot.js",
+  #   # "ui.js",
+  #   #For development and debugging, comment out js here and load it dynamically inside model.
+  # ]
   # context.register_page_bundle("parameter-image", "text/javascript", [
   #   os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
   #   ])
@@ -119,8 +119,8 @@ def register_slycat_plugin(context):
     "slick.headerbuttons.css",
     "slick-slycat-theme.css",
     #
-    "ui.css",
-    "slycat-additions.css",
+    # "ui.css",
+    # "slycat-additions.css",
     #For development and debugging, comment out css here and load it dynamically inside model.
   ]
   context.register_page_bundle("parameter-image", "text/css", [
