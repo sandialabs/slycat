@@ -110,14 +110,15 @@ def register_slycat_plugin(context):
 
   # Register CSS
   stylesheets = [
-    "jquery-ui/jquery-ui.css",
-    "jquery-ui/jquery.ui.theme.css",
-    "jquery-ui/jquery.ui.resizable.css",
-    "stickies.css",
-    "slick.grid.css",
-    "slick-default-theme.css",
-    "slick.headerbuttons.css",
-    "slick-slycat-theme.css",
+    # "jquery-ui/jquery-ui.css",
+    # resizable and theme are already included in jquery-ui.css, so no need to include them again here
+    # "jquery-ui/jquery.ui.theme.css",
+    # "jquery-ui/jquery.ui.resizable.css",
+    # "stickies.css",
+    # "slick.grid.css",
+    # "slick-default-theme.css",
+    # "slick.headerbuttons.css",
+    # "slick-slycat-theme.css",
     #
     # "ui.css",
     # "slycat-additions.css",

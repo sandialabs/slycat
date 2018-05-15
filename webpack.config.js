@@ -17,7 +17,9 @@ module.exports = {
   plugins: [
     new webpack.ProvidePlugin({
       $: 'jquery',
-  		jQuery: 'jquery'
+  		jQuery: 'jquery',
+      'window.jQuery': 'jquery',
+      'window.$': 'jquery'
     }),
     new Visualizer({
       filename: 'webpack-visualizer-stats.html'

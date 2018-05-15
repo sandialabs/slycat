@@ -95,7 +95,7 @@
 }
 /* Stripe backgrounds generated using http://www.stripegenerator.com */
 .highlightWrapper.null {
-	background: #DDDDDD url(stripe2.png) !important;
+	background: #DDDDDD url(../img/stripe2.png) !important;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -103,7 +103,7 @@
 	height: 100%;
 }
 .selected .highlightWrapper.null {
-	background-image: url(stripe1.png) !important;
+	background-image: url(../img/stripe1.png) !important;
 }
 .highlight .highlightWrapper.null {
 	position: static;
@@ -123,18 +123,18 @@
 }
 .slick-header-column:hover .icon-sort-off {
 	border: 1px solid transparent;
-	background: transparent url(sort-asc-light.png) no-repeat center center;
+	background: transparent url(../img/sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
 	border: 1px solid #C7C7C7 !important;
 }
 .icon-sort-ascending {
 	border: 1px solid transparent;
-	background: transparent url(sort-asc-gray.png) no-repeat center center;
+	background: transparent url(../img/sort-asc-gray.png) no-repeat center center;
 }
 .icon-sort-descending {
 	border: 1px solid transparent;
-	background: transparent url(sort-desc-gray.png) no-repeat center center;
+	background: transparent url(../img/sort-desc-gray.png) no-repeat center center;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover
