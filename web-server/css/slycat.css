@@ -42,6 +42,9 @@ body
   padding-left: 110px;
   color: #353535 !important;
 }
+.bootstrap-styles .navbar > .container .navbar-brand {
+  margin-left: 0;
+}
 
 .bootstrap-styles .navbar .breadcrumb
 {
