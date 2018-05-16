@@ -12,7 +12,7 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'web-server/dist')
   },
   plugins: [
     new webpack.ProvidePlugin({
@@ -37,11 +37,11 @@ module.exports = {
       // This enables Babel
 			{ test: /\.js$/, 
 				exclude: /node_modules/, 
-				loader: "babel-loader",
+				use: "babel-loader",
 			},
       // This enables the html-loader, needed to load knockout .html templates
       { test: /\.html$/, 
-        loader: 'html-loader' 
+        use: 'html-loader' 
       },
       // This enables the style and css loaders, which are needed to load CSS files
       {
@@ -50,37 +50,41 @@ module.exports = {
       },
       // This enabled the URL loader for loading images
       {
-        test: /\.(png|jpg|gif|jp(e*)g|svg)$/,
+        test: /\.(png|jpg|gif|jp(e*)g)$/,
         use: [
           {
             loader: 'url-loader',
             options: {
-              // Disabling file size limit for now because we have no way of serving static resources outside of cherrypy yet.
               // If the file is greater than the limit (in bytes) the file-loader is used by default and all query parameters are passed to it.
-              // limit: 8192
+              limit: 8192,
+              name: '[name].[ext]',
+              publicPath: '/dist',
             }
           }
         ]
       },
       // This enabled the URL loader for loading fonts
       { 
-        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
-        loader: "url-loader" 
-      },
-      { 
-        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
-        loader: "url-loader" 
+        test: /\.(ttf|eot|svg|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              limit: 8192,
+              name: '[name].[ext]',
+              publicPath: '/dist',
+            }
+          }
+        ]
       },
       // This enables compiling Less to CSS
       {
         test: /\.less$/,
-        use: [{
-          loader: 'style-loader' // creates style nodes from JS strings
-        }, {
-          loader: 'css-loader' // translates CSS into CommonJS
-        }, {
-          loader: 'less-loader' // compiles Less to CSS
-        }]
+        use: [ 
+          'style-loader', // creates style nodes from JS strings
+          'css-loader', // translates CSS into CommonJS
+          'less-loader' // compiles Less to CSS
+        ]
       },
 		],
 	},

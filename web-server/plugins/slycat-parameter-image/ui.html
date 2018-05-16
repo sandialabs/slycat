@@ -16,15 +16,6 @@
     script.async = false;
     document.head.appendChild(script);
   });
-  [
-    // "css/ui.css",
-  ].forEach(function(src) {
-    var link = document.createElement('link');
-    link.href = server_root + "resources/pages/parameter-image/" + src;
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    document.head.appendChild(link);
-  });
 </script>
 
 <div class="parameter-image" id="parameter-image-plus-layout">

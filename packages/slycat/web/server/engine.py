@@ -208,6 +208,14 @@ def start(root_path, config_file):
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
   # Setup our static content directories.
+  configuration["/dist"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.staticdir.dir": abspath("dist"),
+    "tools.staticdir.on": True,
+    }
+
   configuration["/css"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,
