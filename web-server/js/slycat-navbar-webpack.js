@@ -17,7 +17,7 @@ import "./knockout-projections"
 import ispasswordrequired from "./slycat-server-ispasswordrequired-webpack";
 import "./slycat-resizing-modals-webpack";
 import "./slycat-nag-webpack";
-import slycatNavbar from '../templates/slycat-navbar.html';
+import slycatNavbar from '../templates/slycat-navbar-webpack.html';
 import slycat_edit_model from '../plugins/slycat-model-wizards/edit-ui-webpack';
 import slycat_delete_model from '../plugins/slycat-model-wizards/delete-ui-webpack';
 import slycat_apply_template from '../plugins/slycat-model-wizards/apply-template-ui-webpack';
