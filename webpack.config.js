@@ -63,7 +63,7 @@ module.exports = {
           }
         ]
       },
-      // This enabled the URL loader for loading fonts
+      // This enabled the URL loader for loading fonts, with an automatic fallback to the file-loader for fonts larger than the set limit.
       { 
         test: /\.(ttf|eot|svg|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
         use: [
