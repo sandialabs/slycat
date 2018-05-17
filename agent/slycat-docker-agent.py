@@ -47,6 +47,7 @@ class Agent(agent.Agent):
         run_commands = []
         # get the command scripts that were sent to the agent
         jid = random.randint(10000000, 99999999)
+        log = self.create_job_logger(jid)
         for command_script in command["scripts"]:
             # compare the payload commands to the registered commands on the agent
             if command_script != "":
@@ -86,7 +87,6 @@ class Agent(agent.Agent):
             output[0], output[1] = self.run_shell_command("sbatch %s" % tmp_file.name, jid, True)
         else:
             try:
-                log = self.create_job_logger(jid)
                 log("[COMMAND length] %s" % len(run_commands))
                 for command in run_commands:
                     log("[COMMAND] %s" % command)
@@ -101,6 +101,7 @@ class Agent(agent.Agent):
             "command": command,
             "output": output[0],
             "errors": output[1],
+            "log_file_path": os.path.abspath(str(jid) + ".log"),
             "available_scripts": [
                 {
                     "name": script["name"],

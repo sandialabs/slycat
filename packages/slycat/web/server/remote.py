@@ -606,7 +606,8 @@ class Session(object):
             "available_scripts": response["available_scripts"],
             "output": response["errors"],
             "errors": response["output"],
-            "jid": response["jid"]
+            "jid": response["jid"],
+            "log_file_path": response["log_file_path"]
         }
 
     def get_remote_job_status(self, jid):
