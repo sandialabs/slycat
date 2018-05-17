@@ -179,6 +179,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			    (datapoints_meta["column-types"][i] == "string")) {
 			    color_by_type.push(datapoints_meta["column-types"][i]);
 				color_by_cols.push(i);
+
+				// make sure names aren't too long (if they are then truncate with ...)
 				color_by_names.push(datapoints_meta["column-names"][i]);
 			};
 
@@ -209,14 +211,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		scatter_plot.attr("width", width)
 			.attr("height", height);
 		
-		// brush has to be under points for selection, subset, but on top for zoom
-		//if (selections.sel_type() == 0) {
-		//	draw_points();
-		//	sel_zoom_buttons();
-		//} else {
-			sel_zoom_buttons();
-			draw_points();
-		//}
+		// brush has to be under points
+		sel_zoom_buttons();
+		draw_points();
 
 	}
 	

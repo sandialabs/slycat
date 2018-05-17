@@ -114,10 +114,15 @@ function(client, dialog, selections, $, d3, URI)
 
 		// sort out the variable metadata we need
 		num_plots = variables_metadata[0]["row-count"];
-		plot_name = variables_data[0]["data"][0];
 		x_axis_name = variables_data[0]["data"][1];
 		y_axis_name = variables_data[0]["data"][2];
 		plot_type = variables_data[0]["data"][3];
+
+        // populate plot names, but truncate with it too long
+		plot_name = variables_data[0]["data"][0];
+
+        console.log(num_plots);
+        console.log(plot_name);
 
 		// init plot order (up to number of plots available)
 		for (var i = 0; i < Math.min(num_plots,3); i++) {

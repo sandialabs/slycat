@@ -28,6 +28,10 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     var ONE_MINUTE = 60000;
     var ONE_SECOND = 1000;
 
+    // constants for cutting off plot names, slider names
+    var MAX_PLOT_NAME = 20;
+    var MAX_SLIDER_NAME = 20;
+
     // waits 1 minute past last successful progress update
     var endTime = Number(new Date()) + ONE_MINUTE;
 
