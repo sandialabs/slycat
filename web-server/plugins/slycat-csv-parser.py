@@ -77,6 +77,8 @@ def parse_file(file, model, database):
                     cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
                 break
         if not column_has_floats:
+            [unicode(item, 'utf-8') for item in column[1:]]
+
             data.append(numpy.array(column[1:]))
             attributes.append({"name": column[0], "type": "string"})
             column_headers.append(column[0])
