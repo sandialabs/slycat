@@ -152,7 +152,7 @@ class Agent(agent.Agent):
             "status_list": self._status_list
         }
         try:
-            with open(str(command["command"]["jid"])+'.log') as log_file:
+            with open(str(command["command"]["jid"]) + '.log') as log_file:
                 for line in log_file:
                     if line.strip(' \t\n\r') in self._status_list:
                         results["status"] = line.strip(' \t\n\r')
