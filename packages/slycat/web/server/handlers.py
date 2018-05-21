@@ -2166,6 +2166,9 @@ def post_remote_command(hostname):
     """
     sid = get_sid(hostname)
     command = cherrypy.request.json["command"]
+    if command["hpc"]["is_hpc_job"]:
+        command["hpc"]["parameters"]["module_name"] = cherrypy.request.app.config["slycat-web-server"]["module-name"]
+        pass
     with slycat.web.server.remote.get_session(sid) as session:
         return session.run_remote_command(command)
 
