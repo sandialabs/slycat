@@ -152,6 +152,9 @@ class DArray(slycat.darray.Prototype):
       def __init__(self, storage, dtype):
         self._storage = storage
         self._dtype = dtype
+        if dtype == "string":
+          self._dtype = 'unicode'
+
       def __getitem__(self, *args, **kwargs):
         result = self._storage.__getitem__(*args, **kwargs)
         return result.astype(self._dtype)
