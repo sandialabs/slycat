@@ -1,4 +1,5 @@
 import React from "react";
+import ControlsButtonToggle from "./controls-button-toggle";
 
 class ControlsVideo extends React.Component {
   constructor(props) {

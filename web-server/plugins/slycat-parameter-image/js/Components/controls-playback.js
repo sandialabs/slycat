@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ControlsDropdown from "./controls-dropdown";
+import ControlsButton from "./controls-button";
 
 class ControlsPlayback extends React.Component {
   constructor(props) {

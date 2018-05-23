@@ -4,7 +4,7 @@ import d3 from "./d3.min";
 import "jquery-ui";
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import ControlsDropdown from './controls-dropdown';
+import ControlsDropdown from './Components/controls-dropdown';
 
 // class ColorSwitcherControls extends React.Component {
 //   constructor(props) {
