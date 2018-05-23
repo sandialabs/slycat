@@ -1791,6 +1791,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .text("Download " + image.uri)
             ;
 
+          frame_html.append("div")
+            .classed("mouseEventOverlay", true)
+            .attr("width", "100%")
+            .attr("height", "100%")
+            ;
+
         }
         else if(isStl)
         {
