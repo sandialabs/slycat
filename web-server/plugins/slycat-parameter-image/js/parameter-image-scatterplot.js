@@ -1295,6 +1295,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       move_start: (function() {
         // console.log("move_start");
+
+        // Showing the mouseEventOverlay
+        $(".mouseEventOverlay", this.closest(".image-frame")).show();
+
         var frame, sourceEventTarget;
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
@@ -1312,6 +1316,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       move_end: function() {
         // console.log("move_end");
+
+        // Hiding the mouseEventOverlay
+        $(".mouseEventOverlay", this.closest(".image-frame")).hide();
+
         self.state = "";
         self._sync_open_images();
       },
@@ -1368,6 +1376,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       resize_start: (function() {
         // console.log("resize_start");
+
+        // Showing the mouseEventOverlay
+        $(".mouseEventOverlay", this.closest(".image-frame")).show();
+
         // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this 
         // event handler and that stops the mousedown handler from moving the frame to the front automatically.
         self._move_frame_to_front(this.closest(".image-frame"));
@@ -1389,6 +1401,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       }),
       resize_end: (function() {
         // console.log("resize_end");
+
+        // Hiding the mouseEventOverlay
+        $(".mouseEventOverlay", this.closest(".image-frame")).hide();
+
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
         self._sync_open_images();
@@ -1791,10 +1807,13 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             .text("Download " + image.uri)
             ;
 
+          // Adding on overlay div to fix mouse event issues when resizing and dragging PDFs because the <object>, <iframe>,
+          // and <embed> elements capture mouse events and don't propagate them to parent elements.
+          // This div is above those elements but initially hidden. On resize and move events, it's displayed, thus
+          // capturing mouse events and letting them bubble up to the parent frame instead of getting stuck in the 
+          // PDF viewer.
           frame_html.append("div")
             .classed("mouseEventOverlay", true)
-            .attr("width", "100%")
-            .attr("height", "100%")
             ;
 
         }
