@@ -15,14 +15,14 @@
     "jquery": "2.1.1",
     "jquery-ui": "1.10.4",
     "knockout": "3.2.0",
-    "knockout-mapping": "^2.6.0",
+    "knockout-mapping": "2.6.0",
     "papaparse": "4.3.2",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
-    "three": "^0.92.0",
-    "three-stl-loader": "^1.0.6",
-    "three-trackballcontrols": "^0.0.7",
-    "urijs": "^1.19.1"
+    "three": "0.92.0",
+    "three-stl-loader": "1.0.6",
+    "three-trackballcontrols": "0.0.7",
+    "urijs": "1.19.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
