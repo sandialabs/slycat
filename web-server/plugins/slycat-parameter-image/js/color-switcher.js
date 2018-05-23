@@ -18,17 +18,7 @@ import ControlsDropdown from './controls-dropdown';
 //     );}
 // }
 
-$.widget("slycat.colorswitcher",
-{
-  options:
-  {
-    colormap : "day",
-  },
-  _create: function()
-  {
-    var self = this;
-
-    class ColorBar extends React.Component {
+class ColorBar extends React.Component {
         constructor(props) {
             super(props);
 
@@ -36,27 +26,36 @@ $.widget("slycat.colorswitcher",
             selection: this.props.selection,
           };
 
-            this.state[this.props.dropdown.state_label] = dropdown.selected;
+            this.state[this.props.dropdown.state_label] = this.props.dropdown.selected;
 
             this.set_selected = this.set_selected.bind(this);
         }
 
         set_selected(state_label, key, trigger, e) {
-        // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
+          // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
+          if(key == this.state[state_label])
+          {
+            return;
+          }
+          // That function will receive the previous state as the first argument, and the props at the time the update is applied as the
+          // second argument. This format is favored because this.props and this.state may be updated asynchronously,
+          // you should not rely on their values for calculating the next state.
+          const obj = {};
+          obj[state_label] = key;
+          this.setState((prevState, props) => (obj));
+          this.state.selection = key;
 
-        if(key == this.state[state_label])
-        {
-          return;
-        }
-        // That function will receive the previous state as the first argument, and the props at the time the update is applied as the
-        // second argument. This format is favored because this.props and this.state may be updated asynchronously,
-        // you should not rely on their values for calculating the next state.
-        const obj = {};
-        obj[state_label] = key;
-        this.setState((prevState, props) => (obj));
+          // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
+          this.props.element.trigger(trigger, key);
+      }
 
-        // This is the legacy way of letting the rest of non-React components that the state changed. Remove once we are converted to React.
-        this.props.element.trigger(trigger, key);
+      get_selected_colormap() {
+          if(this.state.selection == null) {
+              return "night";
+          }
+          else {
+            return this.state.selection;
+          }
       }
 
         render() {
@@ -69,6 +68,17 @@ $.widget("slycat.colorswitcher",
         }
     }
 
+$.widget("slycat.colorswitcher",
+{
+  options:
+  {
+    colormap : "day",
+    selection: null,
+  },
+  _create: function()
+  {
+    var self = this;
+
     this.color_labels = [];
     this.color_labels.push({
       key: "night",
@@ -77,10 +87,10 @@ $.widget("slycat.colorswitcher",
       key: "day",
       name: "Day"});
     this.color_labels.push({
-      key: "rainbow night",
+      key: "rainbow",
       name: "Rainbow Night"});
     this.color_labels.push({
-      key: "rainbow day",
+      key: "rainbow_day",
       name: "Rainbow Day"});
 
     this.color_maps =
@@ -210,55 +220,54 @@ $.widget("slycat.colorswitcher",
     // this.list = $('<ul class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
     //   .appendTo(this.element)
     //   ;
-    $.each(this.color_maps, function(key, value)
-    {
-      var gradient_data = self.get_gradient_data(key);
-      var color_stops = [];
-      for(var i = 0; i < gradient_data.length; i++)
-      {
-        color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
-      }
-      var background_color = self.get_background(key);
-      var item = $('<li role="presentation">')
-        .addClass("color")
-        .toggleClass("active", key == self.options.colormap)
-        .attr("data-colormap", key)
-        .appendTo(self.list)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(value.label)
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
-
-              self.options.colormap = menu_item.attr("data-colormap");
-              self.list.find(".color").removeClass("active");
-              menu_item.addClass("active");
-
-              self.element.trigger("colormap-changed", [self.options.colormap]);
-            })
-            .css({
-              "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
-              "background-size" : "5px 75%, 50px 100%",
-              "background-position" : "right 10px center, right 5px center",
-              "background-repeat" : "no-repeat, no-repeat",
-              "padding-right" : "70px",
-            })
-        )
-        ;
-    });
+    // $.each(this.color_maps, function(key, value)
+    // {
+    //   var gradient_data = self.get_gradient_data(key);
+    //   var color_stops = [];
+    //   for(var i = 0; i < gradient_data.length; i++)
+    //   {
+    //     color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
+    //   }
+    //   var background_color = self.get_background(key);
+    //   var item = $('<li role="presentation">')
+    //     .addClass("color")
+    //     .toggleClass("active", key == self.options.colormap)
+    //     .attr("data-colormap", key)
+    //     .appendTo(self.list)
+    //     .append(
+    //       $('<a role="menuitem" tabindex="-1">')
+    //         .html(value.label)
+    //         .click(function()
+    //         {
+    //           var menu_item = $(this).parent();
+    //           if(menu_item.hasClass("active"))
+    //             return false;
+    //
+    //           self.options.colormap = menu_item.attr("data-colormap");
+    //           self.list.find(".color").removeClass("active");
+    //           menu_item.addClass("active");
+    //
+    //           self.element.trigger("colormap-changed", [self.options.colormap]);
+    //         })
+    //         .css({
+    //           "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
+    //           "background-size" : "5px 75%, 50px 100%",
+    //           "background-position" : "right 10px center, right 5px center",
+    //           "background-repeat" : "no-repeat, no-repeat",
+    //           "padding-right" : "70px",
+    //         })
+    //     );
+    // });
 
     const dropdown = [
                 {
-                    id: 'color-switcher-dropdown',
-                    label: 'Colors',
-                    title: 'Colors',
+                    id: 'color-switcher',
+                    label: 'Color Scheme',
+                    title: 'Change Color Scheme',
                     state_label: 'color',
-                    trigger: 'color_changed',
+                    trigger: 'colormap-changed',
                     items: this.color_labels,
-                    selected: self.options["colormap"],
+                    selected: self.options.colormap,
                 }];
 
     const color_bar = <ColorBar element={self.element}
@@ -266,24 +275,32 @@ $.widget("slycat.colorswitcher",
         selection={self.options.selection}
       />;
 
-    ReactDOM.render(color_bar, document.getElementById('color-switcher'));
+    self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
+    console.log("self.color_bar has been created.");
   },
 
   _setOption: function(key, value)
   {
     //console.log("slycat.colorswitcher._setOption()", key, value);
-    this.options[key] = value;
+    // this.options[key] = value;
+    //
+    // if(key == "colormap")
+    // {
+    //   this.list.find(".color").removeClass("active");
+    //   this.list.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
+    // }
 
-    if(key == "colormap")
+    if(key == "color")
     {
-      this.list.find(".color").removeClass("active");
-      this.list.find("[data-colormap='" + this.options.colormap + "']").addClass("active");
+      self.color_bar.setState({colormap: Number(self.options.colormap)});
     }
   },
 
   // Return a d3 rgb object with the suggested background color for the given color map.
   get_background: function(name)
   {
+    //console.log("get_background");
+    //console.log(this.options.colormap);
     if(name === undefined)
       name = this.options.colormap;
     return this.color_maps[name].background;
@@ -309,6 +326,9 @@ $.widget("slycat.colorswitcher",
   // Callers should modify the domain by passing a min and max to suit their own needs.  
   get_color_scale: function(name, min, max)
   {
+    name = this.color_bar.get_selected_colormap();
+    console.log("Just called get_selected_colormap, and the new name is: ");
+    console.log(name);
     if(name === undefined)
       name = this.options.colormap;
     if(min === undefined)
