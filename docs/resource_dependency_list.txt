@@ -108,6 +108,7 @@ jquery.knob            1.2.8   https://github.com/aterrien/jQuery-Knob
 stickies.core          0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
 TrackballControls        n/a   https://github.com/mrdoob/three.js/blob/master/examples/js/controls/TrackballControls.js
 react                 16.2.0   https://reactjs.org
+react-dom			  16.2.0   https://reactjs.org
 redux                  3.7.2   https://redux.js.org
 
 
