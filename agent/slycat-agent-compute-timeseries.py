@@ -25,8 +25,6 @@ import scipy.cluster.hierarchy
 import scipy.spatial.distance
 import slycat.hdf5
 import json
-import threading
-import logging
 
 try:
     import cpickle as pickle
@@ -54,11 +52,11 @@ parser.add_argument("--log_file", default="slycat-agent-compute-timeseries.log",
                     help="Name of the IPython profile to use")
 arguments = parser.parse_args()
 
-log_lock = threading.Lock()
-log = logging.getLogger()
-log.setLevel(logging.INFO)
-log.addHandler(logging.FileHandler(arguments.log_file))
-log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
+# log_lock = threading.Lock()
+# log = logging.getLogger()
+# log.setLevel(logging.INFO)
+# log.addHandler(logging.FileHandler(arguments.log_file))
+# log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
 
 if arguments.timeseries_name is None:
     directory_full_path = arguments.directory
@@ -76,15 +74,14 @@ _numSamples = arguments.cluster_sample_count
 try:
     pool = ipyparallel.Client(profile=arguments.profile)[:]
 except:
-    log.info("Ipython not found switching to linear run")
-    pool = None
+    raise Exception("A running IPython parallel cluster is required to run this script.")
 
 # Compute the model.
 try:
-    log.info("Examining and verifying data.")
+    print("Examining and verifying data.")
     """
-  Find number of timeseries and accurate cluster sample count before starting model
-  """
+    Find number of timeseries and accurate cluster sample count before starting model
+    """
     if os.path.isfile(os.path.join(arguments.directory, "inputs.hdf5")):
         inputs_path = os.path.join(arguments.directory, "inputs.hdf5")
     else:
@@ -108,9 +105,9 @@ try:
     # reduce the num of samples if fewer timeseries that curr cluster-sample-count
     if timeseries_samples.min() < _numSamples:
         _numSamples = int(timeseries_samples.min())
-        log.info("Reducing cluster sample count to minimum found in data: %s", _numSamples)
+        print("Reducing cluster sample count to minimum found in data: %s", _numSamples)
 
-    log.info("Storing clustering parameters.")
+    print("Storing clustering parameters.")
 
     dirname = "%s/slycat_timeseries_%s" % (arguments.workdir, arguments.hash)
     if not os.path.exists(dirname):
@@ -127,25 +124,25 @@ try:
         timeseries_count = dimensions[0]["end"] - dimensions[0]["begin"]
 
         """
-    Save data to dictionary to be pickled. Slycat server will later un-pickle
-    the file and use the data for the following commands:
-
-    put_model_arrayset(mid, "inputs")
-    put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
-    """
+        Save data to dictionary to be pickled. Slycat server will later un-pickle
+        the file and use the data for the following commands:
+    
+        put_model_arrayset(mid, "inputs")
+        put_model_arrayset_array(mid, "inputs", 0, dimensions, attributes)
+        """
         arrayset_inputs = dict(aid="inputs", array=0, dimensions=dimensions, attributes=attributes)
         with open(os.path.join(dirname, "arrayset_inputs.pickle"), "wb") as arrayset_inputs_pickle:
             pickle.dump(arrayset_inputs, arrayset_inputs_pickle)
 
         """
-    Fetch data for each of the attributes and pickle to disk. Slycat server will
-    later un-pickle the files and use the data for the following command:
-
-    put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
-    """
+        Fetch data for each of the attributes and pickle to disk. Slycat server will
+        later un-pickle the files and use the data for the following command:
+    
+        put_model_arrayset_data(mid, "inputs", "0/%s/..." % attribute, [data])
+        """
         attributes_array = numpy.empty(shape=(len(attributes),), dtype=object)
         for attribute in range(len(attributes)):
-            log.info("Storing input table attribute %s", attribute)
+            print("Storing input table attribute %s", attribute)
             attributes_array[attribute] = array.get_data(attribute)[...]
         with open(os.path.join(dirname, "inputs_attributes_data.pickle"), "wb") as attributes_file:
             pickle.dump(attributes_array, attributes_file)
@@ -175,13 +172,13 @@ try:
 
     def get_time_range(directory, timeseries_index):
         """
-    Get the minimum and maximum times for the input timeseries and returns the
-    values as a tuple.
+        Get the minimum and maximum times for the input timeseries and returns the
+        values as a tuple.
 
-    :param directory: working directory for the timeseries
-    :param timeseries_index:
-    :returns: timeseries time range as tuple
-    """
+        :param directory: working directory for the timeseries
+        :param timeseries_index:
+        :returns: timeseries time range as tuple
+        """
         import h5py
         import os
         import slycat.hdf5
@@ -191,22 +188,18 @@ try:
         return statistics["min"], statistics["max"]
 
 
-    log.info("Collecting timeseries statistics.")
-    if pool is not None:
-        time_ranges = pool.map_sync(get_time_range, list(itertools.repeat(directory_full_path, timeseries_count)),
-                                    range(timeseries_count))
-    else:
-        time_ranges = [[get_time_range(directory_full_path, _)[0], get_time_range(directory_full_path, _)[1]] for _ in
-                       xrange(timeseries_count)]
+    print("Collecting timeseries statistics.")
+    time_ranges = pool.map_sync(get_time_range, list(itertools.repeat(directory_full_path, timeseries_count)),
+                                range(timeseries_count))
 
     # For each cluster ...
     for index, (name, storage) in enumerate(sorted(clusters.items())):
-        log.info("cluster index: %s" % index)
+        print("cluster index: %s" % index)
         progress_begin = float(index) / float(len(clusters))
         progress_end = float(index + 1) / float(len(clusters))
 
         # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-        log.info("Resampling data for %s" % name)
+        print("Resampling data for %s" % name)
 
         # Get the minimum and maximum times across every series in the cluster.
         ranges = [time_ranges[timeseries[0]] for timeseries in storage]
@@ -217,16 +210,16 @@ try:
 
             def uniform_pla(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
                 """
-        Create waveforms using a piecewise linear approximation.
+                Create waveforms using a piecewise linear approximation.
 
-        :param directory: working directory for the timeseries
-        :param min_time:
-        :param max_time:
-        :param bin_count:
-        :param timeseries_index:
-        :param attribute_index:
-        :return: computed time series
-        """
+                :param directory: working directory for the timeseries
+                :param min_time:
+                :param max_time:
+                :param bin_count:
+                :param timeseries_index:
+                :param attribute_index:
+                :return: computed time series
+                """
                 import h5py
                 import numpy
                 import os
@@ -253,31 +246,23 @@ try:
             bin_counts = list(itertools.repeat(_numSamples, len(storage)))
             timeseries_indices = [timeseries for timeseries, attribute in storage]
             attribute_indices = [attribute for timeseries, attribute in storage]
-
-            if pool is not None:
-                waveforms = pool.map_sync(uniform_pla, directories, min_times, max_times, bin_counts,
-                                          timeseries_indices,
-                                          attribute_indices)
-            else:
-                waveforms = [
-                    uniform_pla(directories[_], min_times[_], max_times[_], bin_counts[_], timeseries_indices[_],
-                                attribute_indices[_]) for _ in xrange(len(min_times))]
-
+            waveforms = pool.map_sync(uniform_pla, directories, min_times, max_times, bin_counts, timeseries_indices,
+                                      attribute_indices)
 
         elif arguments.cluster_sample_type == "uniform-paa":
 
             def uniform_paa(directory, min_time, max_time, bin_count, timeseries_index, attribute_index):
                 """
-        Create waveforms using a piecewise aggregate approximation.
+                Create waveforms using a piecewise aggregate approximation.
 
-        :param directory: working directory for the timeseries
-        :param min_time:
-        :param max_time:
-        :param bin_count:
-        :param timeseries_index:
-        :param attribute_index:
-        :return: computed time series
-        """
+                :param directory: working directory for the timeseries
+                :param min_time:
+                :param max_time:
+                :param bin_count:
+                :param timeseries_index:
+                :param attribute_index:
+                :return: computed time series
+                """
                 import h5py
                 import numpy
                 import os
@@ -308,27 +293,21 @@ try:
             bin_counts = list(itertools.repeat(_numSamples, len(storage)))
             timeseries_indices = [timeseries for timeseries, attribute in storage]
             attribute_indices = [attribute for timeseries, attribute in storage]
-            if pool is not None:
-                waveforms = pool.map_sync(uniform_pla, directories, min_times, max_times, bin_counts,
-                                          timeseries_indices,
-                                          attribute_indices)
-            else:
-                waveforms = [
-                    uniform_paa(directories[_], min_times[_], max_times[_], bin_counts[_], timeseries_indices[_],
-                                attribute_indices[_]) for _ in xrange(len(min_times))]
+            waveforms = pool.map_sync(uniform_paa, directories, min_times, max_times, bin_counts, timeseries_indices,
+                                      attribute_indices)
 
         # Compute a distance matrix comparing every series to every other ...
         observation_count = len(waveforms)
         distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
         for i in range(0, observation_count):
-            log.info("Computing distance matrix for %s, %s of %s" % (name, i + 1, observation_count))
+            print("Computing distance matrix for %s, %s of %s" % (name, i + 1, observation_count))
             for j in range(i + 1, observation_count):
                 distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
                 distance_matrix[i, j] = distance
                 distance_matrix[j, i] = distance
 
         # Use the distance matrix to cluster observations ...
-        log.info("Clustering %s" % name)
+        print("Clustering %s" % name)
         distance = scipy.spatial.distance.squareform(distance_matrix)
         linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type),
                                                   metric=str(arguments.cluster_metric))
@@ -342,7 +321,7 @@ try:
             exemplars[i] = i
             cluster_membership.append(set([i]))
 
-        log.info("Identifying examplars for %s" % (name))
+        print("Identifying examplars for %s" % (name))
         for i in range(len(linkage)):
             cluster_id = i + observation_count
             (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -380,7 +359,7 @@ try:
             exemplars[cluster_id] = exemplar_id
 
         # Store the cluster.
-        log.info("Storing %s" % name)
+        print("Storing %s" % name)
         file_cluster_n = dict(aid="cluster-%s" % name, parser="slycat-blob-parser")
         with open(os.path.join(dirname, "file_cluster_%s.json" % name), "w") as file_cluster_n_json:
             json.dump(file_cluster_n, file_cluster_n_json)
@@ -403,7 +382,7 @@ try:
             waveform_times_array[index] = waveform["times"]
             waveform_values_array[index] = waveform["values"]
 
-        log.info("Creating array %s %s" % (attributes, dimensions))
+        print("Creating array %s %s" % (attributes, dimensions))
         with open(os.path.join(dirname, "waveform_%s_dimensions.pickle" % name), "wb") as dimensions_file:
             pickle.dump(dimensions_array, dimensions_file)
         with open(os.path.join(dirname, "waveform_%s_attributes.pickle" % name), "wb") as attributes_file:
@@ -416,6 +395,6 @@ try:
 except:
     import traceback
 
-    log.info(traceback.format_exc())
+    print(traceback.format_exc())
 
-log.info("done.")
+print("done.")

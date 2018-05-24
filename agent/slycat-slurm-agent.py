@@ -135,7 +135,7 @@ class Agent(agent.Agent):
             value1, value2 = p.communicate()
             if log_to_file:
                 log(str(value1))
-                log("[FINISHED]")
+                log("[RAN SCRIPT]")
                 return value1, value2
             else:
                 return value1, value2
