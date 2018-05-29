@@ -88,8 +88,8 @@ def js_bundle():
                                                                                     "js/slycat-server-ispasswordrequired.js",
                                                                                     "js/slycat-bookmark-manager.js",
                                                                                     "js/slycat-web-client.js",
-                                                                                  # Used by wizards
-                                                                                  "js/slycat_file_uploader_factory.js",
+                                                                                    # Used by wizards
+                                                                                    "js/slycat_file_uploader_factory.js",
                                                                                     "js/slycat-dialog.js",
                                                                                     "js/slycat-markings.js",
                                                                                     "js/slycat-nag.js",
