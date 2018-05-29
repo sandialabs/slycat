@@ -4,7 +4,7 @@
 
 import server_root from './slycat-server-root';
 import URI from "urijs";
-import lodash from "lodash"; 
+import _ from "lodash"; 
 
 var module = {};
 
@@ -68,7 +68,7 @@ module.create = function(pid, mid)
   {
     var new_location = URI(window.location).removeQuery("bid").addQuery("bid", bid);
     window.history.replaceState( null, null, new_location.toString() );
-    lodash.each(bid_callbacks, function(callback)
+    _.each(bid_callbacks, function(callback)
     {
       callback(bid);
     });
