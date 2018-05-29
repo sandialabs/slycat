@@ -77,9 +77,6 @@ def register_slycat_plugin(context):
   # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
   context.set_global_bundles("parameter-image", False)
 
-  # Register the webpack generated /dist/ui_parameter_image.js main JS file as js/ui_parameter_image.js (used in ui.html to load this main JS bundle)
-  context.register_page_resource("parameter-image", "js/ui_parameter_image.js", os.path.join(os.path.dirname(__file__), "../../dist/ui_parameter_image.js"))
-
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image", "media-columns", media_columns)
 

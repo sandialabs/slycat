@@ -115,8 +115,8 @@ def js_bundle():
                                                                                     "js/slycat-range-slider.js",
                                                                                   # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
                                                                                   "js/slycat-page-main.js",
-                                                                                  # Used by /web-server/templates/slycat-projects.html
-                                                                                  "js/slycat-projects-main.js",
+                                                                                    # Used by /web-server/templates/slycat-projects.html
+                                                                                    "js/slycat-projects-main.js",
                                                                                   # Used by /web-server/templates/slycat-project.html
                                                                                   "js/slycat-project-main.js",
                                                                                     "js/slycat-model-main.js",

@@ -2,20 +2,12 @@
 
 <script type="text/javascript">
   var model_name = "{{name}}";
-
-  // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
+  // Load JS bundle
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  [
-    // "js/parameter-controls.js",
-    // "js/parameter-image-table.js",
-    // "js/parameter-image-scatterplot.js",
-    "js/ui_parameter_image.js",
-  ].forEach(function(src) {
-    var script = document.createElement('script');
-    script.src = server_root + "resources/pages/parameter-image/" + src;
-    script.async = false;
-    document.head.appendChild(script);
-  });
+  var script = document.createElement('script');
+  script.src = server_root + "dist/ui_parameter_image.js";
+  script.async = false;
+  document.head.appendChild(script);
 </script>
 
 <div class="parameter-image" id="parameter-image-plus-layout">
