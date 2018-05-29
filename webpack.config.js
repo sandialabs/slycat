@@ -10,6 +10,7 @@ module.exports = {
   entry: {
     ui_parameter_image: './web-server/plugins/slycat-parameter-image/js/ui.js',
     slycat_projects:    './web-server/js/slycat-projects-main.js',
+    slycat_project:    './web-server/js/slycat-project-main.js',
   },
   output: {
     filename: '[name].js',

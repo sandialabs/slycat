@@ -117,8 +117,8 @@ def js_bundle():
                                                                                   "js/slycat-page-main.js",
                                                                                     # Used by /web-server/templates/slycat-projects.html
                                                                                     "js/slycat-projects-main.js",
-                                                                                  # Used by /web-server/templates/slycat-project.html
-                                                                                  "js/slycat-project-main.js",
+                                                                                    # Used by /web-server/templates/slycat-project.html
+                                                                                    "js/slycat-project-main.js",
                                                                                     "js/slycat-model-main.js",
                                                                                     # Seems to only affect /web-server/templates/slycat-navbar.html
                                                                                     "js/slycat-resizing-modals.js",
