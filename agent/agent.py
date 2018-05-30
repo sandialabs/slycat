@@ -474,7 +474,8 @@ class Agent(object):
                         debug = True
 
                 action = command["action"]
-                self.log.info("command: %s" % command)
+                if debug:
+                    self.log.info("command: %s" % command)
                 if action == "exit":
                     self.log.info("*agent stopping*\n")
                     if not arguments.fail_exit:
