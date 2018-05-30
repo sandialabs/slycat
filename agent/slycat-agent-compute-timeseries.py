@@ -32,7 +32,7 @@ except:
     import pickle
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--directory", default=None,
+parser.add_argument("directory",
                     help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple sub-directories with multiple timeseries-N.hdf5 files).")
 parser.add_argument("--timeseries-name", default=None,
                     help="Name of the timeseries, i.e. sub-directory name in the input directory.")
@@ -48,15 +48,7 @@ parser.add_argument("--workdir", default=None,
                     help="Working directory to store data to be processed during model creation")
 parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
 parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
-parser.add_argument("--log_file", default="slycat-agent-compute-timeseries.log",
-                    help="Name of the IPython profile to use")
 arguments = parser.parse_args()
-
-# log_lock = threading.Lock()
-# log = logging.getLogger()
-# log.setLevel(logging.INFO)
-# log.addHandler(logging.FileHandler(arguments.log_file))
-# log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
 
 if arguments.timeseries_name is None:
     directory_full_path = arguments.directory

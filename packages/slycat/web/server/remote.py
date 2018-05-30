@@ -468,7 +468,7 @@ class Session(object):
                 # uncomment this line for production
                 arr.append(
                     "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py"
-                    " --directory \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s"
+                    " \"%s\" --timeseries-name=\"%s\" --cluster-sample-count %s --cluster-sample-type %s"
                     " --cluster-type %s --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
                         hdf5_dir, params["timeseries_name"], params["cluster_sample_count"],
                         params["cluster_sample_type"],
@@ -479,7 +479,7 @@ class Session(object):
                 # uncomment this line for production
                 arr.append(
                     "python $SLYCAT_HOME/agent/slycat-agent-compute-timeseries.py"
-                    " --directory \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s"
+                    " \"%s\" --cluster-sample-count %s --cluster-sample-type %s --cluster-type %s"
                     " --cluster-metric %s --workdir \"%s\" --hash %s --profile ${profile}" % (
                         hdf5_dir, params["cluster_sample_count"], params["cluster_sample_type"], params["cluster_type"],
                         params["cluster_metric"], pickle_dir, uid))
