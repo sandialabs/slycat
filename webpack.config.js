@@ -92,4 +92,11 @@ module.exports = {
       },
 		],
 	},
+  optimization: {
+    splitChunks: {
+      // 'all' creates lots of chunks but does not automatically load them, making it a mess
+      // chunks: 'all',
+      chunks: 'async',
+    }
+  },
 };
