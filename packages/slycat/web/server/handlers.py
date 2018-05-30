@@ -72,8 +72,8 @@ def js_bundle():
                                                                                     "js/slycat-curl-config.js",
                                                                                     # Load this immediately following curl to configure it.
                                                                                     "js/uri.min.js",
-                                                                                    "js/react.development.js",
-                                                                                    "js/react-dom.development.js",
+                                                                                    # "js/react.development.js",
+                                                                                    # "js/react-dom.development.js",
                                                                                     "js/jquery-2.1.1.min.js",
                                                                                     "js/lodash.min.js",
                                                                                     "js/slycat-lodash-wrap.js",
@@ -93,19 +93,19 @@ def js_bundle():
                                                                                     "js/slycat-dialog.js",
                                                                                     "js/slycat-markings.js",
                                                                                     "js/slycat-nag.js",
-                                                                                  # Only used by slycat-parser-controls.js
-                                                                                  "js/slycat-parsers.js",
-                                                                                  # Used by wizards
-                                                                                  "js/slycat-model-controls.js",
-                                                                                  # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
-                                                                                  "js/slycat-parser-controls.js",
+                                                                                    # Only used by slycat-parser-controls.js
+                                                                                    "js/slycat-parsers.js",
+                                                                                    # Used by wizards
+                                                                                    "js/slycat-model-controls.js",
+                                                                                    # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
+                                                                                    "js/slycat-parser-controls.js",
                                                                                   # Used by wizards, a bunch of old ones but also the remap wizard
                                                                                   "js/slycat-model-results.js",
                                                                                     # Used by slycat-navbar(-webpack) and slycat-project-main.js
                                                                                     "js/slycat-model-names.js",
                                                                                     "js/slycat-navbar.js",
-                                                                                  # Used by creation wizards
-                                                                                  "js/slycat-local-browser.js",
+                                                                                    # Used by creation wizards
+                                                                                    "js/slycat-local-browser.js",
                                                                                   # Used by creation wizards
                                                                                   "js/slycat-remote-browser.js",
                                                                                   # Used by creation wizards

@@ -11,6 +11,9 @@ import mapping from "knockout-mapping";
 import fileUploader from "../../../js/slycat-file-uploader-factory-webpack";
 import "../../../js/slycat-local-browser-webpack";
 import "../../../js/slycat-parser-controls-webpack";
+import "../../../js/slycat-remote-controls-webpack";
+import "../../../js/slycat-remote-browser-webpack";
+import "../../../js/slycat-table-ingestion-webpack";
 import parameterImageWizardUI from "../wizard-ui.html";
 
 function constructor(params)

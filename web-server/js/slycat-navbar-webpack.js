@@ -208,6 +208,7 @@ ko.components.register("slycat-navbar",
         success : function()
         {
           window.location.reload(true);
+          console.log("set new location in slycat-navbar-webpack line 210. This is what causes the reload on first model load.");
         }
       });
     }
