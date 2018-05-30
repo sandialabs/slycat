@@ -9,6 +9,7 @@ module.exports = {
 	// mode: 'development',
   entry: {
     ui_parameter_image: './web-server/plugins/slycat-parameter-image/js/ui.js',
+    ui_run_command:     './web-server/plugins/slycat-run-command/ui.js',
     slycat_projects:    './web-server/js/slycat-projects-main.js',
     slycat_project:     './web-server/js/slycat-project-main.js',
     slycat_page:        './web-server/js/slycat-page-main.js',
