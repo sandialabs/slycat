@@ -539,55 +539,32 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 
 
 def ssh_connect(hostname=None, username=None, password=None):
-    if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] != "certificate":
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=hostname, username=username, password=password)
-        ssh.get_transport().set_keepalive(5)
-    else:
-        import requests
-        import tempfile
-        num_bits = 2056
-        # create the private key
-        pvt_key = paramiko.RSAKey.generate(num_bits)
-        # create the public key
-        pub_key = "ssh-rsa " + pvt_key.get_base64()  # SSO specific format
-        # pub_key = "ssh-rsa " + pvt_key.get_base64()
-        # + " " + principal + "\n"  # General Format, principal is <username>@<hostname>
-        cherrypy.log.error("ssh_connect cert method, POST to sso-auth-server for user: %s" % cherrypy.request.login)
-        r = requests.post(slycat.web.server.config["slycat-web-server"]["sso-auth-server"]["url"],
-                          cert=(slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["cert-path"],
-                                slycat.web.server.config["slycat-web-server"]["ssl-certificate"]["key-path"]),
-                          data='{"principal": "' + cherrypy.request.login + '", "pubkey": "' + pub_key + '"}',
-                          headers={"Content-Type": "application/json"},
-                          verify=False)
-
-        cherrypy.log.error("ssh_connect cert method, POST result: %s" % str(r))
-        # create a cert file obj
-        # cert_file_object = tempfile.TemporaryFile().write(str(r.json()["certificate"])).seek(0) #this line crashes
-        cert_file_object = tempfile.TemporaryFile()
-        cert_file_object.write(str(r.json()["certificate"]))
-        cert_file_object.seek(0)
-        # create a key file obj
-        key_file_object = tempfile.TemporaryFile()
-        pvt_key.write_private_key(key_file_object)
-        key_file_object.seek(0)
-        # create the cert used for auth
-        cert = paramiko.RSACert(privkey_file_obj=key_file_object, cert_file_obj=cert_file_object)
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        cherrypy.log.error("ssh_connect cert method, calling ssh.connect for user: %s" % cherrypy.request.login)
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    
+    if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] == "certificate":
         import traceback
+        _certFn = "gen-rsa-ssh-cert"
+        if _certFn not in slycat.web.server.plugin.manager.utilities:
+            raise Exception("Unknown ssh_connect plugin: %s." % _certFn)
+        
         try:
-            ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=cert,
+            # get SSH cert from SSO server
+            RSAcert = slycat.web.server.plugin.manager.utilities[_certFn]( )
+            ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=RSAcert,
                         port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
         except paramiko.AuthenticationException as e:
             cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
             cherrypy.log.error("ssh_connect cert method, called ssh.connect traceback: %s" % traceback.print_exc())
             raise cherrypy.HTTPError("403 Remote authentication failed.")
-        ssh.get_transport().set_keepalive(5)
-        cert_file_object.close()
-        key_file_object.close()
+    else:
+        try:
+            ssh.connect(hostname=hostname, username=username, password=password)
+        except paramiko.AuthenticationException as e:
+            cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (username, hostname, str(e)))
+            raise cherrypy.HTTPError("403 Remote authentication failed.")
+    
+    ssh.get_transport().set_keepalive(5)
     return ssh
 
 
