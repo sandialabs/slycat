@@ -9,13 +9,13 @@ import slycat_additions_css from "css/slycat-additions.css";
 import stickies_css from "../css/stickies.css";
 import ui_css from "../css/ui.css";
 
-import server_root from "../../../js/slycat-server-root";
+import server_root from "js/slycat-server-root";
 import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
-import client from "../../../js/slycat-web-client-webpack";
-import bookmark_manager from "../../../js/slycat-bookmark-manager-webpack";
-import * as dialog from "../../../js/slycat-dialog-webpack";
+import client from "js/slycat-web-client-webpack";
+import bookmark_manager from "js/slycat-bookmark-manager-webpack";
+import * as dialog from "js/slycat-dialog-webpack";
 import NoteManager from "./note-manager";
 import FilterManager from "./filter-manager";
 import d3 from "./d3.min";
@@ -29,17 +29,17 @@ import "jquery-ui";
 import "./jquery.layout-latest.min";
 import "./jquery.scrollintoview.min";
 import "./jquery.event.drag-2.2";
-import "./slick.core";
-import "./slick.grid";
-import "./slick.rowselectionmodel";
-import "./slick.headerbuttons";
-import "./slick.autotooltips";
+import "js/slick.core";
+import "js/slick.grid";
+import "js/slick.rowselectionmodel";
+import "js/slick.headerbuttons";
+import "js/slick.autotooltips";
 import "./slick.slycateditors";
-import "../../../js/slycat-range-slider-webpack"; 
+import "js/slycat-range-slider-webpack"; 
 import "./category-select";
 import "bootstrap";
-import "../../../js/slycat-navbar-webpack"
-import * as slycat_model_main from "../../../js/slycat-model-main-webpack";
+import "js/slycat-navbar-webpack"
+import * as slycat_model_main from "js/slycat-model-main-webpack";
 
 // Wait for document ready
 $(document).ready(function() {

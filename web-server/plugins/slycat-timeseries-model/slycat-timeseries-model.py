@@ -522,59 +522,42 @@ def register_slycat_plugin(context):
 
     context.register_page("timeseries", page_html)
 
-    context.register_page_bundle("timeseries", "text/css", [
-        os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
-        os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
-        os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-        os.path.join(os.path.dirname(__file__), "css/ui.css"),
-    ])
-    context.register_page_bundle("timeseries", "text/javascript", [
-        os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-        os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-        os.path.join(os.path.dirname(__file__), "js/jquery.knob.js"),
-        os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-        os.path.join(os.path.dirname(__file__), "js/chunker.js"),
-        os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
-        os.path.join(os.path.dirname(__file__), "js/timeseries-cluster.js"),
-        os.path.join(os.path.dirname(__file__), "js/timeseries-dendrogram.js"),
-        os.path.join(os.path.dirname(__file__), "js/timeseries-waveformplot.js"),
-        os.path.join(os.path.dirname(__file__), "js/timeseries-table.js"),
-        os.path.join(os.path.dirname(__file__), "js/timeseries-legend.js"),
-        os.path.join(os.path.dirname(__file__), "js/timeseries-controls.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-        # For development and debugging, loading some js dynamically inside model.
-        # os.path.join(os.path.dirname(__file__), "js/ui.js"),
-    ])
-    context.register_page_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
+    # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
+    context.set_global_bundles("timeseries", False)
 
-    # Register jquery-ui images
-    images = [
-        # for stickies
-        'ui-bg_flat_0_aaaaaa_40x100.png',
-        'ui-icons_222222_256x240.png',
-        'ui-bg_highlight-soft_75_cccccc_1x100.png',
-        'ui-bg_flat_75_ffffff_40x100.png',
-        'ui-bg_glass_75_e6e6e6_1x400.png',
-    ]
-    for image in images:
-        context.register_page_resource("timeseries", image, os.path.join(os.path.dirname(__file__), "images", image))
-
-    devs = [
-        # "js/parameter-image-dendrogram.js",
-        # "js/parameter-image-scatterplot.js",
-        "js/ui.js",
-    ]
-    for dev in devs:
-        context.register_page_resource("timeseries", dev, os.path.join(os.path.dirname(__file__), dev))
+    # context.register_page_bundle("timeseries", "text/css", [
+    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/ui.css"),
+    # ])
+    # context.register_page_bundle("timeseries", "text/javascript", [
+    #     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/jquery.knob.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/chunker.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/timeseries-cluster.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/timeseries-dendrogram.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/timeseries-waveformplot.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/timeseries-table.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/timeseries-legend.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/timeseries-controls.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
+    #     # For development and debugging, loading some js dynamically inside model.
+    #     # os.path.join(os.path.dirname(__file__), "js/ui.js"),
+    # ])
+    # context.register_page_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
 
     # Register custom commands for use by wizards
     context.register_model_command("GET", "timeseries", "pull_data", pull_data)
