@@ -34,7 +34,7 @@ import "js/slick.grid";
 import "js/slick.rowselectionmodel";
 import "js/slick.headerbuttons";
 import "js/slick.autotooltips";
-import "./slick.slycateditors";
+import "js/slick.slycateditors";
 import "js/slycat-range-slider-webpack"; 
 import "./category-select";
 import "bootstrap";
