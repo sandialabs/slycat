@@ -243,19 +243,30 @@ def register_slycat_plugin(context):
         time_points = slycat.web.server.get_model_arrayset_data (
             database, model, "dac-time-points", "%s/0/..." % database_ind)[0]
 
-        # get desired rows of variable data from database
-        var_data = []
+        # get desired rows of variable data from database (one at a time)
+        # var_data = []
+        # num_rows = len(rows)
+        # for i in range(0, num_rows):
+        #     if i == 0:
+        #         first_slice = slycat.web.server.get_model_arrayset_data (
+        #             database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[0]))[0]
+        #         num_cols = len(first_slice)
+        #         var_data = numpy.zeros((num_rows, num_cols))
+        #         var_data[0,:] = first_slice
+        #     else:
+        #         var_data[i,:] = slycat.web.server.get_model_arrayset_data (
+        #             database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[i]))[0]
+
+        # get desired rows of variable data from database (all at once)
         num_rows = len(rows)
-        for i in range(0, num_rows):
-            if i == 0:
-                first_slice = slycat.web.server.get_model_arrayset_data (
-                    database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[0]))[0]
-                num_cols = len(first_slice)
-                var_data = numpy.zeros((num_rows, num_cols))
-                var_data[0,:] = first_slice
-            else:
-                var_data[i,:] = slycat.web.server.get_model_arrayset_data (
-                database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[i]))[0]
+        var_data = []
+        if num_rows > 0:
+            str_rows = [str(x) for x in rows]
+            hyper_rows = "|".join(str_rows)
+
+            # load desired rows using hyperchunks
+            var_data = numpy.array(slycat.web.server.get_model_arrayset_data (
+                database, model, "dac-var-data", "%s/0/%s" % (database_ind, hyper_rows)))
 
         # find indices within user selected range
         range_inds = numpy.where((time_points >= x_min) & (time_points <= x_max))[0]

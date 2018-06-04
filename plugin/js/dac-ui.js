@@ -67,7 +67,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                     $.when(request.get_parameters("dac-parse-log")).then(
                         function(error_log)
                         {
+                            // display text then scroll to bottom
                             $("#dac_processing_textarea").text(error_log[1]);
+                            $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
                         });
 
                     // reset time out and continue

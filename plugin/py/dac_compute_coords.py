@@ -148,7 +148,7 @@ def scale_coords (coords, full_coords, subset, center):
     # scale to [0,1]^2
     scaled_coords = rot_coords / (2.0 * coords_scale) + 0.5
 
-    # set coords of anything not in subset to (-1,-1)
+    # set coords of anything not in subset
     num_coords = coords.shape[0]
     new_coords = np.zeros((num_coords,2))
     for i in range(num_coords):
