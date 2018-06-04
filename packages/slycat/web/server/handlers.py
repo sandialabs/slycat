@@ -99,22 +99,22 @@ def js_bundle():
                                                                                     "js/slycat-model-controls.js",
                                                                                     # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
                                                                                     "js/slycat-parser-controls.js",
-                                                                                  # Used by wizards, a bunch of old ones but also the remap wizard
+                                                                                  # Used by wizards, a bunch of old ones but also the remap wizard. None of the main ones use it.
                                                                                   "js/slycat-model-results.js",
                                                                                     # Used by slycat-navbar(-webpack) and slycat-project-main.js
                                                                                     "js/slycat-model-names.js",
                                                                                     "js/slycat-navbar.js",
                                                                                     # Used by creation wizards
                                                                                     "js/slycat-local-browser.js",
-                                                                                  # Used by creation wizards
-                                                                                  "js/slycat-remote-browser.js",
-                                                                                  # Used by creation wizards
-                                                                                  "js/slycat-remote-controls.js",
+                                                                                    # Used by creation wizards
+                                                                                    "js/slycat-remote-browser.js",
+                                                                                    # Used by creation wizards
+                                                                                    "js/slycat-remote-controls.js",
                                                                                     "js/slycat-remotes.js",
                                                                                     "js/slycat-login-controls.js",
                                                                                     "js/slycat-range-slider.js",
-                                                                                  # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
-                                                                                  "js/slycat-page-main.js",
+                                                                                    # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
+                                                                                    "js/slycat-page-main.js",
                                                                                     # Used by /web-server/templates/slycat-projects.html
                                                                                     "js/slycat-projects-main.js",
                                                                                     # Used by /web-server/templates/slycat-project.html
@@ -122,10 +122,10 @@ def js_bundle():
                                                                                     "js/slycat-model-main.js",
                                                                                     # Seems to only affect /web-server/templates/slycat-navbar.html
                                                                                     "js/slycat-resizing-modals.js",
-                                                                                  # Used by wizards
-                                                                                  "js/slycat-table-ingestion.js",
+                                                                                    # Used by wizards
+                                                                                    "js/slycat-table-ingestion.js",
                                                                                     "js/slycat-3d-viewer.js",
-                                                                                  # Used by wizards
+                                                                                  # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
                                                                                   "js/slycat-remote-interface.js",
                                                                                   # Seems to be only used in Parameter Image Plus and Timeseries
                                                                                   "js/slycat-job-checker.js"

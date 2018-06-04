@@ -1,5 +1,45 @@
 /* Copyright © 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
+import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
+import slick_grid_css from "../css/slick.grid.css";
+// import slick_default_theme_css from "../css/slick-default-theme.css";
+// import slick_headerbuttons_css from "../css/slick.headerbuttons.css";
+// import slick_slycat_theme_css from "../css/slick-slycat-theme.css";
+// import ui_css from "../css/ui.css";
+// import slycat_additions_css from "../css/slycat-additions.css";
+
+// import server_root from "../../../js/slycat-server-root";
+// import _ from "lodash";
+// import ko from "knockout";
+// import mapping from "knockout-mapping";
+// import client from "../../../js/slycat-web-client-webpack";
+// import bookmark_manager from "../../../js/slycat-bookmark-manager-webpack";
+// import * as dialog from "../../../js/slycat-dialog-webpack";
+// import NoteManager from "./note-manager";
+// import FilterManager from "./filter-manager";
+// import d3 from "./d3.min";
+// import URI from "urijs";
+// import * as chunker from "./chunker";
+// import "./parameter-image-scatterplot";
+// import "./parameter-controls";
+// import "./parameter-image-table";
+// import "./color-switcher";
+// import "jquery-ui";
+// import "./jquery.layout-latest.min";
+// import "./jquery.scrollintoview.min";
+// import "./jquery.event.drag-2.2";
+// import "./slick.core";
+// import "./slick.grid";
+// import "./slick.rowselectionmodel";
+// import "./slick.headerbuttons";
+// import "./slick.autotooltips";
+// import "./slick.slycateditors";
+// import "../../../js/slycat-range-slider-webpack"; 
+// import "./category-select";
+// import "bootstrap";
+// import "../../../js/slycat-navbar-webpack"
+// import * as slycat_model_main from "../../../js/slycat-model-main-webpack";
+
 define("slycat-timeseries-model", ["slycat-server-root", 'slycat-web-client', "slycat-bookmark-manager", "slycat-dialog", "knockout", "URI", "slycat-timeseries-controls", "domReady!"], function(server_root, client, bookmark_manager, dialog, ko, URI)
 {
   ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
