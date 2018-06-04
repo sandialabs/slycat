@@ -525,16 +525,6 @@ def register_slycat_plugin(context):
     # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
     context.set_global_bundles("timeseries", False)
 
-    # context.register_page_bundle("timeseries", "text/css", [
-    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/ui.css"),
-    # ])
     # context.register_page_bundle("timeseries", "text/javascript", [
     #     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
     #     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),

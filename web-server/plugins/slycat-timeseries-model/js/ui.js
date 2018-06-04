@@ -18,11 +18,11 @@ import * as dialog from "js/slycat-dialog-webpack";
 // import FilterManager from "./filter-manager";
 // import d3 from "./d3.min";
 import URI from "urijs";
-// import * as chunker from "./chunker";
-// import "./parameter-image-scatterplot";
-// import "./parameter-controls";
-// import "./parameter-image-table";
-// import "./color-switcher";
+import * as chunker from "./chunker";
+import "./timeseries-cluster";
+import "./timeseries-controls";
+import "./timeseries-legend";
+import "./color-switcher";
 import "jquery-ui";
 import "js/jquery.layout-latest.min";
 import "js/jquery.scrollintoview.min";
@@ -415,7 +415,7 @@ $(document).ready(function() {
       waveforms_metadata[cluster_index] = null;
       
       // Load the waveforms.
-      get_model_arrayset({
+      chunker.get_model_arrayset({
         server_root : server_root + "",
         mid : model._id,
         aid : "preview-" + s_to_a(clusters)[cluster_index],
@@ -945,7 +945,7 @@ $(document).ready(function() {
     // Retrieve waveform data if it's not already in the cache
     if(waveforms_data[cluster] === undefined) {
       // Load the waveforms.
-      get_model_arrayset({
+      chunker.get_model_arrayset({
         server_root : server_root,
         mid : model._id,
         aid : "preview-" + s_to_a(clusters)[cluster],

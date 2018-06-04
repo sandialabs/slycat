@@ -1,7 +1,7 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
-var arrayset_metadata_cache = {};
-var arrayset_metadata_retrieval_inprogress = {};
-var arrayset_metadata_callbacks = {};
+export var arrayset_metadata_cache = {};
+export var arrayset_metadata_retrieval_inprogress = {};
+export var arrayset_metadata_callbacks = {};
 
 function is_little_endian()
 {
@@ -37,7 +37,7 @@ function get_model_array_attribute_metadata(parameters, dfd)
 }
 
 // Retrieve an arrayset's metadata asynchronously, calling a callback when it's ready ...
-function get_model_arrayset_metadata(parameters)
+export function get_model_arrayset_metadata(parameters)
 {
   // It's cached, so just execute callback with cached metadata
   if(arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
@@ -89,7 +89,7 @@ function get_model_arrayset_metadata(parameters)
 
 // Cast a generic arraybuffer to a typed array, with an optional offset and
 // count.  Note that offset and count are measured in elements, not bytes.
-function cast_array_buffer(buffer, type, offset, count)
+export function cast_array_buffer(buffer, type, offset, count)
 {
   if(type == "int32")
   {
@@ -152,7 +152,7 @@ function cast_array_buffer(buffer, type, offset, count)
 }
 
 // Retrieve an array attribute asynchronously, calling a callback when it's ready ...
-function get_model_array_attribute(parameters) {
+export function get_model_array_attribute(parameters) {
   var dfd = $.Deferred();
   if(parameters.metadata === undefined) {
     parameters.metadataSuccess = retrieve_model_array_attribute;
@@ -235,7 +235,7 @@ function get_model_array_attribute(parameters) {
 }
 
 // Retrieve an arrayset asynchronously, calling a callback when it's ready ...
-function get_model_arrayset(parameters)
+export function get_model_arrayset(parameters)
 {
   if(parameters.metadata !== undefined) 
   {

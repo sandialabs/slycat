@@ -1,5 +1,10 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
-define("slycat-timeseries-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse"], function(server_root, dialog, _, Papa) {
+
+import server_root from "js/slycat-server-root";
+import * as dialog from "js/slycat-dialog-webpack";
+import _ from "lodash";
+import Papa from "papaparse";
+
 $.widget("timeseries.controls",
 {
   options:
@@ -248,5 +253,4 @@ $.widget("timeseries.controls",
       self._set_color_variables();
     }
   },
-});
 });
