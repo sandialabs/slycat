@@ -18,7 +18,7 @@ import bookmark_manager from "js/slycat-bookmark-manager-webpack";
 import * as dialog from "js/slycat-dialog-webpack";
 import NoteManager from "./note-manager";
 import FilterManager from "./filter-manager";
-import d3 from "./d3.min";
+import d3 from "js/d3.min";
 import URI from "urijs";
 import * as chunker from "./chunker";
 import "./parameter-image-scatterplot";
