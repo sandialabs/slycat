@@ -169,7 +169,7 @@ export function get_model_array_attribute(parameters) {
     var metadata = parameters.metadata;
     var attribute = parameters.attribute;
     var isStringAttribute = metadata.attributes[attribute].type == "string";
-    var byteorder = "&byteorder=" + (is_little_endian() ? "little" : "big");
+    var byteorder = "&byteorder=" + (is_little_endian.call(this) ? "little" : "big");
     if(isStringAttribute)
     {
       byteorder = "";
@@ -279,7 +279,7 @@ export function get_model_arrayset(parameters)
       hyperchunks.push(".../.../...");
     }
 
-    var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian() ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
+    var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian.call(this) ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
     var request = new XMLHttpRequest();
     request.open("GET", uri);
     request.responseType = "arraybuffer";
