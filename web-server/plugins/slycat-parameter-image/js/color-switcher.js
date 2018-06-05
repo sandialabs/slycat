@@ -276,7 +276,33 @@ $.widget("slycat.colorswitcher",
       />;
 
     self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
-    console.log("self.color_bar has been created.");
+
+    var all_color_stops = [];
+    var all_background_color = [];
+
+    $.each(this.color_maps, function(key, value) {
+
+        var gradient_data = self.get_gradient_data(key);
+        var color_stops = [];
+        for (var i = 0; i < gradient_data.length; i++) {
+            color_stops.push(gradient_data[i].color + " " + gradient_data[i].offset + "%");
+        }
+        var background_color = self.get_background(key);
+
+        all_color_stops.push(color_stops);
+        all_background_color.push(background_color);
+    });
+
+    for (var i = 0; i < all_color_stops.length; i++) {
+      $("#color-switcher li").eq(i)
+            .css({
+                "background-image": "linear-gradient(to bottom, " + all_color_stops[i].join(", ") + "), linear-gradient(to bottom, " + all_background_color[i] + ", " + all_background_color[i] + ")",
+                "background-size": "5px 75%, 50px 100%",
+                "background-position": "right 10px center, right 5px center",
+                "background-repeat": "no-repeat, no-repeat",
+                "padding-right": "70px",
+            });
+    }
   },
 
   _setOption: function(key, value)
@@ -299,8 +325,6 @@ $.widget("slycat.colorswitcher",
   // Return a d3 rgb object with the suggested background color for the given color map.
   get_background: function(name)
   {
-    //console.log("get_background");
-    //console.log(this.options.colormap);
     if(name === undefined)
       name = this.options.colormap;
     return this.color_maps[name].background;
@@ -327,8 +351,6 @@ $.widget("slycat.colorswitcher",
   get_color_scale: function(name, min, max)
   {
     name = this.color_bar.get_selected_colormap();
-    console.log("Just called get_selected_colormap, and the new name is: ");
-    console.log(name);
     if(name === undefined)
       name = this.options.colormap;
     if(min === undefined)
