@@ -8,15 +8,10 @@ import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import ui_css from "../css/ui.css";
 
 import server_root from "js/slycat-server-root";
-// import _ from "lodash";
 import ko from "knockout";
-// import mapping from "knockout-mapping";
 import client from "js/slycat-web-client-webpack";
 import bookmark_manager from "js/slycat-bookmark-manager-webpack";
 import * as dialog from "js/slycat-dialog-webpack";
-// import NoteManager from "./note-manager";
-// import FilterManager from "./filter-manager";
-// import d3 from "./d3.min";
 import URI from "urijs";
 import * as chunker from "./chunker";
 import "./timeseries-cluster";
@@ -35,9 +30,6 @@ import "js/slick.grid";
 import "js/slick.rowselectionmodel";
 import "js/slick.headerbuttons";
 import "js/slick.autotooltips";
-// import "./slick.slycateditors";
-// import "js/slycat-range-slider-webpack"; 
-// import "./category-select";
 import "bootstrap";
 import "js/slycat-navbar-webpack"
 import * as slycat_model_main from "js/slycat-model-main-webpack";
