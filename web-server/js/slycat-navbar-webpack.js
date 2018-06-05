@@ -17,20 +17,20 @@ import "./knockout-projections"
 import ispasswordrequired from "./slycat-server-ispasswordrequired-webpack";
 import "./slycat-resizing-modals-webpack";
 import "./slycat-nag-webpack";
-import slycatNavbar from '../templates/slycat-navbar-webpack.html';
-import slycat_edit_model from '../plugins/slycat-model-wizards/edit-ui-webpack';
-import slycat_delete_model from '../plugins/slycat-model-wizards/delete-ui-webpack';
-import slycat_apply_template from '../plugins/slycat-model-wizards/apply-template-ui-webpack';
-import slycat_create_saved_bookmark from '../plugins/slycat-model-wizards/create-saved-bookmark-ui-webpack';
-import slycat_create_template from '../plugins/slycat-model-wizards/create-template-ui-webpack';
-import slycat_info_model from '../plugins/slycat-model-wizards/info-ui-webpack';
-import slycat_reset_model from '../plugins/slycat-model-wizards/reset-ui-webpack';
-import remap_wizard from '../plugins/slycat-remap-wizard/remap-ui-webpack';
-import slycat_create_project from '../plugins/slycat-project-wizards/create-ui-webpack';
-import slycat_edit_project from '../plugins/slycat-project-wizards/edit-ui';
-import slycat_info_project from '../plugins/slycat-project-wizards/info-ui';
-import slycat_delete_project from '../plugins/slycat-project-wizards/delete-ui';
-import parameter_image from '../plugins/slycat-parameter-image/js/wizard-ui';
+import slycatNavbar from 'templates/slycat-navbar-webpack.html';
+import slycat_edit_model from 'plugins/slycat-model-wizards/edit-ui-webpack';
+import slycat_delete_model from 'plugins/slycat-model-wizards/delete-ui-webpack';
+import slycat_apply_template from 'plugins/slycat-model-wizards/apply-template-ui-webpack';
+import slycat_create_saved_bookmark from 'plugins/slycat-model-wizards/create-saved-bookmark-ui-webpack';
+import slycat_create_template from 'plugins/slycat-model-wizards/create-template-ui-webpack';
+import slycat_info_model from 'plugins/slycat-model-wizards/info-ui-webpack';
+import slycat_reset_model from 'plugins/slycat-model-wizards/reset-ui-webpack';
+import remap_wizard from 'plugins/slycat-remap-wizard/remap-ui-webpack';
+import slycat_create_project from 'plugins/slycat-project-wizards/create-ui-webpack';
+import slycat_edit_project from 'plugins/slycat-project-wizards/edit-ui';
+import slycat_info_project from 'plugins/slycat-project-wizards/info-ui';
+import slycat_delete_project from 'plugins/slycat-project-wizards/delete-ui';
+import parameter_image from 'plugins/slycat-parameter-image/js/wizard-ui';
 import "bootstrap";
 
 ko.components.register("slycat-navbar",
