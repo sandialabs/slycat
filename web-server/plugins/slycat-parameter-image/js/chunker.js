@@ -1,11 +1,12 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
-var arrayset_metadata_cache = {};
+ 
+export var arrayset_metadata_cache = {};
 
 function is_little_endian()
 {
-  if(this.result === undefined)
-    this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-  return this.result;
+  if(window.result === undefined)
+    window.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
+  return window.result;
 }
 
 // Retrieve an array attribute's metadata asynchronously, calling a callback when it's ready ...
@@ -116,8 +117,7 @@ export function get_model_array_attribute(parameters) {
     var metadata = parameters.metadata;
     var attribute = parameters.attribute;
     var isStringAttribute = metadata.attributes[attribute].type == "string";
-    // Assigning current scope's "this" to is_little_endian function, otherwise "this" is undefined in is_little_endian
-    var byteorder = "&byteorder=" + (is_little_endian.call(this) ? "little" : "big");
+    var byteorder = "&byteorder=" + (is_little_endian() ? "little" : "big");
     if(isStringAttribute)
     {
       byteorder = "";

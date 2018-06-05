@@ -5,9 +5,9 @@ export var arrayset_metadata_callbacks = {};
 
 function is_little_endian()
 {
-  if(this.result === undefined)
-    this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-  return this.result;
+  if(window.result === undefined)
+    window.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
+  return window.result;
 }
 
 // Retrieve an array attribute's metadata asynchronously, calling a callback when it's ready ...
@@ -169,7 +169,7 @@ export function get_model_array_attribute(parameters) {
     var metadata = parameters.metadata;
     var attribute = parameters.attribute;
     var isStringAttribute = metadata.attributes[attribute].type == "string";
-    var byteorder = "&byteorder=" + (is_little_endian.call(this) ? "little" : "big");
+    var byteorder = "&byteorder=" + (is_little_endian() ? "little" : "big");
     if(isStringAttribute)
     {
       byteorder = "";
@@ -279,7 +279,7 @@ export function get_model_arrayset(parameters)
       hyperchunks.push(".../.../...");
     }
 
-    var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian.call(this) ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
+    var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian() ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
     var request = new XMLHttpRequest();
     request.open("GET", uri);
     request.responseType = "arraybuffer";
