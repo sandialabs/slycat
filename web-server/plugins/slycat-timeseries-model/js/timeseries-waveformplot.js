@@ -427,11 +427,11 @@ $.widget("timeseries.waveformplot",
       if (timeout == null)
         timeout = 500
 
-      self.previewWaveformsTimeout = setTimeout( function(){
+      self.previewWaveformsTimeout = setTimeout( function work(){
         destinationContext.drawImage(sourceCanvas, 0, 0);
         if(self.previewWaveformsTimeout)
         {
-          self.previewWaveformsTimeout = setTimeout(arguments.callee, timeout);
+          self.previewWaveformsTimeout = setTimeout(work, timeout);
         }
       }, timeout );
     }
@@ -615,14 +615,14 @@ $.widget("timeseries.waveformplot",
     var timeout = 100; //how long to yield control to UI thread
     var todo = items.concat(); //create a clone of the original
 
-    windowTimer.timeoutID = setTimeout(function(){
+    windowTimer.timeoutID = setTimeout(function work(){
       var start = +new Date();
       do {
         process(todo.shift());
       } while (todo.length > 0 && (+new Date() - start < 50));
 
       if (todo.length > 0){
-        windowTimer.timeoutID = setTimeout(arguments.callee, timeout);
+        windowTimer.timeoutID = setTimeout(work, timeout);
       } else {
         callback(items);
       }
