@@ -525,30 +525,6 @@ def register_slycat_plugin(context):
     # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
     context.set_global_bundles("timeseries", False)
 
-    # context.register_page_bundle("timeseries", "text/javascript", [
-    #     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/jquery.knob.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/chunker.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/timeseries-cluster.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/timeseries-dendrogram.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/timeseries-waveformplot.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/timeseries-table.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/timeseries-legend.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/timeseries-controls.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-    #     # For development and debugging, loading some js dynamically inside model.
-    #     # os.path.join(os.path.dirname(__file__), "js/ui.js"),
-    # ])
-    # context.register_page_resource("timeseries", "images", os.path.join(os.path.dirname(__file__), "images"))
-
     # Register custom commands for use by wizards
     context.register_model_command("GET", "timeseries", "pull_data", pull_data)
     context.register_model_command("POST", "timeseries", "checkjob", checkjob)
