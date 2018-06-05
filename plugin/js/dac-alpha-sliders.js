@@ -16,13 +16,24 @@ define ("dac-alpha-sliders", ["jquery", "slycat-dialog", "dac-request-data"],
 	var alpha_names = null;
 	var alpha_values = [];
 	var alpha_order = [];
+
+	// maximum length of a slider name
+	var max_slider_name_length = null;
 	
-	module.setup = function (ALPHA_STEP, num_alpha, names_alpha)
+	module.setup = function (ALPHA_STEP, num_alpha, names_alpha, MAX_SLIDER_NAME)
 	{
 
 		// sort out the information we need
 		alpha_num = num_alpha;
 		alpha_names = names_alpha;
+		max_slider_name_length = MAX_SLIDER_NAME;
+
+        // truncate names if they are too long
+        for (var i = 0; i < alpha_num; i ++) {
+            if (alpha_names[i].length > max_slider_name_length) {
+                alpha_names[i] = alpha_names[i].substring(0, max_slider_name_length) + " ...";
+            }
+        }
 
 		// initialize alpha slider values to all 1 and order to 1 ... n
 		for (i = 0; i < alpha_num; i++) {

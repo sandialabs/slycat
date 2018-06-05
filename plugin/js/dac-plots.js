@@ -25,6 +25,9 @@ function(client, dialog, selections, $, d3, URI)
     var max_time_points = null;
     var max_num_plots = null;
 
+    // maximum plot name length to (hopefully) avoid bad plot alignment in the pane
+    var max_plot_name_length = null;
+
 	// model ID
 	var mid = URI(window.location).segment(-1);
 
@@ -86,7 +89,7 @@ function(client, dialog, selections, $, d3, URI)
 	
 	// set up initial private variables, user interface
 	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
-	                         MAX_TIME_POINTS, MAX_NUM_PLOTS, variables_metadata, variables_data)
+	                         MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data)
 	{
 	
 		// set ui constants
@@ -110,6 +113,9 @@ function(client, dialog, selections, $, d3, URI)
         // set maximum number of plots (per selection)
         max_num_plots = MAX_NUM_PLOTS;
 
+        // set maximum length of plot names
+        max_plot_name_length = MAX_PLOT_NAME;
+
 		// populate pull down menus and initialize d3 plots
 
 		// sort out the variable metadata we need
@@ -118,11 +124,17 @@ function(client, dialog, selections, $, d3, URI)
 		y_axis_name = variables_data[0]["data"][2];
 		plot_type = variables_data[0]["data"][3];
 
-        // populate plot names, but truncate with it too long
+        // populate plot names
 		plot_name = variables_data[0]["data"][0];
 
-        console.log(num_plots);
-        console.log(plot_name);
+        // truncate plot names if too long
+        for (var i = 0; i < num_plots; i++) {
+
+            if (plot_name.length > max_plot_name_length) {
+                plot_name[i] = plot_name[i].substring(0, max_plot_name_length) + " ...";
+            }
+
+        }
 
 		// init plot order (up to number of plots available)
 		for (var i = 0; i < Math.min(num_plots,3); i++) {

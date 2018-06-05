@@ -7,22 +7,18 @@ S. Martin
 
 <div id="dac-model" style="-webkit-flex:1; flex:1;">
 
-	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px;">
+	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px">
 
 		<label>Data is being processed for the model (it is safe to close the browser):</label>
-			<div class="progress">
-				<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
-					 aria-valuemin="0"
-					 aria-valuemax="100">
-				</div>
+		<div class="progress">
+			<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
+				 aria-valuemin="0"
+				 aria-valuemax="100">
 			</div>
+		</div>
 
-
-		<label>Process Results:</label>
-			<div style="margin-top: 0px;">
-	          <textarea id="dac_processing_textarea" rows="20" class="form-control" readonly>
-    	      </textarea>
-			</div>
+		<label>Process Results (to pause updates click on text box, to resume click off text box):</label>
+		<textarea id="dac_processing_textarea" class="form-control" readonly rows="20" style="resize:vertical"></textarea>
 
 	</div>
 

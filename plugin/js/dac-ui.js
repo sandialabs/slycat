@@ -31,12 +31,18 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     // constants for cutting off plot names, slider names
     var MAX_PLOT_NAME = 20;
     var MAX_SLIDER_NAME = 20;
+    var MAX_COLOR_NAME = 20;
 
     // waits 1 minute past last successful progress update
     var endTime = Number(new Date()) + ONE_MINUTE;
 
     // polling interval is 1 second
     var interval = ONE_SECOND;
+
+    // if user is looking at textarea then don't scroll to bottom
+    var user_scroll = false;
+    $("#dac_processing_textarea").focus (function () { user_scroll = true });
+    $("#dac_processing_textarea").focusout(function () { user_scroll = false });
 
     // poll database for artifact "dac-poll-progress"
     (function poll() {
@@ -67,9 +73,14 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                     $.when(request.get_parameters("dac-parse-log")).then(
                         function(error_log)
                         {
-                            // display text then scroll to bottom
-                            $("#dac_processing_textarea").text(error_log[1]);
-                            $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
+                            // update text box unless user has focused on it
+                            if (user_scroll == false) {
+                                // display text then scroll to bottom
+                                $("#dac_processing_textarea").text(error_log[1]);
+
+                                // scroll to bottom
+                                $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
+                            }
                         });
 
                     // reset time out and continue
@@ -199,19 +210,19 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
-				                                         variables[0]["data"][0]);
+				                                         variables[0]["data"][0], MAX_SLIDER_NAME);
 
 				                // set up the alpha buttons
 				                alpha_buttons.setup (variables_meta[0]["row-count"]);
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
-				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, variables_meta, variables);
+				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_meta, variables);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
 					                POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR,
-					                COLOR_BY_LOW, COLOR_BY_HIGH, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
+					                COLOR_BY_LOW, COLOR_BY_HIGH, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
 
 				                // set up table (propagate selections through to scatter plot)
 				                metadata_table.setup(data_table_meta, data_table);
