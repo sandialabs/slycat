@@ -31,7 +31,8 @@ import "js/slick.rowselectionmodel";
 import "js/slick.headerbuttons";
 import "js/slick.autotooltips";
 import "bootstrap";
-import "js/slycat-navbar-webpack"
+import "js/slycat-navbar-webpack";
+import "js/slycat-job-checker-webpack";
 import * as slycat_model_main from "js/slycat-model-main-webpack";
 
 // Wait for document ready

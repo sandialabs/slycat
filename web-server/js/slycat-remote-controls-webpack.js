@@ -2,12 +2,12 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from "./slycat-server-root";
-import client from "./slycat-web-client-webpack";
+import server_root from "js/slycat-server-root";
+import client from "js/slycat-web-client-webpack";
 import ko from "knockout";
 import mapping from "knockout-mapping";
-import ispasswordrequired from "./slycat-server-ispasswordrequired-webpack";
-import slycatRemoteControls from "../templates/slycat-remote-controls.html";
+import ispasswordrequired from "js/slycat-server-ispasswordrequired-webpack";
+import slycatRemoteControls from "templates/slycat-remote-controls.html";
 
 ko.components.register("slycat-remote-controls",
 {
