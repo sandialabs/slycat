@@ -1,0 +1,41 @@
+<!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
+
+<!-- show parse log, modified from plugins/slycat-model-wizards/info-ui.html -->
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h3 class="modal-title">Parse Log</h3>
+</div>
+<div class="modal-body">
+  <form class="form-horizontal">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <strong>Name</strong>
+      </div>
+      <div class="panel-body">
+        <span id="slycat-edit-project-name" type="text" placeholder="Name" data-bind="text:model.name"></span>
+      </div>
+    </div>
+    <div class="panel panel-default" data-bind="visible:model.description">
+      <div class="panel-heading">
+        <strong>Description</strong>
+      </div>
+      <div class="panel-body">
+        <span data-bind="text:model.description"></span>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <strong>Parse Report</strong>
+      </div>
+      <div class="panel-body">
+        <pre><code data-bind='text:ko.toJS(details.model())["artifact:dac-parse-log"][1]'></code></pre>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" data-dismiss="modal">Close</button>
+</div>
+

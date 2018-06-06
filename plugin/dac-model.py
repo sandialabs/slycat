@@ -26,7 +26,7 @@ def register_slycat_plugin(context):
 
     def page_html(database, model):
         return open(os.path.join(os.path.dirname(__file__), 
-                    "dac-ui.html"), "r").read()
+                    "html/dac-ui.html"), "r").read()
 
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
@@ -350,4 +350,10 @@ def register_slycat_plugin(context):
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action":"create", "context":"project"})
     context.register_wizard_resource("DAC", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-wizard.js"))
-    context.register_wizard_resource("DAC", "ui.html", os.path.join(os.path.dirname(__file__), "dac-wizard.html"))
+    context.register_wizard_resource("DAC", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-wizard.html"))
+
+    # register parse info menu item
+    context.register_wizard("dac-show-parse-log", "Show Parse Log",
+                            require={"action": "info", "context": "model", "model-type": ["DAC"]})
+    context.register_wizard_resource("dac-show-parse-log", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-parse-log.js"))
+    context.register_wizard_resource("dac-show-parse-log", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-parse-log.html"))
