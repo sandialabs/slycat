@@ -125,10 +125,10 @@ def js_bundle():
                                                                                     # Used by wizards
                                                                                     "js/slycat-table-ingestion.js",
                                                                                     "js/slycat-3d-viewer.js",
-                                                                                  # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
-                                                                                  "js/slycat-remote-interface.js",
-                                                                                  # Seems to be only used in Parameter Image Plus and Timeseries
-                                                                                  "js/slycat-job-checker.js"
+                                                                                    # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
+                                                                                    "js/slycat-remote-interface.js",
+                                                                                    # Seems to be only used in Parameter Image Plus and Timeseries
+                                                                                    "js/slycat-job-checker.js"
                                                                               ])
     return js_bundle._bundle
 
