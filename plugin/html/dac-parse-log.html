@@ -30,7 +30,7 @@
         <strong>Parse Report</strong>
       </div>
       <div class="panel-body">
-        <pre><code data-bind='text:ko.toJS(details.model())["artifact:dac-parse-log"][1]'></code></pre>
+        <pre><code data-bind='text: ko.toJS(details.model()) != null ? ko.toJS(details.model())["artifact:dac-parse-log"][1] : ""'></code></pre>
       </div>
     </div>
   </form>

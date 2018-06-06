@@ -23,7 +23,7 @@ define(["slycat-server-root", "slycat-web-client", "knockout", "URI", "knockout-
       server_cache_size: 0,
       analysis_computation_time:0,
       db_creation_time: 0,
-      model: null
+      model: null,
     });
 
     $.ajax({
