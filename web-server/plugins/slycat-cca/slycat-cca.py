@@ -117,43 +117,8 @@ def register_slycat_plugin(context):
 
   context.register_page("cca", page_html)
 
-  context.register_page_bundle("cca", "text/css", [
-    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
-    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
-    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-    os.path.join(os.path.dirname(__file__), "css/ui.css"),
-    ])
-  context.register_page_bundle("cca", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/chunker.js"),
-    os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-barplot.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-scatterplot.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-table.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-legend.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-controls.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-    os.path.join(os.path.dirname(__file__), "js/ui.js"),
-    ])
-  context.register_page_resource("cca", "images", os.path.join(os.path.dirname(__file__), "images"))
-  # Register images and other resources
-  images = [
-    'ui-bg_glass_75_e6e6e6_1x400.png',
-  ]
-  for image in images:
-    context.register_page_resource("cca", image, os.path.join(os.path.dirname(__file__), "images", image))
+  # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
+  context.set_global_bundles("cca", False)
 
   # Register custom wizards for creating CCA models.
   context.register_wizard("new-cca", "New CCA Model", require={"action":"create", "context":"project"})

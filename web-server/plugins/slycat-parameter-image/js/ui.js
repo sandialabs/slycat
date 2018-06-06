@@ -20,24 +20,15 @@ import NoteManager from "./note-manager";
 import FilterManager from "./filter-manager";
 import d3 from "js/d3.min";
 import URI from "urijs";
-import * as chunker from "./chunker";
+import * as chunker from "js/chunker";
 import "./parameter-image-scatterplot";
 import "./parameter-controls";
 import "./parameter-image-table";
 import "./color-switcher";
 import "jquery-ui";
 import "js/jquery.layout-latest.min";
-import "js/jquery.scrollintoview.min";
-import "js/jquery.event.drag-2.2";
-import "js/slick.core";
-import "js/slick.grid";
-import "js/slick.rowselectionmodel";
-import "js/slick.headerbuttons";
-import "js/slick.autotooltips";
-import "js/slick.slycateditors";
 import "js/slycat-range-slider-webpack"; 
 import "./category-select";
-import "bootstrap";
 import "js/slycat-navbar-webpack"
 import * as slycat_model_main from "js/slycat-model-main-webpack";
 

@@ -1,5 +1,11 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
-define("slycat-cca-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse"], function(server_root, dialog, _, Papa) {
+
+import server_root from "js/slycat-server-root";
+import _ from "lodash";
+import * as dialog from "js/slycat-dialog-webpack";
+import Papa from "papaparse";
+import "jquery-ui";
+
 $.widget("cca.controls",
 {
 
@@ -195,5 +201,4 @@ $.widget("cca.controls",
     }
   },
 
-});
 });

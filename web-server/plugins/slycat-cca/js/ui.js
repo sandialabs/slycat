@@ -1,7 +1,36 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-bookmark-manager", "URI", "slycat-cca-controls", "domReady!"], function(server_root, client, dialog, bookmark_manager, URI)
-{
+import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
+import slick_grid_css from "css/slickgrid/slick.grid.css";
+import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
+import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
+import slick_slycat_theme_css from "css/slick-slycat-theme.css";
+import slycat_additions_css from "css/slycat-additions.css";
+import ui_css from "../css/ui.css";
+
+import server_root from "js/slycat-server-root";
+import client from "js/slycat-web-client-webpack";
+import bookmark_manager from "js/slycat-bookmark-manager-webpack";
+import * as dialog from "js/slycat-dialog-webpack";
+import URI from "urijs";
+import * as chunker from "js/chunker";
+import "./cca-legend";
+import "./cca-table";
+import "./cca-controls";
+import "./cca-barplot";
+import "./cca-scatterplot";
+import "./color-switcher";
+import "jquery-ui";
+import "js/jquery.layout-latest.min";
+import "js/jquery.scrollintoview.min";
+import "js/slycat-navbar-webpack"
+import * as slycat_model_main from "js/slycat-model-main-webpack";
+
+// Wait for document ready
+$(document).ready(function() {
+
+  slycat_model_main.start();
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +114,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     $(".load-status").text("Loading data.");
 
     // Load the x_loadings artifact.
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "input-structure-correlation",
@@ -100,7 +129,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     });
 
     // Load the y_loadings artifact.
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "output-structure-correlation",
@@ -115,7 +144,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     });
 
     // Load the r^2 statistics artifact.
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "cca-statistics",
@@ -130,7 +159,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     });
 
     // Load the Wilks statistics artifact.
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "cca-statistics",
@@ -145,7 +174,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     });
 
     // Load the canonical-indices artifact.
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "canonical-indices",
@@ -164,7 +193,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     });
 
     // Load the canonical-variables artifacts.
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "canonical-variables",
@@ -178,7 +207,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       error : artifact_missing
     });
 
-    get_model_array_attribute({
+    chunker.get_model_array_attribute({
       server_root : server_root,
       mid : model._id,
       aid : "canonical-variables",
@@ -307,7 +336,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
       }
       else
       {
-        get_model_array_attribute({
+        chunker.get_model_array_attribute({
           server_root : server_root,
           mid : model._id,
           aid : "data-table",
@@ -700,7 +729,7 @@ define("slycat-cca-model", ["slycat-server-root", "slycat-web-client", "slycat-d
     }
     else
     {
-      get_model_array_attribute({
+      chunker.get_model_array_attribute({
         server_root : server_root,
         mid : model._id,
         aid : "data-table",

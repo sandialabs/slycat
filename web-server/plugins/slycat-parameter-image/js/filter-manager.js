@@ -7,6 +7,7 @@ import * as dialog from "js/slycat-dialog-webpack";
 import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
+import "js/jquery.scrollintoview.min";
 
 function FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns) {
   var self = this;

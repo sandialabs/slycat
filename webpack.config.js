@@ -10,6 +10,7 @@ module.exports = {
   entry: {
     ui_parameter_image: './web-server/plugins/slycat-parameter-image/js/ui.js',
     ui_timeseries:      './web-server/plugins/slycat-timeseries-model/js/ui.js',
+    ui_cca:             './web-server/plugins/slycat-cca/js/ui.js',
     ui_run_command:     './web-server/plugins/slycat-run-command/ui.js',
     slycat_projects:    './web-server/js/slycat-projects-main.js',
     slycat_project:     './web-server/js/slycat-project-main.js',
