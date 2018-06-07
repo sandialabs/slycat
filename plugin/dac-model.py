@@ -353,7 +353,7 @@ def register_slycat_plugin(context):
     context.register_wizard_resource("DAC", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-wizard.html"))
 
     # register parse info menu item
-    context.register_wizard("dac-show-parse-log", "Show Parse Log",
+    context.register_wizard("dac-show-parse-log", "Model Parse Log",
                             require={"action": "info", "context": "model", "model-type": ["DAC"]})
     context.register_wizard_resource("dac-show-parse-log", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-parse-log.js"))
     context.register_wizard_resource("dac-show-parse-log", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-parse-log.html"))

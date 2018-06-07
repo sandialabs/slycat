@@ -24,6 +24,7 @@ define(["slycat-server-root", "slycat-web-client", "knockout", "URI", "knockout-
       analysis_computation_time:0,
       db_creation_time: 0,
       model: null,
+      parse_log: null,
     });
 
     $.ajax({
@@ -33,6 +34,11 @@ define(["slycat-server-root", "slycat-web-client", "knockout", "URI", "knockout-
       success: function(result)
       {
         mapping.fromJS(result, component.details);
+
+        // if parse log is found, write text to model details (for display in html)
+        if ("artifact:dac-parse-log" in result.model) {
+            component.details.parse_log(result.model["artifact:dac-parse-log"][1]);
+        }
       },
       error: function(request, status, reason_phrase)
       {

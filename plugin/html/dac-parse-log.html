@@ -30,7 +30,7 @@
         <strong>Parse Report</strong>
       </div>
       <div class="panel-body">
-        <pre><code data-bind='text: ko.toJS(details.model()) != null ? ko.toJS(details.model())["artifact:dac-parse-log"][1] : ""'></code></pre>
+        <pre><code data-bind='text: ko.toJS(details.parse_log()) != null ? ko.toJS(details.parse_log()) : "No parse log found (this happens, for example, when a model is loaded using the DAC generic format)."'></code></pre>
       </div>
     </div>
   </form>
