@@ -32,6 +32,9 @@ import slycat_info_project from 'plugins/slycat-project-wizards/info-ui';
 import slycat_delete_project from 'plugins/slycat-project-wizards/delete-ui';
 import parameter_image from 'plugins/slycat-parameter-image/js/wizard-ui';
 import timeseries from 'plugins/slycat-timeseries-model/js/wizard-ui';
+import new_cca from 'plugins/slycat-cca/js/new-ui';
+import rerun_cca from 'plugins/slycat-cca/js/rerun-ui';
+import parameter_image_plus from 'plugins/slycat-parameter-image-plus-model/js/wizard-ui';
 import "bootstrap";
 
 ko.components.register("slycat-navbar",
@@ -261,6 +264,9 @@ ko.components.register("slycat-navbar",
         ko.components.register('slycat-delete-project', slycat_delete_project);
         ko.components.register('parameter-image', parameter_image);
         ko.components.register('timeseries', timeseries);
+        ko.components.register('new-cca', new_cca);
+        ko.components.register('rerun-cca', rerun_cca);
+        ko.components.register('parameter-image-plus', parameter_image_plus);
       }
     });
 
