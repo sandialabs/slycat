@@ -2,7 +2,7 @@
  
 export var arrayset_metadata_cache = {};
 
-function is_little_endian()
+export function is_little_endian()
 {
   if(window.result === undefined)
     window.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);

@@ -4,6 +4,7 @@ import server_root from "js/slycat-server-root";
 import * as dialog from "js/slycat-dialog-webpack";
 import _ from "lodash";
 import Papa from "papaparse";
+import "jquery-ui";
 
 $.widget("timeseries.controls",
 {

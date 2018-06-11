@@ -126,5 +126,3 @@ def register_slycat_plugin(context):
   context.register_wizard_resource("new-cca", "ui.html", os.path.join(os.path.dirname(__file__), "new-ui.html"))
 
   context.register_wizard("rerun-cca", "Modified CCA Model", require={"action":"create", "context":"model", "model-type":["cca"]})
-  context.register_wizard_resource("rerun-cca", "ui.js", os.path.join(os.path.dirname(__file__), "js/rerun-ui.js"))
-  context.register_wizard_resource("rerun-cca", "ui.html", os.path.join(os.path.dirname(__file__), "rerun-ui.html"))

@@ -4,29 +4,14 @@
   var project_id = "{{full-project._id}}";
   var model_id = "{{_id}}";
   var model_name = "{{name}}";
-
-  // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
+  // Load JS bundle
   var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  [
-    // "js/parameter-image-dendrogram.js",
-    // "js/parameter-image-scatterplot.js",
-    // "js/ui.js",
-  ].forEach(function(src) {
-    var script = document.createElement('script');
-    script.src = server_root + "resources/pages/parameter-image-plus/" + src;
-    script.async = false;
-    document.head.appendChild(script);
-  });
-  [
-    //"ui.css",
-  ].forEach(function(src) {
-    var link = document.createElement('link');
-    link.href = server_root + "resources/pages/parameter-image-plus/" + src;
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    document.head.appendChild(link);
-  });
+  var script = document.createElement('script');
+  script.src = server_root + "dist/ui_parameter_plus.js";
+  script.async = false;
+  document.head.appendChild(script);
 </script>
+
 <div class="parameter-image" id="parameter-image-plus-layout">
   <slycat-job-checker></slycat-job-checker>
 

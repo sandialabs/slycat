@@ -1,5 +1,8 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
-define("slycat-color-switcher", ["d3"], function(d3) {
+
+import d3 from "js/d3.min";
+import "jquery-ui";
+
 $.widget("slycat.colorswitcher",
 {
   options:
@@ -265,5 +268,4 @@ $.widget("slycat.colorswitcher",
       columns[j].colorMap = this.get_color_scale(name, columns[j].columnMin, columns[j].columnMax);
     }
   }
-});
 });

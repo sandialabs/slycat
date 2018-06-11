@@ -427,85 +427,8 @@ def register_slycat_plugin(context):
 
   context.register_page("parameter-image-plus", page_html)
 
-  # Register JS
-  javascripts = [
-    "jquery-ui-1.10.4.custom.min.js",
-    "jquery.layout-latest.min.js",
-    "d3.min.js",
-    "jquery.scrollintoview.min.js",
-    "jquery.event.drag-2.2.js",
-    "slick.core.js",
-    "slick.grid.js",
-    "slick.rowselectionmodel.js",
-    "slick.headerbuttons.js",
-    "slick.autotooltips.js",
-    "slick.slycateditors.js",
-    "chunker.js",
-    "login.js",
-    "color-switcher.js",
-    "parameter-controls.js",
-    "parameter-image-table.js",
-    "parameter-image-dendrogram.js",
-    "parameter-image-scatterplot.js",
-    "ui.js",
-    #For development and debugging, comment out js here and load it dynamically inside model.
-  ]
-  context.register_page_bundle("parameter-image-plus", "text/javascript", [
-    os.path.join(os.path.join(os.path.dirname(__file__), "js"), js) for js in javascripts
-    ])
-
-  # Register CSS
-  stylesheets = [
-    "jquery-ui-1.10.4.custom.min.css",
-    "slick.grid.css",
-    "slick-default-theme.css",
-    "slick.headerbuttons.css",
-    "slick-slycat-theme.css",
-    "ui.css"
-  ]
-  context.register_page_bundle("parameter-image-plus", "text/css", [
-    os.path.join(os.path.join(os.path.dirname(__file__), "css"), css) for css in stylesheets
-    ])
-
-  # Register images and other resources
-  images = [
-    "x-gray.png",
-    "x-light.png",
-    "y-gray.png",
-    "y-light.png",
-    "sort-asc-light.png",
-    "sort-asc-gray.png",
-    "sort-desc-light.png",
-    "sort-desc-gray.png",
-    "image-gray.png",
-    "image-light.png",
-    "stripe1.png",
-    "stripe2.png",
-    "pin.png",
-    "sort-dendrogram-selected.png",
-    "sort-dendrogram.png",
-  ]
-  for image in images:
-    context.register_page_resource("parameter-image-plus", image, os.path.join(os.path.join(os.path.dirname(__file__), "img"), image))
-
-  # Register jquery ui images, which are expected in images folder
-  jqimages = [
-    "ui-bg_glass_75_e6e6e6_1x400.png",
-    "ui-icons_222222_256x240.png",
-    "ui-bg_highlight-soft_75_cccccc_1x100.png",
-    "ui-bg_flat_75_ffffff_40x100.png",
-    "ui-bg_flat_0_aaaaaa_40x100.png",
-  ]
-  for jqimage in jqimages:
-    context.register_page_resource("parameter-image-plus", "images/" + jqimage, os.path.join(os.path.join(os.path.dirname(__file__), "img"), jqimage))
-
-  devs = [
-    # "js/parameter-image-dendrogram.js",
-    # "js/parameter-image-scatterplot.js",
-    # "js/ui.js",
-  ]
-  for dev in devs:
-    context.register_page_resource("parameter-image-plus", dev, os.path.join(os.path.dirname(__file__), dev))
+  # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
+  context.set_global_bundles("parameter-image-plus", False)
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)
@@ -514,5 +437,3 @@ def register_slycat_plugin(context):
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image-plus", "New Parameter Image Model", require={"action":"create", "context":"project"})
-  context.register_wizard_resource("parameter-image-plus", "ui.js", os.path.join(os.path.dirname(__file__), "js/wizard-ui.js"))
-  context.register_wizard_resource("parameter-image-plus", "ui.html", os.path.join(os.path.dirname(__file__), "wizard-ui.html"))

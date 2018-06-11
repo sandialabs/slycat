@@ -285,11 +285,11 @@
 }
 .icon-sort-off {
   border: 1px solid transparent;
-  background: transparent url(sort-asc-light.png) no-repeat center center;
+  background: transparent url(../../../img/sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
   border: 1px solid transparent !important;
-  background: transparent url(sort-asc-gray.png) no-repeat center center !important;
+  background: transparent url(../../../img/sort-asc-gray.png) no-repeat center center !important;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover
@@ -308,12 +308,12 @@
   top: 4px;
 }
 .slick-header-button.icon-image-off {
-  background: transparent url(image-light.png) no-repeat center center;
+  background: transparent url(../../../img/image-light.png) no-repeat center center;
 }
 .slick-header-button.icon-image-on,
 .slick-header-button.icon-image-off:hover
 {
-  background: transparent url(image-gray.png) no-repeat center center;
+  background: transparent url(../../../img/image-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off
@@ -322,12 +322,12 @@
   top: 4px;
 }
 .slick-header-button.icon-y-off {
-  background: transparent url(y-light.png) no-repeat center center;
+  background: transparent url(../../../img/y-light.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off:hover
 {
-  background: transparent url(y-gray.png) no-repeat center center;
+  background: transparent url(../../../img/y-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off
@@ -336,12 +336,12 @@
   top: 4px;
 }
 .slick-header-button.icon-x-off {
-  background: transparent url(x-light.png) no-repeat center center;
+  background: transparent url(../../../img/x-light.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off:hover
 {
-  background: transparent url(x-gray.png) no-repeat center center;
+  background: transparent url(../../../img/x-gray.png) no-repeat center center;
 }
 #page-title {
   padding-top: 5px;
@@ -463,7 +463,7 @@
   bottom: 0px;
   left: 0px;
   cursor: pointer;
-  background: #DBD9EB url(sort-dendrogram.png) no-repeat center center;;
+  background: #DBD9EB url(../../../img/sort-dendrogram.png) no-repeat center center;;
   padding: 4px;
   margin: 0 0 5px 18px;
   height: 17px;
@@ -472,7 +472,7 @@
 
 #dendrogram-pane #dendrogram-sort-control.selected
 {
-  background: #7767B0 url(sort-dendrogram-selected.png) no-repeat center center;
+  background: #7767B0 url(../../../img/sort-dendrogram-selected.png) no-repeat center center;
   color: #FFFFFF;
   cursor: default;
 }

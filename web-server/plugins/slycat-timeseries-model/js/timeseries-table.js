@@ -10,6 +10,7 @@ import "js/slick.grid";
 import "js/slick.rowselectionmodel";
 import "js/slick.headerbuttons";
 import "js/slick.autotooltips";
+import * as chunker from "./chunker";
 
 $.widget("timeseries.table",
 {
@@ -341,7 +342,7 @@ $.widget("timeseries.table",
         else
         {
           var request = new XMLHttpRequest();
-          request.open("GET", self.options["server-root"] + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data?hyperchunks=0/rank(a" + self.options["sort-variable"] + ',"asc")/...&byteorder=' + (is_little_endian() ? "little" : "big") );
+          request.open("GET", self.options["server-root"] + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data?hyperchunks=0/rank(a" + self.options["sort-variable"] + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
           request.responseType = "arraybuffer";
           request.onload = function(e)
           {
@@ -484,17 +485,10 @@ $.widget("timeseries.table",
         row_string += rows[i];
       }
 
-      function is_little_endian()
-      {
-        if(this.result === undefined)
-          this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-        return this.result;
-      }
-
       // XMLHttpRequest does not support synchronous retrieval with arraybuffer, so falling back to ajax with no arraybuffer for initial synchronous sorted table filter retrieval.
       if(asynchronous){
         var request = new XMLHttpRequest();
-        request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (is_little_endian() ? "little" : "big") + sort);
+        request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (chunker.is_little_endian() ? "little" : "big") + sort);
         request.responseType = "arraybuffer";
         request.callback = callback;
         request.onload = function(e)
@@ -571,7 +565,7 @@ $.widget("timeseries.table",
           {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (is_little_endian() ? "little" : "big") );
+            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;
@@ -592,13 +586,6 @@ $.widget("timeseries.table",
             request.send();
           }
         }
-      }
-
-      function is_little_endian()
-      {
-        if(this.result === undefined)
-          this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-        return this.result;
       }
     }
 
