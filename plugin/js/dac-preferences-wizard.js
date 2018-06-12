@@ -78,6 +78,10 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var cont_map = null;
     var disc_map = null;
 
+    // UI parameters
+    component.dac_max_label_length = ko.observable(20);     // defaults to 20
+    component.dac_max_time_points = ko.observable(500);     // defaults to 500
+
     // need a large dialog for color palettes
     $(".modal-dialog").addClass("modal-lg");
 
@@ -463,15 +467,12 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         });
     };
 
-    component.color_preferences = function () {
+    component.speedup_preferences = function() {
 
-        console.log('color preferences');
+        // show speed up preferences
+        component.tab(3);
 
-    };
-
-    component.other_preferences = function() {
-
-        console.log('other preferences');
+        console.log('speed up preferences');
 
     };
 

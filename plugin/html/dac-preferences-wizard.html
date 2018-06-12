@@ -40,7 +40,7 @@ S. Martin
         <li data-bind="css:{active:tab() == 0}"><a>Variables</a></li>
         <li data-bind="css:{active:tab() == 1}"><a>Metadata</a></li>
         <li data-bind="css:{active:tab() == 2}"><a>Colors</a></li>
-        <li data-bind="css:{active:tab() == 3}"><a>Other</a></li>
+        <li data-bind="css:{active:tab() == 3}"><a>Options</a></li>
     </ul>
 
     <!-- This tab lets the user select whether or not the file to upload is on the local
@@ -51,9 +51,10 @@ S. Martin
      the columns are checkboxes (bool) or radio buttons (select).  Here we have one
      column include or not include in the meta-data table. -->
     <div data-bind="visible:tab() == 0">
-        <label>Select variables to include in analysis.</label>
-        <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections,
+        <label>Select variables to include in analysis.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections,
 shift-click a range of names then click the include switch."></i>
+        </label>
         <slycat-table-ingestion params="
             variables: var_attributes,
             properties: [{name: 'Include', type: 'bool'}]
@@ -64,9 +65,10 @@ shift-click a range of names then click the include switch."></i>
          the columns are checkboxes (bool) or radio buttons (select).  Here we have one
          column include or not include in the meta-data table. -->
     <div data-bind="visible:tab() == 1">
-        <label>Select metadata to include in analysis.</label>
-        <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections,
+        <label>Select metadata to include in analysis.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections,
 shift-click a range of names then click the include switch."></i>
+        </label>
         <slycat-table-ingestion params="
             variables: meta_attributes,
             properties: [{name: 'Include', type: 'bool'}]
@@ -76,9 +78,10 @@ shift-click a range of names then click the include switch."></i>
     <!-- Options for changing the color scheme in DAC. -->
     <div data-bind="visible:tab() == 2">
         <div>
-            <label>Select ColorBrewer scale for continuous metadata.</label>
-            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Continuous data is numerical data.  For information on
+            <label>Select ColorBrewer scale for continuous metadata.
+                <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Continuous data is numerical data.  For information on
 ColorBrewer scales, see colorbrewer2.org."></i>
+            </label>
         </div>
 
         <div style="margin-bottom: 6px">
@@ -94,9 +97,10 @@ ColorBrewer scales, see colorbrewer2.org."></i>
         <div id="dac-diverging-swatches" data-bind="visible: dac_scale_type() == 'diverging'"></div>
 
         <div style="margin-top: 20px">
-            <label>Select ColorBrewer scale for discrete metadata.</label>
-            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Discrete data is string data.  If you have ordinal data,
+            <label>Select ColorBrewer scale for discrete metadata.
+                <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Discrete data is string data.  If you have ordinal data,
 it will be considered numerical unless you use alphabetic labels."></i>
+            </label>
         </div>
 
         <div id="dac-discrete-swatches"></div>
@@ -105,7 +109,32 @@ it will be considered numerical unless you use alphabetic labels."></i>
 
     <!-- Options for changing the length of labels, etc. in DAC. -->
     <div data-bind="visible:tab() == 3">
-        Other.
+        <label>Options to adjust/optimize the Dial-A-Cluster user inferface.</label>
+
+        <div class="form-group" style="margin-top:30px">
+            <label class="col-sm-2 control-label">Maximum label length
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                title="Length beyond which labels for variables and metadata are truncated
+in the Dial-A-Cluster user interface (defaults to 20)."></i>
+            </label>
+            <div class="col-sm-10">
+              <input class="form-control" type="number" min="5" placeholder="20" data-bind="value: dac_max_label_length"></input>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:30px">
+            <label class="col-sm-2 control-label">Maximum plot resolution
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                title="Maximum number of points to include in a variable plot (for example, number of
+time points in a time series plot).  Beyond this number plots are produced
+by subsampling from original data (defaults to 500)."></i>
+            </label>
+            <div class="col-sm-10">
+              <input class="form-control" type="number" min="2" placeholder="500" data-bind="value: dac_max_time_points"></input>
+            </div>
+        </div>
+
+
     </div>
 
     </div>
@@ -117,7 +146,6 @@ it will be considered numerical unless you use alphabetic labels."></i>
     <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:check_variables">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 1,click:check_metadata">Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 2,click:color_preferences">Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 3,click:other_preferences">Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Finish & Save Prefences</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 2,click:speedup_preferences">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 3,click:finish">Save Preferences & Re-Launch Model</button>
 </div>
