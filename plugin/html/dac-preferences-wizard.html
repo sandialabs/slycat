@@ -112,24 +112,24 @@ it will be considered numerical unless you use alphabetic labels."></i>
         <label>Options to adjust/optimize the Dial-A-Cluster user inferface.</label>
 
         <div class="form-group" style="margin-top:30px">
-            <label class="col-sm-2 control-label">Maximum label length
+            <label class="col-sm-5 control-label">Maximum label length
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                title="Length beyond which labels for variables and metadata are truncated
-in the Dial-A-Cluster user interface (defaults to 20)."></i>
+                    title="Length beyond which labels for variables and metadata are truncated
+                           in the Dial-A-Cluster user interface (defaults to 20)."></i>
             </label>
-            <div class="col-sm-10">
+            <div class="col-sm-3">
               <input class="form-control" type="number" min="5" placeholder="20" data-bind="value: dac_max_label_length"></input>
             </div>
         </div>
 
         <div class="form-group" style="margin-top:30px">
-            <label class="col-sm-2 control-label">Maximum plot resolution
+            <label class="col-sm-5 control-label">Maximum plot resolution
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                title="Maximum number of points to include in a variable plot (for example, number of
-time points in a time series plot).  Beyond this number plots are produced
-by subsampling from original data (defaults to 500)."></i>
+                    title="Maximum number of points to include in a variable plot (for example, number of
+                           time points in a time series plot).  Beyond this number plots are produced
+                           by subsampling from original data (defaults to 500)."></i>
             </label>
-            <div class="col-sm-10">
+            <div class="col-sm-3">
               <input class="form-control" type="number" min="2" placeholder="500" data-bind="value: dac_max_time_points"></input>
             </div>
         </div>
