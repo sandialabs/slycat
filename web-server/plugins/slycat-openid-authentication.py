@@ -79,8 +79,9 @@ def register_slycat_plugin(context):
                 raise cherrypy.HTTPError(401, 'Authentication is required')
 
         else:
-            # incoming user doesn't have a session, must route through openid login process starting
-            # at /index.html to authenticate & create a session
+            # OpenID Note: incoming user doesn't have a session. Route through openid login process starting
+            # at /index.html to authenticate & create a session. OpenID server will return user back
+            # to /openid-login/ (see open_id_authenticate() in handlers) which then creates the session.
             cherrypy.log.error("++ unauthenticated request, asking user to login")
             raise cherrypy.HTTPError(401, 'Authentication is required')
 
