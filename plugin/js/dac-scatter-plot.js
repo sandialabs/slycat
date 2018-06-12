@@ -150,9 +150,17 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					.domain([0 - scatter_border, 1 + scatter_border]);
 				y_scale = d3.scale.linear()
 					.domain([0 - scatter_border, 1 + scatter_border]);
+
+                // color brewer example scale
+			    color_scale = d3.scale.quantize()
+                    .range(["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb",
+                            "#41b6c4","#1d91c0","#225ea8","#253494","#081d58"]);
+
+				/*
 				color_scale = d3.scale.linear()
 					.range([color_by_low, color_by_high])
 					.interpolate(d3.interpolateRgb);
+                */
 
 				// set subset to full mds_coord set
                 for (i = 0; i < mds_coords.length; i++) {

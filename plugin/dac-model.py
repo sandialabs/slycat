@@ -357,3 +357,9 @@ def register_slycat_plugin(context):
                             require={"action": "info", "context": "model", "model-type": ["DAC"]})
     context.register_wizard_resource("dac-show-parse-log", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-parse-log.js"))
     context.register_wizard_resource("dac-show-parse-log", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-parse-log.html"))
+
+    # register preferences menu item
+    context.register_wizard("dac-preferences-wizard", "Model Preferences",
+                            require={"action": "edit", "context": "model", "model-type": ["DAC"]})
+    context.register_wizard_resource("dac-preferences-wizard", "ui.js", os.path.join(os.path.dirname(__file__), "js/dac-preferences-wizard.js"))
+    context.register_wizard_resource("dac-preferences-wizard", "ui.html", os.path.join(os.path.dirname(__file__), "html/dac-preferences-wizard.html"))
