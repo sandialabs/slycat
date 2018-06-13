@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const Visualizer = require('webpack-visualizer-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
   // mode is now specified as a command line flag in package.json
@@ -24,6 +25,15 @@ module.exports = {
     publicPath: '/dist/',
   },
   plugins: [
+    // Deletes the web-server/dist folder so that old files don't remain there, only fresh ones from the last run.
+    new CleanWebpackPlugin(
+      [
+        'web-server/dist',
+      ],
+      {
+        watch: true,
+      }
+    ),
     new webpack.ProvidePlugin({
       $: 'jquery',
   		jQuery: 'jquery',
