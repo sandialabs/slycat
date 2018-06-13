@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<!--
+Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link id="slycat-server-root" href="{{slycat-server-root}}">
+    <script src="{{slycat-server-root}}dist/slycat_projects.js" type="text/javascript"></script>
+    <title>Slycat Projects</title>
+  </head>
+
+  <body>
+    <slycat-navbar></slycat-navbar>
+
+    <div id="slycat-projects" class="bootstrap-styles slycat-content">
+      <div class="container" data-bind="visible:projects().length">
+        <div class="panel panel-default">
+          <div class="list-group" data-bind="foreach: projects">
+            <a class="list-group-item" data-bind="attr:{href:$parent.server_root + 'projects/' + $data._id()}">
+              <span class="label label-default">project</span>
+              <strong data-bind="text:name"></strong>
+              <p>
+                <small>
+                  <span data-bind="text:description"></span>
+                  <em>
+                  Created <span data-bind="text:created"></span>
+                  by <span data-bind="text:creator"></span>
+                  </em>
+                </small>
+              </p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{{slycat-injected-code}}}
+  <script src="/dist/vendors~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_ru~29e28113.js"></script><script src="/dist/vendors~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_ti~7afcd8b9.js"></script><script src="/dist/slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_run_comman~247387c4.js"></script><script src="/dist/slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_timeseries.js"></script><script src="/dist/slycat_projects.js"></script></body>
+</html>

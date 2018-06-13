@@ -141,9 +141,9 @@ module.exports = {
 	},
   optimization: {
     splitChunks: {
-      // 'all' creates lots of chunks but does not automatically load them, making it a mess
-      // chunks: 'all',
-      chunks: 'async',
+      // 'all' creates lots of chunks but does not automatically load them. Using HtmlWebpackPlugin to inject them into templates.
+      chunks: 'all',
+      // chunks: 'async',
     }
   },
   // This configures webpack to look in the web-server directory for modules, after it looked in node_modules

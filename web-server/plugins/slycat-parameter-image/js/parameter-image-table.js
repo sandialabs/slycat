@@ -4,6 +4,7 @@
 // Slickgrid-based data table widget, for use with the CCA model.
 
 import d3 from "js/d3.min";
+import * as chunker from "js/chunker";
 import "jquery-ui";
 import "js/jquery.event.drag-2.2";
 import "js/slick.core";
@@ -686,7 +687,7 @@ $.widget("parameter_image.table",
           {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (is_little_endian() ? "little" : "big") );
+            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;
@@ -707,13 +708,6 @@ $.widget("parameter_image.table",
             request.send();
           }
         }
-      }
-
-      function is_little_endian()
-      {
-        if(this.result === undefined)
-          this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-        return this.result;
       }
     }
 

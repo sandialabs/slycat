@@ -9,7 +9,7 @@ def register_slycat_plugin(context):
   def page_html(database, model):
     import pystache
     context = dict()
-    return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
+    return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_run_command.html")), "r").read(), context)
 
   '''
 

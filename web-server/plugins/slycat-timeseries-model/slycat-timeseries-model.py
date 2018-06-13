@@ -89,7 +89,7 @@ def register_slycat_plugin(context):
             "artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
         context["cluster-bin-count"] = model[
             "artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
-        return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
+        return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_timeseries.html")), "r").read(), context)
 
     # def get_remote_file(sid, hostname, username, password, filename):
     #     """

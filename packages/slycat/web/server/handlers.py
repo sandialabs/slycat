@@ -224,7 +224,7 @@ def get_projects(_=None):
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-    return slycat.web.server.template.render("slycat-projects.html", context)
+    return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_projects.html")), context)
 
 
 @cherrypy.tools.json_out(on=True)
@@ -299,7 +299,7 @@ def get_project(pid):
         context["slycat-project"] = project
         context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
         context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-        return slycat.web.server.template.render("slycat-project.html", context)
+        return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_project.html")), context)
 
 
 def get_remote_host_dict():
@@ -546,7 +546,7 @@ def get_page(ptype):
     <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
       <p>No plugin available for page type \u201c%s\u201d.</p>
     </div>""" % ptype
-        return slycat.web.server.template.render("slycat-page.html", context)
+        return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_page.html")), context)
 
     context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model=None)
     if ptype in slycat.web.server.plugin.manager.page_bundles:
@@ -557,7 +557,7 @@ def get_page(ptype):
                                              slycat.web.server.plugin.manager.page_bundles[ptype].items() if
                                              content_type == "text/javascript"]
 
-    return slycat.web.server.template.render("slycat-page.html", context)
+    return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_page.html")), context)
 
 
 def get_model(mid, **kwargs):

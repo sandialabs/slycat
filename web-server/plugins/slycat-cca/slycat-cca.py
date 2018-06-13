@@ -110,7 +110,7 @@ def register_slycat_plugin(context):
     context = dict()
     context["_id"] = model["_id"]
     context["name"] = model["name"];
-    return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
+    return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_cca.html")), "r").read(), context)
 
   # Register our new model type
   context.register_model("cca", finish)

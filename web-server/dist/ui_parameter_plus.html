@@ -1,0 +1,77 @@
+<!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
+
+<script type="text/javascript">
+  var project_id = "{{full-project._id}}";
+  var model_id = "{{_id}}";
+  var model_name = "{{name}}";
+</script>
+
+<div class="parameter-image" id="parameter-image-plus-layout">
+  <slycat-job-checker></slycat-job-checker>
+
+	<div id="controls-pane" class="ui-layout-north">
+    <div class="center">
+      <div id="controls"></div>
+      <div id="color-switcher"></div>
+    </div>
+    <div id="set-value-form" class="dialog" title="Set Values" style="display: none;">
+      <p>
+         <label for="value">Set values for <span id="set-value-form-variable">variable</span>:</label>
+         <input type="text" id="value" />
+         <input type="hidden" id="variable-index" />
+         <div class='dialogErrorMessage'></div>
+      </p>
+    </div>
+    <div id="clear-value-form" class="dialog" title="Clear Values" style="display: none;">
+      <p>
+         <label for="variableIndex">Clear values for <span id="clear-value-form-variable">variable</span>?</label>
+         <input type="hidden" id="variable-index" />
+      </p>
+    </div>
+    <div id="csv-save-choice-form" class="dialog" title="Download Choice" style="display: none;">
+      <p>
+         <label id="csv-save-choice-label"></label>
+      </p>
+    </div>
+	</div>
+
+	<div id="model-pane" class="ui-layout-center">
+  	<div id="scatterplot-pane" class="ui-layout-center">
+      <div class="load-status"></div>
+      <div id="scatterplot"></div>
+    </div>
+  </div>
+
+  <div id="dendrogram-pane" class="ui-layout-west">
+    <div id="dendrogram-leaf-backdrop"></div>
+    <div class="load-status"></div>
+    <svg id="dendrogram-viewer" width="100%" height="100%">
+      <defs>
+        <linearGradient id="subtree-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#7767b0" stop-opacity="1" />
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div id="table-pane" class="ui-layout-south">
+    <div class="load-status"></div>
+    <div id="table"></div>
+  </div>
+
+  <div title='Remote Login' id="remote-login-dialog" style="display: none;">
+    <p id='remote-error'></p>
+    <p id='remote-hostname'></p>
+    <form>
+      <fieldset>
+        <label for='remote-username'>Username</label>
+        <input id='remote-username' type='text'/>
+        <label for='remote-password'>Password</label>
+        <input id='remote-password' type='password'/>
+      </fieldset>
+    </form>
+  </div>
+
+</div>
+<script src="/dist/vendors~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_ru~29e28113.js"></script><script src="/dist/vendors~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_ti~7afcd8b9.js"></script><script src="/dist/vendors~ui_cca~ui_parameter_image~ui_parameter_plus~ui_timeseries.js"></script><script src="/dist/slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_run_comman~247387c4.js"></script><script src="/dist/slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_timeseries.js"></script><script src="/dist/ui_cca~ui_parameter_image~ui_parameter_plus~ui_timeseries.js"></script><script src="/dist/ui_cca~ui_parameter_image~ui_parameter_plus.js"></script><script src="/dist/ui_parameter_image~ui_parameter_plus.js"></script><script src="/dist/ui_parameter_plus~ui_timeseries.js"></script><script src="/dist/ui_parameter_plus.js"></script>

@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM dendrogram control, for use with the parameter-image model.
 
+import server_root from "js/slycat-server-root";
 import d3 from "js/d3.min";
 import * as remotes from "js/slycat-remotes-webpack";
 import URI from "urijs";
