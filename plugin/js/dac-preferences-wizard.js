@@ -79,8 +79,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var disc_map = null;
 
     // UI parameters
-    component.dac_max_label_length = ko.observable(20);     // defaults to 20
-    component.dac_max_time_points = ko.observable(500);     // defaults to 500
+    component.dac_max_label_length = ko.observable(20);                     // defaults to 20
+    component.dac_max_time_points = ko.observable(500);                     // defaults to 500
+    component.dac_max_num_plots = ko.observable(50);                        // defaults to 50
+    component.dac_max_points_animate = ko.observable(2500);                 // defaults to 2500
+    component.dac_scatter_plot_type = ko.observable("circle");              // defaults to circle
+    component.dac_control_bar_position = ko.observable("scatter-plot");     // defaults to over scatter plot
+
+    // private versions of UI parameters (converted to integers)
+    var dac_max_label_length = null;
+    var dac_max_time_points = null;
+    var dac_max_num_plots = null;
+    var dac_max_points_animate = null;
 
     // need a large dialog for color palettes
     $(".modal-dialog").addClass("modal-lg");
@@ -346,135 +356,52 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // initialize all swatches, switch betweent them in wizard
     component.draw_swatches();
 
-    // assigns default ui preferences for DAC to slycat
-    var assign_pref_defaults = function () {
-
-        // assign defaults for all preferences, override available in push script
-
-        // default alpha parameters
-        var dac_alpha_parms = [];
-        var dac_alpha_order = [];
-        //---------------------------
-        for (i = 0; i < num_vars; i++) {
-            dac_alpha_parms.push(1);
-            dac_alpha_order.push(i);
-        }
-
-        // from variable-defaults.pref file
-        // --------------------------------
-        var dac_var_plot_order = [0, 1, 2];
-
-        // from dac-ui.pref file:
-        // ----------------------
-        var dac_ui_parms = {
-
-            // the step size for the alpha slider (varies from 0 to 1)
-    	    ALPHA_STEP: 0.001,
-
-    	    // default width for the alpha sliders (in pixels)
-    	    ALPHA_SLIDER_WIDTH: 170,
-
-    	    // default height of alpha buttons (in pixels)
-            ALPHA_BUTTONS_HEIGHT: 33,
-
-            // number of points over which to stop animation
-		    MAX_POINTS_ANIMATE: 2500,
-
-		    // border around scatter plot (fraction of 1)
-		    SCATTER_BORDER: 0.025,
-
-            // scatter button toolbar height
-		    SCATTER_BUTTONS_HEIGHT: 37,
-
-		    // scatter plot colors (css/d3 named colors)
-		    POINT_COLOR: 'whitesmoke',
-		    POINT_SIZE: 5,
-		    NO_SEL_COLOR: 'gray',
-		    SELECTION_1_COLOR: 'red',
-		    SELECTION_2_COLOR: 'blue',
-		    COLOR_BY_LOW: 'yellow',
-		    COLOR_BY_HIGH: 'limegreen',
-		    OUTLINE_NO_SEL: 1,
-		    OUTLINE_SEL: 2,
-
-		    // pixel adjustments for d3 time series plots
-			PLOTS_PULL_DOWN_HEIGHT: 38,
-			PADDING_TOP: 10,
-			PADDING_BOTTOM: 24,
-		    PADDING_LEFT: 37,
-			PADDING_RIGHT: 10,
-			X_LABEL_PADDING: 4,
-			Y_LABEL_PADDING: 13,
-			LABEL_OPACITY: 0.2,
-			X_TICK_FREQ: 80,
-			Y_TICK_FREQ: 40
-
-        };
-
-        // upload the default ui parms
-        client.put_model_parameter ({
-            mid: component.model._id(),
-            aid: "dac-ui-parms",
-            value: dac_ui_parms,
-            error: function () {
-                dialog.ajax_error("Error uploading UI preferences.")("","","");
-                $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                $('.pts-browser-continue').toggleClass('disabled', false);
-            },
-            success: function () {
-
-             // upload alpha parameters to slycat
-             client.put_model_parameter({
-                mid: component.model._id(),
-                aid: "dac-alpha-parms",
-                value: dac_alpha_parms,
-                error: function () {
-                    dialog.ajax_error("Error uploading alpha parameter preferences.")("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                    $('.pts-browser-continue').toggleClass('disabled', false);
-                },
-                success: function () {
-
-                // upload alpha order to slycat
-                client.put_model_parameter({
-                    mid: component.model._id(),
-                    aid: "dac-alpha-order",
-                    value: dac_alpha_order,
-                    error: function () {
-                        dialog.ajax_error("Error uploading alpha order preferences.")("","","");
-                        $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                        $('.pts-browser-continue').toggleClass('disabled', false);
-                    },
-                    success: function () {
-
-                    // upload plot order to slycat
-                    client.put_model_parameter({
-                        mid: component.model._id(),
-                        aid: "dac-var-plot-order",
-                        value: dac_var_plot_order,
-                        error: function () {
-                            dialog.ajax_error("Error uploading variable plot order preferences.")("","","");
-                            $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                            $('.pts-browser-continue').toggleClass('disabled', false);
-                        },
-                        // now initialize MDS coords by calling server
-                        success: function () {
-                            init_MDS_coords();
-                        }
-                    }); }
-                }); }
-             }); }
-        });
-    };
-
+    // show options tab
     component.speedup_preferences = function() {
 
         // show speed up preferences
         component.tab(3);
 
-        console.log('speed up preferences');
-
     };
+
+    // check user selection options before finishing wizard
+    component.check_options = function () {
+
+        // convert to correct types
+        dac_max_label_length = Math.round(Number(component.dac_max_label_length()));
+        dac_max_time_points = Math.round(Number(component.dac_max_time_points()));
+        dac_max_num_plots = Math.round(Number(component.dac_max_num_plots()));
+        dac_max_points_animate = Math.round(Number(component.dac_max_points_animate()));
+
+        // check options
+
+        if (dac_max_label_length < 5) {
+
+            // label length must be at least 5
+            dialog.ajax_error("Please make sure the maximum label length is at least 5.")("","","");
+
+        } else if (component.dac_max_time_points() < 10) {
+
+            // time points must be at least 10
+            dialog.ajax_error("Please make sure the maximum number of time points is at least 10.")("","","");
+
+        } else if (component.dac_max_num_plots() < 10) {
+
+            // time points must be at least 10
+            dialog.ajax_error("Please make sure the maximum number of plots is at least 10.")("","","");
+
+        } else if (component.dac_max_points_animate() < 10) {
+
+            // time points must be at least 10
+            dialog.ajax_error("Please make sure the maximum number of points to animate is at least 10.")("","","");
+
+        } else {
+
+            // everything is checked, finish model
+            component.finish();
+
+        }
+    }
 
     // very last function called to launch model
     component.go_to_model = function() {
@@ -484,21 +411,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // this script gets called at the end of the 4th tab (after selecting columns to include)
     component.finish = function() {
 
-        console.log('finish');
-        /*
-        // record metadata columns that user wants to include
-        var meta_include_columns = [];
-        for(var i = 0; i != component.meta_attributes().length; ++i) {
-        if(component.meta_attributes()[i].Include())
-            meta_include_columns.push(i);
-        };
-
-        // record variables columns that user wants to include
-        var var_include_columns = [];
-        for(var i = 0; i != component.var_attributes().length; ++i) {
-        if(component.var_attributes()[i].Include())
-            var_include_columns.push(i);
-        };
+        // turn off continue button while we load data
+        $(".browser-continue").toggleClass("disabled", true);
 
         // record desired metadata columns as an artifact in the new model
         client.put_model_parameter({
@@ -515,14 +429,79 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                     aid: "dac-var-include-columns",
                     input: true,
                     success: function() {
-                        component.tab(6);
+
+                        // next up is continuous color map
+                        client.put_model_parameter({
+                            mid: component.model._id(),
+                            value: cont_map,
+                            aid: "dac-cont-colormap",
+                            input: true,
+                            success: function () {
+
+                                // then discrete color map
+                                client.put_model_parameter({
+                                    mid: component.model._id(),
+                                    value: disc_map,
+                                    aid: "dac-disc-colormap",
+                                    input: true,
+                                    success: function () {
+
+                                        // finally other options
+                                        client.put_model_parameter({
+                                            mid: component.model._id(),
+                                            value: [dac_max_label_length, dac_max_time_points,
+                                                    dac_max_num_plots, dac_max_points_animate,
+                                                    component.dac_scatter_plot_type(),
+                                                    component.dac_control_bar_position()],
+                                            aid: "dac-options",
+                                            input: true,
+                                            success: function () {
+
+                                                // re-load model
+                                                component.go_to_model();
+
+                                            },
+                                            error: function () {
+
+                                                dialog.ajax_error("Server error: could not record options selected.")
+                                                    ("","","");
+                                                $(".browser-continue").toggleClass("disabled", false);
+                                            }
+
+                                        })
+
+                                    },
+                                    error: function () {
+
+                                        dialog.ajax_error("Server error: could not record discrete colormap selection.")
+                                            ("","","");
+                                        $(".browser-continue").toggleClass("disabled", false);
+                                    }
+
+                                })
+                            },
+                            error: function () {
+
+                                dialog.ajax_error("Server error: could not record continuous colormap selection.")
+                                    ("","","");
+                                $(".browser-continue").toggleClass("disabled", false);
+                            }
+                        })
+
+                    },
+                    error: function () {
+
+                        dialog.ajax_error("Server error: could not record variable column selection.")("","","");
+                        $(".browser-continue").toggleClass("disabled", false);
                     }
                 });
+            },
+            error: function () {
+
+                dialog.ajax_error("Server error: could not record metadata column selection.")("","","");
+                $(".browser-continue").toggleClass("disabled", false);
             }
-
         });
-        */
-
     };
 
     // function for operating the back button in the wizard

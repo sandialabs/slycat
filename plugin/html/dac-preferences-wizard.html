@@ -109,31 +109,78 @@ it will be considered numerical unless you use alphabetic labels."></i>
 
     <!-- Options for changing the length of labels, etc. in DAC. -->
     <div data-bind="visible:tab() == 3">
-        <label>Options to adjust/optimize the Dial-A-Cluster user inferface.</label>
+        <label>Options to adjust/optimize the Dial-A-Cluster user inferface:</label>
 
-        <div class="form-group" style="margin-top:30px">
-            <label class="col-sm-5 control-label">Maximum label length
+        <div class="container" style="margin-top:30px; width:100%">
+            <label class="col-sm-2 control-label">Max. label length
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
                     title="Length beyond which labels for variables and metadata are truncated
-                           in the Dial-A-Cluster user interface (defaults to 20)."></i>
+in the Dial-A-Cluster user interface (defaults to 20, minimum is 5)."></i>
             </label>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
               <input class="form-control" type="number" min="5" placeholder="20" data-bind="value: dac_max_label_length"></input>
             </div>
         </div>
 
-        <div class="form-group" style="margin-top:30px">
-            <label class="col-sm-5 control-label">Maximum plot resolution
+        <div class="container" style="margin-top:30px; width:100%">
+
+            <label class="col-sm-2 control-label">Max. number plots
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                    title="Maximum number of points to include in a variable plot (for example, number of
-                           time points in a time series plot).  Beyond this number plots are produced
-                           by subsampling from original data (defaults to 500)."></i>
+                   title="Maximum number of plots to display at a time. Beyond this number
+only a random subset of the selected plots are shown (defaults to 50
+per selection, minimum is 10)."></i>
             </label>
-            <div class="col-sm-3">
-              <input class="form-control" type="number" min="2" placeholder="500" data-bind="value: dac_max_time_points"></input>
+            <div class="col-sm-2">
+                <input class="form-control" type="number" min="10" placeholder="50" data-bind="value: dac_max_num_plots"></input>
+            </div>
+
+            <div class="col-sm-1"></div>
+
+            <label class="col-sm-2 control-label">Max. plot resolution
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                    title="Maximum number of points to include in a variable plot (for example, number
+of time points in a time series plot).  Beyond this number plots are produced
+by subsampling from original data (defaults to 500, minimum is 10)."></i>
+            </label>
+            <div class="col-sm-2">
+              <input class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_time_points"></input>
+            </div>
+
+        </div>
+
+        <div class="container" style="margin-top:30px; width:100%">
+            <label class="col-sm-2 control-label">Max. points to animate
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                    title="Number of points in scatter plot beyond which animations between
+ coordinate changes are no longer used, for example when adjusting
+ sliders or zooming (defaults to 2500, minimum is 10)."></i>
+            </label>
+            <div class="col-sm-2">
+              <input class="form-control" type="number" min="10" placeholder="20" data-bind="value: dac_max_points_animate"></input>
             </div>
         </div>
 
+        <div class="container" style="margin-top: 30px; margin-left: 15px; width:100%">
+            <label class="col" control-label>
+            Use
+            <input type="radio" name="dac-scatter-plot-radios" value="circle" data-bind="checked: dac_scatter_plot_type">
+            circles, or
+            <input type="radio" name="dac-scatter-plot-radios" value="rect" data-bind="checked: dac_scatter_plot_type">
+            squares for scatter plot.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+               title="Render the scatter plot with squares (faster) or circles (slower)."></i>
+            </label>
+        </div>
+
+        <div class="container" style="margin-top: 30px; margin-left: 15px; margin-bottom: 15px; width:100%">
+            <label class="col" control-label>
+            Put selection control bar
+            <input type="radio" name="dac-control-bar-radios" value="scatter-plot" data-bind="checked: dac_control_bar_position">
+            above scatter plot, or
+            <input type="radio" name="dac-control-bar-radios" value="top-of-screen" data-bind="checked: dac_control_bar_position">
+            above entire interface.
+            </label>
+        </div>
 
     </div>
 
@@ -147,5 +194,5 @@ it will be considered numerical unless you use alphabetic labels."></i>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:check_variables">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 1,click:check_metadata">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 2,click:speedup_preferences">Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 3,click:finish">Save Preferences & Re-Launch Model</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 3,click:check_options"><i class="fa fa-spinner fa-pulse"></i> Save Preferences & Re-Launch Model</button>
 </div>
