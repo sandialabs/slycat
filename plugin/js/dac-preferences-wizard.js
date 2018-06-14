@@ -288,6 +288,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // set up swatches in third panel
     component.draw_swatches = function () {
 
+        // set up swatches
         d3.select("#dac-sequential-swatches")
             .selectAll(".dac-palette")
                 .data(d3.entries(cb_seq))
@@ -327,6 +328,54 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             .attr("class", "dac-swatch")
             .style("background-color", function(d) { return d; });
 
+        // load up previous continuous selection, if any
+        client.get_model_parameter({
+            mid: component.model._id(),
+            aid: "dac-cont-colormap",
+            success: function (cont_data) {
+
+                // set continuous color map data
+                cont_map = cont_data[0];
+                cont_selected = cont_data[1];
+
+                // is there a selection?
+                if (cont_selected != null) {
+
+                    // is it a diverging selection?
+                    if (cont_selected in cb_div) {
+
+                        // yes, switch to diverging color scales
+                        component.dac_scale_type("diverging");
+                    }
+
+                    // either way, highlight previous selection
+                    d3.select("[title=" + cont_selected + "]")
+                        .style("background-color", "#444")
+
+                };
+            }
+        });
+
+        // load up previous discrete selection, if any
+        client.get_model_parameter({
+            mid: component.model._id(),
+            aid: "dac-disc-colormap",
+            success: function (disc_data) {
+
+                // set continuous color map data
+                disc_map = disc_data[0];
+                disc_selected = disc_data[1];
+
+                // is there a selection?
+                if (disc_selected != null) {
+
+                    // either way, highlight previous selection
+                    d3.select("[title=" + disc_selected + "]")
+                        .style("background-color", "#444")
+
+                };
+            }
+        });
     }
 
     // set continuous color palette selection
@@ -483,7 +532,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         // next up is continuous color map
                         client.put_model_parameter({
                             mid: component.model._id(),
-                            value: cont_map,
+                            value: [cont_map, cont_selected],
                             aid: "dac-cont-colormap",
                             input: true,
                             success: function () {
@@ -491,7 +540,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                                 // then discrete color map
                                 client.put_model_parameter({
                                     mid: component.model._id(),
-                                    value: disc_map,
+                                    value: [disc_map, disc_selected],
                                     aid: "dac-disc-colormap",
                                     input: true,
                                     success: function () {

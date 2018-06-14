@@ -53,6 +53,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	var sel_1_color = null;
 	var sel_2_color = null;
 	var focus_color = null;
+    var cont_colormap = null;
+    var disc_colormap = null;
 
 	// keep track of color for point in focus
     var focus_point_color = null;
@@ -76,8 +78,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	// initial setup: read in MDS coordinates & plot
 	module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER, 
 		POINT_COLOR, POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-		SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, MAX_COLOR_NAME, OUTLINE_NO_SEL,
-		OUTLINE_SEL, datapoints_meta, include_columns)
+		SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
+		DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
+		datapoints_meta, include_columns)
 	{
 
 		// set the maximum number of points to animate, maximum zoom factor
@@ -98,6 +101,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		// set colors for scaling
 		color_by_low = COLOR_BY_LOW;
 		color_by_high = COLOR_BY_HIGH;
+        cont_colormap = CONT_COLORMAP;
+        disc_colormap = DISC_COLORMAP;
 
 		// set maximum color by name length
 		max_color_by_name_length = MAX_COLOR_NAME;
@@ -151,16 +156,10 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				y_scale = d3.scale.linear()
 					.domain([0 - scatter_border, 1 + scatter_border]);
 
-                // color brewer example scale
-			    color_scale = d3.scale.quantize()
-                    .range(["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb",
-                            "#41b6c4","#1d91c0","#225ea8","#253494","#081d58"]);
-
-				/*
+                // default color scale
 				color_scale = d3.scale.linear()
 					.range([color_by_low, color_by_high])
 					.interpolate(d3.interpolateRgb);
-                */
 
 				// set subset to full mds_coord set
                 for (i = 0; i < mds_coords.length; i++) {
@@ -643,10 +642,42 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
                                     curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
                                 }
 
+                                // set colormap to discrete color map if present
+                                if (disc_colormap == null) {
+
+                                    // revert to default color map
+                                    color_scale = d3.scale.linear()
+                                        .range([color_by_low, color_by_high])
+                                        .interpolate(d3.interpolateRgb);
+
+                                } else {
+
+                                    // use selected color brewer scale
+                                    color_scale = d3.scale.quantize()
+                                        .range(disc_colormap);
+
+                                };
+
 						    } else {
 
                                 // get selected column from data base (number data)
                                 curr_color_by_col = data["data"][select_col];
+
+                                // set colormap to continuous color map if present
+                                if (cont_colormap == null) {
+
+                                    // revert to default color map
+                                    color_scale = d3.scale.linear()
+                                        .range([color_by_low, color_by_high])
+                                        .interpolate(d3.interpolateRgb);
+
+                                } else {
+
+                                    // use selected color brewer scale
+                                    color_scale = d3.scale.quantize()
+                                        .range(cont_colormap);
+
+                                };
 
 						    }
 
