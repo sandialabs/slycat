@@ -100,7 +100,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // this function is called to select variables to
     // include (after selecting metadata)
-    component.include_variables = function() {
+    var include_variables = function() {
 
         // load first column and use to let user select metadata
         client.get_model_arrayset_data({
@@ -170,7 +170,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     }
 
     // upon starting wizard, populate variables
-    component.include_variables();
+    include_variables();
 
     // check that user selected at least one variable
     component.check_variables = function () {
@@ -195,7 +195,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // this function gets called after all data is uploaded,
     // including metadata table
-    component.include_metadata = function() {
+    var include_metadata = function() {
 
         // load header row and use to let user select metadata
         client.get_model_arrayset_metadata({
@@ -260,7 +260,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     };
 
     // upon starting wizard, populate metadata
-    component.include_metadata();
+    include_metadata();
 
     // check metadata results
     component.check_metadata = function () {
@@ -286,7 +286,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     }
 
     // set up swatches in third panel
-    component.draw_swatches = function () {
+    var draw_swatches = function () {
 
         // set up swatches
         d3.select("#dac-sequential-swatches")
@@ -453,7 +453,32 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     }
 
     // initialize all swatches, switch betweent them in wizard
-    component.draw_swatches();
+    draw_swatches();
+
+    // initialize options with any previous selections
+    var init_options = function () {
+
+        // load previous selections
+        client.get_model_parameter({
+            mid: component.model._id(),
+            aid: "dac-options",
+            success: function (options) {
+
+                // set options
+                component.dac_max_label_length(options[0]);
+                component.dac_max_time_points(options[1]);
+                component.dac_max_num_plots(options[2]);
+                component.dac_max_points_animate(options[3]);
+                component.dac_scatter_plot_type(options[4]);
+                component.dac_control_bar_position(options[5]);
+
+            }
+        });
+
+    }
+
+    // set options to display any previous selections
+    init_options();
 
     // show options tab
     component.speedup_preferences = function() {
