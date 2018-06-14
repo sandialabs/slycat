@@ -12,14 +12,31 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
          plots, metadata_table, selections, $, d3, URI, ko)
 {
 
+    // controls on top or above scatter plot
+    var CONTROL_BAR = "scatter-plot";
+
     // maximum number of points to display for plots
     var MAX_TIME_POINTS = 500;
 
     // maximum number of plots (per selection)
     var MAX_NUM_PLOTS = 50;
 
+    // animation threshold
+    var MAX_POINTS_ANIMATE = null;
+
     // focus selection color
     var FOCUS_COLOR = "black";
+
+    // scatter plot points (circles or squares)
+    var SCATTER_PLOT_TYPE = "circle";
+
+    // variable/metadata inclusion columns
+    var var_include_columns = null;
+    var meta_include_columns = null;
+
+    // colormap defaults
+    var cont_colormap = null;
+    var disc_colormap = null;
 
     // model id from address bar
     var mid = URI(window.location).segment(-1);
@@ -57,7 +74,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 if (result[0] == "Done") {
 
                     // done uploading to database
-                    launch_model();
+                    check_preferences();
 
                 } else if (result[0] == "Error") {
 
@@ -101,7 +118,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                             // if "dac-polling-progress" doesn't exist it's an older model, just load it
                             if (!("artifact:dac-polling-progress" in result))
                             {
-                                launch_model();
+                                check_preferences();
                             } else {
 
                                 // otherwise keep trying, do not reset timer
@@ -112,17 +129,92 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                         error: function ()
                         {
                             // couldn't even load model? -- give up
-                            launch_model();
+                            check_preferences();
                         }
                     });
 
                 } else {
                     // all else fails -- give up
-                    launch_model();
+                    check_preferences();
                 }
             }
         });
     })();
+
+    // check for preferences, and set up variable
+    function check_preferences ()
+    {
+
+        // get artifacts in model (to see if user has modified preferences
+        client.get_model (
+        {
+            mid: mid,
+            success: function (result)
+            {
+                // check for preference variables
+                if (("artifact:dac-var-include-columns" in result) &&
+                    ("artifact:dac-metadata-include-columns" in result) &&
+                    ("artifact:dac-cont-colormap" in result) &&
+                    ("artifact:dac-disc-colormap" in result) &&
+                    ("artifact:dac-options" in result)) {
+
+                    // load preference data
+                    $.when(request.get_parameters("dac-var-include-columns"),
+                           request.get_parameters("dac-metadata-include-columns"),
+                           request.get_parameters("dac-cont-colormap"),
+                           request.get_parameters("dac-disc-colormap"),
+                           request.get_parameters("dac-options")).then(
+                           function (var_include, meta_include, cont_color, disc_color, options) {
+
+                                // set var/meta inclusion
+                                var_include_columns = var_include[0];
+                                meta_include_columns = meta_include[0];
+
+                                // set colormaps
+                                cont_colormap = cont_color[0];
+                                disc_colormap = disc_color[0];
+
+                                // set options -- label length
+                                MAX_PLOT_NAME = options[0][0];
+                                MAX_COLOR_NAME = options[0][0];
+                                MAX_SLIDER_NAME = options[0][0];
+
+                                // set options -- plots
+                                MAX_TIME_POINTS = options[0][1];
+                                MAX_NUM_PLOTS = options[0][2];
+
+                                // set options -- animation
+                                MAX_POINTS_ANIMATE = options[0][3];
+
+                                // set options -- scatter plot type
+                                SCATTER_PLOT_TYPE = options[0][4];
+
+                                // set options -- control bar
+                                CONTROL_BAR = options[0][5];
+
+                                // start model
+                                launch_model();
+
+                     });
+
+
+
+                } else {
+
+                    // no preferences found, launch model with defaults
+                    launch_model();
+
+                }
+            },
+            error: function () {
+
+                // couldn't load model -- try to launch anyway (forget about preferences)
+                launch_model();
+
+            }
+        });
+    }
+
 
     // setup and launch model
     function launch_model ()
@@ -143,7 +235,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     			var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
 
 				// number of points over which to stop animation
-				var MAX_POINTS_ANIMATE = parseInt(ui_parms["MAX_POINTS_ANIMATE"]);
+				if (MAX_POINTS_ANIMATE == null) {
+				    MAX_POINTS_ANIMATE = parseInt(ui_parms["MAX_POINTS_ANIMATE"]);
+				};
 
 				// border around scatter plot (fraction of 1)
 				var SCATTER_BORDER = parseFloat(ui_parms["SCATTER_BORDER"]);
@@ -176,7 +270,6 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					Y_TICK_FREQ: parseInt(ui_parms["Y_TICK_FREQ"]),
 				};
 
-
 	            // Remove progress element from DOM
 	            $('#dac-progress-feedback').remove();
 
@@ -198,7 +291,6 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
                 // set up subset change event
                 document.body.addEventListener("DACSubsetChanged", subset_changed);
-
 
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta"),
@@ -222,10 +314,11 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
 					                POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR,
-					                COLOR_BY_LOW, COLOR_BY_HIGH, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0]);
+					                COLOR_BY_LOW, COLOR_BY_HIGH, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
+					                data_table_meta[0], meta_include_columns);
 
 				                // set up table (propagate selections through to scatter plot)
-				                metadata_table.setup(data_table_meta, data_table);
+				                metadata_table.setup(data_table_meta, data_table, meta_include_columns);
 
 		   	                },
 		   	                function () {

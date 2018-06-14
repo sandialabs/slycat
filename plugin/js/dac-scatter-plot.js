@@ -77,9 +77,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER, 
 		POINT_COLOR, POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
 		SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, MAX_COLOR_NAME, OUTLINE_NO_SEL,
-		OUTLINE_SEL, datapoints_meta)
+		OUTLINE_SEL, datapoints_meta, include_columns)
 	{
-	
+
 		// set the maximum number of points to animate, maximum zoom factor
 		max_points_animate = MAX_POINTS_ANIMATE;
 		
@@ -183,13 +183,24 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		
 		// set up color by selection
 
+        // set up include columns vector
+	    if (include_columns == null) {
+
+	        // no preference, then all columns
+	        include_columns = [];
+	        for (i = 0; i < datapoints_meta["column-count"]; i++) {
+	            include_columns.push(i);
+	        }
+	    }
+
 		// look for columns with numbers/strings for color by menu
 		for (var i = 0; i < datapoints_meta["column-count"]; i++)
 		{
 
-            // we accept number and string data
-			if ((datapoints_meta["column-types"][i] == "float64") ||
-			    (datapoints_meta["column-types"][i] == "string")) {
+            // we accept number and string data, only for included columns
+			if ((include_columns.indexOf(i) != -1) &&
+			    ((datapoints_meta["column-types"][i] == "float64") ||
+			    (datapoints_meta["column-types"][i] == "string"))) {
 			    color_by_type.push(datapoints_meta["column-types"][i]);
 				color_by_cols.push(i);
 
@@ -599,7 +610,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				// get column to color by
 				var select_col = Number(this.value);
 				curr_color_by_sel = select_col;
-				
+
 				// set up coloring
 				if (select_col == -1) {
 				
@@ -613,8 +624,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					$.when(request.get_table("dac-datapoints-meta")).then(
 						function (data)
 						{
+
 						    // check for string data
-						    if (color_by_type[select_col] == "string") {
+						    if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
 
 						        // use alphabetical order by number to color
 
@@ -624,12 +636,12 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 						        // get unique sorted string data
 						        var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
 
+
                                 // get indices or original string data in the unique sorted string data
                                 curr_color_by_col = [];
                                 for (i=0; i < color_by_string_data.length; i++) {
                                     curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
                                 }
-
 
 						    } else {
 

@@ -137,11 +137,34 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         lastSelected: false,
                         tooltip: tooltip
                     });
+                };
 
-                }
+                // check to see if user has previously selected columns
+                client.get_model_parameter({
+                    mid: component.model._id(),
+                    aid: "dac-var-include-columns",
+                    success: function (include_columns) {
 
-                // give access to gui
-                mapping.fromJS(attributes, component.var_attributes);
+                        // change attributes according to previous selections
+                        for (var i = 0; i != attributes.length; i++) {
+
+                            // un-mark non-included columns
+                            if (include_columns.indexOf(i) == -1) {
+                                attributes[i].Include = false;
+                            }
+
+                        }
+
+                        // give access to gui
+                        mapping.fromJS(attributes, component.var_attributes);
+
+                    },
+                    error: function () {
+
+                        // give access to gui
+                        mapping.fromJS(attributes, component.var_attributes);
+                    }
+                });
             }
         });
     }
@@ -204,7 +227,34 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                         tooltip: tooltip
                     });
                 }
-                mapping.fromJS(attributes, component.meta_attributes);
+
+                // check to see if user has previously selected columns
+                client.get_model_parameter({
+                    mid: component.model._id(),
+                    aid: "dac-metadata-include-columns",
+                    success: function (include_columns) {
+
+                        // change attributes according to previous selections
+                        for (var i = 0; i != attributes.length; i++) {
+
+                            // un-mark non-included columns
+                            if (include_columns.indexOf(i) == -1) {
+                                attributes[i].Include = false;
+                            }
+
+                        }
+
+                        // give access to gui
+                        mapping.fromJS(attributes, component.meta_attributes);
+
+                    },
+                    error: function () {
+
+                        // give access to gui
+                        mapping.fromJS(attributes, component.meta_attributes);
+                    }
+                });
+
             }
         });
     };

@@ -29,11 +29,11 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 
 	
 	// populate slick grid's column metadata
-	function make_column(column_index)
+	function make_column(id_index, column_index)
 	{
 		return {
-			id : column_index,
-			field : column_index,
+			id : id_index,
+			field : id_index,
 			name : table_metadata["column-names"][column_index],
 			sortable : true,
 			toolTip : table_metadata["column-names"][column_index]
@@ -41,19 +41,39 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 	}
 	
 	// load grid data and set up colors for selections
-	module.setup = function (metadata, data)
+	module.setup = function (metadata, data, include_columns)
 	{
 
-		// get number of rows and columns in data table
+
+		// get number of rows and total available columns in data table
 		var num_rows = data[0]["data"][0].length;
-		var num_cols = data[0]["data"].length;
-				
+		var avail_cols = data[0]["data"].length;
+
+	    // set number of columns to include
+	    if (include_columns == null) {
+
+	        // no preference, then all columns
+	        include_columns = [];
+	        for (i = 0; i < avail_cols; i++) {
+	            include_columns.push(i);
+	        }
+	    }
+
+	    // set number of columns to use
+	    var num_cols = include_columns.length;
+
 		// set up slick grid column names
 		table_metadata = metadata[0];
 		for (var i = 0; i != num_cols; i++) {
-			grid_columns.push(make_column(i));
+			grid_columns.push(make_column(i, include_columns[i]));
 		}
-				
+
+		// produce new data table with correct columns
+		table_data = [];
+		for (var i = 0; i != num_cols; i++) {
+		    table_data.push(data[0]["data"][include_columns[i]])
+		}
+
 		// produce a vector of sequential id for table rows and a zero vector
 		var row_id = [];
 		var zero_vec = [];
@@ -61,11 +81,11 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 			row_id.push(i);
 			zero_vec.push(0);
 		}
-				
+
 		// add two columns to data, unique id and selection mode
-		data[0]["data"].push(row_id);
-		data[0]["data"].push(zero_vec);
-		grid_rows = d3.transpose(data[0]["data"]);
+		table_data.push(row_id);
+		table_data.push(zero_vec);
+		grid_rows = d3.transpose(table_data);
 
 		// set up slick grid
 		data_view = new Slick.Data.DataView();
