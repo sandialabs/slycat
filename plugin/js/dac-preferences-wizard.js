@@ -78,13 +78,21 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var cont_map = null;
     var disc_map = null;
 
+    // option defaults
+    var DEF_MAX_LABEL_LENGTH = 20;
+    var DEF_MAX_TIME_POINTS = 500;
+    var DEF_MAX_NUM_PLOTS = 50;
+    var DEF_MAX_POINTS_ANIMATE = 2500;
+    var DEF_SCATTER_PLOT_TYPE = "circle";
+    var DEF_CONTROL_BAR_POSITION = "scatter-plot";
+
     // UI parameters
-    component.dac_max_label_length = ko.observable(20);                     // defaults to 20
-    component.dac_max_time_points = ko.observable(500);                     // defaults to 500
-    component.dac_max_num_plots = ko.observable(50);                        // defaults to 50
-    component.dac_max_points_animate = ko.observable(2500);                 // defaults to 2500
-    component.dac_scatter_plot_type = ko.observable("circle");              // defaults to circle
-    component.dac_control_bar_position = ko.observable("scatter-plot");     // defaults to over scatter plot
+    component.dac_max_label_length = ko.observable(DEF_MAX_LABEL_LENGTH);
+    component.dac_max_time_points = ko.observable(DEF_MAX_TIME_POINTS);
+    component.dac_max_num_plots = ko.observable(DEF_MAX_NUM_PLOTS);
+    component.dac_max_points_animate = ko.observable(DEF_MAX_POINTS_ANIMATE);
+    component.dac_scatter_plot_type = ko.observable(DEF_SCATTER_PLOT_TYPE);
+    component.dac_control_bar_position = ko.observable(DEF_CONTROL_BAR_POSITION);
 
     // private versions of UI parameters (converted to integers)
     var dac_max_label_length = null;
@@ -526,6 +534,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
         }
     }
+
+    // reset defaults on options pane
+    component.reset_defaults = function () {
+
+        component.dac_max_label_length(DEF_MAX_LABEL_LENGTH);
+        component.dac_max_time_points(DEF_MAX_TIME_POINTS);
+        component.dac_max_num_plots(DEF_MAX_NUM_PLOTS);
+        component.dac_max_points_animate(DEF_MAX_POINTS_ANIMATE);
+        component.dac_scatter_plot_type(DEF_SCATTER_PLOT_TYPE);
+        component.dac_control_bar_position(DEF_CONTROL_BAR_POSITION);
+
+    };
 
     // very last function called to launch model
     component.go_to_model = function() {
