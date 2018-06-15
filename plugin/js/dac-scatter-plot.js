@@ -53,8 +53,11 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	var sel_1_color = null;
 	var sel_2_color = null;
 	var focus_color = null;
-    var cont_colormap = null;
-    var disc_colormap = null;
+
+    // user preferences for circles or squares
+    var scatter_plot_type = null;
+    var point_type_x = null;
+    var point_type_y = null;
 
 	// keep track of color for point in focus
     var focus_point_color = null;
@@ -66,7 +69,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	// colors to use for scaling
 	var color_by_low = null;
 	var color_by_high = null;
-	
+    var cont_colormap = null;
+    var disc_colormap = null;
+
 	// color by selection menu (default is "Do Not Color")
 	var curr_color_by_sel = -1;
 	var curr_color_by_col = [];
@@ -77,7 +82,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	
 	// initial setup: read in MDS coordinates & plot
 	module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER, 
-		POINT_COLOR, POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
+		POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
+		NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
 		SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
 		DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 		datapoints_meta, include_columns)
@@ -97,6 +103,20 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		sel_1_color = SELECTION_1_COLOR;
 		sel_2_color = SELECTION_2_COLOR;
 		focus_color = SEL_FOCUS_COLOR;
+        scatter_plot_type = SCATTER_PLOT_TYPE;
+
+        // set x, y labels for D3 in case of circles or squares
+        if (scatter_plot_type == "circle") {
+
+            point_type_x = "cx";
+            point_type_y = "cy";
+
+        } else {
+
+            point_type_x = "x";
+            point_type_y = "y";
+
+        }
 
 		// set colors for scaling
 		color_by_low = COLOR_BY_LOW;
@@ -120,7 +140,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		
 		// bind selection/zoom buttons to callback operations
 		$("#dac-scatter-button-sel-1").on("click", 
-			function() { selections.set_sel_type(1); module.draw() });
+			function() { selections.set_sel_type(1); module.draw(); });
 		$("#dac-scatter-button-sel-2").on("click", 
 			function() { selections.set_sel_type(2); module.draw(); });
 		$("#dac-scatter-button-subset").on("click",
@@ -240,12 +260,24 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		
 		// brush has to be under points
 		sel_zoom_buttons();
-		draw_points();
+        draw_points();
 
 	}
-	
+
 	// entirely redraws points (including selection)
-	function draw_points ()
+	function draw_points () {
+
+		// draw points (either circles or squares)
+		if (scatter_plot_type == "circle") {
+		    draw_circles();
+		} else {
+		    draw_squares();
+		}
+
+	}
+
+	// entirely redraws points (including selection, using circles)
+	function draw_circles ()
 	{
 		// erase any old points
 		scatter_plot.selectAll("circle").remove();
@@ -343,9 +375,125 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
         }
 			
 	}
-	
-	// animate if MDS coordinates have changed, or for zoom (private)
-	animate = function ()
+
+	// entirely redraws points (including selection)
+	function draw_squares ()
+	{
+		// erase any old points
+		scatter_plot.selectAll(".square").remove();
+
+        // remove old focus point
+        scatter_plot.selectAll(".focus").remove();
+
+		// input new points
+        scatter_points = scatter_plot.selectAll(".square")
+            .data(mds_coords)
+            .attr("class", "square")
+            .enter()
+            .append("rect")
+            .attr("class", "square");
+
+		// make sure they are colored according to selections
+		scatter_points.attr("stroke", function(d,i) {
+
+			// default is point_color
+			var outline_color = no_sel_color;
+
+			if (selections.in_sel_1(i) != -1) {
+				outline_color = sel_1_color;
+			}
+			if (selections.in_sel_2(i) != -1) {
+				outline_color = sel_2_color;
+			}
+
+			return outline_color;
+		});
+
+		// selections get thicker outline
+		scatter_points.attr("stroke-width", function(d,i) {
+
+			// default stroke-width is 1
+			var outline_width = outline_no_sel;
+
+			// selected width is 2
+			if (selections.in_sel_1(i) != -1 ||
+			    selections.in_sel_2(i) != -1) {
+			   	outline_width = outline_sel;
+			}
+
+			return outline_width;
+		});
+
+		// fill in points
+		if (curr_color_by_col.length > 0) {
+			scatter_points.attr("fill", function(d,i) {
+				return color_scale(curr_color_by_col[i]);
+			});
+		} else {
+			scatter_points.attr("fill", point_color);
+		}
+
+		// put in correct positions
+		scatter_points.attr("x", function(d) {
+				return x_scale(d[0]) - point_size;
+			})
+			.attr("y", function(d) {
+				return y_scale(d[1]) - point_size;
+			})
+			.attr("width", point_size*2)
+			.attr("height", point_size*2)
+			.on("mousedown", sel_individual);
+
+		// draw new focus rect, if needed
+        if (selections.focus() != null) {
+
+            // are we in color by mode?
+            if (curr_color_by_col.length > 0) {
+                // yes -- get current point color
+                focus_point_color = color_scale(curr_color_by_col[selections.focus()]);
+            } else {
+                // no -- revert to standard point color
+                focus_point_color = point_color;
+            }
+
+            // get focus data
+            scatter_plot.selectAll(".focus")
+                        .data([mds_coords[selections.focus()]])
+                        .attr("class", "focus")
+                        .enter()
+                        .append("rect")
+                        .attr("class", "focus")
+                        .attr("stroke", focus_color)
+                        .attr("stroke-width", outline_sel)
+                        .attr("fill", focus_point_color)
+                        .attr("x", function(d) {
+                            return x_scale(d[0]) - point_size;
+                        })
+                        .attr("y", function(d) {
+                            return y_scale(d[1]) - point_size;
+                        })
+                        .attr("width", point_size*2)
+                        .attr("height", point_size*2)
+                        .on("mousedown", defocus);
+
+        }
+
+	}
+
+    // animate if MDS coordinates have changed, or from zoom
+    animate = function ()
+    {
+
+        // circles and square have to be treated differently
+        if (scatter_plot_type == "circle") {
+            animate_circles();
+        } else {
+            animate_squares();
+        }
+    }
+
+	// animate if MDS coordinates have changed, or for zoom (private) for circles
+	animate_circles = function ()
 	{
 		// assume that only data has changed, scale should still be OK
 		scatter_points.transition()
@@ -364,6 +512,29 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			        })
 			        .attr("cy", function(d) {
 				        return y_scale(d[1])
+			        });
+	}
+
+	// animate if MDS coordinates have changed, or for zoom (private) for squares
+	animate_squares = function ()
+	{
+		// assume that only data has changed, scale should still be OK
+		scatter_points.transition()
+			.attr("x", function(d) {
+			return x_scale(d[0]) - point_size;
+			})
+			.attr("y", function(d) {
+				return y_scale(d[1]) - point_size;
+			});
+
+		// move focus point
+		scatter_plot.selectAll(".focus")
+		            .transition()
+		            .attr("x", function(d) {
+			            return x_scale(d[0]) - point_size;
+			        })
+			        .attr("y", function(d) {
+				        return y_scale(d[1]) - point_size;
 			        });
 	}
 	
@@ -386,9 +557,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 					// record new values in mds_coords
 					mds_coords = JSON.parse(result)["mds_coords"];
 					
-					// update the data in d3
-					scatter_plot.selectAll("circle")
-						.data(mds_coords);					
+					// update the data in d3 (using either cirlces or squares)
+					scatter_plot.selectAll(scatter_plot_type)
+						.data(mds_coords);
 
 					// update the focus point
 					if (selections.focus() != null) {
@@ -615,7 +786,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				
 					// revert to no color & re-draw
 					curr_color_by_col = [];
-					draw_points();
+					module.draw();
 					
 				} else {
 				

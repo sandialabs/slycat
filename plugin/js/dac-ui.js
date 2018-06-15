@@ -313,9 +313,10 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					                POINT_SIZE, NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR,
-					                COLOR_BY_LOW, COLOR_BY_HIGH, cont_colormap, disc_colormap, MAX_COLOR_NAME,
-					                OUTLINE_NO_SEL, OUTLINE_SEL, data_table_meta[0], meta_include_columns);
+					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_1_COLOR,
+					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
+					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
+					                OUTLINE_SEL, data_table_meta[0], meta_include_columns);
 
 				                // set up table (propagate selections through to scatter plot)
 				                metadata_table.setup(data_table_meta, data_table, meta_include_columns);
