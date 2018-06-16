@@ -23,12 +23,12 @@ S. Martin
 	</div>
 
 	<div class="ui-layout-center dac-model-content">
-		
-		<div class="ui-layout-center">
 
-			<div class="ui-layout-north" id="dac-mds-buttons">
+		<div class="ui-layout-center" id="dac-control-bar-scatter-plot">
+
+			<div class="ui-layout-north">
 		
-				<!-- MDS Scatter Plot Buttons -->
+				<!-- MDS Scatter Plot Buttons (above scatter plot)-->
 				<div class="bootstrap-styles">
 			
 					<div class="btn-group" data-toggle="buttons" 
@@ -75,7 +75,7 @@ between selection 1 and selection 2.">Difference
 					<i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
 title="The difference calculation is
 out of sync with the current selection."> </i>
-					<i class="fa fa-refresh"  id="dac-selection-synced"
+					<i class="fa fa-refresh" id="dac-selection-synced"
 title="The difference calculation is in
 sync with the current selection"> </i>
         			
@@ -86,14 +86,80 @@ sync with the current selection"> </i>
 			</div>
 				
 			<div class="ui-layout-center" id="dac-mds-pane">
-					
+
 				<!-- MDS Scatter Plot -->
 				<svg id="dac-mds-scatterplot"></svg>
-			
+
 			</div>
 			
 		</div>
-		
+
+		<div class="ui-layout-center" id="dac-mds-pane-bar-top">
+
+			<!-- MDS Scatter Plot -->
+			<svg id="dac-mds-scatterplot"></svg>
+
+		</div>
+
+		<div class="ui-layout-north" id="dac-control-bar-top">
+
+			<!-- MDS Scatter Plot Buttons (above entire interface-->
+			<div class="bootstrap-styles">
+
+				<div class="btn-group" data-toggle="buttons"
+					id="dac-scatter-select-buttons">
+					<label class="btn btn-default btn-sm active"
+						id="dac-scatter-button-sel-1" title="Select group 1.
+Use shift to add to group.">
+						<input type="radio" name="options" autocomplete="off"
+							value="selection_1">Selection 1</input>
+					</label>
+					<label class="btn btn-default btn-sm"
+						id="dac-scatter-button-sel-2" title="Select group 2.
+Use shift to add to group.">
+						<input type="radio" name="options" autocomplete="off"
+							value="selection_2">Selection 2</input>
+					</label>
+					<label class="btn btn-default btn-sm"
+						id="dac-scatter-button-subset" title="Select subset for all analysis.
+Use shift to exclude subset.">
+						<input type="radio" name="options" autocomplete="off"
+							value="subset">Subset</input>
+					</label>
+					<label class="btn btn-default btn-sm"
+						id="dac-scatter-button-zoom" title="Zoom for scatter plot.">
+						<input type="radio" name="options" autocomplete="off"
+							value="zoom">Zoom</input>
+					</label>
+				</div>
+
+				<div class="btn-group" id="dac-difference-buttons">
+					<label id="dac-previous-three-button" class="btn btn-default btn-sm disabled"
+						   title="Previous three most different plots.">
+						<i class="fa fa-chevron-left" aria-hidden="true"></i>
+					</label>
+					<label id="dac-scatter-diff-button" class="btn btn-default btn-sm"
+						   title="Order variable plots to maximize difference
+between selection 1 and selection 2.">Difference
+					</label>
+					<label id="dac-next-three-button" class="btn btn-default btn-sm disabled"
+						   title="Next three most different plots.">
+						<i class="fa fa-chevron-right" aria-hidden="true"></i>
+					</label>
+				</div>
+				<i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
+				   title="The difference calculation is
+out of sync with the current selection."> </i>
+				<i class="fa fa-refresh"  id="dac-selection-synced"
+				   title="The difference calculation is in
+sync with the current selection"> </i>
+
+				<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
+
+			</div>
+
+		</div>
+
 		<div class="ui-layout-south" id="dac-datapoints-pane">
 		
 			<!-- MetaData Table --->
@@ -192,6 +258,5 @@ not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i>
 		<svg class="dac-plot" id="dac-plot-3"></svg>
 
 	</div>
-	<!-- </div> -->
-	
+
 </div>

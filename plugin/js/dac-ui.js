@@ -275,7 +275,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 	            // set up jQuery layout for user interface
 				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
-							  SCATTER_BUTTONS_HEIGHT);
+							  SCATTER_BUTTONS_HEIGHT, CONTROL_BAR);
 
                 // set up alpha slider value change event
                 document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);

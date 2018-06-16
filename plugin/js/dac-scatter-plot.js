@@ -56,8 +56,6 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 
     // user preferences for circles or squares
     var scatter_plot_type = null;
-    var point_type_x = null;
-    var point_type_y = null;
 
 	// keep track of color for point in focus
     var focus_point_color = null;
@@ -104,19 +102,6 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		sel_2_color = SELECTION_2_COLOR;
 		focus_color = SEL_FOCUS_COLOR;
         scatter_plot_type = SCATTER_PLOT_TYPE;
-
-        // set x, y labels for D3 in case of circles or squares
-        if (scatter_plot_type == "circle") {
-
-            point_type_x = "cx";
-            point_type_y = "cy";
-
-        } else {
-
-            point_type_x = "x";
-            point_type_y = "y";
-
-        }
 
 		// set colors for scaling
 		color_by_low = COLOR_BY_LOW;
@@ -245,11 +230,12 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		
 	// draw the MDS scatter plot
 	module.draw = function ()
-	{				
+	{
+
 		// draw svg to size of container
 		var width = $("#dac-mds-pane").width();
 		var height = $("#dac-mds-pane").height();
-		
+
 		// set correct viewing window
 		x_scale.range([0,width]);
 		y_scale.range([height,0]);
