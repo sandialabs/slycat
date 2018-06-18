@@ -270,7 +270,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
       };
 
       var on_slycat_fn = function() {
-        var fn = vm.agent_function()
+        var fn = vm.agent_function();
         var uid = generateUniqueId();
 
         var fn_params = vm.agent_function_params();
@@ -285,21 +285,178 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           fn_params_copy.timeseries_name = "";
 
         }
+        var json_payload =
+        {
+          "scripts": [
+          ],
+          "hpc": {
+              "is_hpc_job": true,
+              "parameters": {
+                  "wckey" : vm.wckey(),
+                  "nnodes" : vm.nnodes(),
+                  "partition" : vm.partition(),
+                  "ntasks_per_node" : vm.ntasks_per_node(),
+                  "time_hours" : vm.time_hours() === undefined ? 0 : vm.time_hours(),
+                  "time_minutes" : vm.time_minutes() === undefined ? 0 : vm.time_minutes(),
+                  "time_seconds" : vm.time_seconds() === undefined ? 0 : vm.time_seconds(),
+                  "working_dir" : fn_params.workdir + "/slycat/"
+              }
+          }
+        };
 
-        client.post_agent_function({
+        var hdf5_dir = fn_params.workdir + "slycat/" + uid + "/" + "hdf5/";
+        var pickle_dir = fn_params.workdir + "slycat/" + uid + "/" + "pickle/";
+
+        if (fn_params.timeseries_type === "csv")
+        {
+          json_payload.scripts.push({
+              "name": "timeseries_to_hdf5",
+              "parameters": [
+                  {
+                      "name": "--directory",
+                      "value": hdf5_dir
+                  },
+                  {
+                      "name": "--id-column",
+                      "value": fn_params.id_column
+                  },
+                  {
+                      "name": "--inputs-file",
+                      "value": fn_params.inputs_file
+                  },
+                  {
+                      "name": "--inputs-file-delimiter",
+                      "value": fn_params.inputs_file_delimiter
+                  },
+                  {
+                      "name": "--force",
+                      "value": true
+                  }
+              ]
+          });
+        }
+        else if(fn_params.timeseries_type === "xyce")
+        {
+          json_payload.scripts.push({
+              "name": "slycat-xyce-timeseries-to-hdf5",
+              "parameters": [
+                  {
+                      "name": "--output-directory",
+                      "value": hdf5_dir
+                  },
+                  {
+                      "name": "--id-column",
+                      "value": fn_params.id_column
+                  },
+                  {
+                      "name": "--timeseries-file",
+                      "value": fn_params.xyce_timeseries_file
+                  },
+                  {
+                      "name": "--inputs-directory",
+                      "value": fn_params.input_directory
+                  },
+                  {
+                      "name": "--force",
+                      "value": true
+                  }
+              ]
+          });
+        }
+            // # check if we have a pre-set hdf5 directory
+            // if "hdf5_directory" in params and params["hdf5_directory"] != "":
+            //     hdf5_dir = params["hdf5_directory"]
+
+        if (fn_params.timeseries_name !== "")
+        {
+          json_payload.scripts.push({
+              "name": "compute_timeseries",
+              "parameters": [
+                  {
+                      "name": "--directory",
+                      "value": hdf5_dir
+                  },
+                  {
+                      "name": "--timeseries-name",
+                      "value": fn_params.timeseries_name
+                  },
+                  {
+                      "name": "--cluster-sample-count",
+                      "value": fn_params.cluster_sample_count
+                  },
+                  {
+                      "name": "--cluster-sample-type",
+                      "value": fn_params.cluster_sample_type
+                  },
+                  {
+                      "name": "--cluster-type",
+                      "value": fn_params.cluster_type
+                  },
+                  {
+                      "name": "--cluster-metric",
+                      "value": fn_params.cluster_metric
+                  },
+                  {
+                      "name": "--workdir",
+                      "value": pickle_dir
+                  },
+                  {
+                      "name": "--hash",
+                      "value": uid
+                  },
+                  {
+                      "name": "--profile",
+                      "value": "${profile}"
+                  }
+              ]
+          });
+        }
+        else
+        {
+          json_payload.scripts.push({
+                "name": "compute_timeseries",
+                "parameters": [
+                    {
+                        "name": "--directory",
+                        "value": hdf5_dir
+                    },
+                    {
+                        "name": "--cluster-sample-count",
+                        "value": fn_params.cluster_sample_count
+                    },
+                    {
+                        "name": "--cluster-sample-type",
+                        "value": fn_params.cluster_sample_type
+                    },
+                    {
+                        "name": "--cluster-type",
+                        "value": fn_params.cluster_type
+                    },
+                    {
+                        "name": "--cluster-metric",
+                        "value": fn_params.cluster_metric
+                    },
+                    {
+                        "name": "--workdir",
+                        "value": pickle_dir
+                    },
+                    {
+                        "name": "--hash",
+                        "value": uid
+                    },
+                    {
+                        "name": "--profile",
+                        "value": "${profile}"
+                    }
+                ]
+            });
+        }
+
+        client.post_remote_command({
           hostname: vm.remote.hostname(),
-          wckey: vm.wckey(),
-          nnodes: vm.nnodes(),
-          partition: vm.partition(),
-          ntasks_per_node: vm.ntasks_per_node(),
-          time_hours: vm.time_hours() === undefined ? 0 : vm.time_hours(),
-          time_minutes: vm.time_minutes() === undefined ? 0 : vm.time_minutes(),
-          time_seconds: vm.time_seconds() === undefined ? 0 : vm.time_seconds(),
-          fn: fn,
-          fn_params: fn_params_copy,
-          uid: uid,
+          command: json_payload,
           success: function(results) {
-            if (results.errors) {
+            if (!results.errors) {
               alert('[Error] Could not start batch file for Slycat pre-built function ' + fn + ': ' + results.errors);
               vm.on_error_callback();
               return void 0;
@@ -307,9 +464,10 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
 
             if (vm.on_submit_callback)
               vm.on_submit_callback();
-
-            vm.jid(results.jid);
-            vm.working_directory(results.working_dir)
+            const splitResult = results.errors.replace(/(\r\n\t|\n|\r\t)/gm,"").split(" ");
+            const jid =  splitResult[splitResult.length-1];
+            vm.jid(jid);
+            vm.working_directory(results.working_dir);
             server_checkjob(uid);
           },
           error: function(request, status, reason_phrase) {

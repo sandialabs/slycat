@@ -32,7 +32,7 @@ except:
     import pickle
 
 parser = argparse.ArgumentParser()
-parser.add_argument("directory",
+parser.add_argument("--directory",
                     help="Directory containing hdf5 timeseries data (one inputs.hdf5 and multiple sub-directories with multiple timeseries-N.hdf5 files).")
 parser.add_argument("--timeseries-name", default=None,
                     help="Name of the timeseries, i.e. sub-directory name in the input directory.")

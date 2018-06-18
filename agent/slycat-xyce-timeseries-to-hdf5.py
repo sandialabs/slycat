@@ -32,8 +32,8 @@ def _isNumeric(j):
   return True
 
 parser = argparse.ArgumentParser()
-parser.add_argument("input_directory", help="Input directory containing XYCE data (a dakota_tabular.dat file and multiple workdirN/*.prn files).")
-parser.add_argument("output_directory", help="Output directory containing hdf5 files.")
+parser.add_argument("--input_directory", help="Input directory containing XYCE data (a dakota_tabular.dat file and multiple workdirN/*.prn files).")
+parser.add_argument("--output_directory", help="Output directory containing hdf5 files.")
 parser.add_argument("--id-column", default="%eval_id", help="Inputs file id column name.  Default: %(default)s")
 parser.add_argument("--inputs-file", default=None, help="The name of the delimited text file containing input data.  By default, dakota_tabular.dat will be loaded from the input directory.")
 parser.add_argument("--inputs-file-delimiter", default=None, help="Field delimiter.  By default, fields will be delimited with any whitespace except a newline.")
