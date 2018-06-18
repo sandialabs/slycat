@@ -1,7 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
   // mode is now specified in webpack.dev.js and webpack.prod.js
@@ -18,20 +17,11 @@ module.exports = {
     slycat_page:        './web-server/js/slycat-page-main.js',
   },
   output: {
-    filename: '[name].js',
+    filename: '[name].[chunkhash].js',
     path: path.resolve(__dirname, 'web-server/dist'),
     publicPath: '/dist/',
   },
   plugins: [
-    // Deletes the web-server/dist folder so that old files don't remain there, only fresh ones from the last run.
-    new CleanWebpackPlugin(
-      [
-        'web-server/dist',
-      ],
-      {
-        watch: true,
-      }
-    ),
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery',
