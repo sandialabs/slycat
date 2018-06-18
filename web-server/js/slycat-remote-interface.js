@@ -467,7 +467,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             const splitResult = results.errors.replace(/(\r\n\t|\n|\r\t)/gm,"").split(" ");
             const jid =  splitResult[splitResult.length-1];
             vm.jid(jid);
-            vm.working_directory(results.working_dir);
+            vm.working_directory(fn_params.workdir + "/slycat/");
             server_checkjob(uid);
           },
           error: function(request, status, reason_phrase) {
