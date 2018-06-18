@@ -9,6 +9,14 @@ module.exports = merge(common, {
     contentBase: path.join(__dirname, 'web-server/dist'),
     // compress: true,
     port: 9000,
+    https: true,
     index: 'slycat_projects.html',
+    proxy: {
+      '/api': {
+        target: 'https://localhost:443',
+        pathRewrite: {'^/api' : ''},
+        secure: false,
+      }
+    }
   }
 });
