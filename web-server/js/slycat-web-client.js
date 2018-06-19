@@ -213,6 +213,46 @@ module.get_configuration_support_email = function(params)
   });
 }
 
+module.get_configuration_injected_code = function(params)
+{
+  $.ajax(
+  {
+    dataType: "json",
+    type: "GET",
+    url: api_root + "configuration/injected-code",
+    success: function(injected_code)
+    {
+      if(params.success)
+        params.success(injected_code);
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(params.error)
+        params.error(request, status, reason_phrase);
+    },
+  });
+}
+
+module.get_configuration_ga_tracking_id = function(params)
+{
+  $.ajax(
+  {
+    dataType: "json",
+    type: "GET",
+    url: api_root + "configuration/ga-tracking-id",
+    success: function(id)
+    {
+      if(params.success)
+        params.success(id);
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(params.error)
+        params.error(request, status, reason_phrase);
+    },
+  });
+}
+
 module.get_configuration_remote_hosts = function(params)
 {
   $.ajax(

@@ -2357,6 +2357,16 @@ def get_configuration_support_email():
 
 
 @cherrypy.tools.json_out(on=True)
+def get_configuration_injected_code():
+    return cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
+
+
+@cherrypy.tools.json_out(on=True)
+def get_configuration_ga_tracking_id():
+    return cherrypy.request.app.config["slycat-web-server"].get("ga-tracking-id", "")
+
+
+@cherrypy.tools.json_out(on=True)
 def get_configuration_version():
     with get_configuration_version.lock:
         if not get_configuration_version.initialized:

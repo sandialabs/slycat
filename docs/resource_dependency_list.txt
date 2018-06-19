@@ -109,6 +109,7 @@ stickies.core          0.0.5   https://github.com/reesewill/stickies/blob/master
 TrackballControls        n/a   https://github.com/mrdoob/three.js/blob/master/examples/js/controls/TrackballControls.js
 react                 16.4.0   https://reactjs.org
 react-dom             16.4.0   https://reactjs.org
+react-ga               2.5.3   https://github.com/react-ga/react-ga
 redux                  3.7.2   https://redux.js.org
 
 
