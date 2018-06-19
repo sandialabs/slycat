@@ -304,8 +304,8 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
           }
         };
 
-        var hdf5_dir = fn_params.workdir + "slycat/" + uid + "/" + "hdf5/";
-        var pickle_dir = fn_params.workdir + "slycat/" + uid + "/" + "pickle/";
+        var hdf5_dir = fn_params.workdir + "/slycat/" + uid + "/" + "hdf5/";
+        var pickle_dir = fn_params.workdir + "/slycat/" + uid + "/" + "pickle/";
 
         if (fn_params.timeseries_type === "csv")
         {
@@ -467,7 +467,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             const splitResult = results.errors.replace(/(\r\n\t|\n|\r\t)/gm,"").split(" ");
             const jid =  splitResult[splitResult.length-1];
             vm.jid(jid);
-            vm.working_directory(fn_params.workdir + "/slycat/");
+            vm.working_directory(fn_params.workdir + "/slycat/" + uid + "/");
             server_checkjob(uid);
           },
           error: function(request, status, reason_phrase) {
