@@ -234,28 +234,33 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
     for i in range(num_meta_cols):
         if meta_column_types[i] == "float64":
 
-            # compute pairwise distance matrix for property i
-            prop_dist_mat_i = np.absolute(
-                np.transpose(np.tile(meta_columns[i],
-                                    (num_time_series, 1))) - np.tile(meta_columns[i],
-                                    (num_time_series, 1)))
-            prop_dist_vec_i = np.squeeze(np.reshape(prop_dist_mat_i,
-                                    (num_time_series * num_time_series, 1)))
+            # compute pairwise distance matrix vector for property i
+            prop_dist_mats.append(compute_prop_dist_vec(meta_columns[i], num_time_series))
 
-            # make sure we don't divide by 0
-            prop_dist_vec_max_i = np.amax(prop_dist_vec_i)
-            if prop_dist_vec_max_i <= np.finfo(float).eps:
-                prop_dist_vec_max_i = 1.0
-            prop_dist_mats.append(prop_dist_vec_i / prop_dist_vec_max_i)
+        elif meta_column_types[i] == "string":
+
+            # compute pairwise distance matrix for property i
+            # using strings (sorted alphabetically and assigned
+            # values starting at 0)
+
+            # sort potential values in string metadata
+            uniq_sorted_columns = sorted(set(meta_columns[i]))
+
+            # use alphabetical order to make a vector of numbers
+            meta_column_num = [uniq_sorted_columns.index(str_meta) for str_meta in meta_columns[i]]
+
+            prop_dist_mats.append(compute_prop_dist_vec(meta_column_num, num_time_series))
 
         else:
+            # do nothing
             prop_dist_mats.append(0)
 
     # compute NNLS cluster button alpha values, if more than one data point
     alpha_cluster_mat = np.zeros((num_meta_cols, num_vars))
     if num_time_series > 1:
         for i in range(num_meta_cols):
-            if meta_column_types[i] == "float64":
+            if (meta_column_types[i] == "float64") or \
+               (meta_column_types[i] == "string"):
 
                 beta_i = scipy.optimize.nnls(all_dist_mat, prop_dist_mats[i])
                 alpha_i = np.sqrt(beta_i[0])
@@ -267,3 +272,19 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
                 alpha_cluster_mat[i, :] = alpha_i / alpha_max_i
 
     return alpha_cluster_mat
+
+
+# subroutine for compute_alpha_clusters which computes the pairwise
+# distance matrix for the alpha slider optimization
+def compute_prop_dist_vec(prop_vec, vec_length):
+    # compute pairwise distance matrix for property
+    prop_dist_mat = np.absolute(
+        np.transpose(np.tile(prop_vec, (vec_length, 1))) - np.tile(prop_vec, (vec_length, 1)))
+    prop_dist_vec = np.squeeze(np.reshape(prop_dist_mat, (vec_length * vec_length, 1)))
+
+    # make sure we don't divide by 0
+    prop_dist_vec_max = np.amax(prop_dist_vec)
+    if prop_dist_vec_max <= np.finfo(float).eps:
+        prop_dist_vec_max = 1.0
+
+    return prop_dist_vec / prop_dist_vec_max
