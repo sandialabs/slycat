@@ -52,6 +52,7 @@ parser.add_argument("--inputs-file-delimiter", default=None,
 parser.add_argument("--parallel-jobs", "-j", default=multiprocessing.cpu_count(), type=int,
                     help="Number of parallel jobs to run.  Default: %(default)s")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
+parser.add_argument("--log_file", default=None, help="log file path")
 arguments = parser.parse_args()
 
 log_lock = threading.Lock()

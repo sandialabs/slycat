@@ -42,6 +42,7 @@ parser.add_argument("--timeseries-file", default="circuit.cir.prn", help="The na
 parser.add_argument("--start", default=None, help="First time in data to ingest. Default is to ingest entire signal.")
 parser.add_argument("--end", default=None, help="Last time in data to ingest. Default is to ingest entire signal.")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
+parser.add_argument("--log_file", default=None, help="log file path")
 arguments = parser.parse_args()
 
 log_lock = threading.Lock()

@@ -48,6 +48,7 @@ parser.add_argument("--workdir", default=None,
                     help="Working directory to store data to be processed during model creation")
 parser.add_argument("--hash", default=None, help="Unique identifier for the output folder.")
 parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
+parser.add_argument("--log_file", default=None, help="log file path")
 arguments = parser.parse_args()
 
 if arguments.timeseries_name is None:

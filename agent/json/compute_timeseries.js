@@ -74,6 +74,14 @@
 			"type": "string",
 			"required": "FALSE",
 			"default": "NULL"
+		},
+	    {
+			"name": "--log-file",
+			"description": "log file path",
+			"example": "python slycat-agent-compute-timeseries.py --log_file file.path",
+			"type": "string",
+			"required": "FALSE",
+			"default": "NULL"
 		}
 	]
 }

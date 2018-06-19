@@ -50,6 +50,14 @@
 			"type": "bool",
 			"required": "FALSE",
 			"default": "NULL"
+		},
+	    {
+			"name": "--log-file",
+			"description": "log file path",
+			"example": "python slycat-timeseries-to-hdf5.py --log_file file.path",
+			"type": "string",
+			"required": "FALSE",
+			"default": "NULL"
 		}
 	]
 }

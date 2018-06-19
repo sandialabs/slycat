@@ -313,7 +313,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
               "name": "timeseries_to_hdf5",
               "parameters": [
                   {
-                      "name": "--directory",
+                      "name": "--output-directory",
                       "value": hdf5_dir
                   },
                   {
@@ -330,7 +330,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
                   },
                   {
                       "name": "--force",
-                      "value": true
+                      "value": ""
                   }
               ]
           });
@@ -358,7 +358,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
                   },
                   {
                       "name": "--force",
-                      "value": true
+                      "value": ""
                   }
               ]
           });
