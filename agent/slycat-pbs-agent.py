@@ -85,7 +85,7 @@ class Agent(agent.Agent):
                                 tmp_file)
             # with open(tmp_file.name, 'r') as myfile:
             #     data = myfile.read().replace('\n', '')
-            output[0], output[1] = self.run_shell_command("sbatch %s" % tmp_file.name, jid, True)
+            output[0], output[1] = self.run_shell_command("qsub %s" % tmp_file.name, jid, True)
         else:
             try:
                 log("[COMMAND length] %s" % len(run_commands))
