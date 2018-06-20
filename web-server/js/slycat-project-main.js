@@ -15,14 +15,16 @@ import ko from 'knockout';
 import mapping from 'knockout-mapping';
 import URI from 'urijs';
 import "js/slycat-navbar-webpack";
+import ga from "js/slycat-ga";
 
 // Wait for document ready
 $(document).ready(function() {
 
   var page = {};
   page.server_root = server_root;
+  page.project_id = URI(window.location).segment(-1);
   page.project = mapping.fromJS({
-    _id: URI(window.location).segment(-1), 
+    _id: page.project_id, 
     name: "", 
     description: "",
     created: "",

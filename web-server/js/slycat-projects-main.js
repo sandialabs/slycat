@@ -11,7 +11,7 @@ import client from 'js/slycat-web-client-webpack';
 import ko from 'knockout';
 import mapping from 'knockout-mapping';
 import "js/slycat-navbar-webpack";
-import ga from "js/slycat-ga"
+import ga from "js/slycat-ga";
 
 // Wait for document ready
 $(document).ready(function() {

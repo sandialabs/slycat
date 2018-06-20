@@ -9,11 +9,11 @@ rights in this software.
 <html>
   <head>
     <meta charset="utf-8"/>
-    <title data-bind="text: title">{{slycat-project.name}} - Slycat Project</title>
+    <title data-bind="text: title"></title>
   </head>
 
   <body>
-    <slycat-navbar params="project_id:'{{slycat-project._id}}', project_name:'{{slycat-project-name}}'"></slycat-navbar>
+    <slycat-navbar params="project_id:project_id"></slycat-navbar>
 
     <div id="slycat-project" class="bootstrap-styles slycat-content">
       <div class="container">
@@ -63,7 +63,6 @@ rights in this software.
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </body>

@@ -9,7 +9,7 @@ module.exports = merge(common, {
     // Where files are located on the filesystem.
     contentBase: path.join(__dirname, 'web-server/dist'),
     // Public URL of served files. Commended out because we want them available at the root URL.
-    // publicPath: '',
+    publicPath: '/',
     // compress: true,
     port: 9000,
     https: true,

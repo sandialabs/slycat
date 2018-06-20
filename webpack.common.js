@@ -19,8 +19,8 @@ module.exports = {
   output: {
     filename: '[name].[chunkhash].js',
     path: path.resolve(__dirname, 'web-server/dist'),
-    // Public URL of js bundle files. Commended out because we want them available at the root URL.
-    // publicPath: '/dist/',
+    // Public URL of js bundle files. We want them available at the root URL.
+    publicPath: '/',
   },
   plugins: [
     new webpack.ProvidePlugin({
@@ -98,8 +98,8 @@ module.exports = {
               // If the file is greater than the limit (in bytes) the file-loader is used by default and all query parameters are passed to it.
               limit: 8192,
               name: '[name].[ext]',
-              // Public URL of image files. Commended out because we want them available at the root URL.
-              // publicPath: '/dist',
+              // Public URL of image files. We want them available at the root URL.
+              publicPath: '/',
             }
           }
         ]
@@ -113,8 +113,8 @@ module.exports = {
             options: {
               limit: 8192,
               name: '[name].[ext]',
-              // Public URL of font files. Commended out because we want them available at the root URL.
-              // publicPath: '/dist',
+              // Public URL of font files. We want them available at the root URL.
+              publicPath: '/',
             }
           }
         ]
