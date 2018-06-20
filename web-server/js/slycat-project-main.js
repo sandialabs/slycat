@@ -3,18 +3,18 @@
  retains certain rights in this software. */
 
 // CSS resources
-import "../css/namespaced-bootstrap.less";
-import "../css/slycat.css";
+import "css/namespaced-bootstrap.less";
+import "css/slycat.css";
 
-import server_root from './slycat-server-root';
-import client from './slycat-web-client-webpack';
-import markings from './slycat-markings-webpack';
-import dialog from './slycat-dialog-webpack';
-import model_names from './slycat-model-names-webpack';
+import server_root from 'js/slycat-server-root';
+import client from 'js/slycat-web-client-webpack';
+import markings from 'js/slycat-markings-webpack';
+import dialog from 'js/slycat-dialog-webpack';
+import model_names from 'js/slycat-model-names-webpack';
 import ko from 'knockout';
 import mapping from 'knockout-mapping';
 import URI from 'urijs';
-import "./slycat-navbar-webpack";
+import "js/slycat-navbar-webpack";
 
 // Wait for document ready
 $(document).ready(function() {
