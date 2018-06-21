@@ -112,9 +112,6 @@ function doPoll() {
     {
       model = result;
       // If the model isn't ready or failed, we're done.
-      console.log("modell  state" + JSON.stringify(model["state"]));
-      console.log("modell  result" + JSON.stringify(model["result"]));
-      console.log("modell  type" + (model["state"] === "closed" && model["result"] === null));
       if(model["state"] === "closed" && model["result"] === null)
       {
           window.alert("model failed to complete possibly the connection was terminated to the hpc client try pulling data");
@@ -132,7 +129,8 @@ function doPoll() {
           {
             window.location.reload(true);
           },
-          error: function() {
+          error: function()
+          {
             window.location.reload(true);
           }
         });
