@@ -111,56 +111,81 @@ function doPoll() {
     success : function(result)
     {
       model = result;
-      bookmarker = bookmark_manager.create(model.project, model._id);
-      cluster_bin_count = model["artifact:cluster-bin-count"];
-      cluster_bin_type = model["artifact:cluster-bin-type"];
-      cluster_type = model["artifact:cluster-type"];
       // If the model isn't ready or failed, we're done.
-      if(model["state"] === "waiting" || model["state"] === "running") {
-        show_checkjob();
-        setTimeout(doPoll, 15000);
-        return;
+      console.log("modell  state" + JSON.stringify(model["state"]));
+      console.log("modell  result" + JSON.stringify(model["result"]));
+      console.log("modell  type" + (model["state"] === "closed" && model["result"] === null));
+      if(model["state"] === "closed" && model["result"] === null)
+      {
+          window.alert("model failed to complete possibly the connection was terminated to the hpc client try pulling data");
+          show_checkjob();
+          setTimeout(doPoll, 15000);
       }
 
-      // Check if model has the image-columns artifact and create one if it doesn't
-      if(!model.hasOwnProperty("artifact:image-columns"))
+      if(model["state"] === "finished")
       {
-        // Find media columns
-        console.log("This model has no artifact:image-columns");
-        client.get_model_command({
+        client.put_model(
+        {
           mid: model._id,
-          type: "timeseries",
-          command: "media-columns",
-          success: function(media_columns) {
-            // console.log("here are the media_columns: " + media_columns);
-            client.put_model_parameter({
-              mid: model._id,
-              aid: "image-columns",
-              value: media_columns,
-              input: true,
-              success: function() {
-                // console.log("successfully saved image-columns");
-                image_columns = media_columns;
-              }
-            });
+          state: "closed",
+          success : function()
+          {
+            window.location.reload(true);
           },
-          error: function(error) {
-            console.log("error getting model command");
+          error: function() {
+            window.location.reload(true);
           }
         });
       }
+
+      if(model["state"] === "closed" && model["result"] === "succeeded")
+      {
+        bookmarker = bookmark_manager.create(model.project, model._id);
+        cluster_bin_count = model["artifact:cluster-bin-count"];
+        cluster_bin_type = model["artifact:cluster-bin-type"];
+        cluster_type = model["artifact:cluster-type"];
+        // Check if model has the image-columns artifact and create one if it doesn't
+        if(!model.hasOwnProperty("artifact:image-columns"))
+        {
+          // Find media columns
+          console.log("This model has no artifact:image-columns");
+          client.get_model_command({
+            mid: model._id,
+            type: "timeseries",
+            command: "media-columns",
+            success: function(media_columns) {
+              // console.log("here are the media_columns: " + media_columns);
+              client.put_model_parameter({
+                mid: model._id,
+                aid: "image-columns",
+                value: media_columns,
+                input: true,
+                success: function() {
+                  // console.log("successfully saved image-columns");
+                  image_columns = media_columns;
+                }
+              });
+            },
+            error: function(error) {
+              console.log("error getting model command");
+            }
+          });
+        }
+        else
+        {
+          image_columns = model["artifact:image-columns"];
+        }
+        $('.slycat-job-checker').remove();
+
+        if(model["result"] == "failed")
+          return;
+        setup_page();
+      }
       else
       {
-        image_columns = model["artifact:image-columns"];
+        show_checkjob();
+        setTimeout(doPoll, 15000);
       }
-
-      $('.slycat-job-checker').remove();
-
-      if(model["state"] == "closed" && model["result"] === null)
-        return;
-      if(model["result"] == "failed")
-        return;
-      setup_page();
     },
     error: function(request, status, reason_phrase)
     {
