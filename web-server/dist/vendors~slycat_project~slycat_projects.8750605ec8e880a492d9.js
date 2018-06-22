@@ -1,4 +1,4 @@
-(window["webpackJsonp"] = window["webpackJsonp"] || []).push([["vendors~slycat_projects"],{
+(window["webpackJsonp"] = window["webpackJsonp"] || []).push([["vendors~slycat_project~slycat_projects"],{
 
 /***/ "./node_modules/fbjs/lib/emptyFunction.js":
 /*!************************************************!*\

@@ -26,6 +26,7 @@ module.exports = merge(common, {
         // { from: /^\/$/, to: '/views/landing.html' },
         // { from: /^\/subpage/, to: '/views/subpage.html' },
         { from: /^\/projects/, to: '/slycat_project.html' },
+        { from: /^\/models/, to: '/slycat_model.html' },
         // { from: /./, to: '/views/404.html' },
       ]
     }

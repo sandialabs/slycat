@@ -15,6 +15,7 @@ module.exports = {
     slycat_projects:    './web-server/js/slycat-projects-main.js',
     slycat_project:     './web-server/js/slycat-project-main.js',
     slycat_page:        './web-server/js/slycat-page-main.js',
+    slycat_model:       './web-server/js/slycat-model-main-webpack.js',
   },
   output: {
     filename: '[name].[chunkhash].js',
@@ -70,6 +71,11 @@ module.exports = {
       template: 'web-server/templates/slycat-page.html',
       filename: 'slycat_page.html',
       chunks: ['slycat_page'],
+    }),
+    new HtmlWebpackPlugin({
+      template: 'web-server/templates/slycat-model-page-webpack.html',
+      filename: 'slycat_model.html',
+      chunks: ['slycat_model'],
     }),
   ],
   module: {
