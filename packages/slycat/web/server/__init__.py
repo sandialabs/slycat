@@ -18,10 +18,11 @@ from slycat.web.server.cache import Cache
 from cherrypy._cpcompat import base64_decode
 import urlparse
 import functools
+import threading
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
-
+model_locks = {}
 
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -265,7 +266,8 @@ def put_model_arrayset(database, model, aid, input=False):
   :param input:
   :return:
   """
-    slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
+    with get_model_lock(model["_id"]):
+        slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
     storage = uuid.uuid4().hex
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.create(storage) as file:
@@ -290,7 +292,8 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
   :param dimensions: number of data rows
   :return:
   """
-    slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
+    with get_model_lock(model["_id"]):
+        slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
     storage = model["artifact:%s" % aid]
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(storage, "r+") as file:
@@ -322,7 +325,8 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
     data = iter(data)
 
-    slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
+    with get_model_lock(model["_id"]):
+        slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
 
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
@@ -345,15 +349,16 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
 
 def put_model_file(database, model, aid, value, content_type, input=False):
-    fid = database.write_file(model, content=value, content_type=content_type)
-    model = database[model[
-        "_id"]]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
-    model["artifact:%s" % aid] = fid
-    model["artifact-types"][aid] = "file"
-    if input:
-        model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
-    database.save(model)
-    return model
+    with get_model_lock(model["_id"]):
+        fid = database.write_file(model, content=value, content_type=content_type)
+        model = database[model[
+            "_id"]]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
+        model["artifact:%s" % aid] = fid
+        model["artifact-types"][aid] = "file"
+        if input:
+            model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+        database.save(model)
+        return model
 
 
 def get_model_file(database, model, aid):
@@ -368,48 +373,57 @@ def get_model_file(database, model, aid):
 
 
 def put_model_inputs(database, model, source, deep_copy=False):
-    slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
-    for aid in source["input-artifacts"]:
-        original_type = source["artifact-types"][aid]
-        original_value = source["artifact:%s" % aid]
+    with get_model_lock(model["_id"]):
+        slycat.web.server.update_model(database, model, message="Copying existing model inputs.")
+        for aid in source["input-artifacts"]:
+            original_type = source["artifact-types"][aid]
+            original_value = source["artifact:%s" % aid]
 
-        if original_type == "json":
-            model["artifact:%s" % aid] = original_value
-        elif original_type == "hdf5":
-            if deep_copy:
-                new_value = uuid.uuid4().hex
-                os.makedirs(os.path.dirname(slycat.web.server.hdf5.path(new_value)))
-                with slycat.web.server.hdf5.lock:
-                    shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
-                    model["artifact:%s" % aid] = new_value
-                    database.save({"_id": new_value, "type": "hdf5"})
-            else:
+            if original_type == "json":
                 model["artifact:%s" % aid] = original_value
-        elif original_type == "file":
-            original_content = database.get_attachment(source["_id"], original_value)
-            original_content_type = source["_attachments"][original_value]["content_type"]
+            elif original_type == "hdf5":
+                if deep_copy:
+                    new_value = uuid.uuid4().hex
+                    os.makedirs(os.path.dirname(slycat.web.server.hdf5.path(new_value)))
+                    with slycat.web.server.hdf5.lock:
+                        shutil.copy(slycat.web.server.hdf5.path(original_value), slycat.web.server.hdf5.path(new_value))
+                        model["artifact:%s" % aid] = new_value
+                        database.save({"_id": new_value, "type": "hdf5"})
+                else:
+                    model["artifact:%s" % aid] = original_value
+            elif original_type == "file":
+                original_content = database.get_attachment(source["_id"], original_value)
+                original_content_type = source["_attachments"][original_value]["content_type"]
 
-            database.put_attachment(model, original_content, filename=original_value,
-                                    content_type=original_content_type)
-            model["artifact:%s" % aid] = original_value
-        else:
-            slycat.email.send_error("slycat.web.server.__init__.py put_model_inputs",
-                                    "Cannot copy unknown input artifact type %s." % original_type)
-            raise Exception("Cannot copy unknown input artifact type %s." % original_type)
-        model["artifact-types"][aid] = original_type
-        model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+                database.put_attachment(model, original_content, filename=original_value,
+                                        content_type=original_content_type)
+                model["artifact:%s" % aid] = original_value
+            else:
+                slycat.email.send_error("slycat.web.server.__init__.py put_model_inputs",
+                                        "Cannot copy unknown input artifact type %s." % original_type)
+                raise Exception("Cannot copy unknown input artifact type %s." % original_type)
+            model["artifact-types"][aid] = original_type
+            model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
 
-    model["_rev"] = database[model["_id"]][
-        "_rev"]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
-    database.save(model)
+        model["_rev"] = database[model["_id"]][
+            "_rev"]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
+        database.save(model)
+
+
+def get_model_lock(model_id):
+    if model_id in model_locks:
+        return model_locks[model_id]
+    model_locks[model_id] = threading.Lock()
+    return model_locks[model_id]
 
 
 def put_model_parameter(database, model, aid, value, input=False):
-    model["artifact:%s" % aid] = value
-    model["artifact-types"][aid] = "json"
-    if input:
-        model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
-    database.save(model)
+    with get_model_lock(model["_id"]):
+        model["artifact:%s" % aid] = value
+        model["artifact-types"][aid] = "json"
+        if input:
+            model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+        database.save(model)
 
 
 def delete_model_parameter(database, model, aid):
@@ -420,10 +434,10 @@ def delete_model_parameter(database, model, aid):
     :param aid: artifact id
     :return: not used
     """
-    #TODO: add a lock around this call
-    del model["artifact:%s" % aid]
-    del model["artifact-types"][aid]
-    database.save(model)
+    with get_model_lock(model["_id"]):
+        del model["artifact:%s" % aid]
+        del model["artifact-types"][aid]
+        database.save(model)
 
 
 def create_session(hostname, username, password):
