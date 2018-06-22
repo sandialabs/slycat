@@ -130,7 +130,7 @@
 /******/
 /******/
 /******/ 	// add entry module to deferred list
-/******/ 	deferredModules.push(["./web-server/js/slycat-project-main.js","vendors~slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_paramet~a96b520b","vendors~slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_paramet~946a3084","vendors~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_ti~7afcd8b9","vendors~slycat_project~slycat_projects","slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~~0dd3e680","slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_timeseries"]);
+/******/ 	deferredModules.push(["./web-server/js/slycat-project-main.js","vendors~slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_paramet~a96b520b","vendors~slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_paramet~946a3084","vendors~slycat_model~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~ui_t~17fefb25","slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~~0dd3e680","slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_image~ui_parameter_plus~~76b1d382"]);
 /******/ 	// run deferred modules when ready
 /******/ 	return checkDeferredModules();
 /******/ })
