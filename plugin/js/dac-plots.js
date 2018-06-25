@@ -52,10 +52,12 @@ function(client, dialog, selections, $, d3, URI)
 
 	// meta data for plots
 	var num_plots = null;
+	var num_included_plots = null;
 	var plot_name = null;
 	var x_axis_name = null;
 	var y_axis_name = null;
 	var plot_type = null;
+	var var_include_columns = null;
 	
 	// colors for plots
 	var sel_color = [];
@@ -89,9 +91,10 @@ function(client, dialog, selections, $, d3, URI)
 	
 	// set up initial private variables, user interface
 	module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
-	                         MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data)
+	                         MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data,
+	                         INCLUDE_VARS)
 	{
-	
+
 		// set ui constants
 		sel_color.push(SELECTION_1_COLOR);
 		sel_color.push(SELECTION_2_COLOR);
@@ -116,10 +119,14 @@ function(client, dialog, selections, $, d3, URI)
         // set maximum length of plot names
         max_plot_name_length = MAX_PLOT_NAME;
 
+        // which variables to actuall plot
+        var_include_columns = INCLUDE_VARS;
+
 		// populate pull down menus and initialize d3 plots
 
 		// sort out the variable metadata we need
 		num_plots = variables_metadata[0]["row-count"];
+		num_included_plots = var_include_columns.length;
 		x_axis_name = variables_data[0]["data"][1];
 		y_axis_name = variables_data[0]["data"][2];
 		plot_type = variables_data[0]["data"][3];
@@ -130,15 +137,15 @@ function(client, dialog, selections, $, d3, URI)
         // truncate plot names if too long
         for (var i = 0; i < num_plots; i++) {
 
-            if (plot_name.length > max_plot_name_length) {
+            if (plot_name[i].length > max_plot_name_length) {
                 plot_name[i] = plot_name[i].substring(0, max_plot_name_length) + " ...";
             }
 
         }
 
 		// init plot order (up to number of plots available)
-		for (var i = 0; i < Math.min(num_plots,3); i++) {
-		    plots_selected.push(i);
+		for (var i = 0; i < Math.min(num_included_plots,3); i++) {
+		    plots_selected.push(var_include_columns[i]);
 		}
 
         // initialize zoom level
@@ -155,18 +162,18 @@ function(client, dialog, selections, $, d3, URI)
         link_plots = [0, 0, 0];
 
 		// remove unused plot pull downs
-		for (var i = num_plots; i < 3; i++) {
+		for (var i = num_included_plots; i < 3; i++) {
 		    $("#dac-select-plot-" + (i+1)).remove();
 		    $("#dac-link-plot-" + (i+1)).remove();
 		    $("#dac-plots-displayed-" + (i+1)).remove();
-		    $("#dac-plots-not-displayed-" + (i+1).remove());
+		    $("#dac-plots-not-displayed-" + (i+1)).remove();
 		    $("#dac-low-resolution-plot-" + (i+1)).remove();
 		    $("#dac-full-resolution-plot-" + (i+1)).remove();
 		    $("#dac-link-label-plot-" + (i+1)).remove();
 		}
 
 		// initialize plots as d3 plots
-		for (var i = 0; i < Math.min(num_plots,3); ++i) {
+		for (var i = 0; i < Math.min(num_included_plots,3); ++i) {
 				
 			// populate pull down menu
 			display_plot_pull_down.bind($("#dac-select-plot-" + (i+1)))(i);
@@ -242,9 +249,14 @@ function(client, dialog, selections, $, d3, URI)
 		// every pull down contains the list of plot names in the same order
 		for (var j = 0; j != num_plots; ++j)
 		{
-			// generate the pull down (select) in HTML
-			var select_item = $('<option value="' + j +'">').appendTo(this);
-			select_item.text(plot_name[j]);
+		    // show included variables only for plots
+		    if (var_include_columns.indexOf(j) != -1) {
+
+		        // generate the pull down (select) in HTML
+                var select_item = $('<option value="' + j +'">').appendTo(this);
+                select_item.text(plot_name[j]);
+
+		    }
 		}
 		
 		// set default option
@@ -280,7 +292,7 @@ function(client, dialog, selections, $, d3, URI)
 	{
 
         // uncheck boxes, if checked
-        for (j = 0; j < Math.min(num_plots, 3); j ++) {
+        for (j = 0; j < Math.min(num_included_plots, 3); j ++) {
             $("#dac-link-plot-" + (j+1).toString()).prop("checked", false);
         };
 
@@ -302,7 +314,7 @@ function(client, dialog, selections, $, d3, URI)
 
                 // yes -- check compatibility with previously checked links
                 var compatible_link = true;
-                for (j = 0; j < Math.min(num_plots, 3); j++) {
+                for (j = 0; j < Math.min(num_included_plots, 3); j++) {
 
                     // only check axes that are linked
                     if (link_plots[j] != 0) {
@@ -405,7 +417,7 @@ function(client, dialog, selections, $, d3, URI)
 		var num_y_ticks = Math.round(height/plot_adjustments.y_tick_freq);
 		
 		// the sizes and ranges of the plots are all the same
-		for (var i = 0; i < Math.min(num_plots,3); ++i) {
+		for (var i = 0; i < Math.min(num_included_plots,3); ++i) {
 				   
 			// change scale
 			x_scale[i].range([plot_adjustments.padding_left + 

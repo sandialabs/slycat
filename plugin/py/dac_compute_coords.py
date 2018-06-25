@@ -252,6 +252,7 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
             prop_dist_mats.append(compute_prop_dist_vec(meta_column_num, num_time_series))
 
         else:
+
             # do nothing
             prop_dist_mats.append(0)
 
