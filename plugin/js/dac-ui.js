@@ -302,10 +302,11 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
-				                                         variables[0]["data"][0], MAX_SLIDER_NAME);
+				                                         variables[0]["data"][0], MAX_SLIDER_NAME,
+				                                         var_include_columns);
 
 				                // set up the alpha buttons
-				                alpha_buttons.setup (variables_meta[0]["row-count"]);
+				                alpha_buttons.setup (variables_meta[0]["row-count"], var_include_columns);
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,

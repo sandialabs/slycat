@@ -15,7 +15,10 @@ function(client, dialog, $, request, selections) {
 	// private variables
 	var alpha_num = null;
 	var alpha_clusters = null;
-	
+
+	// which columns to include
+	var var_include_columns = null;
+
 	// zero out all alpha sliders
 	var zero_button_callback = function ()
 	{
@@ -36,10 +39,16 @@ function(client, dialog, $, request, selections) {
 	// put all alpha sliders to one
 	var ones_button_callback = function ()
 	{
-		// create array of ones
+		// create array of ones (use zeros for non-included columns)
 		var ones_array = new Array(alpha_num);
 		for (var i = 0; i != alpha_num; ++i) {
-			ones_array[i] = 1.0;
+
+		    if (var_include_columns.indexOf(i) != -1) {
+		        ones_array[i] = 1.0;
+		    } else {
+		        ones_array[i] = 0.0;
+		    }
+
 		}
 				
 	    // fire alpha value change event
@@ -69,12 +78,15 @@ function(client, dialog, $, request, selections) {
 
 	}
 	
-	module.setup = function (num_sliders)
+	module.setup = function (num_sliders, INCLUDE_COLUMNS)
 	{
 
 		// determine number of alpha sliders
         alpha_num = num_sliders;
-		
+
+		// which columns to use
+		var_include_columns = INCLUDE_COLUMNS;
+
 		// load up cluster alpha values
 		$.when (request.get_array("dac-alpha-clusters", 0)).then(
 			function (alpha_cluster_data)
