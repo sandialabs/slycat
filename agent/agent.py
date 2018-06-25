@@ -337,7 +337,8 @@ class Agent(object):
             raise Exception("Directory unreadable.")
 
         try:
-            content = open(path, "rb").read()
+            with open(path, "rb") as f:
+                file_content = f.read()
         except IOError as e:
             if e.errno == errno.EACCES:
                 raise Exception("Access denied.")
@@ -348,8 +349,8 @@ class Agent(object):
         content_type, encoding = slycat.mime_type.guess_type(path)
         sys.stdout.write("%s\n%s" % (json.dumps(
             {"ok": True, "message": "File retrieved.", "path": path, "content-type": content_type,
-             "size": len(content)}),
-                                     content))
+             "size": len(file_content)}),
+                                     file_content))
         sys.stdout.flush()
 
     # Handle the 'get-image' command.
