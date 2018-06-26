@@ -622,7 +622,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			type: "DAC",
 			command: "compute_fisher",
 			parameters: {selection_1: sel_1,
-			             selection_2: sel_2},
+			             selection_2: sel_2,
+			             include_columns: var_include_columns},
 			success: function (result)
 				{
 
@@ -716,6 +717,7 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	}
 
 	// routine to return sort array and return indices
+	// (return only subset of included columns)
 	function sort_indices(arr)
 	{
 	
@@ -730,12 +732,16 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
   			return left[0] > right[0] ? -1 : 1;
 		});
 		
-		// isolate indices
+		// isolate indices (keeping only if an included column)
 		var indices = [];
 		for (var j in arr_with_index) {
-		    indices.push(arr_with_index[j][1]);
+
+            var arr_ind_j = arr_with_index[j][1];
+		    if (var_include_columns.indexOf(parseInt(arr_ind_j)) != -1) {
+		        indices.push(arr_ind_j);
+		    }
 		}
-		
+
 		// return only indices
 		return indices;
 		
