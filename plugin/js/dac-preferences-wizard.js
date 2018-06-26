@@ -601,8 +601,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                                             input: true,
                                             success: function () {
 
-                                                // re-load model
-                                                component.go_to_model();
+                                                // re-init MDS coords
+                                                init_MDS_coords();
 
                                             },
                                             error: function () {
@@ -647,6 +647,27 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             }
         });
     };
+
+    // call to re-initialize MDS coords and alpha cluster values
+    var init_MDS_coords = function () {
+
+        // call server to compute new coords
+        client.get_model_command({
+            mid: component.model._id(),
+            type: "DAC",
+            command: "init_mds_coords",
+            success: function () {
+
+                // re-load model
+                component.go_to_model();
+            },
+            error: function () {
+
+                dialog.ajax_error("Server error: could not re-initialize MDS coords.")("","","");
+                $(".browser-continue").toggleClass("disabled", false);
+            }
+        });
+    }
 
     // function for operating the back button in the wizard
     component.back = function() {

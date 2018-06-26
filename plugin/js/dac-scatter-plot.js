@@ -77,14 +77,17 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 	var color_by_names = ["Do Not Color"];
 	var color_by_type = [];
 	var max_color_by_name_length = null;
-	
+
+	// variables to use in analysis
+	var var_include_columns = null;
+
 	// initial setup: read in MDS coordinates & plot
 	module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER, 
 		POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
 		NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
 		SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
 		DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
-		datapoints_meta, include_columns)
+		datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS)
 	{
 
 		// set the maximum number of points to animate, maximum zoom factor
@@ -115,6 +118,9 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 		// set selection width
 		outline_no_sel = OUTLINE_NO_SEL;
 		outline_sel = OUTLINE_SEL;
+
+        // include columns (variables and metadata)
+        var_include_columns = VAR_INCLUDE_COLUMNS;
 
 		// set up selection button colors
 		$("#dac-scatter-button-sel-1").css("color", sel_1_color);
@@ -184,25 +190,15 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 				dialog.ajax_error ("Server failure: could not load MDS coords.")("","","");
 			}
 		);
-		
+
 		// set up color by selection
-
-        // set up include columns vector
-	    if (include_columns == null) {
-
-	        // no preference, then all columns
-	        include_columns = [];
-	        for (i = 0; i < datapoints_meta["column-count"]; i++) {
-	            include_columns.push(i);
-	        }
-	    }
 
 		// look for columns with numbers/strings for color by menu
 		for (var i = 0; i < datapoints_meta["column-count"]; i++)
 		{
 
             // we accept number and string data, only for included columns
-			if ((include_columns.indexOf(i) != -1) &&
+			if ((meta_include_columns.indexOf(i) != -1) &&
 			    ((datapoints_meta["column-types"][i] == "float64") ||
 			    (datapoints_meta["column-types"][i] == "string"))) {
 			    color_by_type.push(datapoints_meta["column-types"][i]);
@@ -537,7 +533,8 @@ define ("dac-scatter-plot", ["slycat-web-client", "slycat-dialog",
 			parameters: {alpha: alpha_values,
 			             subset: selections.get_subset(),
 			             subset_center: subset_center,
-			             current_coords: mds_coords},
+			             current_coords: mds_coords,
+			             include_columns: var_include_columns},
 			success: function (result)
 				{
 					// record new values in mds_coords

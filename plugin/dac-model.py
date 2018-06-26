@@ -50,9 +50,20 @@ def register_slycat_plugin(context):
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
         num_vars = len(meta_dist)
 
+        # check to see if the user wants to include a subset of variables
+        if "artifact:dac-var-include-columns" in model:
+
+            # load include columns
+            var_include_columns = slycat.web.server.get_model_parameter(database, model, "dac-var-include-columns")
+
+        else:
+
+            # if no columns specified, use all variables
+            var_include_columns = range(0, num_vars)
+
         # get distance matrices as a list of numpy arrays from slycat server
         var_dist = []
-        for i in range(num_vars):
+        for i in var_include_columns:
             var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
                 database, model, "dac-var-dist", "%s/0/..." % i)))
             var_dist.append(var_dist_i)
@@ -79,7 +90,11 @@ def register_slycat_plugin(context):
         meta_columns = slycat.web.server.get_model_arrayset_data (database, model, "dac-datapoints-meta", "0/.../...")
 
         # compute alpha cluster values for NNLS cluster button
-        alpha_cluster_mat = dac.compute_alpha_clusters (var_dist, meta_columns, meta_column_types)
+        alpha_cluster_mat_included = dac.compute_alpha_clusters (var_dist, meta_columns, meta_column_types)
+
+        # re-size alpha values to actual number of variables (not just number of included variables)
+        alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
+        alpha_cluster_mat[:, var_include_columns] = alpha_cluster_mat_included
 
         # upload computations to slycat server
         # ------------------------------------
@@ -137,9 +152,12 @@ def register_slycat_plugin(context):
         subset_center = numpy.array(kwargs["subset_center"])
         old_coords = numpy.array(kwargs["current_coords"])
 
+        # only use included variables
+        include_columns = numpy.array(kwargs["include_columns"])
+
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
-        for i in range(len(alpha_values)):
+        for i in include_columns:
             dist_mats.append(next(iter(slycat.web.server.get_model_arrayset_data (
             	database, model, "dac-var-dist", "%s/0/..." % i))))
 
@@ -148,7 +166,7 @@ def register_slycat_plugin(context):
 			database, model, "dac-full-mds-coords", "0/0/...")))
 
         # compute new MDS coords (truncate coords for old models)
-        mds_coords = dac.compute_coords(dist_mats, alpha_values, old_coords[:,0:2], subset_mask)
+        mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns], old_coords[:,0:2], subset_mask)
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords, 

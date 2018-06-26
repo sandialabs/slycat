@@ -44,20 +44,9 @@ define("dac-table", ["slycat-dialog", "dac-request-data", "dac-manage-selections
 	module.setup = function (metadata, data, include_columns)
 	{
 
-
 		// get number of rows and total available columns in data table
 		var num_rows = data[0]["data"][0].length;
 		var avail_cols = data[0]["data"].length;
-
-	    // set number of columns to include
-	    if (include_columns == null) {
-
-	        // no preference, then all columns
-	        include_columns = [];
-	        for (i = 0; i < avail_cols; i++) {
-	            include_columns.push(i);
-	        }
-	    }
 
 	    // set number of columns to use
 	    var num_cols = include_columns.length;

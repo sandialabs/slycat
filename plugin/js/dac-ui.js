@@ -300,6 +300,27 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 		   	           function (variables_meta, variables, data_table_meta, data_table)
 		   	                {
 
+                                // change variables included from null to list of indices, if necessary
+                                if (var_include_columns == null) {
+
+                                    var_include_columns = [];
+                                    for (i = 0; i < variables_meta[0]["column-count"]; i++) {
+                                        var_include_columns.push(i);
+                                    }
+
+                                }
+
+                                // change metadata included from null to list of indices, if necessary
+                                if (meta_include_columns == null) {
+
+                                    meta_include_columns = [];
+                                    for (i = 0; i < data_table_meta[0]["column-count"]; i++) {
+                                        meta_include_columns.push(i);
+                                    }
+
+
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
 				                                         variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -318,7 +339,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_1_COLOR,
 					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
-					                OUTLINE_SEL, data_table_meta[0], meta_include_columns);
+					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns);
 
 				                // set up table (propagate selections through to scatter plot)
 				                metadata_table.setup(data_table_meta, data_table, meta_include_columns);
