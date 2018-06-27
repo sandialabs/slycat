@@ -304,10 +304,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                                 if (var_include_columns == null) {
 
                                     var_include_columns = [];
-                                    for (i = 0; i < variables_meta[0]["column-count"]; i++) {
+                                    for (i = 0; i < variables_meta[0]["row-count"]; i++) {
                                         var_include_columns.push(i);
                                     }
-
                                 }
 
                                 // change metadata included from null to list of indices, if necessary
@@ -317,8 +316,6 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                                     for (i = 0; i < data_table_meta[0]["column-count"]; i++) {
                                         meta_include_columns.push(i);
                                     }
-
-
                                 }
 
 		   	                    // set up the alpha sliders
