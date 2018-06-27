@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from './slycat-server-root';
+import api_root from 'js/slycat-api-root';
 import URI from "urijs";
 import _ from "lodash"; 
 
@@ -92,7 +92,7 @@ module.create = function(pid, mid)
 
     req = $.ajax({
       type : "POST",
-      url : server_root + "projects/" + pid + "/bookmarks",
+      url : api_root + "projects/" + pid + "/bookmarks",
       contentType : "application/json",
       data: JSON.stringify(state),
       processData: false,
@@ -116,7 +116,7 @@ module.create = function(pid, mid)
       $.ajax(
       {
         dataType: "json",
-        url: server_root + "bookmarks/" + bid,
+        url: api_root + "bookmarks/" + bid,
         async: true,
         success: function(resp)
         {

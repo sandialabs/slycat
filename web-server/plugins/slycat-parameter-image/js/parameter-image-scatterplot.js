@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import d3 from "js/d3.min";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes-webpack";
@@ -226,7 +226,7 @@ $.widget("parameter_image.scatterplot",
         if(self.end_drag) // Already dragging ...
         {
           self.end_drag = [self._offsetX(e), self._offsetY(e)];
-          output = e;
+          let output = e;
           var width = self.element.width();
           var height = self.element.height();
 
@@ -1842,7 +1842,7 @@ $.widget("parameter_image.scatterplot",
           var viewer = document.createElement('slycat-3d-viewer');
 
           var ps = document.createAttribute('params')
-          // var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
+          // var stl_uri = api_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
           var stl_uri = image_url;
           ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
           var s = document.createAttribute('style');
@@ -1918,7 +1918,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     // If we don't have a session for the image hostname, create one.
-    var cached_uri = URI(server_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
+    var cached_uri = URI(api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
 
     console.log("Attempting to load image from server-side cache...");
     console.log("Loading image " + image.uri + " from server...");
@@ -1930,7 +1930,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     xhr.image = image;
-    xhr.open("GET", server_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
+    xhr.open("GET", api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
     xhr.responseType = "arraybuffer";
 
     xhr.onload = function(e){
@@ -1977,7 +1977,7 @@ $.widget("parameter_image.scatterplot",
 
               xhr.image = image;
               //Double encode to avoid cherrypy's auto unencode in the controller
-              xhr.open("GET", server_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
+              xhr.open("GET", api_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
               xhr.responseType = "arraybuffer";
               xhr.onload = function(e) {
                 // If we get 404, the remote session no longer exists because it timed-out.

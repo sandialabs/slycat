@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from "../../../js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import _ from "lodash";
 import "jquery-ui";
 import "./stickies.core";
@@ -151,7 +151,7 @@ NoteManager.prototype.sync_remote = function() {
   // logging every open image is too slow, so just log the count instead.
   $.ajax({
     type : "POST",
-    url : server_root + "events/models/" + self.model_id + "/select/opennotes/count/" + self.notes.length
+    url : api_root + "events/models/" + self.model_id + "/select/opennotes/count/" + self.notes.length
   });
   self.bookmarker.updateState({ "notes" : self.notes });
 };

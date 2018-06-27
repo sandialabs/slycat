@@ -18,7 +18,10 @@ module.exports = {
     slycat_model:       './web-server/js/slycat-model-main-webpack.js',
   },
   output: {
-    filename: '[name].[chunkhash].js',
+    // Use this to add the chunk hash into the filename. Great for caching, but can't
+    // find a way to make it work with dynamic model code imports yet.
+    // filename: '[name].[chunkhash].js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
     // Public URL of js bundle files. We want them available at the root URL.
     publicPath: '/',
@@ -138,10 +141,16 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
+      // Disabling chunking everything because I can't get it to work with dynamic imports for model code.
       // 'all' creates lots of chunks but does not automatically load them. Using HtmlWebpackPlugin to inject them into templates.
-      chunks: 'all',
+      // chunks: 'all',
+      // Chunking only non-model bundles
+      chunks (chunk) {
+        // exclude `ui_parameter_image`
+        return chunk.name !== 'ui_parameter_image';
+      },
       // chunks: 'async',
-    }
+    },
   },
   // This configures webpack to look in the web-server directory for modules, after it looked in node_modules
   resolve: {

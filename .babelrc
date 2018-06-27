@@ -10,4 +10,5 @@
   "compact": false,
   // Keeps same line breaks, but wacky code
   //"retainLines": true,
+  "plugins": ["syntax-dynamic-import","transform-runtime",],
 }

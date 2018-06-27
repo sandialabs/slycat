@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import * as dialog from "js/slycat-dialog-webpack";
 import _ from "lodash";
 import ko from "knockout";
@@ -260,7 +260,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
               categories = ko.observableArray();
               $.ajax({
                 type: "GET",
-                url : server_root + "models/" + vm.model_id() + "/arraysets/data-table/metadata?unique=0/" + targetFilter.index() + "/...",
+                url : api_root + "models/" + vm.model_id() + "/arraysets/data-table/metadata?unique=0/" + targetFilter.index() + "/...",
                 success : function(result) {
                    _(result.unique[0].values[0]).sort().each(function(c) { targetFilter.categories.push({value: ko.observable(c), selected: ko.observable(true)}); }).value(); // selected by default
                   // Bookmark once all unique values are set

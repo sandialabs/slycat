@@ -1,7 +1,7 @@
 import Papa from "papaparse";
-import server_root from "../../../../js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import _ from "lodash";
-import dialog from "../../../../js/slycat-dialog-webpack";
+import dialog from "js/slycat-dialog-webpack";
 import React from "react";
 import ControlsButton from './controls-button';
 
@@ -24,7 +24,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "models/" + this.props.mid + "/arraysets/" + this.props.aid + "/data",
+      url : api_root + "models/" + this.props.mid + "/arraysets/" + this.props.aid + "/data",
       data: JSON.stringify({"hyperchunks": "0/.../..."}),
       contentType: "application/json",
       success : function(result)
