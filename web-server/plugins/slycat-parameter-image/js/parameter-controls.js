@@ -6,6 +6,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "jquery-ui";
 import ControlsBar from './Components/controls-bar';
+import "bootstrap";
 
 $.widget("parameter_image.controls",
 {

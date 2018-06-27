@@ -2,10 +2,8 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from "./slycat-server-root";
-import client from "./slycat-web-client-webpack";
 import ko from "knockout";
-import slycatLocalBrowser from "../templates/slycat-local-browser.html";
+import slycatLocalBrowser from "templates/slycat-local-browser.html";
 
 ko.components.register("slycat-local-browser",
 {

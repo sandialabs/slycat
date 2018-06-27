@@ -16,6 +16,7 @@ import mapping from 'knockout-mapping';
 import URI from 'urijs';
 import "js/slycat-navbar-webpack";
 import ga from "js/slycat-ga";
+import "bootstrap";
 
 // Wait for document ready
 $(document).ready(function() {

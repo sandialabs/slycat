@@ -35,7 +35,8 @@ import timeseries from 'plugins/slycat-timeseries-model/js/wizard-ui';
 import new_cca from 'plugins/slycat-cca/js/new-ui';
 import rerun_cca from 'plugins/slycat-cca/js/rerun-ui';
 import parameter_image_plus from 'plugins/slycat-parameter-image-plus-model/js/wizard-ui';
-import "bootstrap";
+// Can't import bootstrap here because it breaks models, which are dynamically imported and also contain bootstrap, and it seems to clash with this one.
+// import "bootstrap";
 
 ko.components.register("slycat-navbar",
 {
