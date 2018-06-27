@@ -193,15 +193,15 @@ class Agent(object):
         :param jid: job id
         :return: 
         """
-        logger = logging.getLogger(name)
-        if name not in self._loggers:
+        logger = logging.getLogger(str(name))
+        if str(name) not in self._loggers:
             logger.setLevel(logging.INFO)
             handler = logging.FileHandler(str(name) + '.log')
             formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
-            self._loggers[name] = logger
-        return lambda msg: self._loggers[name].info(msg)
+            self._loggers[str(name)] = logger
+        return lambda msg: self._loggers[str(name)].info(msg)
 
     def get_user_config(self):
         """
