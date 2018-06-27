@@ -42,10 +42,7 @@ class Agent(object):
     """
     __metaclass__ = abc.ABCMeta
     _log_lock = threading.Lock()
-    log = logging.getLogger()
-    log.setLevel(logging.INFO)
-    log.addHandler(logging.FileHandler('slycat-agent.log'))
-    log.handlers[0].setFormatter(logging.Formatter("[%(asctime)s] - [%(levelname)s] : %(message)s"))
+    _loggers = {}
 
     def __init__(self):
         self.scripts = []
@@ -190,16 +187,21 @@ class Agent(object):
                     run_command += str(parameter["value"])
                 return run_command
 
-    def create_job_logger(self, jid):
+    def get_job_logger(self, name):
         """
         returns a logging function with the jid.log as the file name
         :param jid: job id
         :return: 
         """
-        log = logging.getLogger()
-        log.setLevel(logging.INFO)
-        log.addHandler(logging.FileHandler(str(jid) + '.log'))
-        return lambda msg: log.log(logging.INFO, msg)
+        logger = logging.getLogger(name)
+        if name not in self._loggers:
+            logger.setLevel(logging.INFO)
+            handler = logging.FileHandler(str(name) + '.log')
+            formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            self._loggers[name] = logger
+        return lambda msg: self._loggers[name].info(msg)
 
     def get_user_config(self):
         """
@@ -425,8 +427,8 @@ class Agent(object):
         :return: 
         """
         debug = False
-        self.log.info("\n")
-        self.log.info("*agent started*")
+        self.get_job_logger("slycat_agent")("\n")
+        self.get_job_logger("slycat_agent")("*agent started*")
         # Parse and sanity-check command-line arguments.
         parser = argparse.ArgumentParser()
         parser.add_argument("--fail-startup", default=False, action="store_true",
@@ -462,13 +464,13 @@ class Agent(object):
                 try:
                     command = json.loads(command)
                 except:
-                    self.log.error("Not a JSON object.")
+                    self.get_job_logger("slycat_agent")("Not a JSON object.")
                     raise Exception("Not a JSON object.")
                 if not isinstance(command, dict):
-                    self.log.error("Not a JSON object.")
+                    self.get_job_logger("slycat_agent")("Not a JSON object.")
                     raise Exception("Not a JSON object.")
                 if "action" not in command:
-                    self.log.error("Missing action for command: %s" % command)
+                    self.get_job_logger("slycat_agent")("Missing action for command: %s" % command)
                     raise Exception("Missing action.")
                 if "debug" in command:
                     if command["debug"] is True:
@@ -476,9 +478,9 @@ class Agent(object):
 
                 action = command["action"]
                 if debug:
-                    self.log.info("command: %s" % command)
+                    self.get_job_logger("slycat_agent")("command: %s" % command)
                 if action == "exit":
-                    self.log.info("*agent stopping*\n")
+                    self.get_job_logger("slycat_agent")("*agent stopping*\n")
                     if not arguments.fail_exit:
                         break
                 elif action == "browse":
@@ -514,7 +516,7 @@ class Agent(object):
                 elif action == "set-user-config":
                     self.set_user_config(command)
                 else:
-                    self.log.error("Unknown command.")
+                    self.get_job_logger("slycat_agent")("Unknown command.")
                     raise Exception("Unknown command.")
             except Exception as e:
                 if debug:
