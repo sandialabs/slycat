@@ -16,7 +16,7 @@ $.widget("timeseries.table",
 {
   options:
   {
-    "server-root" : "",
+    api_root : "",
     mid : null,
     aid : null,
     metadata : null,
@@ -215,7 +215,7 @@ $.widget("timeseries.table",
         }
 
         self.data = new self._data_provider({
-          server_root : self.options["server-root"],
+          api_root : self.options.api_root,
           mid : self.options.mid,
           aid : self.options.aid,
           metadata : self.options.metadata,
@@ -342,7 +342,7 @@ $.widget("timeseries.table",
         else
         {
           var request = new XMLHttpRequest();
-          request.open("GET", self.options["server-root"] + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data?hyperchunks=0/rank(a" + self.options["sort-variable"] + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
+          request.open("GET", self.options.api_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data?hyperchunks=0/rank(a" + self.options["sort-variable"] + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
           request.responseType = "arraybuffer";
           request.onload = function(e)
           {
@@ -434,7 +434,7 @@ $.widget("timeseries.table",
   {
     var self = this;
 
-    self.server_root = parameters.server_root
+    self.api_root = parameters.api_root
     self.mid = parameters.mid;
     self.aid = parameters.aid;
     self.metadata = parameters.metadata;
@@ -488,7 +488,7 @@ $.widget("timeseries.table",
       // XMLHttpRequest does not support synchronous retrieval with arraybuffer, so falling back to ajax with no arraybuffer for initial synchronous sorted table filter retrieval.
       if(asynchronous){
         var request = new XMLHttpRequest();
-        request.open("GET", self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (chunker.is_little_endian() ? "little" : "big") + sort);
+        request.open("GET", self.api_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index&byteorder=" + (chunker.is_little_endian() ? "little" : "big") + sort);
         request.responseType = "arraybuffer";
         request.callback = callback;
         request.onload = function(e)
@@ -500,7 +500,7 @@ $.widget("timeseries.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index" + sort,
+          url : self.api_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/" + sortedUnsorted + "-indices?rows=" + row_string + "&index=Index" + sort,
           async : false,
           callback : callback,
           success : function(data)
@@ -565,7 +565,7 @@ $.widget("timeseries.table",
           {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
+            request.open("GET", self.api_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;
@@ -621,7 +621,7 @@ $.widget("timeseries.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
+          url : self.api_root + "models/" + self.mid + "/tables/" + self.aid + "/arrays/0/chunk?rows=" + rowsToRetrieve + "&columns=" + column_begin + "-" + column_end + "&index=Index" + sort,
           async : false,
           success : function(data)
           {
@@ -681,7 +681,7 @@ $.widget("timeseries.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + rowsToRetrieve,
+          url : self.api_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + rowsToRetrieve,
           success : function(data)
           {
             self.pages[page] = [];

@@ -10,7 +10,6 @@ $.widget("timeseries.waveformplot",
 {
   options:
   {
-  	"server-root" : "",
     mid : null,
     waveforms : null, // Time & value data for all waveforms, not just the visible ones
     selection : null, // Array of ids of waveforms that are visible

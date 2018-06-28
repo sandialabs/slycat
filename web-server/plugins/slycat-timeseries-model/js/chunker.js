@@ -14,7 +14,7 @@ export function is_little_endian()
 function get_model_array_attribute_metadata(parameters, dfd)
 {
   return $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata?arrays=" + parameters.array,
+    url : parameters.api_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata?arrays=" + parameters.array,
     contentType : "application/json",
     success: function(result)
     {
@@ -40,8 +40,8 @@ function get_model_array_attribute_metadata(parameters, dfd)
 export function get_model_arrayset_metadata(parameters)
 {
   // It's cached, so just execute callback with cached metadata
-  if(arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) {
-    parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
+  if(arrayset_metadata_cache[parameters.api_root + parameters.mid + parameters.aid] !== undefined) {
+    parameters.metadata = arrayset_metadata_cache[parameters.api_root + parameters.mid + parameters.aid];
     if(parameters.metadataSuccess !== undefined) {
       parameters.metadataSuccess(parameters);
     } else {
@@ -49,33 +49,33 @@ export function get_model_arrayset_metadata(parameters)
     }
   }
   // It's being cached now, so add callback to queue
-  else if(arrayset_metadata_retrieval_inprogress[parameters.server_root + parameters.mid + parameters.aid]) {
+  else if(arrayset_metadata_retrieval_inprogress[parameters.api_root + parameters.mid + parameters.aid]) {
     var callback = parameters.metadataSuccess !== undefined ? parameters.metadataSuccess : parameters.success;
-    arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid].push({callback:callback, parameters: parameters});
+    arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid].push({callback:callback, parameters: parameters});
   } 
   // It's not in the cache and it's not being cached, so retrieve it and execute callback queue
   else {
-    arrayset_metadata_retrieval_inprogress[parameters.server_root + parameters.mid + parameters.aid] = true;
+    arrayset_metadata_retrieval_inprogress[parameters.api_root + parameters.mid + parameters.aid] = true;
     var callback = parameters.metadataSuccess !== undefined ? parameters.metadataSuccess : parameters.success;
-    if(arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid] === undefined)
+    if(arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid] === undefined)
     {
-      arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid] = [];
+      arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid] = [];
     }
-    arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid].push({callback:callback, parameters: parameters});
+    arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid].push({callback:callback, parameters: parameters});
 
     $.ajax({
-      url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata",
+      url : parameters.api_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata",
       contentType : "application/json",
       success: function(metadata)
       {
-        arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] = metadata;
-        arrayset_metadata_retrieval_inprogress[parameters.server_root + parameters.mid + parameters.aid] = false;
+        arrayset_metadata_cache[parameters.api_root + parameters.mid + parameters.aid] = metadata;
+        arrayset_metadata_retrieval_inprogress[parameters.api_root + parameters.mid + parameters.aid] = false;
         // Execute callback queue
-        for(var i=0; i < arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid].length; i++)
+        for(var i=0; i < arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid].length; i++)
         {
-          var callback_parameters = arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid][i].parameters;
+          var callback_parameters = arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid][i].parameters;
           callback_parameters.metadata = metadata;
-          arrayset_metadata_callbacks[parameters.server_root + parameters.mid + parameters.aid][i].callback(callback_parameters);
+          arrayset_metadata_callbacks[parameters.api_root + parameters.mid + parameters.aid][i].callback(callback_parameters);
         }
       },
       error: function(request, status, reason_phrase)
@@ -186,7 +186,7 @@ export function get_model_array_attribute(parameters) {
     ranges = ranges.join("|");
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges + byteorder);
+    request.open("GET", parameters.api_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges + byteorder);
     if(!isStringAttribute)
     {
       request.responseType = "arraybuffer";
@@ -241,9 +241,9 @@ export function get_model_arrayset(parameters)
   {
     retrieve_model_arrayset(parameters);
   } 
-  else if (arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid] !== undefined) 
+  else if (arrayset_metadata_cache[parameters.api_root + parameters.mid + parameters.aid] !== undefined) 
   {
-    parameters.metadata = arrayset_metadata_cache[parameters.server_root + parameters.mid + parameters.aid];
+    parameters.metadata = arrayset_metadata_cache[parameters.api_root + parameters.mid + parameters.aid];
     retrieve_model_arrayset(parameters);
   } 
   else 
@@ -279,7 +279,7 @@ export function get_model_arrayset(parameters)
       hyperchunks.push(".../.../...");
     }
 
-    var uri = parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian() ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
+    var uri = parameters.api_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?byteorder=" + (is_little_endian() ? "little" : "big") + "&hyperchunks=" + encodeURIComponent(hyperchunks.join(";"));
     var request = new XMLHttpRequest();
     request.open("GET", uri);
     request.responseType = "arraybuffer";

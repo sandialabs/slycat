@@ -5,12 +5,13 @@
 
 import d3 from "js/d3.min";
 import * as chunker from "./chunker";
+import "bootstrap";
 
 $.widget("timeseries.dendrogram",
 {
   options:
   {
-  	"server-root" : "",
+  	api_root : "",
     mid : null,
   	clusters:[],
   	cluster: 0,
@@ -40,7 +41,7 @@ $.widget("timeseries.dendrogram",
   	var collapsed_nodes = this.options.collapsed_nodes;
   	var expanded_nodes = this.options.expanded_nodes;
     var selected_nodes = this.options.selected_nodes;
-  	var server_root = self.options["server-root"];
+  	var api_root = self.options.api_root;
   	var mid = self.options.mid;
 
   	var linkage = cluster_data["linkage"];
@@ -513,7 +514,7 @@ $.widget("timeseries.dendrogram",
       }
 
       chunker.get_model_arrayset_metadata({
-        server_root : self.options["server-root"],
+        api_root : self.options.api_root,
         mid : self.options.mid,
         aid : "preview-" + s_to_a(self.options.clusters)[self.options.cluster],
         success : function(parameters)
@@ -523,7 +524,7 @@ $.widget("timeseries.dendrogram",
               $(this).attr("d", "");
             } else {
               chunker.get_model_arrayset({
-                server_root : self.options["server-root"],
+                api_root : self.options.api_root,
                 mid : self.options.mid,
                 aid : "preview-" + s_to_a(self.options.clusters)[self.options.cluster],
                 arrays : d["exemplar"] + ":" + (d["exemplar"]+1),

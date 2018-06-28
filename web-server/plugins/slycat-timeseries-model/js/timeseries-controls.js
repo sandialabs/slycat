@@ -1,10 +1,11 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import * as dialog from "js/slycat-dialog";
 import _ from "lodash";
 import Papa from "papaparse";
 import "jquery-ui";
+import "bootstrap";
 
 $.widget("timeseries.controls",
 {
@@ -124,7 +125,7 @@ $.widget("timeseries.controls",
     $.ajax(
     {
       type : "POST",
-      url : server_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
+      url : api_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
       data: JSON.stringify({"hyperchunks": "0/.../..."}),
       contentType: "application/json",
       success : function(result)

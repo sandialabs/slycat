@@ -1,4 +1,6 @@
-/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
+ DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
+ retains certain rights in this software. */
 
 import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
 import slick_grid_css from "css/slickgrid/slick.grid.css";
@@ -7,7 +9,7 @@ import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import ui_css from "../css/ui.css";
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import ko from "knockout";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
@@ -25,14 +27,9 @@ import "jquery-ui";
 import "js/jquery.layout-latest.min";
 import "js/slycat-navbar";
 import "js/slycat-job-checker";
-import * as slycat_model_main from "js/slycat-model-main";
 
 // Wait for document ready
 $(document).ready(function() {
-
-  slycat_model_main.start();
-
-  ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -137,7 +134,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "GET",
-      url : server_root + "models/" + model._id,
+      url : api_root + "models/" + model._id,
       success : function(result)
       {
         model = result;
@@ -238,7 +235,7 @@ $(document).ready(function() {
 
     // Load list of clusters.
     $.ajax({
-      url : server_root + "models/" + model._id + "/files/clusters",
+      url : api_root + "models/" + model._id + "/files/clusters",
       contentType : "application/json",
       success: function(result)
       {
@@ -254,7 +251,7 @@ $(document).ready(function() {
 
     // Load data table metadata.
     $.ajax({
-      url : server_root + "models/" + model._id + "/tables/inputs/arrays/0/metadata?index=Index",
+      url : api_root + "models/" + model._id + "/tables/inputs/arrays/0/metadata?index=Index",
       contentType : "application/json",
       success: function(metadata)
       {
@@ -378,7 +375,7 @@ $(document).ready(function() {
     var lastRow  = table_metadata["column-max"][lastColumn]+1;
 
     $.ajax({
-      url : server_root + "models/" + model._id + "/tables/inputs/arrays/0/chunk?rows=" + firstRow + "-" + lastRow + "&columns=" + parameters.column + "&index=Index&sort=" + lastColumn + ":ascending",
+      url : api_root + "models/" + model._id + "/tables/inputs/arrays/0/chunk?rows=" + firstRow + "-" + lastRow + "&columns=" + parameters.column + "&index=Index&sort=" + lastColumn + ":ascending",
       async: true,
       callback: parameters.callback,
       success: function(resp){
@@ -404,7 +401,7 @@ $(document).ready(function() {
       
       // Load the waveforms.
       chunker.get_model_arrayset({
-        server_root : server_root + "",
+        api_root : api_root + "",
         mid : model._id,
         aid : "preview-" + s_to_a(clusters)[cluster_index],
         success : function(result, metadata)
@@ -423,7 +420,7 @@ $(document).ready(function() {
       clusters_data[cluster_index] = null;
       $.ajax(
       {
-        url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster_index],
+        url : api_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster_index],
         contentType : "application/json",
         success : function(cluster_data)
         {
@@ -448,7 +445,7 @@ $(document).ready(function() {
       var controls_options =
       {
         mid : model._id,
-        model_name: model_name,
+        model_name: window.model_name,
         aid : "inputs",
         metadata: table_metadata,
         highlight: selected_simulations,
@@ -536,7 +533,6 @@ $(document).ready(function() {
 
       var waveformplot_options =
       {
-        "server-root" : server_root,
         mid : model._id,
         waveforms: waveforms_data[cluster_index],
         color_scale: colorscale,
@@ -574,7 +570,7 @@ $(document).ready(function() {
 
       var table_options =
       {
-        "server-root" : server_root,
+        api_root : api_root,
         mid : model._id,
         aid : "inputs",
         metadata : table_metadata,
@@ -635,7 +631,7 @@ $(document).ready(function() {
         });
 
       var dendrogram_options = build_dendrogram_node_options(cluster_index);
-      dendrogram_options["server-root"]=server_root;
+      dendrogram_options.api_root = api_root;
       dendrogram_options.mid = model._id;
       dendrogram_options.clusters = s_to_a(clusters);
       dendrogram_options.cluster_data = s_to_o(clusters_data[cluster_index]);
@@ -726,7 +722,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/colormap/" + colormap
+      url : api_root + "events/models/" + model._id + "/select/colormap/" + colormap
     });
     bookmarker.updateState({"colormap" : colormap});
   }
@@ -747,7 +743,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/cluster/" + cluster_index
+      url : api_root + "events/models/" + model._id + "/select/cluster/" + cluster_index
     });
     bookmarker.updateState({"cluster-index" : cluster_index});
   }
@@ -785,7 +781,7 @@ $(document).ready(function() {
       $.ajax(
       {
         type : "POST",
-        url : server_root + "events/models/" + model._id + "/select/node/" + parameters.node["node-index"],
+        url : api_root + "events/models/" + model._id + "/select/node/" + parameters.node["node-index"],
       });
     }
   }
@@ -797,7 +793,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/simulation/count/" + selected_simulations.length
+      url : api_root + "events/models/" + model._id + "/select/simulation/count/" + selected_simulations.length
     });
     var bookmark_selected_simulations = {};
     bookmark_selected_simulations["simulation-selection"] = selected_simulations;
@@ -816,7 +812,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/variable/" + selected_column[cluster_index]
+      url : api_root + "events/models/" + model._id + "/select/variable/" + selected_column[cluster_index]
     });
     var selected_variable = {};
     selected_variable[cluster_index + "-column-index"] = selected_column[cluster_index];
@@ -834,7 +830,7 @@ $(document).ready(function() {
     {
       $.ajax({
         type: "GET",
-        url : server_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column[cluster_index] + "/...",
+        url : api_root + "models/" + model._id + "/arraysets/inputs/metadata?unique=0/" + selected_column[cluster_index] + "/...",
         success : function(result) {
           uniqueValues = result.unique[0].values[0];
           colorscale = $("#color-switcher").colorswitcher("get_color_scale_ordinal", undefined, uniqueValues);
@@ -881,7 +877,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model._id + "/select/sort-order/" + variable + "/" + order
+      url : api_root + "events/models/" + model._id + "/select/sort-order/" + variable + "/" + order
     });
     bookmarker.updateState( {"sort-variable" : sort_variable, "sort-order" : sort_order} );
   }
@@ -900,7 +896,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model._id + "/toggle/node/" + node["node-index"],
+      url : api_root + "events/models/" + model._id + "/toggle/node/" + node["node-index"],
     });
   }
 
@@ -910,7 +906,7 @@ $(document).ready(function() {
     if((clusters_data[cluster] === undefined) || (clusters_data[cluster] === null)) {
        $.ajax(
       {
-        url : server_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster],
+        url : api_root + "models/" + model._id + "/files/cluster-" + s_to_a(clusters)[cluster],
         contentType : "application/json",
         success : function(cluster_data)
         {
@@ -934,7 +930,7 @@ $(document).ready(function() {
     if(waveforms_data[cluster] === undefined) {
       // Load the waveforms.
       chunker.get_model_arrayset({
-        server_root : server_root,
+        api_root : api_root,
         mid : model._id,
         aid : "preview-" + s_to_a(clusters)[cluster],
         success : function(result, metadata)

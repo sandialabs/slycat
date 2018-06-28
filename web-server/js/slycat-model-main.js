@@ -58,8 +58,11 @@ $(document).ready(function() {
     if (page.model_type == "parameter-image") {
       html = await import('plugins/slycat-parameter-image/ui.html');
     }
+    else if (page.model_type == "timeseries") {
+      html = await import('plugins/slycat-timeseries-model/ui.html');
+    }
     else {
-      console.log("We don't recognize this model type, so not loading anything.");
+      console.log("We don't recognize this model type, so not loading a template.");
     }
 
     if (html.default) {
@@ -78,9 +81,14 @@ $(document).ready(function() {
 
     if (page.model_type == "parameter-image") {
       module = await import('dist/ui_parameter_image');
+      // console.log("loading ui_parameter_image.js");
+    }
+    else if (page.model_type == "timeseries") {
+      module = await import('dist/ui_timeseries');
+      // console.log("loading ui_parameter_image.js");
     }
     else {
-      console.log("We don't recognize this model type, so not loading anything.");
+      console.log("We don't recognize this model type, so not loading a module.");
     }
 
     return module;

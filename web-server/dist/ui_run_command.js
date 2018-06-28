@@ -130,7 +130,7 @@
 /******/
 /******/
 /******/ 	// add entry module to deferred list
-/******/ 	deferredModules.push(["./web-server/plugins/slycat-run-command/ui.js","vendors~slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_plus~ui_run_comm~c3296245","slycat_model~slycat_page~slycat_project~slycat_projects~ui_cca~ui_parameter_plus~ui_run_command~ui_t~c432f948"]);
+/******/ 	deferredModules.push(["./web-server/plugins/slycat-run-command/ui.js","vendors~slycat_model~slycat_page~slycat_project~slycat_projects~ui_run_command","slycat_model~slycat_page~slycat_project~slycat_projects~ui_run_command"]);
 /******/ 	// run deferred modules when ready
 /******/ 	return checkDeferredModules();
 /******/ })

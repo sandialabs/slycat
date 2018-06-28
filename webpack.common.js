@@ -146,8 +146,9 @@ module.exports = {
       // chunks: 'all',
       // Chunking only non-model bundles
       chunks (chunk) {
-        // exclude `ui_parameter_image`
-        return chunk.name !== 'ui_parameter_image';
+        // exclude `model chunks`
+        var exclude = ['ui_parameter_image', 'ui_timeseries', 'ui_cca', 'ui_parameter_plus', ];
+        return exclude.indexOf(chunk.name) < 0;
       },
       // chunks: 'async',
     },
