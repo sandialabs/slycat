@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import d3 from "js/d3.min";
 import "jquery-ui";
 import "js/jquery.event.drag-2.2";
@@ -542,7 +542,7 @@ $.widget("parameter_image.table",
         $.ajax(
         {
           type : "GET",
-          url : server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
+          url : api_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
           success : function(data)
           {
             self.pages[page] = [];
@@ -656,7 +656,7 @@ $.widget("parameter_image.table",
           {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
+            request.open("GET", api_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;

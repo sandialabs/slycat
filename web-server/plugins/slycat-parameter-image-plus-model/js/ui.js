@@ -8,7 +8,7 @@ import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import ko from "knockout";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
@@ -26,13 +26,9 @@ import "./color-switcher";
 import "jquery-ui";
 import "js/jquery.layout-latest.min";
 import "js/slycat-navbar"
-import * as slycat_model_main from "js/slycat-model-main";
 
 // Wait for document ready
 $(document).ready(function() {
-
-  slycat_model_main.start();
-  ko.applyBindings({}, document.getElementsByClassName('slycat-content')[0]);
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -180,7 +176,7 @@ $(document).ready(function() {
   $.ajax(
   {
     type : "GET",
-    url : server_root + "models/" + model_id,
+    url : api_root + "models/" + model_id,
     success : function(result)
     {
       model = result;
@@ -236,7 +232,7 @@ $(document).ready(function() {
 
     // Load list of clusters.
     $.ajax({
-      url : server_root + "models/" + model_id + "/files/clusters",
+      url : api_root + "models/" + model_id + "/files/clusters",
       contentType : "application/json",
       success: function(result) {
         clusters = result;
@@ -250,7 +246,7 @@ $(document).ready(function() {
 
     // Load data table metadata.
     $.ajax({
-      url : server_root + "models/" + model_id + "/tables/data-table/arrays/0/metadata?index=Index",
+      url : api_root + "models/" + model_id + "/tables/data-table/arrays/0/metadata?index=Index",
       contentType : "application/json",
       success: function(metadata) {
         table_metadata = metadata;
@@ -310,7 +306,7 @@ $(document).ready(function() {
 
       $.ajax(
       {
-        url : server_root + "models/" + model_id + "/files/cluster-" + clusters[cluster_index],
+        url : api_root + "models/" + model_id + "/files/cluster-" + clusters[cluster_index],
         contentType : "application/json",
         success : function(cluster_data)
         {
@@ -380,7 +376,7 @@ $(document).ready(function() {
         hidden_simulations = bookmark["hidden-simulations"];
 
       chunker.get_model_array_attribute({
-        server_root : server_root,
+        api_root : api_root,
         mid : model_id,
         aid : "data-table",
         array : 0,
@@ -399,7 +395,7 @@ $(document).ready(function() {
       });
 
       chunker.get_model_array_attribute({
-        server_root : server_root,
+        api_root : api_root,
         mid : model_id,
         aid : "data-table",
         array : 0,
@@ -435,7 +431,7 @@ $(document).ready(function() {
       else
       {
         chunker.get_model_array_attribute({
-          server_root : server_root,
+          api_root : api_root,
           mid : model_id,
           aid : "data-table",
           array : 0,
@@ -465,7 +461,7 @@ $(document).ready(function() {
         $.ajax(
         {
           type : "GET",
-          url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
+          url : api_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
           success : function(result)
           {
             images = result[0];
@@ -596,7 +592,7 @@ $(document).ready(function() {
 
       var table_options =
       {
-        "server-root" : server_root,
+        api_root : api_root,
         mid : model_id,
         aid : "data-table",
         metadata : table_metadata,
@@ -841,9 +837,8 @@ $(document).ready(function() {
       }
 
       $("#controls").controls({
-        "server-root" : server_root,
         mid : model_id,
-        model_name: model_name,
+        model_name: window.model_name,
         aid : "data-table",
         metadata: table_metadata,
         // clusters : clusters,
@@ -908,7 +903,7 @@ $(document).ready(function() {
 
           $.ajax({
             type: "PUT",
-            url : server_root + "models/" + model_id + "/arraysets/data-table/data",
+            url : api_root + "models/" + model_id + "/arraysets/data-table/data",
             data : formdata,
             processData: false,
             contentType: false,
@@ -1022,7 +1017,7 @@ $(document).ready(function() {
       $.ajax(
       {
         type : "POST",
-        url : server_root + "events/models/" + model_id + "/select/node/" + parameters.node["node-index"]
+        url : api_root + "events/models/" + model_id + "/select/node/" + parameters.node["node-index"]
       });
     }
     if(parameters.skip_bookmarking != true)
@@ -1060,7 +1055,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/toggle/node/" + node["node-index"],
+      url : api_root + "events/models/" + model_id + "/toggle/node/" + node["node-index"],
     });
   }
 
@@ -1087,7 +1082,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/colormap/" + colormap
+      url : api_root + "events/models/" + model_id + "/select/colormap/" + colormap
     });
 
     bookmarker.updateState({"colormap" : colormap});
@@ -1112,7 +1107,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/variable/" + variable
+      url : api_root + "events/models/" + model_id + "/select/variable/" + variable
     });
 
     bookmarker.updateState({"variable-selection" : variable});
@@ -1130,7 +1125,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "GET",
-      url : server_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
+      url : api_root + "models/" + model_id + "/arraysets/data-table/data?hyperchunks=0/" + images_index + "/0:" + table_metadata["row-count"],
       success : function(result)
       {
         images = result[0];
@@ -1154,7 +1149,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/images/" + variable
+      url : api_root + "events/models/" + model_id + "/select/images/" + variable
     });
     bookmarker.updateState( {"images-selection" : variable} );
   }
@@ -1162,7 +1157,7 @@ $(document).ready(function() {
   function update_v(variable)
   {
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model_id,
       aid : "data-table",
       array : 0,
@@ -1275,7 +1270,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/sort-order/" + variable + "/" + order
+      url : api_root + "events/models/" + model_id + "/select/sort-order/" + variable + "/" + order
     });
     bookmarker.updateState( {"sort-variable" : variable, "sort-order" : order} );
   }
@@ -1286,7 +1281,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/simulation/count/" + selection.length
+      url : api_root + "events/models/" + model_id + "/select/simulation/count/" + selection.length
     });
     bookmarker.updateState( {"simulation-selection" : selection} );
     selected_simulations = selection;
@@ -1297,7 +1292,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/cluster/" + variable
+      url : api_root + "events/models/" + model_id + "/select/cluster/" + variable
     });
     bookmarker.updateState( {"cluster-index" : variable} );
   }
@@ -1308,7 +1303,7 @@ $(document).ready(function() {
     if(clusters_data[cluster_index] === undefined) {
        $.ajax(
       {
-        url : server_root + "models/" + model_id + "/files/cluster-" + clusters[cluster_index],
+        url : api_root + "models/" + model_id + "/files/cluster-" + clusters[cluster_index],
         contentType : "application/json",
         success : function(cluster_data)
         {
@@ -1331,7 +1326,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/x/" + variable
+      url : api_root + "events/models/" + model_id + "/select/x/" + variable
     });
     bookmarker.updateState( {"x-selection" : variable} );
     x_index = Number(variable);
@@ -1342,7 +1337,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/y/" + variable
+      url : api_root + "events/models/" + model_id + "/select/y/" + variable
     });
     bookmarker.updateState( {"y-selection" : variable} );
     y_index = Number(variable);
@@ -1366,7 +1361,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/auto-scale/" + auto_scale
+      url : api_root + "events/models/" + model_id + "/auto-scale/" + auto_scale
     });
     bookmarker.updateState( {"auto-scale" : auto_scale} );
   }
@@ -1377,7 +1372,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/select/openimages/count/" + selection.length
+      url : api_root + "events/models/" + model_id + "/select/openimages/count/" + selection.length
     });
     bookmarker.updateState( {"open-images-selection" : selection} );
   }
@@ -1388,7 +1383,7 @@ $(document).ready(function() {
     $.ajax(
     {
       type : "POST",
-      url : server_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length
+      url : api_root + "events/models/" + model_id + "/hidden/count/" + hidden_simulations.length
     });
     bookmarker.updateState( {"hidden-simulations" : hidden_simulations} );
   }
@@ -1396,7 +1391,7 @@ $(document).ready(function() {
   function update_scatterplot_x(variable)
   {
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model_id,
       aid : "data-table",
       array : 0,
@@ -1416,7 +1411,7 @@ $(document).ready(function() {
   function update_scatterplot_y(variable)
   {
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model_id,
       aid : "data-table",
       array : 0,

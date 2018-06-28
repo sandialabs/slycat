@@ -64,6 +64,9 @@ $(document).ready(function() {
     else if (page.model_type == "cca") {
       html = await import('plugins/slycat-cca/ui.html');
     }
+    else if (page.model_type == "parameter-image-plus") {
+      html = await import('plugins/slycat-parameter-image-plus-model/ui.html');
+    }
     else {
       console.log("We don't recognize this model type, so not loading a template.");
     }
@@ -93,6 +96,10 @@ $(document).ready(function() {
     else if (page.model_type == "cca") {
       module = await import('dist/ui_cca');
       // console.log("loading ui_cca.js");
+    }
+    else if (page.model_type == "parameter-image-plus") {
+      module = await import('dist/ui_parameter_plus');
+      // console.log("loading ui_parameter_plus.js");
     }
     else {
       console.log("We don't recognize this model type, so not loading a module.");
