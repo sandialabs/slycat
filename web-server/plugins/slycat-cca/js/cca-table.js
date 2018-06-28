@@ -18,7 +18,7 @@ $.widget("cca.table",
 {
   options:
   {
-    "server-root" : "",
+    api_root : "",
     mid : null,
     aid : null,
     metadata : null,
@@ -99,7 +99,7 @@ $.widget("cca.table",
       self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
 
     self.data = new self._data_provider({
-      server_root : self.options["server-root"],
+      api_root : self.options.api_root,
       mid : self.options.mid,
       aid : self.options.aid,
       metadata : self.options.metadata,
@@ -284,7 +284,7 @@ $.widget("cca.table",
   {
     var self = this;
 
-    self.server_root = parameters.server_root
+    self.api_root = parameters.api_root
     self.mid = parameters.mid;
     self.aid = parameters.aid;
     self.metadata = parameters.metadata;
@@ -345,13 +345,13 @@ $.widget("cca.table",
         $.ajax(
         {
           type : "GET",
-          url : self.server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
+          url : self.api_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
           success : function(data)
           {
             self.pages[page] = [];
             for(var i=0; i < data[0].length; i++)
             {
-              result = {};
+              var result = {};
               for(var j = column_begin; j != column_end; ++j)
               {
                 result[j] = data[j][i];
@@ -458,7 +458,7 @@ $.widget("cca.table",
           {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", self.server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
+            request.open("GET", self.api_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;

@@ -13,7 +13,7 @@ export function is_little_endian()
 export function get_model_array_attribute_metadata(parameters, dfd)
 {
   return $.ajax({
-    url : parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata?arrays=" + parameters.array,
+    url : parameters.api_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/metadata?arrays=" + parameters.array,
     contentType : "application/json",
     success: function(result)
     {
@@ -134,7 +134,7 @@ export function get_model_array_attribute(parameters) {
     ranges = ranges.join("|");
 
     var request = new XMLHttpRequest();
-    request.open("GET", parameters.server_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges + byteorder);
+    request.open("GET", parameters.api_root + "models/" + parameters.mid + "/arraysets/" + parameters.aid + "/data?hyperchunks=" + parameters.array + "/" + parameters.attribute + "/" + ranges + byteorder);
     if(!isStringAttribute)
     {
       request.responseType = "arraybuffer";

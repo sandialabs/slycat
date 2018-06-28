@@ -8,7 +8,7 @@ import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
@@ -24,12 +24,9 @@ import "jquery-ui";
 import "js/jquery.layout-latest.min";
 import "js/jquery.scrollintoview.min";
 import "js/slycat-navbar"
-import * as slycat_model_main from "js/slycat-model-main";
 
 // Wait for document ready
 $(document).ready(function() {
-
-  slycat_model_main.start();
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
@@ -115,7 +112,7 @@ $(document).ready(function() {
 
     // Load the x_loadings artifact.
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "input-structure-correlation",
       array : 0,
@@ -130,7 +127,7 @@ $(document).ready(function() {
 
     // Load the y_loadings artifact.
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "output-structure-correlation",
       array : 0,
@@ -145,7 +142,7 @@ $(document).ready(function() {
 
     // Load the r^2 statistics artifact.
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "cca-statistics",
       array : 0,
@@ -160,7 +157,7 @@ $(document).ready(function() {
 
     // Load the Wilks statistics artifact.
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "cca-statistics",
       array : 0,
@@ -175,7 +172,7 @@ $(document).ready(function() {
 
     // Load the canonical-indices artifact.
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "canonical-indices",
       array : 0,
@@ -194,7 +191,7 @@ $(document).ready(function() {
 
     // Load the canonical-variables artifacts.
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "canonical-variables",
       array : 0,
@@ -208,7 +205,7 @@ $(document).ready(function() {
     });
 
     chunker.get_model_array_attribute({
-      server_root : server_root,
+      api_root : api_root,
       mid : model._id,
       aid : "canonical-variables",
       array : 0,
@@ -337,7 +334,7 @@ $(document).ready(function() {
       else
       {
         chunker.get_model_array_attribute({
-          server_root : server_root,
+          api_root : api_root,
           mid : model._id,
           aid : "data-table",
           array : 0,
@@ -487,7 +484,7 @@ $(document).ready(function() {
 
       var table_options =
       {
-        "server-root" : server_root,
+        api_root : api_root,
         mid : model._id,
         aid : "data-table",
         metadata : table_metadata,
@@ -573,7 +570,7 @@ $(document).ready(function() {
 
       $("#controls-pane #controls").controls({
         mid : model._id,
-        model_name: model_name,
+        model_name: window.model_name,
         aid : "data-table",
         metadata: table_metadata,
         color_variables: color_variables,
@@ -730,7 +727,7 @@ $(document).ready(function() {
     else
     {
       chunker.get_model_array_attribute({
-        server_root : server_root,
+        api_root : api_root,
         mid : model._id,
         aid : "data-table",
         array : 0,

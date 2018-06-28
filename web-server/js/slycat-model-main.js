@@ -50,7 +50,7 @@ $(document).ready(function() {
   });
 
   async function loadModelTemplate() {
-    // console.log("loadModelTemplate, page.model_type is " + page.model_type);
+    console.log("loadModelTemplate, page.model_type is " + page.model_type);
 
     var template = document.createElement('template');
     var html = "";
@@ -60,6 +60,9 @@ $(document).ready(function() {
     }
     else if (page.model_type == "timeseries") {
       html = await import('plugins/slycat-timeseries-model/ui.html');
+    }
+    else if (page.model_type == "cca") {
+      html = await import('plugins/slycat-cca/ui.html');
     }
     else {
       console.log("We don't recognize this model type, so not loading a template.");
@@ -86,6 +89,10 @@ $(document).ready(function() {
     else if (page.model_type == "timeseries") {
       module = await import('dist/ui_timeseries');
       // console.log("loading ui_parameter_image.js");
+    }
+    else if (page.model_type == "cca") {
+      module = await import('dist/ui_cca');
+      // console.log("loading ui_cca.js");
     }
     else {
       console.log("We don't recognize this model type, so not loading a module.");
