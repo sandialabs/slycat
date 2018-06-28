@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import client from "./slycat-web-client-webpack";
+import client from "js/slycat-web-client";
 
 var module = {};//uploader object we wish to populate and return
 module.MEGABYTE = 10000000;//the number of bytes we will split large files on

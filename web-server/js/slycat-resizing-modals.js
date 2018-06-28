@@ -2,7 +2,11 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define("slycat-resizing-modals", ['slycat-navbar', 'domReady!'], function(){
+import "js/slycat-navbar";
+
+// Wait for document ready
+$(document).ready(function() {
+
   $('body').delegate('.zooming-modals .modal', 'shown.bs.modal', function(){
     var self = $(this);
     var modalBackdrop = self.find('.modal-backdrop');
@@ -13,4 +17,5 @@ define("slycat-resizing-modals", ['slycat-navbar', 'domReady!'], function(){
     observer.observe(self.find('.modal-backdrop')[0], {attributes: true});
     resized();
   });
-})
+
+});

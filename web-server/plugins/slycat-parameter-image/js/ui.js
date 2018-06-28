@@ -13,9 +13,9 @@ import api_root from "js/slycat-api-root";
 import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
-import client from "js/slycat-web-client-webpack";
-import bookmark_manager from "js/slycat-bookmark-manager-webpack";
-import * as dialog from "js/slycat-dialog-webpack";
+import client from "js/slycat-web-client";
+import bookmark_manager from "js/slycat-bookmark-manager";
+import * as dialog from "js/slycat-dialog";
 import NoteManager from "./note-manager";
 import FilterManager from "./filter-manager";
 import d3 from "js/d3.min";
@@ -27,7 +27,7 @@ import "./parameter-image-table";
 import "./color-switcher";
 import "jquery-ui";
 import "js/jquery.layout-latest.min";
-import "js/slycat-range-slider-webpack"; 
+import "js/slycat-range-slider"; 
 import "./category-select";
 
 // Wait for document ready

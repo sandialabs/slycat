@@ -1,7 +1,7 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 import server_root from "js/slycat-server-root";
-import * as dialog from "js/slycat-dialog-webpack";
+import * as dialog from "js/slycat-dialog";
 import _ from "lodash";
 import Papa from "papaparse";
 import "jquery-ui";

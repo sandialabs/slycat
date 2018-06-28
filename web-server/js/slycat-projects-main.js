@@ -7,10 +7,10 @@ import "css/namespaced-bootstrap.less";
 import "css/slycat.css";
 
 import server_root from 'js/slycat-server-root';
-import client from 'js/slycat-web-client-webpack';
+import client from 'js/slycat-web-client';
 import ko from 'knockout';
 import mapping from 'knockout-mapping';
-import "js/slycat-navbar-webpack";
+import "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import "bootstrap";
 

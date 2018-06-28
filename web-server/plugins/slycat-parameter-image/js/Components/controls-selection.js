@@ -1,4 +1,4 @@
-import dialog from "js/slycat-dialog-webpack";
+import dialog from "js/slycat-dialog";
 import React from "react";
 
 class ControlsSelection extends React.Component {

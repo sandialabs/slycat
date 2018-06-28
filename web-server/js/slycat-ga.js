@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import client from 'js/slycat-web-client-webpack';
+import client from 'js/slycat-web-client';
 import ReactGA from 'react-ga';
 
 $(document).ready(function() {

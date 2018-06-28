@@ -6,12 +6,12 @@
 import api_root from "js/slycat-api-root";
 import d3 from "js/d3.min";
 import URI from "urijs";
-import * as remotes from "js/slycat-remotes-webpack";
+import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
 import ko from "knockout";
 import "jquery-ui";
-import "js/slycat-login-controls-webpack";
-import "js/slycat-3d-viewer-webpack";
+import "js/slycat-login-controls";
+import "js/slycat-3d-viewer";
 
 var nodrag = d3.behavior.drag();
 

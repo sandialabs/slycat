@@ -3,19 +3,19 @@
  retains certain rights in this software. */
 
 import server_root from "js/slycat-server-root";
-import client from "js/slycat-web-client-webpack";
-import * as dialog from "js/slycat-dialog-webpack";
-import markings from "js/slycat-markings-webpack";
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
+import markings from "js/slycat-markings";
 import ko from "knockout";
 import mapping from "knockout-mapping";
-import fileUploader from "js/slycat-file-uploader-factory-webpack";
-import "js/slycat-local-browser-webpack";
-import "js/slycat-parser-controls-webpack";
-import "js/slycat-remote-controls-webpack";
-import "js/slycat-remote-browser-webpack";
-import "js/slycat-table-ingestion-webpack";
-import "js/slycat-remote-interface-webpack";
-import "js/slycat-model-controls-webpack";
+import fileUploader from "js/slycat-file-uploader-factory";
+import "js/slycat-local-browser";
+import "js/slycat-parser-controls";
+import "js/slycat-remote-controls";
+import "js/slycat-remote-browser";
+import "js/slycat-table-ingestion";
+import "js/slycat-remote-interface";
+import "js/slycat-model-controls";
 import parameterImagePlusWizardUI from "../wizard-ui.html";
 
 function constructor(params)

@@ -10,14 +10,14 @@ import ui_css from "../css/ui.css";
 
 import server_root from "js/slycat-server-root";
 import ko from "knockout";
-import client from "js/slycat-web-client-webpack";
-import bookmark_manager from "js/slycat-bookmark-manager-webpack";
-import * as dialog from "js/slycat-dialog-webpack";
+import client from "js/slycat-web-client";
+import bookmark_manager from "js/slycat-bookmark-manager";
+import * as dialog from "js/slycat-dialog";
 import d3 from "js/d3.min";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 
-import "js/slycat-job-checker-webpack";
+import "js/slycat-job-checker";
 import "./parameter-image-scatterplot";
 import "./parameter-controls";
 import "./parameter-image-dendrogram";
@@ -25,8 +25,8 @@ import "./parameter-image-table";
 import "./color-switcher";
 import "jquery-ui";
 import "js/jquery.layout-latest.min";
-import "js/slycat-navbar-webpack"
-import * as slycat_model_main from "js/slycat-model-main-webpack";
+import "js/slycat-navbar"
+import * as slycat_model_main from "js/slycat-model-main";
 
 // Wait for document ready
 $(document).ready(function() {

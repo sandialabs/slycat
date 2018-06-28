@@ -3,7 +3,7 @@
  retains certain rights in this software. */
 
 import api_root from "js/slycat-api-root";
-import * as dialog from "js/slycat-dialog-webpack";
+import * as dialog from "js/slycat-dialog";
 import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";

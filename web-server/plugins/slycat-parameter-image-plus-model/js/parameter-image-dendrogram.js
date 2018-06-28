@@ -5,7 +5,7 @@
 
 import server_root from "js/slycat-server-root";
 import d3 from "js/d3.min";
-import * as remotes from "js/slycat-remotes-webpack";
+import * as remotes from "js/slycat-remotes";
 import URI from "urijs";
 
 $.widget("parameter_image.dendrogram",

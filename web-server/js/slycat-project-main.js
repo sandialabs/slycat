@@ -7,14 +7,14 @@ import "css/namespaced-bootstrap.less";
 import "css/slycat.css";
 
 import server_root from 'js/slycat-server-root';
-import client from 'js/slycat-web-client-webpack';
-import markings from 'js/slycat-markings-webpack';
-import dialog from 'js/slycat-dialog-webpack';
-import model_names from 'js/slycat-model-names-webpack';
+import client from 'js/slycat-web-client';
+import markings from 'js/slycat-markings';
+import dialog from 'js/slycat-dialog';
+import model_names from 'js/slycat-model-names';
 import ko from 'knockout';
 import mapping from 'knockout-mapping';
 import URI from 'urijs';
-import "js/slycat-navbar-webpack";
+import "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import "bootstrap";
 

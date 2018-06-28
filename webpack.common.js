@@ -15,7 +15,7 @@ module.exports = {
     slycat_projects:    './web-server/js/slycat-projects-main.js',
     slycat_project:     './web-server/js/slycat-project-main.js',
     slycat_page:        './web-server/js/slycat-page-main.js',
-    slycat_model:       './web-server/js/slycat-model-main-webpack.js',
+    slycat_model:       './web-server/js/slycat-model-main.js',
   },
   output: {
     // Use this to add the chunk hash into the filename. Great for caching, but can't
@@ -76,7 +76,7 @@ module.exports = {
       chunks: ['slycat_page'],
     }),
     new HtmlWebpackPlugin({
-      template: 'web-server/templates/slycat-model-page-webpack.html',
+      template: 'web-server/templates/slycat-model-page.html',
       filename: 'slycat_model.html',
       chunks: ['slycat_model'],
     }),

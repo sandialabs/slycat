@@ -1,6 +1,6 @@
 import server_root from '../../js/slycat-server-root';
 import URI from "urijs";
-import client from '../../js/slycat-web-client-webpack';
+import client from '../../js/slycat-web-client';
 
 var test_script_json = {
       "scripts": [

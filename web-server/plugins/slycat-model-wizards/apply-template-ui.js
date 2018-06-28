@@ -2,34 +2,39 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-bookmark-manager", "knockout", "knockout-mapping"], function(server_root, client, dialog, bookmark_manager, ko, mapping)
+import server_root from "js/slycat-server-root";
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
+import bookmark_manager from "js/slycat-bookmark-manager";
+import ko from 'knockout';
+import mapping from "knockout-mapping";
+import applyTemplateUI from "./apply-template-ui.html";
+
+function constructor(params)
 {
-  function constructor(params)
+  var component = {};
+  component.project = params.projects()[0];
+  component.model = params.models()[0];
+  component.references = mapping.fromJS([]);
+  component.reference = ko.observable(null);
+
+  client.get_project_references(
   {
-    var component = {};
-    component.project = params.projects()[0];
-    component.model = params.models()[0];
-    component.references = mapping.fromJS([]);
-    component.reference = ko.observable(null);
-
-    client.get_project_references(
+    pid: component.project._id(),
+    success: function(references)
     {
-      pid: component.project._id(),
-      success: function(references)
-      {
-        mapping.fromJS(references, component.references);
-      },
-    });
+      mapping.fromJS(references, component.references);
+    },
+  });
 
-    component.apply_template = function()
-    {
-      bookmark_manager.current_bid(component.reference());
-    }
-    return component;
+  component.apply_template = function()
+  {
+    bookmark_manager.current_bid(component.reference());
   }
+  return component;
+}
 
-  return {
-    viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/slycat-apply-template/ui.html" },
-    };
-});
+export default {
+  viewModel: constructor,
+  template: applyTemplateUI,
+};

@@ -2,7 +2,7 @@
 
 import server_root from "js/slycat-server-root";
 import _ from "lodash";
-import * as dialog from "js/slycat-dialog-webpack";
+import * as dialog from "js/slycat-dialog";
 import Papa from "papaparse";
 import "jquery-ui";
 

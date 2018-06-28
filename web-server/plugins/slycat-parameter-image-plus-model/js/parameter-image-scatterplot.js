@@ -6,9 +6,9 @@
 import server_root from "js/slycat-server-root";
 import d3 from "js/d3.min";
 import URI from "urijs";
-import * as remotes from "js/slycat-remotes-webpack";
+import * as remotes from "js/slycat-remotes";
 import "jquery-ui";
-import "js/slycat-login-controls-webpack";
+import "js/slycat-login-controls";
 import pin from '../img/pin.png';
 
 $.widget("parameter_image.scatterplot",

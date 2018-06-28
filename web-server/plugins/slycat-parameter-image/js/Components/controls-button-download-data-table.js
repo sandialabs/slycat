@@ -1,7 +1,7 @@
 import Papa from "papaparse";
 import api_root from "js/slycat-api-root";
 import _ from "lodash";
-import dialog from "js/slycat-dialog-webpack";
+import dialog from "js/slycat-dialog";
 import React from "react";
 import ControlsButton from './controls-button';
 
