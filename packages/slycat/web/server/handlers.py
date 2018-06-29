@@ -66,69 +66,69 @@ def js_bundle():
         if js_bundle._bundle is None:
             js_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
                                                                               [
-                                                                                  # Alex: indented files are already handled through Webpack
-                                                                                    "js/curl.js",
-                                                                                    # "js/curl-debug.js", # Uncomment this to debug problems loading modules with curl
-                                                                                    "js/slycat-curl-config.js",
-                                                                                    # Load this immediately following curl to configure it.
-                                                                                    "js/uri.min.js",
-                                                                                    # "js/react.development.js",
-                                                                                    # "js/react-dom.development.js",
-                                                                                    "js/jquery-2.1.1.min.js",
-                                                                                    "js/lodash.min.js",
-                                                                                    "js/slycat-lodash-wrap.js",
-                                                                                    "js/bootstrap.js",
-                                                                                    "js/knockout-3.2.0.js",
-                                                                                    "js/knockout.mapping.js",
-                                                                                    "js/knockout-projections.js",
-                                                                                  # We might not be using knockstrap anywhere
-                                                                                  "js/knockstrap.js",
-                                                                                    "js/papaparse.min.js",
-                                                                                    "js/slycat-server-root.js",
-                                                                                    "js/slycat-server-ispasswordrequired.js",
-                                                                                    "js/slycat-bookmark-manager.js",
-                                                                                    "js/slycat-web-client.js",
-                                                                                    # Used by wizards
-                                                                                    "js/slycat_file_uploader_factory.js",
-                                                                                    "js/slycat-dialog.js",
-                                                                                    "js/slycat-markings.js",
-                                                                                    "js/slycat-nag.js",
-                                                                                    # Only used by slycat-parser-controls.js
-                                                                                    "js/slycat-parsers.js",
-                                                                                    # Used by wizards
-                                                                                    "js/slycat-model-controls.js",
-                                                                                    # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
-                                                                                    "js/slycat-parser-controls.js",
-                                                                                  # Used by wizards, a bunch of old ones but also the remap wizard. None of the main ones use it.
-                                                                                  "js/slycat-model-results.js",
-                                                                                    # Used by slycat-navbar(-webpack) and slycat-project-main.js
-                                                                                    "js/slycat-model-names.js",
-                                                                                    "js/slycat-navbar.js",
-                                                                                    # Used by creation wizards
-                                                                                    "js/slycat-local-browser.js",
-                                                                                    # Used by creation wizards
-                                                                                    "js/slycat-remote-browser.js",
-                                                                                    # Used by creation wizards
-                                                                                    "js/slycat-remote-controls.js",
-                                                                                    "js/slycat-remotes.js",
-                                                                                    "js/slycat-login-controls.js",
-                                                                                    "js/slycat-range-slider.js",
-                                                                                    # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
-                                                                                    "js/slycat-page-main.js",
-                                                                                    # Used by /web-server/templates/slycat-projects.html
-                                                                                    "js/slycat-projects-main.js",
-                                                                                    # Used by /web-server/templates/slycat-project.html
-                                                                                    "js/slycat-project-main.js",
-                                                                                    "js/slycat-model-main.js",
-                                                                                    # Seems to only affect /web-server/templates/slycat-navbar.html
-                                                                                    "js/slycat-resizing-modals.js",
-                                                                                    # Used by wizards
-                                                                                    "js/slycat-table-ingestion.js",
-                                                                                    "js/slycat-3d-viewer.js",
-                                                                                    # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
-                                                                                    "js/slycat-remote-interface.js",
-                                                                                    # Seems to be only used in Parameter Image Plus and Timeseries
-                                                                                    "js/slycat-job-checker.js"
+                                                                                  # # Alex: indented files are already handled through Webpack
+                                                                                  #   "js/curl.js",
+                                                                                  #   # "js/curl-debug.js", # Uncomment this to debug problems loading modules with curl
+                                                                                  #   "js/slycat-curl-config.js",
+                                                                                  #   # Load this immediately following curl to configure it.
+                                                                                  #   "js/uri.min.js",
+                                                                                  #   # "js/react.development.js",
+                                                                                  #   # "js/react-dom.development.js",
+                                                                                  #   "js/jquery-2.1.1.min.js",
+                                                                                  #   "js/lodash.min.js",
+                                                                                  #   "js/slycat-lodash-wrap.js",
+                                                                                  #   "js/bootstrap.js",
+                                                                                  #   "js/knockout-3.2.0.js",
+                                                                                  #   "js/knockout.mapping.js",
+                                                                                  #   "js/knockout-projections.js",
+                                                                                  # # We might not be using knockstrap anywhere
+                                                                                  # "js/knockstrap.js",
+                                                                                  #   "js/papaparse.min.js",
+                                                                                  #   "js/slycat-server-root.js",
+                                                                                  #   "js/slycat-server-ispasswordrequired.js",
+                                                                                  #   "js/slycat-bookmark-manager.js",
+                                                                                  #   "js/slycat-web-client.js",
+                                                                                  #   # Used by wizards
+                                                                                  #   "js/slycat_file_uploader_factory.js",
+                                                                                  #   "js/slycat-dialog.js",
+                                                                                  #   "js/slycat-markings.js",
+                                                                                  #   "js/slycat-nag.js",
+                                                                                  #   # Only used by slycat-parser-controls.js
+                                                                                  #   "js/slycat-parsers.js",
+                                                                                  #   # Used by wizards
+                                                                                  #   "js/slycat-model-controls.js",
+                                                                                  #   # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
+                                                                                  #   "js/slycat-parser-controls.js",
+                                                                                  # # Used by wizards, a bunch of old ones but also the remap wizard. None of the main ones use it.
+                                                                                  # "js/slycat-model-results.js",
+                                                                                  #   # Used by slycat-navbar(-webpack) and slycat-project-main.js
+                                                                                  #   "js/slycat-model-names.js",
+                                                                                  #   "js/slycat-navbar.js",
+                                                                                  #   # Used by creation wizards
+                                                                                  #   "js/slycat-local-browser.js",
+                                                                                  #   # Used by creation wizards
+                                                                                  #   "js/slycat-remote-browser.js",
+                                                                                  #   # Used by creation wizards
+                                                                                  #   "js/slycat-remote-controls.js",
+                                                                                  #   "js/slycat-remotes.js",
+                                                                                  #   "js/slycat-login-controls.js",
+                                                                                  #   "js/slycat-range-slider.js",
+                                                                                  #   # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
+                                                                                  #   "js/slycat-page-main.js",
+                                                                                  #   # Used by /web-server/templates/slycat-projects.html
+                                                                                  #   "js/slycat-projects-main.js",
+                                                                                  #   # Used by /web-server/templates/slycat-project.html
+                                                                                  #   "js/slycat-project-main.js",
+                                                                                  #   "js/slycat-model-main.js",
+                                                                                  #   # Seems to only affect /web-server/templates/slycat-navbar.html
+                                                                                  #   "js/slycat-resizing-modals.js",
+                                                                                  #   # Used by wizards
+                                                                                  #   "js/slycat-table-ingestion.js",
+                                                                                  #   "js/slycat-3d-viewer.js",
+                                                                                  #   # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
+                                                                                  #   "js/slycat-remote-interface.js",
+                                                                                  #   # Seems to be only used in Parameter Image Plus and Timeseries
+                                                                                  #   "js/slycat-job-checker.js"
                                                                               ])
     return js_bundle._bundle
 

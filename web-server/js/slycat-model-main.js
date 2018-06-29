@@ -50,7 +50,7 @@ $(document).ready(function() {
   });
 
   async function loadModelTemplate() {
-    console.log("loadModelTemplate, page.model_type is " + page.model_type);
+    // console.log("loadModelTemplate, page.model_type is " + page.model_type);
 
     var template = document.createElement('template');
     var html = "";
