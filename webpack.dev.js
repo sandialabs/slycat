@@ -6,6 +6,8 @@ module.exports = merge(common, {
   mode: 'development',
   devtool: 'eval-source-map',
   devServer: {
+    // Only comiles on refresh, not on file change. But does not work, complains of running webpack twice.
+    // lazy: true,
     // Where files are located on the filesystem.
     contentBase: path.join(__dirname, 'web-server/dist'),
     // Public URL of served files. Commended out because we want them available at the root URL.

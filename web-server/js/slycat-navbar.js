@@ -37,6 +37,8 @@ import rerun_cca from 'plugins/slycat-cca/js/rerun-ui';
 import parameter_image_plus from 'plugins/slycat-parameter-image-plus-model/js/wizard-ui';
 // Can't import bootstrap here because it breaks models, which are dynamically imported and also contain bootstrap, and it seems to clash with this one.
 // import "bootstrap";
+// However, we can import bootstrap's modal js file, since the navbar uses it to create dialogs for wizards.
+import "bootstrap/js/modal";
 
 ko.components.register("slycat-navbar",
 {
