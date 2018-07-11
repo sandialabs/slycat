@@ -82,9 +82,6 @@ $(document).ready(function() {
   async function loadModelModule() {
     // console.log("loadModelModule, page.model_type is " + page.model_type);
 
-    var template = document.createElement('template');
-    var html = "";
-
     if (page.model_type == "parameter-image") {
       module = await import('dist/ui_parameter_image');
       // console.log("loading ui_parameter_image.js");

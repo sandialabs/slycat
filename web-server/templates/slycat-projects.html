@@ -1,10 +1,8 @@
-<!DOCTYPE html>
+<!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . 
+     Under the terms of Contract  DE-NA0003525 with National Technology and Engineering 
+     Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software. -->
 
-<!--
-Copyright 2013, Sandia Corporation. Under the terms of Contract
-DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
-rights in this software.
--->
+<!DOCTYPE html>
 
 <html>
   <head>
@@ -14,27 +12,6 @@ rights in this software.
 
   <body>
     <slycat-navbar></slycat-navbar>
-
-    <div id="slycat-projects" class="bootstrap-styles slycat-content">
-      <div class="container" data-bind="visible:projects().length">
-        <div class="panel panel-default">
-          <div class="list-group" data-bind="foreach: projects">
-            <a class="list-group-item" data-bind="attr:{href:$parent.server_root + 'projects/' + $data._id()}">
-              <span class="label label-default">project</span>
-              <strong data-bind="text:name"></strong>
-              <p>
-                <small>
-                  <span data-bind="text:description"></span>
-                  <em>
-                  Created <span data-bind="text:created"></span>
-                  by <span data-bind="text:creator"></span>
-                  </em>
-                </small>
-              </p>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div id="slycat-projects" class="bootstrap-styles slycat-content"></div>
   </body>
 </html>
