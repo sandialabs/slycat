@@ -218,6 +218,7 @@ $.widget("slycat.colorswitcher",
                     trigger: 'colormap-changed',
                     items: this.color_labels,
                     selected: self.options.colormap,
+                    single: true,
                 }];
 
     const color_bar = <ColorBar element={self.element}

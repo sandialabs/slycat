@@ -12,9 +12,9 @@ class ControlsDropdown extends React.Component {
           {item.name}
         </a>
       </li>);
-    return (
-      <React.Fragment>
-      <div className="btn-group btn-group-xs">
+
+    let dropdown = 
+        <React.Fragment>
         <button className="btn btn-default dropdown-toggle" type="button" id={this.props.id} data-toggle="dropdown" aria-expanded="true" title={this.props.title}>
           {this.props.label}&nbsp;
           <span className="caret"></span>
@@ -22,7 +22,19 @@ class ControlsDropdown extends React.Component {
         <ul className="dropdown-menu" role="menu" aria-labelledby={this.props.id}>
           {optionItems}
         </ul>
-      </div>
+        </React.Fragment>;
+
+    return (
+      <React.Fragment>
+      {this.props.single != true ? (
+        <div className="btn-group btn-group-xs">
+          {dropdown}
+        </div>
+      ) : (
+        <React.Fragment>
+        {dropdown}
+        </React.Fragment>
+      )}
       </React.Fragment>
     );
   }

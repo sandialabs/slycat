@@ -47,7 +47,7 @@ class ColorBar extends React.Component {
             <ControlsDropdown key={this.props.dropdown[0].id} id={this.props.dropdown[0].id} label={this.props.dropdown[0].label} title={this.props.dropdown[0].title}
                               state_label={this.props.dropdown[0].state_label} trigger={this.props.dropdown[0].trigger}
                               items={this.props.dropdown[0].items}
-                              selected={this.state[this.props.dropdown[0].state_label]} set_selected={this.set_selected}/>);
+                              selected={this.state[this.props.dropdown[0].state_label]} single={this.props.dropdown[0].single} set_selected={this.set_selected}/>);
     }
 }
 
