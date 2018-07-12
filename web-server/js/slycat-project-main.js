@@ -6,116 +6,69 @@
 import "css/namespaced-bootstrap.less";
 import "css/slycat.css";
 
-import server_root from 'js/slycat-server-root';
+import React from "react";
+import ReactDOM from "react-dom";
+import { ModelsList, TemplatesList } from 'components/ModelsList';
 import client from 'js/slycat-web-client';
-import markings from 'js/slycat-markings';
-import dialog from 'js/slycat-dialog';
-import model_names from 'js/slycat-model-names';
-import ko from 'knockout';
-import mapping from 'knockout-mapping';
 import URI from 'urijs';
-import "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import "bootstrap";
+
+// These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.
+import ko from 'knockout';
+import "js/slycat-navbar";
+
+export default function renderTemplates(project_id) {
+  // Create a React TemplatesList component after getting the list of templates in this project
+  client.get_project_references(
+  {
+    pid: project_id,
+    success: function(result)
+    {
+      const templates_list = <TemplatesList templates={result} />
+      ReactDOM.render(
+        templates_list,
+        document.getElementById('slycat-templates')
+      );
+    }
+  });
+}
 
 // Wait for document ready
 $(document).ready(function() {
 
-  var page = {};
-  page.server_root = server_root;
-  page.project_id = URI(window.location).segment(-1);
-  page.project = mapping.fromJS({
-    _id: page.project_id, 
-    name: "", 
-    description: "",
-    created: "",
-    creator: "",
-    acl:{administrators:[],writers:[],readers:[]}
-  });
-  page.projects = ko.observableArray();
+  // Get the project ID from the URL
+  const project_id = URI(window.location).segment(-1);
+
+  // Set the page title by getting the project and appending to its name
   client.get_project({
-    pid: page.project._id(),
+    pid: project_id,
     success: function(result) {
-      page.projects.push(mapping.fromJS(result));
+      document.title = result.name + " - Slycat Project";
     },
     error: function(request, status, reason_phrase) {
       console.log("Unable to retrieve project.");
     }
   });
 
-  page.title = ko.pureComputed(function()
-  {
-    var projects = page.projects();
-    return projects.length ? projects[0].name() + " - Slycat Project" : "";
-  });
-
-  page.models = mapping.fromJS([]);
+  // Create a React ModelsList component after getting the list of models in this project
   client.get_project_models({
-    pid: page.project._id(),
+    pid: project_id,
     success: function(result) {
-      mapping.fromJS(result, page.models);
+      const models_list = <ModelsList models={result} />
+      ReactDOM.render(
+        models_list,
+        document.getElementById('slycat-models')
+      );
     },
     error: function(request, status, reason_phrase) {
       console.log("Unable to retrieve project models.");
     }
   });
 
-  page.markings = markings.allowed;
-  page.badge = function(marking)
-  {
-    for(var i = 0; i != page.markings().length; ++i)
-    {
-      if(page.markings()[i].type() == marking)
-        return page.markings()[i].badge();
-    }
-  }
+  renderTemplates(project_id);
 
-  var references = mapping.fromJS([]);
-
-  page.templates = references.filter(function(reference)
-  {
-    return reference.bid() && !reference.mid();
-  }).map(function(reference)
-  {
-    return {
-      _id: reference._id,
-      name: reference.name,
-      created: reference.created,
-      creator: reference.creator,
-      model_type: reference["model-type"] ? reference["model-type"]() : "",
-    };
-  });
-  
-  page.model_names = model_names;
-  
-  page.edit_template = function(reference)
-  {
-  }
-  page.delete_template = function(reference)
-  {
-    dialog.dialog(
-    {
-      title: "Delete Template?",
-      message: "The template will be deleted immediately and there is no undo.  This will not affect any existing models.",
-      buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
-      callback: function(button)
-      {
-        if(button.label != "OK")
-          return;
-        client.delete_reference(
-        {
-          rid: reference._id(),
-          success: function()
-          {
-            page.update_references();
-          },
-          error: dialog.ajax_error("Couldn't delete template."),
-        });
-      },
-    });
-  }
-
-  page.update_references = function()
+  var update_references = function()
   {
     client.get_project_references(
     {
@@ -127,8 +80,8 @@ $(document).ready(function() {
     });
   }
 
-  page.update_references();
-
+  // These next 2 lines render the navbar using knockout. Remove them once we convert it to react.
+  var page = { project_id: project_id }
   ko.applyBindings(page, document.querySelector("html"));
 
 });

@@ -1,4 +1,4 @@
-(window["webpackJsonp"] = window["webpackJsonp"] || []).push([["vendors~slycat_model~slycat_project~slycat_projects"],{
+(window["webpackJsonp"] = window["webpackJsonp"] || []).push([["vendors~slycat_model~slycat_projects"],{
 
 /***/ "./node_modules/core-js/library/modules/_add-to-unscopables.js":
 /*!*********************************************************************!*\

@@ -18,7 +18,7 @@ class ProjectsList extends React.Component {
               );
     });
 
-    if(projects.length > 1)
+    if(projects.length > 0)
     {
       return (
         <div className="container">

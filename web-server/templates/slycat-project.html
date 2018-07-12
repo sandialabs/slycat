@@ -9,61 +9,14 @@ rights in this software.
 <html>
   <head>
     <meta charset="utf-8"/>
-    <title data-bind="text: title"></title>
+    <title></title>
   </head>
 
   <body>
     <slycat-navbar params="project_id:project_id"></slycat-navbar>
-
-    <div id="slycat-project" class="bootstrap-styles slycat-content">
-      <div class="container">
-        <h3>Models</h3>
-        <div class="panel panel-default">
-          <div class="list-group" data-bind="visible: models().length == 0">
-            <div class="list-group-item">There are no models in this project. You can add a model by using the Create menu above.</div>
-          </div>
-          <div class="list-group" data-bind="foreach: models">
-            <a class="list-group-item" data-bind="attr: {href:$parent.server_root + 'models/' + $data._id()}">
-              <span class="label label-default" data-bind="text: $root.model_names.translate_model_type($data['model-type']()) + ' model'"></span>
-              <strong data-bind="text:name"></strong>
-              <div class="pull-right" style="display: inline-block" data-bind="html:$parent.badge($data.marking())"></div>
-              <span class="label label-danger" data-bind="visible:$data.result && $data.result() == 'failed',popover:{placement:'right', trigger:'hover', content:message}">Failed</span>
-              <p>
-                <small>
-                  <span data-bind="text:description"></span>
-                  <em>
-                    Created <span data-bind="text:created"></span>
-                    by <span data-bind="text:creator"></span>
-                  </em>
-                </small>
-              </p>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="container" data-bind="visible: templates().length">
-        <h3>Templates</h3>
-        <div class="panel panel-default">
-          <div class="list-group" data-bind="foreach: templates">
-            <div class="list-group-item">
-              <span class="label label-default" data-bind="visible:model_type, text: $root.model_names.translate_model_type(model_type) + ' model'"></span>
-              <strong data-bind="text:name"></strong>
-                <small>
-                  <em>
-                    Created <span data-bind="text:created"></span>
-                    by <span data-bind="text:creator"></span>
-                  </em>
-                </small>
-              </strong>
-              <span class="pull-right">
-                <!-- <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_template"><span class="fa fa-pencil"></span></button> -->
-                <button type="button" class="btn btn-xs btn-danger" data-bind="click: $parent.delete_template"><span class="fa fa-trash-o"></span></button>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div id="slycat-project-react" class="bootstrap-styles slycat-content">
+      <div id="slycat-models"></div>
+      <div id="slycat-templates"></div>
     </div>
   </body>
 </html>
