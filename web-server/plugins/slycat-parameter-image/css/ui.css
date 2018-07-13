@@ -393,8 +393,13 @@
 #controls #filter-selector {
   width: 90px;
 }
+
+#color-dropdown {
+    margin: 0px 4px 0px 0px;
+}
+
 .ControlsGroup {
-  margin: 0px 2px;
+  margin: 0px 0px;
 }
 /* Making text unselectable inside of the scatterplot because dragging usually is supposed to do other things,
    like selecting points or moving pins. */
