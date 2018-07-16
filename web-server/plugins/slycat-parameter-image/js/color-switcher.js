@@ -245,7 +245,7 @@ $.widget("slycat.colorswitcher",
     });
 
     for (var i = 0; i < all_color_stops.length; i++) {
-      $("#color-switcher li").eq(i)
+      $("#color-switcher a").eq(i)
             .css({
                 "background-image": "linear-gradient(to bottom, " + all_color_stops[i].join(", ") + "), linear-gradient(to bottom, " + all_background_color[i] + ", " + all_background_color[i] + ")",
                 "background-size": "5px 75%, 50px 100%",
