@@ -394,8 +394,8 @@
   width: 90px;
 }
 
-#color-dropdown {
-    margin: 0px 4px 0px 0px;
+#scatterplot-controls {
+  margin-right: 4px;
 }
 
 .ControlsGroup {
