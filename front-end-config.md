@@ -13,8 +13,8 @@ This is what we decided our new config.json for our react application
 					"context": "project||model||global",
 					"page":"path",
 					"js": "path",
-					"name": "name",
-		            "label": "friendly name"
+					"type": "name",
+		                        "label": "friendly name"
 				}
 			],
 			"page" : "/name/path",
@@ -27,7 +27,7 @@ This is what we decided our new config.json for our react application
 		"context": "project||model||global",
 		"page":"path",
 		"js": "path",
-		"name": "name",
+		"type": "name",
 		"label": "friendly name"
 	},
 	"server_url" : "full domain name",
