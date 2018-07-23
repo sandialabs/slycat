@@ -31,7 +31,7 @@ This is what we decided our new config.json for our react application
 		"label": "friendly name"
 	},
 	"server_url" : "full domain name",
-	"server_friendly_name" : " frienly nanme like slycat"
+	"server_friendly_name" : "friendly name like slycat"
 }
 ```
 
