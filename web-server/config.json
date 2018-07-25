@@ -1,0 +1,114 @@
+{
+  "models":
+  [
+    {
+      "name": "name",  
+      "model_wizards":
+      [
+        {
+          "action": "create||delete||info||edit",
+          "context": "project||model||global",
+          "page":"path",
+          "js": "path",
+          "type": "name",
+          "label": "friendly name"
+        }
+      ],
+      "page": "/name/path",
+      "js": []
+    }
+  ],
+  "global_wizards" : 
+  [
+    {
+      "action": "create",
+      "context": "global",
+      "page": "create-ui.html",
+      "js": "create_project.js",
+      "type": "slycat-create-project",
+      "label": "New Project"
+    },
+    {
+      "action": "edit",
+      "context": "project",
+      "page": "edit-project-ui.html",
+      "js": "edit-project-ui.js",
+      "type": "slycat-edit-project",
+      "label": "Edit Project"
+    },
+    {
+      "action": "info",
+      "context": "project",
+      "page": "info-project-ui.html",
+      "js": "info-project-ui.js",
+      "type": "slycat-info-project",
+      "label": "Project Details"
+    },
+    {
+      "action": "delete",
+      "context": "project",
+      "page": "delete-project-ui.html",
+      "js": "delete-project-ui.js",
+      "type": "slycat-delete-project",
+      "label": "Delete Project"
+    },
+    {
+      "action": "delete",
+      "context": "model",
+      "page": "delete-model-ui.html",
+      "js": "delete-model-ui.js",
+      "type": "slycat-delete-model",
+      "label": "Delete Model"
+    },
+    {
+      "action": "edit",
+      "context": "model",
+      "page": "edit-model-ui.html",
+      "js": "edit-model-ui.js",
+      "type": "slycat-edit-model",
+      "label": "Name Model"
+    },
+    {
+      "action": "create",
+      "context": "model",
+      "page": "create-template-ui.html",
+      "js": "create-template-ui.js",
+      "type": "slycat-create-template",
+      "label": "Template"
+    },
+    {
+      "action": "create",
+      "context": "model",
+      "page": "create-saved-bookmark-ui.html",
+      "js": "create-saved-bookmark-ui.js",
+      "type": "slycat-create-saved-bookmark",
+      "label": "Create New"
+    },
+    {
+      "action": "edit",
+      "context": "model",
+      "page": "apply-template-ui.html",
+      "js": "apply-template-ui.js",
+      "type": "slycat-apply-template",
+      "label": "Apply Template"
+    },
+    {
+      "action": "edit",
+      "context": "model",
+      "page": "reset-model-ui.html",
+      "js": "reset-model-ui.js",
+      "type": "slycat-reset-model",
+      "label": "Reset Model"
+    },
+    {
+      "action": "info",
+      "context": "model",
+      "page": "info-model-ui.html",
+      "js": "info-model-ui.js",
+      "type": "slycat-info-model",
+      "label": "Model Details"
+    }
+  ],
+  "server_url" : "https://localhost:9000",
+  "server_friendly_name" : "Alex's Dev Slycat"
+}

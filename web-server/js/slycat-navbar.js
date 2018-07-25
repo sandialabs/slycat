@@ -40,6 +40,8 @@ import parameter_image_plus from 'plugins/slycat-parameter-image-plus-model/js/w
 // However, we can import bootstrap's modal js file, since the navbar uses it to create dialogs for wizards.
 import "bootstrap/js/modal";
 
+import config from 'config.json';
+
 ko.components.register("slycat-navbar",
 {
   viewModel: function(params)
@@ -75,6 +77,7 @@ ko.components.register("slycat-navbar",
 
     var component = this;
     component.server_root = server_root;
+    component.server_friendly_name = config.server_friendly_name != undefined ? config.server_friendly_name : 'Slycat';
     component.model_names = model_names;
     component.ispasswordrequired = ispasswordrequired;
 
