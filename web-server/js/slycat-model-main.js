@@ -83,19 +83,19 @@ $(document).ready(function() {
     // console.log("loadModelModule, page.model_type is " + page.model_type);
 
     if (page.model_type == "parameter-image") {
-      module = await import('dist/ui_parameter_image');
+      module = await import(/* webpackChunkName: "ui_parameter_image" */ 'plugins/slycat-parameter-image/js/ui.js');
       // console.log("loading ui_parameter_image.js");
     }
     else if (page.model_type == "timeseries") {
-      module = await import('dist/ui_timeseries');
+      module = await import(/* webpackChunkName: "ui_timeseries" */ 'plugins/slycat-timeseries-model/js/ui.js');
       // console.log("loading ui_parameter_image.js");
     }
     else if (page.model_type == "cca") {
-      module = await import('dist/ui_cca');
+      module = await import(/* webpackChunkName: "ui_cca" */ 'plugins/slycat-cca/js/ui.js');
       // console.log("loading ui_cca.js");
     }
     else if (page.model_type == "parameter-image-plus") {
-      module = await import('dist/ui_parameter_plus');
+      module = await import(/* webpackChunkName: "ui_parameter_image_plus" */ 'plugins/slycat-parameter-image-plus-model/js/ui.js');
       // console.log("loading ui_parameter_plus.js");
     }
     else {
