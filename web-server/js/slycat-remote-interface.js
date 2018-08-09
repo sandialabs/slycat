@@ -353,7 +353,11 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
                       "value": fn_params.xyce_timeseries_file
                   },
                   {
-                      "name": "--inputs-directory",
+                      "name": "--inputs-file",
+                      "value": fn_params.inputs_file
+                  },
+                  {
+                      "name": "--input-directory",
                       "value": fn_params.input_directory
                   },
                   {
@@ -367,7 +371,7 @@ define('slycat-remote-interface', ['knockout', 'knockout-mapping', 'slycat-serve
             // if "hdf5_directory" in params and params["hdf5_directory"] != "":
             //     hdf5_dir = params["hdf5_directory"]
 
-        if (fn_params.timeseries_name !== "")
+        if (fn_params.timeseries_name !== "" && fn_params.timeseries_type === "csv")
         {
           json_payload.scripts.push({
               "name": "compute_timeseries",
