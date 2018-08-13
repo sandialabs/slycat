@@ -5,6 +5,9 @@ import "jquery-ui";
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import ColorBar from './Components/color-bar';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import reducer from './Reducers';
 
 // class ColorSwitcherControls extends React.Component {
 //   constructor(props) {
@@ -221,10 +224,15 @@ $.widget("slycat.colorswitcher",
                     single: true,
                 }];
 
+    const store = createStore(reducer);
+
+    const
+
     const color_bar = <ColorBar element={self.element}
         dropdown={dropdown}
         selection={self.options.selection}
-      />;
+        store={store}
+        />;
 
     self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
 

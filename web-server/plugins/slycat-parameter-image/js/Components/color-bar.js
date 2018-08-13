@@ -1,5 +1,16 @@
 import React from "react";
 import ControlsDropdown from './controls-dropdown';
+import { connect } from 'react-redux';
+import { helloWorldAction } from './Actions';
+
+const mapStateToProps = (state) => ({
+    yoYo: state.say,
+    stateObject: state
+})
+
+const mapDispatchToProps = (dispatch) => ({
+    saySomething: () => { dispatch(sayHello()) }
+})
 
 class ColorBar extends React.Component {
     constructor(props) {
