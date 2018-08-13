@@ -225,9 +225,7 @@ $.widget("slycat.colorswitcher",
                 }];
 
     const store = createStore(reducer);
-
-    const
-
+    
     const color_bar = <ColorBar element={self.element}
         dropdown={dropdown}
         selection={self.options.selection}
