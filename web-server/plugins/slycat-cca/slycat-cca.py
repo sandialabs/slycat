@@ -104,25 +104,9 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute CCA Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def page_html(database, model):
-    # At the moment, the CCA client UI is still hard-coded into the server.
-    import pystache
-    context = dict()
-    context["_id"] = model["_id"]
-    context["name"] = model["name"];
-    return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_cca.html")), "r").read(), context)
-
   # Register our new model type
   context.register_model("cca", finish)
 
-  context.register_page("cca", page_html)
-
-  # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
-  context.set_global_bundles("cca", False)
-
   # Register custom wizards for creating CCA models.
   context.register_wizard("new-cca", "New CCA Model", require={"action":"create", "context":"project"})
-  context.register_wizard_resource("new-cca", "ui.js", os.path.join(os.path.dirname(__file__), "js/new-ui.js"))
-  context.register_wizard_resource("new-cca", "ui.html", os.path.join(os.path.dirname(__file__), "new-ui.html"))
-
   context.register_wizard("rerun-cca", "Modified CCA Model", require={"action":"create", "context":"model", "model-type":["cca"]})

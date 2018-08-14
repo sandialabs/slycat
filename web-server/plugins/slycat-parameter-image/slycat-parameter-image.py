@@ -57,25 +57,8 @@ def register_slycat_plugin(context):
     """
     slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
-  def page_html(database, model):
-    """Add the HTML representation of the model to the context object."""
-    import json
-    import pystache
-
-    context = dict()
-    context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
-    context["_id"] = model["_id"]
-    context["name"] = model["name"]
-    context["full-project"] = database.get("project", model["project"])
-    return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_parameter_image.html")), "r").read(), context)
-
   # Register our new model type
   context.register_model("parameter-image", finish)
-
-  context.register_page("parameter-image", page_html)
-
-  # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
-  context.set_global_bundles("parameter-image", False)
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image", "media-columns", media_columns)

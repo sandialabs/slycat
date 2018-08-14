@@ -1,37 +1,17 @@
-import ko from "knockout";
+// This is the front-end slycat plugin configuartion file. 
+// Import plugin registrations below for any plugin you want available on the system.
 
-import slycat_edit_model from 'plugins/slycat-model-wizards/edit-ui';
-import slycat_delete_model from 'plugins/slycat-model-wizards/delete-ui';
-import slycat_apply_template from 'plugins/slycat-model-wizards/apply-template-ui';
-import slycat_create_saved_bookmark from 'plugins/slycat-model-wizards/create-saved-bookmark-ui';
-import slycat_create_template from 'plugins/slycat-model-wizards/create-template-ui';
-import slycat_info_model from 'plugins/slycat-model-wizards/info-ui';
-import slycat_reset_model from 'plugins/slycat-model-wizards/reset-ui';
-import remap_wizard from 'plugins/slycat-remap-wizard/remap-ui';
-import slycat_create_project from 'plugins/slycat-project-wizards/create-ui';
-import slycat_edit_project from 'plugins/slycat-project-wizards/edit-ui';
-import slycat_info_project from 'plugins/slycat-project-wizards/info-ui';
-import slycat_delete_project from 'plugins/slycat-project-wizards/delete-ui';
-import parameter_image from 'plugins/slycat-parameter-image/js/wizard-ui';
-import timeseries from 'plugins/slycat-timeseries-model/js/wizard-ui';
-import new_cca from 'plugins/slycat-cca/js/new-ui';
-import rerun_cca from 'plugins/slycat-cca/js/rerun-ui';
-import parameter_image_plus from 'plugins/slycat-parameter-image-plus-model/js/wizard-ui';
+// Model wizards
+import 'plugins/slycat-model-wizards/slycat-model-wizards';
 
-ko.components.register('slycat-edit-model', slycat_edit_model);
-ko.components.register('slycat-delete-model', slycat_delete_model);
-ko.components.register('slycat-apply-template', slycat_apply_template);
-ko.components.register('slycat-create-saved-bookmark', slycat_create_saved_bookmark);
-ko.components.register('slycat-create-template', slycat_create_template);
-ko.components.register('slycat-info-model', slycat_info_model);
-ko.components.register('slycat-reset-model', slycat_reset_model);
-ko.components.register('remap-wizard', remap_wizard);
-ko.components.register('slycat-create-project', slycat_create_project);
-ko.components.register('slycat-edit-project', slycat_edit_project);
-ko.components.register('slycat-info-project', slycat_info_project);
-ko.components.register('slycat-delete-project', slycat_delete_project);
-ko.components.register('parameter-image', parameter_image);
-ko.components.register('timeseries', timeseries);
-ko.components.register('new-cca', new_cca);
-ko.components.register('rerun-cca', rerun_cca);
-ko.components.register('parameter-image-plus', parameter_image_plus);
+// Project wizards
+import 'plugins/slycat-project-wizards/slycat-project-wizards';
+
+// Models
+import 'plugins/slycat-parameter-image/slycat-parameter-image';
+import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
+import 'plugins/slycat-cca/slycat-cca';
+import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
+
+// Remap wizard, which is probably not working as of August 2018
+import 'plugins/slycat-remap-wizard/slycat-remap-wizard';

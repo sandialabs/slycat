@@ -410,25 +410,8 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute Generic Model", target=compute_uploaded_distance, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def page_html(database, model):
-    """Add the HTML representation of the model to the context object."""
-    import json
-    import pystache
-
-    context = dict()
-    context["formatted-model"] = json.dumps(model, indent=2, sort_keys=True)
-    context["_id"] = model["_id"];
-    context["name"] = model["name"];
-    context["full-project"] = database.get("project", model["project"]);
-    return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_parameter_plus.html")), "r").read(), context)
-
   # Register our new model type
   context.register_model("parameter-image-plus", finish)
-
-  context.register_page("parameter-image-plus", page_html)
-
-  # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
-  context.set_global_bundles("parameter-image-plus", False)
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image-plus", "media-columns", media_columns)

@@ -230,8 +230,7 @@ ko.components.register("slycat-navbar",
         mapping.fromJS(wizards, component.wizards);
         // Alex commenting out because automatically registering knockout components breaks under webpack.
         // Webpack expects to package all modules at build time, while this approach tries to load modules at runtime.
-        // We need to come up with a new plugin architecture that supports webpack.
-        // For the time being, I am just manually registering the plugins that I know of below.
+        // Front-end plugin registration is now being done in 'js/slycat-plugins'
         // for(var i = 0; i != wizards.length; ++i)
         // {
         //   ko.components.register(wizards[i].type,
@@ -240,23 +239,6 @@ ko.components.register("slycat-navbar",
         //   });
         //   console.log("registering: " + wizards[i].type);
         // }
-        // ko.components.register('slycat-edit-model', wizards.slycat_edit_model);
-        // ko.components.register('slycat-delete-model', slycat_delete_model);
-        // ko.components.register('slycat-apply-template', slycat_apply_template);
-        // ko.components.register('slycat-create-saved-bookmark', slycat_create_saved_bookmark);
-        // ko.components.register('slycat-create-template', slycat_create_template);
-        // ko.components.register('slycat-info-model', slycat_info_model);
-        // ko.components.register('slycat-reset-model', slycat_reset_model);
-        // ko.components.register('remap-wizard', remap_wizard);
-        // ko.components.register('slycat-create-project', wizards.slycat_create_project);
-        // ko.components.register('slycat-edit-project', slycat_edit_project);
-        // ko.components.register('slycat-info-project', slycat_info_project);
-        // ko.components.register('slycat-delete-project', slycat_delete_project);
-        // ko.components.register('parameter-image', parameter_image);
-        // ko.components.register('timeseries', timeseries);
-        // ko.components.register('new-cca', new_cca);
-        // ko.components.register('rerun-cca', rerun_cca);
-        // ko.components.register('parameter-image-plus', parameter_image_plus);
       }
     });
 

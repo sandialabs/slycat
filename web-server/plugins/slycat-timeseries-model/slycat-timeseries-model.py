@@ -72,25 +72,6 @@ def register_slycat_plugin(context):
         slycat.web.server.update_model(database, model, state="finished", result="failed",
                                        finished=datetime.datetime.utcnow().isoformat(), message=message)
 
-    def page_html(database, model):
-        """
-        Add the HTML representation of the model to the context object.
-    
-        :param database:
-        :param model:
-        :return: HTML render for the model
-        """
-        import pystache
-
-        context = dict()
-        context["_id"] = model["_id"]
-        context["cluster-type"] = model["artifact:cluster-type"] if "artifact:cluster-type" in model else "null"
-        context["cluster-bin-type"] = model[
-            "artifact:cluster-bin-type"] if "artifact:cluster-bin-type" in model else "null"
-        context["cluster-bin-count"] = model[
-            "artifact:cluster-bin-count"] if "artifact:cluster-bin-count" in model else "null"
-        return pystache.render(open(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dist/ui_timeseries.html")), "r").read(), context)
-
     # def get_remote_file(sid, hostname, username, password, filename):
     #     """
     #     Utility function to fetch remote files.
@@ -519,11 +500,6 @@ def register_slycat_plugin(context):
 
     # Register our new model type
     context.register_model("timeseries", finish)
-
-    context.register_page("timeseries", page_html)
-
-    # Set the global_bundles flag to tell slycat not to emit the global JS and CSS files
-    context.set_global_bundles("timeseries", False)
 
     # Register custom commands for use by wizards
     context.register_model_command("GET", "timeseries", "pull_data", pull_data)

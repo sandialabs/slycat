@@ -70,17 +70,6 @@ class Manager(object):
         except Exception as e:
           import traceback
           cherrypy.log.error(traceback.format_exc())
-
-  def set_global_bundles(self, type, global_bundles_flag):
-    """Set flag for global JS bundle
-    """
-    if type not in self.pages:
-      slycat.email.send_error("slycat.web.server.plugin.py set_global_bundles", "Unknown page type: %s." % type)
-      raise Exception("Unknown page type: %s." % type)
-    if type not in self.global_bundles:
-      self.global_bundles[type] = global_bundles_flag
-
-    cherrypy.log.error("Set global_bundles to '%s' for '%s' models." % (global_bundles_flag, type))
     
 
   def register_directory(self, type, init, user):
