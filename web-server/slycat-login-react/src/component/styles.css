@@ -1,6 +1,6 @@
 body {
     background-color: #F2F2F2;
-    background-image: url('/resources/global/slycat-logo-navbar.png');
+    background-image: url('../../../css/slycat-logo-navbar.png');
     background-repeat: no-repeat;
     background-position: 50% 100px;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -31,7 +31,7 @@ body {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
 }
-.form-signin input[type="text"] {
+.form-signin input[type="password"] {
   margin-bottom: 20px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;

@@ -14,7 +14,6 @@ import ga from "js/slycat-ga";
 
 // Wait for document ready
 $(document).ready(function() {
-
   // Enable knockout
   var mid = URI(window.location).segment(-1);
   var page = {};
@@ -43,7 +42,7 @@ $(document).ready(function() {
       });
 
     },
-    error: function()
+    error: function(request, status, reason_phrase)
     {
       console.log("Error retrieving model.");
     }

@@ -1394,9 +1394,9 @@ module.get_projects = function(params) {
     contentType: 'application/json',
     type: 'GET',
     url: api_root + 'projects_list',
-    success: function(result) {
+    success: function(result, textStatus, request) {
       if (params.success)
-        params.success(result);
+        params.success(result, textStatus, request);
     },
     error: function(request, status, reason_phrase) {
       if (params.error)

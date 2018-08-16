@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import URI from 'urijs';
 import './namespaced-bootstrap.min.css';
 import './styles.css';
+import api_root from 'js/slycat-api-root';
 
 class Form extends Component {
 
@@ -42,7 +43,7 @@ class Form extends Component {
         var user_name = this.b64EncodeUnicode(this.state.credentials.username);
         var password = this.b64EncodeUnicode(this.state.credentials.password);
 
-        var url = URI("/" + "login");
+        var url = URI(api_root + "login");
         var sendInfo = JSON.stringify({
             "user_name": user_name,
             "password": password,
@@ -58,26 +59,12 @@ class Form extends Component {
             })
         }).then(res => res.json())
             .catch(error => console.error('Error:', error))
-            .then(response => window.location.replace(response.target));
-
-        // $.ajax(
-        //     {
-        //           contentType: "application/json",
-        //           type: "POST",
-        //           url: URI("/" + "login"),
-        //           data: this.state.credentials.username,//json payload
-        //           success: function(result)
-        //           {
-        //             console.log("success " + result);
-        //             //window.location.replace("/");
-        //             // window.location.replace(result.target);
-        //           },
-        //           error: function(request, status, reason_phrase)
-        //           {
-        //             console.log("error request:" + request.responseJSON +" status: "+ status + " reason: " + reason_phrase);
-        //             // $("#signin-alert").show(200);
-        //           }
-        //     });
+            .then(
+                response => {
+                    console.log('response.target is ' + response.target);
+                    window.location.replace(response.target);
+                }
+            );
 
         event.preventDefault();
     }
@@ -85,11 +72,11 @@ class Form extends Component {
     render() {
         return (
             <form className="form-signin" onSubmit={this.handleSubmit}>
-                <label for="username" className="sr-only"></label>
-                <input id="username" className="form-control" placeholder="Username" type="text" value={this.state.credentials.username} onChange={this.changeUsername} />
+                <label htmlFor="username" className="sr-only"></label>
+                <input id="username" className="form-control" placeholder="Username" required type="text" value={this.state.credentials.username} onChange={this.changeUsername} />
 
-                <label for="password" className="sr-only"></label>
-                <input id="password" className="form-control" placeholder="Password" type="text" value={this.state.credentials.password} onChange={this.changePassword} />
+                <label htmlFor="password" className="sr-only"></label>
+                <input id="password" className="form-control" placeholder="Password" required type="password" value={this.state.credentials.password} onChange={this.changePassword} />
 
                 <button className="btn btn-lg btn-primary btn-block" id="go" type="submit">Sign In </button>
             </form>

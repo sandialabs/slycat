@@ -8,6 +8,7 @@ import "font-awesome/css/font-awesome.css";
 import "css/slycat.css";
 
 import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import model_names from "js/slycat-model-names";
@@ -26,6 +27,16 @@ import "bootstrap/js/modal";
 
 import config from 'config.json';
 
+// Let's check to see if we have a session by trying to retrive the projects list.
+// If we get redirected, it likely means we don't have a seesion, so let's take the user
+// to the login page.
+fetch(api_root + 'projects_list', {redirect: 'error', credentials: "same-origin"})
+  .catch(error => {
+    console.log("we are being redirected or have another type of error, so let's go to the login page");
+    window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
+  })
+  ;
+
 ko.components.register("slycat-navbar",
 {
   viewModel: function(params)
@@ -35,7 +46,7 @@ ko.components.register("slycat-navbar",
     function checkCookie(){
       var myCookie = getCookie("slycattimeout");
       if(myCookie == null){
-          window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+          window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
           // window.location.href = "/projects";
       }
     }
@@ -503,7 +514,7 @@ ko.components.register("slycat-navbar",
     {
       client.sign_out({ 
         success: function(){
-          window.location.href = "/login/slycat-login.html?from=" + window.location.href;
+          window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
           // window.location.href = "/projects";
         }, 
         error: function(){
