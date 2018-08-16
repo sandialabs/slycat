@@ -14,7 +14,6 @@ import ga from "js/slycat-ga";
 
 // Wait for document ready
 $(document).ready(function() {
-  // Enable knockout
   var mid = URI(window.location).segment(-1);
   var page = {};
   page.model_id = mid;
@@ -55,16 +54,16 @@ $(document).ready(function() {
     var html = "";
 
     if (page.model_type == "parameter-image") {
-      html = await import('plugins/slycat-parameter-image/ui.html');
+      html = await import(/* webpackChunkName: "ui_parameter_image_template" */ 'plugins/slycat-parameter-image/ui.html');
     }
     else if (page.model_type == "timeseries") {
-      html = await import('plugins/slycat-timeseries-model/ui.html');
+      html = await import(/* webpackChunkName: "ui_timeseries_template" */ 'plugins/slycat-timeseries-model/ui.html');
     }
     else if (page.model_type == "cca") {
-      html = await import('plugins/slycat-cca/ui.html');
+      html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca/ui.html');
     }
     else if (page.model_type == "parameter-image-plus") {
-      html = await import('plugins/slycat-parameter-image-plus-model/ui.html');
+      html = await import(/* webpackChunkName: "ui_parameter_image_plus_template" */ 'plugins/slycat-parameter-image-plus-model/ui.html');
     }
     else {
       console.log("We don't recognize this model type, so not loading a template.");
@@ -82,19 +81,19 @@ $(document).ready(function() {
     // console.log("loadModelModule, page.model_type is " + page.model_type);
 
     if (page.model_type == "parameter-image") {
-      module = await import(/* webpackChunkName: "ui_parameter_image" */ 'plugins/slycat-parameter-image/js/ui.js');
+      module = await import(/* webpackChunkName: "ui_parameter_image_module" */ 'plugins/slycat-parameter-image/js/ui.js');
       // console.log("loading ui_parameter_image.js");
     }
     else if (page.model_type == "timeseries") {
-      module = await import(/* webpackChunkName: "ui_timeseries" */ 'plugins/slycat-timeseries-model/js/ui.js');
+      module = await import(/* webpackChunkName: "ui_timeseries_module" */ 'plugins/slycat-timeseries-model/js/ui.js');
       // console.log("loading ui_parameter_image.js");
     }
     else if (page.model_type == "cca") {
-      module = await import(/* webpackChunkName: "ui_cca" */ 'plugins/slycat-cca/js/ui.js');
+      module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca/js/ui.js');
       // console.log("loading ui_cca.js");
     }
     else if (page.model_type == "parameter-image-plus") {
-      module = await import(/* webpackChunkName: "ui_parameter_image_plus" */ 'plugins/slycat-parameter-image-plus-model/js/ui.js');
+      module = await import(/* webpackChunkName: "ui_parameter_image_plus_module" */ 'plugins/slycat-parameter-image-plus-model/js/ui.js');
       // console.log("loading ui_parameter_plus.js");
     }
     else {
