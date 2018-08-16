@@ -29,9 +29,15 @@ module.exports = merge(common, {
       rewrites: [
         // { from: /^\/$/, to: '/views/landing.html' },
         // { from: /^\/subpage/, to: '/views/subpage.html' },
-        { from: /^\/projects/, to: '/slycat_project.html' },
+        // If the URL begins with projects/ (note the trailing slash), serve up the single project page
+        { from: /^\/projects\//, to: '/slycat_project.html' },
+        // If the URL begins with projects (note no trailing slash), serve up the listing of all projects.
+        // This is for backwards compatibility, since we used to redirect unknows URLs to /projects to give the user
+        // a projects listing.
+        { from: /^\/projects/, to: '/slycat_projects.html' },
         { from: /^\/models/, to: '/slycat_model.html' },
         { from: /^\/login/, to: '/slycat_login.html' },
+        { from: /^\/pages/, to: '/slycat_page.html' },
         // { from: /./, to: '/views/404.html' },
       ]
     }

@@ -11,6 +11,7 @@ import client from 'js/slycat-web-client';
 import ko from 'knockout';
 import mapping from 'knockout-mapping';
 import "js/slycat-navbar";
+import ga from "js/slycat-ga";
 
 // Wait for document ready
 $(document).ready(function() {
