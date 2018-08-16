@@ -1,7 +1,7 @@
 import React from "react";
 import ControlsDropdown from './controls-dropdown';
 import { connect } from 'react-redux';
-import { helloWorldAction } from './Actions';
+import { helloWorldAction } from '../Actions/hello-world-action';
 
 const mapStateToProps = (state) => ({
     yoYo: state.say,

@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import ColorBar from './Components/color-bar';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
-import reducer from './Reducers';
+import reducer from './Reducers/hello-world-reducer';
 
 // class ColorSwitcherControls extends React.Component {
 //   constructor(props) {
