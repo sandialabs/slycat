@@ -611,12 +611,18 @@ def response_url():
             cleaned_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
             if not cleaned_url.__contains__(
                     current_url.netloc):  # check net location to avoid cross site script attacks
-                cleaned_url = "https://" + current_url.netloc + "/projects"
+                # No longer need to add projects to root url, so removing 
+                # cleaned_url = "https://" + current_url.netloc + "/projects"
+                cleaned_url = "https://" + current_url.netloc
         else:
-            cleaned_url = "https://" + current_url.netloc + "/projects"
+            # No longer need to add projects to root url, so removing 
+            # cleaned_url = "https://" + current_url.netloc + "/projects"
+            cleaned_url = "https://" + current_url.netloc
     except Exception as e:
         # cherrypy.log.error("no location provided setting target to /projects")
-        cleaned_url = "https://" + current_url.netloc + "/projects"
+        # No longer need to add projects to root url, so removing 
+        # cleaned_url = "https://" + current_url.netloc + "/projects"
+        cleaned_url = "https://" + current_url.netloc
     return cleaned_url
 
 
