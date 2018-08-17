@@ -9,9 +9,11 @@ import "css/slycat.css";
 import server_root from 'js/slycat-server-root';
 import client from 'js/slycat-web-client';
 import ko from 'knockout';
+import URI from "urijs";
 import mapping from 'knockout-mapping';
 import "js/slycat-navbar";
 import ga from "js/slycat-ga";
+import {loadTemplate, loadModule} from 'js/slycat-plugins';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -28,5 +30,14 @@ $(document).ready(function() {
     }
   });
   ko.applyBindings(page, document.querySelector("html"));
+
+  let pid = URI(window.location).segment(-1);
+  loadTemplate(pid).then(component => {
+    document.querySelector(".slycat-content").appendChild(component);
+    loadModule(pid).then(component => {
+      // console.log("inside loadModelModule().then()");
+      // ko.applyBindings(page, document.querySelector(".slycat-content"));
+    });
+  });
 
 });

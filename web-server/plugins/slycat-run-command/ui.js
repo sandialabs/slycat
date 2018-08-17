@@ -1,6 +1,6 @@
-import server_root from '../../js/slycat-server-root';
+import api_root from "js/slycat-api-root";
 import URI from "urijs";
-import client from '../../js/slycat-web-client';
+import client from 'js/slycat-web-client';
 
 var test_script_json = {
       "scripts": [
@@ -139,7 +139,7 @@ function run_remote_command()
   {
     contentType: "application/json",
     type: "POST",
-    url: URI(server_root + "remotes/"+$('#hostname').val()+"/post-remote-command"),
+    url: URI(api_root + "remotes/"+$('#hostname').val()+"/post-remote-command"),
     success: function(result)
     {
       document.getElementById('response').value = JSON.stringify(result)
