@@ -1,16 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { helloWorldAction } from './Actions'
+import { helloWorldAction } from '../Actions/hello-world-action.js'
 
 let Button = ({ whatsUp, stateObject, saySomething }) => (
 
 <div >
     <button onClick={saySomething}>
-        PRESS TO DISPATCH FIRST ACTION
+        Dispatch State
     </button>
-    <h2>{whatsUp}</h2>
     <button onClick={()=> console.log('Redux State:',stateObject)} >
-        Press to inspect STATE in console panel
+        Inspect State
     </button>
   </div>
 
@@ -22,7 +21,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  saySomething: () => { dispatch(sayHello())}
+  saySomething: () => { dispatch(helloWorldAction())}
 })
 
 Button = connect(

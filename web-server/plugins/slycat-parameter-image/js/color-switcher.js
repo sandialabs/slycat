@@ -5,6 +5,7 @@ import "jquery-ui";
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import ColorBar from './Components/color-bar';
+import Button from './Components/redux-test';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import reducer from './Reducers/hello-world-reducer';
@@ -232,6 +233,10 @@ $.widget("slycat.colorswitcher",
         store={store}
         />;
 
+
+    const redux_test = <Button store={store}/>
+
+    self.redux_test = ReactDOM.render(redux_test, document.getElementById('redux-test'));
     self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
 
     var all_color_stops = [];
