@@ -6,9 +6,11 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import ColorBar from './Components/color-bar';
 import Button from './Components/redux-test';
+import ColorButton from './Components/color-bar-redux.js';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
-import reducer from './Reducers/hello-world-reducer';
+import helloWorldReducer from './Reducers/hello-world-reducer';
+import colorSwitcherReducer from './Reducers/color-switcher-reducer';
 
 // class ColorSwitcherControls extends React.Component {
 //   constructor(props) {
@@ -225,19 +227,23 @@ $.widget("slycat.colorswitcher",
                     single: true,
                 }];
 
-    const store = createStore(reducer);
+    const helloWorldStore = createStore(helloWorldReducer);
+    const colorSwitcherStore = createStore(colorSwitcherReducer);
     
     const color_bar = <ColorBar element={self.element}
         dropdown={dropdown}
         selection={self.options.selection}
-        store={store}
         />;
 
 
-    const redux_test = <Button store={store}/>
+    //const redux_test = <Button store={helloWorldStore}/>
+    const color_switcher_redux = <ColorButton store={colorSwitcherStore} element={self.element} dropdown={dropdown} selection={self.options.selection}
+    />;
 
-    self.redux_test = ReactDOM.render(redux_test, document.getElementById('redux-test'));
+    //self.redux_test = ReactDOM.render(redux_test, document.getElementById('redux-test'));
+
     self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
+    self.color_switcher_redux = ReactDOM.render(color_switcher_redux, document.getElementById('redux-test'));
 
     var all_color_stops = [];
     var all_background_color = [];

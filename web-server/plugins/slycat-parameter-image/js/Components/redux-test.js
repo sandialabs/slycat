@@ -8,7 +8,7 @@ let Button = ({ whatsUp, stateObject, saySomething }) => (
     <button onClick={saySomething}>
         Dispatch State
     </button>
-    <button onClick={()=> console.log('Redux State:',stateObject)} >
+    <button onClick={()=> console.log('Redux State:', stateObject)} >
         Inspect State
     </button>
   </div>
