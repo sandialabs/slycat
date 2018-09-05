@@ -1,24 +1,18 @@
 import React from "react";
 
-class ControlsButton extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return this.props.hidden ? null : (
+const ControlsButton = (props) => {
+    return props.hidden ? null : (
       <button
           className="btn btn-default"
-          type="button" title={this.props.title}
-          disabled={this.props.disabled}
-          onClick={this.props.click}>
-        {this.props.icon &&
-          <span className={'fa ' + this.props.icon} aria-hidden="true"/>
+          type="button" title={props.title}
+          disabled={props.disabled}
+          onClick={props.click}>
+        {props.icon &&
+          <span className={'fa ' + props.icon} aria-hidden="true"/>
         }
-        {this.props.label}
+        {props.label}
       </button>
     );
-  }
-}
+};
 
 export default ControlsButton

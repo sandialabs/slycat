@@ -47,7 +47,7 @@ class ControlsBar extends React.Component {
 
   set_selected(state_label, key, trigger, e) {
     // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
-    if(key == this.state[state_label])
+    if(key === this.state[state_label])
     {
       return;
     }

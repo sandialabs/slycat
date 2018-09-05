@@ -9,9 +9,9 @@ class ControlsVideo extends React.Component {
 
   handleKeypressBlur(e) {
     // Check if blur event (focusOut) or Enter key was presses
-    if(e.type == 'blur' || (e.type == 'keypress' && e.which == 13)) {
+    if(e.type === 'blur' || (e.type === 'keypress' && e.which === 13)) {
       // Convert value to a floating point number and take its absolute value because videos can't have negative time
-      var val = Math.abs(parseFloat(e.target.value));
+      let val = Math.abs(parseFloat(e.target.value));
       // Set value to 0 if previous conversion didn't result in a number
       if(isNaN(val))
       {
