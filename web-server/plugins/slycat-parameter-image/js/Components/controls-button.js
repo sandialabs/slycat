@@ -7,9 +7,13 @@ class ControlsButton extends React.Component {
 
   render() {
     return this.props.hidden ? null : (
-      <button className="btn btn-default" type="button" title={this.props.title} disabled={this.props.disabled} onClick={this.props.click}>
+      <button
+          className="btn btn-default"
+          type="button" title={this.props.title}
+          disabled={this.props.disabled}
+          onClick={this.props.click}>
         {this.props.icon &&
-          <span className={'fa ' + this.props.icon} aria-hidden="true"></span>
+          <span className={'fa ' + this.props.icon} aria-hidden="true"/>
         }
         {this.props.label}
       </button>

@@ -2,20 +2,17 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from 'js/slycat-server-root';
-import client from 'js/slycat-web-client';
 import ko from 'knockout';
-import mapping from 'knockout-mapping';
 import template from 'templates/slycat-alert.html';
 
 export function dialog(params)
 {
-  var component = {};
+  let component = {};
   component.close = function(button)
   {
     component.result = button;
     component.container.children().modal("hide");
-  }
+  };
   component.title = ko.observable(params.title || "Alert");
   component.message = ko.observable(params.message || "");
   component.input = ko.observable(params.input || false);
@@ -56,7 +53,7 @@ export function confirm(params)
     buttons: [{className: "btn-default", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
     callback: function(button)
     {
-      if(button.label == "OK")
+      if(button.label === "OK")
       {
         if(params.ok)
           params.ok();

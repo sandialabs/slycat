@@ -61,8 +61,7 @@ $.widget("slycat.colorswitcher",
         let gradient_data = self.get_gradient_data(key);
         let color_stops = [];
         for (var i = 0; i < gradient_data.length; i++) {
-            color_stops.push(gradient_data[i].color
-                + " "
+            color_stops.push(gradient_data[i].color + " "
                 + gradient_data[i].offset + "%");
         }
         let background_color = self.get_background(key);
