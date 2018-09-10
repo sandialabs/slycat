@@ -164,7 +164,12 @@ module.exports = {
   // This configures webpack to look in the web-server directory for modules, after it looked in node_modules
   resolve: {
     modules: [
-      "node_modules", 
+      // Looks for modules in a node_modules directory inside the current context and all of its ancestors
+      "node_modules",
+      // Looks for modules in a slycat/node_modules directory inside the current context and all of its ancestors.
+      // This is needed for plugins that are not part of the core slycat distribution, because they are directory siblings,
+      // so the resolver will never find a node_modules directory in them or any of their ancestors.
+      "./slycat/node_modules",
       path.resolve(__dirname, "web-server"),
     ],
   },
