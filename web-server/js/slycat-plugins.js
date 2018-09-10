@@ -12,6 +12,7 @@ import 'plugins/slycat-parameter-image/slycat-parameter-image';
 import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
 import 'plugins/slycat-cca/slycat-cca';
 import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
+import '../../dial-a-cluster/plugin/dial-a-cluster-model';
 
 // Remap wizard, which is probably not working as of August 2018
 import 'plugins/slycat-remap-wizard/slycat-remap-wizard';
