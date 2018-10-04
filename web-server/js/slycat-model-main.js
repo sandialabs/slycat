@@ -37,7 +37,7 @@ $(document).ready(function() {
         ko.applyBindings(page, document.querySelector("head"));
         loadModule(page.model_type).then(component => {
           // console.log("inside loadModelModule().then()");
-          // ko.applyBindings(page, document.querySelector(".slycat-content"));
+          ko.applyBindings(page, document.querySelector(".slycat-content"));
         });
       });
 
