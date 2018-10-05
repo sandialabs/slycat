@@ -747,6 +747,15 @@ $.widget("parameter_image.scatterplot",
       self.x_axis_layer
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
         .call(self.x_axis)
+        // Selecting all the labels and rotating them 45 degrees around their start
+        .selectAll("text")  
+          // .style("text-anchor", "end")
+          .style("text-anchor", "start")
+          // .attr("dx", "0em")
+          // .attr("dy", "0em")
+          // .attr("x", "0")
+          // .attr("y", "0")
+          .attr("transform", "rotate(45)")
         ;
     }
 
