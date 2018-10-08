@@ -12,9 +12,6 @@ import "jquery-ui";
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ColorBar from './Components/color-bar';
-import ColorButton from './Components/color-bar-redux.js';
-import { createStore } from 'redux';
-import colorSwitcherReducer from './Reducers/color-switcher-reducer';
 import COLOR_MAP from './Components/color-map.js';
 import COLOR_LABELS from './Components/color-labels.js';
 
@@ -41,20 +38,13 @@ $.widget("slycat.colorswitcher",
                     single: true,
                 }];
 
-    const colorSwitcherStore = createStore(colorSwitcherReducer);
     const color_bar = <ColorBar
         element={self.element}
         dropdown={dropdown}
         selection={self.options.selection}
         />;
-    const color_switcher_redux = <ColorButton
-        store={colorSwitcherStore}
-        element={self.element} dropdown={dropdown}
-        selection={self.options.selection}
-        />;
 
     self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
-    self.color_switcher_redux = ReactDOM.render(color_switcher_redux, document.getElementById('redux-test'));
     let all_color_stops = [];
     let all_background_color = [];
     $.each(this.color_maps, function(key, value) {
