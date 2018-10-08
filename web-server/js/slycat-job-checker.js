@@ -15,7 +15,7 @@ ko.components.register('slycat-job-checker', {
     var vm = this;
     vm.remote = mapping.fromJS({ hostname: null, username: null, password: null, status: null, status_type: null, enable: true, focus: false, sid: null, session_exists: false });
     vm.remote.focus.extend({ notify: 'always'  });
-    vm.jid = params.jid;
+    vm.jid = ko.observable(-1);
     vm.output = ko.observable('Output for the current job will be posted here...');
     var iid = -1; // window.setInterval() ID
     var previous_state = '';

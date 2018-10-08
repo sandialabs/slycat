@@ -37,7 +37,6 @@ $(document).ready(function() {
         ko.applyBindings(page, document.querySelector("head"));
         loadModule(page.model_type).then(component => {
           // console.log("inside loadModelModule().then()");
-          // Can't applyBindings here because in some models it results in a duplicate
           // ko.applyBindings(page, document.querySelector(".slycat-content"));
         });
       });

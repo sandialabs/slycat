@@ -40,11 +40,8 @@ export async function loadTemplate(name) {
     case "run-command":
       html = await import(/* webpackChunkName: "run_command_template" */ 'plugins/slycat-run-command/ui.html');
       break;
-    case "DAC":
-      html = await import(/* webpackChunkName: "run_command_template" */ '../../../dial-a-cluster/plugin/html/dac-ui.html');
-      break;
     default:
-      console.log("We don't recognize the " + name + " template type, so not loading a template.");
+      console.log("We don't recognize this template type, so not loading a template.");
   }
 
   if (html.default) {
@@ -75,11 +72,8 @@ export async function loadModule(name) {
     case "run-command":
       module = await import(/* webpackChunkName: "run_command_module" */ 'plugins/slycat-run-command/ui.js');
       break;
-    case "DAC":
-      module = await import(/* webpackChunkName: "run_command_module" */ '../../../dial-a-cluster/plugin/js/dac-ui.js');
-      break;
     default:
-      console.log("We don't recognize the " + name + " module type, so not loading a module.");
+      console.log("We don't recognize this module type, so not loading a module.");
   }
 
   return module;

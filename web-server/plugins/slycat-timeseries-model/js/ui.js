@@ -223,12 +223,8 @@ $(document).ready(function() {
     $($('#timeseries-model').children()).remove();
     $('#timeseries-model').append($jc);
 
-    // Using a jid observable instead of setting it like this because
-    // knockout renders components asynchronously and they aren't always
-    // ready by the time this is executed.
-    // var vm = ko.dataFor($('.slycat-job-checker')[0]);
-    // vm.set_jid(model['artifact:jid']);
-    ko.applyBindings({jid: model['artifact:jid']}, document.getElementById('slycat-job-checker-wrapper'));
+    var vm = ko.dataFor($('.slycat-job-checker')[0]);
+    vm.set_jid(model['artifact:jid']);
   };
 
   function setup_page()
@@ -1005,4 +1001,5 @@ $(document).ready(function() {
 
     return node_indexes;
   }
+
 });
