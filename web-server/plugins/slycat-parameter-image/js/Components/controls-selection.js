@@ -1,4 +1,4 @@
-import dialog from "js/slycat-dialog";
+import * as dialog from "js/slycat-dialog";
 import React from "react";
 
 const ControlsSelection = (props) => {
@@ -13,11 +13,11 @@ const ControlsSelection = (props) => {
         {className: "btn-default", label:"Cancel"},
         {className: "btn-primary",  label:"Apply"}
       ],
-      callback: function(button, value)
+      callback: function(button, valueIn)
       {
         if(button.label === "Apply")
         {
-          let value = value().trim();
+          let value = valueIn().trim();
           let numeric = props.metadata["column-types"][variableIndex] !== "string";
           let valueValid = value.length > 0;
           if( valueValid && numeric && isNaN(Number(value)) ) {
