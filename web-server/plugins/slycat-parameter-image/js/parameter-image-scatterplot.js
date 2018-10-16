@@ -76,6 +76,9 @@ $.widget("parameter_image.scatterplot",
     "video-sync-time" : 0,
     frameLength : 1/25,
     highest_z_index: 0,
+    x_axis_date: true,
+    y_axis_date: false,
+    z_axis_date: false,
   },
 
   syncing_videos : [],
@@ -404,9 +407,34 @@ $.widget("parameter_image.scatterplot",
     return clone;
   },
 
-  _createScale: function(string, values, range, reverse)
+  _createScale: function(string, values, range, reverse, date)
   {
-    if(!string)
+    if(date)
+    {
+      var dates = [];
+      for(date of values)
+      {
+        // console.log('date: ' + date);
+        // console.log('new Date(date.toString()): ' + new Date(date.toString()));
+        dates.push(new Date(date.toString()));
+      }
+      // console.log("unsorted dates: " + dates);
+      dates.sort(function(a, b){
+        return a - b;
+      });
+      // console.log('sorted dates: ' + dates);
+      var domain = [dates[0], dates[dates.length-1]];
+      // console.log('domain: ' + domain);
+      if(reverse === true)
+      {
+        domain.reverse();
+      }
+      return d3.time.scale()
+        .domain(domain)
+        .range(range)
+        ;
+    }
+    else if(!string)
     {
       var domain = [d3.min(values), d3.max(values)];
       if(reverse === true)
@@ -737,8 +765,8 @@ $.widget("parameter_image.scatterplot",
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
       var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false);
-      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false);
+      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false, self.options.x_axis_date);
+      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false, self.options.x_axis_date);
 
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
@@ -747,7 +775,7 @@ $.widget("parameter_image.scatterplot",
         .scale(self.x_scale)
         .orient("bottom")
         // Set number of ticks based on width of axis.
-        .ticks(range_canvas[1]/75)
+        .ticks(range_canvas[1]/85)
         // .tickSize(15)
         ;
       self.x_axis_layer
@@ -874,7 +902,8 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        cx = Math.round( self.x_scale_canvas( x[index] ) );
+        // cx = Math.round( self.x_scale_canvas( x[index] ) );
+        cx = Math.round( self.options.x_axis_date ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
         cy = Math.round( self.y_scale_canvas( y[index] ) );
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
@@ -918,7 +947,7 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        cx = Math.round( self.x_scale_canvas( x[index] ) );
+        cx = Math.round( self.options.x_axis_date ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
         cy = Math.round( self.y_scale_canvas( y[index] ) );
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
