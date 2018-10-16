@@ -743,7 +743,12 @@ $.widget("parameter_image.scatterplot",
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
       self.x_axis_offset = total_height - height_offset - self.options.border - 40;
-      self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
+      self.x_axis = d3.svg.axis()
+        .scale(self.x_scale)
+        .orient("bottom")
+        // .ticks(20)
+        // .tickSize(15)
+        ;
       self.x_axis_layer
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
         .call(self.x_axis)
@@ -755,7 +760,7 @@ $.widget("parameter_image.scatterplot",
           // .attr("dy", "0em")
           // .attr("x", "0")
           // .attr("y", "0")
-          .attr("transform", "rotate(45)")
+          .attr("transform", "rotate(15)")
         ;
     }
 
@@ -789,6 +794,7 @@ $.widget("parameter_image.scatterplot",
 
     if (self.updates.update_x_label) {
       var x = self.svg.attr("width") / 2;
+      // This is the vertical offset of the x-axis label. Need to make this dependent on height of tick labels.
       var y = 40;
 
       self.x_axis_layer.selectAll(".label").remove()
