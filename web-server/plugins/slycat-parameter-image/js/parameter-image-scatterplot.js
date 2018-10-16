@@ -746,7 +746,8 @@ $.widget("parameter_image.scatterplot",
       self.x_axis = d3.svg.axis()
         .scale(self.x_scale)
         .orient("bottom")
-        // .ticks(20)
+        // Set number of ticks based on width of axis.
+        .ticks(range_canvas[1]/75)
         // .tickSize(15)
         ;
       self.x_axis_layer
@@ -778,7 +779,13 @@ $.widget("parameter_image.scatterplot",
       self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false);
       self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false);
 
-      self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
+      self.y_axis = d3.svg.axis()
+        .scale(self.y_scale)
+        .orient("left")
+        // Set number of ticks based on height of axis.
+        .ticks(range_canvas[0]/50)
+        ;
+      console.log("range_canvas[0]/75: " + (range_canvas[0]/75));
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
@@ -793,16 +800,21 @@ $.widget("parameter_image.scatterplot",
     }
 
     if (self.updates.update_x_label) {
-      var x = self.svg.attr("width") / 2;
-      // This is the vertical offset of the x-axis label. Need to make this dependent on height of tick labels.
-      var y = 40;
+      // This is the vertical offset of the x-axis label.
+      var y = 5;
+
+      // This is the horizontal offset of the x-axis label. Set to align with the end of the axis.
+      var width = Math.min(self.options.width, self.options.height);
+      var x_axis_width = width - (2 * self.options.border) - xoffset;
+      var x_remaining_width = self.svg.attr("width") - x_axis_width;
+      var x = (x_remaining_width / 2) + x_axis_width + 20;
 
       self.x_axis_layer.selectAll(".label").remove()
       self.x_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
         .attr("y", y)
-        .style("text-anchor", "middle")
+        .style("text-anchor", "start")
         .style("font-weight", "bold")
         .text(self.options.x_label)
         ;
