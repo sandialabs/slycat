@@ -785,7 +785,6 @@ $.widget("parameter_image.scatterplot",
         // Set number of ticks based on height of axis.
         .ticks(range_canvas[0]/50)
         ;
-      console.log("range_canvas[0]/75: " + (range_canvas[0]/75));
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
@@ -1053,7 +1052,11 @@ $.widget("parameter_image.scatterplot",
 
       self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
 
-      self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
+      self.legend_axis = d3.svg.axis()
+        .scale(self.legend_scale)
+        .orient("right")
+        .ticks(range[1]/50)
+        ;
       self.legend_axis_layer
         .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
         .call(self.legend_axis)
