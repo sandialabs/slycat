@@ -1169,8 +1169,27 @@ $.widget("parameter_image.scatterplot",
         .attr('class', 'pin-button frame-button fa fa-thumb-tack')
         .attr('title', 'Pin')
         .attr("aria-hidden", "true")
-        .on("click", handlers["pin"]);
+        .on("click", handlers["pin"])
+        ;
     };
+
+    var add_max_button = function(fh) {
+      fh.append("i")
+        .attr('class', 'max-button frame-button fa fa-window-maximize')
+        .attr('title', 'Maximize')
+        .attr("aria-hidden", "true")
+        .on("click", handlers["maximize"])
+        ;
+    }
+
+    var add_min_button = function(fh) {
+      fh.append("i")
+        .attr('class', 'min-button frame-button fa fa-window-minimize')
+        .attr('title', 'Minimize')
+        .attr("aria-hidden", "true")
+        .on("click", handlers["minimize"])
+        ;
+    }
 
     var add_download_button = function(fh, uri, filename) {
       fh.append("a")
@@ -1900,6 +1919,12 @@ $.widget("parameter_image.scatterplot",
 
       // Create a pin button ...
       add_pin_button(footer);
+
+      // Create a maximize button ...
+      add_max_button(footer);
+
+      // Create a maximize button ...
+      add_min_button(footer);
 
       // Create a download button for non-links ...
       if(!link)

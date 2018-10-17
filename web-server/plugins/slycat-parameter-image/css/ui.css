@@ -453,6 +453,16 @@
   float: left;
   padding: 3px 4px;
 }
+.frame-button.max-button {
+  float: left;
+  padding: 5px 4px;
+  font-size: 12px;
+}
+.frame-button.min-button {
+  float: left;
+  padding: 5px 4px;
+  font-size: 12px;
+}
 .frame-button.pin-button {
   padding: 4px 22px 4px 4px;
 }
