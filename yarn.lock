@@ -2554,9 +2554,9 @@ follow-redirects@^1.0.0:
   dependencies:
     debug "^3.1.0"
 
-font-awesome@4.3.0:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.3.0.tgz#44eeb790cdf986642786f33fce784764f1841c40"
+font-awesome@4.7.0:
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/font-awesome/-/font-awesome-4.7.0.tgz#8fa8cf0411a1a31afd07b06d2902bb9fc815a133"
 
 for-in@^1.0.1, for-in@^1.0.2:
   version "1.0.2"
