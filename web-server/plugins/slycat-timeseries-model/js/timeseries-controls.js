@@ -1,5 +1,12 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
-define("slycat-timeseries-controls", ["slycat-server-root", "slycat-dialog", "lodash", "papaparse"], function(server_root, dialog, _, Papa) {
+
+import api_root from "js/slycat-api-root";
+import * as dialog from "js/slycat-dialog";
+import _ from "lodash";
+import Papa from "papaparse";
+import "jquery-ui";
+import "bootstrap";
+
 $.widget("timeseries.controls",
 {
   options:
@@ -74,13 +81,14 @@ $.widget("timeseries.controls",
 
       if(filteredHighlight.length > 0)
       {
-        txt += "You have " + filteredHighlight.length + " rows selected. ";
+        // txt += "You have " + filteredHighlight.length + " rows selected. ";
+        txt += `You have ${filteredHighlight.length} rows selected. `;
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"});
       }
       if(self.options.selection != null && self.options.selection.length > 0 && self.options.selection.length < self.options.metadata['row-count'])
       {
         var visibleRows = self.options.selection.length;
-        txt += "You have " + visibleRows + " rows visible. ";
+        txt += `You have ${visibleRows} rows visible. `;
         buttons_save.splice(buttons_save.length-1, 0, {className: "btn-primary", label:"Save Visible", icon_class:"fa fa-eye"});
       }
 
@@ -117,7 +125,7 @@ $.widget("timeseries.controls",
     $.ajax(
     {
       type : "POST",
-      url : server_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
+      url : api_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
       data: JSON.stringify({"hyperchunks": "0/.../..."}),
       contentType: "application/json",
       success : function(result)
@@ -178,17 +186,17 @@ $.widget("timeseries.controls",
   {
     var self = this;
     this.color_items.empty();
-    for(var i = 0; i < this.options.color_variables.length; i++) {
+    for(let value of this.options.color_variables) {
       $("<li role='presentation'>")
-        .toggleClass("active", self.options["color-variable"] == self.options.color_variables[i])
-        .attr("data-colorvariable", this.options.color_variables[i])
+        .toggleClass("active", self.options["color-variable"] == value)
+        .attr("data-colorvariable", value)
         .appendTo(self.color_items)
         .append(
           $('<a role="menuitem" tabindex="-1">')
-            .html(this.options.metadata['column-names'][this.options.color_variables[i]])
+            .html(this.options.metadata['column-names'][value])
             .click(function()
             {
-              var menu_item = $(this).parent();
+              let menu_item = $(this).parent();
               if(menu_item.hasClass("active"))
                 return false;
 
@@ -247,5 +255,4 @@ $.widget("timeseries.controls",
       self._set_color_variables();
     }
   },
-});
 });

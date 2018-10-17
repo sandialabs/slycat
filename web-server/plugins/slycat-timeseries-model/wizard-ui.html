@@ -19,7 +19,6 @@
 
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
-
       <div class="form-group">
         <label for="timeseries-type-radios">What type of data will you be using?</label>
         <div class="radio" style="margin-left: 15px;">
@@ -168,32 +167,34 @@
     <div data-bind="visible:tab() == 5">
       <form class="compute form-horizontal" role="form">
         <slycat-remote-interface params="
-          agent_function: 'timeseries-model', 
-          agent_function_params: { 
-            'timeseries_type': timeseries_type(), 
-            'inputs_file': inputs_file(), 
-            'input_directory': input_directory(),
-            'id_column': id_column(), 
-            'inputs_file_delimiter': inputs_file_delimiter(), 
-            'xyce_timeseries_file': xyce_timeseries_file(), 
-            'timeseries_name': timeseries_name(), 
-            'cluster_sample_count': cluster_sample_count(), 
-            'cluster_sample_type': $('#timeseries-wizard-cluster-sample-type').val(), 
-            'cluster_type': $('#timeseries-wizard-cluster-type').val(), 
-            'cluster_metric': $('#timeseries-wizard-cluster-metric').val(), 
-            'workdir': workdir(),
-            'hdf5_directory': hdf5_directory()
-          },
-          model_type: 'timeseries', 
-          mid: model._id(), 
-          suggestions: [{'ntasks_per_node': 2}], 
-          sid: remote.sid, 
-          hostname: remote.hostname, 
-          username: remote.username, 
-          password: remote.password, 
-          on_submit_callback: to_compute_next_step,
-          on_error_callback: submit_job_error,
-          session_exists:remote.session_exists"></slycat-remote-interface>
+            agent_function: 'timeseries-model', 
+            agent_function_params: { 
+              'timeseries_type': timeseries_type(), 
+              'inputs_file': inputs_file(), 
+              'input_directory': input_directory(),
+              'id_column': id_column(), 
+              'inputs_file_delimiter': inputs_file_delimiter(), 
+              'xyce_timeseries_file': xyce_timeseries_file(), 
+              'timeseries_name': timeseries_name(), 
+              'cluster_sample_count': cluster_sample_count(), 
+              'cluster_sample_type': document.getElementById('timeseries-wizard-cluster-sample-type').options[document.getElementById('timeseries-wizard-cluster-sample-type').selectedIndex].value, 
+              'cluster_type': document.getElementById('timeseries-wizard-cluster-type').options[document.getElementById('timeseries-wizard-cluster-type').selectedIndex].value, 
+              'cluster_metric': document.getElementById('timeseries-wizard-cluster-metric').options[document.getElementById('timeseries-wizard-cluster-metric').selectedIndex].value, 
+              'workdir': workdir(),
+              'hdf5_directory': hdf5_directory()
+            },
+            model_type: 'timeseries', 
+            mid: model._id(), 
+            suggestions: [{'ntasks_per_node': 2}], 
+            sid: remote.sid, 
+            hostname: remote.hostname, 
+            username: remote.username, 
+            password: remote.password, 
+            on_submit_callback: to_compute_next_step,
+            on_error_callback: submit_job_error,
+            session_exists:remote.session_exists,
+          ">
+        </slycat-remote-interface>
       </form>
     </div>
 

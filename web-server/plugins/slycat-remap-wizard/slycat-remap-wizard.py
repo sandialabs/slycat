@@ -151,5 +151,3 @@ def register_slycat_plugin(context):
   context.register_model_command("GET", "remap-wizard", "list-uris", list_uris)
 
   context.register_wizard("remap-wizard", "Remap Wizard", require={"action":"create", "context":"model", "model-type":["parameter-image", "parameter-image-plus"]})
-  context.register_wizard_resource("remap-wizard", "ui.js", os.path.join(os.path.dirname(__file__), "remap-ui.js"))
-  context.register_wizard_resource("remap-wizard", "ui.html", os.path.join(os.path.dirname(__file__), "remap-ui.html"))

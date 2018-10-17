@@ -2,62 +2,63 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define(["slycat-server-root", "slycat-web-client"], function(server_root, client)
+import server_root from "js/slycat-server-root";
+import client from "js/slycat-web-client";
+import deleteUI from "./delete-ui.html";
+
+function constructor(params)
 {
-  function constructor(params)
+  var component = {};
+  component.project = params.projects()[0];
+  component.model = params.models()[0];
+
+  component.delete_model = function()
   {
-    var component = {};
-    component.project = params.projects()[0];
-    component.model = params.models()[0];
-
-    component.delete_model = function()
+    client.delete_model(
     {
-      client.delete_model(
+      mid: component.model._id(),
+      success: function()
       {
-        mid: component.model._id(),
-        success: function()
-        {
-          client.get_project_references({
-            pid: component.project._id(),
-            success: function(result)
+        client.get_project_references({
+          pid: component.project._id(),
+          success: function(result)
+          {
+            var outgoing = 0;
+            var incoming = 0;
+            for(var i=0; result.length > i; i++)
             {
-              var outgoing = 0;
-              var incoming = 0;
-              for(var i=0; result.length > i; i++)
+              var reference = result[i];
+              if( (reference.mid == component.model._id()) && reference.bid )
               {
-                var reference = result[i];
-                if( (reference.mid == component.model._id()) && reference.bid )
-                {
-                  outgoing++;
-                  client.delete_reference({
-                    rid: reference._id,
-                    success: function(){
-                      delete_reference_success();
-                    }
-                  });
-                }
-                function delete_reference_success(){
-                  incoming++;
-                }
+                outgoing++;
+                client.delete_reference({
+                  rid: reference._id,
+                  success: function(){
+                    delete_reference_success();
+                  }
+                });
               }
-              function redirect(){
-                if (outgoing != incoming){
-                  setTimeout(redirect,100);
-                } else {
-                  window.location.href = server_root + "projects/" + component.project._id();
-                }
+              function delete_reference_success(){
+                incoming++;
               }
-              redirect();
             }
-          });
-        }
-      });
-    }
-    return component;
+            function redirect(){
+              if (outgoing != incoming){
+                setTimeout(redirect,100);
+              } else {
+                window.location.href = server_root + "projects/" + component.project._id();
+              }
+            }
+            redirect();
+          }
+        });
+      }
+    });
   }
+  return component;
+}
 
-  return {
-    viewModel: constructor,
-    template: { "require": "text!" + server_root + "resources/wizards/slycat-delete-model/ui.html" },
-  };
-});
+export default {
+  viewModel: constructor,
+  template: deleteUI,
+};

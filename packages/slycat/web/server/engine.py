@@ -87,6 +87,8 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-parsers", "/configuration/parsers", slycat.web.server.handlers.get_configuration_parsers, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-remote-hosts", "/configuration/remote-hosts", slycat.web.server.handlers.get_configuration_remote_hosts, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-support-email", "/configuration/support-email", slycat.web.server.handlers.get_configuration_support_email, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-configuration-injected-code", "/configuration/injected-code", slycat.web.server.handlers.get_configuration_injected_code, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-configuration-ga-tracking-id", "/configuration/ga-tracking-id", slycat.web.server.handlers.get_configuration_ga_tracking_id, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-version", "/configuration/version", slycat.web.server.handlers.get_configuration_version, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
   dispatcher.connect("get-global-resource", "/resources/global/{resource:.*}", slycat.web.server.handlers.get_global_resource, conditions={"method" : ["GET"]})
@@ -208,6 +210,14 @@ def start(root_path, config_file):
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
   # Setup our static content directories.
+  configuration["/dist"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.staticdir.dir": abspath("dist"),
+    "tools.staticdir.on": True,
+    }
+
   configuration["/css"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,
@@ -250,6 +260,14 @@ def start(root_path, config_file):
     "tools.expires.secs": 3600,
     "tools.%s.on" % authentication : False,
     "tools.staticdir.dir": abspath("slycat-login"),
+    "tools.staticdir.on": True,
+    }
+  configuration["/login-react"] = {
+    "tools.expires.force": True,
+    "tools.expires.on": True,
+    "tools.expires.secs": 3600,
+    "tools.%s.on" % authentication : False,
+    "tools.staticdir.dir": abspath("slycat-login-react"),
     "tools.staticdir.on": True,
     }
   configuration["/openid-login"] = {

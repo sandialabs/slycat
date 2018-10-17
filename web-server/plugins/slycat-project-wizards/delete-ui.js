@@ -2,29 +2,30 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define(["slycat-server-root", "slycat-web-client"], function(server_root, client)
+import server_root from "js/slycat-server-root";
+import client from "js/slycat-web-client";
+import deleteUI from "./delete-ui.html";
+
+function constructor(params)
 {
-  function constructor(params)
+  var component = {};
+  component.project = params.projects()[0];
+
+  component.delete_project = function()
   {
-    var component = {};
-    component.project = params.projects()[0];
-
-    component.delete_project = function()
+    client.delete_project(
     {
-      client.delete_project(
+      pid: component.project._id(),
+      success: function()
       {
-        pid: component.project._id(),
-        success: function()
-        {
-          window.location.href = server_root + "projects";
-        }
-      });
-    }
-    return component;
+        window.location.href = server_root + "projects";
+      }
+    });
   }
+  return component;
+}
 
-  return {
-    viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/slycat-delete-project/ui.html" },
-    };
-});
+export default {
+  viewModel: constructor,
+  template: deleteUI,
+  };

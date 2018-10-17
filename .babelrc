@@ -1,0 +1,14 @@
+{
+	// Enabling the following 2 presets for now:
+	// - env is a Babel preset that automatically determines the Babel plugins you need based on your supported environments. Uses compat-table.
+	// - react strips flow types and transform JSX into createElement calls.
+  "presets": ["env", "react"],
+  // Limit Babel to compile only JSX files. No longer used because we want to be able to use JSX inside all JS files
+  //"only": [
+  //	"*.jsx"
+  //],
+  "compact": false,
+  // Keeps same line breaks, but wacky code
+  //"retainLines": true,
+  "plugins": ["syntax-dynamic-import","transform-runtime",],
+}

@@ -1,32 +1,5 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
-<script type="text/javascript">
-  var model_name = "{{name}}";
-
-  // Load individual JS and CSS to bypass server side bundling. Useful for development and debugging.
-  var server_root = document.getElementById("slycat-server-root").getAttribute("href");
-  [
-    "js/parameter-controls.js",
-    "js/parameter-image-table.js",
-    "js/parameter-image-scatterplot.js",
-    "js/ui.js",
-  ].forEach(function(src) {
-    var script = document.createElement('script');
-    script.src = server_root + "resources/pages/parameter-image/" + src;
-    script.async = false;
-    document.head.appendChild(script);
-  });
-  [
-    // "css/ui.css",
-  ].forEach(function(src) {
-    var link = document.createElement('link');
-    link.href = server_root + "resources/pages/parameter-image/" + src;
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    document.head.appendChild(link);
-  });
-</script>
-
 <div class="parameter-image" id="parameter-image-plus-layout">
 
 	<div id="controls-pane" class="ui-layout-north">
@@ -51,13 +24,7 @@
             <!-- /ko -->
           </div>
 
-          <div id="scatterplot-controls" class="btn-group btn-group-xs"></div>
-
-          <div id="selection-controls" class="btn-group btn-group-xs"></div>
-
-          <div id="video-controls" class="input-group input-group-xs"></div>
-
-          <div id="playback-controls" class="btn-group btn-group-xs"></div>
+          <div class="form-group" id="react-controls"></div>
 
           <div id="color-switcher" class="btn-group btn-group-xs"></div>
 

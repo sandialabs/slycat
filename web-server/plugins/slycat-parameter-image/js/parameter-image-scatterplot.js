@@ -3,71 +3,80 @@
 //////////////////////////////////////////////////////////////////////////////////
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
-define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI", "slycat-remotes", "lodash", "knockout"], function(server_root, d3, URI, remotes, _, ko)
+import api_root from "js/slycat-api-root";
+import d3 from "js/d3.min";
+import URI from "urijs";
+import * as remotes from "js/slycat-remotes";
+import _ from "lodash";
+import ko from "knockout";
+import "jquery-ui";
+import "js/slycat-login-controls";
+import "js/slycat-3d-viewer";
+
+var nodrag = d3.behavior.drag();
+
+// Commenting this out Nov 20 1017 because I have no idea what it does and I rewrote much of the dragging code. If still no problems after a few months, just delete it.
+nodrag.on("dragstart", function() {
+  // console.log("nodrag.on('dragstart'...");
+  // d3.event.sourceEvent.stopPropagation();
+});
+
+$.widget("parameter_image.scatterplot",
 {
-  var nodrag = d3.behavior.drag();
-
-  // Commenting this out Nov 20 1017 because I have no idea what it does and I rewrote much of the dragging code. If still no problems after a few months, just delete it.
-  nodrag.on("dragstart", function() {
-    console.log("nodrag.on('dragstart'...");
-    // d3.event.sourceEvent.stopPropagation();
-  });
-
-  $.widget("parameter_image.scatterplot",
+  options:
   {
-    options:
-    {
-      width : 300,
-      height : 300,
-      pick_distance : 3,
-      drag_threshold : 3,
-      indices : [],
-      x_label : "X Label",
-      y_label : "Y Label",
-      v_label : "V Label",
-      x : [],
-      y : [],
-      v : [],
-      x_string : false,
-      y_string : false,
-      v_string : false,
-      images : [],
-      selection : [],
-      colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
-      border : 25,
-      open_images : [],
-      gradient : null,
-      hidden_simulations : [],
-      filtered_indices : [],
-      filtered_selection : [],
-      filtered_x : [],
-      filtered_y : [],
-      filtered_v : [],
-      scale_x : [],
-      scale_y : [],
-      scale_v: [],
-      "auto-scale" : true,
-      canvas_square_size : 8,
-      canvas_square_border_size : 1,
-      canvas_selected_square_size : 16,
-      canvas_selected_square_border_size : 2,
-      pinned_width : 200,
-      pinned_height : 200,
-      pinned_stl_width: 200,
-      pinned_stl_height: 200,
-      hover_time : 250,
-      image_cache : {},
-      video_file_extensions : [
-        '3gp','3g2','h261','h263','h264','jpgv','jpm','jpgm','mj2','mjp2','mp4','mp4v','mpg4','mpeg','mpg','mpe','m1v','m2v','ogv','qt','mov','uvh','uvvh','uvm','uvvm','uvp','uvvp',
-        'uvs','uvvs','uvv','uvvv','dvb','fvt','mxu','m4u','pyv','uvu','uvvu','viv','webm','f4v','fli','flv','m4v','mkv','mk3d','mks','mng','asf','asx','vob','wm','wmv','wmx','wvx','avi',
-        'movie','smv','ice',
-      ],
-      link_protocols : ['http','https'],
-      "video-sync" : false,
-      "video-sync-time" : 0,
-      frameLength : 1/25,
-      highest_z_index: 0,
-    },
+    model : null,
+    width : 300,
+    height : 300,
+    pick_distance : 3,
+    drag_threshold : 3,
+    indices : [],
+    x_label : "X Label",
+    y_label : "Y Label",
+    v_label : "V Label",
+    x : [],
+    y : [],
+    v : [],
+    x_string : false,
+    y_string : false,
+    v_string : false,
+    images : [],
+    selection : [],
+    colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
+    border : 25,
+    open_images : [],
+    gradient : null,
+    hidden_simulations : [],
+    filtered_indices : [],
+    filtered_selection : [],
+    filtered_x : [],
+    filtered_y : [],
+    filtered_v : [],
+    scale_x : [],
+    scale_y : [],
+    scale_v: [],
+    "auto-scale" : true,
+    canvas_square_size : 8,
+    canvas_square_border_size : 1,
+    canvas_selected_square_size : 16,
+    canvas_selected_square_border_size : 2,
+    pinned_width : 200,
+    pinned_height : 200,
+    pinned_stl_width: 200,
+    pinned_stl_height: 200,
+    hover_time : 250,
+    image_cache : {},
+    video_file_extensions : [
+      '3gp','3g2','h261','h263','h264','jpgv','jpm','jpgm','mj2','mjp2','mp4','mp4v','mpg4','mpeg','mpg','mpe','m1v','m2v','ogv','qt','mov','uvh','uvvh','uvm','uvvm','uvp','uvvp',
+      'uvs','uvvs','uvv','uvvv','dvb','fvt','mxu','m4u','pyv','uvu','uvvu','viv','webm','f4v','fli','flv','m4v','mkv','mk3d','mks','mng','asf','asx','vob','wm','wmv','wmx','wvx','avi',
+      'movie','smv','ice',
+    ],
+    link_protocols : ['http','https'],
+    "video-sync" : false,
+    "video-sync-time" : 0,
+    frameLength : 1/25,
+    highest_z_index: 0,
+  },
 
   syncing_videos : [],
   pausing_videos : [],
@@ -93,9 +102,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self.options.scale_y = self.options.y;
       self.options.scale_v = self.options.v;
     }
-
+    
     this.remotes = remotes.create_pool();
-
     self.hover_timer = null;
     self.close_hover_timer = null;
 
@@ -195,11 +203,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     {
       // console.log("self.element.mousedown");
       e.preventDefault();
-      output = e;
+      let output = e;
       self.start_drag = [self._offsetX(e), self._offsetY(e)];
-      s_d = self.start_drag;
+      let s_d = self.start_drag;
       self.end_drag = null;
-      s_e = self.start_drag;
+      let s_e = self.start_drag;
     });
 
     self.element.mousemove(function(e)
@@ -218,7 +226,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         if(self.end_drag) // Already dragging ...
         {
           self.end_drag = [self._offsetX(e), self._offsetY(e)];
-          output = e;
+          let output = e;
           var width = self.element.width();
           var height = self.element.height();
 
@@ -817,8 +825,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           square_size = self.options.canvas_square_size,
           border_width = self.options.canvas_square_border_size,
           half_border_width = border_width / 2,
-          fillWidth = fillHeight = square_size - (2 * border_width),
-          strokeWidth = strokeHeight = square_size - border_width;
+          fillWidth = square_size - (2 * border_width),
+          fillHeight = fillWidth,
+          strokeWidth = square_size - border_width,
+          strokeHeight = strokeWidth;
 
       // Draw points on canvas ...
       var time = Date;
@@ -865,8 +875,10 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           square_size = self.options.canvas_selected_square_size,
           border_width = self.options.canvas_selected_square_border_size,
           half_border_width = border_width / 2,
-          fillWidth = fillHeight = square_size - (2 * border_width),
-          strokeWidth = strokeHeight = square_size - border_width;
+          fillWidth = square_size - (2 * border_width),
+          fillHeight = fillWidth,
+          strokeWidth = square_size - border_width
+          strokeHeight = strokeWidth;
 
       canvas.clearRect(0, 0, self.canvas_selected.width, self.canvas_selected.height);
       canvas.strokeStyle = "black";
@@ -1128,7 +1140,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
     var frame_html = null;
 
-    within_svg = function(e, options) {
+    let within_svg = function(e, options) {
       return 0 <= e.y && e.y <= options.height && 0 <= e.x && e.x <= options.width;
     }
 
@@ -1279,7 +1291,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     };
 
     var handlers = {
-      move: (function() {
+      move: function() {
         // console.log("move");
         var theElement, transx, transy;
         if (within_svg(d3.event, self.options)) {
@@ -1292,8 +1304,8 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           });
           self._adjust_leader_line(theElement);
         }
-      }),
-      move_start: (function() {
+      },
+      move_start: function() {
         // console.log("move_start");
 
         // Showing the mouseEventOverlay
@@ -1313,7 +1325,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
             image.image_class = "open-image";
           }
         }
-      }),
+      },
       move_end: function() {
         // console.log("move_end");
 
@@ -1323,12 +1335,12 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self.state = "";
         self._sync_open_images();
       },
-      close: (function() {
+      close: function() {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
         self._remove_image_and_leader_line(frame);
         self._sync_open_images();
-      }),
+      },
       frame_mousedown: function(){
         // console.log("frame_mousedown");
         var target = d3.select(d3.event.target);
@@ -1346,15 +1358,15 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         // Move the frame to the front.
         self._move_frame_to_front(this);
       },
-      hover: (function() {
+      hover: function() {
         clear_hover_timer(self);
         return self.close_hover_timer = window.setTimeout((function() {
           return self._hover_timeout(image.index, 0);
         }), 1000);
-      }),
-      resize: (function() {
+      },
+      resize: function() {
         // console.log("resize");
-        var frame, min, target_width, x, y;
+        var frame, min, target_width, target_height, x, y;
         min = 50;
         x = d3.event.x;
         y = d3.event.y;
@@ -1373,8 +1385,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         }
 
         $(window).trigger('resize');
-      }),
-      resize_start: (function() {
+      },
+
+      resize_start: function() {
         // console.log("resize_start");
 
         // Showing the mouseEventOverlay
@@ -1389,17 +1402,18 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         // Add resizing class to scatterplot to use CSS to keep cursor as arrow while resizing
         d3.select("#scatterplot").classed("resizing", true);
 
-        if(frame.classed("hover-image")) 
-        {
+        if (frame.classed("hover-image")) {
           self.opening_image = null;
           clear_hover_timer(self);
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
         }
+
         // Need to stopPropagation here otherwise the system thinks we are moving the frame and does that instead of resize
         d3.event.sourceEvent.stopPropagation();
-      }),
-      resize_end: (function() {
+      },
+
+      resize_end: function() {
         // console.log("resize_end");
 
         // Hiding the mouseEventOverlay
@@ -1409,8 +1423,9 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self.state = "";
         self._sync_open_images();
         // d3.event.sourceEvent.stopPropagation();
-      }),
-      pin: (function() {
+      },
+
+      pin: function() {
         // console.log("pin event handler running");
         var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
         self.opening_image = null;
@@ -1459,18 +1474,21 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         self._sync_open_images();
 
         $(window).trigger('resize');
-      }),
-      pause_video: (function(){
+      },
+
+      pause_video: function(){
         video_sync_time_changed(self);
-      }),
-      seeked_video: (function(){
+      },
+
+      seeked_video: function(){
         video_sync_time_changed(self);
-      }),
-      jump: (function(){
+      },
+      
+      jump: function(){
         // console.log("jump event handler running");
         var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
         self.element.trigger("jump_to_simulation", index);
-      }),
+      },
     }
 
     function video_sync_time_changed(self_passed)
@@ -1598,6 +1616,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
                 });
               self._adjust_leader_line(frame_html);
           });
+        
         } else if(blob.type.indexOf('video/') == 0) {
           // Create the video ...
           var video = frame_html
@@ -1823,7 +1842,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
           var viewer = document.createElement('slycat-3d-viewer');
 
           var ps = document.createAttribute('params')
-          // var stl_uri = server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
+          // var stl_uri = api_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
           var stl_uri = image_url;
           ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
           var s = document.createAttribute('style');
@@ -1899,7 +1918,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     // If we don't have a session for the image hostname, create one.
-    var cached_uri = URI(server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
+    var cached_uri = URI(api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()))
 
     console.log("Attempting to load image from server-side cache...");
     console.log("Loading image " + image.uri + " from server...");
@@ -1911,7 +1930,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
     }
 
     xhr.image = image;
-    xhr.open("GET", server_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
+    xhr.open("GET", api_root + "projects/" + self.options.model.project + "/cache/" + URI.encode(uri.host() + uri.path()), true);
     xhr.responseType = "arraybuffer";
 
     xhr.onload = function(e){
@@ -1958,7 +1977,7 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
 
               xhr.image = image;
               //Double encode to avoid cherrypy's auto unencode in the controller
-              xhr.open("GET", server_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
+              xhr.open("GET", api_root + "remotes/" + hostname + api + uri.pathname() + "?cache=project&project=" + self.options.model.project + "&key=" + URI.encode(URI.encode(uri.host() + uri.path())), true);
               xhr.responseType = "arraybuffer";
               xhr.onload = function(e) {
                 // If we get 404, the remote session no longer exists because it timed-out.
@@ -2102,11 +2121,11 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
         xvalues = self.options.x,
         yvalues = self.options.y;
     for(var i = indices.length-1; i > -1; i-- ) {
-      index = indices[i];
-      x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
-      y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
-      x2 = x1 + size;
-      y2 = y1 + size;
+      let index = indices[i];
+      let x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
+      let y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
+      let x2 = x1 + size;
+      let y2 = y1 + size;
 
       if(x >= x1 && x <= x2 && y >= y1 && y <= y2)
       {
@@ -2552,5 +2571,4 @@ define("slycat-parameter-image-scatterplot", ["slycat-server-root", "d3", "URI",
       self._sync_open_images();
     }
   },
-  });
 });

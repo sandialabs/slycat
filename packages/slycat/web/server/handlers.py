@@ -66,49 +66,69 @@ def js_bundle():
         if js_bundle._bundle is None:
             js_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
                                                                               [
-                                                                                  "js/curl.js",
-                                                                                  # "js/curl-debug.js", # Uncomment this to debug problems loading modules with curl
-                                                                                  "js/slycat-curl-config.js",
-                                                                                  # Load this immediately following curl to configure it.
-                                                                                  "js/uri.min.js",
-                                                                                  "js/jquery-2.1.1.min.js",
-                                                                                  "js/lodash.min.js",
-                                                                                  "js/slycat-lodash-wrap.js",
-                                                                                  "js/bootstrap.js",
-                                                                                  "js/knockout-3.2.0.js",
-                                                                                  "js/knockout.mapping.js",
-                                                                                  "js/knockout-projections.js",
-                                                                                  "js/knockstrap.js",
-                                                                                  "js/papaparse.min.js",
-                                                                                  "js/slycat-server-root.js",
-                                                                                  "js/slycat-server-ispasswordrequired.js",
-                                                                                  "js/slycat-bookmark-manager.js",
-                                                                                  "js/slycat-web-client.js",
-                                                                                  "js/slycat_file_uploader_factory.js",
-                                                                                  "js/slycat-dialog.js",
-                                                                                  "js/slycat-markings.js",
-                                                                                  "js/slycat-nag.js",
-                                                                                  "js/slycat-parsers.js",
-                                                                                  "js/slycat-model-controls.js",
-                                                                                  "js/slycat-parser-controls.js",
-                                                                                  "js/slycat-model-results.js",
-                                                                                  "js/slycat-model-names.js",
-                                                                                  "js/slycat-navbar.js",
-                                                                                  "js/slycat-local-browser.js",
-                                                                                  "js/slycat-remote-browser.js",
-                                                                                  "js/slycat-remote-controls.js",
-                                                                                  "js/slycat-remotes.js",
-                                                                                  "js/slycat-login-controls.js",
-                                                                                  "js/slycat-range-slider.js",
-                                                                                  "js/slycat-page-main.js",
-                                                                                  "js/slycat-projects-main.js",
-                                                                                  "js/slycat-project-main.js",
-                                                                                  "js/slycat-model-main.js",
-                                                                                  "js/slycat-resizing-modals.js",
-                                                                                  "js/slycat-table-ingestion.js",
-                                                                                  "js/slycat-3d-viewer.js",
-                                                                                  "js/slycat-remote-interface.js",
-                                                                                  "js/slycat-job-checker.js"
+                                                                                  # # Alex: indented files are already handled through Webpack
+                                                                                  #   "js/curl.js",
+                                                                                  #   # "js/curl-debug.js", # Uncomment this to debug problems loading modules with curl
+                                                                                  #   "js/slycat-curl-config.js",
+                                                                                  #   # Load this immediately following curl to configure it.
+                                                                                  #   "js/uri.min.js",
+                                                                                  #   # "js/react.development.js",
+                                                                                  #   # "js/react-dom.development.js",
+                                                                                  #   "js/jquery-2.1.1.min.js",
+                                                                                  #   "js/lodash.min.js",
+                                                                                  #   "js/slycat-lodash-wrap.js",
+                                                                                  #   "js/bootstrap.js",
+                                                                                  #   "js/knockout-3.2.0.js",
+                                                                                  #   "js/knockout.mapping.js",
+                                                                                  #   "js/knockout-projections.js",
+                                                                                  # # We might not be using knockstrap anywhere
+                                                                                  # "js/knockstrap.js",
+                                                                                  #   "js/papaparse.min.js",
+                                                                                  #   "js/slycat-server-root.js",
+                                                                                  #   "js/slycat-server-ispasswordrequired.js",
+                                                                                  #   "js/slycat-bookmark-manager.js",
+                                                                                  #   "js/slycat-web-client.js",
+                                                                                  #   # Used by wizards
+                                                                                  #   "js/slycat_file_uploader_factory.js",
+                                                                                  #   "js/slycat-dialog.js",
+                                                                                  #   "js/slycat-markings.js",
+                                                                                  #   "js/slycat-nag.js",
+                                                                                  #   # Only used by slycat-parser-controls.js
+                                                                                  #   "js/slycat-parsers.js",
+                                                                                  #   # Used by wizards
+                                                                                  #   "js/slycat-model-controls.js",
+                                                                                  #   # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
+                                                                                  #   "js/slycat-parser-controls.js",
+                                                                                  # # Used by wizards, a bunch of old ones but also the remap wizard. None of the main ones use it.
+                                                                                  # "js/slycat-model-results.js",
+                                                                                  #   # Used by slycat-navbar(-webpack) and slycat-project-main.js
+                                                                                  #   "js/slycat-model-names.js",
+                                                                                  #   "js/slycat-navbar.js",
+                                                                                  #   # Used by creation wizards
+                                                                                  #   "js/slycat-local-browser.js",
+                                                                                  #   # Used by creation wizards
+                                                                                  #   "js/slycat-remote-browser.js",
+                                                                                  #   # Used by creation wizards
+                                                                                  #   "js/slycat-remote-controls.js",
+                                                                                  #   "js/slycat-remotes.js",
+                                                                                  #   "js/slycat-login-controls.js",
+                                                                                  #   "js/slycat-range-slider.js",
+                                                                                  #   # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
+                                                                                  #   "js/slycat-page-main.js",
+                                                                                  #   # Used by /web-server/templates/slycat-projects.html
+                                                                                  #   "js/slycat-projects-main.js",
+                                                                                  #   # Used by /web-server/templates/slycat-project.html
+                                                                                  #   "js/slycat-project-main.js",
+                                                                                  #   "js/slycat-model-main.js",
+                                                                                  #   # Seems to only affect /web-server/templates/slycat-navbar.html
+                                                                                  #   "js/slycat-resizing-modals.js",
+                                                                                  #   # Used by wizards
+                                                                                  #   "js/slycat-table-ingestion.js",
+                                                                                  #   "js/slycat-3d-viewer.js",
+                                                                                  #   # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
+                                                                                  #   "js/slycat-remote-interface.js",
+                                                                                  #   # Seems to be only used in Parameter Image Plus and Timeseries
+                                                                                  #   "js/slycat-job-checker.js"
                                                                               ])
     return js_bundle._bundle
 
@@ -204,7 +224,7 @@ def get_projects(_=None):
     context["slycat-css-bundle"] = css_bundle()
     context["slycat-js-bundle"] = js_bundle()
     context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-    return slycat.web.server.template.render("slycat-projects.html", context)
+    return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_projects.html")), context)
 
 
 @cherrypy.tools.json_out(on=True)
@@ -279,7 +299,7 @@ def get_project(pid):
         context["slycat-project"] = project
         context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
         context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-        return slycat.web.server.template.render("slycat-project.html", context)
+        return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_project.html")), context)
 
 
 def get_remote_host_dict():
@@ -526,7 +546,7 @@ def get_page(ptype):
     <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
       <p>No plugin available for page type \u201c%s\u201d.</p>
     </div>""" % ptype
-        return slycat.web.server.template.render("slycat-page.html", context)
+        return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_page.html")), context)
 
     context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model=None)
     if ptype in slycat.web.server.plugin.manager.page_bundles:
@@ -537,7 +557,7 @@ def get_page(ptype):
                                              slycat.web.server.plugin.manager.page_bundles[ptype].items() if
                                              content_type == "text/javascript"]
 
-    return slycat.web.server.template.render("slycat-page.html", context)
+    return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_page.html")), context)
 
 
 def get_model(mid, **kwargs):
@@ -556,10 +576,22 @@ def get_model(mid, **kwargs):
         mtype = model.get("model-type", None)
         ptype = kwargs.get("ptype", None)
         cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
+        context = {}
+
+        # Setting slycat_model_page and whether global JS and CSS bundles are emitted based on global_bundles flag set by model plugin when it registers.
+        slycat_model_page = 'slycat-model-page.html'
+        if mtype in slycat.web.server.plugin.manager.global_bundles and slycat.web.server.plugin.manager.global_bundles[mtype] == False:
+            context["slycat-js-bundle"] = None
+            context["slycat-css-bundle"] = None
+            # slycat_model_page = 'slycat-model-page-webpack.html'
+            cherrypy.log.error("Global bundle will NOT be emitted for '%s'." % (mtype))
+        else:
+            context["slycat-js-bundle"] = js_bundle()
+            context["slycat-css-bundle"] = css_bundle()
+            cherrypy.log.error("Global bundle will be emitted for '%s'." % (mtype))
 
         marking = slycat.web.server.plugin.manager.markings[model["marking"]]
-
-        context = {}
+        
         context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
         context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking[
             "page-before"]
@@ -573,10 +605,6 @@ def get_model(mid, **kwargs):
         context["slycat-project"] = project
         context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
 
-        context["slycat-css-bundle"] = css_bundle()
-        
-        context["slycat-js-bundle"] = js_bundle()
-
         context["slycat-model-type"] = mtype
 
         if mtype not in slycat.web.server.plugin.manager.models.keys():
@@ -584,7 +612,7 @@ def get_model(mid, **kwargs):
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
         <p>No plugin available for model type \u201c%s\u201d.</p>
       </div>""" % mtype
-            return slycat.web.server.template.render("slycat-model-page.html", context)
+            return slycat.web.server.template.render(slycat_model_page, context)
 
         if ptype is None:
             ptype = slycat.web.server.plugin.manager.models[mtype]["ptype"]
@@ -594,7 +622,7 @@ def get_model(mid, **kwargs):
       <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
         <p>No plugin available for page type \u201c%s\u201d.</p>
       </div>""" % ptype
-            return slycat.web.server.template.render("slycat-model-page.html", context)
+            return slycat.web.server.template.render(slycat_model_page, context)
 
         context["slycat-page-type"] = ptype
         context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
@@ -606,7 +634,7 @@ def get_model(mid, **kwargs):
                                                  slycat.web.server.plugin.manager.page_bundles[ptype].items() if
                                                  content_type == "text/javascript"]
 
-        return slycat.web.server.template.render("slycat-model-page.html", context)
+        return slycat.web.server.template.render(slycat_model_page, context)
 
 
 def model_command(mid, type, command, **kwargs):
@@ -870,11 +898,11 @@ def open_id_authenticate(**params):
     if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
         raise cherrypy.HTTPError(404)
 
-    cherrypy.log.error("++ open_id_authenticate: incoming params = %s" % params)
+    cherrypy.log.error("params = %s" % params)
     current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
     kerberos_principal = params['openid.ext2.value.Authuser']
     auth_user = kerberos_principal.split("@")[0]
-    cherrypy.log.error("++ open_id_authenticate: setting auth_user = %s, calling create_single_sign_on_session" % auth_user)
+    cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
     slycat.web.server.create_single_sign_on_session(slycat.web.server.check_https_get_remote_ip(), auth_user)
     raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects")
 
@@ -925,6 +953,8 @@ def login():
 def get_root():
     """
     Redirect all requests to "/" to "/projects"
+    Not sure why we used to do that, but after conversion to webpack this is no longer needed,
+    so I changed the projects-redirect config parameter in web-server-config.ini to just "/"
     """
     current_url = urlparse.urlparse(cherrypy.url())
     proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
@@ -2166,9 +2196,6 @@ def post_remote_command(hostname):
     """
     sid = get_sid(hostname)
     command = cherrypy.request.json["command"]
-    if command["hpc"]["is_hpc_job"]:
-        command["hpc"]["parameters"]["module_name"] = cherrypy.request.app.config["slycat-web-server"]["module-name"]
-        pass
     with slycat.web.server.remote.get_session(sid) as session:
         return session.run_remote_command(command)
 
@@ -2329,6 +2356,16 @@ def get_configuration_remote_hosts():
 @cherrypy.tools.json_out(on=True)
 def get_configuration_support_email():
     return cherrypy.request.app.config["slycat-web-server"]["support-email"]
+
+
+@cherrypy.tools.json_out(on=True)
+def get_configuration_injected_code():
+    return cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
+
+
+@cherrypy.tools.json_out(on=True)
+def get_configuration_ga_tracking_id():
+    return cherrypy.request.app.config["slycat-web-server"].get("ga-tracking-id", "")
 
 
 @cherrypy.tools.json_out(on=True)

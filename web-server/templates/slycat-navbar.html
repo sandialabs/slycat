@@ -8,8 +8,8 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" data-bind="attr:{href:server_root + 'projects'}" title="Slycat">
-          <span data-bind="visible: project().length == 0">Slycat</span>
+        <a class="navbar-brand" data-bind="attr:{href:server_root}" title="Slycat">
+          <span data-bind="visible: project().length == 0, text: server_friendly_name">Slycat</span>
         </a>
       </div>
       <div class="collapse navbar-collapse" id="slycat-navbar-content">
@@ -219,7 +219,7 @@
       <div class="modal-content">
         <div class="modal-body">
           <div class="jumbotron">
-            <img data-bind="attr:{src:server_root + 'css/slycat-brand.png'}"/>
+            <img src="../css/slycat-brand.png" />
             <p>&hellip; is the web-based analysis and visualization platform created at Sandia National Laboratories.</p>
           </div>
           <p>Version <span data-bind="text:version.version"></span>, commit <span data-bind="text:version.commit"></span></p>

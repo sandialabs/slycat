@@ -2,7 +2,19 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
-define("slycat-parameter-image-table", ["d3"], function(d3) {
+
+import api_root from "js/slycat-api-root";
+import d3 from "js/d3.min";
+import "jquery-ui";
+import "js/jquery.event.drag-2.2";
+import "js/slick.core";
+import "js/slick.grid";
+import "js/slick.rowselectionmodel";
+import "js/slick.headerbuttons";
+import "js/slick.autotooltips";
+import "js/slick.slycateditors";
+import * as chunker from "js/chunker";
+
 $.widget("parameter_image.table",
 {
   options:
@@ -530,13 +542,13 @@ $.widget("parameter_image.table",
         $.ajax(
         {
           type : "GET",
-          url : server_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
+          url : api_root + "models/" + self.mid + "/arraysets/" + self.aid + "/data?hyperchunks=0/" + column_begin + ":" + (column_end - 1) + "|index(0)" + sort + "/" + row_begin + ":" + row_end,
           success : function(data)
           {
             self.pages[page] = [];
             for(var i=0; i < data[0].length; i++)
             {
-              result = {};
+              var result = {};
               for(var j = column_begin; j != column_end; ++j)
               {
                 result[j] = data[j][i];
@@ -644,7 +656,7 @@ $.widget("parameter_image.table",
           {
             // we have no data for this column, so go retrieve it and call this function again.
             var request = new XMLHttpRequest();
-            request.open("GET", server_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (is_little_endian() ? "little" : "big") );
+            request.open("GET", api_root + "models/" + self.mid + "/arraysets/data-table/data?hyperchunks=0/rank(a" + self.sort_column + ',"asc")/...&byteorder=' + (chunker.is_little_endian() ? "little" : "big") );
             request.responseType = "arraybuffer";
             request.direction = direction;
             request.rows = rows;
@@ -666,13 +678,6 @@ $.widget("parameter_image.table",
           }
         }
       }
-
-      function is_little_endian()
-      {
-        if(this.result === undefined)
-          this.result = ((new Uint32Array((new Uint8Array([1,2,3,4])).buffer))[0] === 0x04030201);
-        return this.result;
-      }
     }
 
     self.invalidate = function()
@@ -686,5 +691,4 @@ $.widget("parameter_image.table",
   {
     return $(a).not(b).length == 0 && $(b).not(a).length == 0;
   },
-});
 });

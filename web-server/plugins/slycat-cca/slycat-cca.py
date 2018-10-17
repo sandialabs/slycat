@@ -104,62 +104,9 @@ def register_slycat_plugin(context):
     thread = threading.Thread(name="Compute CCA Model", target=compute, kwargs={"mid" : model["_id"]})
     thread.start()
 
-  def page_html(database, model):
-    # At the moment, the CCA client UI is still hard-coded into the server.
-    import pystache
-    context = dict()
-    context["_id"] = model["_id"]
-    context["name"] = model["name"];
-    return pystache.render(open(os.path.join(os.path.dirname(__file__), "ui.html"), "r").read(), context)
-
   # Register our new model type
   context.register_model("cca", finish)
 
-  context.register_page("cca", page_html)
-
-  context.register_page_bundle("cca", "text/css", [
-    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
-    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
-    os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-    os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-    os.path.join(os.path.dirname(__file__), "css/ui.css"),
-    ])
-  context.register_page_bundle("cca", "text/javascript", [
-    os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/jquery.scrollintoview.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-    os.path.join(os.path.dirname(__file__), "js/chunker.js"),
-    os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-barplot.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-scatterplot.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-table.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-legend.js"),
-    os.path.join(os.path.dirname(__file__), "js/cca-controls.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-    os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-    os.path.join(os.path.dirname(__file__), "js/ui.js"),
-    ])
-  context.register_page_resource("cca", "images", os.path.join(os.path.dirname(__file__), "images"))
-  # Register images and other resources
-  images = [
-    'ui-bg_glass_75_e6e6e6_1x400.png',
-  ]
-  for image in images:
-    context.register_page_resource("cca", image, os.path.join(os.path.dirname(__file__), "images", image))
-
   # Register custom wizards for creating CCA models.
   context.register_wizard("new-cca", "New CCA Model", require={"action":"create", "context":"project"})
-  context.register_wizard_resource("new-cca", "ui.js", os.path.join(os.path.dirname(__file__), "js/new-ui.js"))
-  context.register_wizard_resource("new-cca", "ui.html", os.path.join(os.path.dirname(__file__), "new-ui.html"))
-
   context.register_wizard("rerun-cca", "Modified CCA Model", require={"action":"create", "context":"model", "model-type":["cca"]})
-  context.register_wizard_resource("rerun-cca", "ui.js", os.path.join(os.path.dirname(__file__), "js/rerun-ui.js"))
-  context.register_wizard_resource("rerun-cca", "ui.html", os.path.join(os.path.dirname(__file__), "rerun-ui.html"))

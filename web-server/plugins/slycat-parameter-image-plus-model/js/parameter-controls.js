@@ -1,10 +1,13 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
+import api_root from "js/slycat-api-root";
+import * as dialog from "js/slycat-dialog";
+import "jquery-ui";
+
 $.widget("parameter_image.controls",
 {
   options:
   {
-    "server-root" : "",
     mid : null,
     model_name : null,
     aid : null,
@@ -295,7 +298,7 @@ $.widget("parameter_image.controls",
     $.ajax(
     {
       type : "POST",
-      url : server_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
+      url : api_root + "models/" + self.options.mid + "/arraysets/" + self.options.aid + "/data",
       data: JSON.stringify({"hyperchunks": "0/.../..."}),
       contentType: "application/json",
       success : function(result)
@@ -615,7 +618,7 @@ $.widget("parameter_image.controls",
   {
     var self = this,
         noneHidden = this.options.hidden_simulations.length == 0;
-        titleText = 'Show All Hidden Scatterplot Points';
+    var titleText = 'Show All Hidden Scatterplot Points';
     if(noneHidden) {
       titleText = 'There are currently no hidden scatterplot points to show.';
     }

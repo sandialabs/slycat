@@ -10,29 +10,10 @@ rights in this software.
   <head>
     <meta charset="utf-8"/>
     <link id="slycat-server-root" href="{{slycat-server-root}}">
-    <link rel="stylesheet" href="{{slycat-server-root}}resources/global/{{slycat-css-bundle}}" type="text/css">
-    {{#slycat-page-css-bundles}}
-      <link rel="stylesheet" href="{{slycat-server-root}}resources/pages/{{slycat-page-type}}/{{bundle}}" type="text/css">
-    {{/slycat-page-css-bundles}}
-    <script src="{{slycat-server-root}}resources/global/{{slycat-js-bundle}}" type="text/javascript"></script>
-    {{#slycat-page-js-bundles}}
-      <script src="{{slycat-server-root}}resources/pages/{{slycat-page-type}}/{{bundle}}" type="text/javascript"></script>
-    {{/slycat-page-js-bundles}}
   </head>
 
   <body>
     <slycat-navbar></slycat-navbar>
-    <div class="slycat-content">
-      {{{slycat-marking-before-html}}}
-      {{{slycat-page-html}}}
-      {{{slycat-marking-after-html}}}
-    </div>
-    <script type="text/javascript">
-      require(["slycat-page-main"], function(module)
-      {
-        module.start();
-      });
-    </script>
-    {{{slycat-injected-code}}}
+    <div class="slycat-content"></div>
   </body>
 </html>

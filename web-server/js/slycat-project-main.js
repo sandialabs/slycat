@@ -2,113 +2,86 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define("slycat-project-main", ["slycat-server-root", "slycat-web-client", "slycat-markings", "slycat-dialog", "slycat-model-names", "knockout", "knockout-mapping", "URI"], function(server_root, client, markings, dialog, model_names, ko, mapping, URI)
-{
-  var module = {}
-  module.start = function()
+// CSS resources
+import "css/namespaced-bootstrap.less";
+import "css/slycat.css";
+
+import React from "react";
+import ReactDOM from "react-dom";
+import { ModelsList, TemplatesList } from 'components/ModelsList';
+import client from 'js/slycat-web-client';
+import URI from 'urijs';
+import ga from "js/slycat-ga";
+import "bootstrap";
+
+// These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.
+import ko from 'knockout';
+import "js/slycat-navbar";
+
+export default function renderTemplates(project_id) {
+  // Create a React TemplatesList component after getting the list of templates in this project
+  client.get_project_references(
   {
-    var page = {};
-    page.server_root = server_root;
-    page.project = mapping.fromJS({_id: URI(window.location).segment(-1), name: "", description: "",created: "",creator: "",acl:{administrators:[],writers:[],readers:[]}});
-    page.projects = ko.observableArray();
-    client.get_project({
+    pid: project_id,
+    success: function(result)
+    {
+      const templates_list = <TemplatesList templates={result} />
+      ReactDOM.render(
+        templates_list,
+        document.getElementById('slycat-templates')
+      );
+    }
+  });
+}
+
+// Wait for document ready
+$(document).ready(function() {
+
+  // Get the project ID from the URL
+  const project_id = URI(window.location).segment(-1);
+
+  // Set the page title by getting the project and appending to its name
+  client.get_project({
+    pid: project_id,
+    success: function(result) {
+      document.title = result.name + " - Slycat Project";
+    },
+    error: function(request, status, reason_phrase) {
+      console.log("Unable to retrieve project.");
+    }
+  });
+
+  // Create a React ModelsList component after getting the list of models in this project
+  client.get_project_models({
+    pid: project_id,
+    success: function(result) {
+      const models_list = <ModelsList models={result} />
+      ReactDOM.render(
+        models_list,
+        document.getElementById('slycat-models')
+      );
+    },
+    error: function(request, status, reason_phrase) {
+      console.log("Unable to retrieve project models.");
+    }
+  });
+
+  renderTemplates(project_id);
+
+  var update_references = function()
+  {
+    client.get_project_references(
+    {
       pid: page.project._id(),
-      success: function(result) {
-        page.projects.push(mapping.fromJS(result));
-      },
-      error: function(request, status, reason_phrase) {
-        console.log("Unable to retrieve project.");
+      success: function(result)
+      {
+        mapping.fromJS(result, references);
       }
     });
+  }
 
-    page.title = ko.pureComputed(function()
-    {
-      var projects = page.projects();
-      return projects.length ? projects[0].name() + " - Slycat Project" : "";
-    });
+  // These next 2 lines render the navbar using knockout. Remove them once we convert it to react.
+  var page = { project_id: project_id }
+  ko.applyBindings(page, document.querySelector("html"));
 
-    page.models = mapping.fromJS([]);
-    client.get_project_models({
-      pid: page.project._id(),
-      success: function(result) {
-        mapping.fromJS(result, page.models);
-      },
-      error: function(request, status, reason_phrase) {
-        console.log("Unable to retrieve project models.");
-      }
-    });
-
-    page.markings = markings.allowed;
-    page.badge = function(marking)
-    {
-      for(var i = 0; i != page.markings().length; ++i)
-      {
-        if(page.markings()[i].type() == marking)
-          return page.markings()[i].badge();
-      }
-    }
-
-    var references = mapping.fromJS([]);
-
-    page.templates = references.filter(function(reference)
-    {
-      return reference.bid() && !reference.mid();
-    }).map(function(reference)
-    {
-      return {
-        _id: reference._id,
-        name: reference.name,
-        created: reference.created,
-        creator: reference.creator,
-        model_type: reference["model-type"] ? reference["model-type"]() : "",
-      };
-    });
-    
-    page.model_names = model_names;
-    
-    page.edit_template = function(reference)
-    {
-    }
-    page.delete_template = function(reference)
-    {
-      dialog.dialog(
-      {
-        title: "Delete Template?",
-        message: "The template will be deleted immediately and there is no undo.  This will not affect any existing models.",
-        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
-        callback: function(button)
-        {
-          if(button.label != "OK")
-            return;
-          client.delete_reference(
-          {
-            rid: reference._id(),
-            success: function()
-            {
-              page.update_references();
-            },
-            error: dialog.ajax_error("Couldn't delete template."),
-          });
-        },
-      });
-    }
-
-    page.update_references = function()
-    {
-      client.get_project_references(
-      {
-        pid: page.project._id(),
-        success: function(result)
-        {
-          mapping.fromJS(result, references);
-        }
-      });
-    }
-
-    page.update_references();
-
-    ko.applyBindings(page, document.querySelector("html"));
-  };
-
-  return module;
 });

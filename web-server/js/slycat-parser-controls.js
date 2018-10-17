@@ -2,39 +2,40 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define("slycat-parser-controls", ["slycat-server-root", "slycat-parsers", "knockout", "lodash"], function(server_root, parsers, ko, lodash)
+import parsers from "js/slycat-parsers";
+import ko from "knockout";
+import _ from "lodash";
+import slycatParserControls from "templates/slycat-parser-controls.html";
+
+ko.components.register("slycat-parser-controls",
 {
-  ko.components.register("slycat-parser-controls",
+  viewModel: function(params)
   {
-    viewModel: function(params)
+    var component = this;
+    component.parser = params.parser || ko.observable(null);
+    component.disabled = params.disabled === undefined ? false : params.disabled;
+
+    if(params.category)
     {
-      var component = this;
-      component.parser = params.parser || ko.observable(null);
-      component.disabled = params.disabled === undefined ? false : params.disabled;
+      component.parsers = parsers.available.filter(function(parser)
+      {
+        return _.includes(parser.categories(), params.category);
+      });
+    }
+    else
+    {
+      component.parsers = parsers.available;
+    }
 
-      if(params.category)
+    function assign_default_parser()
+    {
+      if(component.parser() === null && component.parsers().length)
       {
-        component.parsers = parsers.available.filter(function(parser)
-        {
-          return lodash.contains(parser.categories(), params.category);
-        });
+        component.parser(component.parsers()[0].type());
       }
-      else
-      {
-        component.parsers = parsers.available;
-      }
-
-      function assign_default_parser()
-      {
-        if(component.parser() === null && component.parsers().length)
-        {
-          component.parser(component.parsers()[0].type());
-        }
-      }
-      component.parsers.subscribe(assign_default_parser);
-      assign_default_parser();
-    },
-    template: { require: "text!" + server_root + "templates/slycat-parser-controls.html" }
-  });
+    }
+    component.parsers.subscribe(assign_default_parser);
+    assign_default_parser();
+  },
+  template: slycatParserControls
 });
-

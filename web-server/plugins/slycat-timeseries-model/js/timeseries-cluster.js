@@ -3,6 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM cluster control, for use with the timeseries model.
 
+import "jquery-ui";
+
 $.widget("timeseries.cluster",
 {
   options:

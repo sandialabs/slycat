@@ -2,8 +2,11 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-define("slycat-nag", ["slycat-dialog"], function(dialog)
-{
+import * as dialog from "js/slycat-dialog";
+
+// Wait for document ready
+$(document).ready(function() {
+
   var nag = false;
 
   function FlexBoxSupport(){
