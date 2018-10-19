@@ -834,7 +834,7 @@ $.widget("parameter_image.scatterplot",
       var width = Math.min(self.options.width, self.options.height);
       var x_axis_width = width - (2 * self.options.border) - xoffset;
       var x_remaining_width = self.svg.attr("width") - x_axis_width;
-      var x = (x_remaining_width / 2) + x_axis_width + 20;
+      var x = (x_remaining_width / 2) + x_axis_width + 40;
 
       self.x_axis_layer.selectAll(".label").remove()
       self.x_axis_layer.append("text")
