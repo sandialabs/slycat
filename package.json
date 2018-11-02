@@ -32,6 +32,7 @@
     "urijs": "1.19.1"
   },
   "devDependencies": {
+    "autoprefixer": "^9.3.1",
     "babel-cli": "^6.26.0",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
@@ -49,6 +50,10 @@
     "html-webpack-plugin": "^4.0.0-alpha",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
+    "node-sass": "^4.9.4",
+    "postcss-loader": "^3.0.0",
+    "precss": "^3.1.2",
+    "sass-loader": "^7.1.0",
     "style-loader": "^0.21.0",
     "url-loader": "^1.0.1",
     "webpack": "^4.8.3",
