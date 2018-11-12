@@ -4,6 +4,8 @@ import _ from "lodash";
 import {dialog} from "js/slycat-dialog";
 import React from "react";
 import ControlsButton from './controls-button';
+import "js/slycat-table-ingestion";
+import ko from "knockout";
 
 /***
  * react component for downloading a data table
@@ -79,23 +81,59 @@ class ControlsButtonVarOptions extends React.Component {
   }
 
   render() {
+    var variablesKO = ko.observableArray();
+    variablesKO.push({Categorical: false,
+                                                    Classification: 'Neither',
+                                                    Editable: false,
+                                                    category: false,
+                                                    disabled: false,
+                                                    hidden: false,
+                                                    image: false,
+                                                    input: false,
+                                                    lastSelected: false,
+                                                    name: 'Model',
+                                                    output: false,
+                                                    rating: false,
+                                                    selected: false,
+                                                    tooltip: '',
+                                                    type: 'string'});
+
+    let axes_variables = [];
+    for(let axes_variable of this.props.axes_variables)
+    {
+      axes_variables.push({
+        'Axis Type': 'Linear',
+        disabled: false,
+        hidden: false,
+        lastSelected: false,
+        name: axes_variable.name,
+        selected: false,
+        tooltip: '',
+      });
+    }
+
     return (
       <React.Fragment>
-      <ControlsButton icon="fa-cog" title="Set Variable Options" data_toggle="modal" data_target={'#' + this.modalId} />
+        <ControlsButton icon="fa-cog" title="Set Variable Options" data_toggle="modal" data_target={'#' + this.modalId} />
         <div className="modal fade" data-backdrop="static" id={this.modalId}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h3 className="modal-title">Edit Variable Options</h3>
+                <h3 className="modal-title">Edit Axes Scales</h3>
               </div>
               <div className="modal-body">
-                <p>The Message</p>
+                <slycat-table-ingestion 
+                  params={`variables: ` + JSON.stringify(axes_variables) + `,
+                          properties: [
+                            {name: 'Axis Type', type: 'select', values: ['Linear','Date & Time','Log']}
+                          ]`}
+                ></slycat-table-ingestion>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn" onClick={this.closeModal}>
+                <button type="button" className="btn btn-default" onClick={this.closeModal}>
                   Cancel
                 </button>
-                <button type="button" className="btn" onClick={this.apply}>
+                <button type="button" className="btn btn-primary" onClick={this.apply}>
                   Apply
                 </button>
               </div>

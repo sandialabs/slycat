@@ -6,7 +6,9 @@ const ControlsButton = (props) => {
           className="btn btn-default"
           type="button" title={props.title}
           disabled={props.disabled}
-          onClick={props.click}>
+          onClick={props.click}
+          data-toggle={props.data_toggle}
+          data-target={props.data_target}>
         {props.icon &&
           <span className={'fa ' + props.icon} aria-hidden="true"/>
         }

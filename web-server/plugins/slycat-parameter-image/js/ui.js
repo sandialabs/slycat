@@ -755,6 +755,7 @@ $(document).ready(function() {
         // clusters : clusters,
         x_variables: axes_variables,
         y_variables: axes_variables,
+        axes_variables: axes_variables,
         image_variables: image_columns,
         color_variables: color_variables,
         rating_variables : rating_columns,

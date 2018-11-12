@@ -7,6 +7,7 @@ import ControlsGroup from './controls-group';
 import ControlsButtonToggle from './controls-button-toggle';
 import ControlsButton from './controls-button';
 import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
+import ControlsButtonVarOptions from './controls-button-var-options';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -20,6 +21,7 @@ class ControlsBar extends React.Component {
       video_sync: this.props.video_sync,
       video_sync_time: this.props.video_sync_time,
       video_sync_time_value: this.props.video_sync_time,
+      var_settings: this.props.var_settings,
     };
     for(let dropdown of this.props.dropdowns)
     {
@@ -223,6 +225,9 @@ class ControlsBar extends React.Component {
       <React.Fragment>
         <ControlsGroup id="scatterplot-controls">
           {dropdowns}
+          <ControlsButtonVarOptions selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
+            aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
+            indices={this.props.indices} axes_variables={this.props.axes_variables} />
         </ControlsGroup>
         <ControlsGroup id="selection-controls">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
