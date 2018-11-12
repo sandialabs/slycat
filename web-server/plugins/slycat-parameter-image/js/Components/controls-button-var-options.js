@@ -6,6 +6,7 @@ import React from "react";
 import ControlsButton from './controls-button';
 import "js/slycat-table-ingestion";
 import ko from "knockout";
+import "../../css/controls-button-var-options.css";
 
 /***
  * react component for downloading a data table
@@ -112,6 +113,23 @@ class ControlsButtonVarOptions extends React.Component {
       });
     }
 
+    const fonts = [
+      {name: "Arial", fontFamily: "Arial", },
+      {name: "Arial Black", fontFamily: "Arial Black", },
+      {name: "Courier", fontFamily: "Courier", },
+      {name: "Courier New", fontFamily: "Courier New", },
+      {name: "Georgia", fontFamily: "Georgia", },
+      {name: "Tahoma", fontFamily: "Tahoma", },
+      {name: "Times", fontFamily: "Times", },
+      {name: "Times New Roman", fontFamily: "Times New Roman", },
+      {name: "Trebuchet MS", fontFamily: "Trebuchet MS", },
+      {name: "Verdana", fontFamily: "Verdana", },
+    ];
+
+    const fontItems = fonts.map((font, index) =>
+      <li key={index} style={{fontFamily: font.fontFamily}}><a href="#">{font.name}</a></li>
+    );
+
     return (
       <React.Fragment>
         <ControlsButton icon="fa-cog" title="Set Variable Options" data_toggle="modal" data_target={'#' + this.modalId} />
@@ -122,6 +140,28 @@ class ControlsButtonVarOptions extends React.Component {
                 <h3 className="modal-title">Edit Axes Scales</h3>
               </div>
               <div className="modal-body">
+                <div className="slycat-axes-font">
+                  <div className="form-inline">
+                    <div className="form-group">
+                      <label htmlFor="font-family">Font</label>
+                      <div className="dropdown font-family-dropdown">
+                        <button className="btn btn-default dropdown-toggle" type="button" id="font-family" 
+                          data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                          Dropdown
+                          <span className="caret"></span>
+                        </button>
+                        <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
+                          {fontItems}
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="font-size">Size</label>
+                      <input type="number" className="form-control" id="font-size"  max="40" min="6" step="1" defaultValue="10" />
+                    </div>
+                  </div>
+                </div>
+                <hr />
                 <slycat-table-ingestion 
                   params={`variables: ` + JSON.stringify(axes_variables) + `,
                           properties: [
