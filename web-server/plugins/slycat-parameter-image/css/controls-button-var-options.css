@@ -1,0 +1,9 @@
+.slycat-axes-font {
+  text-align: left;
+}
+.font-family-dropdown {
+  display: inline-block;
+}
+label[for="font-size"] {
+  margin-left: 20px;
+}
