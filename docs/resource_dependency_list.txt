@@ -97,18 +97,7 @@ knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-proje
 slickgrid                 2.2   https://github.com/mleibman/SlickGrid
 stats                      16   https://github.com/mrdoob/stats.js/blob/master/src/Stats.js
 
-Directly included in Slycat in other slycat/web_server subdirectories:
-
-Directly included in Slycat in slycat/web_server/plugins/slycat-stl-model/js:
-stlloader                 n/a   https://github.com/mrdoob/three.js/blob/dev/examples/js/loaders/STLLoader.js
-stats                     n/a   https://github.com/mrdoob/stats.js
-three.min.js
-TrackballControls         n/a   https://github.com/mrdoob/three.js/blob/master/examples/js/controls/TrackballControls.js
-
-slycat-tracer-image has a ton of JS. We should probably just remove that model.
-jquery.mousewheel       3.1.9   https://github.com/jquery/jquery-mousewheel
-
-slycat-parameter-image has:
+Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
 stickies.core           0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
 
 
