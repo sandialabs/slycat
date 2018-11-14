@@ -1,4 +1,7 @@
 import React from "react";
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import slycat from '../reducers';
 import ControlsPlayback from './controls-playback';
 import ControlsDropdown from './controls-dropdown';
 import ControlsVideo from './controls-video';
@@ -7,7 +10,9 @@ import ControlsGroup from './controls-group';
 import ControlsButtonToggle from './controls-button-toggle';
 import ControlsButton from './controls-button';
 import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
-import ControlsButtonVarOptions from './controls-button-var-options';
+import VisibleVarOptions from './visible-var-options';
+
+const store = createStore(slycat);
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -222,12 +227,19 @@ class ControlsBar extends React.Component {
     const playing = (this.state.video_sync && any_video_playing) || (!this.state.video_sync && current_frame_video_playing);
 
     return (
+      <Provider store={store}>
       <React.Fragment>
         <ControlsGroup id="scatterplot-controls">
           {dropdowns}
-          <ControlsButtonVarOptions selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
-            aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
-            indices={this.props.indices} axes_variables={this.props.axes_variables} />
+          <VisibleVarOptions 
+            selection={this.state.selection} 
+            hidden_simulations={this.state.hidden_simulations}
+            aid={this.props.aid} mid={this.props.mid} 
+            model_name={this.props.model_name} 
+            metadata={this.props.metadata}
+            indices={this.props.indices} 
+            axes_variables={this.props.axes_variables}
+          />
         </ControlsGroup>
         <ControlsGroup id="selection-controls">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
@@ -255,6 +267,7 @@ class ControlsBar extends React.Component {
           />
         </ControlsGroup>
       </React.Fragment>
+      </Provider>
     );
   }
 }
