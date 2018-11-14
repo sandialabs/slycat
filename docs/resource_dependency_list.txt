@@ -81,7 +81,7 @@ papaparse               4.3.2   https://github.com/mholt/PapaParse
 react                  16.4.0   https://reactjs.org
 react-dom              16.4.0   https://reactjs.org
 react-ga                2.5.3   https://github.com/react-ga/react-ga
-react-redux             5.0.7.  https://github.com/reduxjs/react-redux
+react-redux             5.0.7   https://github.com/reduxjs/react-redux
 redux                   4.0.0   https://redux.js.org
 three                  0.92.0   https://yarnpkg.com/en/package/three
 three-stl-loader        1.0.6   https://yarnpkg.com/en/package/three-stl-loader
