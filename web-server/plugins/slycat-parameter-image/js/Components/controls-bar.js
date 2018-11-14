@@ -14,6 +14,13 @@ import VisibleVarOptions from './visible-var-options';
 
 const store = createStore(slycat);
 
+
+const logStore = () => {
+  console.log(store.getState());
+};
+
+store.subscribe(logStore);
+
 class ControlsBar extends React.Component {
   constructor(props) {
     super(props);
