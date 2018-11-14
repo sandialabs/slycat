@@ -996,25 +996,41 @@ module.set_user_config = function(params) {
   });
 };
 
-module.post_agent_function = function(params) {
+module.post_remote_command = function(params) {
+
+  // this is an example of the format that this function is expecting
+  // var test_script_json = {
+  //       "scripts": [
+  //           {
+  //               "name": "test",
+  //               "parameters": [
+  //                   {
+  //                       "name": "--number",
+  //                       "value": 2
+  //                   }
+  //               ]
+  //           }
+  //       ],
+  //       "hpc": {
+  //           "is_hpc_job": false,
+  //           "parameters": {
+  //               wckey : "test1",
+  //               nnodes : "1",
+  //               partition : "mypartition",
+  //               ntasks_per_node : "1",
+  //               time_hours : "01",
+  //               time_minutes : "30",
+  //               time_seconds : "30",
+  //               working_dir : "slycat"
+  //           }
+  //       }
+  // };
+  console.log("parsing " + JSON.stringify(params));
   $.ajax({
     contentType: 'application/json',
-    data: JSON.stringify({
-      wckey: params.wckey,
-      nnodes: params.nnodes,
-      partition: params.partition,
-      ntasks_per_node: params.ntasks_per_node,
-      ntasks: params.ntasks,
-      ncpu_per_task: params.ncpu_per_task,
-      time_hours: params.time_hours,
-      time_minutes: params.time_minutes,
-      time_seconds: params.time_seconds,
-      fn: params.fn,
-      fn_params: params.fn_params,
-      uid: params.uid
-    }),
+    data: JSON.stringify({"command": params.command}),
     type: 'POST',
-    url: api_root + 'remotes/'+params.hostname+'/run-agent-function',
+    url: api_root + 'remotes/'+params.hostname+'/post-remote-command',
     success: function(response) {
       if (params.success)
         params.success(response);
@@ -1025,7 +1041,6 @@ module.post_agent_function = function(params) {
     }
   });
 };
-
 
 module.post_remote_browse = function(params)
 {
