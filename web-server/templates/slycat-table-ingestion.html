@@ -60,7 +60,8 @@
                     name: $parentContext.$index() + variable.name() + name, 
                     value: 'true',
                   },
-                  checked: variable[name]
+                  checked: variable[name],
+                  disable: variable.disabled()
                   "
               />
             </td>
