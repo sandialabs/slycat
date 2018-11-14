@@ -7,3 +7,7 @@
 label[for="font-size"] {
   margin-left: 20px;
 }
+
+.font-family-dropdown .btn .caret {
+    margin-left: 10px;
+}

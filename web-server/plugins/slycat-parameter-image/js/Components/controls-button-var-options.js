@@ -67,7 +67,7 @@ export default function ControlsButtonVarOptions(props) {
                     <div className="dropdown font-family-dropdown">
                       <button className="btn btn-default dropdown-toggle" type="button" id="font-family" 
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Dropdown
+                        Arial
                         <span className="caret"></span>
                       </button>
                       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
