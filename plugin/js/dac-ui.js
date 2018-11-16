@@ -5,12 +5,34 @@
 // S. Martin
 // 1/15/2015
 
-define("dac-model", ["slycat-web-client", "slycat-dialog", "dac-layout", "dac-request-data",
-                     "dac-alpha-sliders", "dac-alpha-buttons", "dac-scatter-plot", "dac-plots",
-					 "dac-table", "dac-manage-selections", "jquery", "d3", "URI", "knockout", "domReady!"],
-function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_plot,
-         plots, metadata_table, selections, $, d3, URI, ko)
-{
+// slick grid styling
+import "../css/dac-ui.css";
+import "../css/slickGrid/slick.grid.css";
+import "../css/slickGrid/slick-default-theme.css";
+import "../css/slickGrid/slick.headerbuttons.css";
+import "../css/slickGrid/slick-slycat-theme.css";
+
+// dial-a-cluster ui
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
+import layout from "./dac-layout.js";
+import request from "./dac-request-data.js";
+import alpha_sliders from "./dac-alpha-sliders.js";
+import alpha_buttons from "./dac-alpha-buttons.js";
+import scatter_plot from "./dac-scatter-plot.js";
+import plots from "./dac-plots.js";
+import metadata_table from "./dac-table.js";
+import selections from "./dac-manage-selections.js";
+import URI from "urijs";
+import "bootstrap";
+import "js/jquery.layout-latest.min.js";
+import "./jquery-ui-1.10.4.custom.min.js";
+
+// edit and info pulldowns
+//import "js/dac-parse-log.js";
+
+// Wait for document ready
+$(document).ready(function() {
 
     // controls on top or above scatter plot
     var CONTROL_BAR = "scatter-plot";
@@ -49,6 +71,11 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     var MAX_PLOT_NAME = 20;
     var MAX_SLIDER_NAME = 20;
     var MAX_COLOR_NAME = 20;
+
+    // constant for maximum number of editable column categories
+    var MAX_CATS = 50;
+     // constant for maximum length of freetext in editable column
+    var MAX_FREETEXT_LEN = 500;
 
     // waits 1 minute past last successful progress update
     var endTime = Number(new Date()) + ONE_MINUTE;
@@ -159,11 +186,11 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                     ("artifact:dac-options" in result)) {
 
                     // load preference data
-                    $.when(request.get_parameters("dac-var-include-columns"),
-                           request.get_parameters("dac-metadata-include-columns"),
-                           request.get_parameters("dac-cont-colormap"),
-                           request.get_parameters("dac-disc-colormap"),
-                           request.get_parameters("dac-options")).then(
+                    $.when(request.get_parameters("dac-var-include-columns", mid),
+                           request.get_parameters("dac-metadata-include-columns", mid),
+                           request.get_parameters("dac-cont-colormap", mid),
+                           request.get_parameters("dac-disc-colormap", mid),
+                           request.get_parameters("dac-options", mid)).then(
                            function (var_include, meta_include, cont_color, disc_color, options) {
 
                                 // set var/meta inclusion
@@ -191,6 +218,13 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 
                                 // set options -- control bar
                                 CONTROL_BAR = options[0][5];
+
+                                // set options -- editable columns
+                                // if statement to ensure backwards compatiblity
+                                if (options[0].length > 6) {
+                                    MAX_CATS = options[0][6];
+                                    MAX_FREETEXT_LEN = options[0][7];
+                                };
 
                                 // start model
                                 launch_model();
@@ -221,7 +255,7 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     {
 
     	// load ui parameters and initialize dial-a-cluser layout
-	    $.when (request.get_parameters("dac-ui-parms")).then(
+	    $.when (request.get_parameters("dac-ui-parms", mid)).then(
 			function (ui_parms)
 			{
 
@@ -229,7 +263,9 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
     			var ALPHA_STEP = parseFloat(ui_parms["ALPHA_STEP"]);
 
     			// default width for the alpha sliders (in pixels)
-    			var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
+                //var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
+     			// updated for download button
+    			var ALPHA_SLIDER_WIDTH = 190;
 
     			// default height of alpha buttons (in pixels)
     			var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
@@ -293,18 +329,17 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                 document.body.addEventListener("DACSubsetChanged", subset_changed);
 
                 // load all relevant data and set up panels
-                $.when(request.get_table_metadata("dac-variables-meta"),
-		   	           request.get_table("dac-variables-meta"),
-		   	           request.get_table_metadata("dac-datapoints-meta"),
-			           request.get_table("dac-datapoints-meta")).then(
+                $.when(request.get_table_metadata("dac-variables-meta", mid),
+		   	           request.get_table("dac-variables-meta", mid),
+		   	           request.get_table_metadata("dac-datapoints-meta", mid),
+			           request.get_table("dac-datapoints-meta", mid)).then(
 		   	           function (variables_meta, variables, data_table_meta, data_table)
 		   	                {
-
                                 // change variables included from null to list of indices, if necessary
                                 if (var_include_columns == null) {
 
                                     var_include_columns = [];
-                                    for (i = 0; i < variables_meta[0]["row-count"]; i++) {
+                                    for (var i = 0; i < variables_meta[0]["row-count"]; i++) {
                                         var_include_columns.push(i);
                                     }
                                 }
@@ -319,12 +354,12 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
                                 }
 
 		   	                    // set up the alpha sliders
-				                alpha_sliders.setup (ALPHA_STEP, variables_meta[0]["row-count"],
+				                alpha_sliders.setup(ALPHA_STEP, variables_meta[0]["row-count"],
 				                                         variables[0]["data"][0], MAX_SLIDER_NAME,
 				                                         var_include_columns);
 
 				                // set up the alpha buttons
-				                alpha_buttons.setup (variables_meta[0]["row-count"], var_include_columns);
+				                alpha_buttons.setup(variables_meta[0]["row-count"], var_include_columns);
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
@@ -338,9 +373,46 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns);
 
-				                // set up table (propagate selections through to scatter plot)
-				                metadata_table.setup(data_table_meta, data_table, meta_include_columns);
-
+				                // set up table
+				                client.get_model(
+                                {
+                                    mid: mid,
+                                    success: function (result)
+                                    {
+                                            // editable column data (initialize to empty)
+                                        var editable_columns = {num_rows: 0,
+                                                                attributes: [],
+                                                                categories: [],
+                                                                data: []};
+                                            // check for editable columns
+                                        if ('artifact:dac-editable-columns' in result)
+                                        {
+                                                // load editable columns
+                                            client.get_model_parameter({
+                                                mid: mid,
+                                                aid: "dac-editable-columns",
+                                                success: function (result)
+                                                {
+                                                    // initialize table with editable columns
+                                                    editable_columns = result;
+                                                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                                            editable_columns, MAX_FREETEXT_LEN);
+                                                    },
+                                                error: function () {
+                                                        // notify user that editable columns exist, but could not be loaded
+                                                    dialog.ajax_error('Server error: could not load editable column data.')
+                                                        ("","","")
+                                                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                                            editable_columns, MAX_FREETEXT_LEN);
+                                                    }
+                                            });
+                                        } else {
+                                                // initialize table with no editable columns
+                                            metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                                            editable_columns, MAX_FREETEXT_LEN);
+                                        }
+                                    }
+                                });
 		   	                },
 		   	                function () {
 		   	                    dialog.ajax_error ("Server error: could not load initial data.")("","","");
@@ -462,6 +534,4 @@ function(client, dialog, layout, request, alpha_sliders, alpha_buttons, scatter_
             metadata_table.jump_to (jump_to);
         }
     }
-
-
 });

@@ -5,11 +5,14 @@
 // S. Martin
 // 1/15/2015
 
-define ("dac-layout",["jquery", "dac-scatter-plot", "dac-plots", "dac-table"],
-	function($, scatter_plot, plots, metadata_table) { return {
-	 
-	setup: function(ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
-		SCATTER_BUTTONS_HEIGHT, CONTROL_BAR_POSITION)
+import scatter_plot from "./dac-scatter-plot.js";
+import plots from "./dac-plots.js";
+import metadata_table from "./dac-table.js";
+
+export default {
+
+    setup: function(ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
+        SCATTER_BUTTONS_HEIGHT, CONTROL_BAR_POSITION)
     {
 
         if (CONTROL_BAR_POSITION == "scatter-plot")
@@ -85,17 +88,17 @@ define ("dac-layout",["jquery", "dac-scatter-plot", "dac-plots", "dac-table"],
                 $("#dac-model").height($(window).height());
             });
 
-	    } else {
+        } else {
 
-	        // set up control bar at very top of UI
+            // set up control bar at very top of UI
 
-	        // remove scatter plot control bar
-	        $("#dac-control-bar-scatter-plot").remove();
+            // remove scatter plot control bar
+            $("#dac-control-bar-scatter-plot").remove();
 
             // rename mds-pane
             $("#dac-mds-pane-bar-top").attr("id", "dac-mds-pane");
 
-	        // set up remainder of jquery layout
+            // set up remainder of jquery layout
             $("#dac-model").layout(
             {
                 applyDefaultStyles: true,
@@ -148,7 +151,6 @@ define ("dac-layout",["jquery", "dac-scatter-plot", "dac-plots", "dac-table"],
                 $("#dac-model").height($(window).height());
             });
 
-	    }
-	}
-	
-}; });
+        }
+    }
+};

@@ -4,13 +4,16 @@
 // S. Martin
 // 6/7/2018
 
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings",
-        "knockout", "knockout-mapping", "jquery", "d3", "slycat_file_uploader_factory"],
-    function(server_root, client, dialog, markings, ko, mapping, $, d3, fileUploader)
-{
+import api_root from "js/slycat-api-root";
+import client from "js/slycat-web-client";
+import dialog from "js/slycat-dialog";
+import ko from "knockout";
+import mapping from "knockout-mapping";
+import d3 from "d3";
+import dacWizardUI from "../html/dac-preferences-wizard.html";
 
-    function constructor(params)
-    {
+function constructor(params)
+{
 
     var component = {};
 
@@ -59,13 +62,13 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 Spectral:{9:["#d53e4f","#f46d43","#fdae61","#fee08b","#ffffbf","#e6f598","#abdda4","#66c2a5","#3288bd"]},
                 RdYlGn:{9:["#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850"]}};
     var cb_disc={Accent:{8:["#7fc97f","#beaed4","#fdc086","#ffff99","#386cb0","#f0027f","#bf5b17","#666666"]},
-                 Dark2:{8:["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02","#a6761d","#666666"]},
-                 Paired:{8:["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00"]},
-                 Pastel1:{8:["#fbb4ae","#b3cde3","#ccebc5","#decbe4","#fed9a6","#ffffcc","#e5d8bd","#fddaec"]},
-                 Pastel2:{8:["#b3e2cd","#fdcdac","#cbd5e8","#f4cae4","#e6f5c9","#fff2ae","#f1e2cc","#cccccc"]},
-                 Set1:{8:["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf"]},
-                 Set2:{8:["#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494","#b3b3b3"]},
-                 Set3:{8:["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5"]}};
+                Dark2:{8:["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02","#a6761d","#666666"]},
+                Paired:{8:["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00"]},
+                Pastel1:{8:["#fbb4ae","#b3cde3","#ccebc5","#decbe4","#fed9a6","#ffffcc","#e5d8bd","#fddaec"]},
+                Pastel2:{8:["#b3e2cd","#fdcdac","#cbd5e8","#f4cae4","#e6f5c9","#fff2ae","#f1e2cc","#cccccc"]},
+                Set1:{8:["#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf"]},
+                Set2:{8:["#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494","#b3b3b3"]},
+                Set3:{8:["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5"]}};
 
     // sequential or diverging color scales (defaults to sequential)
     component.dac_scale_type = ko.observable("sequential");
@@ -85,6 +88,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     var DEF_MAX_POINTS_ANIMATE = 2500;
     var DEF_SCATTER_PLOT_TYPE = "circle";
     var DEF_CONTROL_BAR_POSITION = "scatter-plot";
+    var DEF_MAX_CATS = 50;
+    var DEF_MAX_FREETEXT_LEN = 500;
 
     // UI parameters
     component.dac_max_label_length = ko.observable(DEF_MAX_LABEL_LENGTH);
@@ -93,18 +98,25 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     component.dac_max_points_animate = ko.observable(DEF_MAX_POINTS_ANIMATE);
     component.dac_scatter_plot_type = ko.observable(DEF_SCATTER_PLOT_TYPE);
     component.dac_control_bar_position = ko.observable(DEF_CONTROL_BAR_POSITION);
+    component.dac_max_cats = ko.observable(DEF_MAX_CATS);
+    component.dac_max_freetext_len = ko.observable(DEF_MAX_FREETEXT_LEN);
 
     // private versions of UI parameters (converted to integers)
     var dac_max_label_length = null;
     var dac_max_time_points = null;
     var dac_max_num_plots = null;
     var dac_max_points_animate = null;
+    var dac_max_cats = null;
+    var dac_max_freetext_len = null;
 
     // need a large dialog for color palettes
     $(".modal-dialog").addClass("modal-lg");
 
     // if the user selects the cancel button we quit, doing nothing
-    component.cancel = function() { };
+    component.cancel = function() {
+        // revert to normal modal dialog size
+       $(".modal-dialog").removeClass("modal-lg");
+    };
 
     // this function is called to select variables to
     // include (after selecting metadata)
@@ -118,7 +130,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             success: function(data) {
 
                 // time series names
-                var_names = data[0];
+                console.log(data)
+                var var_names = data[0];
 
                 // attributes for gui
                 var attributes = [];
@@ -480,6 +493,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                 component.dac_scatter_plot_type(options[4]);
                 component.dac_control_bar_position(options[5]);
 
+                // keep backwards compatiblity
+                if (options.length > 6) {
+                    component.dac_max_cats(options[6]);
+                    component.dac_max_freetext_len(options[7]);
+                }
             }
         });
 
@@ -504,7 +522,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         dac_max_time_points = Math.round(Number(component.dac_max_time_points()));
         dac_max_num_plots = Math.round(Number(component.dac_max_num_plots()));
         dac_max_points_animate = Math.round(Number(component.dac_max_points_animate()));
-
+        dac_max_cats = Math.round(Number(component.dac_max_cats()));
+        dac_max_freetext_len = Math.round(Number(component.dac_max_freetext_len()));
+        
         // check options
 
         if (dac_max_label_length < 5) {
@@ -527,11 +547,18 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             // time points must be at least 10
             dialog.ajax_error("Please make sure the maximum number of points to animate is at least 10.")("","","");
 
-        } else {
-
+        }
+        else if (component.dac_max_cats() < 5) {
+            // maximum categories must be at least 5
+            dialog.ajax_error("Please make sure the maximum number of categories is at least 5.")("","","");
+        } 
+        else if (component.dac_max_freetext_len < 10) {
+            // maximum freetext length must be at least 10
+            dialog.ajax_error("Please make sure the maximum length of freetext is at least 10.")("","","");
+        } 
+        else {
             // everything is checked, finish model
             component.finish();
-
         }
     }
 
@@ -544,12 +571,16 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         component.dac_max_points_animate(DEF_MAX_POINTS_ANIMATE);
         component.dac_scatter_plot_type(DEF_SCATTER_PLOT_TYPE);
         component.dac_control_bar_position(DEF_CONTROL_BAR_POSITION);
+        component.dac_max_cats(DEF_MAX_CATS);
+        component.dac_max_freetext_len(DEF_MAX_FREETEXT_LEN);
 
     };
 
     // very last function called to launch model
     component.go_to_model = function() {
-      location = server_root + 'models/' + component.model._id();
+        // revert to normal modal dialog size
+        $(".modal-dialog").removeClass("modal-lg");
+        location = 'models/' + component.model._id();
     };
 
     // this script gets called at the end of the 4th tab (after selecting columns to include)
@@ -596,7 +627,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
                                             value: [dac_max_label_length, dac_max_time_points,
                                                     dac_max_num_plots, dac_max_points_animate,
                                                     component.dac_scatter_plot_type(),
-                                                    component.dac_control_bar_position()],
+                                                    component.dac_control_bar_position(),
+                                                    dac_max_cats, dac_max_freetext_len],
                                             aid: "dac-options",
                                             input: true,
                                             success: function () {
@@ -680,10 +712,9 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     };
 
     return component;
-    }
+}
 
-    return {
-    viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/dac-preferences-wizard/ui.html"}
-    };
-});
+export default {
+viewModel: constructor,
+template: dacWizardUI
+};

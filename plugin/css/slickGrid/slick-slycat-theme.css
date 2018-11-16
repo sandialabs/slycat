@@ -63,18 +63,18 @@ rights in this software.
 }
 .slick-header-column:hover .icon-sort-off {
 	border: 1px solid transparent;
-	background: transparent url(../images/sort-asc-light.png) no-repeat center center;
+	background: transparent url(../../../../slycat/web-server/img/sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
 	border: 1px solid #C7C7C7 !important;
 }
 .icon-sort-ascending {
 	border: 1px solid transparent;
-	background: transparent url(../images/sort-asc-gray.png) no-repeat center center;
+	background: transparent url(../../../../slycat/web-server/img/sort-asc-gray.png) no-repeat center center;
 }
 .icon-sort-descending {
 	border: 1px solid transparent;
-	background: transparent url(../images/sort-desc-gray.png) no-repeat center center;
+	background: transparent url(../../../../slycat/web-server/img/sort-desc-gray.png) no-repeat center center;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover

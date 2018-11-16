@@ -110,6 +110,20 @@ def parse_mat_file(file):
 
     return attributes, dimensions, data
 
+def parse_list_file(file):
+    """
+    parses a text file with a list, one string per row
+    :param file: list file to be parsed (strings, one per row)
+    :return: a list of strings
+    """
+    cherrypy.log.error ("Started DAC list file parser.")
+    # get rows of file
+    rows = [row.strip() for row in file.splitlines()]
+    # remove any empty rows
+    rows = filter(None, rows)
+    # return only unique rows
+    rows = list(set(rows))
+    return rows
 
 def parse(database, model, input, files, aids, **kwargs):
 
@@ -135,14 +149,17 @@ def parse(database, model, input, files, aids, **kwargs):
     # "matrix" for matrix.  for example, aids: ["variable", "0", "table"] is
     # the default, while aids: ["variable", "1", "mat"] indicates that the
     # file is the 2nd matrix in the aid and should be parsed with no header row.
+    # ["variable", "0", "list"] indicates a text file with a list, one per row.
 
     # set defaults (table, array 0)
     table = True
+    list_file = False
     array_col = 0
 
     # change defaults for three parameters
     if len(aids) == 3:
         table = (aids[2] == "table")
+        list_file = (aids[2] == "list")
         array_col = int(aids[1])
 
     # change defaults for two parameters
@@ -165,7 +182,12 @@ def parse(database, model, input, files, aids, **kwargs):
             slycat.web.server.put_model_arrayset(database, model, aid, input)
             slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
             slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_col, data)
-
+    elif list_file:
+         # list file (one string per row)
+         # get strings in list
+        list_data = parse_list_file(files[0])
+         # put list in slycat database as a model parameter
+        slycat.web.server.put_model_parameter(database, model, aids[0], list_data, input)
     else:
 
         # matrix parser (newer parser)
@@ -188,5 +210,6 @@ def register_slycat_plugin(context):
     context.register_parser("dac-var-files-parser", "DAC .var files (and variables.meta file)", ["dac-var-files"], parse)
     context.register_parser("dac-time-files-parser", "DAC .time files", ["dac-time-files"], parse)
     context.register_parser("dac-dist-files-parser", "DAC .dist files", ["dac-dist-files"], parse)
+    context.register_parser("dac-category-file-parser", "DAC category list (text file, one category per line)", ["dac-cat-file"], parse)
 
 

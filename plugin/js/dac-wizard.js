@@ -4,13 +4,18 @@
 // S. Martin
 // 3/31/2017
 
-define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-markings",
-        "knockout", "knockout-mapping", "jquery", "slycat_file_uploader_factory"],
-    function(server_root, client, dialog, markings, ko, mapping, $, fileUploader)
-{
+import api_root from "js/slycat-api-root";
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
+import markings from "js/slycat-markings";
+import ko from "knockout";
+import mapping from "knockout-mapping";
+import fileUploader from "js/slycat-file-uploader-factory";
+import dacWizardUI from "../html/dac-wizard.html";
 
-    function constructor(params)
-    {
+
+function constructor(params)
+{
 
     var component = {};
 
@@ -24,23 +29,23 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // DAC generic format file selections
     component.browser_dac_file = mapping.fromJS({
-        path:null, 
-        selection: [], 
+        path:null,
+        selection: [],
         progress: ko.observable(null),
     });
     component.browser_var_files = mapping.fromJS({
-        path:null, 
-        selection: [], 
+        path:null,
+        selection: [],
         progress: ko.observable(null),
     });
     component.browser_time_files = mapping.fromJS({
-        path:null, 
-        selection: [], 
+        path:null,
+        selection: [],
         progress: ko.observable(null),
     });
     component.browser_dist_files = mapping.fromJS({
-        path:null, 
-        selection: [], 
+        path:null,
+        selection: [],
         progress: ko.observable(null),
     });
 
@@ -66,6 +71,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
     // parameters for testing PTS ingestion
     component.csv_min_size = ko.observable(null);
     component.min_num_dig = ko.observable(null);
+
+    var num_vars = 0;
 
     // process pts continue or stop flag
     var process_continue = false;
@@ -95,7 +102,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         // make sure upload state says nothing uploaded
         dac_upload = false;
         csv_meta_upload = false;
-        pref_defaults_upload = false;
+        var pref_defaults_upload = false;
 
         // set PTS parameter defaults
         component.csv_min_size = 10;
@@ -179,8 +186,8 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         // get all file names
         var files = component.browser_var_files.selection();
         var file_names = [];
-        for (i = 0; i < files.length; i++) { 
-            file_names[i] = files[i].name; 
+        for (var i = 0; i < files.length; i++) {
+            file_names[i] = files[i].name;
         }
 
         // look for variables.meta
@@ -233,14 +240,14 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
             success: function(metadata) {
 
                 // number of rows in variables.meta file (global variable)
-                num_vars = metadata.arrays[0].shape[0];
+                let num_vars = metadata.arrays[0].shape[0];
 
                 // get header names
-                headers = metadata.arrays[0].attributes;
-                num_headers = headers.length;
+                var headers = metadata.arrays[0].attributes;
+                var num_headers = headers.length;
 
                 // check header row in variables.meta
-                headers_OK = true;
+                var headers_OK = true;
                 if (num_headers == 4) {
 
                     if (headers[0].name != 'Name') { headers_OK = false };
@@ -254,7 +261,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
                 // check variable file names
                 var all_var_files_found = true;
-                for (i = 1; i <= num_vars; i++) {
+                for (var i = 1; i <= num_vars; i++) {
                     var_file_inds[i-1] = file_names.indexOf("variable_" + i.toString() + ".var");
                     if (var_file_inds[i-1] == -1) {
                         all_var_files_found = false;
@@ -285,11 +292,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         // get all file names
         var files = component.browser_time_files.selection();
         var file_names = [];
-        for (i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
+        for (var i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
 
         // check variable file names
         var all_time_files_found = true;
-        for (i = 1; i <= num_vars; i++) {
+        for (var i = 1; i <= num_vars; i++) {
             time_file_inds[i-1] = file_names.indexOf("variable_" + i.toString() + ".time");
             if (time_file_inds[i-1] == -1) {
                 all_time_files_found = false;
@@ -314,11 +321,11 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         // get all file names
         var files = component.browser_dist_files.selection();
         var file_names = [];
-        for (i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
+        for (var i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
 
         // check variable file names
         var all_dist_files_found = true;
-        for (i = 1; i <= num_vars; i++) {
+        for (var i = 1; i <= num_vars; i++) {
             dist_file_inds[i-1] = file_names.indexOf("variable_" + i.toString() + ".dist");
             if (dist_file_inds[i-1] == -1) {
                 all_dist_files_found = false;
@@ -479,45 +486,45 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         var dac_ui_parms = {
 
             // the step size for the alpha slider (varies from 0 to 1)
-    	    ALPHA_STEP: 0.001,
+            ALPHA_STEP: 0.001,
 
-    	    // default width for the alpha sliders (in pixels)
-    	    ALPHA_SLIDER_WIDTH: 170,
+            // default width for the alpha sliders (in pixels)
+            ALPHA_SLIDER_WIDTH: 170,
 
-    	    // default height of alpha buttons (in pixels)
+            // default height of alpha buttons (in pixels)
             ALPHA_BUTTONS_HEIGHT: 33,
 
             // number of points over which to stop animation
-		    MAX_POINTS_ANIMATE: 2500,
+            MAX_POINTS_ANIMATE: 2500,
 
-		    // border around scatter plot (fraction of 1)
-		    SCATTER_BORDER: 0.025,
+            // border around scatter plot (fraction of 1)
+            SCATTER_BORDER: 0.025,
 
             // scatter button toolbar height
-		    SCATTER_BUTTONS_HEIGHT: 37,
+            SCATTER_BUTTONS_HEIGHT: 37,
 
-		    // scatter plot colors (css/d3 named colors)
-		    POINT_COLOR: 'whitesmoke',
-		    POINT_SIZE: 5,
-		    NO_SEL_COLOR: 'gray',
-		    SELECTION_1_COLOR: 'red',
-		    SELECTION_2_COLOR: 'blue',
-		    COLOR_BY_LOW: 'white',
-		    COLOR_BY_HIGH: 'dimgray',
-		    OUTLINE_NO_SEL: 1,
-		    OUTLINE_SEL: 2,
+            // scatter plot colors (css/d3 named colors)
+            POINT_COLOR: 'whitesmoke',
+            POINT_SIZE: 5,
+            NO_SEL_COLOR: 'gray',
+            SELECTION_1_COLOR: 'red',
+            SELECTION_2_COLOR: 'blue',
+            COLOR_BY_LOW: 'white',
+            COLOR_BY_HIGH: 'dimgray',
+            OUTLINE_NO_SEL: 1,
+            OUTLINE_SEL: 2,
 
-		    // pixel adjustments for d3 time series plots
-			PLOTS_PULL_DOWN_HEIGHT: 38,
-			PADDING_TOP: 10,        // 10 (values when plot selectors were)
-			PADDING_BOTTOM: 14,     // 24 (at the bottom of the plots)
-		    PADDING_LEFT: 37,
-			PADDING_RIGHT: 10,
-			X_LABEL_PADDING: 4,
-			Y_LABEL_PADDING: 13,
-			LABEL_OPACITY: 0.2,
-			X_TICK_FREQ: 80,
-			Y_TICK_FREQ: 40,
+            // pixel adjustments for d3 time series plots
+            PLOTS_PULL_DOWN_HEIGHT: 38,
+            PADDING_TOP: 10,        // 10 (values when plot selectors were)
+            PADDING_BOTTOM: 14,     // 24 (at the bottom of the plots)
+            PADDING_LEFT: 37,
+            PADDING_RIGHT: 10,
+            X_LABEL_PADDING: 4,
+            Y_LABEL_PADDING: 13,
+            LABEL_OPACITY: 0.2,
+            X_TICK_FREQ: 80,
+            Y_TICK_FREQ: 40,
 
         };
 
@@ -618,7 +625,7 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
 
     // very last function called to launch model
     component.go_to_model = function() {
-      location = server_root + 'models/' + component.model._id();
+      location = api_root + 'models/' + component.model._id();
     };
 
     component.finish_model = function () {
@@ -717,11 +724,15 @@ define(["slycat-server-root", "slycat-web-client", "slycat-dialog", "slycat-mark
         component.tab(target);
     };
 
-    return component;
-    }
+return component;
+}
 
-    return {
+// export default {
+//     viewModel: constructor,
+//     template: {require: "text!" + api_root + "resources/wizards/DAC/ui.html"}
+// }
+
+export default {
     viewModel: constructor,
-    template: { require: "text!" + server_root + "resources/wizards/DAC/ui.html"}
-    };
-});
+    template: dacWizardUI,
+}
