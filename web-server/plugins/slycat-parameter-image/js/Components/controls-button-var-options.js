@@ -15,10 +15,6 @@ export default function ControlsButtonVarOptions(props) {
     $('#' + modalId).modal('hide');
   }
 
-  function apply(e) {
-    $('#' + modalId).modal('hide');
-  }
-
   let axes_variables = [];
   for(let axes_variable of props.axes_variables)
   {
@@ -47,7 +43,12 @@ export default function ControlsButtonVarOptions(props) {
   ];
 
   const fontItems = fonts.map((font, index) =>
-    <li key={index} style={{fontFamily: font.fontFamily}}><a href="#">{font.name}</a></li>
+    <li key={index} 
+      style={{fontFamily: font.fontFamily}} 
+      className={font.fontFamily == props.font_family ? 'active' : 'notactive'}
+    >
+      <a href="#" onClick={props.onFontFamilyChange}>{font.name}</a>
+    </li>
   );
 
   return (
@@ -66,8 +67,8 @@ export default function ControlsButtonVarOptions(props) {
                     <label htmlFor="font-family">Font</label>
                     <div className="dropdown font-family-dropdown">
                       <button className="btn btn-default dropdown-toggle" type="button" id="font-family" 
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Arial
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style={{fontFamily: props.font_family}}>
+                        {props.font_family}
                         <span className="caret"></span>
                       </button>
                       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
@@ -94,10 +95,7 @@ export default function ControlsButtonVarOptions(props) {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-default" onClick={closeModal}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-primary" onClick={apply}>
-                Apply
+                Close
               </button>
             </div>
           </div>

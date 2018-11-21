@@ -1,5 +1,3 @@
-// import * as d3 from 'd3';
-
 import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
 import slick_grid_css from "css/slickgrid/slick.grid.css";
 import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
@@ -29,6 +27,9 @@ import "jquery-ui";
 import "js/jquery.layout-latest.min";
 import "js/slycat-range-slider"; 
 import "./category-select";
+
+import { createStore } from 'redux';
+import slycat from './reducers';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -82,6 +83,9 @@ $(document).ready(function() {
   var layout = null;
 
   var filterxhr = null;
+
+  var axes_font_size = 12;
+  var axes_font_family = "Arial";
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -149,6 +153,7 @@ $(document).ready(function() {
       {
         model = result;
         bookmarker = bookmark_manager.create(model.project, model._id);
+
         input_columns = model["artifact:input-columns"];
         output_columns = model["artifact:output-columns"];
         image_columns = model["artifact:image-columns"];
@@ -245,6 +250,20 @@ $(document).ready(function() {
     bookmarker.getState(function(state)
     {
       bookmark = state;
+
+      // Create Redux store and set its state based on what's in the bookmark
+      window.store = createStore(slycat, bookmark.state);
+
+      // Save Redux state to bookmark whenever it changes
+      const bookmarkState = () => {
+        bookmarker.updateState({"state" : store.getState()});
+      };
+      window.store.subscribe(bookmarkState);
+
+      // Set local variables based on Redux store
+      axes_font_size = store.getState().fontSize;
+      axes_font_family = store.getState().fontFamily;
+
       // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
       filter_manager.set_bookmark(bookmark);
       setup_controls();
@@ -650,6 +669,8 @@ $(document).ready(function() {
         "auto-scale" : auto_scale,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
+        axes_font_size : axes_font_size,
+        axes_font_family : axes_font_family,
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)

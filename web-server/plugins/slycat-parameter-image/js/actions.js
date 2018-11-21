@@ -24,5 +24,5 @@ export function changeFontSize(size) {
 }
 
 export function changeFontFamily(family) {
-  return { type: CHANGE_FONT_FAMILY, family }
+  return { type: CHANGE_FONT_FAMILY, fontFamily: family }
 }

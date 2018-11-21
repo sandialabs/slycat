@@ -79,6 +79,8 @@ $.widget("parameter_image.scatterplot",
     x_axis_date: true,
     y_axis_date: false,
     z_axis_date: false,
+    axes_font_size: 12,
+    axes_font_family: "Arial",
   },
 
   syncing_videos : [],
@@ -345,6 +347,41 @@ $.widget("parameter_image.scatterplot",
       self.element.trigger("selection-changed", [self.options.selection]);
     });
     self._filterIndices();
+
+    const update_axes_font_size = () => {
+      if(self.options.axes_font_size != store.getState().fontSize)
+      {
+        self.options.axes_font_size = store.getState().fontSize;
+        self.x_axis_layer.selectAll("text")
+          .style("font-size", self.options.axes_font_size)
+          ;
+        self.y_axis_layer.selectAll("text")
+          .style("font-size", self.options.axes_font_size)
+          ;
+        self.legend_layer.selectAll("text")
+          .style("font-size", self.options.axes_font_size)
+          ;
+      }
+    };
+
+    const update_axes_font_family = () => {
+      if(self.options.axes_font_family != store.getState().fontFamily)
+      {
+        self.options.axes_font_family = store.getState().fontFamily;
+        self.x_axis_layer.selectAll("text")
+          .style("font-family", self.options.axes_font_family)
+          ;
+        self.y_axis_layer.selectAll("text")
+          .style("font-family", self.options.axes_font_family)
+          ;
+        self.legend_layer.selectAll("text")
+          .style("font-family", self.options.axes_font_family)
+          ;
+      }
+    };
+
+    window.store.subscribe(update_axes_font_size);
+    window.store.subscribe(update_axes_font_family);
   },
 
   _filterIndices: function()
@@ -785,6 +822,8 @@ $.widget("parameter_image.scatterplot",
         .selectAll("text")  
           // .style("text-anchor", "end")
           .style("text-anchor", "start")
+          .style("font-size", self.options.axes_font_size)
+          .style("font-family", self.options.axes_font_family)
           // .attr("dx", "0em")
           // .attr("dy", "0em")
           // .attr("x", "0")
@@ -816,6 +855,9 @@ $.widget("parameter_image.scatterplot",
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
+        .selectAll("text")  
+          .style("font-size", self.options.axes_font_size)
+          .style("font-family", self.options.axes_font_family)
         ;
     }
 
@@ -843,6 +885,8 @@ $.widget("parameter_image.scatterplot",
         .attr("y", y)
         .style("text-anchor", "start")
         .style("font-weight", "bold")
+        .style("font-size", self.options.axes_font_size)
+        .style("font-family", self.options.axes_font_family)
         .text(self.options.x_label)
         ;
     }
@@ -861,6 +905,8 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "rotate(-90," + x +"," + y + ")")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
+        .style("font-size", self.options.axes_font_size)
+        .style("font-family", self.options.axes_font_family)
         .text(self.options.y_label)
         ;
     }
@@ -1089,6 +1135,8 @@ $.widget("parameter_image.scatterplot",
       self.legend_axis_layer
         .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
         .call(self.legend_axis)
+        .style("font-size", self.options.axes_font_size)
+        .style("font-family", self.options.axes_font_family)
         ;
     }
 
@@ -1108,6 +1156,8 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "rotate(-90," + x +"," + y + ")")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
+        .style("font-size", self.options.axes_font_size)
+        .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label)
         ;
     }
