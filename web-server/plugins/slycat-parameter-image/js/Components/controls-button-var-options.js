@@ -1,9 +1,6 @@
-import Papa from "papaparse";
-import api_root from "js/slycat-api-root";
-import _ from "lodash";
-import {dialog} from "js/slycat-dialog";
 import React, { useState } from "react";
 import ControlsButton from './controls-button';
+import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
@@ -20,6 +17,8 @@ export default function ControlsButtonVarOptions(props) {
   {
     axes_variables.push({
       'Axis Type': 'Linear',
+      // 'Alex Testing Bool True': true,
+      // 'Alex Testing Bool False': false,
       disabled: false,
       hidden: false,
       lastSelected: false,
@@ -28,6 +27,23 @@ export default function ControlsButtonVarOptions(props) {
       tooltip: '',
     });
   }
+  // Testing various properties
+  // axes_variables[1].disabled = true;
+
+  let axes_properties = [{name: 'Axis Type', 
+                          type: 'select', 
+                          values: ['Linear','Date & Time','Log']
+                        }];
+  // // Testing boolean property
+  // axes_properties.push({
+  //   name: 'Alex Testing Bool True',
+  //   type: 'bool',
+  // });
+  // // Testing boolean property
+  // axes_properties.push({
+  //   name: 'Alex Testing Bool False',
+  //   type: 'bool',
+  // });
 
   const fonts = [
     {name: "Arial", fontFamily: "Arial", },
@@ -87,14 +103,15 @@ export default function ControlsButtonVarOptions(props) {
               </div>
               <hr />
               <slycat-table-ingestion 
-                params={`variables: ` + JSON.stringify(axes_variables) + `,
-                        properties: [
-                          {name: 'Axis Type', type: 'select', values: ['Linear','Date & Time','Log']}
-                        ]`}
+                params={`variables: ${JSON.stringify(axes_variables)},
+                        properties: ${JSON.stringify(axes_properties)}`}
               ></slycat-table-ingestion>
+              <SlycatTableIngestion variables={axes_variables}
+                properties={axes_properties}
+              />
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-default" onClick={closeModal}>
+              <button type="button" className="btn btn-primary" onClick={closeModal}>
                 Close
               </button>
             </div>
