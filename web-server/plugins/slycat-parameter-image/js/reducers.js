@@ -1,11 +1,13 @@
 import {
   CHANGE_FONT_SIZE,
   CHANGE_FONT_FAMILY,
+  CHANGE_AXES_VARIABLE_SCALE,
 } from './actions';
 
 const initialState = {
   fontSize: 12,
-  fontFamily: "Arial"
+  fontFamily: "Arial",
+  axesVariables: {},
 }
 
 export default function slycat(state = initialState, action) {
@@ -17,6 +19,10 @@ export default function slycat(state = initialState, action) {
     case CHANGE_FONT_FAMILY:
       return Object.assign({}, state, {
         fontFamily: action.fontFamily
+      })
+    case CHANGE_AXES_VARIABLE_SCALE:
+      return Object.assign({}, state, {
+        axesVariables: Object.assign({}, state.axesVariables, {[action.axesVariable]: action.axesScale})
       })
     default:
       return state

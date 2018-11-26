@@ -7,16 +7,22 @@ import "../../css/controls-button-var-options.css";
 
 export default function ControlsButtonVarOptions(props) {
   const modalId = 'varOptionsModal';
+  const title = 'Edit Axes Scales';
 
   function closeModal(e) {
     $('#' + modalId).modal('hide');
   }
 
   let axes_variables = [];
-  for(let axes_variable of props.axes_variables)
+  for(let [index, axes_variable] of props.axes_variables.entries())
   {
+    let scale_type = 'Linear';
+    if(props.axes_variables_scale[index] !== undefined)
+    {
+      scale_type = props.axes_variables_scale[index];
+    }
     axes_variables.push({
-      'Axis Type': 'Linear',
+      'Axis Type': scale_type,
       // 'Alex Testing Bool True': true,
       // 'Alex Testing Bool False': false,
       disabled: false,
@@ -29,6 +35,7 @@ export default function ControlsButtonVarOptions(props) {
   }
   // Testing various properties
   // axes_variables[1].disabled = true;
+  // axes_variables[1].tooltip = 'Alex Testing Tooltip';
 
   let axes_properties = [{name: 'Axis Type', 
                           type: 'select', 
@@ -69,12 +76,12 @@ export default function ControlsButtonVarOptions(props) {
 
   return (
     <React.Fragment>
-      <ControlsButton icon="fa-cog" title="Set Variable Options" data_toggle="modal" data_target={'#' + modalId} />
+      <ControlsButton icon="fa-cog" title={title} data_toggle="modal" data_target={'#' + modalId} />
       <div className="modal fade" data-backdrop="static" id={modalId}>
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h3 className="modal-title">Edit Axes Scales</h3>
+              <h3 className="modal-title">{title}</h3>
             </div>
             <div className="modal-body">
               <div className="slycat-axes-font">
@@ -94,7 +101,7 @@ export default function ControlsButtonVarOptions(props) {
                   </div>
                   <div className="form-group">
                     <label htmlFor="font-size">Size</label>
-                    <input type="number" className="form-control" id="font-size"  max="40" min="6" step="1" 
+                    <input type="number" className="form-control" id="font-size" max="40" min="6" step="1" 
                       value={props.font_size} 
                       onChange={props.onFontSizeChange}
                     />
@@ -106,8 +113,10 @@ export default function ControlsButtonVarOptions(props) {
                 params={`variables: ${JSON.stringify(axes_variables)},
                         properties: ${JSON.stringify(axes_properties)}`}
               ></slycat-table-ingestion>
-              <SlycatTableIngestion variables={axes_variables}
+              <SlycatTableIngestion 
+                variables={axes_variables}
                 properties={axes_properties}
+                onChange={props.onAxesVariableScaleChange}
               />
             </div>
             <div className="modal-footer">

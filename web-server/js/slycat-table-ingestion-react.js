@@ -82,10 +82,10 @@ export default function SlycatTableIngestion(props) {
                 key={property.name + indexProps}
               >
                 <input type="checkbox"
-                  name={indexVars + variable.name + property.name + 'react'}
+                  name={indexVars}
                   value='true'
-                  disabled={variable.disabled ? 'disabled' : undefined}
-                  defaultChecked={variable[property.name] ? 'checked' : undefined}
+                  disabled={variable.disabled ? 'disabled' : false}
+                  defaultChecked={variable[property.name] ? 'checked' : false}
                 />
               </td>
             );
@@ -101,10 +101,11 @@ export default function SlycatTableIngestion(props) {
                   >
                     <input 
                       type='radio'
-                      name={indexVars + variable.name + property.name + 'react'}
+                      name={indexVars}
                       value={value}
-                      disabled={variable.disabled ? 'disabled' : undefined}
-                      defaultChecked={value == variable[property.name] ? 'checked' : undefined}
+                      disabled={variable.disabled ? 'disabled' : false}
+                      checked={value == variable[property.name] ? 'checked' : false}
+                      onChange={props.onChange}
                     />
                   </td>
                 )
