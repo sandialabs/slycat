@@ -86,6 +86,7 @@ $(document).ready(function() {
 
   var axes_font_size = 12;
   var axes_font_family = "Arial";
+  var axes_variables_scale = {};
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -263,6 +264,7 @@ $(document).ready(function() {
       // Set local variables based on Redux store
       axes_font_size = store.getState().fontSize;
       axes_font_family = store.getState().fontFamily;
+      axes_variables_scale = store.getState().axesVariables;
 
       // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
       filter_manager.set_bookmark(bookmark);
@@ -658,6 +660,9 @@ $(document).ready(function() {
         x_string: table_metadata["column-types"][x_index]=="string",
         y_string: table_metadata["column-types"][y_index]=="string",
         v_string: table_metadata["column-types"][v_index]=="string",
+        x_index: x_index,
+        y_index: y_index,
+        v_index: v_index,
         images: images,
         width: $("#scatterplot-pane").width(),
         height: $("#scatterplot-pane").height(),
@@ -671,6 +676,7 @@ $(document).ready(function() {
         "video-sync-time" : video_sync_time,
         axes_font_size : axes_font_size,
         axes_font_family : axes_font_family,
+        axes_variables_scale : axes_variables_scale,
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -1140,6 +1146,7 @@ $(document).ready(function() {
   {
     update_current_colorscale();
     $("#table").table("option", "colorscale", colorscale);
+    $("#scatterplot").scatterplot("option", "v_index", v_index);
     $("#scatterplot").scatterplot("update_color_scale_and_v", {
       v : v, 
       v_string : table_metadata["column-types"][v_index]=="string", 
@@ -1348,9 +1355,10 @@ $(document).ready(function() {
       success : function(result)
       {
         $("#scatterplot").scatterplot("option", {
+          x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
           x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          x_label:table_metadata["column-names"][variable]
+          x_label:table_metadata["column-names"][variable],
         });
       },
       error : artifact_missing
@@ -1368,9 +1376,10 @@ $(document).ready(function() {
       success : function(result)
       {
         $("#scatterplot").scatterplot("option", {
+          y_index: variable,
           y_string: table_metadata["column-types"][variable]=="string", 
           y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          y_label:table_metadata["column-names"][variable]
+          y_label:table_metadata["column-names"][variable],
         });
       },
       error : artifact_missing

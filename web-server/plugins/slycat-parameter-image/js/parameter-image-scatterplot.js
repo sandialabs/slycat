@@ -40,6 +40,9 @@ $.widget("parameter_image.scatterplot",
     x_string : false,
     y_string : false,
     v_string : false,
+    x_index : null,
+    y_index : null,
+    v_index : null,
     images : [],
     selection : [],
     colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
@@ -76,11 +79,12 @@ $.widget("parameter_image.scatterplot",
     "video-sync-time" : 0,
     frameLength : 1/25,
     highest_z_index: 0,
-    x_axis_date: true,
-    y_axis_date: false,
-    z_axis_date: false,
     axes_font_size: 12,
     axes_font_family: "Arial",
+    axes_variables_scale: {},
+    x_axis_type: 'Linear',
+    y_axis_type: 'Linear',
+    v_axis_type: 'Linear',
   },
 
   syncing_videos : [],
@@ -120,6 +124,8 @@ $.widget("parameter_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
     self.login_open = false;
+
+    self.set_x_y_v_axes_types();
 
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
@@ -380,8 +386,26 @@ $.widget("parameter_image.scatterplot",
       }
     };
 
+    const update_axes_variables_scale = () => {
+      if(self.options.axes_variables_scale != store.getState().axesVariables)
+      {
+        self.options.axes_variables_scale = store.getState().axesVariables;
+        self.set_x_y_v_axes_types();
+        self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
+      }
+    };
+
     window.store.subscribe(update_axes_font_size);
     window.store.subscribe(update_axes_font_family);
+    window.store.subscribe(update_axes_variables_scale);
+  },
+
+  set_x_y_v_axes_types: function()
+  {
+    var self = this;
+    self.options.x_axis_type = self.options.axes_variables_scale[self.options.x_index] != undefined ? self.options.axes_variables_scale[self.options.x_index] : 'Linear';
+    self.options.y_axis_type = self.options.axes_variables_scale[self.options.y_index] != undefined ? self.options.axes_variables_scale[self.options.y_index] : 'Linear';
+    self.options.v_axis_type = self.options.axes_variables_scale[self.options.v_index] != undefined ? self.options.axes_variables_scale[self.options.v_index] : 'Linear';
   },
 
   _filterIndices: function()
@@ -444,12 +468,12 @@ $.widget("parameter_image.scatterplot",
     return clone;
   },
 
-  _createScale: function(string, values, range, reverse, date)
+  _createScale: function(string, values, range, reverse, type)
   {
-    if(date)
+    if(type == 'Date & Time')
     {
       var dates = [];
-      for(date of values)
+      for(let date of values)
       {
         // console.log('date: ' + date);
         // console.log('new Date(date.toString()): ' + new Date(date.toString()));
@@ -802,8 +826,8 @@ $.widget("parameter_image.scatterplot",
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
       var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false, self.options.x_axis_date);
-      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false, self.options.x_axis_date);
+      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false, self.options.x_axis_type);
+      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false, self.options.x_axis_type);
 
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
@@ -843,8 +867,8 @@ $.widget("parameter_image.scatterplot",
       var range_canvas = [height - (2 * self.options.border) - 40, 0];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false);
-      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false);
+      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false, self.options.y_axis_type);
+      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false, self.options.y_axis_type);
 
       self.y_axis = d3.svg.axis()
         .scale(self.y_scale)
@@ -949,8 +973,8 @@ $.widget("parameter_image.scatterplot",
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
         // cx = Math.round( self.x_scale_canvas( x[index] ) );
-        cx = Math.round( self.options.x_axis_date ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
-        cy = Math.round( self.y_scale_canvas( y[index] ) );
+        cx = Math.round( self.options.x_axis_type == 'Date & Time' ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
+        cy = Math.round( self.options.y_axis_type == 'Date & Time' ? self.y_scale_canvas( new Date(y[index].toString()) ) : self.y_scale_canvas( y[index] ) );
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
@@ -993,8 +1017,8 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        cx = Math.round( self.options.x_axis_date ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
-        cy = Math.round( self.y_scale_canvas( y[index] ) );
+        cx = Math.round( self.options.x_axis_type == 'Date & Time' ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
+        cy = Math.round( self.options.y_axis_type == 'Date & Time' ? self.y_scale_canvas( new Date(y[index].toString()) ) : self.y_scale_canvas( y[index] ) );
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
@@ -1125,7 +1149,7 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
-      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
+      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
 
       self.legend_axis = d3.svg.axis()
         .scale(self.legend_scale)
