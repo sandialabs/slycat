@@ -977,9 +977,8 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        // cx = Math.round( self.x_scale_canvas( x[index] ) );
-        cx = Math.round( self.options.x_axis_type == 'Date & Time' ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
-        cy = Math.round( self.options.y_axis_type == 'Date & Time' ? self.y_scale_canvas( new Date(y[index].toString()) ) : self.y_scale_canvas( y[index] ) );
+        cx = Math.round(self.x_scale_canvas_format(x[index]));
+        cy = Math.round(self.y_scale_canvas_format(y[index]));
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
@@ -1022,8 +1021,8 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        cx = Math.round( self.options.x_axis_type == 'Date & Time' ? self.x_scale_canvas( new Date(x[index].toString()) ) : self.x_scale_canvas( x[index] ) );
-        cy = Math.round( self.options.y_axis_type == 'Date & Time' ? self.y_scale_canvas( new Date(y[index].toString()) ) : self.y_scale_canvas( y[index] ) );
+        cx = Math.round(self.x_scale_canvas_format(x[index]));
+        cy = Math.round(self.y_scale_canvas_format(y[index]));
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
@@ -2708,5 +2707,34 @@ $.widget("parameter_image.scatterplot",
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
       self._sync_open_images();
     }
+  },
+
+  x_scale_canvas_format: function(coordinate)
+  {
+    var self = this;
+    return self.x_scale_canvas(self.format_for_scale(coordinate, self.options.x_axis_type));
+  },
+
+  y_scale_canvas_format: function(coordinate)
+  {
+    var self = this;
+    return self.y_scale_canvas(self.format_for_scale(coordinate, self.options.y_axis_type));
+  },
+
+  x_scale_format: function(coordinate)
+  {
+    var self = this;
+    return self.x_scale(self.format_for_scale(coordinate, self.options.x_axis_type));
+  },
+
+  y_scale_format: function(coordinate)
+  {
+    var self = this;
+    return self.y_scale(self.format_for_scale(coordinate, self.options.y_axis_type));
+  },
+
+  format_for_scale: function(coordinate, scale_type)
+  {
+    return scale_type == 'Date & Time' ? new Date(coordinate.toString()) : coordinate;
   },
 });
