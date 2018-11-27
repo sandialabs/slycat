@@ -1185,6 +1185,7 @@ $.widget("parameter_image.scatterplot",
     var add_min_button = function(fh) {
       fh.append("i")
         .attr('class', 'min-button frame-button fa fa-window-minimize')
+        .style('display', 'none')
         .attr('title', 'Minimize')
         .attr("aria-hidden", "true")
         .on("click", handlers["minimize"])
@@ -1442,6 +1443,22 @@ $.widget("parameter_image.scatterplot",
         self.state = "";
         self._sync_open_images();
         // d3.event.sourceEvent.stopPropagation();
+      },
+
+      maximize: function() {
+        let target = d3.event.target;
+        let frame = d3.select(target.closest(".image-frame"));
+        target.style.display = 'none';
+        frame.select('.min-button').style('display', 'block');
+        console.log('maximize');
+      },
+
+      minimize: function() {
+        let target = d3.event.target;
+        let frame = d3.select(target.closest(".image-frame"));
+        target.style.display = 'none';
+        frame.select('.max-button').style('display', 'block');
+        console.log('minimize');
       },
 
       pin: function() {
