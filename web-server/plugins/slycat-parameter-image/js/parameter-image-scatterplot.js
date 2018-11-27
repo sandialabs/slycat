@@ -471,6 +471,7 @@ $.widget("parameter_image.scatterplot",
   _createScale: function(string, values, range, reverse, type)
   {
     // console.log("_createScale: " + type);
+    // Make a time scale for 'Date & Time' variable types
     if(type == 'Date & Time')
     {
       var dates = [];
@@ -496,18 +497,37 @@ $.widget("parameter_image.scatterplot",
         .range(range)
         ;
     }
+    // For numeric variables
     else if(!string)
     {
-      var domain = [d3.min(values), d3.max(values)];
-      if(reverse === true)
+      // Log scale if 'Log' variable types
+      if(type == 'Log')
       {
-        domain.reverse();
+        var domain = [d3.min(values), d3.max(values)];
+        if(reverse === true)
+        {
+          domain.reverse();
+        }
+        return d3.scale.log()
+          .domain(domain)
+          .range(range)
+          ;
       }
-      return d3.scale.linear()
-        .domain(domain)
-        .range(range)
-        ;
+      // Linear scale otherwise
+      else 
+      {
+        var domain = [d3.min(values), d3.max(values)];
+        if(reverse === true)
+        {
+          domain.reverse();
+        }
+        return d3.scale.linear()
+          .domain(domain)
+          .range(range)
+          ;
+      }
     }
+    // For string variables, make an ordinal scale
     else
     {
       var uniqueValues = d3.set(values).values().sort();
