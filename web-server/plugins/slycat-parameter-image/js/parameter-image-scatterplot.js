@@ -301,8 +301,8 @@ $.widget("parameter_image.scatterplot",
 
           for(var i = 0; i != count; ++i)
           {
-            x_coord = self.x_scale(x[i]);
-            y_coord = self.y_scale(y[i]);
+            x_coord = self.x_scale_format(x[i]);
+            y_coord = self.y_scale_format(y[i]);
             if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
             {
               var index = self.options.selection.indexOf(self.options.indices[i]);
@@ -321,8 +321,8 @@ $.widget("parameter_image.scatterplot",
 
         for(var i = count - 1; i > -1; i--)
         {
-          x_coord = self.x_scale(x[i]);
-          y_coord = self.y_scale(y[i]);
+          x_coord = self.x_scale_format(x[i]);
+          y_coord = self.y_scale_format(y[i]);
           if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
           {
             // Update the list of selected points ...
@@ -529,7 +529,7 @@ $.widget("parameter_image.scatterplot",
     var width = self.svg.attr("width");
     var range = self.x_scale.range();
     var rangeLast = range.length - 1;
-    var relx = (self.x_scale(self.options.x[imageIndex]) - range[0]) / (range[rangeLast] - range[0]);
+    var relx = (self.x_scale_format(self.options.x[imageIndex]) - range[0]) / (range[rangeLast] - range[0]);
     var x;
 
     if(relx < 0.5)
@@ -544,7 +544,7 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
     var height = self.svg.attr("height");
-    var target_y = self.y_scale(self.options.y[imageIndex]);
+    var target_y = self.y_scale_format(self.options.y[imageIndex]);
     return parseInt((target_y / height) * (height - imageHeight));
   },
 
@@ -1060,8 +1060,8 @@ $.widget("parameter_image.scatterplot",
             y : height * image.rely,
             width : image.width,
             height : image.height,
-            target_x : self.x_scale(self.options.x[image.index]),
-            target_y : self.y_scale(self.options.y[image.index]),
+            target_x : self.x_scale_format(self.options.x[image.index]),
+            target_y : self.y_scale_format(self.options.y[image.index]),
             video : image.video,
             currentTime : image.currentTime,
             current_frame : image.current_frame,
@@ -1084,10 +1084,10 @@ $.widget("parameter_image.scatterplot",
         var image_index = Number(frame.attr("data-index"));
         var uri = frame.attr("data-uri");
         self.line_layer.select("line[data-uri='" + uri + "']")
-          .attr("x2", self.x_scale(self.options.x[image_index]) )
-          .attr("y2", self.y_scale(self.options.y[image_index]) )
-          .attr("data-targetx", self.x_scale(self.options.x[image_index]))
-          .attr("data-targety", self.y_scale(self.options.y[image_index]))
+          .attr("x2", self.x_scale_format(self.options.x[image_index]) )
+          .attr("y2", self.y_scale_format(self.options.y[image_index]) )
+          .attr("data-targetx", self.x_scale_format(self.options.x[image_index]))
+          .attr("data-targety", self.y_scale_format(self.options.y[image_index]))
           ;
       });
     }
@@ -2202,8 +2202,8 @@ $.widget("parameter_image.scatterplot",
           y : height * image.rely,
           width : image.width,
           height : image.height,
-          target_x : self.x_scale(self.options.x[image.index]),
-          target_y : self.y_scale(self.options.y[image.index]),
+          target_x : self.x_scale_format(self.options.x[image.index]),
+          target_y : self.y_scale_format(self.options.y[image.index]),
           });
       }
     });
@@ -2259,8 +2259,8 @@ $.widget("parameter_image.scatterplot",
         yvalues = self.options.y;
     for(var i = indices.length-1; i > -1; i-- ) {
       let index = indices[i];
-      let x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
-      let y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
+      let x1 = Math.round( self.x_scale_format( xvalues[index] ) ) - shift;
+      let y1 = Math.round( self.y_scale_format( yvalues[index] ) ) - shift;
       let x2 = x1 + size;
       let y2 = y1 + size;
 
@@ -2294,12 +2294,12 @@ $.widget("parameter_image.scatterplot",
       index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]].trim(),
       image_class : "hover-image",
-      x : Math.min(self.x_scale(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
-      y : Math.min(self.y_scale(self.options.y[image_index]) + 10, height - hover_height - self.options.border - 10),
+      x : Math.min(self.x_scale_format(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
+      y : Math.min(self.y_scale_format(self.options.y[image_index]) + 10, height - hover_height - self.options.border - 10),
       width : hover_width,
       height : hover_height,
-      target_x : self.x_scale(self.options.x[image_index]),
-      target_y : self.y_scale(self.options.y[image_index]),
+      target_x : self.x_scale_format(self.options.x[image_index]),
+      target_y : self.y_scale_format(self.options.y[image_index]),
       no_sync : true,
     }]);
   },
@@ -2495,8 +2495,8 @@ $.widget("parameter_image.scatterplot",
         y : self._getDefaultYPosition(image_index, imageHeight),
         width : imageWidth,
         height : imageHeight,
-        target_x : self.x_scale(self.options.x[image_index]),
-        target_y : self.y_scale(self.options.y[image_index]),
+        target_x : self.x_scale_format(self.options.x[image_index]),
+        target_y : self.y_scale_format(self.options.y[image_index]),
         });
     });
     self._open_images(images);
