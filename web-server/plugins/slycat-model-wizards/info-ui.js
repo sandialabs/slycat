@@ -2,7 +2,7 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import server_root from "js/slycat-server-root";
+import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
 import ko from 'knockout';
 import mapping from "knockout-mapping";
@@ -33,7 +33,7 @@ var constructor = function(params) {
   $.ajax({
     dataType: "json",
     type: "GET",
-    url: URI(server_root + "get-model-statistics/" + component.model._id()),
+    url: URI(api_root + "get-model-statistics/" + component.model._id()),
     success: function(result)
     {
       mapping.fromJS(result, component.details);

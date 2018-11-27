@@ -1,19 +1,5 @@
 Slycat software resource and dependency list
 
-
-Potential Dependency Additions
--Javascript-
-knockout.mapping         2.6.0   https://github.com/SteveSanderson/knockout.mapping
-uri                     1.19.1   https://medialize.github.io/URI.js/
-stats                       16   https://github.com/mrdoob/stats.js/blob/master/src/Stats.js
-three                   0.92.0   https://yarnpkg.com/en/package/three
-three-stl-loader         1.0.6   https://yarnpkg.com/en/package/three-stl-loader
-three-trackballcontrols  0.0.7   https://yarnpkg.com/en/package/three-trackballcontrols
-
-
-
-
-
 Software dependencies for:  Slycat Release 1.5.2
 
 -Python-
@@ -81,36 +67,39 @@ wcwidth                              0.1.7     https://pypi.python.org/pypi
 
 
 -Javascript-
-bootstrap              3.3.1   http://getbootstrap.com
-curl                   0.8.10  https://github.com/cujojs/curl
-jquery                 2.1.1   https://jquery.org/
-knockout               3.2.0   http://knockoutjs.com
-knockout.mapping       2.4.1   https://github.com/SteveSanderson/knockout.mapping
-knockout.projections   1.1.0   https://github.com/SteveSanderson/knockout-projections
-knockstrap             1.1.0   https://faulknercs.github.io/Knockstrap/
-lodash                 3.5.0   https://lodash.com/
-papaparse              4.3.2   https://github.com/mholt/PapaParse
-slick.headerbuttons      n/a   https://github.com/mleibman/SlickGrid
-uri                   1.14.1   https://medialize.github.io/URI.js/
-d3                     3.4.6   https://d3js.org
-slickgrid                2.2   https://github.com/mleibman/SlickGrid
-stats                    n/a   https://github.com/mrdoob/stats.js
-stlloader                n/a   https://github.com/mrdoob/three.js/blob/dev/examples/js/loaders/STLLoader.js
-three                     71   https://threejs.org
-slick.autotooltips       n/a   https://github.com/mleibman/SlickGrid
-require.js             2.1.22  http://requirejs.org
-jquery-ui             1.10.4   https://jqueryui.com
-jquery-layout          1.3.0   http://layout.jquery-dev.com
-jquery-scrollintoview    1.8   https://github.com/litera/jquery-scrollintoview
-jquery.event.drag        2.2   http://threedubmedia.com/code/event/drag
-jquery.mousewheel      3.1.9   https://github.com/jquery/jquery-mousewheel
-jquery.knob           1.2.11   https://github.com/aterrien/jQuery-Knob
-stickies.core          0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
-TrackballControls        n/a   https://github.com/mrdoob/three.js/blob/master/examples/js/controls/TrackballControls.js
-react                 16.4.0   https://reactjs.org
-react-dom             16.4.0   https://reactjs.org
-react-ga               2.5.3   https://github.com/react-ga/react-ga
-redux                  3.7.2   https://redux.js.org
+
+From npm in slycat/node_modules:
+bootstrap               3.3.1   http://getbootstrap.com
+font-awesome            4.7.0   https://fontawesome.com/
+jquery                  2.1.1   https://jquery.org/
+jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
+jquery-ui              1.10.4   https://jqueryui.com
+knockout                3.2.0   http://knockoutjs.com
+knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
+lodash                4.17.11   https://lodash.com/
+papaparse               4.3.2   https://github.com/mholt/PapaParse
+react                  16.4.0   https://reactjs.org
+react-dom              16.4.0   https://reactjs.org
+react-ga                2.5.3   https://github.com/react-ga/react-ga
+react-redux             5.0.7   https://github.com/reduxjs/react-redux
+redux                   4.0.0   https://redux.js.org
+three                  0.92.0   https://yarnpkg.com/en/package/three
+three-stl-loader        1.0.6   https://yarnpkg.com/en/package/three-stl-loader
+three-trackballcontrols 0.0.7   https://yarnpkg.com/en/package/three-trackballcontrols
+urijs                  1.19.1   https://medialize.github.io/URI.js/
+
+Directly included in Slycat in slycat/web_server/js:
+d3                      3.4.6   https://d3js.org
+jquery.event.drag         2.2   http://threedubmedia.com/code/event/drag
+jquery-layout           1.3.0   http://layout.jquery-dev.com
+jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
+knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections
+slickgrid                 2.2   https://github.com/mleibman/SlickGrid
+stats                      16   https://github.com/mrdoob/stats.js/blob/master/src/Stats.js
+
+Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
+stickies.core           0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
+
 
 
 -System Services-

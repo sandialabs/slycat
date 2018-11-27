@@ -11,7 +11,6 @@ import "js/slick.grid";
 import "js/slick.rowselectionmodel";
 import "js/slick.headerbuttons";
 import "js/slick.autotooltips";
-import "js/slick.slycateditors";
 import * as chunker from "js/chunker";
 
 $.widget("cca.table",
