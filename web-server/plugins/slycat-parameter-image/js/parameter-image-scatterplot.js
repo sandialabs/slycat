@@ -470,6 +470,7 @@ $.widget("parameter_image.scatterplot",
 
   _createScale: function(string, values, range, reverse, type)
   {
+    // console.log("_createScale: " + type);
     if(type == 'Date & Time')
     {
       var dates = [];
@@ -600,11 +601,13 @@ $.widget("parameter_image.scatterplot",
       }
       self._filterIndices();
       self._close_hidden_simulations();
+      self.set_x_y_v_axes_types();
       self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "y")
     {
+      self.set_x_y_v_axes_types();
       if(self.options["auto-scale"])
       {
         self.options.filtered_y = self._filterValues(self.options.y);
@@ -621,6 +624,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "v")
     {
+      self.set_x_y_v_axes_types();
       if(self.options["auto-scale"])
       {
         self.options.filtered_v = self._filterValues(self.options.v);
@@ -729,6 +733,7 @@ $.widget("parameter_image.scatterplot",
   update_color_scale_and_v: function(data)
   {
     var self = this;
+    self.set_x_y_v_axes_types();
     self.options.colorscale = data.colorscale;
     self.options.v = data.v;
     if(data.v_string !== undefined)
