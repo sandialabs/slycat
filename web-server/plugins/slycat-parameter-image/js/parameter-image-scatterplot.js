@@ -1450,6 +1450,20 @@ $.widget("parameter_image.scatterplot",
         let frame = d3.select(target.closest(".image-frame"));
         target.style.display = 'none';
         frame.select('.min-button').style('display', 'block');
+
+        // Get the frame's location and size
+        let x = frame.attr('data-transx');
+        let y = frame.attr('data-transy');
+        let width = $(frame.node()).outerWidth();
+        let height = $(frame.node()).outerHeight();
+
+        // Save the frame's location and size in its data attributes
+        frame.attr('data-minx', x);
+        frame.attr('data-miny', y);
+        frame.attr('data-minwidth', width);
+        frame.attr('data-minheight', height);
+
+
         console.log('maximize');
       },
 
