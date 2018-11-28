@@ -1451,20 +1451,49 @@ $.widget("parameter_image.scatterplot",
         target.style.display = 'none';
         frame.select('.min-button').style('display', 'block');
 
-        // Get the frame's location and size
+        // Get the SVG pane's size
+        var $svg = $('#scatterplot svg');
+        var svgh = $svg.height();
+        var svgw = $svg.width();
+
+        // Get the frame's current location and size
         let x = frame.attr('data-transx');
         let y = frame.attr('data-transy');
         let width = $(frame.node()).outerWidth();
         let height = $(frame.node()).outerHeight();
 
-        // Save the frame's location and size in its data attributes
+        // Save the frame's current location and size in its data attributes, 
+        // as minimized location and size, so we can restore to this size on minimize.
         frame.attr('data-minx', x);
         frame.attr('data-miny', y);
         frame.attr('data-minwidth', width);
         frame.attr('data-minheight', height);
 
+        // Calculate new maxmized frame size and location
+        let ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
+        let target_height = svgh;
+        let target_width = svgh * ratio;
+        let target_x = 1;
+        let target_y = 1;
 
-        console.log('maximize');
+        // Maximize the frame and write its new size and location into its data attributes
+        frame
+          .attr("data-transx", target_x)
+          .attr("data-transy", target_y)
+          // .attr("data-width", target_width)
+          // .attr("data-height", target_height)
+          .style({
+            left: target_x + "px",
+            top: target_y + "px",
+            width: target_width + "px",
+            height: target_height + "px",
+          })
+          ;
+
+        self._adjust_leader_line(frame);
+        self._sync_open_images();
+
+        $(window).trigger('resize');
       },
 
       minimize: function() {
@@ -1472,7 +1501,31 @@ $.widget("parameter_image.scatterplot",
         let frame = d3.select(target.closest(".image-frame"));
         target.style.display = 'none';
         frame.select('.max-button').style('display', 'block');
-        console.log('minimize');
+
+        // Get the frame's previous location and size
+        let target_x = frame.attr('data-minx');
+        let target_y = frame.attr('data-miny');
+        let target_width = frame.attr('data-minwidth');
+        let target_height = frame.attr('data-minheight');
+
+        // Restore the frame and write its new size and location into its data attributes
+        frame
+          .attr("data-transx", target_x)
+          .attr("data-transy", target_y)
+          .attr("data-width", target_width)
+          .attr("data-height", target_height)
+          .style({
+            left: target_x + "px",
+            top: target_y + "px",
+            width: target_width + "px",
+            height: target_height + "px",
+          })
+          ;
+
+        self._adjust_leader_line(frame);
+        self._sync_open_images();
+
+        $(window).trigger('resize');
       },
 
       pin: function() {
@@ -1510,12 +1563,18 @@ $.widget("parameter_image.scatterplot",
         x = self._getDefaultXPosition(image.index, imageWidth);
         y = self._getDefaultYPosition(image.index, imageHeight);
 
-        frame.attr("data-transx", x).attr("data-transy", y).style({
-          left: x + "px",
-          top: y + "px",
-          width: target_width + "px",
-          height: target_height + "px",
-        });
+        frame
+          .attr("data-transx", x)
+          .attr("data-transy", y)
+          // .attr("data-width", target_width)
+          // .attr("data-height", target_height)
+          .style({
+            left: x + "px",
+            top: y + "px",
+            width: target_width + "px",
+            height: target_height + "px",
+          })
+          ;
 
         if (isStl)
           frame.style('height', (imageHeight + 20) + 'px');
@@ -1791,6 +1850,7 @@ $.widget("parameter_image.scatterplot",
 
         } else if(blob.type.indexOf('application/pdf') == 0) {
           // Create the pdf ...
+
           var pdfWidth = 320;
 
           // Using an embed element
@@ -1850,11 +1910,6 @@ $.widget("parameter_image.scatterplot",
           // Using an <object> with an <iframe> fallback will reach the most users.
           // https://pdfobject.com/static.html
           var pdf = frame_html
-            // Overriding width and height to keep 8.5/11 ratio that's more applicable to PDFs
-            .style({
-              "width": pdfWidth + "px",
-              "height": (pdfWidth*(11/8.5))+10 + "px",
-            })
             .attr("data-ratio", 8.5/11)
             .append("object")
             .attr("data-uri", image.uri)
@@ -1875,6 +1930,23 @@ $.widget("parameter_image.scatterplot",
             .attr("download", "download")
             .text("Download " + image.uri)
             ;
+
+          // Overriding width and height to keep 8.5/11 ratio that's more applicable to PDFs
+          // This needs to happen only for new PDFs. Ones that are being re-opened at startup need to keep their restored size.
+          // So we check for a width & height of 200, which only happens when new media is opened.
+          if(image.width == 200 && image.height == 200)
+          {
+            // console.log('overriding initial pdf size');
+            frame_html.style({
+              "width": pdfWidth + "px",
+              "height": (pdfWidth*(11/8.5))+10 + "px",
+            })
+          }
+
+          // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
+          // other media, but caused PDF frame to grow by 20px each time the page is refreshed. So this
+          // adjustment fixes that.
+          frame_html.style({"height": image.height + 'px'});
 
           // Adding on overlay div to fix mouse event issues when resizing and dragging PDFs because the <object>, <iframe>,
           // and <embed> elements capture mouse events and don't propagate them to parent elements.
