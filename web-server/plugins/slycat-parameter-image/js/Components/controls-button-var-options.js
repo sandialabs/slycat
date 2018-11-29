@@ -101,7 +101,7 @@ export default function ControlsButtonVarOptions(props) {
                   </div>
                   <div className="form-group">
                     <label htmlFor="font-size">Size</label>
-                    <input type="number" className="form-control" id="font-size" max="40" min="6" step="1" 
+                    <input type="number" className="form-control" id="font-size" max="40" min="8" step="1" 
                       value={props.font_size} 
                       onChange={props.onFontSizeChange}
                     />

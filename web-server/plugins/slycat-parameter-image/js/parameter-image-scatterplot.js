@@ -367,6 +367,8 @@ $.widget("parameter_image.scatterplot",
         self.legend_layer.selectAll("text")
           .style("font-size", self.options.axes_font_size)
           ;
+        self._schedule_update({update_y_label:true});
+        self._schedule_update({update_x_label:true});
       }
     };
 
@@ -383,6 +385,8 @@ $.widget("parameter_image.scatterplot",
         self.legend_layer.selectAll("text")
           .style("font-family", self.options.axes_font_family)
           ;
+        self._schedule_update({update_y_label:true});
+        self._schedule_update({update_x_label:true});
       }
     };
 

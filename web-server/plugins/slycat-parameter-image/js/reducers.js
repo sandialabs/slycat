@@ -5,7 +5,7 @@ import {
 } from './actions';
 
 const initialState = {
-  fontSize: 12,
+  fontSize: 15,
   fontFamily: "Arial",
   axesVariables: {},
 }
