@@ -25,7 +25,7 @@
     "papaparse": "4.3.2",
     "popper.js": "^1.14.4",
     "react": "16.7.0-alpha",
-    "react-dom": "^16.4.0",
+    "react-dom": "^16.7.0-alpha",
     "react-ga": "2.5.3",
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
