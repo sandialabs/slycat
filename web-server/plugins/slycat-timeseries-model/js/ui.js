@@ -30,7 +30,7 @@ import "js/slycat-job-checker";
 
 // Wait for document ready
 $(document).ready(function() {
-
+  ko.applyBindings({}, document.querySelector(".slycat-content"));
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -195,7 +195,8 @@ $(document).ready(function() {
       }
     });
   }
-  doPoll();
+  //TODO remove this timeout when we convert to react as it is only here to let KO load
+  setTimeout(doPoll, 500);
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
