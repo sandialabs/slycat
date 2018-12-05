@@ -4,6 +4,7 @@ export default function SlycatTableIngestion(props) {
 
   // Declare a new UI state variables...
   // To track which variables are selected
+  // selected is an array, each element corresponds to a variable, with boolean values indicating whether it's selected.
   const [selected, setSelected] = useState(props.variables.map((variable, indexVars) => variable.selected));
   // To track the last selected variable
   const [lastSelected, setLastSelected] = useState(0);
@@ -24,7 +25,17 @@ export default function SlycatTableIngestion(props) {
   }
 
   function selectAll(e) {
-    console.log("selectAll");
+    let property = e.target.dataset.property;
+    for(let [index, variableSelected] of selected.entries())
+    {
+      if(variableSelected)
+      {
+        // Find the radio button that needs to be selected based on its name and value attributes
+        let radio = document.querySelector(`.${props.uniqueID} input[value='${property}'][name='${index}']`);
+        // Fire the onChange handler
+        props.onChange({target: radio});
+      }
+    }
   }
 
   function select(varIndex) {
@@ -99,6 +110,7 @@ export default function SlycatTableIngestion(props) {
               <span>{value}</span>
               <i className={`fa fa-toggle-on select-all-button button ${anyVariablesSelected() ? "" : "disabled"}`}
                  title={anyVariablesSelected() ? "Toggle selected rows" : "No rows selected"}
+                 data-property={value}
                  onClick={anyVariablesSelected() ? selectAll : void(0)}
               />
             </th>
@@ -166,7 +178,7 @@ export default function SlycatTableIngestion(props) {
   });
 
   return (
-    <div className='slycat-table-ingestion'>
+    <div className={`slycat-table-ingestion ${props.uniqueID}`}>
       <table>
         <thead>
           <tr>

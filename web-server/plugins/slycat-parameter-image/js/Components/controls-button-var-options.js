@@ -115,6 +115,7 @@ export default function ControlsButtonVarOptions(props) {
                         properties: ${JSON.stringify(axes_properties)}`}
               ></slycat-table-ingestion>
               <SlycatTableIngestion 
+                uniqueID="varOptions"
                 variables={axes_variables}
                 properties={axes_properties}
                 onChange={props.onAxesVariableScaleChange}
