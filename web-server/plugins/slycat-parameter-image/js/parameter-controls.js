@@ -23,6 +23,7 @@ $.widget("parameter_image.controls",
     "auto-scale" : true,
     x_variables : [],
     y_variables : [],
+    axes_variables : [],
     image_variables : [],
     color_variables : [],
     rating_variables : [],
@@ -53,6 +54,14 @@ $.widget("parameter_image.controls",
       y_axis_dropdown_items.push({
         key: y_variable, 
         name: self.options.metadata['column-names'][y_variable]
+      });
+    }
+
+    const axes_items = [];
+    for(let axes_variable of this.options.axes_variables) {
+      axes_items.push({
+        key: axes_variable, 
+        name: self.options.metadata['column-names'][axes_variable]
       });
     }
 
@@ -114,6 +123,7 @@ $.widget("parameter_image.controls",
 
     const controls_bar = <ControlsBar element={self.element} 
       dropdowns={dropdowns}
+      axes_variables={axes_items}
       auto_scale={self.options["auto-scale"]} 
       hidden_simulations={self.options.hidden_simulations}
       disable_hide_show={self.options.disable_hide_show}
