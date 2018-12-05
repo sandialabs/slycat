@@ -110,10 +110,6 @@ export default function ControlsButtonVarOptions(props) {
                 </div>
               </div>
               <hr />
-              <slycat-table-ingestion 
-                params={`variables: ${JSON.stringify(axes_variables)},
-                        properties: ${JSON.stringify(axes_properties)}`}
-              ></slycat-table-ingestion>
               <SlycatTableIngestion 
                 uniqueID="varOptions"
                 variables={axes_variables}
