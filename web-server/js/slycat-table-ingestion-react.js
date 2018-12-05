@@ -2,10 +2,16 @@ import React, { useState } from "react";
 
 export default function SlycatTableIngestion(props) {
 
+  // Declare a new UI state variables...
+  // To track which variables are selected
+  const [selected, setSelected] = useState(props.variables.map((variable, indexVars) => variable.selected));
+  // To track the last selected variable
+  const [lastSelected, setLastSelected] = useState(0);
+
   function anyVariablesSelected() {
-    for(var i = 0; i < props.variables.length; i++)
+    for(var i = 0; i < selected.length; i++)
     {
-      if( props.variables[i].selected )
+      if( selected[i] )
       {
         return true;
       }
@@ -21,8 +27,49 @@ export default function SlycatTableIngestion(props) {
     console.log("selectAll");
   }
 
-  function select(e) {
-    console.log("select");
+  function select(varIndex) {
+    if(props.variables[varIndex].disabled)
+    {
+      return;
+    }
+    else if(event.shiftKey)
+    {
+      // Find start and end between lastSelected and currently shift clicked
+      let begin = Math.min(lastSelected, varIndex);
+      let end = Math.max(lastSelected, varIndex);
+
+      // Set everything in between to selected
+      let newSelected = selected.slice(0);
+      for(var i = begin; i <= end; i++)
+      {
+        if(!props.variables[i].disabled)
+        {
+          newSelected[i] = true;
+        }
+      }
+      setSelected(newSelected);
+      // Set current clicked to lastSelected
+      setLastSelected(varIndex);
+    }
+    else if(event.ctrlKey || event.metaKey)
+    {
+      setLastSelected(varIndex);
+      let newSelected = selected.slice(0);
+      // Invert the selected state, so Ctrl + click will either selecte unselected, or unselect selected.
+      newSelected[varIndex] = !newSelected[varIndex];
+      setSelected(newSelected);
+    }
+    else
+    {
+      // Set last selected to current variable
+      setLastSelected(varIndex);
+
+      // Set all selected to false
+      let newSelected = selected.map(x => false);
+      // Set selected to true on current variable
+      newSelected[varIndex] = true;
+      setSelected(newSelected);
+    }
   }
 
   const propertiesItems = props.properties.map((property, indexProps) => {
@@ -67,9 +114,9 @@ export default function SlycatTableIngestion(props) {
     <tr key={indexVars}
       title={variable.tooltip ? variable.tooltip : undefined}
       style={{display: variable.hidden ? 'none' : ''}}
-      className={`${variable.selected ? 'selected' : ''} ${variable.lastSelected ? 'lastSelected' : ''} ${variable.disabled ? 'disabled' : ''}`}
+      className={`${selected[indexVars] ? 'selected' : ''} ${lastSelected == indexVars ? 'lastSelected' : ''} ${variable.disabled ? 'disabled' : ''}`}
     >
-      <th onClick={select}>
+      <th onClick={() => select(indexVars)}>
         {variable.name}
       </th>
       {

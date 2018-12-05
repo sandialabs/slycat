@@ -34,8 +34,9 @@ export default function ControlsButtonVarOptions(props) {
     });
   }
   // Testing various properties
-  // axes_variables[1].disabled = true;
+  axes_variables[1].disabled = true;
   // axes_variables[1].tooltip = 'Alex Testing Tooltip';
+  // axes_variables[1].selected = true;
 
   let axes_properties = [{name: 'Axis Type', 
                           type: 'select', 

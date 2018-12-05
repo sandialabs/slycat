@@ -10,11 +10,11 @@ export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'
  * other constants
  */
 
-export const VisibilityFilters = {
-  SHOW_ALL: 'SHOW_ALL',
-  SHOW_COMPLETED: 'SHOW_COMPLETED',
-  SHOW_ACTIVE: 'SHOW_ACTIVE'
-}
+// export const VisibilityFilters = {
+//   SHOW_ALL: 'SHOW_ALL',
+//   SHOW_COMPLETED: 'SHOW_COMPLETED',
+//   SHOW_ACTIVE: 'SHOW_ACTIVE'
+// }
 
 /*
  * action creators
