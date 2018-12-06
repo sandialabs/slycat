@@ -38,7 +38,7 @@ export default function SlycatTableIngestion(props) {
     }
   }
 
-  function select(varIndex) {
+  function select(event, varIndex) {
     if(props.variables[varIndex].disabled)
     {
       return;
@@ -128,7 +128,7 @@ export default function SlycatTableIngestion(props) {
       style={{display: variable.hidden ? 'none' : ''}}
       className={`${selected[indexVars] ? 'selected' : ''} ${lastSelected == indexVars ? 'lastSelected' : ''} ${variable.disabled ? 'disabled' : ''}`}
     >
-      <th onClick={() => select(indexVars)}>
+      <th onClick={(event) => select(event, indexVars)}>
         {variable.name}
       </th>
       {
