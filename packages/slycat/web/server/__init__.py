@@ -24,6 +24,7 @@ config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
 model_locks = {}
 
+
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""
     return ((1.0 - amount) * a) + (amount * b)
@@ -497,6 +498,7 @@ def get_remote_file(sid, path):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path)
 
+
 def get_remote_file_server(client, sid, path):
     """Returns the content of a file from a remote system.
 
@@ -555,29 +557,31 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 def ssh_connect(hostname=None, username=None, password=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    
+
     if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] == "certificate":
         import traceback
         _certFn = "gen-rsa-ssh-cert"
         if _certFn not in slycat.web.server.plugin.manager.utilities:
             raise Exception("Unknown ssh_connect plugin: %s." % _certFn)
-        
+
         try:
             # get SSH cert from SSO server
-            RSAcert = slycat.web.server.plugin.manager.utilities[_certFn]( )
+            RSAcert = slycat.web.server.plugin.manager.utilities[_certFn]()
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=RSAcert,
                         port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
+            cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (
+            cherrypy.request.login, hostname, str(e)))
             cherrypy.log.error("ssh_connect cert method, called ssh.connect traceback: %s" % traceback.print_exc())
             raise cherrypy.HTTPError("403 Remote authentication failed.")
     else:
         try:
             ssh.connect(hostname=hostname, username=username, password=password)
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (username, hostname, str(e)))
+            cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (
+            username, hostname, str(e)))
             raise cherrypy.HTTPError("403 Remote authentication failed.")
-    
+
     ssh.get_transport().set_keepalive(5)
     return ssh
 
@@ -593,10 +597,14 @@ def get_password_function():
             slycat.email.send_error("slycat-standard-authentication.py authenticate",
                                     "cherrypy.HTTPError 500 no password check plugin found.")
             raise cherrypy.HTTPError("500 No password check plugin found.")
-        get_password_function.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args,
-                                                 **kwargs)
+        get_password_function.password_check = functools.partial(
+            slycat.web.server.plugin.manager.password_checks[plugin], *args,
+            **kwargs)
     return get_password_function.password_check
+
+
 get_password_function.password_check = None
+
 
 def response_url():
     """
@@ -649,12 +657,13 @@ def decode_username_and_password():
     return user_name, password
 
 
-def clean_up_old_session():
+def clean_up_old_session(user_name=None):
     """
     try and delete any outdated sessions
     for the user if they have the cookie for it
     :return:no-op
     """
+    cherrypy.log.error("cleaning all sessions for %s" % user_name)
     if "slycatauth" in cherrypy.request.cookie:
         try:
             # cherrypy.log.error("found old session trying to delete it ")
@@ -663,6 +672,19 @@ def clean_up_old_session():
             session = couchdb.get("session", sid)
             if session is not None:
                 couchdb.delete(session)
+        except:
+            # if an exception was throw there is nothing to be done
+            pass
+    if user_name is not None:
+        try:
+            couchdb = slycat.web.server.database.couchdb.connect()
+            sessions = [session for session in couchdb.scan("slycat/sessions") if
+                        session["creator"] == user_name]
+            if sessions:
+                cherrypy.log.error("sessions found %s" % user_name)
+                for session in sessions:
+                    couchdb.delete(session)
+                    cherrypy.log.error("sessions deleted %s" % user_name)
         except:
             # if an exception was throw there is nothing to be done
             pass
@@ -698,7 +720,6 @@ def create_single_sign_on_session(remote_ip, auth_user):
     create a session and return.
     :return: not used
     """
-    clean_up_old_session()
     # must define groups but not populating at the moment !!!
     groups = []
 
@@ -706,10 +727,12 @@ def create_single_sign_on_session(remote_ip, auth_user):
     cherrypy.log.error("++ create_single_sign_on_session creating session for %s" % auth_user)
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": auth_user}
-    database = slycat.web.server.database.couchdb.connect()
-    database.save(
-        {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
-         'groups': groups, 'ip': remote_ip, "sessions": []})
+    with slycat.web.server.database.couchdb.db_lock:
+        clean_up_old_session(auth_user)
+        database = slycat.web.server.database.couchdb.connect()
+        database.save(
+            {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
+             'groups': groups, 'ip': remote_ip, "sessions": []})
 
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
@@ -762,6 +785,7 @@ def check_rules(groups):
                     pass
             if deny:
                 raise cherrypy.HTTPError("403 User denied by authentication rules.")
+
 
 def check_https_get_remote_ip():
     """

@@ -343,7 +343,7 @@ ko.components.register('slycat-remote-interface', {
       else if(fn_params.timeseries_type === "xyce")
       {
         json_payload.scripts.push({
-            "name": "slycat-xyce-timeseries-to-hdf5",
+            "name": "xyce_timeseries_to_hdf5",
             "parameters": [
                 {
                     "name": "--output-directory",
