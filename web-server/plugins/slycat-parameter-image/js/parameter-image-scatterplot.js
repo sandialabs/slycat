@@ -478,12 +478,14 @@ $.widget("parameter_image.scatterplot",
     // Make a time scale for 'Date & Time' variable types
     if(type == 'Date & Time')
     {
-      var dates = [];
+      let dates = [];
+      let date = NaN;
       for(let date of values)
       {
-        // console.log('date: ' + date);
-        // console.log('new Date(date.toString()): ' + new Date(date.toString()));
-        dates.push(new Date(date.toString()));
+        // Make sure Date is valid before adding it to array, so we get a scale with usable min and max
+        date = new Date(date.toString())
+        if(!isNaN(date))
+          dates.push(date);
       }
       // console.log("unsorted dates: " + dates);
       dates.sort(function(a, b){
@@ -1003,6 +1005,9 @@ $.widget("parameter_image.scatterplot",
         canvas.fillStyle = color;
         cx = Math.round(self.x_scale_canvas_format(x[index]));
         cy = Math.round(self.y_scale_canvas_format(y[index]));
+        // Skip this point if its x or y coordinates are NaN
+        if(isNaN(cx) || isNaN(cy))
+          continue;
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
