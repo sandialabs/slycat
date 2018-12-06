@@ -284,7 +284,7 @@ ko.components.register('slycat-remote-interface', {
 
       var fn_params_copy = $.extend(true, {}, fn_params);
 
-      if(fn_params.timeseries_type !== 'csv' && fn_params.timeseries_name != "")
+      if(fn_params.timeseries_type !== 'csv')
       {
         // Blank out timeseries_name
         fn_params_copy.timeseries_name = "";
@@ -358,7 +358,7 @@ ko.components.register('slycat-remote-interface', {
                     "value": fn_params.xyce_timeseries_file
                 },
                 {
-                    "name": "--inputs-directory",
+                    "name": "--input-directory",
                     "value": fn_params.input_directory
                 },
                 {
@@ -372,7 +372,7 @@ ko.components.register('slycat-remote-interface', {
           // if "hdf5_directory" in params and params["hdf5_directory"] != "":
           //     hdf5_dir = params["hdf5_directory"]
 
-      if (fn_params.timeseries_name !== "")
+      if (fn_params.timeseries_type === "csv")
       {
         json_payload.scripts.push({
             "name": "compute_timeseries",
