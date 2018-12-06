@@ -359,13 +359,13 @@ $.widget("parameter_image.scatterplot",
       {
         self.options.axes_font_size = store.getState().fontSize;
         self.x_axis_layer.selectAll("text")
-          .style("font-size", self.options.axes_font_size)
+          .style("font-size", self.options.axes_font_size + 'px')
           ;
         self.y_axis_layer.selectAll("text")
-          .style("font-size", self.options.axes_font_size)
+          .style("font-size", self.options.axes_font_size + 'px')
           ;
         self.legend_layer.selectAll("text")
-          .style("font-size", self.options.axes_font_size)
+          .style("font-size", self.options.axes_font_size + 'px')
           ;
         self._schedule_update({update_y_label:true});
         self._schedule_update({update_x_label:true});
@@ -875,7 +875,7 @@ $.widget("parameter_image.scatterplot",
         .selectAll("text")  
           // .style("text-anchor", "end")
           .style("text-anchor", "start")
-          .style("font-size", self.options.axes_font_size)
+          .style("font-size", self.options.axes_font_size + 'px')
           .style("font-family", self.options.axes_font_family)
           // .attr("dx", "0em")
           // .attr("dy", "0em")
@@ -909,7 +909,7 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
         .selectAll("text")  
-          .style("font-size", self.options.axes_font_size)
+          .style("font-size", self.options.axes_font_size + 'px')
           .style("font-family", self.options.axes_font_family)
         ;
     }
@@ -938,7 +938,7 @@ $.widget("parameter_image.scatterplot",
         .attr("y", y)
         .style("text-anchor", "start")
         .style("font-weight", "bold")
-        .style("font-size", self.options.axes_font_size)
+        .style("font-size", self.options.axes_font_size + 'px')
         .style("font-family", self.options.axes_font_family)
         .text(self.options.x_label)
         ;
@@ -958,7 +958,7 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "rotate(-90," + x +"," + y + ")")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
-        .style("font-size", self.options.axes_font_size)
+        .style("font-size", self.options.axes_font_size + 'px')
         .style("font-family", self.options.axes_font_family)
         .text(self.options.y_label)
         ;
@@ -1187,7 +1187,7 @@ $.widget("parameter_image.scatterplot",
       self.legend_axis_layer
         .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
         .call(self.legend_axis)
-        .style("font-size", self.options.axes_font_size)
+        .style("font-size", self.options.axes_font_size + 'px')
         .style("font-family", self.options.axes_font_family)
         ;
     }
@@ -1208,7 +1208,7 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "rotate(-90," + x +"," + y + ")")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
-        .style("font-size", self.options.axes_font_size)
+        .style("font-size", self.options.axes_font_size + 'px')
         .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label)
         ;
