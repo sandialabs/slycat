@@ -34,7 +34,7 @@ export default function ControlsButtonVarOptions(props) {
     });
   }
   // Testing various properties
-  axes_variables[1].disabled = true;
+  // axes_variables[1].disabled = true;
   // axes_variables[1].tooltip = 'Alex Testing Tooltip';
   // axes_variables[1].selected = true;
 
@@ -102,7 +102,7 @@ export default function ControlsButtonVarOptions(props) {
                   </div>
                   <div className="form-group">
                     <label htmlFor="font-size">Size</label>
-                    <input type="number" className="form-control" id="font-size" max="40" min="8" step="1" 
+                    <input type="number" className="form-control" id="font-size" max="40" min="8" step="1" style={{width: "70px"}}
                       value={props.font_size} 
                       onChange={props.onFontSizeChange}
                     />
