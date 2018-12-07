@@ -5,12 +5,7 @@
 // S. Martin
 // 1/15/2015
 
-// slick grid styling
 import "../css/dac-ui.css";
-import "../css/slickGrid/slick.grid.css";
-import "../css/slickGrid/slick-default-theme.css";
-import "../css/slickGrid/slick.headerbuttons.css";
-import "../css/slickGrid/slick-slycat-theme.css";
 
 // dial-a-cluster ui
 import client from "js/slycat-web-client";
@@ -25,8 +20,12 @@ import metadata_table from "./dac-table.js";
 import selections from "./dac-manage-selections.js";
 import URI from "urijs";
 import "bootstrap";
-import "js/jquery.layout-latest.min.js";
-import "./jquery-ui-1.10.4.custom.min.js";
+
+import "jquery-ui";
+// disable-selection and draggable required for jquery.layout resizing functionality
+import "jquery-ui/ui/disable-selection";
+import "jquery-ui/ui/widgets/draggable";
+import "js/jquery.layout-latest";
 
 // edit and info pulldowns
 //import "js/dac-parse-log.js";

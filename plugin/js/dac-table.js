@@ -4,11 +4,12 @@ DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software.
 */
 
-import "../css/dac-ui.css";
-import "../css/slickGrid/slick.grid.css";
-import "../css/slickGrid/slick.headerbuttons.css";
-import "../css/slickGrid/slick-default-theme.css";
-import "../css/slickGrid/slick-slycat-theme.css";
+import jquery_ui_css from "jquery-ui/themes/base/all.css";
+
+import "css/slickgrid/slick.grid.css";
+import "css/slickgrid/slick-default-theme.css";
+import "css/slickgrid/slick.headerbuttons.css";
+import "css/slick-slycat-theme.css";
 
 import selections from "./dac-manage-selections.js";
 import d3 from "js/d3.min";
@@ -16,12 +17,13 @@ import client from "js/slycat-web-client";
 import URI from "urijs";
 import * as dialog from "js/slycat-dialog";
 import "js/jquery.event.drag-2.2";
-import "./slickGrid/slick.autotooltips";
-import "./slickGrid/slick.dataview.js";
-import "./slickGrid/slick.core.js";
-import "./slickGrid/slick.grid.js";
-import "./slickGrid/slick.headerbuttons.js";
-import "./slickGrid/slick.rowselectionmodel.js";
+
+import "js/slick.core";
+import "js/slick.grid";
+import "js/slick.rowselectionmodel";
+import "js/slick.headerbuttons";
+import "js/slick.autotooltips";
+import "js/slick.dataview";
 
 // public functions will be returned via the module variable
 var module = {};

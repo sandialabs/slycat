@@ -5,7 +5,10 @@
 // S. Martin
 // 1/15/2015
 
-import jQuery_ui from "./jquery-ui-1.10.4.custom.min.js";
+import "jquery-ui";
+import "jquery-ui/ui/widgets/sortable";
+
+
 
 // return functions in module variables
 var module = {};
