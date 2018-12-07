@@ -4029,10 +4029,10 @@ jquery-knob@1.2.11:
   resolved "https://registry.yarnpkg.com/jquery-knob/-/jquery-knob-1.2.11.tgz#f37c39dbc1c7a6a6c12cdb2ed4f6bffb683f10d6"
   integrity sha1-83w528HHpqbBLNsu1Pa/+2g/ENY=
 
-jquery-ui@1.10.4:
-  version "1.10.4"
-  resolved "https://registry.yarnpkg.com/jquery-ui/-/jquery-ui-1.10.4.tgz#a096fe5f4e0f2ab69a0585cf10455877f57506bd"
-  integrity sha1-oJb+X04PKraaBYXPEEVYd/V1Br0=
+jquery-ui@1.12.1:
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/jquery-ui/-/jquery-ui-1.12.1.tgz#bcb4045c8dd0539c134bc1488cdd3e768a7a9e51"
+  integrity sha1-vLQEXI3QU5wTS8FIjN0+dop6nlE=
 
 jquery@2.1.1:
   version "2.1.1"
