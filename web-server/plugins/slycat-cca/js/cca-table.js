@@ -5,7 +5,8 @@
 
 import d3 from "js/d3.min";
 import "jquery-ui";
-import "js/jquery.event.drag-2.2";
+// import "js/jquery.event.drag-2.2";
+import "jquery.event.drag";
 import "js/slick.core";
 import "js/slick.grid";
 import "js/slick.rowselectionmodel";
