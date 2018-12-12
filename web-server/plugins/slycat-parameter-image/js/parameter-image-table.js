@@ -5,6 +5,7 @@
 
 import d3 from "js/d3.min";
 import * as chunker from "js/chunker";
+import "jquery-migrate/dist/jquery-migrate.min";
 import "jquery-ui";
 import "js/jquery.event.drag-2.2";
 import "js/slick.core";

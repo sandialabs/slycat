@@ -71,9 +71,11 @@ wcwidth                              0.1.7     https://pypi.python.org/pypi
 From npm in slycat/node_modules:
 bootstrap               3.3.1   http://getbootstrap.com
 font-awesome            4.7.0   https://fontawesome.com/
-jquery                  2.1.1   https://jquery.org/
+jquery                  3.3.1   https://jquery.org/
+jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
 jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
 jquery-ui              1.12.1   https://jqueryui.com
+layout                  1.4.3   https://github.com/alexsielicki/layout.git
 knockout                3.2.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
 lodash                4.17.11   https://lodash.com/
@@ -91,7 +93,6 @@ urijs                  1.19.1   https://medialize.github.io/URI.js/
 Directly included in Slycat in slycat/web_server/js:
 d3                      3.4.6   https://d3js.org
 jquery.event.drag         2.2   http://threedubmedia.com/code/event/drag
-jquery-layout           1.4.4   http://layout.jquery-dev.com
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
 knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections
 slickgrid                 2.2   https://github.com/mleibman/SlickGrid
