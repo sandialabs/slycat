@@ -31,7 +31,7 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "jquery-ui/ui/widget";
-import "js/jquery.layout-latest";
+import "layout";
 import "js/slycat-range-slider"; 
 import "./category-select";
 

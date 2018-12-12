@@ -30,7 +30,7 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "jquery-ui/ui/widgets/dialog";
-import "js/jquery.layout-latest";
+import "layout";
 
 import "js/slycat-navbar"
 

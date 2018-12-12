@@ -29,7 +29,7 @@ import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
-import "js/jquery.layout-latest";
+import "layout";
 
 import "js/slycat-navbar";
 import "js/slycat-job-checker";
