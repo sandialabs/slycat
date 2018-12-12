@@ -103,7 +103,7 @@ $(document).ready(function() {
     {
       size : $("#timeseries-model").width() / 2,
       resizeWhileDragging : false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#dendrogram-viewer").dendrogram("resize_canvas");
       },
@@ -111,7 +111,7 @@ $(document).ready(function() {
     center :
     {
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#waveform-viewer").waveformplot("resize_canvas");
       },
@@ -120,13 +120,13 @@ $(document).ready(function() {
     {
       size: 130,
       resizeWhileDragging: false,
-      onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+      onresize_end: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
     },
     south:
     {
       size: $("#timeseries-model").height() / 3,
       resizeWhileDragging : false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#table").table("resize_canvas");
       },

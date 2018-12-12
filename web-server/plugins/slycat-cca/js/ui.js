@@ -282,28 +282,34 @@ $(document).ready(function() {
     {
       size: $("#cca-model").width() / 2,
       resizeWhileDragging: false,
-      onresize: function() { $("#barplot-table").barplot("resize_canvas"); },
+      onresize_end: function() { 
+        $("#barplot-table").barplot("resize_canvas"); 
+      },
     },
     center:
     {
       resizeWhileDragging: false,
-      onresize: function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); },
+      onresize_end: function() { 
+        $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
+      },
     },
     east:
     {
       size: 130,
       resizeWhileDragging: false,
-      onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+      onresize_end: function() { 
+        $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+      },
     },
     south:
     {
       size: $("body").height() / 2,
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#table").css("height", $("#table-pane").height());
         $("#table").table("resize_canvas");
-      }
+      },
     },
   });
 

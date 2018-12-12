@@ -134,7 +134,7 @@ $(document).ready(function() {
     center:
     {
       // resizeWhileDragging: false,
-      // onresize: function() {
+      // onresize_end: function() {
       //   $("#scatterplot").scatterplot("option", {
       //     width: $("#scatterplot-pane").width(),
       //     height: $("#scatterplot-pane").height()
@@ -145,7 +145,7 @@ $(document).ready(function() {
     {
       size: $("#parameter-image-plus-layout").width() / 2,
       resizeWhileDragging : false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#dendrogram-viewer").dendrogram("resize_canvas");
       }
@@ -154,7 +154,7 @@ $(document).ready(function() {
     {
       size: $("#parameter-image-plus-layout").height() / 4,
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#table").css("height", $("#table-pane").height());
         $("#table").table("resize_canvas");
@@ -167,7 +167,7 @@ $(document).ready(function() {
     center:
     {
       resizeWhileDragging: false,
-      onresize: function() {
+      onresize_end: function() {
         $("#scatterplot").scatterplot("option", {
           width: $("#scatterplot-pane").width(),
           height: $("#scatterplot-pane").height()
