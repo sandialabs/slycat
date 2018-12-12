@@ -3600,6 +3600,14 @@ import-local@^2.0.0:
     pkg-dir "^3.0.0"
     resolve-cwd "^2.0.0"
 
+imports-loader@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/imports-loader/-/imports-loader-0.8.0.tgz#030ea51b8ca05977c40a3abfd9b4088fe0be9a69"
+  integrity sha512-kXWL7Scp8KQ4552ZcdVTeaQCZSLW+e6nJfp3cwUMB673T7Hr98Xjx5JK+ql7ADlJUvj1JS5O01RLbKoutN5QDQ==
+  dependencies:
+    loader-utils "^1.0.2"
+    source-map "^0.6.1"
+
 imurmurhash@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
@@ -4029,17 +4037,17 @@ jquery-knob@1.2.11:
   resolved "https://registry.yarnpkg.com/jquery-knob/-/jquery-knob-1.2.11.tgz#f37c39dbc1c7a6a6c12cdb2ed4f6bffb683f10d6"
   integrity sha1-83w528HHpqbBLNsu1Pa/+2g/ENY=
 
+jquery-migrate@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/jquery-migrate/-/jquery-migrate-3.0.1.tgz#141de3abfe6d301baaa4130b0ec7b9a839845e72"
+  integrity sha512-NYlhcFnRh4Bv9jvadPlcAKQdVGRE0+TSgFYxQ+ZnCxUUHbwd+SjbOg+Xvu1Oea9mpQJ+2VB1eCfcBORWNQsHaA==
+
 jquery-ui@1.12.1:
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/jquery-ui/-/jquery-ui-1.12.1.tgz#bcb4045c8dd0539c134bc1488cdd3e768a7a9e51"
   integrity sha1-vLQEXI3QU5wTS8FIjN0+dop6nlE=
 
-jquery.event.drag@2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/jquery.event.drag/-/jquery.event.drag-2.2.2.tgz#11bbbf83f4c6ef5f3b5065564663913c9f964be1"
-  integrity sha1-Ebu/g/TG7187UGVWRmORPJ+WS+E=
-
-jquery@3.3.1:
+jquery@3.3.1, jquery@>=1.5:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
   integrity sha512-Ubldcmxp5np52/ENotGxlLe6aGMvmF4R8S6tZjsP6Knsaxd/xp3Zrh50cG93lR6nPXyUFwzN3ZSOQI0wRJNdGg==
@@ -4188,6 +4196,12 @@ knockout@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/knockout/-/knockout-3.2.0.tgz#3f394eb67d721bea115e2d0d7be082256ca46a11"
   integrity sha1-PzlOtn1yG+oRXi0Ne+CCJWykahE=
+
+"layout@https://github.com/alexsielicki/layout.git":
+  version "1.4.3"
+  resolved "https://github.com/alexsielicki/layout.git#7261087c6729ec6c012e46586c1b404a20207256"
+  dependencies:
+    jquery ">=1.5"
 
 lcid@^1.0.0:
   version "1.0.0"
