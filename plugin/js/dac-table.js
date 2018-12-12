@@ -17,6 +17,7 @@ import d3 from "js/d3.min";
 import client from "js/slycat-web-client";
 import URI from "urijs";
 import * as dialog from "js/slycat-dialog";
+import "jquery-migrate/dist/jquery-migrate.min";
 import "js/jquery.event.drag-2.2";
 
 import "js/slick.core";
