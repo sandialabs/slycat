@@ -15,8 +15,8 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import URI from "urijs";
 import * as chunker from "js/chunker";
-import "./cca-legend";
 import "./cca-table";
+import "./cca-legend";
 import "./cca-controls";
 import "./cca-barplot";
 import "./cca-scatterplot";
@@ -28,7 +28,7 @@ import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 // resizable required for CCA barplotGroupInputs
 import "jquery-ui/ui/widgets/resizable";
-import "js/jquery.layout-latest";
+import "layout";
 
 import "js/jquery.scrollintoview.min";
 import "js/slycat-navbar"
