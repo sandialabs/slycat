@@ -34,7 +34,7 @@ export default {
                 {
                     size: $(window).width() / 3,
                 },
-                onresize: function()
+                onresize_end: function()
                 {
                     plots.draw();
                 }
@@ -48,7 +48,7 @@ export default {
                 {
                     size: $(window).height() / 4,
                 },
-                onresize: function ()
+                onresize_end: function ()
                 {
                     metadata_table.resize();
                 },
@@ -66,7 +66,7 @@ export default {
                 {
                     size: SCATTER_BUTTONS_HEIGHT,
                 },
-                onresize: function()
+                onresize_end: function()
                 {
                     scatter_plot.draw();
                 },
@@ -106,7 +106,7 @@ export default {
                 {
                     size: $(window).width() / 3,
                 },
-                onresize: function()
+                onresize_end: function()
                 {
                     plots.draw();
                 }
@@ -128,7 +128,7 @@ export default {
                 {
                     size: ALPHA_SLIDER_WIDTH,
                 },
-                onresize: function ()
+                onresize_end: function ()
                 {
                     scatter_plot.draw();
                     metadata_table.resize();
