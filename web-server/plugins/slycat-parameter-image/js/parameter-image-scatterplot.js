@@ -395,7 +395,16 @@ $.widget("parameter_image.scatterplot",
       {
         self.options.axes_variables_scale = store.getState().axesVariables;
         self.set_x_y_v_axes_types();
-        self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
+        self._schedule_update({
+          update_x:true, 
+          update_x_label:true, 
+          update_y:true, 
+          update_y_label:true, 
+          update_leaders:true, 
+          render_data:true, 
+          render_selection:true, 
+          update_legend_axis:true
+        });
       }
     };
 
