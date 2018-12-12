@@ -59,7 +59,7 @@ def register_slycat_plugin(context):
 
                 # check if users match blow away the session if they dont and throw
                 # an unauthorized error to the web browser
-                slycat.web.server.check_user(user_name, auth_user, couchdb, sid, session)
+                slycat.web.server.check_user(user_name, auth_user, sid)
                 groups = session["groups"]
 
                 # no chaching plz
@@ -76,7 +76,8 @@ def register_slycat_plugin(context):
                     cherrypy.response.cookie["slycatauth"] = sid
                     cherrypy.response.cookie["slycatauth"]['expires'] = 0
                     session = None
-                cherrypy.request.login = user_name
+                # set the auth user to the one sent in by apache
+                cherrypy.request.login = auth_user
                 # Apply (optional) authentication rules.
             except Exception as e:
                 cherrypy.log.error("@%s: could not get db session from cookie for %s" % (e, remote_ip))
