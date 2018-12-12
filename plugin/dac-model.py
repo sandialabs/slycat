@@ -420,37 +420,37 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
 
-    # registry css resources with slycat
-    context.register_page_bundle("DAC", "text/css", [
-        os.path.join(os.path.dirname(__file__), "css/dac-ui.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-        os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-    ])
-
-    # register js resources with slycat
-    context.register_page_bundle("DAC", "text/javascript", [
-        os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-        os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-        os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-layout.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-request-data.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-alpha-sliders.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-alpha-buttons.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-manage-selections.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-plots.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-scatter-plot.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-ui.js"),
-        os.path.join(os.path.dirname(__file__), "js/dac-table.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.dataview.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-        os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-    ])
+    # # registry css resources with slycat
+    # context.register_page_bundle("DAC", "text/css", [
+    #     os.path.join(os.path.dirname(__file__), "css/dac-ui.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
+    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
+    # ])
+    #
+    # # register js resources with slycat
+    # context.register_page_bundle("DAC", "text/javascript", [
+    #     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-layout.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-request-data.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-alpha-sliders.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-alpha-buttons.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-manage-selections.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-plots.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-scatter-plot.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-ui.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/dac-table.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.dataview.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
+    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
+    # ])
 
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})
