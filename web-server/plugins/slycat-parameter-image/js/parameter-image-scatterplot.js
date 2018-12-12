@@ -1191,7 +1191,9 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
-      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
+      // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
+      // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
+      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
 
       self.legend_axis = d3.svg.axis()
         .scale(self.legend_scale)

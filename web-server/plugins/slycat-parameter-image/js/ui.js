@@ -127,7 +127,9 @@ $(document).ready(function() {
       onresize_end: function()
       {
         $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
+        if($("#table").data("parameter_image-table")) {
+          $("#table").table("resize_canvas");
+        }
       }
     },
   });
