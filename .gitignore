@@ -63,6 +63,7 @@ web-server/config.ini
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+web-server/dist/
 
 # JIRA plugin
 atlassian-ide-plugin.xml
@@ -99,4 +100,4 @@ yarn-debug.log*
 yarn-error.log*
 yarn.lock
 package-lock.json
-yarn.lock
+
