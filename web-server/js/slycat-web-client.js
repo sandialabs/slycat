@@ -568,6 +568,7 @@ module.get_project_references = function(params)
     dataType: "json",
     type: "GET",
     url: api_root + "projects/" + params.pid + "/references",
+    cache: false,
     success: function(references)
     {
       if(params.success)
