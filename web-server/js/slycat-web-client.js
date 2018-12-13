@@ -627,7 +627,7 @@ module.get_user = function(params)
   $.ajax(
   {
     type: "GET",
-    url: api_root + "users/" + (params.uid || "-"),
+    url: api_root + "users/" + (params.uid || "-")+ '?time=' + new Date().getTime(),
     success: function(user)
     {
       if(params.success)
