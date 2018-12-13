@@ -366,7 +366,7 @@ def delete_project(pid):
 
 
 @cherrypy.tools.json_out(on=True)
-def get_project_models(pid):
+def get_project_models(pid, **kwargs):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
@@ -1867,7 +1867,7 @@ def get_bookmark(bid):
 
 
 @cherrypy.tools.json_out(on=True)
-def get_user(uid):
+def get_user(uid, time):
     if uid == "-":
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
