@@ -46,7 +46,7 @@ class Project extends React.Component {
         <span className="label label-default">project</span> <strong>{this.props.name}</strong>
         <p>
           <small>
-            <span>{this.props.description}</span>
+            <span>{this.props.description}: </span>
             <em>
             Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
             </em>
