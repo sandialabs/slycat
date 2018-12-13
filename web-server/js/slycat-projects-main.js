@@ -8,7 +8,7 @@ import "css/slycat.css";
 
 import React from "react";
 import ReactDOM from "react-dom";
-import ProjectsList from 'components/ProjectsList';
+import SearchWrapper from 'components/ProjectsList';
 import client from 'js/slycat-web-client';
 import ga from "js/slycat-ga";
 import "bootstrap";
@@ -22,7 +22,7 @@ $(document).ready(function() {
 
   client.get_projects({
     success: function(result) {
-      const projects_list = <ProjectsList projects={result.projects} />
+      const projects_list = <SearchWrapper projects={result.projects} />
       ReactDOM.render(
         projects_list,
         document.getElementById('slycat-projects')
