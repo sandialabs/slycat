@@ -628,6 +628,7 @@ module.get_user = function(params)
   {
     type: "GET",
     url: api_root + "users/" + (params.uid || "-")+ '?time=' + new Date().getTime(),
+    cache: false,
     success: function(user)
     {
       if(params.success)
