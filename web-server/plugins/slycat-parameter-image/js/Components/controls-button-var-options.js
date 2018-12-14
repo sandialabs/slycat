@@ -82,6 +82,9 @@ export default function ControlsButtonVarOptions(props) {
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
+              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
               <h3 className="modal-title">{title}</h3>
             </div>
             <div className="modal-body">
