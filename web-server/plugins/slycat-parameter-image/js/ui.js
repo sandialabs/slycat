@@ -115,7 +115,7 @@ $(document).ready(function() {
       // Sliders
       initClosed: true,
       size: $("#parameter-image-plus-layout").width() / 4,
-      onresize: function(pane_name, pane_element, pane_state, pane_options, layout_name)
+      onresize_end: function(pane_name, pane_element, pane_state, pane_options, layout_name)
       {
         filter_manager.slidersPaneHeight( pane_state.innerHeight );
       }
@@ -124,10 +124,12 @@ $(document).ready(function() {
     {
       size: $("#parameter-image-plus-layout").height() / 4,
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
+        if($("#table").data("parameter_image-table")) {
+          $("#table").table("resize_canvas");
+        }
       }
     },
   });
@@ -137,7 +139,7 @@ $(document).ready(function() {
     center:
     {
       resizeWhileDragging: false,
-      onresize: function() 
+      onresize_end: function() 
       {
         if($("#scatterplot").data("parameter_image-scatterplot")) {
           $("#scatterplot").scatterplot("option", {

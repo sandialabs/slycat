@@ -395,7 +395,16 @@ $.widget("parameter_image.scatterplot",
       {
         self.options.axes_variables_scale = store.getState().axesVariables;
         self.set_x_y_v_axes_types();
-        self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
+        self._schedule_update({
+          update_x:true, 
+          update_x_label:true, 
+          update_y:true, 
+          update_y_label:true, 
+          update_leaders:true, 
+          render_data:true, 
+          render_selection:true, 
+          update_legend_axis:true
+        });
       }
     };
 
@@ -1182,7 +1191,9 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
-      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
+      // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
+      // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
+      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
 
       self.legend_axis = d3.svg.axis()
         .scale(self.legend_scale)

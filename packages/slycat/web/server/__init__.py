@@ -571,7 +571,7 @@ def ssh_connect(hostname=None, username=None, password=None):
                         port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
         except paramiko.AuthenticationException as e:
             cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (
-            cherrypy.request.login, hostname, str(e)))
+                cherrypy.request.login, hostname, str(e)))
             cherrypy.log.error("ssh_connect cert method, called ssh.connect traceback: %s" % traceback.print_exc())
             raise cherrypy.HTTPError("403 Remote authentication failed.")
     else:
@@ -579,7 +579,7 @@ def ssh_connect(hostname=None, username=None, password=None):
             ssh.connect(hostname=hostname, username=username, password=password)
         except paramiko.AuthenticationException as e:
             cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (
-            username, hostname, str(e)))
+                username, hostname, str(e)))
             raise cherrypy.HTTPError("403 Remote authentication failed.")
 
     ssh.get_transport().set_keepalive(5)
@@ -690,7 +690,7 @@ def clean_up_old_session(user_name=None):
             pass
 
 
-def check_user(session_user, apache_user, couchdb, sid, session):
+def check_user(session_user, apache_user, sid):
     """
     check to see if the session user is equal to the apache user raise 403 and delete the
     session if they are not equal
@@ -704,11 +704,19 @@ def check_user(session_user, apache_user, couchdb, sid, session):
     if session_user != apache_user:
         cherrypy.log.error("session_user::%s is not equal to apache_user::%s in standard auth"
                            "deleting session and throwing 403 error to the browser" % (session_user, apache_user))
-        couchdb.delete(session)
+        # force a lock so only one delete is called at a time
+        with slycat.web.server.database.couchdb.db_lock:
+            # we need to wrap this in a try catch in case the session is already removed
+            try:
+                couchdb = slycat.web.server.database.couchdb.connect()
+                session = couchdb.get("session", sid)
+                couchdb.delete(session)
+            except:
+                # if we errored here the session has already been removed so we just need to return
+                pass
         # expire the old cookie
         cherrypy.response.cookie["slycatauth"] = sid
         cherrypy.response.cookie["slycatauth"]['expires'] = 0
-        session = None
         cherrypy.response.status = "403 Forbidden"
         raise cherrypy.HTTPError(403)
 

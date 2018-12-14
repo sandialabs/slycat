@@ -63,6 +63,7 @@ web-server/config.ini
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+web-server/dist/
 
 # JIRA plugin
 atlassian-ide-plugin.xml
