@@ -375,6 +375,14 @@ def get_project_models(pid):
     models = sorted(models, key=lambda x: x["created"], reverse=True)
     return models
 
+@cherrypy.tools.json_out(on=True)
+def get_project_csv_data(pid):
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_reader(project)
+
+    projects = [project for project in database.scan("slycat/projects", startkey=pid, endkey=pid)] #There will be a new field in the project object for csv files
+    return projects
 
 @cherrypy.tools.json_out(on=True)
 def get_project_references(pid):
