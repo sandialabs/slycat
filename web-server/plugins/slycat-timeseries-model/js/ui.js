@@ -2,7 +2,8 @@
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
-import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
+import jquery_ui_css from "jquery-ui/themes/base/all.css";
+
 import slick_grid_css from "css/slickgrid/slick.grid.css";
 import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
 import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
@@ -23,14 +24,19 @@ import "./timeseries-table";
 import "./timeseries-dendrogram";
 import "./timeseries-waveformplot";
 import "./color-switcher";
+
 import "jquery-ui";
-import "js/jquery.layout-latest.min";
+// disable-selection and draggable required for jquery.layout resizing functionality
+import "jquery-ui/ui/disable-selection";
+import "jquery-ui/ui/widgets/draggable";
+import "layout";
+
 import "js/slycat-navbar";
 import "js/slycat-job-checker";
 
 // Wait for document ready
 $(document).ready(function() {
-
+  ko.applyBindings({}, document.querySelector(".slycat-content"));
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup global variables.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +103,7 @@ $(document).ready(function() {
     {
       size : $("#timeseries-model").width() / 2,
       resizeWhileDragging : false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#dendrogram-viewer").dendrogram("resize_canvas");
       },
@@ -105,7 +111,7 @@ $(document).ready(function() {
     center :
     {
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#waveform-viewer").waveformplot("resize_canvas");
       },
@@ -114,13 +120,13 @@ $(document).ready(function() {
     {
       size: 130,
       resizeWhileDragging: false,
-      onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+      onresize_end: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
     },
     south:
     {
       size: $("#timeseries-model").height() / 3,
       resizeWhileDragging : false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#table").table("resize_canvas");
       },
@@ -195,7 +201,8 @@ $(document).ready(function() {
       }
     });
   }
-  doPoll();
+  //TODO remove this timeout when we convert to react as it is only here to let KO load
+  setTimeout(doPoll, 500);
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.

@@ -597,3 +597,10 @@ label.bottom-margin
 {
   margin-bottom: 20px;
 }
+
+/* Making sure table ingestion component inside variable options dialog does not extend past viewport */
+#varOptionsModal .modal-dialog {
+  max-height: 90%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}

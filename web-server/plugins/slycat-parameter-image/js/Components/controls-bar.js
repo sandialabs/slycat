@@ -1,4 +1,5 @@
 import React from "react";
+import { Provider } from 'react-redux';
 import ControlsPlayback from './controls-playback';
 import ControlsDropdown from './controls-dropdown';
 import ControlsVideo from './controls-video';
@@ -7,6 +8,7 @@ import ControlsGroup from './controls-group';
 import ControlsButtonToggle from './controls-button-toggle';
 import ControlsButton from './controls-button';
 import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
+import VisibleVarOptions from './visible-var-options';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -20,6 +22,7 @@ class ControlsBar extends React.Component {
       video_sync: this.props.video_sync,
       video_sync_time: this.props.video_sync_time,
       video_sync_time_value: this.props.video_sync_time,
+      var_settings: this.props.var_settings,
     };
     for(let dropdown of this.props.dropdowns)
     {
@@ -173,9 +176,17 @@ class ControlsBar extends React.Component {
     {
       if(dropdown.items.length > 1)
       {
-        return (<ControlsDropdown key={dropdown.id} id={dropdown.id} label={dropdown.label} title={dropdown.title}
-          state_label={dropdown.state_label} trigger={dropdown.trigger} items={dropdown.items}
-          selected={this.state[dropdown.state_label]} set_selected={this.set_selected} />);
+        return (<ControlsDropdown 
+                  key={dropdown.id} 
+                  id={dropdown.id} 
+                  label={dropdown.label} 
+                  title={dropdown.title}
+                  state_label={dropdown.state_label} 
+                  trigger={dropdown.trigger} 
+                  items={dropdown.items}
+                  selected={this.state[dropdown.state_label]} 
+                  set_selected={this.set_selected} 
+                />);
       }
       else
       {
@@ -220,16 +231,33 @@ class ControlsBar extends React.Component {
     const playing = (this.state.video_sync && any_video_playing) || (!this.state.video_sync && current_frame_video_playing);
 
     return (
+      <Provider store={window.store}>
       <React.Fragment>
         <ControlsGroup id="scatterplot-controls">
           {dropdowns}
+          <VisibleVarOptions 
+            selection={this.state.selection} 
+            hidden_simulations={this.state.hidden_simulations}
+            aid={this.props.aid} mid={this.props.mid} 
+            model_name={this.props.model_name} 
+            metadata={this.props.metadata}
+            indices={this.props.indices} 
+            axes_variables={this.props.axes_variables}
+          />
         </ControlsGroup>
         <ControlsGroup id="selection-controls">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} />
-          <ControlsSelection trigger_hide_selection={this.trigger_hide_selection} trigger_hide_unselected={this.trigger_hide_unselected}
-            trigger_show_selection={this.trigger_show_selection} trigger_pin_selection={this.trigger_pin_selection}
-            disable_hide_show={this.state.disable_hide_show} disable_pin={disable_pin} hide_pin={hide_pin}
-            selection={this.state.selection} rating_variables={this.props.rating_variables} metadata={this.props.metadata}
+          <ControlsSelection 
+            trigger_hide_selection={this.trigger_hide_selection} 
+            trigger_hide_unselected={this.trigger_hide_unselected}
+            trigger_show_selection={this.trigger_show_selection} 
+            trigger_pin_selection={this.trigger_pin_selection}
+            disable_hide_show={this.state.disable_hide_show} 
+            disable_pin={disable_pin} 
+            hide_pin={hide_pin}
+            selection={this.state.selection} 
+            rating_variables={this.props.rating_variables} 
+            metadata={this.props.metadata}
             element={this.props.element} />
           <ControlsButton label="Show All" title={show_all_title} disabled={show_all_disabled} click={this.trigger_show_all} />
           <ControlsButton label="Close All Pins" title="" disabled={close_all_disabled} click={this.trigger_close_all} />
@@ -250,6 +278,7 @@ class ControlsBar extends React.Component {
           />
         </ControlsGroup>
       </React.Fragment>
+      </Provider>
     );
   }
 }

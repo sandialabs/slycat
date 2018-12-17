@@ -1,6 +1,7 @@
-// import * as d3 from 'd3';
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
+import jquery_ui_css from "jquery-ui/themes/base/all.css";
+
 import slick_grid_css from "css/slickgrid/slick.grid.css";
 import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
 import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
@@ -26,9 +27,16 @@ import "./parameter-controls";
 import "./parameter-image-table";
 import "./color-switcher";
 import "jquery-ui";
-import "js/jquery.layout-latest.min";
+// disable-selection and draggable required for jquery.layout resizing functionality
+import "jquery-ui/ui/disable-selection";
+import "jquery-ui/ui/widgets/draggable";
+import "jquery-ui/ui/widget";
+import "layout";
 import "js/slycat-range-slider"; 
 import "./category-select";
+
+import { createStore } from 'redux';
+import slycat from './reducers';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -83,6 +91,10 @@ $(document).ready(function() {
 
   var filterxhr = null;
 
+  var axes_font_size = 12;
+  var axes_font_family = "Arial";
+  var axes_variables_scale = {};
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +115,7 @@ $(document).ready(function() {
       // Sliders
       initClosed: true,
       size: $("#parameter-image-plus-layout").width() / 4,
-      onresize: function(pane_name, pane_element, pane_state, pane_options, layout_name)
+      onresize_end: function(pane_name, pane_element, pane_state, pane_options, layout_name)
       {
         filter_manager.slidersPaneHeight( pane_state.innerHeight );
       }
@@ -112,10 +124,12 @@ $(document).ready(function() {
     {
       size: $("#parameter-image-plus-layout").height() / 4,
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
         $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
+        if($("#table").data("parameter_image-table")) {
+          $("#table").table("resize_canvas");
+        }
       }
     },
   });
@@ -125,7 +139,7 @@ $(document).ready(function() {
     center:
     {
       resizeWhileDragging: false,
-      onresize: function() 
+      onresize_end: function() 
       {
         if($("#scatterplot").data("parameter_image-scatterplot")) {
           $("#scatterplot").scatterplot("option", {
@@ -149,6 +163,7 @@ $(document).ready(function() {
       {
         model = result;
         bookmarker = bookmark_manager.create(model.project, model._id);
+
         input_columns = model["artifact:input-columns"];
         output_columns = model["artifact:output-columns"];
         image_columns = model["artifact:image-columns"];
@@ -245,6 +260,21 @@ $(document).ready(function() {
     bookmarker.getState(function(state)
     {
       bookmark = state;
+
+      // Create Redux store and set its state based on what's in the bookmark
+      window.store = createStore(slycat, bookmark.state);
+
+      // Save Redux state to bookmark whenever it changes
+      const bookmarkState = () => {
+        bookmarker.updateState({"state" : store.getState()});
+      };
+      window.store.subscribe(bookmarkState);
+
+      // Set local variables based on Redux store
+      axes_font_size = store.getState().fontSize;
+      axes_font_family = store.getState().fontFamily;
+      axes_variables_scale = store.getState().axesVariables;
+
       // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
       filter_manager.set_bookmark(bookmark);
       setup_controls();
@@ -639,6 +669,9 @@ $(document).ready(function() {
         x_string: table_metadata["column-types"][x_index]=="string",
         y_string: table_metadata["column-types"][y_index]=="string",
         v_string: table_metadata["column-types"][v_index]=="string",
+        x_index: x_index,
+        y_index: y_index,
+        v_index: v_index,
         images: images,
         width: $("#scatterplot-pane").width(),
         height: $("#scatterplot-pane").height(),
@@ -650,6 +683,9 @@ $(document).ready(function() {
         "auto-scale" : auto_scale,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
+        axes_font_size : axes_font_size,
+        axes_font_family : axes_font_family,
+        axes_variables_scale : axes_variables_scale,
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -755,6 +791,7 @@ $(document).ready(function() {
         // clusters : clusters,
         x_variables: axes_variables,
         y_variables: axes_variables,
+        axes_variables: axes_variables,
         image_variables: image_columns,
         color_variables: color_variables,
         rating_variables : rating_columns,
@@ -1118,6 +1155,7 @@ $(document).ready(function() {
   {
     update_current_colorscale();
     $("#table").table("option", "colorscale", colorscale);
+    $("#scatterplot").scatterplot("option", "v_index", v_index);
     $("#scatterplot").scatterplot("update_color_scale_and_v", {
       v : v, 
       v_string : table_metadata["column-types"][v_index]=="string", 
@@ -1326,9 +1364,10 @@ $(document).ready(function() {
       success : function(result)
       {
         $("#scatterplot").scatterplot("option", {
+          x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
           x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          x_label:table_metadata["column-names"][variable]
+          x_label:table_metadata["column-names"][variable],
         });
       },
       error : artifact_missing
@@ -1346,9 +1385,10 @@ $(document).ready(function() {
       success : function(result)
       {
         $("#scatterplot").scatterplot("option", {
+          y_index: variable,
           y_string: table_metadata["column-types"][variable]=="string", 
           y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          y_label:table_metadata["column-names"][variable]
+          y_label:table_metadata["column-names"][variable],
         });
       },
       error : artifact_missing

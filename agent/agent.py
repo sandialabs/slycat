@@ -186,6 +186,8 @@ class Agent(object):
                     run_command += " "
                     run_command += str(parameter["value"])
                 return run_command
+        if not run_command:
+            raise Exception("No Matching script name or missing params")
 
     def get_job_logger(self, name):
         """

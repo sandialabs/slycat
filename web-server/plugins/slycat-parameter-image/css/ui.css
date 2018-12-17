@@ -1052,3 +1052,10 @@ slycat-3d-viewer .header-bar {
   left: 0;
   display: none;
 }
+/* Making axis ticks visible by setting the stroke color */
+.tick line
+{
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}

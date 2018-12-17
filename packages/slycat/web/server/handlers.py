@@ -366,7 +366,7 @@ def delete_project(pid):
 
 
 @cherrypy.tools.json_out(on=True)
-def get_project_models(pid):
+def get_project_models(pid, **kwargs):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
@@ -923,12 +923,13 @@ def login():
     and determins with the user can be authenticated with slycat
     :return: authentication status
     """
-    # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
-    # try and delete any outdated sessions for the user if they have the cookie for it
-    slycat.web.server.clean_up_old_session()
 
     # try and decode the username and password
     user_name, password = slycat.web.server.decode_username_and_password()
+
+    # cherrypy.log.error("login attempt started %s" % datetime.datetime.utcnow())
+    # try and delete any outdated sessions for the user if they have the cookie for it
+    slycat.web.server.clean_up_old_session(user_name)
 
     realm = None
 
@@ -1874,7 +1875,7 @@ def get_bookmark(bid):
 
 
 @cherrypy.tools.json_out(on=True)
-def get_user(uid):
+def get_user(uid, time):
     if uid == "-":
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)

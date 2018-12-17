@@ -91,6 +91,16 @@ module.exports = {
   ],
   module: {
     rules: [
+      // These next two rules are needed to make jQuery Migrate 3.0.1 work, per
+      // https://github.com/jquery/jquery-migrate/issues/273#issuecomment-332527584
+      {
+        test: require.resolve("jquery-migrate"),
+        use: "imports-loader?define=>false",
+      },
+      {
+        test: require.resolve("jquery-migrate/dist/jquery-migrate.min"),
+        use: "imports-loader?define=>false",
+      },
       // This enables Babel
       { test: /\.js$/, 
         exclude: /node_modules/, 
@@ -144,6 +154,26 @@ module.exports = {
           'css-loader', // translates CSS into CommonJS
           'less-loader' // compiles Less to CSS
         ]
+      },
+      {
+        test: /\.(scss)$/,
+        use: [{
+          loader: 'style-loader', // inject CSS to page
+        }, {
+          loader: 'css-loader', // translates CSS into CommonJS modules
+        }, {
+          loader: 'postcss-loader', // Run post css actions
+          options: {
+            plugins: function () { // post css plugins, can be exported to postcss.config.js
+              return [
+                require('precss'),
+                require('autoprefixer')
+              ];
+            }
+          }
+        }, {
+          loader: 'sass-loader' // compiles Sass to CSS
+        }]
       },
     ],
   },

@@ -30,7 +30,7 @@ import config from 'config.json';
 // Let's check to see if we have a session by trying to retrive the projects list.
 // If we get redirected, it likely means we don't have a seesion, so let's take the user
 // to the login page.
-fetch(api_root + 'projects_list', {redirect: 'error', credentials: "same-origin"})
+fetch(api_root + 'projects_list' + '?_=' + new Date().getTime(), {redirect: 'error', credentials: "same-origin", cache: "no-store"})
   .catch(error => {
     console.log("we are being redirected or have another type of error, so let's go to the login page");
     //window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;

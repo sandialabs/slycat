@@ -644,7 +644,7 @@ module.get_user = function(params)
   $.ajax(
   {
     type: "GET",
-    url: api_root + "users/" + (params.uid || "-"),
+    url: api_root + "users/" + (params.uid || "-") + "/" + new Date().getTime(),
     success: function(user)
     {
       if(params.success)
@@ -1427,6 +1427,7 @@ module.get_projects = function(params) {
     contentType: 'application/json',
     type: 'GET',
     url: api_root + 'projects_list',
+    cache: false,
     success: function(result, textStatus, request) {
       if (params.success)
         params.success(result, textStatus, request);
@@ -1443,6 +1444,7 @@ module.get_project_models = function(params) {
     contentType: 'application/json',
     type: 'GET',
     url: api_root + 'projects/'+ params.pid + '/models',
+    cache: false,
     success: function(result) {
       if (params.success)
         params.success(result);

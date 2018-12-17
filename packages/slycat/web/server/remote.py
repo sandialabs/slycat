@@ -578,9 +578,10 @@ class Session(object):
             raise cherrypy.HTTPError(404, "no Slycat agent present on remote host.")
 
         # get the name of our slycat module on the hpc
-        command["module-name"] = None
-        if "module-name" in slycat.web.server.config["slycat-web-server"]:
-            command["module-name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
+        if command["hpc"]["is_hpc_job"] and "parameters" in command["hpc"]:
+            command["hpc"]["parameters"]["module_name"] = None
+            if "module-name" in slycat.web.server.config["slycat-web-server"]:
+                command["hpc"]["parameters"]["module_name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
         stdin, stdout, stderr = self._agent
         payload = {
             "action": "run-remote-command",
