@@ -852,7 +852,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
-        create_project_data(mid, files)
+        create_project_data(mid, aids, files)
     except Exception as e:
         cherrypy.log.error("Exception parsing posted files: %s" % e)
         slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
