@@ -464,7 +464,7 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
-def create_project_data(mid, file):
+def create_project_data(mid, aid, file):
     """
     When a pid along with json "model-type", "marking", "name" is sent with POST
     creates a model and saves it to the database
@@ -482,6 +482,7 @@ def create_project_data(mid, file):
     data = {
         "_id": did,
         "type": "project_data",
+        "file_name": aid[0],
         "project": pid,
         "mid": [mid],
         "created": datetime.datetime.utcnow().isoformat(),
