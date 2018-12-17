@@ -378,6 +378,8 @@ def get_project_models(pid, **kwargs):
 # @cherrypy.tools.json_out(on=True)
 def get_project_csv_data(pid):
     database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_reader(project)
     project_datas = [data for data in database.scan("slycat/project_datas")]
     data = []
 
