@@ -114,7 +114,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.get_project_cache_object, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-project-csv-data", "/projects/:pid/project_data", slycat.web.server.handlers.get_project_csv_data, conditions={"method": ["GET"]})
+  dispatcher.connect("get-project-csv-data", "/projects/:pid/data", slycat.web.server.handlers.get_project_csv_data,conditions={"method": ["GET"]})
   #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
 

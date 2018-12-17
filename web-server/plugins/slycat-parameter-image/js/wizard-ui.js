@@ -58,6 +58,18 @@ function constructor(params)
   });
   component.ps_type("remote"); // remote is selected by default...
 
+  component.get_csv = function() {
+    client.get_project_csv_data({
+        pid: component.project._id(),
+        success: function(attachments) {
+          console.log(attachments);
+        },
+        error: dialog.ajax_error("There was an error retrieving the CSV data."),
+    });
+  };
+
+  component.get_csv();
+
   component.create_model = function() {
     client.post_project_models({
       pid: component.project._id(),

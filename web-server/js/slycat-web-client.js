@@ -152,7 +152,7 @@ module.get_project_csv_data = function(params)
       {
           dataType: "json",
           type: "GET",
-          url: api_root + "/projects/" + params.pid + "/project_data",
+          url: params.pid + "/data",
           success: function (result) {
               if (params.success)
                   params.success(result);

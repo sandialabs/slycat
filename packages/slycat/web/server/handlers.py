@@ -375,14 +375,24 @@ def get_project_models(pid, **kwargs):
     models = sorted(models, key=lambda x: x["created"], reverse=True)
     return models
 
-@cherrypy.tools.json_out(on=True)
+# @cherrypy.tools.json_out(on=True)
 def get_project_csv_data(pid):
     database = slycat.web.server.database.couchdb.connect()
-    project = database.get("project", pid)
-    slycat.web.server.authentication.require_project_reader(project)
+    project_datas = [data for data in database.scan("slycat/project_datas")]
+    data = []
 
-    projects = [project for project in database.scan("slycat/projects", startkey=pid, endkey=pid)] #There will be a new field in the project object for csv files
-    return projects
+    if not project_datas:
+        cherrypy.log.error("The project_datas list is empty.")
+    else:
+        for item in project_datas:
+            if item["project"] == pid:
+                # data_id = item["_id"]
+                # attachment = database.get_attachment(item, "content")
+                temp_json_data = {"_id": item["_id"]}
+                data.append(temp_json_data)
+
+    json_data = json.dumps(data)
+    return json_data
 
 @cherrypy.tools.json_out(on=True)
 def get_project_references(pid):
