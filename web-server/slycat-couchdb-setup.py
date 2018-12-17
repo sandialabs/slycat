@@ -344,6 +344,14 @@ design = {
           require(new_document["creator"] == old_document["creator"], "Session creator cannot be modified.");
         }
       }
+      else if(new_document["type"] == "project_data")
+      {
+        require(new_document["project"] != null, "Must contain project id.");
+        if(old_document)
+        {
+          require(new_document["project"] == old_document["project"], "Project id cannot be modified.");
+        }
+      }
       else
       {
         throw(
