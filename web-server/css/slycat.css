@@ -5,7 +5,7 @@
 html
 {
   font-family: sans-serif;
-  font-size: 10px;
+  font-size: 16px;
   -ms-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-text-size-adjust: 100%;
@@ -16,7 +16,6 @@ body
   background-color: rgb(215, 215, 215);
   color: #333333;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
   line-height: 1.42857;
   margin: 0;
 }
@@ -250,6 +249,7 @@ slycat-navbar nav .alert pre
 #slycat-projects .container
 {
   padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 /* slycat-remote-browser component */
