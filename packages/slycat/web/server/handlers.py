@@ -149,9 +149,15 @@ def get_sid(hostname):
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        for host_session in session["sessions"]:
+        for index, host_session in enumerate(session["sessions"]):
             if host_session["hostname"] == hostname:
                 sid = host_session["sid"]
+                if(not slycat.web.server.remote.check_session(sid)):
+                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, slycat.web.server.remote.session_cache.keys()))
+                    slycat.web.server.remote.delete_session(sid)
+                    del session["sessions"][index]
+                    database.save(session)
+                    raise cherrypy.HTTPError("404")
                 break
     except Exception as e:
         cherrypy.log.error("could not retrieve host session for remotes %s" % e)
@@ -2002,14 +2008,12 @@ def post_remotes():
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        hostname_not_found = True
         for i in xrange(len(session["sessions"])):
             if session["sessions"][i]["hostname"] == hostname:
-                session["sessions"][i]["sid"] = sid
-                session["sessions"][i]["username"] = username
-                hostname_not_found = False
-        if hostname_not_found:
-            session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+                if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
+                    slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
+                del session["sessions"][i]
+        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
         database.save(session)
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
