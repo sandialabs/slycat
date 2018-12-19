@@ -502,10 +502,12 @@ def create_project_data(mid, aid, file):
     pid = project["_id"]
     # slycat.web.server.authentication.require_project_writer(project)
     did = uuid.uuid4().hex
+    seconds = time.time()
+    time_stamp = datetime.datetime.fromtimestamp(seconds).strftime('%Y-%m-%d %H:%M:%S')
     data = {
         "_id": did,
         "type": "project_data",
-        "file_name": aid[1],
+        "file_name": aid[1] + time_stamp,
         "data_table": aid[0],
         "project": pid,
         "mid": [mid],
