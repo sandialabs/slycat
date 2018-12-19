@@ -833,12 +833,6 @@ module.post_project_references = function(params)
   });
 };
 
-//Parses existing data without re-uploading it
-module.parse_existing_data = function(params)
-{
-  
-}
-
 /**
  * put a reference in Slycat
  * @param params: object{
