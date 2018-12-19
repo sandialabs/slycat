@@ -246,7 +246,9 @@ slycat-navbar nav .alert pre
   min-height: calc(100vh - 50px);
 }
 
-#slycat-projects .container
+#slycat-projects .container,
+#slycat-models .container,
+#slycat-templates .container
 {
   padding-top: 15px;
   padding-bottom: 15px;
