@@ -9,6 +9,9 @@ module.exports = merge(common, {
     // Only compiles on refresh, not on file change. But does not work, complains of running webpack twice.
     // lazy: true,
 
+    // Disable live reloading. Useful when trying to run two branches side by side.
+    // inline: false,
+
     // Where non-webpack generated files are located on the filesystem.
     // contentBase: [path.join(__dirname, 'web-server/plugins/slycat-project-wizards'), path.join(__dirname, 'web-server/plugins/slycat-model-wizards')],
     
