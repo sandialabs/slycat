@@ -3,7 +3,7 @@
  retains certain rights in this software. */
 
 // CSS resources
-import "css/namespaced-bootstrap.less";
+import "css/namespaced-bootstrap.scss";
 import "css/slycat.css";
 
 import server_root from 'js/slycat-server-root';

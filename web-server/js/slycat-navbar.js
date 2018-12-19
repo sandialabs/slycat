@@ -3,7 +3,7 @@
  retains certain rights in this software. */
 
 // Global css resources loaded here
-import "css/namespaced-bootstrap.less";
+import "css/namespaced-bootstrap.scss";
 import "font-awesome/css/font-awesome.css";
 import "css/slycat.css";
 
