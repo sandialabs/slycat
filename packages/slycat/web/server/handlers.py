@@ -389,8 +389,29 @@ def get_project_csv_data(pid):
         for item in project_datas:
             if item["project"] == pid:
                 # data_id = item["_id"]
-                # attachment = database.get_attachment(item, "content")
-                temp_json_data = {"_id": item["_id"]}
+                attachment = database.get_attachment(item, "content")
+
+                # data.append(temp_json_data)
+
+    # json_data = json.dumps(data)
+    return attachment
+
+def get_project_file_names(pid):
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_reader(project)
+    project_datas = [data for data in database.scan("slycat/project_datas")]
+    data = []
+
+    if not project_datas:
+        cherrypy.log.error("The project_datas list is empty.")
+    else:
+        for item in project_datas:
+            if item["project"] == pid:
+                # data_id = item["_id"]
+                temp_json_data = {"file_name": item["file_name"]}
+                cherrypy.log.error("The file name is: ")
+                cherrypy.log.error(str(temp_json_data))
                 data.append(temp_json_data)
 
     json_data = json.dumps(data)
@@ -484,7 +505,8 @@ def create_project_data(mid, aid, file):
     data = {
         "_id": did,
         "type": "project_data",
-        "file_name": aid[0],
+        "file_name": aid[1],
+        "data_table": aid[0],
         "project": pid,
         "mid": [mid],
         "created": datetime.datetime.utcnow().isoformat(),

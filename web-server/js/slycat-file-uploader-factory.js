@@ -29,20 +29,20 @@ module.uploadFile = function (fileObject)
   if(fileObject.hostname && fileObject.paths){
     // console.log("creating remote file upload session");
     client.post_uploads({
-      fileName: fileObject.aids[0],
+      fileName: fileObject.aids,
       mid: fileObject.mid,
       input: true,
       parser: fileObject.parser,
       aids: fileObject.aids,
       success: function (uid) {
         // console.log("Upload session created.");
-        uploadRemoteFile(fileObject.aids[0], fileObject.pid, fileObject.mid, uid, fileObject.hostname, fileObject.paths, fileObject);
+        uploadRemoteFile(fileObject.aids, fileObject.pid, fileObject.mid, uid, fileObject.hostname, fileObject.paths, fileObject);
       }
     });
   }else {
     // console.log("creating file upload session");
     client.post_uploads({
-      fileName: fileObject.aids[0],
+      fileName: fileObject.aids,
       mid: fileObject.mid,
       input: true,
       parser: fileObject.parser,
@@ -299,7 +299,7 @@ function uploadFile(pid, mid, uid, file, fileObject)
 function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
 {
   client.post_upload_finished({
-    fileName: fileObject.aids[0],
+    fileName: fileObject.aids,
     uid: uid,
     uploaded: [numberOfUploadedSlices],
     success: function()
