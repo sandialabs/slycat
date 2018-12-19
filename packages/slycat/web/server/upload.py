@@ -192,7 +192,10 @@ class Session(object):
       try:
 
         slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files,self._aids[0], **self._kwargs)
-        slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
+        # Checking if the file being parsed is pre-existing.
+        # If it is, don't create another record of project data.
+        if self._aids[2] is False:
+          slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
       except Exception as e:
         cherrypy.log.error("Exception parsing posted files: %s" % e)
         import traceback
