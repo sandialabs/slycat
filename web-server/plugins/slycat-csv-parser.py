@@ -24,15 +24,6 @@ def parse_file(file, model, database):
         except ValueError:
             return False
 
-    invalid_csv = False  # CSV is completely missing a column header (it isn't just a blank string)
-    content = file.splitlines()
-    csv_reader = csv.reader(content)
-    headings = next(csv_reader)
-    first_line = next(csv_reader)
-
-    if len(headings) != len(first_line):
-        invalid_csv = True
-
     rows = [row for row in
             csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
                        quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]

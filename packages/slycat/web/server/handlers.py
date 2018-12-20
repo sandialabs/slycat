@@ -376,25 +376,34 @@ def get_project_models(pid, **kwargs):
     return models
 
 # @cherrypy.tools.json_out(on=True)
-def get_project_csv_data(pid):
+def get_project_csv_data(pid, file_key, parser, mid, aids):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
     project_datas = [data for data in database.scan("slycat/project_datas")]
     data = []
+    attachment = []
 
     if not project_datas:
         cherrypy.log.error("The project_datas list is empty.")
     else:
         for item in project_datas:
-            if item["project"] == pid:
+            if item["project"] == pid and item["file_name"] == file_key:
                 # data_id = item["_id"]
-                attachment = database.get_attachment(item, "content")
+                http_response = database.get_attachment(item, "content")
+                file = http_response.read()
+                attachment.append(file)
 
                 # data.append(temp_json_data)
 
     # json_data = json.dumps(data)
-    return attachment
+    attachment[0] = attachment[0].replace('\\n', '\n')
+    attachment[0] = attachment[0].replace('["', '')
+    attachment[0] = attachment[0].replace('"]', '')
+
+    model = database.get("model", mid)
+    slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
+    return {"Status": "Success"}
 
 def get_project_file_names(pid):
     database = slycat.web.server.database.couchdb.connect()
@@ -503,11 +512,12 @@ def create_project_data(mid, aid, file):
     # slycat.web.server.authentication.require_project_writer(project)
     did = uuid.uuid4().hex
     seconds = time.time()
-    time_stamp = datetime.datetime.fromtimestamp(seconds).strftime('%Y-%m-%d %H:%M:%S')
+    time_stamp_unformatted = datetime.datetime.fromtimestamp(seconds).strftime('%Y-%m-%d %H:%M:%S')
+    time_stamp_formatted = time_stamp_unformatted.replace(" ", "")
     data = {
         "_id": did,
         "type": "project_data",
-        "file_name": aid[1] + time_stamp,
+        "file_name": aid[1] + time_stamp_formatted,
         "data_table": aid[0],
         "project": pid,
         "mid": [mid],
