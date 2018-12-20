@@ -65,13 +65,16 @@ function constructor(params)
   component.get_server_files = function() {
     client.get_project_csv_data({
         pid: component.project._id(),
-        success: function(attachments) {
-          var data;
-          for(var i = 0; i < attachments.length; i++) {
-                data = attachments[i];
-                component.csv_data.push(data);
-            }
-          },
+        file_key: component.selected_file(),
+        parser: "slycat-csv-parser",
+        mid: component.model._id(),
+        aids: 'data-table',
+
+        success: function(response) {
+          var data = JSON.stringify(response);
+          component.csv_data.push(data);
+          upload_success(component.browser);
+        },
           error: dialog.ajax_error("There was an error retrieving the CSV data."),
       });
     };
@@ -91,9 +94,6 @@ function constructor(params)
         error: dialog.ajax_error("There was an error retrieving the CSV data."),
     });
   };
-
-  component.get_server_files();
-  component.get_server_file_names();
 
   component.create_model = function() {
     client.post_project_models({
@@ -129,6 +129,7 @@ function constructor(params)
 
   // Create a model as soon as the dialog loads. We rename, change description and marking later.
   component.create_model();
+  component.get_server_file_names();
 
   component.cancel = function() {
     if(component.model._id())
@@ -190,41 +191,38 @@ function constructor(params)
     });
   };
 
-    component.existing_table = function() {
-      //var file = component.browser.selection()[0];
-      console.log("existing_table is getting called.");
-      var file;
-      var fileName = component.selected_file;
-      component.current_aids = fileName();
-      //var file = new File([""], fileName())
-      var csvData = component.csv_data();
-      var blob = new Blob([ csvData ], {
-      type : "application/csv;charset=utf-8;"
-      });
-      file.lastModified = null; file.lastModifiedDate = null;
-      file.name = component.current_aids; file.size = null;
-      file.type = null; file.webkitRelativePath = null;
-      var fileObject = {
-          pid: component.project._id(),
-          mid: component.model._id(),
-          file: blob,
-          aids: [["data-table"], component.current_aids, true],
-          parser: component.parser(),
-          progress: component.browser.progress,
-          progress_status: component.browser.progress_status,
-          progress_final: 90,
-          success: function() {
-              upload_success(component.browser);
-          },
-          error: function() {
-              dialog.ajax_error("Did you choose the correct file and filetype? There was a problem parsing the file: ")();
-              $('.browser-continue').toggleClass("disabled", false);
-              component.browser.progress(null);
-              component.browser.progress_status('');
-          }
-      };
-      fileUploader.uploadFile(fileObject);
-  };
+  component.existing_table = function() {
+        var fileName = component.selected_file;
+        component.current_aids = fileName();
+        component.get_server_files();
+        var csvData = component.csv_data();
+        var file;
+        var blob = new Blob([ csvData ], {
+        type : "application/csv;charset=utf-8;"
+        });
+        file.lastModified = null; file.lastModifiedDate = null;
+        file.name = component.current_aids; file.size = null;
+        file.type = null; file.webkitRelativePath = null;
+        var fileObject = {
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: blob,
+            aids: [["data-table"], component.current_aids, true], //If existing data, last value is true.
+            parser: component.parser(),
+            progress: component.browser.progress,
+            progress_status: component.browser.progress_status,
+            progress_final: 90,
+            success: function() {
+                upload_success(component.browser);
+            },
+            error: function() {
+                dialog.ajax_error("Did you choose the correct file and filetype? There was a problem parsing the file: ")();
+                $('.browser-continue').toggleClass("disabled", false);
+                component.browser.progress(null);
+                component.browser.progress_status('');
+            }
+        };
+    };
 
   component.upload_table = function() {
     $('.local-browser-continue').toggleClass("disabled", true);
