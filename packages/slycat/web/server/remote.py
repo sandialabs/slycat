@@ -38,7 +38,7 @@ import time
 import uuid
 import cherrypy
 import paramiko
-
+import socket
 import slycat.email
 import slycat.mime_type
 import slycat.web.server.authentication
@@ -89,9 +89,10 @@ class Session(object):
 
   """
 
-    def __init__(self, client, username, hostname, ssh, sftp, agent=None):
+    def __init__(self, sid, client, username, hostname, ssh, sftp, agent=None):
         now = datetime.datetime.utcnow()
         self._client = client
+        self._sid = sid
         self._username = username
         self._hostname = hostname
         self._ssh = ssh
@@ -779,8 +780,12 @@ class Session(object):
         # Use the agent to retrieve a file.
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
-            stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
-            stdin.flush()
+            try:
+                stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
             metadata = json.loads(stdout.readline())
 
             if metadata["message"] == "Path must be absolute.":
@@ -1124,10 +1129,10 @@ def create_session(hostname, username, password, agent):
                 raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
             agent = (stdin, stdout, stderr)
             with session_cache_lock:
-                session_cache[sid] = Session(client, username, hostname, ssh, sftp, agent)
+                session_cache[sid] = Session(sid, client, username, hostname, ssh, sftp, agent)
         else:
             with session_cache_lock:
-                session_cache[sid] = Session(client, username, hostname, ssh, sftp)
+                session_cache[sid] = Session(sid, client, username, hostname, ssh, sftp)
         return sid
     except cherrypy.HTTPError as e:
         cherrypy.log.error("Agent startup failed for %s@%s: %s" % (username, hostname, e.status))
