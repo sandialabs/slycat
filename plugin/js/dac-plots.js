@@ -239,7 +239,7 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	}
 
 	// set up initial size, axis labels, etc.
-	module.draw();
+	module.update_plots();
 
 }
 

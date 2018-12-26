@@ -44,10 +44,22 @@ module.sel_1 = function()
 	return selection_1;
 }
 
+// init selection array 1
+module.set_sel_1 = function(sel)
+{
+    selection_1 = sel;
+}
+
 // get selection #2
 module.sel_2 = function()
 {
 	return selection_2;
+}
+
+// init selection array 2
+module.set_sel_2 = function(sel)
+{
+    selection_2 = sel;
 }
 
 // set subset mask

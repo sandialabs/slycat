@@ -329,13 +329,14 @@ $(document).ready(function() {
 		   	           function (variables_meta, variables, data_table_meta, data_table)
 		   	                {
 
-                                // get number of variables and number of columns in table
+                                // get number of variables, points and columns in table
                                 var num_vars = variables_meta[0]["row-count"];
                                 var num_cols = data_table_meta[0]["column-count"];
+                                var num_points = data_table_meta[0]["row-count"];
 
-                                // check variable to be included
-                                var var_include_columns = include_check("dac-var-include-columns", num_vars);
-                                var meta_include_columns = include_check("dac-meta-include-columns", num_cols);
+                                // check variables to be included
+                                var var_include_columns = include_check("dac-var-include-columns", num_vars, true);
+                                var meta_include_columns = include_check("dac-meta-include-columns", num_cols, true);
 
                                 // initialize sliders to all one, unless valid bookmark is available
                                 var init_alpha_values = [];
@@ -348,6 +349,21 @@ $(document).ready(function() {
                                         init_alpha_values = bookmark["dac-slider-values"];
                                     };
                                 };
+
+                                // get initial selections, using bookmarks if available
+                                var init_sel_1 = include_check("dac-sel-1", num_points, false);
+                                var init_sel_2 = include_check("dac-sel-2", num_points, false);
+
+                                // get focus point
+                                var init_focus = null;
+                                if ("dac-sel-focus" in bookmark) {
+                                    init_focus = bookmark["dac-sel-focus"];
+                                }
+
+                                // initialize selections/focus
+                                selections.set_sel_1(init_sel_1);
+                                selections.set_sel_2(init_sel_2);
+                                selections.set_focus(init_focus);
 
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
@@ -402,11 +418,15 @@ $(document).ready(function() {
     }
 
     // error checking for included rows/columns
-    function include_check (bookmark_name, num_include)
+    // bookmark_name is the bookmark tag,
+    // num_include is the length the array is checked against
+    // full is true if returned array is to include every index
+    // when bookmark is not present, false to return empty array
+    function include_check (bookmark_name, num_include, full)
     {
 
         // assume we include all meta data columns
-        var include_columns = null;
+        var include_columns = [];
 
         // check bookmarks for variables to include
         if (bookmark_name in bookmark) {
@@ -421,12 +441,14 @@ $(document).ready(function() {
             }
         }
 
-        // change metadata included from null to list of indices, if necessary
-        if (include_columns == null) {
+        // change included from [] to list of indices, if necessary
+        if (full) {
+            if (include_columns.length == 0) {
 
-            include_columns = [];
-            for (var i = 0; i < num_include; i++) {
-                include_columns.push(i);
+                include_columns = [];
+                for (var i = 0; i < num_include; i++) {
+                    include_columns.push(i);
+                }
             }
         }
 
@@ -497,8 +519,6 @@ $(document).ready(function() {
 
         // update MDS scatter plot
         scatter_plot.update(new_alpha_values.detail);
-        console.log(new_alpha_values.detail)
-
 
         // update bookmark to reflect new values
         bookmarker.updateState({"dac-slider-values": new_alpha_values.detail});
@@ -507,7 +527,6 @@ $(document).ready(function() {
     // custom event for change in selection 1, selection 2, active selection
     function selections_changed (new_selections)
     {
-
         // re-order selection order randomly
         // (to prevent always showing 1st part of long selection)
         selections.shuffle();
@@ -529,6 +548,10 @@ $(document).ready(function() {
 
 		// jump to top row in table for current selection (if there is one)
 		metadata_table.jump_to (new_selections.detail.active_sel);
+
+		// bookmark selections
+		bookmarker.updateState ({"dac-sel-1": selections.sel_1(), "dac-sel-2": selections.sel_2(),
+		                         "dac-sel-focus": selections.focus()})
     }
 
     // custom event for jumping to an individual selection in the table
@@ -550,6 +573,9 @@ $(document).ready(function() {
         if (active_selection.detail.active_sel != null) {
             metadata_table.jump_to ([active_selection.detail.active_sel]);
         }
+
+        // bookmark focus selection
+		bookmarker.updateState ({"dac-sel-focus": selections.focus()})
     }
 
     // custom event for difference calculation

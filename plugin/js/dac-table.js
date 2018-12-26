@@ -167,6 +167,12 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 	// fit table into container
 	module.resize();
 
+	// show selections, if any
+	module.select_rows()
+
+	// jump to current selection (default selection 1)
+	module.jump_to(selections.sel_1());
+
 }
 
 // download data table button
