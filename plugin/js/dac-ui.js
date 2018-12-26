@@ -321,6 +321,9 @@ $(document).ready(function() {
                 // set up subset change event
                 document.body.addEventListener("DACSubsetChanged", subset_changed);
 
+                // set up coloring change (mainly to keep bookmarking in this module)
+                document.body.addEventListener("DACColorByChanged", color_by_changed)
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -365,6 +368,12 @@ $(document).ready(function() {
                                 selections.set_sel_2(init_sel_2);
                                 selections.set_focus(init_focus);
 
+                                // initialize color by selection using bookmark, if any
+                                var init_color_by_sel = -1;
+                                if ("dac-color-by" in bookmark) {
+                                    init_color_by_sel = bookmark["dac-color-by"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -384,7 +393,7 @@ $(document).ready(function() {
 					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
-					                init_alpha_values);
+					                init_alpha_values, init_color_by_sel);
 
                                 // set up table with editable columns
                                 setup_editable_columns (data_table_meta, data_table, meta_include_columns);
@@ -612,5 +621,12 @@ $(document).ready(function() {
         if (jump_to.length > 0) {
             metadata_table.jump_to (jump_to);
         }
+    }
+
+    // event for changing coloring of scatter plot
+    function color_by_changed (new_color_sel)
+    {
+        // bookmark selected color
+        bookmarker.updateState({"dac-color-by": new_color_sel.detail});
     }
 });

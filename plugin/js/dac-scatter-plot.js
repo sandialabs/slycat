@@ -92,7 +92,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
 	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
-	init_alpha_values)
+	init_alpha_values, init_color_by_sel)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -152,6 +152,37 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// difference button has not yet been used
 	diff_button_used = false;
 
+    // set up color by menu
+
+	// look for columns with numbers/strings for color by menu
+	for (var i = 0; i < datapoints_meta["column-count"]; i++)
+	{
+
+		// we accept number and string data, only for included columns
+		if ((meta_include_columns.indexOf(i) != -1) &&
+			((datapoints_meta["column-types"][i] == "float64") ||
+			(datapoints_meta["column-types"][i] == "string"))) {
+			color_by_type.push(datapoints_meta["column-types"][i]);
+			color_by_cols.push(i);
+
+			// make sure names aren't too long (if they are then truncate)
+			var name_i = datapoints_meta["column-names"][i];
+			if (name_i.length > max_color_by_name_length) {
+				name_i = name_i.substring(0,max_color_by_name_length) + " ...";
+			}
+			color_by_names.push(name_i);
+		};
+
+	};
+
+    // check init color by value (make sure it fits on list)
+    if (init_color_by_sel >= (color_by_names.length-1)) {
+        init_color_by_sel = -1;
+    }
+
+	// populate pull down menu
+	display_pull_down.bind($("#dac-scatter-select"))(init_color_by_sel);
+
 	$.when (request.get_array("dac-mds-coords", 0, mid)).then(
 		function (mds_data)
 		{
@@ -202,8 +233,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .range([color_by_low, color_by_high])
                             .interpolate(d3.interpolateRgb);
 
-                        // finish
-                        module.draw();
+                        // finish with color plot
+                        color_plot(init_color_by_sel);
 
                     },
                 error: function ()
@@ -218,32 +249,6 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 			dialog.ajax_error ("Server failure: could not load MDS coords.")("","","");
 		}
 	);
-
-	// set up color by selection
-
-	// look for columns with numbers/strings for color by menu
-	for (var i = 0; i < datapoints_meta["column-count"]; i++)
-	{
-
-		// we accept number and string data, only for included columns
-		if ((meta_include_columns.indexOf(i) != -1) &&
-			((datapoints_meta["column-types"][i] == "float64") ||
-			(datapoints_meta["column-types"][i] == "string"))) {
-			color_by_type.push(datapoints_meta["column-types"][i]);
-			color_by_cols.push(i);
-
-			// make sure names aren't too long (if they are then truncate)
-			var name_i = datapoints_meta["column-names"][i];
-			if (name_i.length > max_color_by_name_length) {
-				name_i = name_i.substring(0,max_color_by_name_length) + " ...";
-			}
-			color_by_names.push(name_i);
-		};
-
-	};
-
-	// populate pull down menu
-	display_pull_down.bind($("#dac-scatter-select"))();
 
 }
 
@@ -775,7 +780,7 @@ function sort_indices(arr)
 
 }
 
-var display_pull_down = function()
+var display_pull_down = function(init_color_by_sel)
 {
 
 	this.empty();
@@ -789,7 +794,7 @@ var display_pull_down = function()
 	}
 
 	// set default option
-	this.val(-1)
+	this.val(init_color_by_sel)
 
 	// define action for changing menu
 	this.change(function()
@@ -801,96 +806,110 @@ var display_pull_down = function()
 			// de-focus
 			this.blur();
 
-			// set up coloring
-			if (select_col == -1) {
+            // set up color plot
+            color_plot(select_col);
 
-				// revert to no color & re-draw
-				curr_color_by_col = [];
-				module.draw();
-
-			} else {
-
-				// request new data from server
-				$.when(request.get_table("dac-datapoints-meta", mid)).then(
-					function (data)
-					{
-
-						// check for string data
-						if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
-
-							// use alphabetical order by number to color
-
-							// get string data
-							var color_by_string_data = data["data"][select_col];
-
-							// get unique sorted string data
-							var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
-
-
-							// get indices or original string data in the unique sorted string data
-							curr_color_by_col = [];
-							for (i=0; i < color_by_string_data.length; i++) {
-								curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
-							}
-
-							// set colormap to discrete color map if present
-							if (disc_colormap == null) {
-
-								// revert to default color map
-								color_scale = d3.scale.linear()
-									.range([color_by_low, color_by_high])
-									.interpolate(d3.interpolateRgb);
-
-							} else {
-
-								// use selected color brewer scale
-								color_scale = d3.scale.quantize()
-									.range(disc_colormap);
-
-							};
-
-						} else {
-
-							// get selected column from data base (number data)
-							curr_color_by_col = data["data"][select_col];
-
-							// set colormap to continuous color map if present
-							if (cont_colormap == null) {
-
-								// revert to default color map
-								color_scale = d3.scale.linear()
-									.range([color_by_low, color_by_high])
-									.interpolate(d3.interpolateRgb);
-
-							} else {
-
-								// use selected color brewer scale
-								color_scale = d3.scale.quantize()
-									.range(cont_colormap);
-
-							};
-
-						}
-
-						// get max and min of appropriate column in metadata table
-						var max_color_val = d3.max(curr_color_by_col);
-						var min_color_val = d3.min(curr_color_by_col);
-
-						// set domain of color scale
-						color_scale.domain([min_color_val, max_color_val]);
-
-						// draw new color scale
-						module.draw();
-
-					},
-					function ()
-					{
-						dialog.ajax_error ('Server failure: could not load color by data column.')("","","");
-					}
-				);
-			}
+            // fire new colorby event
+		    var colorbyEvent = new CustomEvent("DACColorByChanged",
+											  {detail: select_col});
+		    document.body.dispatchEvent(colorbyEvent);
 
 		});
+
+}
+
+// set up coloring for scatter plot
+function color_plot(select_col)
+{
+
+    // set up coloring
+    if (select_col == -1) {
+
+        // revert to no color & re-draw
+        curr_color_by_col = [];
+        module.draw();
+
+    } else {
+
+        // request new data from server
+        $.when(request.get_table("dac-datapoints-meta", mid)).then(
+            function (data)
+            {
+
+                // check for string data
+                if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
+
+                    // use alphabetical order by number to color
+
+                    // get string data
+                    var color_by_string_data = data["data"][select_col];
+
+                    // get unique sorted string data
+                    var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
+
+
+                    // get indices or original string data in the unique sorted string data
+                    curr_color_by_col = [];
+                    for (var i=0; i < color_by_string_data.length; i++) {
+                        curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
+                    }
+
+                    // set colormap to discrete color map if present
+                    if (disc_colormap == null) {
+
+                        // revert to default color map
+                        color_scale = d3.scale.linear()
+                            .range([color_by_low, color_by_high])
+                            .interpolate(d3.interpolateRgb);
+
+                    } else {
+
+                        // use selected color brewer scale
+                        color_scale = d3.scale.quantize()
+                            .range(disc_colormap);
+
+                    };
+
+                } else {
+
+                    // get selected column from data base (number data)
+                    curr_color_by_col = data["data"][select_col];
+
+                    // set colormap to continuous color map if present
+                    if (cont_colormap == null) {
+
+                        // revert to default color map
+                        color_scale = d3.scale.linear()
+                            .range([color_by_low, color_by_high])
+                            .interpolate(d3.interpolateRgb);
+
+                    } else {
+
+                        // use selected color brewer scale
+                        color_scale = d3.scale.quantize()
+                            .range(cont_colormap);
+
+                    };
+
+                }
+
+                // get max and min of appropriate column in metadata table
+                var max_color_val = d3.max(curr_color_by_col);
+                var min_color_val = d3.min(curr_color_by_col);
+
+                // set domain of color scale
+                color_scale.domain([min_color_val, max_color_val]);
+
+                // draw new color scale
+                module.draw();
+
+            },
+            function ()
+            {
+                dialog.ajax_error ('Server failure: could not load color by data column.')("","","");
+            }
+        );
+    };
 
 }
 
