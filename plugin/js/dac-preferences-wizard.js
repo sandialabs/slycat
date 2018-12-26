@@ -11,6 +11,7 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import d3 from "d3";
 import dacWizardUI from "../html/dac-preferences-wizard.html";
+import bookmark_manager from "js/slycat-bookmark-manager";
 
 function constructor(params)
 {
@@ -20,6 +21,9 @@ function constructor(params)
     // get project and model IDs
     component.project = params.projects()[0];
     component.model = params.models()[0];
+
+    // set up bookmark object
+    var bookmarker = bookmark_manager.create(component.project._id(), component.model._id());
 
     // tabs in wizard ui
     component.tab = ko.observable(0);
@@ -130,7 +134,6 @@ function constructor(params)
             success: function(data) {
 
                 // time series names
-                console.log(data)
                 var var_names = data[0];
 
                 // attributes for gui
@@ -161,10 +164,12 @@ function constructor(params)
                 };
 
                 // check to see if user has previously selected columns
-                client.get_model_parameter({
-                    mid: component.model._id(),
-                    aid: "dac-var-include-columns",
-                    success: function (include_columns) {
+                bookmarker.getState(function(bookmark)
+                {
+
+                    if ("dac-var-include-columns" in bookmark) {
+
+                        var include_columns = bookmark["dac-var-include-columns"];
 
                         // change attributes according to previous selections
                         for (var i = 0; i != attributes.length; i++) {
@@ -173,18 +178,13 @@ function constructor(params)
                             if (include_columns.indexOf(i) == -1) {
                                 attributes[i].Include = false;
                             }
-
                         }
 
-                        // give access to gui
-                        mapping.fromJS(attributes, component.var_attributes);
-
-                    },
-                    error: function () {
-
-                        // give access to gui
-                        mapping.fromJS(attributes, component.var_attributes);
                     }
+
+                    // give access to gui
+                    mapping.fromJS(attributes, component.var_attributes);
+
                 });
             }
         });
@@ -250,10 +250,12 @@ function constructor(params)
                 }
 
                 // check to see if user has previously selected columns
-                client.get_model_parameter({
-                    mid: component.model._id(),
-                    aid: "dac-metadata-include-columns",
-                    success: function (include_columns) {
+                bookmarker.getState(function(bookmark)
+                {
+
+                    if ("dac-meta-include-columns" in bookmark) {
+
+                        var include_columns = bookmark["dac-meta-include-columns"];
 
                         // change attributes according to previous selections
                         for (var i = 0; i != attributes.length; i++) {
@@ -262,20 +264,14 @@ function constructor(params)
                             if (include_columns.indexOf(i) == -1) {
                                 attributes[i].Include = false;
                             }
-
                         }
 
-                        // give access to gui
-                        mapping.fromJS(attributes, component.meta_attributes);
-
-                    },
-                    error: function () {
-
-                        // give access to gui
-                        mapping.fromJS(attributes, component.meta_attributes);
                     }
-                });
 
+                    // give access to gui
+                    mapping.fromJS(attributes, component.meta_attributes);
+
+                });
             }
         });
     };
@@ -350,10 +346,12 @@ function constructor(params)
             .style("background-color", function(d) { return d; });
 
         // load up previous continuous selection, if any
-        client.get_model_parameter({
-            mid: component.model._id(),
-            aid: "dac-cont-colormap",
-            success: function (cont_data) {
+        bookmarker.getState(function(bookmark)
+        {
+
+            if ("dac-cont-colormap" in bookmark) {
+
+                var cont_data = bookmark["dac-cont-colormap"];
 
                 // set continuous color map data
                 cont_map = cont_data[0];
@@ -374,14 +372,17 @@ function constructor(params)
                         .style("background-color", "#444")
 
                 };
-            }
+            };
+
         });
 
         // load up previous discrete selection, if any
-        client.get_model_parameter({
-            mid: component.model._id(),
-            aid: "dac-disc-colormap",
-            success: function (disc_data) {
+        bookmarker.getState(function(bookmark)
+        {
+
+            if ("dac-disc-colormap" in bookmark) {
+
+                var disc_data = bookmark["dac-disc-colormap"];
 
                 // set continuous color map data
                 disc_map = disc_data[0];
@@ -395,7 +396,7 @@ function constructor(params)
                         .style("background-color", "#444")
 
                 };
-            }
+            };
         });
     }
 
@@ -480,25 +481,34 @@ function constructor(params)
     var init_options = function () {
 
         // load previous selections
-        client.get_model_parameter({
-            mid: component.model._id(),
-            aid: "dac-options",
-            success: function (options) {
+        bookmarker.getState(function(bookmark)
+        {
 
-                // set options
-                component.dac_max_label_length(options[0]);
-                component.dac_max_time_points(options[1]);
-                component.dac_max_num_plots(options[2]);
-                component.dac_max_points_animate(options[3]);
-                component.dac_scatter_plot_type(options[4]);
-                component.dac_control_bar_position(options[5]);
+            // set options, if they exist
+            if ("dac-MAX-PLOT-NAME" in bookmark) {
+                component.dac_max_label_length(bookmark["dac-MAX-PLOT-NAME"]); };
 
-                // keep backwards compatiblity
-                if (options.length > 6) {
-                    component.dac_max_cats(options[6]);
-                    component.dac_max_freetext_len(options[7]);
-                }
-            }
+            if ("dac-MAX-TIME-POINTS" in bookmark){
+                component.dac_max_time_points(bookmark["dac-MAX-TIME-POINTS"]); };
+
+            if ("dac-MAX-NUM-POINTS" in bookmark) {
+                component.dac_max_num_plots(bookmark["dac-MAX-NUM-PLOTS"]); };
+
+            if ("dac-MAX-POINTS-ANIMATE" in bookmark) {
+                component.dac_max_points_animate(bookmark["dac-MAX-POINTS-ANIMATE"]); };
+
+            if ("dac-SCATTER-PLOT-TYPE" in bookmark) {
+                component.dac_scatter_plot_type(bookmark["dac-SCATTER-PLOT-TYPE"]); };
+
+            if ("dac-CONTROL-BAR" in bookmark) {
+                component.dac_control_bar_position(bookmark["dac-CONTROL-BAR"]); };
+
+            if ("dac-MAX-CATS" in bookmark) {
+                component.dac_max_cats(bookmark["dac-MAX-CATS"]); };
+
+            if ("dac-MAX-FREETEXT-LEN" in bookmark) {
+                component.dac_max_freetext_len(bookmark["dac-MAX-FREETEXT-LEN"]); };
+
         });
 
     }
@@ -589,95 +599,33 @@ function constructor(params)
         // turn off continue button while we load data
         $(".browser-continue").toggleClass("disabled", true);
 
-        // record desired metadata columns as an artifact in the new model
-        client.put_model_parameter({
-            mid: component.model._id(),
-            value: meta_include_columns,
-            aid: "dac-metadata-include-columns",
-            input: true,
-            success: function() {
+        // update bookmark state to reflect meta data columns
+        bookmarker.updateState({"dac-meta-include-columns": meta_include_columns});
 
-                // now record desired variable columns as an artifact
-                client.put_model_parameter({
-                    mid: component.model._id(),
-                    value: var_include_columns,
-                    aid: "dac-var-include-columns",
-                    input: true,
-                    success: function() {
+        // update bookmark state to reflect variable columns
+        bookmarker.updateState({"dac-var-include-columns": var_include_columns});
 
-                        // next up is continuous color map
-                        client.put_model_parameter({
-                            mid: component.model._id(),
-                            value: [cont_map, cont_selected],
-                            aid: "dac-cont-colormap",
-                            input: true,
-                            success: function () {
+        // update bookmark state to reflect continuous colormap
+        bookmarker.updateState({"dac-cont-colormap": [cont_map, cont_selected]});
 
-                                // then discrete color map
-                                client.put_model_parameter({
-                                    mid: component.model._id(),
-                                    value: [disc_map, disc_selected],
-                                    aid: "dac-disc-colormap",
-                                    input: true,
-                                    success: function () {
+        // update bookmark state to reflect discrete colormap
+        bookmarker.updateState({"dac-disc-colormap": [disc_map, disc_selected]});
 
-                                        // finally other options
-                                        client.put_model_parameter({
-                                            mid: component.model._id(),
-                                            value: [dac_max_label_length, dac_max_time_points,
-                                                    dac_max_num_plots, dac_max_points_animate,
-                                                    component.dac_scatter_plot_type(),
-                                                    component.dac_control_bar_position(),
-                                                    dac_max_cats, dac_max_freetext_len],
-                                            aid: "dac-options",
-                                            input: true,
-                                            success: function () {
+        // update remaining options in bookmark state
+        bookmarker.updateState({"dac-MAX-PLOT-NAME": dac_max_label_length,
+                                "dac-MAX-COLOR-NAME": dac_max_label_length,
+                                "dac-MAX-SLIDER-NAME": dac_max_label_length,
+                                "dac-MAX-TIME-POINTS": dac_max_time_points,
+                                "dac-MAX-NUM-PLOTS": dac_max_num_plots,
+                                "dac-MAX-POINTS-ANIMATE": dac_max_points_animate,
+                                "dac-SCATTER-PLOT-TYPE": component.dac_scatter_plot_type(),
+                                "dac-CONTROL-BAR": component.dac_control_bar_position(),
+                                "dac-MAX-CATS": dac_max_cats,
+                                "dac-MAX-FREETEXT-LEN": dac_max_freetext_len});
 
-                                                // re-init MDS coords
-                                                init_MDS_coords();
+        // re-init MDS coords
+        init_MDS_coords();
 
-                                            },
-                                            error: function () {
-
-                                                dialog.ajax_error("Server error: could not record options selected.")
-                                                    ("","","");
-                                                $(".browser-continue").toggleClass("disabled", false);
-                                            }
-
-                                        })
-
-                                    },
-                                    error: function () {
-
-                                        dialog.ajax_error("Server error: could not record discrete colormap selection.")
-                                            ("","","");
-                                        $(".browser-continue").toggleClass("disabled", false);
-                                    }
-
-                                })
-                            },
-                            error: function () {
-
-                                dialog.ajax_error("Server error: could not record continuous colormap selection.")
-                                    ("","","");
-                                $(".browser-continue").toggleClass("disabled", false);
-                            }
-                        })
-
-                    },
-                    error: function () {
-
-                        dialog.ajax_error("Server error: could not record variable column selection.")("","","");
-                        $(".browser-continue").toggleClass("disabled", false);
-                    }
-                });
-            },
-            error: function () {
-
-                dialog.ajax_error("Server error: could not record metadata column selection.")("","","");
-                $(".browser-continue").toggleClass("disabled", false);
-            }
-        });
     };
 
     // call to re-initialize MDS coords and alpha cluster values

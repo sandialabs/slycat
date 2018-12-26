@@ -121,7 +121,7 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	// set maximum length of plot names
 	max_plot_name_length = MAX_PLOT_NAME;
 
-	// which variables to actuall plot
+	// which variables to actually plot
 	var_include_columns = INCLUDE_VARS;
 
 	// populate pull down menus and initialize d3 plots

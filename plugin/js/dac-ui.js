@@ -21,17 +21,23 @@ import selections from "./dac-manage-selections.js";
 import URI from "urijs";
 import "bootstrap";
 
-import "jquery-ui";
+// bookmarks & templates
+import bookmark_manager from "js/slycat-bookmark-manager";
+
 // disable-selection and draggable required for jquery.layout resizing functionality
+import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout";
 
-// edit and info pulldowns
-//import "js/dac-parse-log.js";
-
-// Wait for document ready
+// wait for document ready
 $(document).ready(function() {
+
+    // bookmarker is a slycat book mark manager object
+    var bookmarker = null;
+
+    // bookmark is the actual book mark state
+    var bookmark = null;
 
     // controls on top or above scatter plot
     var CONTROL_BAR = "scatter-plot";
@@ -42,8 +48,8 @@ $(document).ready(function() {
     // maximum number of plots (per selection)
     var MAX_NUM_PLOTS = 50;
 
-    // animation threshold
-    var MAX_POINTS_ANIMATE = null;
+    // animation threshold (overrides push script value)
+    var MAX_POINTS_ANIMATE = 2500;
 
     // focus selection color
     var FOCUS_COLOR = "black";
@@ -167,87 +173,79 @@ $(document).ready(function() {
         });
     })();
 
-    // check for preferences, and set up variable
+    // check for preferences using bookmarks, and set up variables
+    // note that we only set data independent bookmarks here, e.g. bookmarks
+    // which do not depend on the model data so they need no error check, like
+    // plotting circles vs. squares or color maps.
     function check_preferences ()
     {
 
-        // get artifacts in model (to see if user has modified preferences
+        // get artifacts in model (to see if user has modified preferences)
         client.get_model (
         {
             mid: mid,
             success: function (result)
             {
-                // check for preference variables
-                if (("artifact:dac-var-include-columns" in result) &&
-                    ("artifact:dac-metadata-include-columns" in result) &&
-                    ("artifact:dac-cont-colormap" in result) &&
-                    ("artifact:dac-disc-colormap" in result) &&
-                    ("artifact:dac-options" in result)) {
 
-                    // load preference data
-                    $.when(request.get_parameters("dac-var-include-columns", mid),
-                           request.get_parameters("dac-metadata-include-columns", mid),
-                           request.get_parameters("dac-cont-colormap", mid),
-                           request.get_parameters("dac-disc-colormap", mid),
-                           request.get_parameters("dac-options", mid)).then(
-                           function (var_include, meta_include, cont_color, disc_color, options) {
+                // set up bookmark object
+                bookmarker = bookmark_manager.create(result.project, result._id);
 
-                                // set var/meta inclusion
-                                var_include_columns = var_include[0];
-                                meta_include_columns = meta_include[0];
+                // get bookmarked state information
+                bookmarker.getState(function(state)
+                {
 
-                                // set colormaps
-                                cont_colormap = JSON.parse(cont_color[0][0]);
-                                disc_colormap = JSON.parse(disc_color[0][0]);
+                    // initialize bookmark state
+                    bookmark = state;
 
-                                // set options -- label length
-                                MAX_PLOT_NAME = options[0][0];
-                                MAX_COLOR_NAME = options[0][0];
-                                MAX_SLIDER_NAME = options[0][0];
+                    // initialize data independent preferences, if present
+                    if ("dac-cont-colormap" in bookmark) {
+                        cont_colormap = JSON.parse(bookmark_preference("dac-cont-colormap", cont_colormap)[0]); };
 
-                                // set options -- plots
-                                MAX_TIME_POINTS = options[0][1];
-                                MAX_NUM_PLOTS = options[0][2];
+                    if ("dac-disc-colormap" in bookmark) {
+                        disc_colormap = JSON.parse(bookmark_preference("dac-disc-colormap", disc_colormap)[0]); };
 
-                                // set options -- animation
-                                MAX_POINTS_ANIMATE = options[0][3];
+                    MAX_PLOT_NAME = bookmark_preference("dac-MAX-PLOT-NAME", MAX_PLOT_NAME);
+                    MAX_COLOR_NAME = bookmark_preference("dac-MAX-COLOR-NAME", MAX_COLOR_NAME);
+                    MAX_SLIDER_NAME = bookmark_preference("dac-MAX-SLIDER-NAME", MAX_SLIDER_NAME);
+                    MAX_TIME_POINTS = bookmark_preference("dac-MAX-TIME-POINTS", MAX_TIME_POINTS);
+                    MAX_NUM_PLOTS = bookmark_preference("dac-MAX-NUM-PLOTS", MAX_NUM_PLOTS);
+                    MAX_POINTS_ANIMATE = bookmark_preference("dac-MAX-POINTS-ANIMATE", MAX_POINTS_ANIMATE);
+                    SCATTER_PLOT_TYPE = bookmark_preference("dac-SCATTER-PLOT-TYPE", SCATTER_PLOT_TYPE);
+                    CONTROL_BAR = bookmark_preference("dac-CONTROL-BAR",CONTROL_BAR);
+                    MAX_CATS = bookmark_preference("dac-MAX-CATS", MAX_CATS);
+                    MAX_FREETEXT_LEN = bookmark_preference("dac-MAX-FREETEXT-LEN", MAX_FREETEXT_LEN);
 
-                                // set options -- scatter plot type
-                                SCATTER_PLOT_TYPE = options[0][4];
+                });
 
-                                // set options -- control bar
-                                CONTROL_BAR = options[0][5];
+                // continue to model
+                launch_model();
 
-                                // set options -- editable columns
-                                // if statement to ensure backwards compatiblity
-                                if (options[0].length > 6) {
-                                    MAX_CATS = options[0][6];
-                                    MAX_FREETEXT_LEN = options[0][7];
-                                };
-
-                                // start model
-                                launch_model();
-
-                     });
-
-
-
-                } else {
-
-                    // no preferences found, launch model with defaults
-                    launch_model();
-
-                }
             },
             error: function () {
 
-                // couldn't load model -- try to launch anyway (forget about preferences)
-                launch_model();
+                // couldn't load model -- error
+                dialog.ajax_error ("Server error: could not load model.")("","","");
 
             }
         });
     }
 
+    // return bookmark preference, if it exists.
+    // otherwise initialize bookmark preference to existing preference
+    function bookmark_preference (bookmark_name, existing_pref)
+    {
+
+        var bookmark_pref = existing_pref;
+        if (bookmark_name in bookmark) {
+                bookmark_pref = bookmark[bookmark_name];
+            } else {
+                var bookmark_state = {}
+                bookmark_state[bookmark_name] = existing_pref;
+                bookmarker.updateState(bookmark_state);
+            }
+
+        return bookmark_pref;
+    }
 
     // setup and launch model
     function launch_model ()
@@ -262,17 +260,13 @@ $(document).ready(function() {
     			var ALPHA_STEP = parseFloat(ui_parms["ALPHA_STEP"]);
 
     			// default width for the alpha sliders (in pixels)
-                //var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
+                // var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
+
      			// updated for download button
     			var ALPHA_SLIDER_WIDTH = 190;
 
     			// default height of alpha buttons (in pixels)
     			var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
-
-				// number of points over which to stop animation
-				if (MAX_POINTS_ANIMATE == null) {
-				    MAX_POINTS_ANIMATE = parseInt(ui_parms["MAX_POINTS_ANIMATE"]);
-				};
 
 				// border around scatter plot (fraction of 1)
 				var SCATTER_BORDER = parseFloat(ui_parms["SCATTER_BORDER"]);
@@ -334,28 +328,19 @@ $(document).ready(function() {
 			           request.get_table("dac-datapoints-meta", mid)).then(
 		   	           function (variables_meta, variables, data_table_meta, data_table)
 		   	                {
-                                // change variables included from null to list of indices, if necessary
-                                if (var_include_columns == null) {
 
-                                    var_include_columns = [];
-                                    for (var i = 0; i < variables_meta[0]["row-count"]; i++) {
-                                        var_include_columns.push(i);
-                                    }
-                                }
+                                // get number of variables and number of columns in table
+                                var num_vars = variables_meta[0]["row-count"];
+                                var num_cols = data_table_meta[0]["column-count"];
 
-                                // change metadata included from null to list of indices, if necessary
-                                if (meta_include_columns == null) {
-
-                                    meta_include_columns = [];
-                                    for (i = 0; i < data_table_meta[0]["column-count"]; i++) {
-                                        meta_include_columns.push(i);
-                                    }
-                                }
+                                // check variable to be included
+                                var var_include_columns = include_check("dac-var-include-columns", num_vars);
+                                var meta_include_columns = include_check("dac-meta-include-columns", num_cols);
 
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, variables_meta[0]["row-count"],
-				                                         variables[0]["data"][0], MAX_SLIDER_NAME,
-				                                         var_include_columns);
+				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
+				                                    var_include_columns);
 
 				                // set up the alpha buttons
 				                alpha_buttons.setup(variables_meta[0]["row-count"], var_include_columns);
@@ -378,15 +363,17 @@ $(document).ready(function() {
                                     mid: mid,
                                     success: function (result)
                                     {
-                                            // editable column data (initialize to empty)
+                                        // editable column data (initialize to empty)
                                         var editable_columns = {num_rows: 0,
                                                                 attributes: [],
                                                                 categories: [],
                                                                 data: []};
-                                            // check for editable columns
+
+                                        // check for editable columns
                                         if ('artifact:dac-editable-columns' in result)
                                         {
-                                                // load editable columns
+
+                                            // load editable columns
                                             client.get_model_parameter({
                                                 mid: mid,
                                                 aid: "dac-editable-columns",
@@ -394,21 +381,26 @@ $(document).ready(function() {
                                                 {
                                                     // initialize table with editable columns
                                                     editable_columns = result;
+
                                                     metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                                            editable_columns, MAX_FREETEXT_LEN);
+                                                                         editable_columns, MAX_FREETEXT_LEN);
+
                                                     },
                                                 error: function () {
+
                                                         // notify user that editable columns exist, but could not be loaded
-                                                    dialog.ajax_error('Server error: could not load editable column data.')
+                                                        dialog.ajax_error('Server error: could not load editable column data.')
                                                         ("","","")
-                                                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                                            editable_columns, MAX_FREETEXT_LEN);
+
+                                                        metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                                             editable_columns, MAX_FREETEXT_LEN);
                                                     }
                                             });
                                         } else {
-                                                // initialize table with no editable columns
+
+                                            // initialize table with no editable columns
                                             metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                                            editable_columns, MAX_FREETEXT_LEN);
+                                                                 editable_columns, MAX_FREETEXT_LEN);
                                         }
                                     }
                                 });
@@ -438,6 +430,40 @@ $(document).ready(function() {
 				$("#dac-model").remove();
 			}
 	    );
+    }
+
+    // error checking for included rows/columns
+    function include_check (bookmark_name, num_include)
+    {
+
+        // assume we include all meta data columns
+        var include_columns = null;
+
+        // check bookmarks for variables to include
+        if (bookmark_name in bookmark) {
+
+            // maximum bookmarked variable to include
+            var max_include = Math.max.apply(null,bookmark[bookmark_name]);
+
+            // if the highest index variables is less than number of variables we
+            // can use the bookmarked list of variable to include
+            if (max_include < num_include) {
+                include_columns = bookmark[bookmark_name];
+            }
+        }
+
+        // change metadata included from null to list of indices, if necessary
+        if (include_columns == null) {
+
+            include_columns = [];
+            for (var i = 0; i < num_include; i++) {
+                include_columns.push(i);
+            }
+        }
+
+        // return columns to include
+        return include_columns;
+
     }
 
     // custom event for change in alpha slider values
