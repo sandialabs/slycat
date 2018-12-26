@@ -91,7 +91,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
 	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
 	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
-	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS)
+	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
+	init_alpha_values)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -154,39 +155,63 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	$.when (request.get_array("dac-mds-coords", 0, mid)).then(
 		function (mds_data)
 		{
+
 			// input data into model
 			mds_coords = mds_data;
 
-			// init shift key detection
-			d3.select("body").on("keydown.brush", key_flip)
-							 .on("keyup.brush", key_flip);
+            // set center to middle of full view
+            subset_center = [.5, .5];
 
-			// svg scatter plot
-			scatter_plot = d3.select("#dac-mds-scatterplot");
+            // set subset to full mds_coord set
+            for (i = 0; i < mds_coords.length; i++) {
+                mds_subset.push(1);
+            }
+            selections.update_subset(mds_subset);
 
-			// d3 scales
-			x_scale = d3.scale.linear()
-				.domain([0 - scatter_border, 1 + scatter_border]);
-			y_scale = d3.scale.linear()
-				.domain([0 - scatter_border, 1 + scatter_border]);
+			// call server to compute new coords (in case of bookmarks)
+            client.post_sensitive_model_command(
+            {
+                mid: mid,
+                type: "DAC",
+                command: "update_mds_coords",
+                parameters: {alpha: init_alpha_values,
+                             subset: selections.get_subset(),
+                             subset_center: subset_center,
+                             current_coords: mds_coords,
+                             include_columns: var_include_columns},
+                success: function (result)
+                    {
+                        // record new values in mds_coords
+                        mds_coords = JSON.parse(result)["mds_coords"];
 
-			// default color scale
-			color_scale = d3.scale.linear()
-				.range([color_by_low, color_by_high])
-				.interpolate(d3.interpolateRgb);
+                        // init shift key detection
+                        d3.select("body").on("keydown.brush", key_flip)
+                                         .on("keyup.brush", key_flip);
 
-			// set subset to full mds_coord set
-			for (i = 0; i < mds_coords.length; i++) {
-				mds_subset.push(1);
-			}
-			selections.update_subset(mds_subset);
+                        // svg scatter plot
+                        scatter_plot = d3.select("#dac-mds-scatterplot");
 
-			// set center to middle of full view
-			subset_center = [.5, .5];
+                        // d3 scales
+                        x_scale = d3.scale.linear()
+                            .domain([0 - scatter_border, 1 + scatter_border]);
+                        y_scale = d3.scale.linear()
+                            .domain([0 - scatter_border, 1 + scatter_border]);
 
-			// finish
-			module.draw();
+                        // default color scale
+                        color_scale = d3.scale.linear()
+                            .range([color_by_low, color_by_high])
+                            .interpolate(d3.interpolateRgb);
 
+                        // finish
+                        module.draw();
+
+                    },
+                error: function ()
+                    {
+                        dialog.ajax_error ('Server failure: could not load bookmarked MDS coords.')("","","");
+                    }
+
+            });
 		},
 		function ()
 		{

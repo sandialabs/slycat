@@ -337,13 +337,25 @@ $(document).ready(function() {
                                 var var_include_columns = include_check("dac-var-include-columns", num_vars);
                                 var meta_include_columns = include_check("dac-meta-include-columns", num_cols);
 
+                                // initialize sliders to all one, unless valid bookmark is available
+                                var init_alpha_values = [];
+                                for (var i = 0; i < num_vars; i++) {
+                                    init_alpha_values.push(1.0); }
+                                if ("dac-slider-values" in bookmark) {
+
+                                    // make sure alpha values are the correct length
+                                    if (bookmark["dac-slider-values"].length == num_vars) {
+                                        init_alpha_values = bookmark["dac-slider-values"];
+                                    };
+                                };
+
 		   	                    // set up the alpha sliders
-				                alpha_sliders.setup(ALPHA_STEP, variables_meta[0]["row-count"],
+				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
-				                                    var_include_columns);
+				                                    var_include_columns, init_alpha_values);
 
 				                // set up the alpha buttons
-				                alpha_buttons.setup(variables_meta[0]["row-count"], var_include_columns);
+				                alpha_buttons.setup(num_vars, var_include_columns);
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
@@ -355,55 +367,12 @@ $(document).ready(function() {
 					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_1_COLOR,
 					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
-					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns);
+					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
+					                init_alpha_values);
 
-				                // set up table
-				                client.get_model(
-                                {
-                                    mid: mid,
-                                    success: function (result)
-                                    {
-                                        // editable column data (initialize to empty)
-                                        var editable_columns = {num_rows: 0,
-                                                                attributes: [],
-                                                                categories: [],
-                                                                data: []};
+                                // set up table with editable columns
+                                setup_editable_columns (data_table_meta, data_table, meta_include_columns);
 
-                                        // check for editable columns
-                                        if ('artifact:dac-editable-columns' in result)
-                                        {
-
-                                            // load editable columns
-                                            client.get_model_parameter({
-                                                mid: mid,
-                                                aid: "dac-editable-columns",
-                                                success: function (result)
-                                                {
-                                                    // initialize table with editable columns
-                                                    editable_columns = result;
-
-                                                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                                         editable_columns, MAX_FREETEXT_LEN);
-
-                                                    },
-                                                error: function () {
-
-                                                        // notify user that editable columns exist, but could not be loaded
-                                                        dialog.ajax_error('Server error: could not load editable column data.')
-                                                        ("","","")
-
-                                                        metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                                             editable_columns, MAX_FREETEXT_LEN);
-                                                    }
-                                            });
-                                        } else {
-
-                                            // initialize table with no editable columns
-                                            metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                                 editable_columns, MAX_FREETEXT_LEN);
-                                        }
-                                    }
-                                });
 		   	                },
 		   	                function () {
 		   	                    dialog.ajax_error ("Server error: could not load initial data.")("","","");
@@ -466,6 +435,60 @@ $(document).ready(function() {
 
     }
 
+    // set up table with editable columns
+    function setup_editable_columns (data_table_meta, data_table, meta_include_columns)
+    {
+
+        // set up table
+        client.get_model(
+        {
+            mid: mid,
+            success: function (result)
+            {
+                // editable column data (initialize to empty)
+                var editable_columns = {num_rows: 0,
+                                        attributes: [],
+                                        categories: [],
+                                        data: []};
+
+                // check for editable columns
+                if ('artifact:dac-editable-columns' in result)
+                {
+
+                    // load editable columns
+                    client.get_model_parameter({
+                        mid: mid,
+                        aid: "dac-editable-columns",
+                        success: function (result)
+                        {
+                            // initialize table with editable columns
+                            editable_columns = result;
+
+                            metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                 editable_columns, MAX_FREETEXT_LEN);
+
+                            },
+                        error: function () {
+
+                                // notify user that editable columns exist, but could not be loaded
+                                dialog.ajax_error('Server error: could not load editable column data.')
+                                ("","","")
+
+                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                     editable_columns, MAX_FREETEXT_LEN);
+                            }
+                    });
+                } else {
+
+                    // initialize table with no editable columns
+                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                         editable_columns, MAX_FREETEXT_LEN);
+                }
+            }
+        });
+
+    }
+
     // custom event for change in alpha slider values
     function alpha_values_changed (new_alpha_values)
     {
@@ -474,6 +497,11 @@ $(document).ready(function() {
 
         // update MDS scatter plot
         scatter_plot.update(new_alpha_values.detail);
+        console.log(new_alpha_values.detail)
+
+
+        // update bookmark to reflect new values
+        bookmarker.updateState({"dac-slider-values": new_alpha_values.detail});
     }
 
     // custom event for change in selection 1, selection 2, active selection

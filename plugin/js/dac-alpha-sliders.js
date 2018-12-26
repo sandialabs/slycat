@@ -8,8 +8,6 @@
 import "jquery-ui";
 import "jquery-ui/ui/widgets/sortable";
 
-
-
 // return functions in module variables
 var module = {};
 
@@ -25,7 +23,8 @@ var max_slider_name_length = null;
 // which sliders to display
 var var_include_columns = null;
 
-module.setup = function (ALPHA_STEP, num_alpha, names_alpha, MAX_SLIDER_NAME, INCLUDE_COLUMNS)
+module.setup = function (ALPHA_STEP, num_alpha, names_alpha,
+    MAX_SLIDER_NAME, INCLUDE_COLUMNS, init_alpha_values)
 {
 
 	// sort out the information we need
@@ -43,14 +42,14 @@ module.setup = function (ALPHA_STEP, num_alpha, names_alpha, MAX_SLIDER_NAME, IN
 		}
 	}
 
-	// initialize alpha slider values to all 1 (unless they are
-	// not included as variables to anlayze) and order to 1 ... n
+	// initialize alpha slider values to all given (unless they are
+	// not included as variables to analyze) and order to 1 ... n
 	for (i = 0; i < alpha_num; i++) {
 
 		if (var_include_columns.indexOf(i) != -1) {
 
 			// push value of 1
-			alpha_values.push(1.0);
+			alpha_values.push(init_alpha_values[i]);
 			alpha_order.push(i);
 
 		} else {
@@ -88,7 +87,7 @@ function display_alpha_sliders(ALPHA_STEP)
 			// add to HTML
 			var list_item = $('<li class="dac-alpha-slider">').appendTo(this);
 			var label_item = $('<label for="dac-slider-' + j + '">').appendTo(list_item);
-			var input_item = $('<input type="range" id="dac-alpha-slider-' +
+			var input_item = $('<input type="range" title="' + alpha_values[j] + '" id="dac-alpha-slider-' +
 					j + '" step="' + ALPHA_STEP + '" min="0" max="1" value="' +
 					alpha_values[j] + '">').appendTo(list_item);
 			label_item.text(alpha_names[j]);
@@ -124,6 +123,7 @@ module.set_alpha_values = function (new_alpha_values)
 		// set slider value
 		if (var_include_columns.indexOf(i) != -1) {
 			$("#dac-alpha-slider-" + i).val(alpha_values[i]);
+			$("#dac-alpha-slider-" + i).attr('title', alpha_values[i]);
 		}
 	}
 
@@ -135,7 +135,5 @@ module.get_alpha_values = function ()
 	return alpha_values;
 }
 
-//return module;
-
-
+// expose to webpack
 export default module;
