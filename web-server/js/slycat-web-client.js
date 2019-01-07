@@ -146,12 +146,12 @@ module.delete_upload = function(params)
   });
 };
 
-module.get_project_csv_data = function(params)
+module.put_project_csv_data = function(params)
 {
   $.ajax(
       {
           dataType: "json",
-          type: "GET",
+          type: "PUT",
           url: params.pid + "/data/" + params.file_key + "/parser/" + params.parser + "/mid/" + params.mid + "/aids/" + params.aids,
           success: function (result) {
               if (params.success)
@@ -788,7 +788,7 @@ module.post_project_models = function(params)
       "marking": params.marking || "",
     }),
     type: "POST",
-    url: api_root + "projects/" + params.pid + "/models",
+    url: api_root + "projects/" + params.pid + "/file/" + params.file_name + "/models",
     success: function(result)
     {
       if(params.success)
@@ -1312,6 +1312,8 @@ module.put_model = function(params)
     model.marking = params.marking;
   if("state" in params)
     model.state = params.state;
+  if("file_name" in params)
+    model.file_name = params.file_name;
 
   $.ajax(
   {

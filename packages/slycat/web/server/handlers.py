@@ -376,41 +376,33 @@ def get_project_models(pid, **kwargs):
     return models
 
 # @cherrypy.tools.json_out(on=True)
-def get_project_csv_data(pid, file_key, parser, mid, aids):
+def put_project_csv_data(pid, file_key, parser, mid, aids):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
-    slycat.web.server.authentication.require_project_reader(project)
+    slycat.web.server.authentication.require_project_writer(project)
     project_datas = [data for data in database.scan("slycat/project_datas")]
     attachment = []
-    new_model = True
+    fid = None
 
     if not project_datas:
-        cherrypy.log.error("The project_datas list is empty.")
+        cherrypy.log.error("[MICROSERVICE] The project_datas list is empty.")
+        raise cherrypy.HTTPError("404 There is no project data stored for this project. %s" % file_key)
     else:
         for item in project_datas:
             if item["project"] == pid and item["file_name"] == file_key:
+                fid = item["_id"]
                 http_response = database.get_attachment(item, "content")
                 file = http_response.read()
                 attachment.append(file)
-    for model_id in item["mid"]:
-        if model_id == mid:
-            new_model = False
 
-    if new_model:
-        cherrypy.log.error("Made it into the model_id check.")
-        fid = item["_id"]
-        file_name = item["file_name"]
-        model_ids = item["mid"]
-        model_ids.append(mid)
-        project_id = item["project"]
-        created = item["created"]
-        creator = item["creator"]
-        revision = item["_rev"]
-        cherrypy.log.error("Revision is: ")
-        cherrypy.log.error(str(revision))
-
-        update_project_data(model_ids, fid, file_name, project_id, created, creator, revision, attachment[0])
-
+    if fid is None:
+        raise cherrypy.HTTPError("404 There was no file with name %s found." % file_key)
+    try:
+        project_data = database.get("project_datas", fid)
+        project_data["mid"].append(mid)
+        database.save(project_data)
+    except Exception as e:
+        cherrypy.log.error(e.message)
 
     attachment[0] = attachment[0].replace('\\n', '\n')
     attachment[0] = attachment[0].replace('["', '')
@@ -423,7 +415,7 @@ def get_project_csv_data(pid, file_key, parser, mid, aids):
 def get_project_file_names(pid):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
-    slycat.web.server.authentication.require_project_reader(project)
+    slycat.web.server.authentication.require_project_writer(project)
     project_datas = [data for data in database.scan("slycat/project_datas")]
     data = []
 
@@ -454,7 +446,7 @@ def get_project_references(pid):
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def post_project_models(pid):
+def post_project_models(pid, file_name):
     """
     When a pid along with json "model-type", "marking", "name" is sent with POST
     creates a model and saves it to the database
@@ -487,7 +479,7 @@ def post_project_models(pid):
 
     model = {
         "_id": mid,
-        "_id": mid,
+        "file_name": file_name,
         "type": "model",
         "model-type": model_type,
         "marking": marking,
@@ -526,13 +518,11 @@ def create_project_data(mid, aid, file):
     pid = project["_id"]
     # slycat.web.server.authentication.require_project_writer(project)
     did = uuid.uuid4().hex
-    seconds = time.time()
-    time_stamp_unformatted = datetime.datetime.fromtimestamp(seconds).strftime('%Y-%m-%d %H:%M:%S')
-    time_stamp_formatted = time_stamp_unformatted.replace(" ", "")
+
     data = {
         "_id": did,
         "type": "project_data",
-        "file_name": aid[1] + time_stamp_formatted,
+        "file_name": aid[1],
         "data_table": aid[0],
         "project": pid,
         "mid": [mid],
@@ -541,29 +531,7 @@ def create_project_data(mid, aid, file):
     }
     database.save(data)
     database.put_attachment(data, filename="content", content_type=content_type, content=file)
-    cherrypy.log.error("added project data")
-
-def update_project_data(model_ids, fid, file_name, project_id, created, creator, revision, file):
-    cherrypy.log.error("Made it into update_project_data")
-    database = slycat.web.server.database.couchdb.connect()
-    content_type = "text/csv"
-
-    data = {
-        "_id": fid,
-        "_rev": revision,
-        "type": "project_data",
-        "file_name": file_name,
-        "mid": model_ids,
-        "project": project_id,
-        "data_table": ["data_table"],
-        "created": created,
-        "creator": creator,
-    }
-    database.save(data)
-    cherrypy.log.error("Saved new project data")
-    cherrypy.log.error("Saved new project data")
-    database.put_attachment(data, filename="content", content_type=content_type, content=file)
-    cherrypy.log.error("updated project data")
+    cherrypy.log.error("[MICROSERVICE] Added project data %s." % did)
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
@@ -826,7 +794,7 @@ def put_model(mid):
     save_model = False
     for key, value in cherrypy.request.json.items():
         if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
-                       "marking"]:
+                       "marking", "file_name"]:
             slycat.email.send_error("slycat.web.server.handlers.py put_model",
                                     "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
             raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)

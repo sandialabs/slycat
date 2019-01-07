@@ -66,7 +66,7 @@ function constructor(params)
     component.browser.progress(10);
     component.browser.progress_status("Parsing...");
 
-    client.get_project_csv_data({
+    client.put_project_csv_data({
         pid: component.project._id(),
         file_key: component.selected_file(),
         parser: "slycat-csv-parser",

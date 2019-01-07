@@ -110,30 +110,6 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
     calls the parse function specified by the registered parser
     :return: not used
     """
-    # cherrypy.log.error("Upload parsing started, WOO!")
-
-    # if self._mid not in parsing_locks:
-    #     parsing_locks[self._mid] = threading.Lock()
-    #
-    # with parsing_locks[self._mid]:
-    #     cherrypy.log.error("got lock: %s" % self._mid)
-    #     database = slycat.web.server.database.couchdb.connect()
-    #     model = database.get("model", self._mid)
-    #
-    #     def numeric_order(x):
-    #         """Files and file parts must be loaded in numeric, not lexicographical, order."""
-    #         return int(x.split("-")[-1])
-    #
-    #     files = []
-    #     storage = path(self._uid)
-    #     for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
-    #         cherrypy.log.error("Assembling %s" % file_dir)
-    #         file = ""
-    #         for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
-    #             cherrypy.log.error(" Loading %s" % file_part)
-    #             with open(file_part, "r") as f:
-    #                 file += f.read()
-    #         files.append(file)
 
     kwargs = {}
     aids = []
@@ -143,11 +119,11 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
                                                                   aids, **kwargs)
     except Exception as e:
-        cherrypy.log.error("Exception parsing posted files: %s" % e)
+        cherrypy.log.error("[MICROSERVICE] Exception parsing posted files: %s" % e)
         import traceback
         cherrypy.log.error(traceback.format_exc())
 
-    cherrypy.log.error("Upload parsing finished.")
+    cherrypy.log.error("[MICROSERVICE] Upload parsing finished.")
 
 @cache_it
 def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
