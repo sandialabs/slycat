@@ -359,6 +359,9 @@ def delete_project(pid):
         couchdb.delete(bookmark)
     for model in couchdb.scan("slycat/project-models", startkey=pid, endkey=pid):
         couchdb.delete(model)
+    for project_data in couchdb.scan("slycat/project_datas", startkey=pid, endkey=pid):
+        couchdb.delete(project_data)
+        
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
 
