@@ -361,7 +361,7 @@ def delete_project(pid):
         couchdb.delete(model)
     for project_data in couchdb.scan("slycat/project_datas", startkey=pid, endkey=pid):
         couchdb.delete(project_data)
-        
+
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
 
@@ -401,7 +401,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     if fid is None:
         raise cherrypy.HTTPError("404 There was no file with name %s found." % file_key)
     try:
-        project_data = database.get("project_datas", fid)
+        project_data = database.get("project_data", fid)
         project_data["mid"].append(mid)
         database.save(project_data)
     except Exception as e:
