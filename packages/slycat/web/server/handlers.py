@@ -483,6 +483,7 @@ def post_project_models(pid, file_name):
     model = {
         "_id": mid,
         "file_name": file_name,
+        "bookmark": "none",
         "type": "model",
         "model-type": model_type,
         "marking": marking,
@@ -797,7 +798,7 @@ def put_model(mid):
     save_model = False
     for key, value in cherrypy.request.json.items():
         if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
-                       "marking", "file_name"]:
+                       "marking", "file_name", "bookmark"]:
             slycat.email.send_error("slycat.web.server.handlers.py put_model",
                                     "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
             raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
@@ -813,6 +814,13 @@ def put_model(mid):
         if value != model.get(key):
             model[key] = value
             save_model = True
+
+            if key == "bookmark":
+                model[key].append(value)
+                save_model = True
+            else:
+                model[key] = value
+                save_model = True
 
     if save_model:
         database.save(model)

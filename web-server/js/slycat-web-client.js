@@ -1314,6 +1314,8 @@ module.put_model = function(params)
     model.state = params.state;
   if("file_name" in params)
     model.file_name = params.file_name;
+  if("bookmark" in params)
+    model.bookmark = params.bookmark;
 
   $.ajax(
   {
