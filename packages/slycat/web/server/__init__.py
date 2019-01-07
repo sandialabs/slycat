@@ -138,16 +138,10 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
     kwargs = {}
     aids = []
     aids.append(aid)
-    aids_length = len(aids)
-    # attachments_length = len(attachment)
 
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
                                                                   aids, **kwargs)
-        # Checking if the file being parsed is pre-existing.
-        # If it is, don't create another record of project data.
-        # if self._aids[2] is False:
-        #     slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
     except Exception as e:
         cherrypy.log.error("Exception parsing posted files: %s" % e)
         import traceback
