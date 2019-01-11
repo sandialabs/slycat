@@ -152,7 +152,8 @@ module.put_project_csv_data = function(params)
       {
           dataType: "json",
           type: "PUT",
-          url: params.pid + "/data/" + params.file_key + "/parser/" + params.parser + "/mid/" + params.mid + "/aids/" + params.aids,
+          url: api_root + "/projects/" + params.pid + "/data/" + params.file_key +
+            "/parser/" + params.parser + "/mid/" + params.mid + "/aids/" + params.aids,
           success: function (result) {
               if (params.success)
                   params.success(result);
@@ -170,7 +171,7 @@ module.get_project_file_names = function(params) {
         dataType: "json",
         type: "GET",
         //url: server_root + "/projects/" + params.pid + "/project_data",
-        url: params.pid + "/name",
+        url: api_root + "/projects/" + params.pid + "/name",
         success: function (result) {
             if (params.success)
                 params.success(result);

@@ -378,8 +378,9 @@ def get_project_models(pid, **kwargs):
     models = sorted(models, key=lambda x: x["created"], reverse=True)
     return models
 
-# @cherrypy.tools.json_out(on=True)
+@cherrypy.tools.json_out(on=True)
 def put_project_csv_data(pid, file_key, parser, mid, aids):
+    cherrypy.log.error("In put_project_csv_data")
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -411,6 +412,9 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     attachment[0] = attachment[0].replace('["', '')
     attachment[0] = attachment[0].replace('"]', '')
 
+    cherrypy.log.error("Attachment ****")
+    cherrypy.log.error(str(attachment[0]))
+
     model = database.get("model", mid)
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
@@ -425,6 +429,7 @@ def get_project_file_names(pid):
     if not project_datas:
         cherrypy.log.error("The project_datas list is empty.")
     else:
+        cherrypy.log.error("Files found.")
         for item in project_datas:
             if item["project"] == pid:
                 # data_id = item["_id"]
