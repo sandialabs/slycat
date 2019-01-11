@@ -31,6 +31,7 @@ the same client IP address is allowed to access the session.
 import datetime
 import json
 import os
+import base64
 import stat
 import sys
 import threading
@@ -756,6 +757,94 @@ class Session(object):
             cherrypy.response.headers["x-slycat-message"] = str(e)
             slycat.email.send_error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s" % str(e))
             raise cherrypy.HTTPError(400)
+
+    def get_file(self, path, data, **kwargs):
+        '''
+        Todo: fill this section out
+        '''
+        cache = kwargs.get("cache", None)
+        project = kwargs.get("project", None)
+        key = kwargs.get("key", None)
+
+        # Sanity-check arguments.
+        if cache not in [None, "project"]:
+            slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                    "cherrypy.HTTPError 400 unknown cache type: %s." % cache)
+            raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
+        if cache is not None:
+            if project is None:
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 must specify project ID.")
+                raise cherrypy.HTTPError("400 Must specify project id.")
+            if key is None:
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 must specify cache key.")
+                raise cherrypy.HTTPError("400 Must specify cache key.")
+
+        # Use the agent to retrieve a file.
+        if self._agent is not None:
+            stdin, stdout, stderr = self._agent
+            try:
+                stdin.write("%s\n" % json.dumps({"action": "write-file", 
+                    "path": path, "data": base64.encodestring(data)}))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
+            metadata = json.loads(stdout.readline())
+
+            if metadata["message"] == "Path must be absolute.":
+                cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
+                    self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (
+                                            self.hostname, path))
+                raise cherrypy.HTTPError("400 Path not absolute.")
+            elif metadata["message"] == "No read permission.":
+                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
+                    self.hostname, path)
+                cherrypy.response.headers[
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has" \
+                                       " access to %s, and don't forget to set appropriate permissions" \
+                                       " on all the parent directories!" % (
+                                           self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 you do not have permission to "
+                                        "retrieve %s:%s. Check the filesystem on %s to verify that"
+                                        " your user has access to %s, and don't forget to set appropriate "
+                                        "permissions on all the parent directories." % (
+                                            self.hostname, path, self.hostname, path))
+                raise cherrypy.HTTPError("400 Access denied.")
+            elif metadata["message"] == "Path not found.":
+                cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
+                    self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
+                                            self.hostname, path))
+                raise cherrypy.HTTPError("400 File not found.")
+            elif metadata["message"] == "Directory unreadable.":
+                cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (
+                    self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
+                raise cherrypy.HTTPError("400 Can't read directory.")
+            elif metadata["message"] == "Access denied.":
+                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
+                    self.hostname, path)
+                cherrypy.response.headers[
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access" \
+                                       " to %s, and don't forget to set appropriate permissions on all" \
+                                       " the parent directories!" % (
+                                           self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 you do not have permission to"
+                                        " retrieve %s:%s. Check the filesystem on %s to verify "
+                                        "that your user has access to %s, and don't forget to set"
+                                        " appropriate permissions on all the parent directories." % (
+                                            self.hostname, path, self.hostname, path))
+                raise cherrypy.HTTPError("400 Access denied.")
+            return metadata["message"]
+        return "failed to write"
 
     def get_file(self, path, **kwargs):
         cache = kwargs.get("cache", None)
