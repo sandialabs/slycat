@@ -31,7 +31,7 @@ class ModelsList extends React.Component {
     {
       return (
         <div className="container">
-          <h3 class="pl-4">Models</h3>
+          <h3 className="pl-4">Models</h3>
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
@@ -46,7 +46,7 @@ class ModelsList extends React.Component {
     {
       return (
         <div className="container">
-          <h3 class="pl-4">Models</h3>
+          <h3 className="pl-4">Models</h3>
           <div className="card">
             <div className="list-group list-group-flush">
               <div className="list-group-item">There are no models in this project. You can add a model by using the Create menu above.</div>
@@ -120,7 +120,7 @@ class TemplatesList extends React.Component {
     {
       return (
         <div className="container">
-          <h3 class="pl-4">Templates</h3>
+          <h3 className="pl-4">Templates</h3>
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
@@ -182,7 +182,7 @@ class Template extends React.Component {
           </em>
         </small>
         <span className="pull-right">
-          {/* <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_template"><span class="fa fa-pencil"></span></button> */}
+          {/* <button type="button" className="btn btn-xs btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
           <button type="button" className="btn btn-sm btn-danger" name={this.props.id} onClick={this.delete_template} title="Delete this template"><span className="fa fa-trash-o"></span></button>
         </span>
       </div>
