@@ -1,0 +1,175 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Simulation View &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Variable Table" href="VariableTable.html" />
+    <link rel="prev" title="Correlation View" href="CorrelationView.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="simulation-view">
+<h1>Simulation View<a class="headerlink" href="#simulation-view" title="Permalink to this headline">¶</a></h1>
+<p>The <em>Simulation View</em> is a scatterplot, in which each point represents an ensemble member.  The axes of the scatterplot are
+the canonical variables, <strong>a</strong><sup>T</sup><em>X</em> and <strong>b</strong><sup>T</sup><em>Y</em>, which are labeled as <em>Input Metavariable</em> and
+<em>Output Metavariable</em>.  The <em>x</em> and <em>y</em> coordinates of each point are weighted sums of that point’s input and output variable
+values, respectively.  Because the values of the canonical variables differ for each canonical component, changing the selected
+component in the <em>Correlation View</em> changes the point coordinates, which are then re-rendered in the scatterplot.  Comparing
+the scatterplots in Figure 23 and Figure 24, you can see how the point locations shift from a loose diagonal for <em>CCA1</em>, to a
+ball of points for <em>CCA2</em>.  Given the low <em>R</em><sup>2</sup> and high <em>p</em>-value for <em>CCA2</em>, the scatterplot point placement visually
+reveals the poor quality of the result (all points would be on the diagonal in an ideal result).</p>
+<div class="figure align-center" id="id2">
+<img alt="_images/Figure23.png" src="_images/Figure23.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 23: CCA model of cars data set displaying the first canonical component.</strong></span></p>
+</div>
+<div class="figure align-center" id="id3">
+<img alt="_images/Figure24.png" src="_images/Figure24.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 24: CCA model of Cars data set displaying the second canonical component.</strong></span></p>
+</div>
+<div class="section" id="legend">
+<h2>Legend<a class="headerlink" href="#legend" title="Permalink to this headline">¶</a></h2>
+<p>To the right of the scatterplot is the <em>Legend</em>.  The <em>Legend</em> is in its own view, which can be resized or closed altogether.
+The <em>Legend</em> displays information about the current color-coding variable, including its name, range of values, and the mapping
+between values and colors.  The color palette is defined by the current theme (see Color Themes).</p>
+</div>
+<div class="section" id="color-coding-points">
+<h2>Color-Coding Points<a class="headerlink" href="#color-coding-points" title="Permalink to this headline">¶</a></h2>
+<p>The first time a model is rendered, the points are colored by their index number.  There are three mechanisms for changing the
+variable that is used to do the color-coding: clicking on a variable in the <em>Correlation View</em>, clicking on the column header
+in the <em>Variable Table</em>, or selecting a variable from the <em>Point Color</em> dropdown list.  Irrespective of the interface used,
+changing the variable selected for color mapping will lead to changes in all three views and the legend, including:
+highlighting the newly selected variable’s row in the bar chart, recoloring the scatterplot using the new variable’s values,
+coloring the cell backgrounds in its table column, returning the cell backgrounds of the previously selected variable’s column
+to its default color (green, lavender, or white depending on its type), and relabeling and redefining the value range in the
+<em>Legend</em>.  Note that the table may include variables that are not present in the <em>Correlation View</em>, columns that
+are neither inputs nor outputs.  These columns are drawn on the right end of the table against white backgrounds.  These provide
+additional color-coding options (numeric variables only), however, the bar chart will not be highlighted because it only
+includes variables passed to CCA.</p>
+</div>
+<div class="section" id="selecting-points">
+<span id="id1"></span><h2>Selecting Points<a class="headerlink" href="#selecting-points" title="Permalink to this headline">¶</a></h2>
+<p>Points in the scatterplot may be selected through several mechanisms.  The simplest is to place the mouse cursor over a point
+and click the left mouse button.  The selected point is redrawn in the plot with a larger radius, while simultaneously in the
+<em>Variable Table</em>, the row corresponding to the selected point is darkened and scrolled to be visible.</p>
+<p>For groups of adjacent points that lie within a rectangular region, rubber banding can be used to draw a rectangle around the
+desired point set.  Position the mouse at one corner of the region.  Press the left mouse button down while simultaneously
+moving the mouse towards the opposite corner of the region.  A yellow rectangle will be drawn between the location of the
+initial button-press and the mouse’s current position.  Move the mouse until the rectangle encloses all the desired points,
+then release the mouse button to finish the selection.</p>
+<p>Holding the control-key while selecting new points, either through clicking or rubber banding, will add these additional points
+to the previously selected set.  Alternately, scatterplot points can be selected by picking rows in the <em>Variable Table</em> (see
+Simulation Selection).</p>
+<p>Clicking in the background (not on any point) deselects all previously selected points.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="CarsExample.html"><em>Cars</em> Example Data Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CreatingCCAModel.html">Creating a CCA Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="CCAModelVis.html">CCA Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+  <li><a href="cca.model.html">Canonical Correlation Analysis Model</a><ul>
+  <li><a href="CCAModelVis.html">CCA Model Visualization</a><ul>
+      <li>Previous: <a href="CorrelationView.html" title="previous chapter">Correlation View</a></li>
+      <li>Next: <a href="VariableTable.html" title="next chapter">Variable Table</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/SimulationView.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
