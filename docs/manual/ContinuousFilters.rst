@@ -59,4 +59,3 @@ to the original max/min, click the |ResetIcon| icon.
    
    **Figure 34: Resetting slider maximum to increase resolution within slider range.**
    
-.. |ResetIcon| image:: ResetIcon.png

@@ -78,7 +78,7 @@ the two adjacent regions.  It collapses the region that is closer to the edge of
 that same divider (now positioned along the edge of the model visualization) will restore the previous layout.
 
 Download Data Table |Download|
-===================
+==============================
 
 .. |Download| image:: DownloadIcon.png
 
@@ -95,6 +95,7 @@ runs are not biasing the analysis results.  Or alternately, you could download t
 create a Parameter Space model to explore what the failures have in common.
 
 .. _color-themes:
+
 Color Themes
 ============
 

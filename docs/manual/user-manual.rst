@@ -1,5 +1,5 @@
-User Manual
-======
+Slycat User Manual
+==================
 
 .. toctree::
    :maxdepth: 2
