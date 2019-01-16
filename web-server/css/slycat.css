@@ -34,44 +34,28 @@ body
 
 .bootstrap-styles .navbar-brand
 {
-  background: url("slycat-logo-navbar.png") transparent 0 15px no-repeat;
+  background: url("slycat-logo-navbar.png") transparent 0 center no-repeat;
+  min-height: 38px;
   background-size: auto 20px;
   padding-right: 0;
   text-align: right;
   padding-left: 110px;
   color: #353535 !important;
 }
-.bootstrap-styles .navbar > .container .navbar-brand {
+.bootstrap-styles .navbar > .container .navbar-brand 
+{
   margin-left: 0;
 }
-
 .bootstrap-styles .navbar .breadcrumb
 {
+  margin-bottom: 0;
   background-color: transparent;
-  margin: 8px 0 0 0;
-  padding-left: 0;
-  padding-right: 0;
-  height: 36px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.navbar .breadcrumb .project,
-.navbar .breadcrumb .model
-{
-  display: inline;
-}
 
+}
 .bootstrap-styles .navbar .breadcrumb a
 {
   color: rgb(136, 0, 0);
 }
-
-.bootstrap-styles .navbar .breadcrumb > li + li:before
-{
-  color: rgb(119, 119, 119);
-}
-
 .bootstrap-styles .navbar-btn
 {
   margin-left: 0;
@@ -98,13 +82,18 @@ body
   position: relative;
   padding-right: 95px !important;
 }
-.nav-bookmarks .bookmark-delete {
+.nav-bookmarks .bookmark-delete,
+.nav-bookmarks .bookmark-edit {
   position: absolute;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.775rem;
+  line-height: 1.4;
+}
+.nav-bookmarks .bookmark-delete {
   right: 20px;
 }
 .nav-bookmarks .bookmark-edit {
-  position: absolute;
-  right: 43px;
+  right: 49px;
 }
 
 .bootstrap-styles .modal .jumbotron
@@ -562,9 +551,6 @@ slycat-navbar nav .alert pre
 }
 .bootstrap-styles .navbar-menus {
   margin: 14px 15px;
-}
-.navbar-personal .dropdown-toggle {
-  padding-right: 0 !important;
 }
 .bootstrap-styles .navbar-default .navbar-nav > .open > a,
 .bootstrap-styles .navbar-default .navbar-nav > .open > a:hover,
