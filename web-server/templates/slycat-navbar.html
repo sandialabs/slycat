@@ -2,8 +2,8 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-light navbar-expand-sm" data-bind="css: {'model' : model_id()}">
     <!-- Branding element. Slycat name visible only on projects listing page.  -->
-    <a class="navbar-brand" data-bind="attr:{href:server_root}" title="Slycat">
-      <span data-bind="visible: project().length == 0, text: server_friendly_name">Slycat</span>
+    <a class="navbar-brand text-dark font-weight-bold" data-bind="attr:{href:server_root}" title="Slycat">
+      <span class="pl-3" data-bind="visible: project().length == 0, text: server_friendly_name">Slycat</span>
     </a>
     <!-- The actual navigation elements. -->
     <div class="collapse navbar-collapse d-flex flex-row-reverse flex-nowrap" id="slycat-navbar-content">
@@ -43,7 +43,8 @@
 
       <!-- Menus -->
       <div class="nav navbar-menus navbar-nav navbar-right btn-group flex-nowrap">
-        <div class="btn-group" data-bind="visible: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length">
+        <!-- ko if: global_create_wizards().length || project_create_wizards().length || model_create_wizards().length -->
+        <div class="btn-group">
           <button type="button" id="slycat-create-wizards" class="btn btn-sm btn-success dropdown-toggle" 
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Create
@@ -62,7 +63,9 @@
             <!-- /ko -->
           </div>
         </div>
-        <div class="btn-group" data-bind="visible: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length">
+        <!-- /ko -->
+        <!-- ko if: global_edit_wizards().length || project_edit_wizards().length || model_edit_wizards().length -->
+        <div class="btn-group">
           <button type="button" id="slycat-edit-wizards" class="btn btn-sm btn-warning dropdown-toggle" 
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Edit
@@ -81,7 +84,9 @@
             <!-- /ko -->
           </div>
         </div>
-        <div class="btn-group" data-bind="visible: project_info_wizards().length || model_info_wizards().length">
+        <!-- /ko -->
+        <!-- ko if: project_info_wizards().length || model_info_wizards().length -->
+        <div class="btn-group">
           <button type="button" id="slycat-info-wizards" class="btn btn-sm btn-info dropdown-toggle" 
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Info
@@ -95,8 +100,9 @@
             <!-- /ko -->
           </div>
         </div>
-        <div class="btn-group nav-bookmarks" 
-          data-bind="visible: (model_id() && model_create_wizards().length) || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0))">
+        <!-- /ko -->
+        <!-- ko if: (model_id() && model_create_wizards().length) || (project_id() && (saved_project_bookmarks().length > 0 || saved_model_bookmarks().length > 0)) -->
+        <div class="btn-group nav-bookmarks">
           <button type="button" class="btn btn-sm btn-primary dropdown-toggle" 
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Bookmarks
@@ -164,7 +170,9 @@
             <!-- /ko -->
           </div>
         </div>
-        <div class="btn-group" data-bind="visible: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length">
+        <!-- /ko -->
+        <!-- ko if: global_delete_wizards().length || project_delete_wizards().length || model_delete_wizards().length -->
+        <div class="btn-group">
           <button type="button" id="slycat-delete-wizards" class="btn btn-sm btn-danger dropdown-toggle" 
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Delete
@@ -183,13 +191,14 @@
             <!-- /ko -->
           </div>
         </div>
+        <!-- /ko -->
       </div>
 
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb" class="mr-auto">
-        <ol class="breadcrumb" data-bind="css: {'slycat-no-models': model().length == 0}">
+        <ol class="breadcrumb pl-0" data-bind="css: {'slycat-no-models': model().length == 0}">
           <!-- ko foreach: project -->
-          <li class="breadcrumb-item project" data-bind="css: {'active': $parent.model().length == 0}">
+          <li class="breadcrumb-item project" data-bind="css: {'active text-dark font-weight-bold': $parent.model().length == 0}">
             <!-- ko if: $parent.model().length != 0 -->
             <a data-bind="text:name,attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
             <!-- /ko -->
@@ -199,7 +208,7 @@
           </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
-          <li class="breadcrumb-item active model" data-bind="text:name"></li>
+          <li class="breadcrumb-item active model text-dark font-weight-bold" data-bind="text:name"></li>
           <!-- /ko -->
         </ol>
       </nav>

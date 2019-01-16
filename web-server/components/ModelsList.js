@@ -31,7 +31,7 @@ class ModelsList extends React.Component {
     {
       return (
         <div className="container">
-          <h3>Models</h3>
+          <h3 class="pl-4">Models</h3>
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
@@ -46,7 +46,7 @@ class ModelsList extends React.Component {
     {
       return (
         <div className="container">
-          <h3>Models</h3>
+          <h3 class="pl-4">Models</h3>
           <div className="card">
             <div className="list-group list-group-flush">
               <div className="list-group-item">There are no models in this project. You can add a model by using the Create menu above.</div>
@@ -120,7 +120,7 @@ class TemplatesList extends React.Component {
     {
       return (
         <div className="container">
-          <h3>Templates</h3>
+          <h3 class="pl-4">Templates</h3>
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
