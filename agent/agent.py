@@ -370,23 +370,30 @@ class Agent(object):
             raise Exception("Path must be absolute.")
         if os.path.exists(path):
             raise Exception("Path exists.")
-        if not os.access(path, os.R_OK):
-            raise Exception("No read permission.")
+        pdir = os.path.dirname(path)
+        if not pdir: pdir = '.'
         if os.path.isdir(path):
-            raise Exception("Directory unreadable.")
-
+            raise Exception("Directory path is unwritable.")
+        if not os.path.exists(os.path.dirname(path)):
+            try:
+                os.makedirs(os.path.dirname(path))
+            except OSError as e: # Guard against race condition
+                raise Exception(e.message)
         try:
+            self.get_job_logger("slycat_agent")("Writing file")
+            self.get_job_logger("slycat_agent")("file \n%s" % data)
             with open(path, "w") as f:
                 f.write(data)
+            self.get_job_logger("slycat_agent")("Done Writing file")
         except IOError as e:
             if e.errno == errno.EACCES:
                 raise Exception("Access denied.")
             raise Exception(e.strerror)
         except Exception as e:
             raise Exception(e.message)
-
+        self.get_job_logger("slycat_agent")("getting ")    
         content_type, encoding = slycat.mime_type.guess_type(path)
-        sys.stdout.write("%s\n%s" % (json.dumps({"ok": True, "message": "File written.", "path": path, "content-type": content_type})))
+        sys.stdout.write("%s\n" % (json.dumps({"ok": True, "message": "File written.", "path": path, "content-type": content_type})))
         sys.stdout.flush()
 
     # Handle the 'get-image' command.

@@ -707,9 +707,12 @@ class Session(object):
                 command["directory-reject"] = directory_reject
             if directory_allow is not None:
                 command["directory-allow"] = directory_allow
-
-            stdin.write("%s\n" % json.dumps(command))
-            stdin.flush()
+            try:
+                stdin.write("%s\n" % json.dumps(command))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
@@ -758,7 +761,7 @@ class Session(object):
             slycat.email.send_error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s" % str(e))
             raise cherrypy.HTTPError(400)
 
-    def get_file(self, path, data, **kwargs):
+    def write_file(self, path, data, **kwargs):
         '''
         Todo: fill this section out
         '''
@@ -785,6 +788,7 @@ class Session(object):
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
             try:
+                cherrypy.log.error("Writing to the agent")
                 stdin.write("%s\n" % json.dumps({"action": "write-file", 
                     "path": path, "data": base64.encodestring(data)}))
                 stdin.flush()
@@ -792,6 +796,7 @@ class Session(object):
                 delete_session(self._sid)
                 raise socket.error('Socket is closed')
             metadata = json.loads(stdout.readline())
+            cherrypy.log.error("reading %s" % metadata)
 
             if metadata["message"] == "Path must be absolute.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
@@ -843,7 +848,7 @@ class Session(object):
                                         " appropriate permissions on all the parent directories." % (
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
-            return metadata["message"]
+            return metadata
         return "failed to write"
 
     def get_file(self, path, **kwargs):
