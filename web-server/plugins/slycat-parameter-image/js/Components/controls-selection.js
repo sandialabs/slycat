@@ -49,7 +49,7 @@ const ControlsSelection = (props) => {
   );
 
   return (
-    <div className="btn-group btn-group-xs">
+    <div className="btn-group">
       <button className={'btn btn-default dropdown-toggle ' + (props.selection.length > 0 ? '' : 'disabled')}
         type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection">
         Selection Action&nbsp;

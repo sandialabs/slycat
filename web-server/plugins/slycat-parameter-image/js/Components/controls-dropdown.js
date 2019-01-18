@@ -7,27 +7,25 @@ class ControlsDropdown extends React.Component {
 
   render() {
     let optionItems = this.props.items.map((item) =>
-      <li role='presentation' key={item.key} className={item.key == this.props.selected ? 'active' : ''}>
-        <a role="menuitem" tabIndex="-1" onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}>
-          {item.name}
-        </a>
-      </li>);
+      <a href="#" key={item.key} tabIndex="-1" className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
+        onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}>
+        {item.name}
+      </a>);
 
     let dropdown = 
         <React.Fragment>
-        <button className="btn btn-default dropdown-toggle" type="button" id={this.props.id} data-toggle="dropdown" aria-expanded="true" title={this.props.title}>
+        <button className={`btn dropdown-toggle btn-sm ${this.props.button_style}`} type="button" id={this.props.id} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title={this.props.title}>
           {this.props.label}&nbsp;
-          <span className="caret"></span>
         </button>
-        <ul className="dropdown-menu" role="menu" aria-labelledby={this.props.id}>
+        <div className="dropdown-menu" aria-labelledby={this.props.id}>
           {optionItems}
-        </ul>
+        </div>
         </React.Fragment>;
 
     return (
       <React.Fragment>
       {this.props.single != true ? (
-        <div className="btn-group btn-group-xs">
+        <div className="btn-group">
           {dropdown}
         </div>
       ) : (

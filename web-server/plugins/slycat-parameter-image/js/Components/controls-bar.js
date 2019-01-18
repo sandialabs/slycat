@@ -165,6 +165,8 @@ class ControlsBar extends React.Component {
   }
 
   render() {
+    // Define default button style
+    const button_style = 'btn-outline-dark';
     // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
     const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
@@ -186,6 +188,7 @@ class ControlsBar extends React.Component {
                   items={dropdown.items}
                   selected={this.state[dropdown.state_label]} 
                   set_selected={this.set_selected} 
+                  button_style={button_style}
                 />);
       }
       else

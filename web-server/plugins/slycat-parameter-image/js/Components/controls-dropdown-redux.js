@@ -29,7 +29,7 @@ class ControlsDropdown extends React.Component {
     return (
       <React.Fragment>
       {this.props.single != true ? (
-        <div className="btn-group btn-group-xs">
+        <div className="btn-group">
           {dropdown}
         </div>
       ) : (

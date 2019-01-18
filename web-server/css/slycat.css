@@ -592,8 +592,3 @@ label.bottom-margin
   overflow-y: scroll;
   overflow-x: hidden;
 }
-
-/*.bootstrap-styles .btn-group > .btn-group:only-child > .btn {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-}*/
