@@ -366,13 +366,6 @@
 {
   background-color: #337AB7;
 }
-#controls
-{
-
-}
-#controls {
-  margin: 2px 0;
-}
 #controls label {
   font-weight: bold;
   margin-right: 5px;
@@ -1054,4 +1047,8 @@ slycat-3d-viewer .header-bar {
   fill: none;
   stroke: black;
   shape-rendering: crispEdges;
+}
+/* avoiding double border between this button and the previous one because the button is prececed by a hidden modal dialog div */
+button#controls-button-var-options {
+  margin-left: -1px;
 }

@@ -103,7 +103,7 @@ $(document).ready(function() {
   {
     north:
     {
-      size: 48,
+      size: 39,
       resizable: false,
     },
     center:
