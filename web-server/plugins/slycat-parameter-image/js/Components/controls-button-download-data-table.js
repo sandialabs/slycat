@@ -201,7 +201,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
 
   render() {
     return (
-      <ControlsButton icon="fa-download" title="Download Data Table" click={this.handleClick} />
+      <ControlsButton icon="fa-download" title="Download Data Table" click={this.handleClick} button_style={this.props.button_style} />
     );
   }
 }

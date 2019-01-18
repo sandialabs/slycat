@@ -3,7 +3,7 @@ import React from "react";
 const ControlsButton = (props) => {
     return props.hidden ? null : (
       <button
-          className="btn btn-default"
+          className={`btn btn-sm ${props.button_style}`}
           type="button" title={props.title}
           disabled={props.disabled}
           onClick={props.click}

@@ -19,7 +19,6 @@ class ControlsDropdown extends React.Component {
         <React.Fragment>
         <button className="btn btn-default dropdown-toggle" type="button" id={this.props.id} data-toggle="dropdown" aria-expanded="true" title={this.props.title}>
           {this.props.label}&nbsp;
-          <span className="caret"></span>
         </button>
         <ul className="dropdown-menu" role="menu" aria-labelledby={this.props.id}>
           {optionItems}

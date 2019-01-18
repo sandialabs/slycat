@@ -77,7 +77,7 @@ export default function ControlsButtonVarOptions(props) {
 
   return (
     <React.Fragment>
-      <ControlsButton icon="fa-cog" title={title} data_toggle="modal" data_target={'#' + modalId} />
+      <ControlsButton icon="fa-cog" title={title} data_toggle="modal" data_target={'#' + modalId} button_style={props.button_style} />
       <div className="modal fade" data-backdrop="static" id={modalId}>
         <div className="modal-dialog">
           <div className="modal-content">
@@ -96,7 +96,6 @@ export default function ControlsButtonVarOptions(props) {
                       <button className="btn btn-default dropdown-toggle" type="button" id="font-family" 
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style={{fontFamily: props.font_family}}>
                         {props.font_family}
-                        <span className="caret"></span>
                       </button>
                       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
                         {fontItems}

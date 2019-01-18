@@ -42,37 +42,42 @@ const ControlsSelection = (props) => {
 
   let rating_variable_controls = props.rating_variables.map((rating_variable) =>
     <React.Fragment key={rating_variable}>
-      <li role="presentation" className="dropdown-header">{props.metadata['column-names'][rating_variable]}</li>
-      <li role='presentation'><a role="menuitem" tabIndex="-1"
-        onClick={(e) => set_value(props.metadata['column-names'][rating_variable], rating_variable, e)}>Set</a></li>
+      <h6 className="dropdown-header">{props.metadata['column-names'][rating_variable]}</h6>
+      <a href="#" className="dropdown-item"
+         onClick={(e) => set_value(props.metadata['column-names'][rating_variable], rating_variable, e)}>
+        Set
+      </a>
     </React.Fragment>
   );
 
   return (
     <div className="btn-group">
-      <button className={'btn btn-default dropdown-toggle ' + (props.selection.length > 0 ? '' : 'disabled')}
-        type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="true" title="Perform Action On Selection">
-        Selection Action&nbsp;
-        <span className="caret"/>
+      <button className={`btn btn-sm dropdown-toggle ${props.button_style} ${props.selection.length > 0 ? '' : 'disabled'}`}
+        type="button" id="selection-dropdown" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true" title="Perform Action On Selection">
+        Selection Action
       </button>
-      <ul id="selection-switcher" className="dropdown-menu" role="menu" aria-labelledby="selection-dropdown">
+      <div id="selection-switcher" className="dropdown-menu" aria-labelledby="selection-dropdown">
         {rating_variable_controls}
-        <li role="presentation" className="dropdown-header">Scatterplot Points</li>
-        <li role='presentation' className={props.disable_hide_show ? 'disabled' : ''}>
-          <a role="menuitem" tabIndex="-1" onClick={props.trigger_hide_selection}>Hide</a>
-        </li>
-        <li role='presentation' className={props.disable_hide_show ? 'disabled' : ''}>
-          <a role="menuitem" tabIndex="-1" onClick={props.trigger_hide_unselected}>Hide Unselected</a>
-        </li>
-        <li role='presentation' className={props.disable_hide_show ? 'disabled' : ''}>
-          <a role="menuitem" tabIndex="-1" onClick={props.trigger_show_selection}>Show</a>
-        </li>
+        <h6 className="dropdown-header">Scatterplot Points</h6>
+        <a href="#" className={`dropdown-item ${props.disable_hide_show ? 'disabled' : ''}`}
+           onClick={props.trigger_hide_selection}>
+          Hide
+        </a>
+        <a href="#" className={`dropdown-item ${props.disable_hide_show ? 'disabled' : ''}`}
+           onClick={props.trigger_hide_unselected}>
+          Hide Unselected
+        </a>
+        <a href="#" className={`dropdown-item ${props.disable_hide_show ? 'disabled' : ''}`}
+           onClick={props.trigger_show_selection}>
+          Show
+        </a>
         {!props.hide_pin &&
-          <li role='presentation' className={props.disable_pin ? 'disabled' : ''}>
-            <a role="menuitem" tabIndex="-1" onClick={props.trigger_pin_selection}>Pin</a>
-          </li>
+          <a href="#" className={`dropdown-item ${props.disable_pin ? 'disabled' : ''}`}
+             onClick={props.trigger_pin_selection}>
+            Pin
+          </a>
         }
-      </ul>
+      </div>
     </div>
   );
 };
