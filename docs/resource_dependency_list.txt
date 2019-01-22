@@ -69,7 +69,7 @@ wcwidth                              0.1.7     https://pypi.python.org/pypi
 -Javascript-
 
 From npm in slycat/node_modules:
-bootstrap               3.3.1   http://getbootstrap.com
+bootstrap               4.2.1   http://getbootstrap.com
 font-awesome            4.7.0   https://fontawesome.com/
 jquery                  3.3.1   https://jquery.org/
 jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
@@ -80,10 +80,10 @@ knockout                3.2.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
 lodash                4.17.11   https://lodash.com/
 papaparse               4.3.2   https://github.com/mholt/PapaParse
-react                  16.4.0   https://reactjs.org
-react-dom              16.4.0   https://reactjs.org
-react-ga                2.5.3   https://github.com/react-ga/react-ga
-react-redux             5.0.7   https://github.com/reduxjs/react-redux
+react           16.8.0-alpha1   https://reactjs.org
+react-dom       16.8.0-alpha1   https://reactjs.org
+react-ga                2.5.6   https://github.com/react-ga/react-ga
+react-redux             6.0.0   https://github.com/reduxjs/react-redux
 redux                   4.0.0   https://redux.js.org
 three                  0.92.0   https://yarnpkg.com/en/package/three
 three-stl-loader        1.0.6   https://yarnpkg.com/en/package/three-stl-loader
