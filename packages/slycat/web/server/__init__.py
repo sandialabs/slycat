@@ -517,6 +517,23 @@ def get_remote_file(sid, path):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path)
 
+def write_remote_file(sid, path, data):
+    """Returns the content of a file from a remote system.
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  path : string
+    Path for the requested file
+
+  Returns
+  -------
+  content : string
+    Content of the requested file
+  """
+    with slycat.web.server.remote.get_session(sid) as session:
+        return session.write_file(path, data)
 
 def get_remote_file_server(client, sid, path):
     """Returns the content of a file from a remote system.

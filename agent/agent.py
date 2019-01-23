@@ -32,6 +32,7 @@ import abc
 import logging
 import ConfigParser
 import glob
+import base64
 
 session_cache = {}
 
@@ -357,6 +358,44 @@ class Agent(object):
                                      file_content))
         sys.stdout.flush()
 
+    # Handle the 'write-file' command.
+    def write_file(self, command):
+        if "path" not in command:
+            raise Exception("Missing path.")
+        if "data" not in command:
+            raise Exception("Missing data.")
+        path = command["path"]
+        data = base64.decodestring(command["data"])
+        if not os.path.isabs(path):
+            raise Exception("Path must be absolute.")
+        if os.path.exists(path):
+            raise Exception("Path exists.")
+        pdir = os.path.dirname(path)
+        if not pdir: pdir = '.'
+        if os.path.isdir(path):
+            raise Exception("Directory path is unwritable.")
+        if not os.path.exists(os.path.dirname(path)):
+            try:
+                os.makedirs(os.path.dirname(path))
+            except OSError as e: # Guard against race condition
+                raise Exception(e.message)
+        try:
+            self.get_job_logger("slycat_agent")("Writing file")
+            self.get_job_logger("slycat_agent")("file \n%s" % data)
+            with open(path, "w") as f:
+                f.write(data)
+            self.get_job_logger("slycat_agent")("Done Writing file")
+        except IOError as e:
+            if e.errno == errno.EACCES:
+                raise Exception("Access denied.")
+            raise Exception(e.strerror)
+        except Exception as e:
+            raise Exception(e.message)
+        self.get_job_logger("slycat_agent")("getting ")    
+        content_type, encoding = slycat.mime_type.guess_type(path)
+        sys.stdout.write("%s\n" % (json.dumps({"ok": True, "message": "File written.", "path": path, "content-type": content_type})))
+        sys.stdout.flush()
+
     # Handle the 'get-image' command.
     def get_image(self, command):
         if "path" not in command:
@@ -489,14 +528,16 @@ class Agent(object):
                     self.browse(command)
                 elif action == "get-file":
                     self.get_file(command)
+                elif action == "write-file":
+                    self.write_file(command)
                 elif action == "get-image":
                     self.get_image(command)
                 elif action == "create-video":
                     sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "this command is depricated and has "
                                                                                   "been removed"}))
                     sys.stdout.flush()
-                elif action == "video-status":
-                    self.video_status(command)
+                # elif action == "video-status":
+                #     self.video_status(command)
                 elif action == "launch":
                     self.launch(command)
                 elif action == "check-agent-job":

@@ -1,0 +1,213 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Canonical Correlation Analysis Model &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Cars Example Data Set" href="CarsExample.html" />
+    <link rel="prev" title="Templates" href="Templates.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="canonical-correlation-analysis-model">
+<h1>Canonical Correlation Analysis Model<a class="headerlink" href="#canonical-correlation-analysis-model" title="Permalink to this headline">¶</a></h1>
+<p>Canonical Correlation Analysis (CCA) was first proposed by Hotelling in 1936 <a class="footnote-reference" href="#id5" id="id1">[1]</a>.  Because CCA finds correlations between
+two multivariate data sets, CCA data structures are a good fit for exploring relationships between the input and output
+variables found in ensemble data sets (such as those generated for sensitivity studies, uncertainty quantification, model
+tuning, or parameter studies).  Slycat™ uses CCA to model the many-to-many relationships between multiple input parameters
+and multiple output metrics.  CCA is a linear method and a direct generalization of several standard statistical techniques,
+including Principal Component Analysis (PCA), Multiple Linear Regression (MLR), and Partial Least Squares (PLS) <a class="footnote-reference" href="#id6" id="id2">[2]</a> <a class="footnote-reference" href="#id7" id="id3">[3]</a>.</p>
+<p>CCA operates on a table of scalar data, where each column is a single input or output variable across all runs, and each row
+consists of the values for each of the variables in a single simulation.  Slycat™ requires the number of rows (samples) to be
+greater than the minimum variable count of the inputs or the outputs.  A more meaningful result will be obtained if the ratio
+of runs to variables is ten or more. Additionally, columns cannot contain the same value for all runs.  Slycat™ will reject
+such columns from being included in the CCA analysis, since they contribute no differentiating information.  CCA cannot handle
+rows with <em>missing data</em>, <em>Inf</em>, <em>-Inf</em>, <em>NAN</em>, or <em>NULL</em> values. Slycat™ will remove rows from the analysis if any of the
+values in either the input or output variable sets include such data.  However, if the bad values are only in columns that
+are not analysis variables, the row will be used.</p>
+<p>For a concise description of CCA, we need the following definitions.  Given <em>n</em> samples (<em>n</em> rows in the table), the input
+variables (presumed to be independent) will be referred to as the set <em>X</em> = {<strong>x</strong><sub>1</sub>, …, <strong>x</strong><sub>n</sub>} and
+the output (dependent) variables as the set <em>Y</em> = {<strong>y</strong><sub>1</sub>, …, <strong>y</strong><sub>n</sub>}.  Each vector <strong>x</strong><sub>i</sub>
+has <em>p</em><sub>1</sub> components and each vector <strong>y</strong><sub>j</sub> has <em>p</em><sub>2</sub> components.  CCA attempts to find projections
+<strong>a</strong> and <strong>b</strong> such that <em>R</em><sup>2</sup> = corr (<strong>a</strong><sup>T</sup><em>X</em>, <strong>b</strong><sup>T</sup><em>Y</em>) is maximized, where corr (•,•)
+denotes the standard Pearson correlation.</p>
+<p>The vectors <strong>a</strong><sup>T</sup><em>X</em> and <strong>b</strong><sup>T</sup><em>Y</em> are known as the first pair of canonical variables.  Further pairs
+of canonical variables are orthogonal and ordered by decreasing importance. In addition to the canonical variables, the
+<em>R</em><sup>2</sup> value for each variable pair is obtained, and various statistics can be computed to determine the significance
+of the correlation. A common statistic used in this context is the <em>p</em>-value associated with Wilks’ <em>λ</em> <a class="footnote-reference" href="#id8" id="id4">[4]</a>.  Slycat™ provides
+both <em>R</em><sup>2</sup> and <em>p</em>-values for each canonical component as part of the Correlation View (see the figure below).  Note
+that these statistics assume that the data is normally distributed.  If your data does not follow a normal distribution, be
+aware that these statistics will be suspect and adjust your interpretation of the results accordingly.</p>
+<p>Once the canonical variables are determined, they can be used to understand how the variables in <em>X</em> are related to the
+variables in <em>Y</em>, although this should be done with some caution. The components of the vectors <strong>a</strong> and <strong>b</strong> can be used
+to determine the relative importance of the corresponding variables in <em>X</em> and <em>Y</em>.  These components are known as canonical
+coefficients.  However, the canonical coefficients are considered difficult to interpret and may hide certain redundancies in
+the data.  For this reason, Slycat™ visualizes the canonical loadings, also known as the structure coefficients. The structure
+coefficients are generally preferred over the canonical coefficients because they are more closely related to the original
+variables.  The structure coefficients are given by the correlations between the canonical variables and the original variables
+(e.g. corr (<strong>a</strong><sup>T</sup><em>X</em>, <em>X</em>) and corr (<strong>a</strong><sup>T</sup><em>Y</em>, <em>Y</em>)).  These are calculated using Pearson’s correlation
+between each column of <em>X</em> or <em>Y</em> and the corresponding canonical variable.</p>
+<div class="figure align-center" id="id9">
+<a class="reference internal image-reference" href="_images/Figure23.png"><img alt="_images/Figure23.png" src="_images/Figure23.png" style="width: 1131.0px; height: 672.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Canonical components are shown in the Correlation View in the upper left.</strong></span></p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="CarsExample.html"><em>Cars</em> Example Data Set</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CreatingCCAModel.html">Creating a CCA Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="LocalFiles.html">Local Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RemoteFiles.html">Remote Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SelectColumns.html">Select Columns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NameModel.html">Name Model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CCAModelVis.html">CCA Model Visualization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CorrelationView.html">Correlation View</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SimulationView.html">Simulation View</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="SimulationView.html#legend">Legend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SimulationView.html#color-coding-points">Color-Coding Points</a></li>
+<li class="toctree-l3"><a class="reference internal" href="SimulationView.html#selecting-points">Selecting Points</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="VariableTable.html">Variable Table</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="VariableTable.html#sorting">Sorting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="VariableTable.html#variable-selection">Variable Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="VariableTable.html#simulation-selection">Simulation Selection</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Hotelling, H., Relations Between Two Sets of Variates.  <em>Biometrika</em>, 28, 321-377 (1936).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>Adams, B.M., Ebeida, M.S., Eldred, M.S., Jakeman, J.D., Swiler, L.P., Bohnhoff, W.J., Dalbey,K.R., Eddy, J.P., Hu, K.T., Vigil, D.M., Bauman, L.E., and Hough, P.D., <em>Dakota, a Multilevel Parallel Object-Oriented Framework for Design Optimization, Parameter Estimation, Uncertainty Quantification, and Sensitivity Analysis: Version 5.3.1 User’s Manual</em>. Tech. Rep. SAND2010-2183, Sandia National Laboratories (2013).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., <em>ParaView Catalyst: Enabling In Situ Data Analysis and Visualization</em>, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td>Krzanowski, W. J., <em>Principles of Multivariate Analysis.  A User’s Perspective</em>.  Oxford University Press, London (1988).</td></tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Canonical Correlation Analysis Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CarsExample.html"><em>Cars</em> Example Data Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CreatingCCAModel.html">Creating a CCA Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CCAModelVis.html">CCA Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+      <li>Previous: <a href="Templates.html" title="previous chapter">Templates</a></li>
+      <li>Next: <a href="CarsExample.html" title="next chapter"><em>Cars</em> Example Data Set</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/cca.model.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

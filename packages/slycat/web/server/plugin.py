@@ -152,6 +152,21 @@ class Manager(object):
 
     return key
 
+  def register_utility(self, command, handler):
+    """Register a server utility handler.
+    Parameters
+    ----------
+    command: string, required
+      Unique command name.
+    handler: callable, required
+      Input args vary with utility.
+    """
+    if command in self.utilities:
+      raise Exception("Utility command '%s' has already been registered." % command)
+
+    self.utilities[command] = handler
+    cherrypy.log.error("Registered server utility '%s'." % command)
+    
   def register_model_command(self, verb, type, command, handler):
     """Register a custom request handler.
 

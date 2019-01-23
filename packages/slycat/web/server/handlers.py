@@ -149,9 +149,15 @@ def get_sid(hostname):
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        for host_session in session["sessions"]:
+        for index, host_session in enumerate(session["sessions"]):
             if host_session["hostname"] == hostname:
                 sid = host_session["sid"]
+                if(not slycat.web.server.remote.check_session(sid)):
+                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, slycat.web.server.remote.session_cache.keys()))
+                    slycat.web.server.remote.delete_session(sid)
+                    del session["sessions"][index]
+                    database.save(session)
+                    raise cherrypy.HTTPError("404")
                 break
     except Exception as e:
         cherrypy.log.error("could not retrieve host session for remotes %s" % e)
@@ -662,75 +668,10 @@ def get_model(mid, **kwargs):
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
 
-    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
+    accept = cherrypy.lib.cptools.accept(media=["application/json"])
     cherrypy.response.headers["content-type"] = accept
 
-    if accept == "application/json":
-        return json.dumps(model)
-
-    elif accept == "text/html":
-        mtype = model.get("model-type", None)
-        ptype = kwargs.get("ptype", None)
-        cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
-        context = {}
-
-        # Setting slycat_model_page and whether global JS and CSS bundles are emitted based on global_bundles flag set by model plugin when it registers.
-        slycat_model_page = 'slycat-model-page.html'
-        if mtype in slycat.web.server.plugin.manager.global_bundles and slycat.web.server.plugin.manager.global_bundles[mtype] == False:
-            context["slycat-js-bundle"] = None
-            context["slycat-css-bundle"] = None
-            # slycat_model_page = 'slycat-model-page-webpack.html'
-            cherrypy.log.error("Global bundle will NOT be emitted for '%s'." % (mtype))
-        else:
-            context["slycat-js-bundle"] = js_bundle()
-            context["slycat-css-bundle"] = css_bundle()
-            cherrypy.log.error("Global bundle will be emitted for '%s'." % (mtype))
-
-        marking = slycat.web.server.plugin.manager.markings[model["marking"]]
-        
-        context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-        context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking[
-            "page-before"]
-        context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking[
-            "page-after"]
-        context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-
-        context["slycat-model"] = model
-        context["slycat-model-name"] = model.get("name", "").replace("'", "\\'")
-
-        context["slycat-project"] = project
-        context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
-
-        context["slycat-model-type"] = mtype
-
-        if mtype not in slycat.web.server.plugin.manager.models.keys():
-            context["slycat-page-html"] = u"""
-      <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-        <p>No plugin available for model type \u201c%s\u201d.</p>
-      </div>""" % mtype
-            return slycat.web.server.template.render(slycat_model_page, context)
-
-        if ptype is None:
-            ptype = slycat.web.server.plugin.manager.models[mtype]["ptype"]
-
-        if ptype not in slycat.web.server.plugin.manager.pages:
-            context["slycat-page-html"] = u"""
-      <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-        <p>No plugin available for page type \u201c%s\u201d.</p>
-      </div>""" % ptype
-            return slycat.web.server.template.render(slycat_model_page, context)
-
-        context["slycat-page-type"] = ptype
-        context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
-        if ptype in slycat.web.server.plugin.manager.page_bundles:
-            context["slycat-page-css-bundles"] = [{"bundle": key} for key, (content_type, content) in
-                                                  slycat.web.server.plugin.manager.page_bundles[ptype].items() if
-                                                  content_type == "text/css"]
-            context["slycat-page-js-bundles"] = [{"bundle": key} for key, (content_type, content) in
-                                                 slycat.web.server.plugin.manager.page_bundles[ptype].items() if
-                                                 content_type == "text/javascript"]
-
-        return slycat.web.server.template.render(slycat_model_page, context)
+    return json.dumps(model)
 
 
 def model_command(mid, type, command, **kwargs):
@@ -2106,14 +2047,12 @@ def post_remotes():
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        hostname_not_found = True
         for i in xrange(len(session["sessions"])):
             if session["sessions"][i]["hostname"] == hostname:
-                session["sessions"][i]["sid"] = sid
-                session["sessions"][i]["username"] = username
-                hostname_not_found = False
-        if hostname_not_found:
-            session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+                if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
+                    slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
+                del session["sessions"][i]
+        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
         database.save(session)
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
