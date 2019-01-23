@@ -25,7 +25,7 @@ $.widget("cca.controls",
   {
   	var self = this;
 
-    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
+    this.color_control = $('<div class="btn-group"></div>')
       .appendTo(this.element)
       ;
     this.color_button = $('\
@@ -35,7 +35,7 @@ $.widget("cca.controls",
       ')
       .appendTo(self.color_control)
       ;
-    this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
+    this.color_items = $('<div id="y-axis-switcher" class="dropdown-menu" aria-labelledby="color-dropdown">')
       .appendTo(self.color_control)
       ;
 

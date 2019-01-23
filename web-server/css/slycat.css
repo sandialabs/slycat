@@ -598,7 +598,8 @@ label.bottom-margin
 }
 
 /* toggle buttons can't show hover effect when not active because it looks like the button was never toggled from active state */
-.slycatControlsButtonToggle.notActive:hover {
+.slycatControlsButtonToggle:not(.active):hover
+{
   background-color: transparent;
   color: #343a40;
 }
