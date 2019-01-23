@@ -329,6 +329,6 @@ a
   max-height: 500px;
   overflow-y: auto;
 }
-#controls-pane .center {
-  margin: 2px 0;
+#cca-controls {
+  height: 100%;
 }

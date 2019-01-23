@@ -275,7 +275,7 @@ $(document).ready(function() {
     applyDefaultStyles: false,
     north:
     {
-      size: 28,
+      size: 39,
       resizable: false,
     },
     west:
@@ -283,14 +283,18 @@ $(document).ready(function() {
       size: $("#cca-model").width() / 2,
       resizeWhileDragging: false,
       onresize_end: function() { 
-        $("#barplot-table").barplot("resize_canvas"); 
+        if($("#barplot-table").data("cca-barplot")) {
+          $("#barplot-table").barplot("resize_canvas"); 
+        }
       },
     },
     center:
     {
       resizeWhileDragging: false,
       onresize_end: function() { 
-        $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
+        if($("#scatterplot").data("cca-scatterplot")) {
+          $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
+        }
       },
     },
     east:
@@ -298,7 +302,9 @@ $(document).ready(function() {
       size: 130,
       resizeWhileDragging: false,
       onresize_end: function() { 
-        $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+        if($("#legend").data("cca-legend")) {
+          $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+        }
       },
     },
     south:
@@ -307,8 +313,10 @@ $(document).ready(function() {
       resizeWhileDragging: false,
       onresize_end: function()
       {
-        $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
+        if($("#table").data("cca-table")) {
+          $("#table").css("height", $("#table-pane").height());
+          $("#table").table("resize_canvas");
+        }
       },
     },
   });
