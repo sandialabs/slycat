@@ -33,7 +33,7 @@
   z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
 }
 #controls {
-  margin: 2px 0px;
+  height: 100%;
 }
 .center {
   text-align: center;

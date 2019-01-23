@@ -95,7 +95,7 @@ $(document).ready(function() {
     applyDefaultStyles: false,
     north :
     {
-      size: 28,
+      size: 39,
       resizable: false,
       resizeWhileDragging : false,
     },
@@ -105,7 +105,9 @@ $(document).ready(function() {
       resizeWhileDragging : false,
       onresize_end: function()
       {
-        $("#dendrogram-viewer").dendrogram("resize_canvas");
+        if($("#dendrogram-viewer").data("timeseries-dendrogram")) {
+          $("#dendrogram-viewer").dendrogram("resize_canvas");
+        }
       },
     },
     center :
@@ -113,14 +115,20 @@ $(document).ready(function() {
       resizeWhileDragging: false,
       onresize_end: function()
       {
-        $("#waveform-viewer").waveformplot("resize_canvas");
+        if($("#waveform-viewer").data("timeseries-waveformplot")) {
+          $("#waveform-viewer").waveformplot("resize_canvas");
+        }
       },
     },
     east:
     {
       size: 130,
       resizeWhileDragging: false,
-      onresize_end: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+      onresize_end: function() { 
+        if($("#legend").data("timeseries-legend")) {
+          $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()});
+        }
+      },
     },
     south:
     {
@@ -128,8 +136,11 @@ $(document).ready(function() {
       resizeWhileDragging : false,
       onresize_end: function()
       {
-        $("#table").table("resize_canvas");
-      },
+        $("#table").css("height", $("#table-pane").height());
+        if($("#table").data("timeseries-table")) {
+          $("#table").table("resize_canvas");
+        }
+      }
     },
   });
 

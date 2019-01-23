@@ -7,7 +7,7 @@ class ControlsDropdown extends React.Component {
 
   render() {
     let optionItems = this.props.items.map((item) =>
-      <a href="#" key={item.key} tabIndex="-1" className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
+      <a href="#" key={item.key} className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
         onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}>
         {item.name}
       </a>);
