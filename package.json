@@ -1,6 +1,6 @@
 {
   "name": "slycat",
-  "version": "1.0.0",
+  "version": "1.13.0",
   "scripts": {
     "dev": "node --max_old_space_size=4096 ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.dev.js",
     "watch": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js --config webpack.watch.js --watch",
