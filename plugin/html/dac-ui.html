@@ -31,27 +31,28 @@ S. Martin
 				<!-- MDS Scatter Plot Buttons (above scatter plot)-->
 				<div class="bootstrap-styles">
 			
-					<div class="btn-group" data-toggle="buttons" 
-						id="dac-scatter-select-buttons">
-						<label class="btn btn-default btn-sm active"
-							id="dac-scatter-button-sel-1" title="Select group 1.
-Use shift to add to group.">
+					<div class="btn-group btn-group-toggle" data-toggle="buttons" id="dac-scatter-select-buttons">
+						<label class="btn btn-outline-dark btn-sm active"
+							id="dac-scatter-button-sel-1" 
+							title="Select group 1. Use shift to add to group.">
 							<input type="radio" name="options" autocomplete="off"
 								value="selection_1"><b style="padding:2px 5px 1px;border:dashed 2px">1</b></input>
 						</label>
-						<label class="btn btn-default btn-sm"
-							id="dac-scatter-button-sel-2" title="Select group 2.
-Use shift to add to group.">
+						<label class="btn btn-outline-dark btn-sm"
+							id="dac-scatter-button-sel-2" 
+							title="Select group 2. 
+							       Use shift to add to group.">
 							<input type="radio" name="options" autocomplete="off"
 								value="selection_2"><b style="padding:2px 5px 1px;border:dashed 2px">2</b></input>
 						</label>
-						<label class="btn btn-default btn-sm"
-							id="dac-scatter-button-subset" title="Select subset for all analysis.
-Use shift to exclude subset.">
+						<label class="btn btn-outline-dark btn-sm"
+							id="dac-scatter-button-subset" 
+							title="Select subset for all analysis.
+                                   Use shift to exclude subset.">
 							<input type="radio" name="options" autocomplete="off"
 								value="subset"><b>&sube;</b></input>
 						</label>
-						<label class="btn btn-default btn-sm"
+						<label class="btn btn-outline-dark btn-sm"
 							id="dac-scatter-button-zoom" title="Zoom for scatter plot.">
 							<input type="radio" name="options" autocomplete="off"
 								value="zoom"><i class="fa fa-search"></i></input>
@@ -178,17 +179,24 @@ sync with the current selection"> </i></label>
 		
 				<!-- Alpha Buttons -->			
 				<div class="bootstrap-styles" id="dac-alpha-buttons">
-					<button type="button" class="btn btn-default"
+					<button type="button" class="btn btn-sm btn-outline-dark"
 							id="dac-download-table-button" title="Download data table.">
-							<i class="fa fa-download"></i></button>
-					<button type="button" class="btn btn-default"
-						    id="dac-alpha-zero-button" title="Set all sliders to 0.">0</button>
-					<button type="button" class="btn btn-default"
-						    id="dac-alpha-one-button" title="Set all sliders to 1.">1</button>
-					<button type="button" class="btn btn-default"
+							<i class="fa fa-download"></i>
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-dark"
+						    id="dac-alpha-zero-button" title="Set all sliders to 0.">
+						0
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-dark"
+						    id="dac-alpha-one-button" title="Set all sliders to 1.">
+						1
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-dark"
 							id="dac-alpha-cluster-button"
-title='Adjust sliders to optimize scatter plot for selected
-(from "Do Not Color" pulldown) table column.'><i class="fa fa-sliders"></i></button>
+							title='Adjust sliders to optimize scatter plot for selected
+								   (from "Do Not Color" pulldown) table column.'>
+						<i class="fa fa-sliders"></i>
+					</button>
 				</div>
 			</div>
 			
