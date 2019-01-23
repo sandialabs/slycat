@@ -1,0 +1,159 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Bookmarks &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Templates" href="Templates.html" />
+    <link rel="prev" title="Models" href="Models.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="bookmarks">
+<h1>Bookmarks<a class="headerlink" href="#bookmarks" title="Permalink to this headline">¶</a></h1>
+<p>Each time you interact with a model, changes in model state are preserved in a Bookmark and the URL in your browser’s address
+bar is modified to incorporate the latest bookmark id.  The id links to a description of the model state that is stored on the
+Slycat™ server.  Although the contents of a bookmark are model dependent, all bookmarks capture the current visualization state
+so that it can be reproduced (though parameters such as view region sizes are not saved, since they are device dependent).
+Examples of the types of information stored in a bookmark include color-encoding, highlighted selections, filter values and
+limits, pinned media selections, and hidden points.</p>
+<p>Bookmarking enables many useful functions.  Dragging and dropping the URL from the address bar into an email, you can share a
+specific state of the visualization with other project members.  If you save model pages as browser bookmarks, you can archive
+and recall interesting model states, though you will be limited to viewing them on the machine where you created them.  The
+current bookmark id is stored locally in your browser’s cache.  This enables you to pick up where you left off when you begin
+new session with a previously viewed model.</p>
+<p>Within Slycat™ there is the concept of a saved <em>Bookmark</em>.  This <em>Bookmark</em> is a persistent link to a model state that you
+explicitly save within a project.  Slycat™ saves the current bookmark id along with a label that you provide.  This provides a
+convenient, machine-independent mechanism for saving exploratory results.  <em>Bookmarks</em> can be used to remember visualizations
+that reveal interesting patterns, to share findings with other team members, or to create a flipbook-style narrative for a
+demonstration.</p>
+<p>To create a <em>Bookmark</em>, click the blue <em>Bookmarks</em> button from within a model page and select <em>Create New</em> (Figure 10).  A
+<em>Create Saved Bookmark</em> popup will appear (Figure 11).  Type in a <em>Name</em> and click the <em>Save Bookmark</em> button on the right to
+save it, or click on the <em>X</em> button in the upper right corner of the dialog to abort the operation.  The <em>Bookmarks</em> button
+dropdown will display a list of all the bookmarks associated with the project.  If you are on a model page, <em>Bookmarks</em>
+associated with that model are listed at the top, while those for other models appear below, each labeled with their model type.
+Clicking on a <em>Bookmark</em> in the list takes you to the associated model and visualizes it according to the saved state.  To
+modify the name of a bookmark, click on the yellow pencil icon.  To delete a bookmark, click on its red trashcan.</p>
+<div class="figure align-center" id="id1">
+<img alt="_images/Figure10.png" src="_images/Figure10.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 10:</strong> <em>Bookmarks</em> <strong>dropdown, including one previously saved bookmark.</strong></span></p>
+</div>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="_images/Figure11.png"><img alt="_images/Figure11.png" src="_images/Figure11.png" style="width: 455.25px; height: 251.25px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 11: Example of a</strong> <em>Create Saved Bookmark</em> <strong>dialog.</strong></span></p>
+</div>
+<p>Note that changes to the <em>View Regions</em> are not currently preserved in bookmarks.  Consequently, when the layout has been
+modified prior to the model being bookmarked, visualizing the <em>Bookmark</em> will render the model using the default <em>View Regions</em>
+layout.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="slycat.overview.html">Overview</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="GettingStarted.html">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Navbar.html">Slycat™ Navbar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Projects.html">Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Models.html">Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Bookmarks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Templates.html">Templates</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+  <li><a href="slycat.overview.html">Overview</a><ul>
+      <li>Previous: <a href="Models.html" title="previous chapter">Models</a></li>
+      <li>Next: <a href="Templates.html" title="next chapter">Templates</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Bookmarks.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
