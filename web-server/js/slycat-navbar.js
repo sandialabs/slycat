@@ -33,8 +33,9 @@ import config from 'config.json';
 fetch(api_root + 'projects_list' + '?_=' + new Date().getTime(), {redirect: 'error', credentials: "same-origin", cache: "no-store"})
   .catch(error => {
     console.log("we are being redirected or have another type of error, so let's go to the login page");
-    //window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
-    window.location.href = "/projects";
+    ispasswordrequired.slycat_passwordrequired?
+      window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href :
+      window.location.href = "/projects";
   })
   ;
 
@@ -47,7 +48,8 @@ ko.components.register("slycat-navbar",
     function checkCookie(){
       var myCookie = getCookie("slycattimeout");
       if(myCookie == null){
-          //window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
+          ispasswordrequired.slycat_passwordrequired?
+          window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href :
           window.location.href = "/projects";
       }
     }
@@ -515,8 +517,7 @@ ko.components.register("slycat-navbar",
     {
       client.sign_out({ 
         success: function(){
-          //window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
-          window.location.href = "/projects";
+          window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href;
         }, 
         error: function(){
           window.alert("Sorry, something went wrong and you are not signed out."); 
