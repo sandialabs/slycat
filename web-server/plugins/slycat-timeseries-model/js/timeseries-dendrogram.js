@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM dendrogram control, for use with the timeseries model.
 
-import d3 from "js/d3.min";
+import d3 from "d3";
 import * as chunker from "./chunker";
 import "bootstrap";
 

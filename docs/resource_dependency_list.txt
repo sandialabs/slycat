@@ -70,6 +70,7 @@ wcwidth                              0.1.7     https://pypi.python.org/pypi
 
 From npm in slycat/node_modules:
 bootstrap               4.2.1   http://getbootstrap.com
+d3                     3.5.12   https://d3js.org
 font-awesome            4.7.0   https://fontawesome.com/
 jquery                  3.3.1   https://jquery.org/
 jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
@@ -91,7 +92,6 @@ three-trackballcontrols 0.0.7   https://yarnpkg.com/en/package/three-trackballco
 urijs                  1.19.1   https://medialize.github.io/URI.js/
 
 Directly included in Slycat in slycat/web_server/js:
-d3                      3.4.6   https://d3js.org
 jquery.event.drag         2.2   http://threedubmedia.com/code/event/drag
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
 knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections

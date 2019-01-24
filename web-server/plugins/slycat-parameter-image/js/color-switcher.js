@@ -7,7 +7,7 @@ of Sandia, LLC, the U.S. Government  retains
 certain rights in this software.
 */
 
-import d3 from "js/d3.min";
+import d3 from "d3";
 import "jquery-ui";
 import React from 'react';
 import ReactDOM from 'react-dom';
