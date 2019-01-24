@@ -394,7 +394,7 @@ ko.components.register("slycat-navbar",
 
     component.open_documentation = function()
     {
-      window.open("http://slycat.readthedocs.org");
+      window.open("/docs");
     }
 
     var references = mapping.fromJS([]);
