@@ -13,7 +13,7 @@ import "css/slick-slycat-theme.css";
 import "../css/slick-dac-theme.css";
 
 import selections from "./dac-manage-selections.js";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import client from "js/slycat-web-client";
 import URI from "urijs";
 import * as dialog from "js/slycat-dialog";

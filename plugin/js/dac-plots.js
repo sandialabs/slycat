@@ -14,7 +14,7 @@ rights in this software.
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import selections from "./dac-manage-selections.js";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import URI from "urijs";
 
 // public functions (or variables)
