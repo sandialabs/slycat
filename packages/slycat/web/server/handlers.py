@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 # Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
 # DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
 # retains certain rights in this software.
@@ -533,7 +534,9 @@ def create_project_data(mid, aid, file):
     pid = project["_id"]
     # slycat.web.server.authentication.require_project_writer(project)
     did = uuid.uuid4().hex
-
+    #TODO review how we pass files to this
+    if isinstance(file, list):
+        file = file[0]
     data = {
         "_id": did,
         "type": "project_data",
@@ -852,7 +855,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
         create_project_data(mid, aids, files)
     except Exception as e:
-        cherrypy.log.error("Exception parsing posted files: %s" % e)
+        cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 %s" % e.message)
         raise cherrypy.HTTPError("400 %s" % e.message)
