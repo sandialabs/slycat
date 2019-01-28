@@ -6,19 +6,19 @@ S. Martin
 -->
 
 <div class="modal-header">
+    <h3 class="modal-title">Dial-A-Cluster Model Table</h3>
     <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
-    <h3 class="modal-title">Dial-A-Cluster Model Table</h3>
 </div>
 
 <!-- Organizes the tabs in the input wizard. -->
 <div class="modal-body">
     <ul class="nav nav-pills">
-        <li data-bind="css:{active:tab() == 0}"><a>Edit Table</a></li>
-        <li data-bind="css:{active:tab() == 1}, visible: dac_add_remove() == 'add-freetext'"><a>Free Text Column</a></li>
-        <li data-bind="css:{active:tab() == 2}, visible: dac_add_remove() == 'add-categorical'"><a>Categorical Column</a></li>
-        <li data-bind="css:{active:tab() == 3}, visible: dac_add_remove() == 'remove-column'"><a>Remove Column</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Edit Table</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: dac_add_remove() == 'add-freetext'"><a class="nav-link">Free Text Column</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: dac_add_remove() == 'add-categorical'"><a class="nav-link">Categorical Column</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: dac_add_remove() == 'remove-column'"><a class="nav-link">Remove Column</a></li>
     </ul>
 
     <!-- This tab lets the user select add or remove column. -->
@@ -130,7 +130,7 @@ shift-click a range of names then click the remove switch."></i>
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-    <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
     <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 1,click:freetext_finish"><i class="fa fa-spinner fa-pulse"></i> Finish & Reload Model</button>
     <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 2,click:add_category">Add Category</button>
