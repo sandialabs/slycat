@@ -2,4 +2,12 @@
 //   @import "bootstrap/scss/bootstrap.scss";
 // }
 
+// :not(.no-bootstrap-styles) * {
+//   @import "bootstrap/scss/bootstrap.scss";
+// }
+
+// *:not(.no-bootstrap-styles) {
+//   @import "bootstrap/scss/bootstrap.scss";
+// }
+
 @import "bootstrap/scss/bootstrap.scss";
