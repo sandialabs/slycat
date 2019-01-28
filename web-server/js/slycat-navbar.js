@@ -16,7 +16,6 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import "js/knockout-projections"
 import ispasswordrequired from "js/slycat-server-ispasswordrequired";
-import "js/slycat-resizing-modals";
 import "js/slycat-nag";
 import slycatNavbar from 'templates/slycat-navbar.html';
 import 'js/slycat-plugins';

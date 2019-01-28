@@ -1,4 +1,4 @@
-<div class="bootstrap-styles zooming-modals">
+<div class="bootstrap-styles">
   <!-- Navigation Bar -->
   <nav class="navbar navbar-light navbar-expand-sm" data-bind="css: {'model' : model_id()}">
     <!-- Branding element. Slycat name visible only on projects listing page.  -->
@@ -221,17 +221,17 @@
       <pre data-bind="visible:detail,text:detail,css:{'bg-danger':$data.type === 'danger','bg-info':$data.type === 'info','bg-success':$data.type === 'success'}"></pre>
     </div>
   <!-- /ko -->
-  <div class="modal fade" id="slycat-wizard" data-backdrop="static">
-    <div class="modal-dialog">
-      <div class="modal-content zoom-sensitive">
-        <div data-bind="if: wizard" style="height: 100%">
+  <div class="modal fade" tabindex="-1" role="dialog" id="slycat-wizard" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div data-bind="if: wizard">
           <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" class="zoom-sensitive" style="height: 100%">
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="slycat-about">
+  <div class="modal fade" tabindex="-1" role="dialog" id="slycat-about">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
