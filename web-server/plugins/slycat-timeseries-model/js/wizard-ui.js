@@ -198,7 +198,6 @@ function constructor(params) {
           username: component.remote.username(),
           password: component.remote.password(),
           success: function(sid) {
-            $('.modal-dialog').addClass('modal-lg');
             component.remote.session_exists(true);
             component.remote.sid(sid);
             component.remote.enable(true);

@@ -1,20 +1,20 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
 <div class="modal-header slycat-timeseries-wizard">
+  <h3 class="modal-title">New Timeseries Model</h3>
   <button type="button" class="close" data-bind="click: cancel, visible: tab() != 6" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">New Timeseries Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Find Data</a></li>
-    <li data-bind="css:{active:tab() == 2}, visible: timeseries_type() != 'hdf5'" class="ps-tab-remote-data"><a>Select Table File</a></li>
-    <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
-    <li data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
-    <li data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a>Select HDF5 Directory</a></li>
-    <li data-bind="css:{active:tab() == 5}"><a>HPC Parameters</a></li>
-    <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Find Data</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: timeseries_type() != 'hdf5'" class="ps-tab-remote-data"><a class="nav-link">Select Table File</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 4}"><a class="nav-link">Timeseries Parameters</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a class="nav-link">Select Timeseries File</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a class="nav-link">Select HDF5 Directory</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 5}"><a class="nav-link">HPC Parameters</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 6}"><a class="nav-link">Name Model</a></li>
   </ul>
 
   <div class="tab-content">
@@ -210,8 +210,7 @@
 </div>
 <div class="modal-footer">
   <button data-bind="visible: [0,6].indexOf(tab()) == -1, click: back" 
-    class="btn btn-default pull-left">Back</button>
-
+    class="btn btn-light mr-auto">Back</button>
   <button data-bind="visible:tab() == 0,click:connect" 
     class="btn btn-primary">Continue</button>
   <button data-bind="visible:tab() == 2,click:select_input_file" 

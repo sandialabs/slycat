@@ -47,14 +47,14 @@ function constructor(params)
   component.row_count = ko.observable(null);
 
   component.cca_type.subscribe(function(newValue) {
-    if(newValue == 'local')
-    {
-      $(".modal-dialog").removeClass("modal-lg");
-    }
-    else
-    {
-      $(".modal-dialog").addClass("modal-lg");
-    }
+    // if(newValue == 'local')
+    // {
+    //   $(".modal-dialog").removeClass("modal-lg");
+    // }
+    // else
+    // {
+    //   $(".modal-dialog").addClass("modal-lg");
+    // }
   });
 
   component.create_model = function() {

@@ -47,14 +47,14 @@ function constructor(params)
   component.server_root = server_root;
   component.ps_type = ko.observable(null);
   component.ps_type.subscribe(function(newValue) {
-    if(newValue == 'local')
-    {
-      $(".modal-dialog").removeClass("modal-lg");
-    }
-    else
-    {
-      $(".modal-dialog").addClass("modal-lg");
-    }
+    // if(newValue == 'local')
+    // {
+    //   $(".modal-dialog").removeClass("modal-lg");
+    // }
+    // else
+    // {
+    //   $(".modal-dialog").addClass("modal-lg");
+    // }
   });
   component.ps_type("remote"); // remote is selected by default...
 

@@ -2,21 +2,21 @@
 
 <div class="parameter-image-plus-model-wizard">
 <div class="modal-header">
+  <h3 class="modal-title">New Parameter Image Model</h3>
   <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">New Parameter Image Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Locate Table</a></li>
-    <li data-bind="css:{active:tab() == 1}, visible: ps_type() == 'remote'" class="ps-tab-remote-data"><a>Select Table</a></li>
-    <li data-bind="css:{active:tab() == 2}"><a>Select Columns</a></li>
-    <li data-bind="css:{active:tab() == 3}" class="ps-tab-locate-matrix"><a>Locate Distances</a></li>
-    <li data-bind="css:{active:tab() == 4}, visible: matrix_type() == 'compute'" class="ps-tab-locate-matrix"><a>Select Distance Metric</a></li>
-    <li data-bind="css:{active:tab() == 5}, visible: matrix_type() == 'compute'" class="ps-tab-compute-matrix"><a>Compute Distances</a></li>
-    <li data-bind="css:{active:tab() == 6}, visible: matrix_type() == 'remote'" class="ps-tab-remote-matrix"><a>Select Distances</a></li>
-    <li data-bind="css:{active:tab() == 7}"><a>Name Model</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Locate Table</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: ps_type() == 'remote'" class="ps-tab-remote-data"><a class="nav-link">Select Table</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 2}"><a class="nav-link">Select Columns</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 3}" class="ps-tab-locate-matrix"><a class="nav-link">Locate Distances</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: matrix_type() == 'compute'" class="ps-tab-locate-matrix"><a class="nav-link">Select Distance Metric</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: matrix_type() == 'compute'" class="ps-tab-compute-matrix"><a class="nav-link">Compute Distances</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 6}, visible: matrix_type() == 'remote'" class="ps-tab-remote-matrix"><a class="nav-link">Select Distances</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 7}"><a class="nav-link">Name Model</a></li>
   </ul>
 
   <div class="tab-content">
@@ -191,7 +191,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
   <button class="btn btn-primary local-browser-continue-data browser-continue" data-bind="visible:tab() == 0,click:select_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary remote-browser-continue-data browser-continue" data-bind="visible:tab() == 1,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 2,click:select_columns">Continue</button>
