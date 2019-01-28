@@ -132,18 +132,6 @@ slycat-navbar nav .alert pre
   margin-bottom: 24px;
 }
 
-#slycat-wizard .modal-body
-{
-  height: calc(100% - 65px - 64px);
-  min-height: 200px;
-  overflow: auto;
-}
-
-#slycat-wizard .modal-content {
-  resize: both;
-  overflow: auto;
-}
-
 #slycat-wizard .steps
 {
     display: inline-block;
@@ -462,12 +450,6 @@ slycat-navbar nav .alert pre
   text-decoration: none;
 }
 
-.zoom-sensitive
-{
-  max-height: 90%;
-  overflow: auto;
-}
-
 /* slycat-table-ingestion component */
 
 .slycat-table-ingestion table
@@ -564,7 +546,6 @@ slycat-navbar nav .alert pre
 }
 textarea,
 input,
-#slycat-wizard .modal-body
 {
   resize: none;
 }
