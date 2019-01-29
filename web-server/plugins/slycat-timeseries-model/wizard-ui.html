@@ -21,19 +21,19 @@
     <div data-bind="visible:tab() == 0">
       <div class="form-group">
         <label for="timeseries-type-radios">What type of data will you be using?</label>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check">
           <label>
             <input type="radio" name="timeseries-type-radios" id="xyce-radio" value="xyce" checked="checked" data-bind="checked: timeseries_type">
             Xyce
           </label>
         </div>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check">
           <label>
             <input type="radio" name="timeseries-type-radios" id="csv-radio" value="csv" data-bind="checked: timeseries_type">
             CSV
           </label>
         </div>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check">
           <label>
             <input type="radio" name="timeseries-type-radios" id="hdf5-radio" value="hdf5" data-bind="checked: timeseries_type">
             HDF5
