@@ -75,7 +75,7 @@
       "></slycat-table-ingestion>
       <div class=" form-horizontal" data-bind="visible: image_attributes().length > 0">
         <div class="cluster-column form-group">
-          <label class="col-sm-4 control-label">Default Cluster Column</label>
+          <label class="col-sm-4 col-form-label">Default Cluster Column</label>
           <div class="col-sm-8">
             <select class="form-control"
               data-bind="options: image_attributes,
@@ -123,7 +123,7 @@
     <div data-bind="visible:tab() == 4">
       <div class="form-horizontal">
         <div class="distance-measure form-group">
-          <label class="col-sm-4 control-label">Select Distance Metric</label>
+          <label class="col-sm-4 col-form-label">Select Distance Metric</label>
           <div class="col-sm-6">
             <select id="distance-measure" class="form-control" data-bind="options: distance_measures, optionsText: 'name', optionsValue: 'value', value: distance_measure"></select>
           </div>
@@ -157,7 +157,7 @@
       <form class="form-horizontal" role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         <div class="form-group">
-          <label class="col-sm-2 control-label">Cluster Linkage</label>
+          <label class="col-sm-2 col-form-label">Cluster Linkage</label>
           <div class="col-sm-10 cluster-linkage-radios">
             <div class="radio">
               <label>
