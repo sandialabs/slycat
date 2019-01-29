@@ -26,19 +26,19 @@ S. Martin
     <div data-bind="visible:tab() == 0">
 
         <label>Would you like to add or remove a column?</label>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" value="add-freetext" data-bind="checked: dac_add_remove">
             Add free text column
         </label>
         </div>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" value="add-categorical" data-bind="checked: dac_add_remove">
             Add categorical column
         </label>
         </div>
-        <div class="radio" id="dac-table-wizard-remove-cols-label" style="margin-left: 15px; color:grey">
+        <div class="form-check" id="dac-table-wizard-remove-cols-label" style="margin-left: 15px; color:grey">
         <label>
             <input type="radio" id="dac-table-wizard-remove-cols-radio" name="local-or-remote-radios" value="remove-column"
                    disabled data-bind="checked: dac_add_remove">
