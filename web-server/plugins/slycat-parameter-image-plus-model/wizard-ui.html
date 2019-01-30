@@ -28,7 +28,7 @@
           Local
         </label>
       </div>
-      <div class="local-browser form-horizontal">
+      <div class="local-browser">
         <slycat-local-browser params="
           selection:browser.selection, 
           disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;}),
@@ -43,7 +43,7 @@
         </label>
       </div>
       <div class="remote-controls">
-        <form class="form-horizontal" role="form">
+        <form role="form">
           <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
         </form>
       </div>
@@ -73,8 +73,8 @@
           {name: 'Editable', type: 'bool'}
         ]
       "></slycat-table-ingestion>
-      <div class=" form-horizontal" data-bind="visible: image_attributes().length > 0">
-        <div class="cluster-column form-group">
+      <div data-bind="visible: image_attributes().length > 0">
+        <div class="cluster-column form-group row">
           <label class="col-sm-4 col-form-label">Default Cluster Column</label>
           <div class="col-sm-8">
             <select class="form-control"
@@ -100,7 +100,7 @@
           Local
         </label>
       </div>
-      <div class="local-browser form-horizontal">
+      <div class="local-browser">
         <slycat-local-browser params="
           selection:browser_matrix.selection, 
           disabled: ko.computed(function(){return matrix_type() == 'local' ? false : true;}),
@@ -114,15 +114,15 @@
         </label>
       </div>
       <div class="remote-controls">
-        <form class="form-horizontal" role="form">
+        <form role="form">
           <slycat-remote-controls params="hostname:remote_matrix.hostname,username:remote_matrix.username,password:remote_matrix.password,status:remote_matrix.status,status_type:remote_matrix.status_type,enable:remote_matrix.enable,focus:remote_matrix.focus,activate:connect_matrix,session_exists:remote_matrix.session_exists"></slycat-remote-controls>
         </form>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 4">
-      <div class="form-horizontal">
-        <div class="distance-measure form-group">
+      <div>
+        <div class="distance-measure form-group row">
           <label class="col-sm-4 col-form-label">Select Distance Metric</label>
           <div class="col-sm-6">
             <select id="distance-measure" class="form-control" data-bind="options: distance_measures, optionsText: 'name', optionsValue: 'value', value: distance_measure"></select>
@@ -133,7 +133,7 @@
 
     <div data-bind="visible:tab() == 5">
       <div class="compute-interface">
-        <form class="compute form-horizontal" role="form">
+        <form class="compute" role="form">
           <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, session_exists: remote.session_exists, on_submit_callback: to_last_step"></slycat-remote-interface>
         </form>
       </div>
@@ -154,9 +154,9 @@
     </div>
 
     <div data-bind="visible:tab() == 7">
-      <form class="form-horizontal" role="form" onsubmit="return false">
+      <form role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
-        <div class="form-group ml-3">
+        <div class="form-group">
           <label class="col-form-label">Cluster Linkage</label>
           <div class="cluster-linkage-radios">
             <div class="form-check">

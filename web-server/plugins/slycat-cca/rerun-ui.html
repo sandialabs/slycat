@@ -19,7 +19,7 @@
         variables: attributes,
         properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
       "></slycat-table-ingestion>
-      <form class="form-horizontal" role="form">
+      <form role="form">
         <div class="form-group mt-3">
           <div class="form-check pl-1">
             <label>
@@ -31,7 +31,7 @@
     </div>
 
     <div data-bind="visible:tab() == 1">
-      <form class="form-horizontal" role="form" onsubmit="return false">
+      <form role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>

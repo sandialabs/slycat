@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <div data-bind="visible:tab() == 1" class="form-horizontal">
+    <div data-bind="visible:tab() == 1">
       <slycat-local-browser params="
         selection:browser.selection,
         progress:browser.progress,
@@ -42,7 +42,7 @@
     </div>
 
     <div data-bind="visible:tab() == 2">
-      <form class="form-horizontal" role="form">
+      <form role="form">
         <slycat-remote-controls params="
           hostname:remote.hostname,
           username:remote.username,
@@ -78,7 +78,7 @@
     </div>
 
     <div data-bind="visible:tab() == 5">
-      <form class="form-horizontal" role="form" onsubmit="return false">
+      <form role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>

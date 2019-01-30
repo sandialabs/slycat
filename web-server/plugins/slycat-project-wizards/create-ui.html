@@ -7,14 +7,14 @@
   </button>
 </div>
 <div class="modal-body">
-  <form class="form-horizontal" data-bind="submit:finish" action="">
-    <div class="form-group">
+  <form data-bind="submit:finish" action="">
+    <div class="form-group row">
       <label for="slycat-create-project-name" class="col-sm-2 col-form-label">Name</label>
       <div class="col-sm-10">
         <input id="slycat-create-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:name"></input>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group row">
       <label for="slycat-create-project-description" class="col-sm-2 col-form-label">Description</label>
       <div class="col-sm-10">
         <textarea id="slycat-create-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:description"></textarea>
