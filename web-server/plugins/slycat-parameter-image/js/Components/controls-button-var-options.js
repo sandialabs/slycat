@@ -67,24 +67,25 @@ export default function ControlsButtonVarOptions(props) {
   ];
 
   const fontItems = fonts.map((font, index) =>
-    <li key={index} 
+    <a key={index} 
+      href="#" onClick={props.onFontFamilyChange}
       style={{fontFamily: font.fontFamily}} 
-      className={font.fontFamily == props.font_family ? 'active' : 'notactive'}
+      className={`dropdown-item {font.fontFamily == props.font_family ? 'active' : 'notactive'}`}
     >
-      <a href="#" onClick={props.onFontFamilyChange}>{font.name}</a>
-    </li>
+      {font.name}
+    </a>
   );
 
   return (
     <React.Fragment>
-      <div className="modal fade" data-backdrop="static" id={modalId}>
+      <div className="modal fade" data-backdrop="false" id={modalId}>
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
+              <h3 className="modal-title">{title}</h3>
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
-              <h3 className="modal-title">{title}</h3>
             </div>
             <div className="modal-body">
               <div className="slycat-axes-font">
@@ -92,18 +93,18 @@ export default function ControlsButtonVarOptions(props) {
                   <div className="form-group">
                     <label htmlFor="font-family">Font</label>
                     <div className="dropdown font-family-dropdown">
-                      <button className="btn btn-default dropdown-toggle" type="button" id="font-family" 
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style={{fontFamily: props.font_family}}>
+                      <button className="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="font-family" 
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{fontFamily: props.font_family}}>
                         {props.font_family}
                       </button>
-                      <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
+                      <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
                         {fontItems}
-                      </ul>
+                      </div>
                     </div>
                   </div>
                   <div className="form-group">
                     <label htmlFor="font-size">Size</label>
-                    <input type="number" className="form-control" id="font-size" max="40" min="8" step="1" style={{width: "70px"}}
+                    <input type="number" className="form-control form-control-sm" id="font-size" max="40" min="8" step="1" style={{width: "70px"}}
                       value={props.font_size} 
                       onChange={props.onFontSizeChange}
                     />
