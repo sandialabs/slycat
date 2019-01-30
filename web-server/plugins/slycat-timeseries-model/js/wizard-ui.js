@@ -83,7 +83,7 @@ function constructor(params) {
   component.user_config = {};
 
   var removeErrors = function() {
-    $('.form-group').removeClass('has-error');
+    $('.form-group').removeClass('is-invalid');
   };
 
   var updateUserConfig = function() {
@@ -301,22 +301,22 @@ function constructor(params) {
     removeErrors();
 
     if (!component.id_column().trim().length) {
-      $('#form-id-column-name').addClass('has-error');
+      $('#form-id-column-name').addClass('is-invalid');
       validated = false;
     }
 
     if (component.timeseries_type() === 'csv' && !component.inputs_file_delimiter().trim().length) {
-      $('#form-inputs-file-delimiter').addClass('has-error');
+      $('#form-inputs-file-delimiter').addClass('is-invalid');
       validated = false;
     }
 
     if (component.timeseries_type() === 'csv' && !component.timeseries_name().trim().length) {
-      $('#form-timeseries-name').addClass('has-error');
+      $('#form-timeseries-name').addClass('is-invalid');
       validated = false;
     }
 
     if (Number(component.cluster_sample_count()) < 2) {
-      $('#form-cluster-sample-count').addClass('has-error');
+      $('#form-cluster-sample-count').addClass('is-invalid');
       validated = false;
     }
 
