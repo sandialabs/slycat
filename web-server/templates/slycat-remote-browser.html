@@ -9,12 +9,12 @@
           <input type="text" class="form-control" id="slycat-remote-browser-path" 
             data-bind="value: path_input"
           >
-          <span class="input-group-btn">
-            <button class="btn btn-default" type="submit">Go</button>
-          </span>
+          <div class="input-group-append">
+            <button class="btn btn-secondary" type="submit">Go</button>
+          </div>
         </div>
         <div class="btn-group" role="group" style="float: right;">
-          <button class="btn btn-default" type="button" title="Navigate to parent directory"
+          <button class="btn btn-secondary" type="button" title="Navigate to parent directory"
             data-bind="
             click:up,
             disable:path()=='/'

@@ -451,7 +451,7 @@ ko.components.register("slycat-navbar",
       {
         title: "Edit Bookmark",
         value: name,
-        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+        buttons: [{className: "btn-light", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
         callback: function(button)
         {
           if(button.label != "OK")
@@ -476,7 +476,7 @@ ko.components.register("slycat-navbar",
       {
         title: "Delete Saved Bookmark?",
         message: "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
-        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+        buttons: [{className: "btn-primary", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
         callback: function(button)
         {
           if(button.label != "OK")

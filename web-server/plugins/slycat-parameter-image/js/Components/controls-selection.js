@@ -10,7 +10,7 @@ const ControlsSelection = (props) => {
       value: '',
       alert: alert,
       buttons: [
-        {className: "btn-default", label:"Cancel"},
+        {className: "btn-light", label:"Cancel"},
         {className: "btn-primary",  label:"Apply"}
       ],
       callback: function(button, valueIn)

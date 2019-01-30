@@ -63,7 +63,7 @@ $.widget("timeseries.controls",
     function openCSVSaveChoiceDialog(){
       var txt = "";
       var buttons_save = [
-        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-light", label:"Cancel"}, 
         {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
       var filteredHighlight;

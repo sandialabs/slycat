@@ -152,7 +152,7 @@ class Template extends React.Component {
     {
       title: "Delete Template?",
       message: 'The template "' + this.props.name + '" will be deleted immediately and there is no undo.  This will not affect any existing models.',
-      buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+      buttons: [{className: "btn-light", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
       callback: function(button)
       {
         if(button.label != "OK")

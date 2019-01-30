@@ -106,7 +106,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
     let self = this;
     let txt = "";
     let buttons_save = [
-      {className: "btn-default", label:"Cancel"},
+      {className: "btn-light", label:"Cancel"},
       {className: "btn-primary", label:"Save Entire Table",
           icon_class:"fa fa-table"}
     ];
