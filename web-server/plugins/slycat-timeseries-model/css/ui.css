@@ -70,8 +70,8 @@
   background: #DBD9EB url(../../../img/sort-dendrogram.png) no-repeat center center;
   padding: 4px;
   margin: 0 0 5px 18px;
-  height: 17px;
-  min-width: 17px;
+  height: 25px;
+  min-width: 25px;
 }
 
 #dendrogram-pane #dendrogram-sort-control.selected
