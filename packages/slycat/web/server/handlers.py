@@ -533,20 +533,29 @@ def create_project_data(mid, aid, file):
     project = database.get("project", model["project"])
     pid = project["_id"]
     # slycat.web.server.authentication.require_project_writer(project)
+    timestamp = time.time()
+    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     did = uuid.uuid4().hex
     #TODO review how we pass files to this
     if isinstance(file, list):
         file = file[0]
+
+    if isinstance(aid[1], list):
+        aid[1] = aid[1][0]
     data = {
         "_id": did,
         "type": "project_data",
-        "file_name": aid[1],
+        "file_name": formatted_timestamp + "_" + aid[1],
         "data_table": aid[0],
         "project": pid,
         "mid": [mid],
         "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
     }
+    if "project_data" not in model:
+        model["project_data"] = []
+    model["project_data"].append(did)
+    database.save(model)
     database.save(data)
     database.put_attachment(data, filename="content", content_type=content_type, content=file)
     cherrypy.log.error("[MICROSERVICE] Added project data %s." % did)
@@ -1207,8 +1216,18 @@ def delete_model(mid):
     project = couchdb.get("project", model["project"])
     slycat.web.server.authentication.require_project_writer(project)
 
+    for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
+        updated = False
+        for index, pd_mid in enumerate(project_data["mid"]):
+            if pd_mid == mid:
+                updated = True
+                del project_data["mid"][index]
+        if updated:
+            couchdb.save(project_data)
+
     couchdb.delete(model)
     slycat.web.server.cleanup.arrays()
+
 
     cherrypy.response.status = "204 Model deleted."
 

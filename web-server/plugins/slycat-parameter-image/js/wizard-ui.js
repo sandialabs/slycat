@@ -207,16 +207,6 @@ function constructor(params)
     var file = component.browser.selection()[0];
     component.current_aids = file.name;
 
-    var current_date = new Date();
-    var day = current_date.getDate();
-    var month = current_date.getMonth()+1;
-    var year = current_date.getFullYear();
-    var seconds = current_date.getSeconds();
-    var minute = current_date.getMinutes();
-    var hour = current_date.getHours();
-    var timestamp = day + '-' + month + '-' + year + ':' + hour + ':' + minute + ':' + seconds;
-
-    component.current_aids = file.name + timestamp;
     console.log(component.current_aids);
 
     client.put_model(

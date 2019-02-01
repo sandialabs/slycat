@@ -150,7 +150,7 @@ function constructor(params)
      pid: component.project._id(),
      mid: component.model._id(),
      file: file,
-     aids: [["data-table"]],
+     aids: [["data-table"], "Test"],
      parser: component.parser(),
      progress: component.browser.progress,
      progress_status: component.browser.progress_status,
