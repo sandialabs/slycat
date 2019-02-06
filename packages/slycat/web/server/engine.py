@@ -134,7 +134,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-references", "/projects/:pid/references", slycat.web.server.handlers.post_project_references, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-project-models", "/projects/:pid/file/:file_name/models",slycat.web.server.handlers.post_project_models, conditions={"method": ["POST"]})
+  dispatcher.connect("post-project-models", "/projects/:pid/models",slycat.web.server.handlers.post_project_models, conditions={"method": ["POST"]})
   dispatcher.connect("post-log", "/log", slycat.web.server.handlers.post_log, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
 

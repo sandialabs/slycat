@@ -467,7 +467,7 @@ def get_project_references(pid):
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def post_project_models(pid, file_name):
+def post_project_models(pid):
     """
     When a pid along with json "model-type", "marking", "name" is sent with POST
     creates a model and saves it to the database
@@ -500,7 +500,6 @@ def post_project_models(pid, file_name):
 
     model = {
         "_id": mid,
-        "file_name": file_name,
         "bookmark": "none",
         "type": "model",
         "model-type": model_type,
@@ -538,7 +537,6 @@ def create_project_data(mid, aid, file):
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
-    slycat.web.server.authentication.require_project_writer(project)
     pid = project["_id"]
     timestamp = time.time()
     formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
@@ -763,7 +761,7 @@ def put_model(mid):
     save_model = False
     for key, value in cherrypy.request.json.items():
         if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
-                       "marking", "file_name", "bookmark"]:
+                       "marking", "bookmark"]:
             slycat.email.send_error("slycat.web.server.handlers.py put_model",
                                     "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
             raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)

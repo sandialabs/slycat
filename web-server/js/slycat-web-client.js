@@ -789,7 +789,7 @@ module.post_project_models = function(params)
       "marking": params.marking || "",
     }),
     type: "POST",
-    url: api_root + "projects/" + params.pid + "/file/" + params.file_name + "/models",
+    url: api_root + "projects/" + params.pid + "/models",
     success: function(result)
     {
       if(params.success)
@@ -1313,8 +1313,6 @@ module.put_model = function(params)
     model.marking = params.marking;
   if("state" in params)
     model.state = params.state;
-  if("file_name" in params)
-    model.file_name = params.file_name;
   if("bookmark" in params)
     model.bookmark = params.bookmark;
 
