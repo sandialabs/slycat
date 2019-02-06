@@ -527,25 +527,26 @@ def post_project_models(pid, file_name):
 
 def create_project_data(mid, aid, file):
     """
-    When a pid along with json "model-type", "marking", "name" is sent with POST
-    creates a model and saves it to the database
-    :param pid: project ID for created model
-    :return: json {"id" : mid}
+    creates a project level data object that can be used to create new
+    models in the current project
+    :param mid: model ID
+    :param aid: artifact ID
+    :param file: file attachment
+    :return: not used
     """
-    cherrypy.log.error("adding project data")
     content_type = "text/csv"
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_writer(project)
     pid = project["_id"]
-    # slycat.web.server.authentication.require_project_writer(project)
     timestamp = time.time()
     formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     did = uuid.uuid4().hex
     #TODO review how we pass files to this
     if isinstance(file, list):
         file = file[0]
-
+    #TODO review how we pass aids to this
     if isinstance(aid[1], list):
         aid[1] = aid[1][0]
     data = {
