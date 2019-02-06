@@ -110,11 +110,9 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
     calls the parse function specified by the registered parser
     :return: not used
     """
-
     kwargs = {}
     aids = []
     aids.append(aid)
-
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
                                                                   aids, **kwargs)
@@ -122,7 +120,6 @@ def parse_existing_file(database, parser, input, attachment, model, aid):
         cherrypy.log.error("[MICROSERVICE] Exception parsing posted files: %s" % e)
         import traceback
         cherrypy.log.error(traceback.format_exc())
-
     cherrypy.log.error("[MICROSERVICE] Upload parsing finished.")
 
 @cache_it

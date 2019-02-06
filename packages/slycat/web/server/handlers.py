@@ -387,7 +387,15 @@ def get_project_models(pid, **kwargs):
 
 @cherrypy.tools.json_out(on=True)
 def put_project_csv_data(pid, file_key, parser, mid, aids):
-    cherrypy.log.error("In put_project_csv_data")
+    """
+    returns a project based on "content-type" header
+    :param pid: project ID
+    :param file_key: file_name
+    :param parser: parser name
+    :param mid: model ID
+    :param aids: artifact IDs
+    :return: status 404 if no file found or with json {"Status": "Success"}
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -395,6 +403,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     attachment = []
     fid = None
 
+    # check for existing project_datas data types
     if not project_datas:
         cherrypy.log.error("[MICROSERVICE] The project_datas list is empty.")
         raise cherrypy.HTTPError("404 There is no project data stored for this project. %s" % file_key)
@@ -405,7 +414,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 http_response = database.get_attachment(item, "content")
                 file = http_response.read()
                 attachment.append(file)
-
+    # if we didnt fined the file repspond with not found
     if fid is None:
         raise cherrypy.HTTPError("404 There was no file with name %s found." % file_key)
     try:
@@ -414,13 +423,10 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         database.save(project_data)
     except Exception as e:
         cherrypy.log.error(e.message)
-
+    # clean up the attachment by removing white space
     attachment[0] = attachment[0].replace('\\n', '\n')
     attachment[0] = attachment[0].replace('["', '')
     attachment[0] = attachment[0].replace('"]', '')
-
-    cherrypy.log.error("Attachment ****")
-    cherrypy.log.error(str(attachment[0]))
 
     model = database.get("model", mid)
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
