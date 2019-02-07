@@ -207,12 +207,13 @@ function constructor(params)
 
   component.load_table = function() {
     $('.remote-browser-continue').toggleClass("disabled", true);
+    const file_name = component.browser.selection()[0].split("/")[component.browser.selection()[0].split("/").length - 1];
     var fileObject ={
      pid: component.project._id(),
      hostname: [component.remote.hostname()],
      mid: component.model._id(),
      paths: [component.browser.selection()],
-     aids: [["data-table"]],
+     aids: [["data-table"], file_name],
      parser: component.parser(),
      progress: component.remote.progress,
      progress_status: component.remote.progress_status,
