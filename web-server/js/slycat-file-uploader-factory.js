@@ -29,7 +29,6 @@ module.uploadFile = function (fileObject)
   if(fileObject.hostname && fileObject.paths){
     // console.log("creating remote file upload session");
     client.post_uploads({
-      fileName: fileObject.aids,
       mid: fileObject.mid,
       input: true,
       parser: fileObject.parser,
@@ -42,7 +41,6 @@ module.uploadFile = function (fileObject)
   }else {
     // console.log("creating file upload session");
     client.post_uploads({
-      fileName: fileObject.aids,
       mid: fileObject.mid,
       input: true,
       parser: fileObject.parser,
@@ -70,7 +68,7 @@ module.uploadFile = function (fileObject)
  * @param fileObject
  *  object that contains all info about the file we wish to upload to couch
  */
-function uploadRemoteFile(fileName, pid, mid, uid, hostname, path, fileObject){
+function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject){
   // Upload the whole file since it is over ssh.
   // console.log("Uploading part whole file");
   
@@ -85,7 +83,6 @@ function uploadRemoteFile(fileName, pid, mid, uid, hostname, path, fileObject){
   }
 
   client.put_upload_file_part({
-    fileName: fileName,
     uid: uid,
     fid: 0,
     pid: 0,
@@ -299,7 +296,6 @@ function uploadFile(pid, mid, uid, file, fileObject)
 function finishUpload(pid, mid, uid, file, numberOfUploadedSlices, fileObject)
 {
   client.post_upload_finished({
-    fileName: fileObject.aids,
     uid: uid,
     uploaded: [numberOfUploadedSlices],
     success: function()
