@@ -542,11 +542,18 @@ def create_project_data(mid, aid, file):
     formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     did = uuid.uuid4().hex
     #TODO review how we pass files to this
+    # our file got passed as a list by someone...
     if isinstance(file, list):
         file = file[0]
     #TODO review how we pass aids to this
-    if isinstance(aid[1], list):
-        aid[1] = aid[1][0]
+    # if true we are using the new file naming structure
+    if len(aid) > 1:
+        # looks like we got passed a list(list()) lets extract the name
+        if isinstance(aid[1], list):
+            aid[1] = aid[1][0]
+    # for backwards compatibility for not passing the file name
+    else:
+        aid[1] = "unnamed_file"
     data = {
         "_id": did,
         "type": "project_data",
@@ -563,7 +570,7 @@ def create_project_data(mid, aid, file):
     database.save(model)
     database.save(data)
     database.put_attachment(data, filename="content", content_type=content_type, content=file)
-    cherrypy.log.error("[MICROSERVICE] Added project data %s." % did)
+    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
