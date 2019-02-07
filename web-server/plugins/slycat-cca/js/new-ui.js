@@ -207,8 +207,6 @@ function constructor(params)
 
   component.load_table = function() {
     $('.remote-browser-continue').toggleClass("disabled", true);
-    console.log("component.browser.selectin: ");
-    console.log(component.browser.selection());
     var fileObject ={
      pid: component.project._id(),
      hostname: [component.remote.hostname()],
