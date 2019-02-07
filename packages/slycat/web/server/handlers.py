@@ -553,7 +553,8 @@ def create_project_data(mid, aid, file):
             aid[1] = aid[1][0]
     # for backwards compatibility for not passing the file name
     else:
-        aid[1] = "unnamed_file"
+        cherrypy.log.error(str(type(aid)))
+        aid.append("unnamed_file")
     data = {
         "_id": did,
         "type": "project_data",
