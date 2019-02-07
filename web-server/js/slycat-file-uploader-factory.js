@@ -68,11 +68,8 @@ module.uploadFile = function (fileObject)
  * @param fileObject
  *  object that contains all info about the file we wish to upload to couch
  */
-//aid, pid, mid, uid, hostname, path, fileObject
 function uploadRemoteFile(pid, mid, uid, hostname, path, fileObject){
-  // Upload the whole file since it is over ssh.
-  // console.log("Uploading part whole file");
-  
+
   if(fileObject.progress)
   {
     // Setting initial progress to 10%

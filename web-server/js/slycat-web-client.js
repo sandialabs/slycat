@@ -170,7 +170,6 @@ module.get_project_file_names = function(params) {
     {
         dataType: "json",
         type: "GET",
-        //url: server_root + "/projects/" + params.pid + "/project_data",
         url: api_root + "/projects/" + params.pid + "/name",
         success: function (result) {
             if (params.success)

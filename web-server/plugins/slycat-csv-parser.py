@@ -86,8 +86,6 @@ def parse_file(file, model, database):
         slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
-    cherrypy.log.error("column headers")
-    cherrypy.log.error(str(column_headers))
     for attribute in attributes:
         if attribute["name"] is "":
             default_name_index += 1
@@ -138,8 +136,6 @@ def parse(database, model, input, files, aids, **kwargs):
     :param kwargs:
     """
     start = time.time()
-    cherrypy.log.error("AID is: %s" % aids)
-    cherrypy.log.error(str(len(aids)))
     if len(files) != len(aids):
         slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
