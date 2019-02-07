@@ -550,33 +550,10 @@ module.get_model_table_metadata = function(params)
 {
   console.log("slycat-web-client.get_model_table_metadata() is deprecated, use get_model_arrayset_metadata() instead.");
 
-    var url = api_root + "models/" + params.mid + "/tables/" + params.aid + "/arrays/" + (params.array || "0") + "/metadata";  if(params.index)
-    url += "?index=" + params.index;
-
-//    //other section
-//    var new_url = api_root + "models/" + params.mid + "/arraysets/" + params.aid +  "/metadata?arrays=" + (params.array || "0") + "%3b1&" +"statistics=0";
-////    if(params.index)
-////      new_url += "?index=" + params.index;
-//    $.ajax(
-//    {
-//      dataType: "json",
-//      type: "GET",
-//      url: new_url,
-//      success: function(result)
-//      {
-//        if(params.success)
-//          console.log("\nNEW:  " + new_url + "\n" + JSON.stringify(result) +"\n");
-//          //params.success(result);
-//      },
-//      error: function(request, status, reason_phrase)
-//      {
-//        if(params.error)
-//          console.log("\nNEW:  " + url + "\n" + request + reason_phrase + status +"\n");
-//          //params.error(request, status, reason_phrase);
-//      },
-//    });
-//    //END other section
-
+  var url = api_root + "models/" + params.mid + "/tables/" + params.aid + "/arrays/" + (params.array || "0") + "/metadata";
+  if(params.index) {
+      url += "?index=" + params.index;
+  }
 
   $.ajax(
   {
