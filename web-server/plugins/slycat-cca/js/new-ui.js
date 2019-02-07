@@ -146,11 +146,12 @@ function constructor(params)
     $('.local-browser-continue').toggleClass("disabled", true);
     //TODO: add logic to the file uploader to look for multiple files list to add
     var file = component.browser.selection()[0];
+    let file_name = file.name;
     var fileObject ={
      pid: component.project._id(),
      mid: component.model._id(),
      file: file,
-     aids: [["data-table"], "Test"],
+     aids: [["data-table"], file_name],
      parser: component.parser(),
      progress: component.browser.progress,
      progress_status: component.browser.progress_status,
