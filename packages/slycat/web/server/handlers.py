@@ -785,12 +785,17 @@ def put_model(mid):
             model[key] = value
             save_model = True
 
-            if key == "bookmark":
-                model[key].append(value)
-                save_model = True
-            else:
-                model[key] = value
-                save_model = True
+            # Revisit this, how booksmark IDs get added to model
+
+            #if key == "bookmark":
+            #    model[key].append(value)
+            #    save_model = True
+            #else:
+            #    model[key] = value
+            #    save_model = True
+
+            model[key] = value
+            save_model = True
 
     if save_model:
         database.save(model)
