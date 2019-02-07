@@ -33,6 +33,25 @@
       </div>
     </div>
 
+    <div data-bind="visible:tab() == 0">
+        <div class="radio server" style="margin-left: 15px;">
+            <label>
+              <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server" data-bind="checked: ps_type">
+              Server
+            </label>
+          </div>
+            <select id="selectmenu1" name="" data-theme="c"
+                     data-bind="options: server_files, value: selected_file" style="margin-left: 15px;">
+            </select>
+          <div class="local-browser form-horizontal">
+            <slycat-server-browser params="
+              disabled: ko.computed(function(){return ps_type() == 'server' ? false : true;}),
+              progress:browser.progress,
+              progress_status:browser.progress_status"></slycat-server-browser>
+            <!--<slycat-parser-controls params="parser:parser, category:'table', disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;})"></slycat-parser-controls>-->
+        </div>
+    </div>
+
     <div data-bind="visible:tab() == 1" class="form-horizontal">
       <slycat-local-browser params="
         selection:browser.selection,

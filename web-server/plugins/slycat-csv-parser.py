@@ -7,7 +7,7 @@ import time
 import numpy
 import slycat.email
 import slycat.web.server
-
+import cherrypy
 
 def parse_file(file, model, database):
     """
@@ -16,7 +16,6 @@ def parse_file(file, model, database):
   :param file: csv file to be parsed
   :returns: attributes, dimensions, data
   """
-    import cherrypy
     def isfloat(value):
         try:
             float(value)
@@ -87,8 +86,6 @@ def parse_file(file, model, database):
         slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
-    cherrypy.log.error("column headers")
-    cherrypy.log.error(str(column_headers))
     for attribute in attributes:
         if attribute["name"] is "":
             default_name_index += 1
