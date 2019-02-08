@@ -82,7 +82,7 @@ function constructor(params)
       });
     };
 
-    component.get_server_file_names = function() {
+  component.get_server_file_names = function() {
       client.get_project_file_names({
           pid: component.project._id(),
           success: function(attachments) {
@@ -202,27 +202,13 @@ function constructor(params)
 
   component.upload_table = function() {
     $('.local-browser-continue').toggleClass("disabled", true);
-    //TODO: add logic to the file uploader to look for multiple files list to add
     var file = component.browser.selection()[0];
-    component.current_aids = file.name;
-
-    console.log(component.current_aids);
-
-    client.put_model(
-    {
-      mid: component.model._id(),
-      success: function()
-      {
-        console.log("Successfully added file name to the model.");
-      },
-      error: dialog.ajax_error("Error updating model."),
-    });
 
     var fileObject ={
      pid: component.project._id(),
      mid: component.model._id(),
      file: file,
-     aids: [["data-table"], component.current_aids],
+     aids: [["data-table"], file.name],
      parser: component.parser(),
      progress: component.browser.progress,
      progress_status: component.browser.progress_status,
