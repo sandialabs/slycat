@@ -195,7 +195,9 @@ class Agent(agent.Agent):
             "jid": command["command"]
         }
 
-        results["output"], results["errors"] = self.run_shell_command("qstat $PBS_JOBID")
+        results["output"], results["errors"] = self.run_shell_command("qstat %s" % results["jid"]["jid"])
+        # above: PBS_JOBID is not available, must have the JID
+#        results["output"], results["errors"] = self.run_shell_command("qstat $PBS_JOBID")
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -207,7 +209,8 @@ class Agent(agent.Agent):
         }
 
         results["output"], results["errors"] = self.run_shell_command(
-            "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
+            "qdel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
+#           "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -219,7 +222,8 @@ class Agent(agent.Agent):
         }
 
         path = command["command"]["path"]
-        f = path + "slurm-%s.out" % results["jid"]
+        f = path + "slycat.o%s" % results["jid"]
+#       f = path + "slurm-%s.out" % results["jid"]
         if os.path.isfile(f):
             results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
         else:
