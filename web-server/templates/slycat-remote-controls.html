@@ -3,7 +3,7 @@
   <div class="col-sm-10">
     <div class="input-group">
       <div class="input-group-prepend">
-        <button type="button" class="btn btn-secondary dropdown-toggle" data-bind="css:{disabled:!enable()}"  data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></button>
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-bind="css:{disabled:!enable()}"  data-toggle="dropdown" aria-expanded="false"></button>
         <ul class="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
           <li><a data-bind="click:$parent.use_remote($data),text:hostname"></a></li>
         </ul>

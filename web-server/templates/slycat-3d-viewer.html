@@ -4,7 +4,6 @@
     <button class="btn btn-primary btn-sm slycat-3d-btn-settings" data-bind="click: run_settings">Settings</button>
     <button class="btn btn-primary btn-sm slycat-3d-btn-rotate" data-bind="click: rotate, css: {active: rotating}">Rotate</button>
     <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <span class="caret"></span>
       <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu">
@@ -12,7 +11,7 @@
       <li data-bind="css: {active: rotate_x}, click: toggleX,"><a href="#">x</a></li>
       <li data-bind="css: {active: rotate_y}, click: toggleY,"><a href="#">y</a></li>
       <li data-bind="css: {active: rotate_z}, click: toggleZ,"><a href="#">z</a></li>
-      <li role="separator" class="divider"></li>
+      <li role="separator" class="dropdown-divider"></li>
       <li data-bind="css: {active: displayStats}, click: toggleStats,"><a href="#">Display performance statistics</a></li>
     </ul>
   </div>
