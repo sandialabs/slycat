@@ -240,7 +240,7 @@ function constructor(params)
             success: function(metadata) {
 
                 // number of rows in variables.meta file (global variable)
-                let num_vars = metadata.arrays[0].shape[0];
+                num_vars = metadata.arrays[0].shape[0];
 
                 // get header names
                 var headers = metadata.arrays[0].attributes;
@@ -625,7 +625,7 @@ function constructor(params)
 
     // very last function called to launch model
     component.go_to_model = function() {
-      location = api_root + 'models/' + component.model._id();
+      location = '/models/' + component.model._id();
     };
 
     component.finish_model = function () {
