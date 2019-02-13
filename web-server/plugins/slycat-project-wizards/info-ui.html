@@ -8,27 +8,27 @@
 </div>
 <div class="modal-body">
   <form data-bind="with: viewModel.project">
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Name</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <p id="slycat-edit-project-name" type="text" placeholder="Name" data-bind="text:name"></p>
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Description</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <p data-bind="text:description"></p>
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Members</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <div class="row">
           <div class="col-sm-12">
           <!-- ko foreach: acl.administrators -->
