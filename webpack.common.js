@@ -21,10 +21,11 @@ module.exports = {
     slycat_login:       './web-server/slycat-login-react/index.js',
   },
   output: {
-    // Use this to add the chunk hash into the filename. Great for caching, but can't
-    // find a way to make it work with dynamic model code imports yet.
-    // filename: '[name].[chunkhash].js',
-    filename: '[name].js',
+    // Use this to add the chunk hash into the filename. 
+    // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
+    filename: '[name].[chunkhash].js',
+    // If problems arise, remove chuckhash from the filename like so:
+    // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
     // Public URL of js bundle files. We want them available at the root URL.
     publicPath: '/',
