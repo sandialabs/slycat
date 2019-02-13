@@ -538,12 +538,6 @@ slycat-navbar nav .alert pre
   color: #777777;
   font-weight: normal;
 }
-.bootstrap-styles .navbar-default .navbar-nav > .open > a,
-.bootstrap-styles .navbar-default .navbar-nav > .open > a:hover,
-.bootstrap-styles .navbar-default .navbar-nav > .open > a:focus
-{
-  background-color: transparent;
-}
 textarea,
 input,
 {
