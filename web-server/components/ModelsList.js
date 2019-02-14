@@ -79,7 +79,7 @@ class Model extends React.Component {
         </div>
         {/* badge() function returns HTML, which React escapes, so we need to use
             dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml */}
-        <div className="pull-right" style={{display: 'inline-block'}} dangerouslySetInnerHTML={{__html: badge(this.props.marking)}}></div>
+        <div className="float-right" style={{display: 'inline-block'}} dangerouslySetInnerHTML={{__html: badge(this.props.marking)}}></div>
         {this.props.result == 'failed' &&
         <span className="badge badge-danger" title={this.props.message}>Failed</span>
         }
@@ -181,7 +181,7 @@ class Template extends React.Component {
             Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
           </em>
         </small>
-        <span className="pull-right">
+        <span className="float-right">
           {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
           <button type="button" className="btn btn-sm btn-danger" name={this.props.id} onClick={this.delete_template} title="Delete this template"><span className="fa fa-trash-o"></span></button>
         </span>
