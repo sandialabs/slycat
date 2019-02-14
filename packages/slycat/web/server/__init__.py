@@ -15,15 +15,27 @@ import slycat.hyperchunks
 import slycat.web.server.hdf5
 import slycat.web.server.remote
 from slycat.web.server.cache import Cache
-from cherrypy._cpcompat import base64_decode
 import urlparse
 import functools
 import threading
+import base64
+import six
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
 model_locks = {}
 
+def tonative(n, encoding='ISO-8859-1'):
+    """Return the given string as a native string in the given encoding."""
+    # In Python 2, the native string type is bytes.
+    if isinstance(n, six.text_type):  # unicode for Python 2
+        return n.encode(encoding)
+    return n
+
+def base64_decode(n, encoding='ISO-8859-1'):	
+    """Return the native string base64-decoded (as a native string)."""	
+    decoded = base64.decodestring(n.encode('ascii'))	
+    return tonative(decoded, encoding)
 
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""

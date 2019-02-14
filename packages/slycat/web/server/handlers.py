@@ -39,7 +39,6 @@ import threading
 import time
 import uuid
 import functools
-from cherrypy._cpcompat import base64_decode
 import datetime
 import urlparse
 
