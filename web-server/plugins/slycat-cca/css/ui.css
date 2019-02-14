@@ -57,6 +57,9 @@
   /*height: 250px;*/
   overflow: hidden;
 }
+#barplot-table * {
+  box-sizing: content-box;
+}
 .barplotHeader {
   /*overflow: hidden;*/
   white-space: nowrap;

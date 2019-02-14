@@ -3,10 +3,10 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
+          <h3 class="modal-title" data-bind="text:title"></h3>
           <button type="button" class="close" data-bind="click:cancel" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
-          <h3 class="modal-title" data-bind="text:title"></h3>
         </div>
         <div class="modal-body">
           <p data-bind="visible:message, text:message"></p>
@@ -17,7 +17,7 @@
           <!-- /ko -->
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" data-bind="click:login,enable:remote.enable">Login</button>
+          <button class="btn btn-primary" data-bind="click:login,enable:remote.enable">Login</button>
         </div>
       </div>
     </div>

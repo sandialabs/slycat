@@ -609,3 +609,6 @@
   max-height: 100%;
   max-width: 100%;
 }
+#auto-scale-option {
+  margin-right: 4px;
+}
