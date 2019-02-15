@@ -4,7 +4,7 @@
 
 import React, { Component } from 'react';
 import URI from 'urijs';
-import "css/namespaced-bootstrap.scss";
+import "css/slycat-bootstrap.scss";
 import './styles.css';
 import api_root from 'js/slycat-api-root';
 
