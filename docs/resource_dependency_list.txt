@@ -70,7 +70,7 @@ wcwidth                              0.1.7     https://pypi.python.org/pypi
 
 From npm in slycat/node_modules:
 @babel/runtime          7.3.1.  https://babeljs.io/docs/en/babel-runtime
-bootstrap               4.2.1   http://getbootstrap.com
+bootstrap               4.3.1   http://getbootstrap.com
 css-loader              1.0.1   https://github.com/webpack-contrib/css-loader
 d3                     3.5.12   http://d3js.org
 font-awesome            4.7.0   https://fontawesome.com/
@@ -88,8 +88,8 @@ object-assign           4.1.1   https://github.com/sindresorhus/object-assign
 papaparse               4.6.3   https://github.com/mholt/PapaParse
 popper.js              1.14.6   https://popper.js.org
 prop-types             15.6.2   https://facebook.github.io/react/
-react           16.8.0-alpha1   https://reactjs.org
-react-dom       16.8.0-alpha1   https://reactjs.org
+react                  16.8.2   https://reactjs.org
+react-dom              16.8.2   https://reactjs.org
 react-ga                2.5.6   https://github.com/react-ga/react-ga
 react-is               16.7.0   https://reactjs.org/
 react-redux             6.0.0   https://github.com/reduxjs/react-redux
