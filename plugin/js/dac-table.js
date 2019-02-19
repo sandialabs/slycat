@@ -170,8 +170,12 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 	// show selections, if any
 	module.select_rows()
 
-	// jump to current selection (default selection 1)
-	module.jump_to(selections.sel_1());
+	// jump to current selection (focus then selection 1)
+	if (selections.focus() != null) {
+	    module.jump_to([selections.focus()]);
+	} else {
+	    module.jump_to(selections.sel_1());
+	};
 
 }
 
@@ -227,8 +231,7 @@ function convert_to_csv (user_selection)
 	// if nothing selected, then output entire table
 	var rows_to_output = [];
 	if (user_selection.length == 0) {
-		console.log(`inside func ${rows_to_output}`)
-		console.log(num_rows)
+
 		// get indices of every row in the table
 		for (var i = 0; i < num_rows; i++) {
 			rows_to_output.push(i);
@@ -333,7 +336,7 @@ function openCSVSaveChoiceDialog(sel)
 function one_row_selected(e, args) {
 
 	// pass along shift/meta key information
-	selections.key_flip(e.shiftKey, e.metaKey);
+	selections.key_flip(e.shiftKey, e.ctrlKey);
 
 	// convert row clicked to data table row
 	var data_clicked = convert_row_ids([args.row])[0];

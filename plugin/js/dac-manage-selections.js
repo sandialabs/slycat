@@ -36,6 +36,11 @@ module.sel_type = function ()
 module.set_sel_type = function(new_sel_type)
 {
 	curr_sel_type = new_sel_type;
+
+    // selection type has been changed
+    var selTypeEvent = new CustomEvent("DACSelTypeChanged",
+                                         {detail: curr_sel_type});
+    document.body.dispatchEvent(selTypeEvent);
 }
 
 // get actual selection (#1)
@@ -259,7 +264,6 @@ module.update_sel_focus = function(i)
 		var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
 											 active_sel: [i]} });
 		document.body.dispatchEvent(selectionEvent);
-
 
 	} else {
 

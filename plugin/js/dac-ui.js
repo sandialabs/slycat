@@ -322,7 +322,10 @@ $(document).ready(function() {
                 document.body.addEventListener("DACSubsetChanged", subset_changed);
 
                 // set up coloring change (mainly to keep bookmarking in this module)
-                document.body.addEventListener("DACColorByChanged", color_by_changed)
+                document.body.addEventListener("DACColorByChanged", color_by_changed);
+
+                // set up coloring change (mainly to keep bookmarking in this module)
+                document.body.addEventListener("DACSelTypeChanged", sel_type_changed);
 
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
@@ -363,10 +366,17 @@ $(document).ready(function() {
                                     init_focus = bookmark["dac-sel-focus"];
                                 }
 
+                                // get state of selection button, default to 1 (red)
+                            	var init_sel_type = 1;
+                                if ("dac-sel-type" in bookmark) {
+                                    init_sel_type = bookmark["dac-sel-type"];
+                                }
+
                                 // initialize selections/focus
                                 selections.set_sel_1(init_sel_1);
                                 selections.set_sel_2(init_sel_2);
                                 selections.set_focus(init_focus);
+                                selections.set_sel_type(init_sel_type);
 
                                 // initialize color by selection using bookmark, if any
                                 var init_color_by_sel = -1;
@@ -629,4 +639,12 @@ $(document).ready(function() {
         // bookmark selected color
         bookmarker.updateState({"dac-color-by": new_color_sel.detail});
     }
+
+    // event for changing selection type
+    function sel_type_changed (new_sel_type)
+    {
+        // bookmark selection type
+        bookmarker.updateState({"dac-sel-type": new_sel_type.detail});
+    }
+
 });

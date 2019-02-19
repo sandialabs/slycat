@@ -127,12 +127,16 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// include columns (variables and metadata)
 	var_include_columns = VAR_INCLUDE_COLUMNS;
 
+    // set selection type button
+    var dac_sel_button_ids = ["#dac-scatter-button-zoom",
+                              "#dac-scatter-button-sel-1",
+                              "#dac-scatter-button-sel-2",
+                              "#dac-scatter-button-subset"];
+    $(dac_sel_button_ids[selections.sel_type()]).addClass("active");
+
 	// set up selection button colors
 	$("#dac-scatter-button-sel-1").css("color", sel_1_color);
 	$("#dac-scatter-button-sel-2").css("color", sel_2_color);
-
-	// set default selection type
-	selections.set_sel_type(1);
 
 	// bind selection/zoom buttons to callback operations
 	$("#dac-scatter-button-sel-1").on("click",
@@ -254,7 +258,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 
 // toggle shift key flag
 function key_flip() {
-	selections.key_flip(d3.event.shiftKey, d3.event.metaKey);
+	selections.key_flip(d3.event.shiftKey, d3.event.ctrlKey);
 }
 
 // draw the MDS scatter plot
