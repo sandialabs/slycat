@@ -416,6 +416,7 @@ function constructor(params)
 
   component.back = function() {
     var target = component.tab();
+
     // Skip Upload Table tab if we're on the Choose Host tab.
     if(component.tab() == 2)
     {
@@ -424,6 +425,12 @@ function constructor(params)
     // Skip remote ui tabs if we are local
     if(component.ps_type() == 'local' && component.tab() == 4)
     {
+      target--;
+      target--;
+    }
+    if(component.ps_type() == 'server' && component.tab() == 4)
+    {
+      target--;
       target--;
       target--;
     }
