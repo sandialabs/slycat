@@ -327,6 +327,9 @@ $(document).ready(function() {
                 // set up coloring change (mainly to keep bookmarking in this module)
                 document.body.addEventListener("DACSelTypeChanged", sel_type_changed);
 
+                // set up zoom change (mainly to keep bookmarking in this module)
+                document.body.addEventListener("DACZoomChanged", zoom_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -384,6 +387,12 @@ $(document).ready(function() {
                                     init_color_by_sel = bookmark["dac-color-by"];
                                 }
 
+                                // initialize zoom extent, if bookmarked
+                                var init_zoom_extent = null;
+                                if ("dac-zoom-extent" in bookmark) {
+                                    init_zoom_extent = bookmark["dac-zoom-extent"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -403,7 +412,7 @@ $(document).ready(function() {
 					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
-					                init_alpha_values, init_color_by_sel);
+					                init_alpha_values, init_color_by_sel, init_zoom_extent);
 
                                 // set up table with editable columns
                                 setup_editable_columns (data_table_meta, data_table, meta_include_columns);
@@ -645,6 +654,13 @@ $(document).ready(function() {
     {
         // bookmark selection type
         bookmarker.updateState({"dac-sel-type": new_sel_type.detail});
+    }
+
+    // event for zoom changes
+    function zoom_changed (new_extent)
+    {
+        // bookmark new zoom extent
+        bookmarker.updateState({"dac-zoom-extent": new_extent.detail});
     }
 
 });

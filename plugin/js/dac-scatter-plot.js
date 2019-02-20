@@ -92,7 +92,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
 	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
-	init_alpha_values, init_color_by_sel)
+	init_alpha_values, init_color_by_sel, init_zoom_extent)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -231,6 +231,13 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .domain([0 - scatter_border, 1 + scatter_border]);
                         y_scale = d3.scale.linear()
                             .domain([0 - scatter_border, 1 + scatter_border]);
+
+                        // check for previous zooming
+                        if (init_zoom_extent != null) {
+                            x_scale.domain([init_zoom_extent[0][0], init_zoom_extent[1][0]]);
+                            y_scale.domain([init_zoom_extent[0][1], init_zoom_extent[1][1]]);
+                        }
+
 
                         // default color scale
                         color_scale = d3.scale.linear()
@@ -970,30 +977,30 @@ function zoom()
 	// reset scale (assumed nothing zoomed)
 	module.reset_zoom();
 
-	for (var i = 0; i < mds_coords.length; i++)
-		{
+    // was it an empty zoom?
+    if (extent[0][0] != extent[1][0] &&
+        extent[0][1] != extent[1][1])
+    {
+        // user did zoom in on something, so reset window
+        x_scale.domain([extent[0][0], extent[1][0]]);
+        y_scale.domain([extent[0][1], extent[1][1]]);
 
-			// was it an empty zoom?
-			if (extent[0][0] != extent[1][0] &&
-				extent[0][1] != extent[1][1])
-			{
-				// user did zoom in on something, so reset window
-				x_scale.domain([extent[0][0], extent[1][0]]);
-				y_scale.domain([extent[0][1], extent[1][1]]);
-			};
+        // fire zoom changed event
+        var zoomEvent = new CustomEvent("DACZoomChanged",
+                                          {detail: extent});
+        document.body.dispatchEvent(zoomEvent);
+    };
 
-		};
+    // remove gray selection box
+    d3.event.target.clear();
+    d3.select(this).call(d3.event.target);
 
-		// remove gray selection box
-		d3.event.target.clear();
-		d3.select(this).call(d3.event.target);
-
-		// re-draw display (animate if small number of points)
-		if (mds_coords.length > max_points_animate) {
-			module.draw();
-		} else {
-			animate();
-		};
+    // re-draw display (animate if small number of points)
+    if (mds_coords.length > max_points_animate) {
+        module.draw();
+    } else {
+        animate();
+    };
 
 };
 
