@@ -14,7 +14,8 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("output_dir", help="Directory where results will be stored.")
-parser.add_argument("--all", action="store_true", help="Dump all projects.")
+parser.add_argument("--all-projects", action="store_true", help="Dump all projects.")
+parser.add_argument("--all-references-bookmarks", action="store_true", help="Dump all projects.")
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
@@ -38,23 +39,23 @@ couchdb = couchdb.Server()[arguments.couchdb_database]
 
 os.makedirs(arguments.output_dir)
 
-if arguments.all:
+if arguments.all_projects:
     arguments.project_id = set(arguments.project_id + [row["id"] for row in couchdb.view("slycat/projects")])
 
-bookmark_ids = list(row["id"] for row in couchdb.view("slycat/project-bookmarks"))
-reference_ids = list(row["id"] for row in couchdb.view("slycat/references"))
+if arguments.all_references_bookmarks:
+    bookmark_ids = list(row["id"] for row in couchdb.view("slycat/project-bookmarks"))
+    reference_ids = list(row["id"] for row in couchdb.view("slycat/references"))
+    logging.info("Dumping bookmarks")
+    for bookmark_id in bookmark_ids:
+        bookmark = couchdb.get(bookmark_id, attachments=True)
+        json.dump(bookmark, open(os.path.join(arguments.output_dir, "bookmark-%s.json" % bookmark["_id"]), "w"))
+    logging.info("Done with bookmarks")
 
-logging.info("Dumping bookmarks")
-for bookmark_id in bookmark_ids:
-    bookmark = couchdb.get(bookmark_id, attachments=True)
-    json.dump(bookmark, open(os.path.join(arguments.output_dir, "bookmark-%s.json" % bookmark["_id"]), "w"))
-logging.info("Done with bookmarks")
-
-logging.info("Dumping references")
-for reference_id in reference_ids:
-    reference = couchdb.get(reference_id, attachments=True)
-    json.dump(reference, open(os.path.join(arguments.output_dir, "reference-%s.json" % reference["_id"]), "w"))
-logging.info("Done with references")
+    logging.info("Dumping references")
+    for reference_id in reference_ids:
+        reference = couchdb.get(reference_id, attachments=True)
+        json.dump(reference, open(os.path.join(arguments.output_dir, "reference-%s.json" % reference["_id"]), "w"))
+    logging.info("Done with references")
 
 for project_id in arguments.project_id:
     logging.info("Dumping project %s", project_id)
