@@ -1,3 +1,4 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
@@ -30,8 +31,6 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout";
-
-import "js/slycat-navbar";
 import "js/slycat-job-checker";
 
 // Wait for document ready

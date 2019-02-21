@@ -1,3 +1,4 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
@@ -11,13 +12,13 @@ import client from 'js/slycat-web-client';
 import ko from 'knockout';
 import URI from "urijs";
 import mapping from 'knockout-mapping';
-import "js/slycat-navbar";
+import {renderNavBar} from "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import {loadTemplate, loadModule} from 'js/slycat-plugins';
 
 // Wait for document ready
 $(document).ready(function() {
-
+  renderNavBar();
   var page = {}
   page.server_root = server_root;
   page.projects = mapping.fromJS([]);
