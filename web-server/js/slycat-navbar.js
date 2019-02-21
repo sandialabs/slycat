@@ -39,7 +39,6 @@ export function renderNavBar() {
         window.location.href = "/projects";
     })
     ;
-    // if (!ko.components.isRegistered("slycat-navbar")) {
   ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
@@ -103,7 +102,7 @@ export function renderNavBar() {
             });
           },
           error: function(request, status, reason_phrase) {
-            alert("navbar Unable to retrieve project.");
+            alert("Unable to retrieve project.");
             window.location.href = "/projects";
           }
         });

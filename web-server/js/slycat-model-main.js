@@ -46,7 +46,8 @@ $(document).ready(function() {
     },
     error: function(request, status, reason_phrase)
     {
-      console.log("Error retrieving model.");
+      alert("Unable to retrieve model.");
+      window.location.href = "/projects";
     }
   });
 });
