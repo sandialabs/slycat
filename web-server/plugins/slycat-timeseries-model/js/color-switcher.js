@@ -1,6 +1,6 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import d3 from "js/d3.min";
+import d3 from "d3";
 import "jquery-ui";
 
 $.widget("slycat.colorswitcher",
@@ -132,13 +132,12 @@ $.widget("slycat.colorswitcher",
       },
     };
 
-    this.button = $('<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="true" title="Line Color Theme"> \
+    this.button = $('<button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="colors-dropdown" data-toggle="dropdown" aria-expanded="false" title="Line Color Theme"> \
           Colors \
-          <span class="caret"></span> \
         </button>')
       .appendTo(this.element)
       ;
-    this.list = $('<ul class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
+    this.list = $('<div class="dropdown-menu" role="menu" aria-labelledby="colors-dropdown">')
       .appendTo(this.element)
       ;
     $.each(this.color_maps, function(key, value)
@@ -150,34 +149,31 @@ $.widget("slycat.colorswitcher",
         color_stops.push( gradient_data[i].color + " " + gradient_data[i].offset + "%" );
       }
       var background_color = self.get_background(key);
-      var item = $('<li role="presentation">')
+      var item = $('<a href="#" class="dropdown-item">')
         .addClass("color")
         .toggleClass("active", key == self.options.colormap)
         .attr("data-colormap", key)
+        .html(value.label)
+        .click(function()
+        {
+          var menu_item = $(this);
+          if(menu_item.hasClass("active"))
+            return false;
+
+          self.options.colormap = menu_item.attr("data-colormap");
+          self.list.find(".color").removeClass("active");
+          menu_item.addClass("active");
+
+          self.element.trigger("colormap-changed", [self.options.colormap]);
+        })
+        .css({
+          "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
+          "background-size" : "5px 75%, 50px 100%",
+          "background-position" : "right 10px center, right 5px center",
+          "background-repeat" : "no-repeat, no-repeat",
+          "padding-right" : "70px",
+        })
         .appendTo(self.list)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(value.label)
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
-
-              self.options.colormap = menu_item.attr("data-colormap");
-              self.list.find(".color").removeClass("active");
-              menu_item.addClass("active");
-
-              self.element.trigger("colormap-changed", [self.options.colormap]);
-            })
-            .css({
-              "background-image" : "linear-gradient(to bottom, " + color_stops.join(", ") + "), linear-gradient(to bottom, " + background_color + ", " + background_color + ")",
-              "background-size" : "5px 75%, 50px 100%",
-              "background-position" : "right 10px center, right 5px center",
-              "background-repeat" : "no-repeat, no-repeat",
-              "padding-right" : "70px",
-            })
-        )
         ;
     });
 

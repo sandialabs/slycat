@@ -2,33 +2,33 @@
 
 <div class="parameter-image-plus-model-wizard">
 <div class="modal-header">
+  <h3 class="modal-title">New Parameter Image Model</h3>
   <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">New Parameter Image Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Locate Table</a></li>
-    <li data-bind="css:{active:tab() == 1}, visible: ps_type() == 'remote'" class="ps-tab-remote-data"><a>Select Table</a></li>
-    <li data-bind="css:{active:tab() == 2}"><a>Select Columns</a></li>
-    <li data-bind="css:{active:tab() == 3}" class="ps-tab-locate-matrix"><a>Locate Distances</a></li>
-    <li data-bind="css:{active:tab() == 4}, visible: matrix_type() == 'compute'" class="ps-tab-locate-matrix"><a>Select Distance Metric</a></li>
-    <li data-bind="css:{active:tab() == 5}, visible: matrix_type() == 'compute'" class="ps-tab-compute-matrix"><a>Compute Distances</a></li>
-    <li data-bind="css:{active:tab() == 6}, visible: matrix_type() == 'remote'" class="ps-tab-remote-matrix"><a>Select Distances</a></li>
-    <li data-bind="css:{active:tab() == 7}"><a>Name Model</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Locate Table</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: ps_type() == 'remote'" class="ps-tab-remote-data"><a class="nav-link">Select Table</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 2}"><a class="nav-link">Select Columns</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 3}" class="ps-tab-locate-matrix"><a class="nav-link">Locate Distances</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: matrix_type() == 'compute'" class="ps-tab-locate-matrix"><a class="nav-link">Select Distance Metric</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: matrix_type() == 'compute'" class="ps-tab-compute-matrix"><a class="nav-link">Compute Distances</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 6}, visible: matrix_type() == 'remote'" class="ps-tab-remote-matrix"><a class="nav-link">Select Distances</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 7}"><a class="nav-link">Name Model</a></li>
   </ul>
 
   <div class="tab-content">
 
     <div data-bind="visible:tab() == 0">
-      <div class="radio local" style="margin-left: 15px;">
-        <label>
+      <div class="form-check local" style="margin-left: 15px;">
+        <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: ps_type">
           Local
         </label>
       </div>
-      <div class="local-browser form-horizontal">
+      <div class="local-browser">
         <slycat-local-browser params="
           selection:browser.selection, 
           disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;}),
@@ -36,14 +36,14 @@
           progress_status:browser.progress_status"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser, category:'table', disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;})"></slycat-parser-controls>
       </div>
-      <div class="radio remote" style="margin-left: 15px;">
-        <label>
+      <div class="form-check remote" style="margin-left: 15px;">
+        <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: ps_type">
           Remote
         </label>
       </div>
       <div class="remote-controls">
-        <form class="form-horizontal" role="form">
+        <form role="form">
           <slycat-remote-controls params="hostname:remote.hostname,username:remote.username,password:remote.password,status:remote.status,status_type:remote.status_type,enable:remote.enable,focus:remote.focus,activate:connect,session_exists:remote.session_exists"></slycat-remote-controls>
         </form>
       </div>
@@ -73,9 +73,9 @@
           {name: 'Editable', type: 'bool'}
         ]
       "></slycat-table-ingestion>
-      <div class=" form-horizontal" data-bind="visible: image_attributes().length > 0">
-        <div class="cluster-column form-group">
-          <label class="col-sm-4 control-label">Default Cluster Column</label>
+      <div data-bind="visible: image_attributes().length > 0">
+        <div class="cluster-column form-group row">
+          <label class="col-sm-4 col-form-label">Default Cluster Column</label>
           <div class="col-sm-8">
             <select class="form-control"
               data-bind="options: image_attributes,
@@ -88,42 +88,42 @@
     </div>
 
     <div data-bind="visible:tab() == 3">
-      <div class="radio compute" style="margin-left: 15px;">
-        <label>
+      <div class="form-check compute" style="margin-left: 15px;">
+        <label class="font-weight-bold">
           <input type="radio" name="matrix-local-or-remote-radios" id="compute-radio" value="compute" data-bind="checked: matrix_type">
           Compute the distance matrix from the input file
         </label>
       </div>
-      <div class="radio local" style="margin-left: 15px;">
-        <label>
+      <div class="form-check local" style="margin-left: 15px;">
+        <label class="font-weight-bold">
           <input type="radio" name="matrix-local-or-remote-radios" id="local-radio" value="local" data-bind="checked: matrix_type">
           Local
         </label>
       </div>
-      <div class="local-browser form-horizontal">
+      <div class="local-browser">
         <slycat-local-browser params="
           selection:browser_matrix.selection, 
           disabled: ko.computed(function(){return matrix_type() == 'local' ? false : true;}),
           progress:browser_matrix.progress,
           progress_status:browser_matrix.progress_status"></slycat-local-browser>
       </div>
-      <div class="radio remote" style="margin-left: 15px;">
-        <label>
+      <div class="form-check remote" style="margin-left: 15px;">
+        <label class="font-weight-bold">
           <input type="radio" name="matrix-local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: matrix_type">
           Remote
         </label>
       </div>
       <div class="remote-controls">
-        <form class="form-horizontal" role="form">
+        <form role="form">
           <slycat-remote-controls params="hostname:remote_matrix.hostname,username:remote_matrix.username,password:remote_matrix.password,status:remote_matrix.status,status_type:remote_matrix.status_type,enable:remote_matrix.enable,focus:remote_matrix.focus,activate:connect_matrix,session_exists:remote_matrix.session_exists"></slycat-remote-controls>
         </form>
       </div>
     </div>
 
     <div data-bind="visible:tab() == 4">
-      <div class="form-horizontal">
-        <div class="distance-measure form-group">
-          <label class="col-sm-4 control-label">Select Distance Metric</label>
+      <div>
+        <div class="distance-measure form-group row">
+          <label class="col-sm-4 col-form-label">Select Distance Metric</label>
           <div class="col-sm-6">
             <select id="distance-measure" class="form-control" data-bind="options: distance_measures, optionsText: 'name', optionsValue: 'value', value: distance_measure"></select>
           </div>
@@ -133,7 +133,7 @@
 
     <div data-bind="visible:tab() == 5">
       <div class="compute-interface">
-        <form class="compute form-horizontal" role="form">
+        <form class="compute" role="form">
           <slycat-remote-interface params="agent_function: distance_measure, agent_function_params: { 'image_columns_names': image_columns_names(), 'input': browser.selection()[0] }, model_type: 'parameter-image-plus', mid: model._id(), suggestions: [{'ntasks_per_node': 1, 'nnodes': 4, 'time_hours': 1, 'time_minutes': 0}], sid: remote.sid, hostname: remote.hostname, username: remote.username, password: remote.password, session_exists: remote.session_exists, on_submit_callback: to_last_step"></slycat-remote-interface>
         </form>
       </div>
@@ -154,30 +154,30 @@
     </div>
 
     <div data-bind="visible:tab() == 7">
-      <form class="form-horizontal" role="form" onsubmit="return false">
+      <form role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         <div class="form-group">
-          <label class="col-sm-2 control-label">Cluster Linkage</label>
-          <div class="col-sm-10 cluster-linkage-radios">
-            <div class="radio">
+          <label class="col-form-label">Cluster Linkage</label>
+          <div class="cluster-linkage-radios">
+            <div class="form-check">
               <label>
                 <input type="radio" name="cluster-linkage-radio" id="average-radio" value="average" data-bind="checked: cluster_linkage">
                 Average
               </label>
             </div>
-            <div class="radio">
+            <div class="form-check">
               <label>
                 <input type="radio" name="cluster-linkage-radio" id="single-radio" value="single" data-bind="checked: cluster_linkage">
                 Single
               </label>
             </div>
-            <div class="radio">
+            <div class="form-check">
               <label>
                 <input type="radio" name="cluster-linkage-radio" id="complete-radio" value="complete" data-bind="checked: cluster_linkage">
                 Complete
               </label>
             </div>
-            <div class="radio">
+            <div class="form-check">
               <label>
                 <input type="radio" name="cluster-linkage-radio" id="weighed-radio" value="weighed" data-bind="checked: cluster_linkage">
                 Weighed
@@ -191,7 +191,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
   <button class="btn btn-primary local-browser-continue-data browser-continue" data-bind="visible:tab() == 0,click:select_type"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary remote-browser-continue-data browser-continue" data-bind="visible:tab() == 1,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 2,click:select_columns">Continue</button>

@@ -1,10 +1,10 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
 <div class="modal-header">
+  <h3 class="modal-title">Remapped Wizard</h3>
   <button type="button" class="close" data-bind="click: tab() != 2 ? cancel : false" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">Remapped Wizard</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
@@ -15,7 +15,7 @@
 
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
-      <form class="form-horizontal" role="form" onsubmit="return false">
+      <form role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
@@ -28,7 +28,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" data-bind="visible:tab() == 0,click:create_model">Continue</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 1,click:finish">Finish</button>
-  <button class="btn btn-default" data-bind="visible:tab() == 2,click:go_to_model">Go To Model</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 0,click:create_model">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 1,click:finish">Finish</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 2,click:go_to_model">Go To Model</button>
 </div>

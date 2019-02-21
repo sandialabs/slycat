@@ -4,7 +4,7 @@
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 import api_root from "js/slycat-api-root";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";

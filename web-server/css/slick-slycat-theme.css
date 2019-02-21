@@ -8,7 +8,22 @@
 	right: 0;
 	bottom: 0;
 }
-
+/* Bootstrap applies 
+   box-sizing: border-box 
+   to everything, but this breaks slickgrid, so undoing it here
+*/
+#table *,
+#table *::before,
+#table *::after,
+#mp-datapoints-table *,
+#mp-datapoints-table *::before,
+#mp-datapoints-table *::after,
+#dac-datapoints-table *,
+#dac-datapoints-table *::before,
+#dac-datapoints-table *::after
+{
+  box-sizing: content-box;
+}
 .ui-widget {
 	font-family: helvetica,arial,sans-serif;
 }

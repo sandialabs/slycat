@@ -69,29 +69,41 @@ wcwidth                              0.1.7     https://pypi.python.org/pypi
 -Javascript-
 
 From npm in slycat/node_modules:
-bootstrap               3.3.1   http://getbootstrap.com
+@babel/runtime          7.3.1.  https://babeljs.io/docs/en/babel-runtime
+bootstrap               4.3.1   http://getbootstrap.com
+css-loader              1.0.1   https://github.com/webpack-contrib/css-loader
+d3                     3.5.12   http://d3js.org
 font-awesome            4.7.0   https://fontawesome.com/
+hoist-non-react-statics 3.2.1   https://github.com/mridgway/hoist-non-react-statics
+invariant               2.2.4   https://github.com/zertosh/invariant
 jquery                  3.3.1   https://jquery.org/
-jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
 jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
+jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
 jquery-ui              1.12.1   https://jqueryui.com
-layout                  1.4.3   https://github.com/alexsielicki/layout.git
 knockout                3.2.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
+layout                  1.4.3   https://github.com/alexsielicki/layout.git
 lodash                4.17.11   https://lodash.com/
-papaparse               4.3.2   https://github.com/mholt/PapaParse
-react                  16.4.0   https://reactjs.org
-react-dom              16.4.0   https://reactjs.org
-react-ga                2.5.3   https://github.com/react-ga/react-ga
-react-redux             5.0.7   https://github.com/reduxjs/react-redux
-redux                   4.0.0   https://redux.js.org
+object-assign           4.1.1   https://github.com/sindresorhus/object-assign
+papaparse               4.6.3   https://github.com/mholt/PapaParse
+popper.js              1.14.6   https://popper.js.org
+prop-types             15.6.2   https://facebook.github.io/react/
+react                  16.8.2   https://reactjs.org
+react-dom              16.8.2   https://reactjs.org
+react-ga                2.5.6   https://github.com/react-ga/react-ga
+react-is               16.7.0   https://reactjs.org/
+react-redux             6.0.0   https://github.com/reduxjs/react-redux
+redux                   4.0.1   https://redux.js.org
+regenerator-runtime    0.12.1   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
+scheduler      0.13.0-alpha.1   https://reactjs.org
+style-loader           0.23.1   https://github.com/webpack-contrib/style-loader#readme
+symbol-observable       1.2.0 
 three                  0.92.0   https://yarnpkg.com/en/package/three
 three-stl-loader        1.0.6   https://yarnpkg.com/en/package/three-stl-loader
 three-trackballcontrols 0.0.7   https://yarnpkg.com/en/package/three-trackballcontrols
 urijs                  1.19.1   https://medialize.github.io/URI.js/
 
 Directly included in Slycat in slycat/web_server/js:
-d3                      3.4.6   https://d3js.org
 jquery.event.drag         2.2   http://threedubmedia.com/code/event/drag
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
 knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections

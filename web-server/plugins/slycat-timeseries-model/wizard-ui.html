@@ -1,39 +1,39 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
 <div class="modal-header slycat-timeseries-wizard">
+  <h3 class="modal-title">New Timeseries Model</h3>
   <button type="button" class="close" data-bind="click: cancel, visible: tab() != 6" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">New Timeseries Model</h3>
 </div>
 <div class="modal-body">
   <ul class="nav nav-pills">
-    <li data-bind="css:{active:tab() == 0}"><a>Find Data</a></li>
-    <li data-bind="css:{active:tab() == 2}, visible: timeseries_type() != 'hdf5'" class="ps-tab-remote-data"><a>Select Table File</a></li>
-    <li data-bind="css:{active:tab() == 4}"><a>Timeseries Parameters</a></li>
-    <li data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a>Select Timeseries File</a></li>
-    <li data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a>Select HDF5 Directory</a></li>
-    <li data-bind="css:{active:tab() == 5}"><a>HPC Parameters</a></li>
-    <li data-bind="css:{active:tab() == 6}"><a>Name Model</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Find Data</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: timeseries_type() != 'hdf5'" class="ps-tab-remote-data"><a class="nav-link">Select Table File</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 4}"><a class="nav-link">Timeseries Parameters</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 7}, visible: timeseries_type() == 'xyce'" class="ps-tab-remote-data"><a class="nav-link">Select Timeseries File</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: timeseries_type() == 'hdf5'" class="ps-tab-remote-data"><a class="nav-link">Select HDF5 Directory</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 5}"><a class="nav-link">HPC Parameters</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 6}"><a class="nav-link">Name Model</a></li>
   </ul>
 
   <div class="tab-content">
     <div data-bind="visible:tab() == 0">
       <div class="form-group">
         <label for="timeseries-type-radios">What type of data will you be using?</label>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check">
           <label>
             <input type="radio" name="timeseries-type-radios" id="xyce-radio" value="xyce" checked="checked" data-bind="checked: timeseries_type">
             Xyce
           </label>
         </div>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check">
           <label>
             <input type="radio" name="timeseries-type-radios" id="csv-radio" value="csv" data-bind="checked: timeseries_type">
             CSV
           </label>
         </div>
-        <div class="radio" style="margin-left: 15px;">
+        <div class="form-check">
           <label>
             <input type="radio" name="timeseries-type-radios" id="hdf5-radio" value="hdf5" data-bind="checked: timeseries_type">
             HDF5
@@ -43,7 +43,7 @@
 
       <div class="form-group" style="margin-top: 40px;">
         <label class="bottom-margin">Where is your data located?</label>
-        <form class="form-horizontal" role="form">
+        <form role="form">
           <slycat-remote-controls params="
             hostname:remote.hostname,
             username:remote.username,
@@ -78,39 +78,39 @@
         progress_status:remote.progress_status"></slycat-remote-browser>
     </div>
 
-    <div data-bind="visible:tab() == 4" class="form-horizontal">
+    <div data-bind="visible:tab() == 4">
       <!--<div id="form-id-column-name" class="form-group">-->
-        <!--<label class="col-sm-4 control-label">ID Column Name</label>-->
+        <!--<label class="col-sm-4 col-form-label">ID Column Name</label>-->
         <!--<div class="col-sm-8">-->
           <!--<input class="form-control" type="text" data-bind="value: id_column">-->
         <!--</div>-->
       <!--</div>-->
       <!-- ko if: timeseries_type() == 'csv' -->
-        <div id="form-inputs-file-delimiter" class="form-group">
-          <label class="col-sm-4 control-label">Table File Delimiter</label>
+        <div id="form-inputs-file-delimiter" class="form-group row">
+          <label class="col-sm-4 col-form-label">Table File Delimiter</label>
           <div class="col-sm-8">
             <input class="form-control" type="text" data-bind="value: inputs_file_delimiter">
           </div>
         </div>
       <!-- /ko -->
       <!-- ko if: timeseries_type() == 'csv' -->
-        <div id="form-timeseries-name" class="form-group"
+        <div id="form-timeseries-name" class="form-group row"
           title="Label of column in the table file containing full paths to timeseries files.">
-          <label class="col-sm-4 control-label">Timeseries Column Name</label>
+          <label class="col-sm-4 col-form-label">Timeseries Column Name</label>
           <div class="col-sm-8">
             <select class="form-control" type="text" data-bind="options: timeseries_names, value: timeseries_name"></select>
           </div>
         </div>
       <!-- /ko -->
-    	<div id="form-cluster-sample-count" class="form-group" 
+    	<div id="form-cluster-sample-count" class="form-group row" 
       title="Each timeseries will be uniformly divided into this number of bins and all points in a bin will be averaged to produce the display value and the value used in the distance calculations.">
-        <label class="col-sm-4 control-label">Timeseries Bin Count</label>
+        <label class="col-sm-4 col-form-label">Timeseries Bin Count</label>
         <div class="col-sm-8">
           <input class="form-control" type="number" min="2" data-bind="value: cluster_sample_count">
         </div>
       </div>
-    	<div class="form-group">
-        <label class="col-sm-4 control-label">Resampling Algorithm</label>
+    	<div class="form-group row">
+        <label class="col-sm-4 col-form-label">Resampling Algorithm</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-sample-type" class="form-control" 
             data-bind="
@@ -119,8 +119,8 @@
               optionsValue: 'value'"></select>
         </div>
       </div>
-    	<div class="form-group">
-        <label class="col-sm-4 control-label">Cluster Linkage Measure</label>
+    	<div class="form-group row">
+        <label class="col-sm-4 col-form-label">Cluster Linkage Measure</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-type" class="form-control" 
             data-bind="
@@ -129,8 +129,8 @@
               optionsValue: 'value'"></select>
         </div>
       </div>
-    	<div class="form-group">
-        <label class="col-sm-4 control-label">Cluster Metric</label>
+    	<div class="form-group row">
+        <label class="col-sm-4 col-form-label">Cluster Metric</label>
         <div class="col-sm-8">
           <select id="timeseries-wizard-cluster-metric" class="form-control" data-bind="options: cluster_metric, enable: cluster_metric().length > 1"></select>
         </div>
@@ -165,7 +165,7 @@
     </div>
 
     <div data-bind="visible:tab() == 5">
-      <form class="compute form-horizontal" role="form">
+      <form class="compute" role="form">
         <slycat-remote-interface params="
             agent_function: 'timeseries-model', 
             agent_function_params: { 
@@ -199,7 +199,7 @@
     </div>
 
     <div data-bind="visible:tab() == 6">
-      <form class="form-horizontal" onsubmit="return false">
+      <form onsubmit="return false">
         <slycat-model-controls params="
           name:model.name,
           description:model.description,
@@ -210,8 +210,7 @@
 </div>
 <div class="modal-footer">
   <button data-bind="visible: [0,6].indexOf(tab()) == -1, click: back" 
-    class="btn btn-default pull-left">Back</button>
-
+    class="btn btn-light mr-auto">Back</button>
   <button data-bind="visible:tab() == 0,click:connect" 
     class="btn btn-primary">Continue</button>
   <button data-bind="visible:tab() == 2,click:select_input_file" 

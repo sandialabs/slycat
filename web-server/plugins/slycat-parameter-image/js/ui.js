@@ -19,7 +19,7 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import NoteManager from "./note-manager";
 import FilterManager from "./filter-manager";
-import d3 from "js/d3.min";
+// import d3 from "d3";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 import "./parameter-image-scatterplot";
@@ -103,7 +103,7 @@ $(document).ready(function() {
   {
     north:
     {
-      size: 28,
+      size: 39,
       resizable: false,
     },
     center:

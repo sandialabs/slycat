@@ -14,7 +14,7 @@ import ko from "knockout";
 import client from "js/slycat-web-client";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 

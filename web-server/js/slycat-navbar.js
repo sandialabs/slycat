@@ -3,7 +3,7 @@
  retains certain rights in this software. */
 
 // Global css resources loaded here
-import "css/namespaced-bootstrap.less";
+import "css/slycat-bootstrap.scss";
 import "font-awesome/css/font-awesome.css";
 import "css/slycat.css";
 
@@ -16,14 +16,13 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import "js/knockout-projections"
 import ispasswordrequired from "js/slycat-server-ispasswordrequired";
-import "js/slycat-resizing-modals";
 import "js/slycat-nag";
 import slycatNavbar from 'templates/slycat-navbar.html';
 import 'js/slycat-plugins';
 // Can't import bootstrap here because it breaks models, which are dynamically imported and also contain bootstrap, and it seems to clash with this one.
 // import "bootstrap";
 // However, we can import bootstrap's modal js file, since the navbar uses it to create dialogs for wizards.
-import "bootstrap/js/modal";
+import "bootstrap/js/dist/modal";
 
 import config from 'config.json';
 
@@ -454,7 +453,7 @@ ko.components.register("slycat-navbar",
       {
         title: "Edit Bookmark",
         value: name,
-        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+        buttons: [{className: "btn-light", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
         callback: function(button)
         {
           if(button.label != "OK")
@@ -479,7 +478,7 @@ ko.components.register("slycat-navbar",
       {
         title: "Delete Saved Bookmark?",
         message: "The saved bookmark will be deleted immediately and there is no undo.  This will not affect any existing models or bookmarks.",
-        buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+        buttons: [{className: "btn-primary", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
         callback: function(button)
         {
           if(button.label != "OK")

@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 // HTML5 DOM waveform visualization, for use with the timeseries model.
 
-import d3 from "js/d3.min";
+import d3 from "d3";
 import knob from "jquery-knob";
 
 $.widget("timeseries.waveformplot",

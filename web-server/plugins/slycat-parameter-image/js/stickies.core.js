@@ -57,7 +57,7 @@
 		},
 		_createCloseButton: function() {
       this.uiStickyCloseButton = $('<i>')
-        .addClass("fa fa-close pull-right")
+        .addClass("fa fa-close float-right")
         .appendTo(this.uiStickyHeader);
 			this._on( this.uiStickyCloseButton, {
 				"click": function() {

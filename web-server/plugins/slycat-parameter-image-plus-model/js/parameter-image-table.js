@@ -4,7 +4,7 @@
 // Slickgrid-based data table widget, for use with the CCA model.
 
 import api_root from "js/slycat-api-root";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import "jquery-migrate/dist/jquery-migrate.min";
 import "jquery-ui";
 import "js/jquery.event.drag-2.2";
