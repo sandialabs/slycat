@@ -21,6 +21,10 @@ function constructor(params)
   var component = {};
   component.tab = ko.observable(0);
   component.project = params.projects()[0];
+  component.server_files = ko.observableArray();
+  component.selected_file = ko.observable("");
+  component.current_aids = ko.observable("");
+  component.csv_data = ko.observableArray();
   component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
   component.remote = mapping.fromJS({
     hostname: null, 
@@ -58,6 +62,42 @@ function constructor(params)
   });
   component.ps_type("remote"); // remote is selected by default...
 
+  component.get_server_files = function() {
+    component.browser.progress(10);
+    component.browser.progress_status("Parsing...");
+
+    client.put_project_csv_data({
+        pid: component.project._id(),
+        file_key: component.selected_file(),
+        parser: "slycat-csv-parser",
+        mid: component.model._id(),
+        aids: 'data-table',
+
+        success: function(response) {
+          var data = JSON.stringify(response);
+          component.csv_data.push(data);
+          upload_success(component.browser);
+        },
+          error: dialog.ajax_error("There was an error retrieving the CSV data."),
+      });
+    };
+
+  component.get_server_file_names = function() {
+      client.get_project_file_names({
+          pid: component.project._id(),
+          success: function(attachments) {
+            var file;
+            var fileName;
+            for(var i = 0; i < attachments.length; i++) {
+                file = attachments[i];
+                fileName = file["file_name"];
+                component.server_files.push(fileName);
+            }
+        },
+        error: dialog.ajax_error("There was an error retrieving the CSV data."),
+    });
+  };
+
   component.create_model = function() {
     client.post_project_models({
       pid: component.project._id(),
@@ -92,6 +132,7 @@ function constructor(params)
 
   // Create a model as soon as the dialog loads. We rename, change description and marking later.
   component.create_model();
+  component.get_server_file_names();
 
   component.cancel = function() {
     if(component.model._id())
@@ -103,6 +144,8 @@ function constructor(params)
 
     if (type === "local") {
       component.tab(1);
+    } else if (type === "server") {
+      component.existing_table();
     } else if (type === "remote") {
       component.tab(2);
     }
@@ -151,15 +194,21 @@ function constructor(params)
     });
   };
 
+  component.existing_table = function() {
+        var fileName = component.selected_file;
+        component.current_aids = fileName();
+        component.get_server_files();
+    };
+
   component.upload_table = function() {
     $('.local-browser-continue').toggleClass("disabled", true);
-    //TODO: add logic to the file uploader to look for multiple files list to add
     var file = component.browser.selection()[0];
+
     var fileObject ={
      pid: component.project._id(),
      mid: component.model._id(),
      file: file,
-     aids: ["data-table"],
+     aids: [["data-table"], file.name],
      parser: component.parser(),
      progress: component.browser.progress,
      progress_status: component.browser.progress_status,
@@ -215,12 +264,13 @@ function constructor(params)
 
   component.load_table = function() {
     $('.remote-browser-continue').toggleClass("disabled", true);
+    const file_name = component.browser.selection()[0].split("/")[component.browser.selection()[0].split("/").length - 1];
     var fileObject ={
      pid: component.project._id(),
      hostname: [component.remote.hostname()],
      mid: component.model._id(),
      paths: [component.browser.selection()],
-     aids: ["data-table"],
+     aids: [["data-table"], file_name],
      parser: component.parser(),
      progress: component.remote.progress,
      progress_status: component.remote.progress_status,
@@ -366,6 +416,7 @@ function constructor(params)
 
   component.back = function() {
     var target = component.tab();
+
     // Skip Upload Table tab if we're on the Choose Host tab.
     if(component.tab() == 2)
     {
@@ -374,6 +425,12 @@ function constructor(params)
     // Skip remote ui tabs if we are local
     if(component.ps_type() == 'local' && component.tab() == 4)
     {
+      target--;
+      target--;
+    }
+    if(component.ps_type() == 'server' && component.tab() == 4)
+    {
+      target--;
       target--;
       target--;
     }

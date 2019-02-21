@@ -29,6 +29,15 @@ function constructor(params)
       bid: bookmark_manager.current_bid(),
       error: dialog.ajax_error("Error creating saved bookmark."),
       success: function(){
+        client.put_model({
+            bookmark: bookmark_manager.current_bid(),
+            mid: bookmark_manager.current_mid(),
+            success: function()
+            {
+              console.log("Successfully added bookmark ID to the model.");
+            },
+            error: dialog.ajax_error("Error updating model."),
+        });
         component.show_wizard(false);
       }
     });

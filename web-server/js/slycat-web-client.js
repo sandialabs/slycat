@@ -146,6 +146,42 @@ module.delete_upload = function(params)
   });
 };
 
+module.put_project_csv_data = function(params)
+{
+  $.ajax(
+      {
+          dataType: "json",
+          type: "PUT",
+          url: api_root + "/projects/" + params.pid + "/data/" + params.file_key +
+            "/parser/" + params.parser + "/mid/" + params.mid + "/aids/" + params.aids,
+          success: function (result) {
+              if (params.success)
+                  params.success(result);
+          },
+          error: function (request, status, reason_phrase) {
+              if (params.error)
+                  params.error(request, status, reason_phrase);
+          }
+      });
+};
+
+module.get_project_file_names = function(params) {
+ $.ajax(
+    {
+        dataType: "json",
+        type: "GET",
+        url: api_root + "/projects/" + params.pid + "/name",
+        success: function (result) {
+            if (params.success)
+                params.success(result);
+        },
+        error: function (request, status, reason_phrase) {
+            if (params.error)
+                params.error(request, status, reason_phrase);
+        }
+    });
+};
+
 /**
  *
  * @param params: object{
@@ -514,33 +550,9 @@ module.get_model_table_metadata = function(params)
   console.log("slycat-web-client.get_model_table_metadata() is deprecated, use get_model_arrayset_metadata() instead.");
 
   var url = api_root + "models/" + params.mid + "/tables/" + params.aid + "/arrays/" + (params.array || "0") + "/metadata";
-  if(params.index)
-    url += "?index=" + params.index;
-
-//    //other section
-//    var new_url = api_root + "models/" + params.mid + "/arraysets/" + params.aid +  "/metadata?arrays=" + (params.array || "0") + "%3b1&" +"statistics=0";
-////    if(params.index)
-////      new_url += "?index=" + params.index;
-//    $.ajax(
-//    {
-//      dataType: "json",
-//      type: "GET",
-//      url: new_url,
-//      success: function(result)
-//      {
-//        if(params.success)
-//          console.log("\nNEW:  " + new_url + "\n" + JSON.stringify(result) +"\n");
-//          //params.success(result);
-//      },
-//      error: function(request, status, reason_phrase)
-//      {
-//        if(params.error)
-//          console.log("\nNEW:  " + url + "\n" + request + reason_phrase + status +"\n");
-//          //params.error(request, status, reason_phrase);
-//      },
-//    });
-//    //END other section
-
+  if(params.index) {
+      url += "?index=" + params.index;
+  }
 
   $.ajax(
   {
@@ -1075,7 +1087,7 @@ module.post_uploads = function(params)
       "mid": params.mid,
       "input": params.input,
       "parser": params.parser,
-      "aids": params.aids
+      "aids": params.aids,
     }),
     type: "POST",
     url: api_root + "uploads",
@@ -1277,6 +1289,8 @@ module.put_model = function(params)
     model.marking = params.marking;
   if("state" in params)
     model.state = params.state;
+  if("bookmark" in params)
+    model.bookmark = params.bookmark;
 
   $.ajax(
   {

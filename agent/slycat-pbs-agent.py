@@ -195,7 +195,9 @@ class Agent(agent.Agent):
             "jid": command["command"]
         }
 
-        results["output"], results["errors"] = self.run_shell_command("qstat $PBS_JOBID")
+        results["output"], results["errors"] = self.run_shell_command("qstat %s" % results["jid"]["jid"])
+        # above: PBS_JOBID is not available, must have the JID
+#        results["output"], results["errors"] = self.run_shell_command("qstat $PBS_JOBID")
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -207,7 +209,8 @@ class Agent(agent.Agent):
         }
 
         results["output"], results["errors"] = self.run_shell_command(
-            "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
+            "qdel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
+#           "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
 
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
@@ -219,7 +222,8 @@ class Agent(agent.Agent):
         }
 
         path = command["command"]["path"]
-        f = path + "slurm-%s.out" % results["jid"]
+        f = path + "slycat.o%s" % results["jid"]
+#       f = path + "slurm-%s.out" % results["jid"]
         if os.path.isfile(f):
             results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
         else:
@@ -229,52 +233,99 @@ class Agent(agent.Agent):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
-    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
-                       time_seconds, fn,
-                       tmp_file):
-        f = tmp_file
-
-        f.write("#!/bin/csh\n\n")
-        f.write("#PBS -l walltime=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
-        f.write("#PBS -l select=1:ncpus=32:vntype=gpu\n")
-        f.write("#PBS -l place=scatter:excl\n")
-        f.write("#PBS -N slycat\n")
-        f.write("#PBS -q %s\n" % partition)
-        f.write("#PBS -r n\n")
-        f.write("#PBS -A %s\n" % wckey)
-        f.write("#PBS -V\n")
-        f.write("#PBS -j oe\n")
-
-        f.write("set slyDir=slycat_tmp\n")
-        f.write("cd $WORKDIR\n")
-
-        f.write("if (! -d $WORKDIR/$slyDir) then\n")
-        f.write("    mkdir $slyDir\n")
-        f.write("endif\n")
-        f.write("cd $slyDir\n")
-
-        f.write("set exechost=`hostname -s`\n")
-        f.write("echo \"++Slycat timeseries job running at `date` on $exechost, in directory `pwd` \"\n")
-        f.write("unlimit\n")
-        f.write("module load slycat\n")
-
-        f.write("echo \"++ Slycat job: launching ipcontroller at `date`\"\n")
-        f.write("ipcontroller --ip='*' &\n")
-        f.write("sleep 20\n")
-        f.write("echo \"++ Slycat job: launching ipython engines at `date`\"\n")
-        f.write("ipengine --location=$exechost &\n")
-        f.write("sleep 1\n")
-        f.write("ipengine --location=$exechost &\n")
-        f.write("sleep 1\n")
-        f.write("ipengine --location=$exechost &\n")
-        f.write("sleep 1\n")
-        f.write("ipengine --location=$exechost &\n")
-        f.write("sleep 20\n")
-        f.write("echo \"++ Slycat job: launching hdf5 conversion at `date`\"\n")
-
+    def generateRootScript(tmp_file, scriptName, eScript, fn):
+        f = open(os.path.dirname(tmp_file.name()) + os.sep + scriptName, mode='w')
+        f.write("#!/bin/bash -l \n")
+        f.write("# This script requires that the slycat working dir be passed in as only arg \n")
+        f.write("# modules not avail on compute nodes, load Slycat env \n")
+        f.write(". /p/app/unsupported/slycat/modules/slycatEnv \n")
+        f.write("slyDir=$1 \n")
+        f.write("slyNodeFile=\"slycatNodes.txt\" \n")
+        f.write("cd $slyDir \n")
+        f.write("hn=`hostname` \n")
+        f.write("# create list of nodes in this job, this script executes on \n")
+        f.write("# the root node - the first node in the list \n")
+        f.write("nodeList=`cat $slyNodeFile | uniq ` \n")
+        f.write("# create an ipython dir for the user, it's a noop if it already exists \n")
+        f.write("echo \"++ root node (which is: $hn) calling create ipython profile\" \n")
+        f.write("ipython profile create --parallel \n")
+        f.write("sleep 1 \n")
+        f.write("# start the controller on this node \n")
+        f.write("echo \"++ root node starting the controller at `date`\" \n")
+        f.write("ipcontroller --ip='*' & \n")
+        f.write("sleep 70 \n")
+        f.write("# ssh to other nodes in job to start the engines \n")
+        f.write("for n in $nodeList \n")
+        f.write("do \n")
+        f.write("  if [ $n != $hn ] \n")
+        f.write("  then \n")
+        f.write("    echo \"++ on $hn, ssh'ing to $n to start engines\" \n")
+        f.write("    ssh $n \"$slyDir/%s $slyDir \" & \n" % eScript)
+        f.write("  fi \n")
+        f.write("done \n")
+        f.write("sleep 90 \n")
+        f.write("echo \"++ root node calling hdf5 conversion and compute timeseries at `date`\" \n")
         for c in fn:
-            f.write("%s\n" % c)
+            f.write("%s \n" % c)
+        f.close()
+        
+    def generateEnginesScript(tmp_file, scriptName):
+        f = open(os.path.dirname(tmp_file.name()) + os.sep + scriptName, mode='w')
+        f.write("#!/bin/bash -l \n")
+        f.write("# This script requires that the slycat working dir be passed in as only arg \n")
+        f.write("hn=`hostname` \n")
+        f.write("# modules not avail on compute nodes, load Slycat env \n")
+        f.write(". /p/app/unsupported/slycat/modules/slycatEnv \n")
+        f.write("sleep 1 \n")
+        f.write("slyDir=$1 \n")
+        f.write("slyNodeFile=\"slycatNodes.txt\" \n")
+        f.write("cd $slyDir \n")
+        f.write("echo \"++ engines running on $hn in `pwd` at `date`\" \n")
+        f.write("nodeList=`cat $slyNodeFile ` \n")
+        f.write("for n in $nodeList \n")
+        f.write("do \n")
+        f.write("  if [ $n == $hn ] \n")
+        f.write("  then \n")
+        f.write("    echo \"++ launching engine on $hn at `date`\" \n")
+        f.write("    ipengine & \n")
+        f.write("    sleep 1 \n")
+        f.write("  fi \n")
+        f.write("done \n")
+        f.write("echo \"++ done launching engines at `date`\" \n")
+        f.close()
 
+    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                       time_seconds, fn, tmp_file):
+        
+        rootScriptName = "rootCommands.bash"
+        engineScriptName = "engineCommands.bash"
+        
+        self.generateRootScript(tmp_file, rootScriptName, engineScriptName, fn)
+        self.generateEnginesScript(tmp_file, engineScriptName)
+        
+        workDir = os.path.dirname(tmp_file.name())
+        f = tmp_file
+        
+        f.write("#!/bin/bash -l \n")
+        f.write("#PBS -A %s \n" % wckey)
+        f.write("#PBS -q %s \n" % partition)
+        f.write("#PBS -l select=%s:ncpus=32:mpiprocs=%s \n" % (nnodes, ntasks_per_node))
+        f.write("#PBS -l walltime=%s:%s:%s \n" % (time_hours, time_minutes, time_seconds))
+        f.write("#PBS -N slycat \n")
+        f.write("#PBS -j oe \n")
+        f.write("#PBS -V \n")
+        f.write("#PBS -l ccm=1 \n")
+        f.write("echo \"++ submit, starting at `date` on `hostname`\" \n")
+        f.write("module load ccm \n")
+        f.write("module load slycat \n")
+        f.write("slyNodeFile=\"slycatNodes.txt\" \n")
+        f.write("slyDir=%s \n" % workDir)
+        f.write("cd $slyDir \n")
+        f.write("# put node names in file cuz compute node doesn't have this env var \n")
+        f.write("cat $PBS_NODEFILE > $slyNodeFile \n")
+        f.write("echo \"++ submit calling ccmrun at `date` \" \n")
+        f.write("ccmrun ./%s $slyDir \n" % rootScriptName)
+        f.write("wait \n")
         f.close()
 
     def run_function(self, command):
@@ -294,6 +345,10 @@ class Agent(agent.Agent):
         fn = command["command"]["fn"]
         # uid = command["command"]["uid"]
         working_dir = command["command"]["working_dir"]
+        # temporary: verify nnodes >= 2, move this check to wizard
+        if nnodes == "1":
+            nnodes = "2"
+        
         try:
             self.run_shell_command("mkdir -p %s" % working_dir)
         except Exception:
