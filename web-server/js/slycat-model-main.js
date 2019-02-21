@@ -1,3 +1,4 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
@@ -9,12 +10,13 @@ import "css/slycat.css";
 import client from "js/slycat-web-client";
 import ko from "knockout";
 import URI from "urijs";
-import "js/slycat-navbar";
+import {renderNavBar} from "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import {loadTemplate, loadModule} from 'js/slycat-plugins';
 
 // Wait for document ready
 $(document).ready(function() {
+  renderNavBar();
   var mid = URI(window.location).segment(-1);
   var page = {};
   page.model_id = mid;
@@ -44,7 +46,8 @@ $(document).ready(function() {
     },
     error: function(request, status, reason_phrase)
     {
-      console.log("Error retrieving model.");
+      alert("Unable to retrieve model.");
+      window.location.href = "/projects";
     }
   });
 });
