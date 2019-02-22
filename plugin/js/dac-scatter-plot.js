@@ -238,7 +238,6 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             y_scale.domain([init_zoom_extent[0][1], init_zoom_extent[1][1]]);
                         }
 
-
                         // default color scale
                         color_scale = d3.scale.linear()
                             .range([color_by_low, color_by_high])
@@ -1052,7 +1051,7 @@ function subset ()
 				if (selection.indexOf(i) != -1) {
 					mds_subset[i] = 1;
 				}
-
+            }
 				// in this case, we set the center to the subset view
 				subset_center = [(extent[0][0] + extent[1][0])/2.0,
 								 (extent[0][1] + extent[1][1])/2.0];
@@ -1062,7 +1061,6 @@ function subset ()
 				//y_scale.domain([0 - scatter_border, 1 + scatter_border]);
 				reset_zoom = true;
 
-			}
 		}
 
 	} else {
@@ -1081,6 +1079,7 @@ function subset ()
 	// fire subset changed event
 	var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
 										 new_subset: mds_subset,
+										 subset_center: subset_center,
 										 zoom: reset_zoom} });
 	document.body.dispatchEvent(subsetEvent);
 }
@@ -1089,8 +1088,16 @@ function subset ()
 module.reset_zoom = function ()
 {
 	// reset zoom to full screen
-	x_scale.domain([0 - scatter_border, 1 + scatter_border]);
-	y_scale.domain([0 - scatter_border, 1 + scatter_border]);
+	var extent = [[0 - scatter_border, 0 - scatter_border],
+	              [1 + scatter_border, 1 + scatter_border]];
+	x_scale.domain([extent[0][0], extent[1][0]]);
+    y_scale.domain([extent[0][1], extent[1][1]]);
+
+	// reset zoom in bookmarks
+    var zoomEvent = new CustomEvent("DACZoomChanged",
+                                      {detail: extent});
+    document.body.dispatchEvent(zoomEvent);
+
 }
 
 // selection brush handler call back
