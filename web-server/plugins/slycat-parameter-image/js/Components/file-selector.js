@@ -1,24 +1,11 @@
+"use strict";
 import React from "react";
 
-class FileSelector extends React.Component
+export const FileSelector = (params) =>
 {
-    constructor(props)
-    {
-        super(props);
-        this.handleChange = this.handleChange.bind(this);
-    }
-
-    handleChange(selectorFiles)
-    {
-        console.log(selectorFiles);
-    }
-
-    render ()
-    {
-        return <div>
-            <input type="file" onChange={ (e) => this.handleChange(e.target.files) } />
-        </div>;
-    }
+    return (
+        <div className="form-group">
+            <input className="form-control-file" type="file" onChange={ (e) => params.handleChange(e.target.files) } />
+        </div>
+    )
 }
-
-export default FileSelector
