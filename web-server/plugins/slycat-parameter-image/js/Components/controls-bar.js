@@ -7,6 +7,8 @@ import ControlsSelection from './controls-selection';
 import ControlsGroup from './controls-group';
 import ControlsButtonToggle from './controls-button-toggle';
 import ControlsButton from './controls-button';
+import FileSelector from './file-selector';
+import ControlsButtonUpdateTable from './update-table';
 import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
 import VisibleVarOptions from './visible-var-options';
 
@@ -251,18 +253,18 @@ class ControlsBar extends React.Component {
         </ControlsGroup>
         <ControlsGroup id="selection-controls" class="btn-group ml-3">
           <ControlsButtonToggle title="Auto Scale" icon="fa-external-link" active={this.state.auto_scale} set_active_state={this.set_auto_scale} button_style={button_style} />
-          <ControlsSelection 
-            trigger_hide_selection={this.trigger_hide_selection} 
+          <ControlsSelection
+            trigger_hide_selection={this.trigger_hide_selection}
             trigger_hide_unselected={this.trigger_hide_unselected}
-            trigger_show_selection={this.trigger_show_selection} 
+            trigger_show_selection={this.trigger_show_selection}
             trigger_pin_selection={this.trigger_pin_selection}
-            disable_hide_show={this.state.disable_hide_show} 
-            disable_pin={disable_pin} 
+            disable_hide_show={this.state.disable_hide_show}
+            disable_pin={disable_pin}
             hide_pin={hide_pin}
-            selection={this.state.selection} 
-            rating_variables={this.props.rating_variables} 
+            selection={this.state.selection}
+            rating_variables={this.props.rating_variables}
             metadata={this.props.metadata}
-            element={this.props.element} 
+            element={this.props.element}
             button_style={button_style}
           />
           <ControlsButton label="Show All" title={show_all_title} disabled={show_all_disabled} click={this.trigger_show_all} button_style={button_style} />
@@ -270,6 +272,9 @@ class ControlsBar extends React.Component {
           <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
             aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
             indices={this.props.indices} button_style={button_style} />
+        </ControlsGroup>
+        <ControlsGroup id="file-selector" class="input-group input-group-sm ml-3">
+          <ControlsButtonUpdateTable button_style={button_style}/>
         </ControlsGroup>
         {any_video_open &&
         <React.Fragment>
