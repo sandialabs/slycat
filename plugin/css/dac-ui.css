@@ -28,8 +28,8 @@
 /* mds buttons */
 #dac-scatter-select-buttons
 {
-	margin: 3px 3px 3px 3px;
-	display: inline-block;
+	/*margin: 3px 3px 3px 3px;
+	display: inline-block;*/
 }
 
 /* difference buttons */
@@ -195,9 +195,10 @@
 
 #dac-alpha-buttons button
 {
-	padding:3px 15px;
-	overflow:hidden;
-	border: 1px solid #d1d1d1;
-	margin: 1px;
+	/*padding:3px 15px;*/
+	/*overflow:hidden;*/
+	/*border: 1px solid #d1d1d1;*/
+	/*margin: 1px;*/
 	font-size: 12px;
+	width: 40px;
 }

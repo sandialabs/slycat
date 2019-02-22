@@ -11,7 +11,7 @@ S. Martin
 
 		<label>Data is being processed for the model (it is safe to close the browser):</label>
 		<div class="progress">
-			<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar"
+			<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
 				 aria-valuemin="0"
 				 aria-valuemax="100">
 			</div>
@@ -31,46 +31,48 @@ S. Martin
 				<!-- MDS Scatter Plot Buttons (above scatter plot)-->
 				<div class="bootstrap-styles">
 			
-					<div class="btn-group" data-toggle="buttons" 
-						id="dac-scatter-select-buttons">
-						<label class="btn btn-default btn-sm"
-							id="dac-scatter-button-sel-1" title="Select group 1.
-Use shift to add to group.">
+					<div class="btn-group btn-group-toggle ml-1 mt-1" data-toggle="buttons" id="dac-scatter-select-buttons">
+						<label class="btn btn-outline-secondary btn-sm active"
+							id="dac-scatter-button-sel-1" 
+							title="Select group 1. Use shift to add to group.">
+
 							<input type="radio" name="options" autocomplete="off"
 								value="selection_1"><b style="padding:2px 5px 1px;border:dashed 2px">1</b></input>
 						</label>
-						<label class="btn btn-default btn-sm"
-							id="dac-scatter-button-sel-2" title="Select group 2.
-Use shift to add to group.">
+						<label class="btn btn-outline-secondary btn-sm"
+							id="dac-scatter-button-sel-2" 
+							title="Select group 2. 
+							       Use shift to add to group.">
 							<input type="radio" name="options" autocomplete="off"
 								value="selection_2"><b style="padding:2px 5px 1px;border:dashed 2px">2</b></input>
 						</label>
-						<label class="btn btn-default btn-sm"
-							id="dac-scatter-button-subset" title="Select subset for all analysis.
-Use shift to exclude subset.">
+						<label class="btn btn-outline-secondary btn-sm"
+							id="dac-scatter-button-subset" 
+							title="Select subset for all analysis.
+                                   Use shift to exclude subset.">
 							<input type="radio" name="options" autocomplete="off"
 								value="subset"><b>&sube;</b></input>
 						</label>
-						<label class="btn btn-default btn-sm"
+						<label class="btn btn-outline-secondary btn-sm"
 							id="dac-scatter-button-zoom" title="Zoom for scatter plot.">
 							<input type="radio" name="options" autocomplete="off"
 								value="zoom"><i class="fa fa-search"></i></input>
 						</label>
         			</div>
 
-					<div class="btn-group" id="dac-difference-buttons">
-						<label id="dac-previous-three-button" class="btn btn-default btn-sm disabled"
+					<div class="btn-group mt-1" id="dac-difference-buttons">
+						<button id="dac-previous-three-button" class="btn btn-outline-secondary btn-sm disabled"
 							   title="Previous three most different plots.">
 							<i class="fa fa-chevron-left" aria-hidden="true"></i>
-						</label>
-						<label id="dac-scatter-diff-button" class="btn btn-default btn-sm"
-title="Order variable plots to maximize difference
-between selection 1 and selection 2."><i class="fa fa-minus"></i>
-						</label>
-						<label id="dac-next-three-button" class="btn btn-default btn-sm disabled"
+						</button>
+						<button id="dac-scatter-diff-button" class="btn btn-outline-secondary btn-sm"
+							title="Order variable plots to maximize difference
+									between selection 1 and selection 2."><i class="fa fa-minus"></i>
+						</button>
+						<button id="dac-next-three-button" class="btn btn-outline-secondary btn-sm disabled"
 							   title="Next three most different plots.">
 							<i class="fa fa-chevron-right" aria-hidden="true"></i>
-						</label>
+						</button>
 					</div>
 					<label><i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
 title="The difference calculation is
@@ -106,53 +108,52 @@ sync with the current selection"> </i></label>
 			<!-- MDS Scatter Plot Buttons (above entire interface-->
 			<div class="bootstrap-styles">
 
-				<div class="btn-group" data-toggle="buttons"
+				<div class="btn-group ml-3"
 					id="dac-scatter-select-buttons">
-					<label class="btn btn-default btn-sm"
-						id="dac-scatter-button-sel-1" title="Select group 1.
-Use shift to add to group.">
-						<input type="radio" name="options" autocomplete="off"
-							value="selection_1">Selection 1</input>
-					</label>
-					<label class="btn btn-default btn-sm"
-						id="dac-scatter-button-sel-2" title="Select group 2.
-Use shift to add to group.">
-						<input type="radio" name="options" autocomplete="off"
-							value="selection_2">Selection 2</input>
-					</label>
-					<label class="btn btn-default btn-sm"
-						id="dac-scatter-button-subset" title="Select subset for all analysis.
-Use shift to exclude subset.">
-						<input type="radio" name="options" autocomplete="off"
-							value="subset">Subset</input>
-					</label>
-					<label class="btn btn-default btn-sm"
-						id="dac-scatter-button-zoom" title="Zoom for scatter plot.">
-						<input type="radio" name="options" autocomplete="off"
-							value="zoom">Zoom</input>
-					</label>
+					<div class="form-check form-check-inline" 
+						title="Select group 1. &#10;Use shift to add to group.">
+					  <input class="form-check-input" type="radio" id="dac-scatter-button-sel-1" name="options" autocomplete="off" value="selection_1">
+					  <label class="form-check-label" for="dac-scatter-button-sel-1">Selection 1</label>
+					</div>
+					<div class="form-check form-check-inline" 
+						title="Select group 2. &#10;Use shift to add to group.">
+					  <input class="form-check-input" type="radio" id="dac-scatter-button-sel-2" name="options" autocomplete="off" value="selection_2">
+					  <label class="form-check-label" for="dac-scatter-button-sel-2">Selection 2</label>
+					</div>
+					<div class="form-check form-check-inline" 
+						title="Select subset for all analysis. &#10;Use shift to exclude subset.">
+					  <input class="form-check-input" type="radio" id="dac-scatter-button-subset" name="options" autocomplete="off" value="subset">
+					  <label class="form-check-label" for="dac-scatter-button-subset">Subset</label>
+					</div>
+					<div class="form-check form-check-inline" 
+						title="Zoom for scatter plot.">
+					  <input class="form-check-input" type="radio" id="dac-scatter-button-zoom" name="options" autocomplete="off" value="zoom">
+					  <label class="form-check-label" for="dac-scatter-button-zoom">Zoom</label>
+					</div>
 				</div>
 
-				<div class="btn-group" id="dac-difference-buttons">
-					<label id="dac-previous-three-button" class="btn btn-default btn-sm disabled"
-						   title="Previous three most different plots.">
-						<i class="fa fa-chevron-left" aria-hidden="true"></i>
-					</label>
-					<label id="dac-scatter-diff-button" class="btn btn-default btn-sm"
-						   title="Order variable plots to maximize difference
-between selection 1 and selection 2.">Difference
-					</label>
-					<label id="dac-next-three-button" class="btn btn-default btn-sm disabled"
-						   title="Next three most different plots.">
-						<i class="fa fa-chevron-right" aria-hidden="true"></i>
-					</label>
+				<div id="dac-difference-buttons" class="btn-group mt-1" role="group" aria-label="Basic example">
+				  <button id="dac-previous-three-button" 
+				  	title="Previous three most different plots." type="button" class="btn btn-sm btn-outline-dark"
+				  	disabled>
+				  	<i class="fa fa-chevron-left" aria-hidden="true"></i>
+				  </button>
+				  <button id="dac-scatter-diff-button" 
+				  	title="Order variable plots to maximize difference &#10;between selection 1 and selection 2." 
+				  	type="button" class="btn btn-sm btn-outline-dark">
+				  	Difference
+				  </button>
+				  <button id="dac-next-three-button" 
+				  	title="Next three most different plots." type="button" class="btn btn-sm btn-outline-dark"
+				  	disabled>
+				  	<i class="fa fa-chevron-right" aria-hidden="true"></i>
+				  </button>
 				</div>
+
 				<label><i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
-				   title="The difference calculation is
-out of sync with the current selection."> </i></label>
+				   title="The difference calculation is &#10;out of sync with the current selection."> </i></label>
 				<label><i class="fa fa-refresh"  id="dac-selection-synced"
-				   title="The difference calculation is in
-sync with the current selection"> </i></label>
+				   title="The difference calculation is in &#10;sync with the current selection"> </i></label>
 
 				<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
 
@@ -178,17 +179,24 @@ sync with the current selection"> </i></label>
 		
 				<!-- Alpha Buttons -->			
 				<div class="bootstrap-styles" id="dac-alpha-buttons">
-					<button type="button" class="btn btn-default"
+					<button type="button" class="btn btn-sm btn-outline-secondary"
 							id="dac-download-table-button" title="Download data table.">
-							<i class="fa fa-download"></i></button>
-					<button type="button" class="btn btn-default"
-						    id="dac-alpha-zero-button" title="Set all sliders to 0.">0</button>
-					<button type="button" class="btn btn-default"
-						    id="dac-alpha-one-button" title="Set all sliders to 1.">1</button>
-					<button type="button" class="btn btn-default"
+							<i class="fa fa-download"></i>
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary"
+						    id="dac-alpha-zero-button" title="Set all sliders to 0.">
+						0
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary"
+						    id="dac-alpha-one-button" title="Set all sliders to 1.">
+						1
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary"
 							id="dac-alpha-cluster-button"
-title='Adjust sliders to optimize scatter plot for selected
-(from "Do Not Color" pulldown) table column.'><i class="fa fa-sliders"></i></button>
+							title='Adjust sliders to optimize scatter plot for selected
+								   (from "Do Not Color" pulldown) table column.'>
+						<i class="fa fa-sliders"></i>
+					</button>
 				</div>
 			</div>
 			

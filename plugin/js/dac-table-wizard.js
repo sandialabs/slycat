@@ -9,7 +9,7 @@ import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import markings from "js/slycat-markings";
 import ko from "knockout";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import dacWizardUI from "../html/dac-table-wizard.html";

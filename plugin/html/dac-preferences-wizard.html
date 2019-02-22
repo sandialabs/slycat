@@ -30,19 +30,19 @@ Matthew Letter
 </style>
 
 <div class="modal-header">
+    <h3 class="modal-title">Dial-A-Cluster Model Preferences</h3>
     <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
-    <h3 class="modal-title">Dial-A-Cluster Model Preferences</h3>
 </div>
 
 <!-- Organizes the tabs in the input wizard. -->
 <div class="modal-body">
     <ul class="nav nav-pills">
-        <li data-bind="css:{active:tab() == 0}"><a>Variables</a></li>
-        <li data-bind="css:{active:tab() == 1}"><a>Metadata</a></li>
-        <li data-bind="css:{active:tab() == 2}"><a>Colors</a></li>
-        <li data-bind="css:{active:tab() == 3}"><a>Options</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Variables</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Metadata</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 2}"><a class="nav-link">Colors</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 3}"><a class="nav-link">Options</a></li>
     </ul>
 
     <!-- This tab lets the user select whether or not the file to upload is on the local
@@ -114,7 +114,7 @@ it will be considered numerical unless you use alphabetic labels."></i>
         <label>Options to adjust/optimize the Dial-A-Cluster user inferface:</label>
 
         <div class="container" style="margin-top:30px; width:100%">
-            <label class="col-sm-2 control-label">Max. label length
+            <label class="col-sm-2 col-form-label">Max. label length
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
                     title="Length beyond which labels for variables and metadata are truncated
 in the Dial-A-Cluster user interface (defaults to 20, minimum is 5)."></i>
@@ -126,7 +126,7 @@ in the Dial-A-Cluster user interface (defaults to 20, minimum is 5)."></i>
 
         <div class="container" style="margin-top:30px; width:100%">
 
-            <label class="col-sm-2 control-label">Max. number plots
+            <label class="col-sm-2 col-form-label">Max. number plots
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
                    title="Maximum number of plots to display at a time. Beyond this number
 only a random subset of the selected plots are shown (defaults to 50
@@ -138,7 +138,7 @@ per selection, minimum is 10)."></i>
 
             <div class="col-sm-1"></div>
 
-            <label class="col-sm-2 control-label">Max. plot resolution
+            <label class="col-sm-2 col-form-label">Max. plot resolution
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
                     title="Maximum number of points to include in a variable plot (for example, number
 of time points in a time series plot).  Beyond this number plots are produced
@@ -151,7 +151,7 @@ by subsampling from original data (defaults to 500, minimum is 10)."></i>
         </div>
 
         <div class="container" style="margin-top:30px; width:100%">
-            <label class="col-sm-2 control-label">Max. points to animate
+            <label class="col-sm-2 col-form-label">Max. points to animate
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
                     title="Number of points in scatter plot beyond which animations between
  coordinate changes are no longer used, for example when adjusting
@@ -163,7 +163,7 @@ by subsampling from original data (defaults to 500, minimum is 10)."></i>
         </div>
 
         <div class="container" style="margin-top:30px; width:100%">
-            <label class="col-sm-2 control-label">Max. number categories
+            <label class="col-sm-2 col-form-label">Max. number categories
                <i class="fa fa-question-circle inline-help" aria-hidden="true"
                   title="Maximum number of categories allowed for editable columns."></i>
            </label>
@@ -171,7 +171,7 @@ by subsampling from original data (defaults to 500, minimum is 10)."></i>
                <input class="form-control" type="number" min="5" placeholder="50" data-bind="value: dac_max_cats"></input>
            </div>
             <div class="col-sm-1"></div>
-            <label class="col-sm-2 control-label">Max. freetext length
+            <label class="col-sm-2 col-form-label">Max. freetext length
                <i class="fa fa-question-circle inline-help" aria-hidden="true"
                    title="Maximum length of freetext entries for editable columns."></i>
            </label>
@@ -181,7 +181,7 @@ by subsampling from original data (defaults to 500, minimum is 10)."></i>
         </div>
         
         <div class="container" style="margin-top: 30px; margin-left: 15px; width:100%">
-            <label class="col" control-label>
+            <label class="col col-form-label">
             Use
             <input type="radio" name="dac-scatter-plot-radios" value="circle" data-bind="checked: dac_scatter_plot_type">
             circles, or
@@ -193,7 +193,7 @@ by subsampling from original data (defaults to 500, minimum is 10)."></i>
         </div>
 
         <div class="container" style="margin-top: 30px; margin-left: 15px; margin-bottom: 15px; width:100%">
-            <label class="col" control-label>
+            <label class="col col-form-label">
             Use a
             <input type="radio" name="dac-control-bar-radios" value="scatter-plot" data-bind="checked: dac_control_bar_position">
             shorter, or
@@ -213,7 +213,7 @@ longer bar is extended above the dial-a-cluster sliders."></i>
 <!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
      to call when the buttons are pressed. -->
 <div class="modal-footer">
-    <button class="btn btn-default pull-left" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:check_variables">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 1,click:check_metadata">Continue</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 2,click:speedup_preferences">Continue</button>
