@@ -3845,6 +3845,7 @@ knockout-mapping@2.6.0:
 knockout@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/knockout/-/knockout-3.2.0.tgz#3f394eb67d721bea115e2d0d7be082256ca46a11"
+  integrity sha1-PzlOtn1yG+oRXi0Ne+CCJWykahE=
 
 "layout@https://github.com/alexsielicki/layout.git":
   version "1.4.3"

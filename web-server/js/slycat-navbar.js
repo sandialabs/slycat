@@ -20,10 +20,13 @@ import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import "js/slycat-nag";
 import slycatNavbar from 'templates/slycat-navbar.html';
 import 'js/slycat-plugins';
-// Can't import bootstrap here because it breaks models, which are dynamically imported and also contain bootstrap, and it seems to clash with this one.
-// import "bootstrap";
-// However, we can import bootstrap's modal js file, since the navbar uses it to create dialogs for wizards.
-import "bootstrap/js/dist/modal";
+// Under Bootstrap 3, we couldn't import bootstrap here because it broke models, 
+// which are dynamically imported and also contain bootstrap, and it seemed to clash with this one.
+// However, we were able to import bootstrap's modal js file, since the navbar uses it to create dialogs for wizards.
+// import "bootstrap/js/dist/modal";
+// Under Bootstrap 4, we seem to be able to import it here and need it along with popper to create popovers on the breadcrumbs.
+import "popper.js";
+import "bootstrap";
 
 import config from 'config.json';
 
@@ -39,6 +42,7 @@ export function renderNavBar() {
         window.location.href = "/projects";
     })
     ;
+
   ko.components.register("slycat-navbar",
   {
     viewModel: function(params)
@@ -95,6 +99,8 @@ export function renderNavBar() {
               pid: component.project_id(),
               success: function(result) {
                 mapping.fromJS(result, component.project_models);
+                // Initialize popovers
+                $('[data-toggle="popover"]').popover();
               },
               error: function(request, status, reason_phrase) {
                 console.log("Unable to retrieve project models.");
