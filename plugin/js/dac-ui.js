@@ -393,6 +393,13 @@ $(document).ready(function() {
                                     init_zoom_extent = bookmark["dac-zoom-extent"];
                                 }
 
+                                // initialize subset state, if bookmarked
+                                var init_subset_center = [.5, .5];
+                                if ("dac-subset-center" in bookmark) {
+                                    init_subset_center = bookmark["dac-subset-center"]
+                                }
+                                console.log(init_subset_center);
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -640,6 +647,11 @@ $(document).ready(function() {
         if (jump_to.length > 0) {
             metadata_table.jump_to (jump_to);
         }
+
+        // bookmark subset data
+        bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
+                              "dac-subset-center": new_subset.detail.subset_center});
+
     }
 
     // event for changing coloring of scatter plot
