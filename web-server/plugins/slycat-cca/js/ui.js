@@ -2,7 +2,6 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
-
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
 
