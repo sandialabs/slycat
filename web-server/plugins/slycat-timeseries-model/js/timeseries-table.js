@@ -5,7 +5,8 @@
 
 import d3 from "d3";
 import "jquery-migrate/dist/jquery-migrate.min";
-import "js/jquery.event.drag-2.2";
+import "js/jquery.event.drag-2.3.0";
+import "js/jquery.event.drop-2.3.0";
 import "js/slick.core";
 import "js/slick.grid";
 import "js/slick.rowselectionmodel";

@@ -109,7 +109,8 @@ three-trackballcontrols 0.0.7   https://yarnpkg.com/en/package/three-trackballco
 urijs                  1.19.1   https://medialize.github.io/URI.js/
 
 Directly included in Slycat in slycat/web_server/js:
-jquery.event.drag         2.2   http://threedubmedia.com/code/event/drag
+jquery.event.drag       2.3.0   https://github.com/6pac/SlickGrid/tree/master/lib
+jquery.event.drop       2.3.0   https://github.com/6pac/SlickGrid/tree/master/lib
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
 knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections
 slickgrid                 2.2   https://github.com/mleibman/SlickGrid
