@@ -6,10 +6,10 @@ rights in this software.
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 
-import "css/slickgrid/slick.grid.css";
-import "css/slickgrid/slick-default-theme.css";
-import "css/slickgrid/slick.headerbuttons.css";
-import "css/slick-slycat-theme.css";
+import slick_grid_css from "slickgrid/slick.grid.css";
+import slick_default_theme_css from "slickgrid/slick-default-theme.css";
+import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
+import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import "../css/slick-dac-theme.css";
 
 import selections from "./dac-manage-selections.js";
@@ -18,15 +18,14 @@ import client from "js/slycat-web-client";
 import URI from "urijs";
 import * as dialog from "js/slycat-dialog";
 import "jquery-migrate/dist/jquery-migrate.min";
-import "js/jquery.event.drag-2.3.0";
-import "js/jquery.event.drop-2.3.0";
-
-import "js/slick.core";
-import "js/slick.grid";
-import "js/slick.rowselectionmodel";
-import "js/slick.headerbuttons";
-import "js/slick.autotooltips";
-import "js/slick.dataview";
+import "slickgrid/lib/jquery.event.drag-2.3.0";
+import "slickgrid/lib/jquery.event.drop-2.3.0";
+import "slickgrid/slick.core";
+import "slickgrid/slick.grid";
+import "slickgrid/plugins/slick.rowselectionmodel";
+import "slickgrid/plugins/slick.headerbuttons";
+import "slickgrid/plugins/slick.autotooltips";
+import "slickgrid/slick.dataview";
 
 // public functions will be returned via the module variable
 var module = {};
