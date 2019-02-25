@@ -3701,11 +3701,11 @@ jquery-migrate@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/jquery-migrate/-/jquery-migrate-3.0.1.tgz#141de3abfe6d301baaa4130b0ec7b9a839845e72"
 
-jquery-ui@1.12.1:
+jquery-ui@1.12.1, jquery-ui@>=1.8.0:
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/jquery-ui/-/jquery-ui-1.12.1.tgz#bcb4045c8dd0539c134bc1488cdd3e768a7a9e51"
 
-jquery@3.3.1, jquery@>=1.5:
+jquery@3.3.1, jquery@>=1.5, jquery@>=1.8.0:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
 
@@ -6113,6 +6113,14 @@ slice-ansi@1.0.0:
   resolved "https://registry.yarnpkg.com/slice-ansi/-/slice-ansi-1.0.0.tgz#044f1a49d8842ff307aad6b505ed178bd950134d"
   dependencies:
     is-fullwidth-code-point "^2.0.0"
+
+slickgrid@^2.4.3:
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/slickgrid/-/slickgrid-2.4.3.tgz#bbbec6190c0641e999bd7efc7bc0e20ccc53e1b4"
+  integrity sha512-5PiVDDPSC8jYdGx6M6+N40UVD0jd0E8BnI+ATBC+htv4OiXmKsBkLfMKHbxPJU3MUnhbc+49klWuqPB6LKk1AQ==
+  dependencies:
+    jquery ">=1.8.0"
+    jquery-ui ">=1.8.0"
 
 snapdragon-node@^2.0.1:
   version "2.1.1"
