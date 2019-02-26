@@ -146,7 +146,9 @@ $(document).ready(function() {
       resizeWhileDragging : false,
       onresize_end: function()
       {
-        $("#dendrogram-viewer").dendrogram("resize_canvas");
+        if($("#dendrogram-viewer").data("parameter_image-dendrogram")) {
+          $("#dendrogram-viewer").dendrogram("resize_canvas");
+        }
       }
     },
     south:
@@ -156,7 +158,9 @@ $(document).ready(function() {
       onresize_end: function()
       {
         $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
+        if($("#table").data("parameter_image-table")) {
+          $("#table").table("resize_canvas");
+        }
       }
     },
   });
@@ -167,10 +171,12 @@ $(document).ready(function() {
     {
       resizeWhileDragging: false,
       onresize_end: function() {
-        $("#scatterplot").scatterplot("option", {
-          width: $("#scatterplot-pane").width(),
-          height: $("#scatterplot-pane").height()
-        });
+        if($("#scatterplot").data("parameter_image-scatterplot")) {
+          $("#scatterplot").scatterplot("option", {
+            width: $("#scatterplot-pane").width(),
+            height: $("#scatterplot-pane").height()
+          });
+        }
       },
     }
   });
