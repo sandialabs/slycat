@@ -85,7 +85,6 @@ jquery                  3.3.1   https://jquery.org/
 jquery.event.drag       2.3.0   https://github.com/6pac/SlickGrid
 jquery.event.drop       2.3.0   https://github.com/6pac/SlickGrid
 jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
-jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
 jquery-ui              1.12.1   https://jqueryui.com
 knockout                3.2.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
