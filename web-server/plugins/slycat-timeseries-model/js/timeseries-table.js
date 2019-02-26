@@ -4,7 +4,6 @@
 // Slickgrid-based data table widget, for use with the timeseries model.
 
 import d3 from "d3";
-import "jquery-migrate/dist/jquery-migrate.min";
 import "slickgrid/lib/jquery.event.drag-2.3.0";
 import "slickgrid/lib/jquery.event.drop-2.3.0";
 import "slickgrid/slick.core";

@@ -9,7 +9,6 @@ import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 
 import d3 from "d3";
-import "jquery-migrate/dist/jquery-migrate.min";
 import "jquery-ui";
 import "slickgrid/lib/jquery.event.drag-2.3.0";
 import "slickgrid/lib/jquery.event.drop-2.3.0";
