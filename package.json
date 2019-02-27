@@ -20,7 +20,7 @@
     "jquery-ui": "1.12.1",
     "knockout": "3.2.0",
     "knockout-mapping": "2.6.0",
-    "layout": "https://github.com/alexsielicki/layout.git",
+    "layout": "https://github.com/GedMarc/layout.git#1.7.0",
     "lodash": "^4.17.11",
     "papaparse": "^4.6.3",
     "popper.js": "^1.14.6",
