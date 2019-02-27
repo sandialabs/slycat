@@ -502,7 +502,7 @@ $(document).ready(function() {
       )
     {
       dendrogram_ready = true;
-      console.log("dendrogram ready to be initiated.");
+      // console.log("dendrogram ready to be initiated.");
 
       $("#dendrogram-pane .load-status").css("display", "none");
 
