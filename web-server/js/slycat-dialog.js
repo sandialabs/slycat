@@ -33,7 +33,7 @@ export function dialog(params)
 
 export function prompt(params)
 {
-  this.dialog({
+  dialog({
     title: params.title || "Prompt",
     message: params.message || "",
     input: true,
@@ -46,7 +46,7 @@ export function prompt(params)
 
 export function confirm(params)
 {
-  this.dialog(
+  dialog(
   {
     title: params.title || "Confirm",
     message: params.message || "",

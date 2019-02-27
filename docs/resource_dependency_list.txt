@@ -1,69 +1,74 @@
 Slycat software resource and dependency list
 
-Software dependencies for:  Slycat Release 1.5.2
+Software dependencies for:  Slycat Release 2.1.0
 
 -Python-
-Miniconda                            4.3.31    https://conda.io/miniconda.html
-backports.ssl                        0.0.9     https://pypi.python.org/pypi
+Miniconda                            4.5.12    https://docs.conda.io/en/latest/miniconda.html
+backports_abc                          0.5     https://pypi.python.org/pypi
 backports.functools_lru_cache          1.5     https://pypi.python.org/pypi
 backports.shutil_get_terminal_size   1.0.0     https://pypi.python.org/pypi
-backports_abc                          0.5     https://pypi.python.org/pypi
-bcrypt                               3.1.4     https://pypi.python.org/pypi
-Cheroot                              6.0.0     https://pypi.python.org/pypi
-CherryPy                            14.0.0     https://pypi.python.org/pypi
+backports.ssl                        0.0.9     https://pypi.python.org/pypi
+bcrypt                               3.1.6     https://pypi.python.org/pypi
+Cheroot                              6.5.4     https://pypi.python.org/pypi
+CherryPy                            17.4.1     https://pypi.python.org/pypi
+cloudpickle                          0.7.0     https://pypi.python.org/pypi
+contextlib2                          0.5.5     https://pypi.python.org/pypi
 CouchDB                                1.2     https://pypi.python.org/pypi
 Cycler                              0.10.0     https://pypi.python.org/pypi
-Cython                              0.27.3     https://pypi.python.org/pypi
-decorator                            4.2.1     https://pypi.python.org/pypi
-dill                               0.2.7.1     https://pypi.python.org/pypi
-futures                              3.2.0     https://pypi.python.org/pypi
-h5py                                 2.7.1     https://pypi.python.org/pypi
-ipykernel                            4.8.2     https://pypi.python.org/pypi
-ipyparallel                          6.1.1     https://pypi.python.org/pypi
-ipython                              5.5.0     https://pypi.python.org/pypi
+Cython                              0.29.4     https://pypi.python.org/pypi
+dask                                 1.1.1     https://pypi.python.org/pypi
+decorator                            4.3.2     https://pypi.python.org/pypi
+dill                                 0.2.9     https://pypi.python.org/pypi
+h5py                                 2.9.0     https://pypi.python.org/pypi
+ipykernel                           4.10.0     https://pypi.python.org/pypi
+ipyparallel                          6.2.3     https://pypi.python.org/pypi
+ipython                              5.8.0     https://pypi.python.org/pypi
 ipython_genutils                     0.2.0     https://pypi.python.org/pypi
-jupyter_client                       5.2.2     https://pypi.python.org/pypi
+jaraco.functools                       2.0     https://pypi.python.org/pypi
+jupyter_client                       5.2.4     https://pypi.python.org/pypi
 jupyter_core                         4.4.0     https://pypi.python.org/pypi
 kiwisolver                           1.0.1     https://pypi.python.org/pypi
-matplotlib                           2.2.0rc1  https://pypi.python.org/pypi
-more-itertools                       4.1.0     https://pypi.python.org/pypi
-networkx                               2.1     https://pypi.python.org/pypi
-numpy                               1.14.1     https://pypi.python.org/pypi
-opencv-python                      3.4.0.12    https://pypi.python.org/pypi
-paramiko                             2.4.0     https://pypi.python.org/pypi
-pathlib2                             2.3.0     https://pypi.python.org/pypi
-pexpect                              4.4.0     https://pypi.python.org/pypi
-pickleshare                          0.7.4     https://pypi.python.org/pypi
-Pillow                               5.0.0     https://pypi.python.org/pypi
-portend                                2.2     https://pypi.python.org/pypi
+matplotlib                           2.2.3     https://pypi.python.org/pypi
+more-itertools                       5.0.0     https://pypi.python.org/pypi
+networkx                               2.2     https://pypi.python.org/pypi
+numpy                               1.16.1     https://pypi.python.org/pypi
+opencv-python                      4.0.0.21    https://pypi.python.org/pypi
+paramiko                             2.4.2     https://pypi.python.org/pypi
+pathlib2                             2.3.3     https://pypi.python.org/pypi
+pexpect                              4.6.0     https://pypi.python.org/pypi
+pickleshare                          0.7.5     https://pypi.python.org/pypi
+Pillow                               5.4.1     https://pypi.python.org/pypi
+portend                                2.3     https://pypi.python.org/pypi
 prompt_toolkit                       1.0.15    https://pypi.python.org/pypi
-ptyprocess                           0.5.2     https://pypi.python.org/pypi
-pyasn1                               0.4.2     https://pypi.python.org/pypi
-pyasn1-modules                       0.2.1     https://pypi.python.org/pypi
-Pygments                             2.2.0     https://pypi.python.org/pypi
-PyNaCl                               1.2.1     https://pypi.python.org/pypi
-pyparsing                            2.2.0     https://pypi.python.org/pypi
+ptyprocess                           0.6.0     https://pypi.python.org/pypi
+pyasn1                               0.4.5     https://pypi.python.org/pypi
+pyasn1-modules                       0.2.4     https://pypi.python.org/pypi
+Pygments                             2.3.1     https://pypi.python.org/pypi
+PyNaCl                               1.3.0     https://pypi.python.org/pypi
+pyparsing                            2.3.1     https://pypi.python.org/pypi
 pystache                             0.5.4     https://pypi.python.org/pypi
-python-dateutil                      2.6.1     https://pypi.python.org/pypi
-python-ldap                          3.0.0b4   https://pypi.python.org/pypi
-python-pam                           1.8.2     https://pypi.python.org/pypi
-pytz                                2018.3     https://pypi.python.org/pypi
-PyWavelets                           0.5.2     https://pypi.python.org/pypi
-PyYAML                                 3.12    https://pypi.python.org/pypi
-pyzmq                               17.0.0     https://pypi.python.org/pypi
-repoze.lru                             0.67    https://pypi.python.org/pypi
+python-dateutil                      2.8.0     https://pypi.python.org/pypi
+python-ldap                          3.1.0     https://pypi.python.org/pypi
+python-pam                           1.8.4     https://pypi.python.org/pypi
+pytz                                2018.9     https://pypi.python.org/pypi
+PyWavelets                           1.0.1     https://pypi.python.org/pypi
+PyYAML                                 3.13    https://pypi.python.org/pypi
+pyzmq                               17.1.2     https://pypi.python.org/pypi
+repoze.lru                             0.7     https://pypi.python.org/pypi
 Routes                               2.4.1     https://pypi.python.org/pypi
-scandir                                1.7     https://pypi.python.org/pypi
-scikit-image                        0.13.1     https://pypi.python.org/pypi
-scikit-learn                        0.19.1     https://pypi.python.org/pypi
-scipy                                1.0.1     https://pypi.python.org/pypi
+scandir                                1.9     https://pypi.python.org/pypi
+scikit-image                        0.14.2     https://pypi.python.org/pypi
+scikit-learn                        0.20.2     https://pypi.python.org/pypi
+scipy                                1.2.0     https://pypi.python.org/pypi
 simplegeneric                        0.8.1     https://pypi.python.org/pypi
 singledispatch                     3.4.0.3     https://pypi.python.org/pypi
-subprocess32                         3.5.0rc1  https://pypi.python.org/pypi
-tempora                                1.1     https://pypi.python.org/pypi
-tornado                                  5     https://pypi.python.org/pypi
+subprocess32                         3.5.3     https://pypi.python.org/pypi
+tempora                                1.14    https://pypi.python.org/pypi
+toolz                                0.9.0     https://pypi.python.org/pypi
+tornado                              5.1.1     https://pypi.python.org/pypi
 traitlets                            4.3.2     https://pypi.python.org/pypi
 wcwidth                              0.1.7     https://pypi.python.org/pypi
+zc.lockfile                            1.4     https://pypi.python.org/pypi
 
 
 -Javascript-
@@ -77,8 +82,9 @@ font-awesome            4.7.0   https://fontawesome.com/
 hoist-non-react-statics 3.2.1   https://github.com/mridgway/hoist-non-react-statics
 invariant               2.2.4   https://github.com/zertosh/invariant
 jquery                  3.3.1   https://jquery.org/
+jquery.event.drag       2.3.0   https://github.com/6pac/SlickGrid
+jquery.event.drop       2.3.0   https://github.com/6pac/SlickGrid
 jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
-jquery-migrate          3.0.1   https://github.com/jquery/jquery-migrate
 jquery-ui              1.12.1   https://jqueryui.com
 knockout                3.2.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
@@ -96,6 +102,7 @@ react-redux             6.0.0   https://github.com/reduxjs/react-redux
 redux                   4.0.1   https://redux.js.org
 regenerator-runtime    0.12.1   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
 scheduler      0.13.0-alpha.1   https://reactjs.org
+slickgrid               2.4.3   https://github.com/6pac/SlickGrid
 style-loader           0.23.1   https://github.com/webpack-contrib/style-loader#readme
 symbol-observable       1.2.0 
 three                  0.92.0   https://yarnpkg.com/en/package/three
@@ -104,10 +111,8 @@ three-trackballcontrols 0.0.7   https://yarnpkg.com/en/package/three-trackballco
 urijs                  1.19.1   https://medialize.github.io/URI.js/
 
 Directly included in Slycat in slycat/web_server/js:
-jquery.event.drag         2.2   http://threedubmedia.com/code/event/drag
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
 knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections
-slickgrid                 2.2   https://github.com/mleibman/SlickGrid
 stats                      16   https://github.com/mrdoob/stats.js/blob/master/src/Stats.js
 
 Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
@@ -116,7 +121,9 @@ stickies.core           0.0.5   https://github.com/reesewill/stickies/blob/maste
 
 
 -System Services-
-Apache CouchDB   2.1.1   http://couchdb.apache.org/
+Apache CouchDB   2.3.0   https://couchdb.apache.org/
+couch-js         1.8.5   http://www.mozilla.org/js/
+couch-js-devel   1.8.5   http://www.mozilla.org/js/
 
 
 -Operating System & OS Support-

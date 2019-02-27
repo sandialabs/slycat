@@ -161,10 +161,6 @@
   display: inline-block;
   text-align: right;
 }
-#rsquared-label sup {
-  position: absolute;
-  margin-top: -3px;
-}
 .rowInput,
 .rowOutput
 {

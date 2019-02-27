@@ -1,12 +1,13 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 
-import slick_grid_css from "css/slickgrid/slick.grid.css";
-import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
+import slick_grid_css from "slickgrid/slick.grid.css";
+import slick_default_theme_css from "slickgrid/slick-default-theme.css";
+import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import ui_css from "../css/ui.css";
 
@@ -30,8 +31,6 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout";
-
-import "js/slycat-navbar";
 import "js/slycat-job-checker";
 
 // Wait for document ready

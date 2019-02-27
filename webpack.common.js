@@ -92,16 +92,6 @@ module.exports = {
   ],
   module: {
     rules: [
-      // These next two rules are needed to make jQuery Migrate 3.0.1 work, per
-      // https://github.com/jquery/jquery-migrate/issues/273#issuecomment-332527584
-      {
-        test: require.resolve("jquery-migrate"),
-        use: "imports-loader?define=>false",
-      },
-      {
-        test: require.resolve("jquery-migrate/dist/jquery-migrate.min"),
-        use: "imports-loader?define=>false",
-      },
       // This enables Babel
       { test: /\.js$/, 
         exclude: /node_modules/, 

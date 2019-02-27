@@ -792,10 +792,10 @@ _update: function()
         strokeHeight = strokeWidth;
 
     // Draw points on canvas ...
-    var time = Date;
-    if(window.performance)
-      time = window.performance;
-    var start = time.now();
+    // var time = Date;
+    // if(window.performance)
+    //   time = window.performance;
+    // var start = time.now();
     
     canvas.clearRect(0, 0, self.canvas_datum.width, self.canvas_datum.height);
     canvas.strokeStyle = "black";
@@ -818,8 +818,8 @@ _update: function()
     // canvas.fillStyle = "white";
     // canvas.fillRect(0 + 0.5, 0 + 0.5, width, height);
     // canvas.strokeRect(0 + 0.5, 0 + 0.5, width, height);
-    var end = time.now();
-    console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
+    // var end = time.now();
+    // console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
 
     // Draw points on svg ...
     // var start = performance.now();
@@ -1063,7 +1063,7 @@ _update: function()
 
   if(self.updates["update_v_label"])
   {
-    console.log("updating v label.");
+    // console.log("updating v label.");
     self.legend_layer.selectAll(".label").remove();
 
     var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));

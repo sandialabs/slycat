@@ -200,15 +200,44 @@
           <!-- ko foreach: project -->
           <li class="breadcrumb-item project" data-bind="css: {'active text-dark font-weight-bold': $parent.model().length == 0}">
             <!-- ko if: $parent.model().length != 0 -->
-            <a data-bind="text:name,attr:{href:$parent.server_root + 'projects/' + _id()}"></a>
+            <a data-bind="
+              text:name,
+              attr:{
+                href:$parent.server_root + 'projects/' + _id(),
+                'data-content': $parent.navbar_popover()
+              },
+              "
+              data-toggle="popover"
+              data-trigger="hover"
+              data-html="true"
+            ></a>
             <!-- /ko -->
             <!-- ko if: $parent.model().length == 0 -->
-            <span class="active" data-bind="text:name"></span>
+            <span class="active" 
+              data-bind="
+                text:name,
+                attr:{
+                  'data-content': $parent.navbar_popover()
+                },
+              "
+              data-toggle="popover"
+              data-trigger="hover"
+              data-html="true"
+            ></span>
             <!-- /ko -->
           </li>
           <!-- /ko -->
           <!-- ko foreach: model -->
-          <li class="breadcrumb-item active model text-dark font-weight-bold" data-bind="text:name"></li>
+          <li class="breadcrumb-item active model text-dark font-weight-bold" 
+            data-bind="
+              text:name,
+              attr:{
+                'data-content': $parent.navbar_popover()
+              },
+              "
+            data-toggle="popover"
+            data-trigger="hover"
+            data-html="true"></li>
           <!-- /ko -->
         </ol>
       </nav>
