@@ -1611,7 +1611,7 @@ $.widget("parameter_image.scatterplot",
 
         // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
         // Alex is commenting it out and always assigning the open-image class to the frame instead.
-        // if (frame.select('.resize').size())
+        // if (frame.select('.resize').length)
         //   theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
         // else
         //   theImage = frame.classed("hover-image", false).classed("open-image", true);
@@ -1687,7 +1687,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     // Don't open image if it's already open
-    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").size() > 0) {
+    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
       self._open_images(images.slice(1));
       return;
     }

@@ -1125,7 +1125,7 @@ _open_images: function(images)
   }
 
   // // Don't open image if it's already open
-  // if($(".open-image[data-uri='" + image.uri + "']").size() > 0) {
+  // if($(".open-image[data-uri='" + image.uri + "']").length > 0) {
   //   self._open_images(images.slice(1));
   //   return;
   // }
@@ -1706,7 +1706,7 @@ _schedule_hover: function(image_index)
 
   // // Disable hovering on points that already have open imges ...
   // var uri = self.options.images[self.options.indices[image_index]];
-  // if($(".open-image[data-uri='" + uri + "']").size() != 0)
+  // if($(".open-image[data-uri='" + uri + "']").length != 0)
   //   return;
 
   // Cancel any pending hover ...
