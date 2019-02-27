@@ -263,7 +263,7 @@ $(document).ready(function() {
                 // var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
 
      			// updated for download button
-    			var ALPHA_SLIDER_WIDTH = 190;
+    			var ALPHA_SLIDER_WIDTH = 180;
 
     			// default height of alpha buttons (in pixels)
     			var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
@@ -393,12 +393,17 @@ $(document).ready(function() {
                                     init_zoom_extent = bookmark["dac-zoom-extent"];
                                 }
 
-                                // initialize subset state, if bookmarked
+                                // initialize subset center, if bookmarked
                                 var init_subset_center = [.5, .5];
                                 if ("dac-subset-center" in bookmark) {
-                                    init_subset_center = bookmark["dac-subset-center"]
+                                    init_subset_center = bookmark["dac-subset-center"];
                                 }
-                                console.log(init_subset_center);
+
+                                // initialize subset itself, if bookmarked
+                                var init_mds_subset = [];
+                                if ("dac-mds-subset" in bookmark) {
+                                    init_mds_subset = bookmark["dac-mds-subset"];
+                                }
 
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
@@ -419,7 +424,8 @@ $(document).ready(function() {
 					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
-					                init_alpha_values, init_color_by_sel, init_zoom_extent);
+					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
+					                init_mds_subset);
 
                                 // set up table with editable columns
                                 setup_editable_columns (data_table_meta, data_table, meta_include_columns);

@@ -92,7 +92,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
 	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
-	init_alpha_values, init_color_by_sel, init_zoom_extent)
+	init_alpha_values, init_color_by_sel, init_zoom_extent,
+	init_subset_center, init_mds_subset)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -194,12 +195,16 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 			// input data into model
 			mds_coords = mds_data;
 
-            // set center to middle of full view
-            subset_center = [.5, .5];
+            // set center to bookmarked value, otherwise center of screen
+            subset_center = init_subset_center;
 
-            // set subset to full mds_coord set
-            for (i = 0; i < mds_coords.length; i++) {
-                mds_subset.push(1);
+            // set subset to full mds_coord set, unless subset is available
+            if (init_mds_subset.length == 0) {
+                for (i = 0; i < mds_coords.length; i++) {
+                    mds_subset.push(1);
+                }
+            } else {
+                mds_subset = init_mds_subset;
             }
             selections.update_subset(mds_subset);
 
