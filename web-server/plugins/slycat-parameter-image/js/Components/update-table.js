@@ -1,14 +1,16 @@
 'use strict';
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import ControlsButton from './controls-button';
 import '../../css/controls-button-var-options.css';
-import {FileSelector} from './file-selector';
+import { FileSelector } from './file-selector';
+import client from "js/slycat-web-client";
 
 export default function ControlsButtonUpdateTable(props) {
   const modalId = 'varUpdateTableModal';
   const title = 'Update Table';
   const [files, setfiles] = useState([new File([""], "filename")]);
   const [disabled, setDisabled] = useState(true);
+  const mid = props.mid;
 
   const cleanup = () =>
   {
@@ -31,6 +33,20 @@ export default function ControlsButtonUpdateTable(props) {
   const uploadFile = () => 
   {
     console.log(files[0].name);
+
+    client.get_model_command({
+        mid: mid,
+        type: "parameter-image",
+        command: "update-table",
+        success: function (result) {
+          console.log(result);
+          console.log("Success!");
+        },
+        error: function(){
+        console.log("Failure.");
+      }
+    });
+
     closeModal();
   };
 

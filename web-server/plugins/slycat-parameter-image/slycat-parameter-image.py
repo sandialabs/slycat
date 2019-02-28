@@ -45,6 +45,12 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(columns)
 
+  def update_table(database, model, verb, type, command, **kwargs):
+    cherrypy.log.error("Hello, from parameter space python")
+    success = "Success"
+
+    return json.dumps(success)
+
   def finish(database, model):
     """
     Called to finish the model.
@@ -62,6 +68,7 @@ def register_slycat_plugin(context):
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image", "media-columns", media_columns)
+  context.register_model_command("GET", "parameter-image", "update-table", update_table)
 
   # Register custom wizards for creating PI models.
   context.register_wizard("parameter-image", "New Parameter Space Model", require={"action":"create", "context":"project"})
