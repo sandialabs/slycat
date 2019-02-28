@@ -46,7 +46,6 @@ def register_slycat_plugin(context):
     return json.dumps(columns)
 
   def update_table(database, model, verb, type, command, **kwargs):
-    cherrypy.log.error("Hello, from parameter space python")
     success = "Success"
 
     return json.dumps(success)
