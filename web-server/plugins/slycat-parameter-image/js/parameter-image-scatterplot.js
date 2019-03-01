@@ -689,7 +689,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
@@ -894,6 +894,8 @@ $.widget("parameter_image.scatterplot",
           // .attr("y", "0")
           .attr("transform", "rotate(15)")
         ;
+      // Updating the x_label here because updating_x clears the label for some reason
+      self._schedule_update({update_x_label:true});
     }
 
     if (self.updates.update_y) {
