@@ -46,8 +46,8 @@ def register_slycat_plugin(context):
     return json.dumps(columns)
 
   def update_table(database, model, verb, type, command, **kwargs):
+    slycat.web.server.delete_model_parameter(database, model, aid="data-table")
     success = "Success"
-
     return json.dumps(success)
 
   def finish(database, model):

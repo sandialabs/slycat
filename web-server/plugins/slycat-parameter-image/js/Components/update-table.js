@@ -4,6 +4,7 @@ import ControlsButton from './controls-button';
 import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
+import fileUploader from "js/slycat-file-uploader-factory";
 
 export default function ControlsButtonUpdateTable(props) {
   const modalId = 'varUpdateTableModal';
@@ -11,6 +12,7 @@ export default function ControlsButtonUpdateTable(props) {
   const [files, setfiles] = useState([new File([""], "filename")]);
   const [disabled, setDisabled] = useState(true);
   const mid = props.mid;
+  const pid = props.pid;
 
   const cleanup = () =>
   {
@@ -39,13 +41,30 @@ export default function ControlsButtonUpdateTable(props) {
         type: "parameter-image",
         command: "update-table",
         success: function (result) {
-          console.log(result);
+            var file = files[0];
+
+            var fileObject ={
+             pid: pid,
+             mid: mid,
+             file: file,
+             aids: [["data-table"], file.name],
+             parser: "slycat-csv-parser",
+             success: function(){
+               //upload_success(component.browser);
+             },
+             error: function(){
+                //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+                //$('.local-browser-continue').toggleClass("disabled", false);
+              }
+            };
+            fileUploader.uploadFile(fileObject);
           console.log("Success!");
         },
         error: function(){
         console.log("Failure.");
       }
     });
+
 
     closeModal();
   };
