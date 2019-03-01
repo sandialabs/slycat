@@ -43,5 +43,4 @@ def register_slycat_plugin(context):
   context.register_model_command("GET", "column-wizard", "media-columns", media_columns)
 
   context.register_wizard("column-wizard", "Select Columns", require={"action":"edit", "context":"model", "model-type":["parameter-image"]})
-  context.register_wizard_resource("column-wizard", "ui.js", os.path.join(os.path.dirname(__file__), "column-ui.js"))
-  context.register_wizard_resource("column-wizard", "ui.html", os.path.join(os.path.dirname(__file__), "column-ui.html"))
+  
