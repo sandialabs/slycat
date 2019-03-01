@@ -79,7 +79,7 @@ export default function ControlsButtonVarOptions(props) {
   return (
     <React.Fragment>
       <div className="modal fade" data-backdrop="false" id={modalId}>
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <h3 className="modal-title">{title}</h3>
