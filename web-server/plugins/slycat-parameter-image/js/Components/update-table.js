@@ -51,6 +51,7 @@ export default function ControlsButtonUpdateTable(props) {
              parser: "slycat-csv-parser",
              success: function(){
                //upload_success(component.browser);
+               location.reload();
              },
              error: function(){
                 //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
