@@ -35,7 +35,8 @@ var fisher_order = null;
 var fisher_pos = null;
 
 // has the difference button ever been used?
-var diff_button_used = null;
+var diff_button_used = false;
+var diff_desired_state = null;
 
 // d3 variables for drawing MDS coords
 var scatter_plot = null;
@@ -93,7 +94,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
-	init_subset_center, init_mds_subset)
+	init_subset_center, init_mds_subset, init_fisher_order,
+	init_fisher_pos, init_diff_desired_state)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -154,8 +156,19 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	$("#dac-scatter-diff-button").on("click", diff_button);
 	$("#dac-next-three-button").on("click", next_three);
 
-	// difference button has not yet been used
-	diff_button_used = false;
+	// set up difference button state
+	fisher_order = init_fisher_order;
+	fisher_pos = init_fisher_pos;
+	if (fisher_order != null) {
+	    diff_button_used = true;
+	}
+	diff_desired_state = init_diff_desired_state;
+
+	// update difference buttons
+	if (diff_button_used) {
+	    set_diff_arrows();
+	    module.toggle_difference(diff_desired_state);
+	}
 
     // set up color by menu
 
@@ -624,22 +637,18 @@ var previous_three = function ()
 	if ((prev_pos < fisher_order.length) && (prev_pos >= 0)) {
 
 		// fire new difference event
-		var differenceEvent = new CustomEvent("DACDifferenceComputed",
-											  {detail: fisher_order.slice(prev_pos)});
+		var differenceEvent = new CustomEvent("DACDifferenceComputed", { detail: {
+										 fisher_order: fisher_order,
+										 fisher_pos: prev_pos,
+										 diff_desired_state: diff_desired_state} });
 		document.body.dispatchEvent(differenceEvent);
-
-		// enable next button
-		$("#dac-next-three-button").removeClass("disabled");
 
 		// update position in list
 		fisher_pos = prev_pos;
 
-		// check if there are any further positions
-		if (fisher_pos - 3 < 0) {
+		// set arrow buttons
+		set_diff_arrows();
 
-			// if not, disable previous button
-			$("#dac-previous-three-button").addClass("disabled");
-		}
 	}
 
 }
@@ -687,20 +696,17 @@ var diff_button = function()
 				// save current position for previous/next three buttons
 				fisher_pos = 0;
 
-				// disable previous three button
-				$("#dac-previous-three-button").addClass("disabled");
+				// set arrow buttons
+				set_diff_arrows();
 
 				// difference button has been used (show as synced)
 				module.toggle_difference(true);
 
-				// if we have more than three variable, enable next three button
-				if (fisher_inds.length > 3) {
-					$("#dac-next-three-button").removeClass("disabled");
-				}
-
 				// fire difference event
-				var differenceEvent = new CustomEvent("DACDifferenceComputed",
-													  { detail: fisher_inds });
+				var differenceEvent = new CustomEvent("DACDifferenceComputed", { detail: {
+										 fisher_order: fisher_order,
+										 fisher_pos: fisher_pos,
+										 diff_desired_state: true} });
 				document.body.dispatchEvent(differenceEvent);
 
 			},
@@ -723,29 +729,57 @@ var next_three = function ()
 	if (next_pos < fisher_order.length) {
 
 		// fire new difference event
-		var differenceEvent = new CustomEvent("DACDifferenceComputed",
-											  {detail: fisher_order.slice(next_pos)});
+		var differenceEvent = new CustomEvent("DACDifferenceComputed", { detail: {
+										 fisher_order: fisher_order,
+										 fisher_pos: next_pos,
+										 diff_desired_state: diff_desired_state} });
 		document.body.dispatchEvent(differenceEvent);
-
-		// enable previous button
-		$("#dac-previous-three-button").removeClass("disabled");
 
 		// update position in list
 		fisher_pos = next_pos;
 
-		// check if there are any further positions
-		if (fisher_pos + 3 >= fisher_order.length) {
-
-			// if not, disable next button
-			$("#dac-next-three-button").addClass("disabled");
-		}
+        // update arrow buttons
+        set_diff_arrows();
 	}
+}
+
+// set arrows according to position and order
+var set_diff_arrows = function ()
+{
+
+    // set forward arrow
+    if (fisher_pos + 3 >= fisher_order.length) {
+
+		// disable next button
+		$("#dac-next-three-button").addClass("disabled");
+
+    } else {
+
+        // enable next button
+        $("#dac-next-three-button").removeClass("disabled");
+
+    }
+
+    // set back arrow
+    if (fisher_pos - 3 < 0) {
+
+        // disable previous button
+        $("#dac-previous-three-button").addClass("disabled");
+
+    } else {
+
+        $("#dac-previous-three-button").removeClass("disabled");
+
+    }
+
 }
 
 // toggle difference button indicator to show desired state
 // true = synced, false = out of sync
 module.toggle_difference = function (desired_state)
 {
+
+    diff_desired_state = desired_state;
 
 	if (desired_state == true) {
 

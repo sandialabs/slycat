@@ -262,11 +262,14 @@ $(document).ready(function() {
     			// default width for the alpha sliders (in pixels)
                 // var ALPHA_SLIDER_WIDTH = parseInt(ui_parms["ALPHA_SLIDER_WIDTH"]);
 
-     			// updated for download button
+     			// updated for download button (and bootstrap upgrade)
     			var ALPHA_SLIDER_WIDTH = 180;
 
     			// default height of alpha buttons (in pixels)
-    			var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
+    			//var ALPHA_BUTTONS_HEIGHT = parseInt(ui_parms["ALPHA_BUTTONS_HEIGHT"]);
+
+                // changed after bootstrap upgrade
+                var ALPHA_BUTTONS_HEIGHT = 34;
 
 				// border around scatter plot (fraction of 1)
 				var SCATTER_BORDER = parseFloat(ui_parms["SCATTER_BORDER"]);
@@ -366,7 +369,15 @@ $(document).ready(function() {
                                 // get focus point
                                 var init_focus = null;
                                 if ("dac-sel-focus" in bookmark) {
+
+                                    // get bookmarked focus value
                                     init_focus = bookmark["dac-sel-focus"];
+
+                                    // make sure focus is in at least one selection
+                                    if ((init_sel_1.indexOf(init_focus) == -1) &&
+                                        (init_sel_2.indexOf(init_focus) == -1)) {
+                                         init_focus = null;
+                                    }
                                 }
 
                                 // get state of selection button, default to 1 (red)
@@ -402,7 +413,37 @@ $(document).ready(function() {
                                 // initialize subset itself, if bookmarked
                                 var init_mds_subset = [];
                                 if ("dac-mds-subset" in bookmark) {
+
+                                    // get bookmarked subset
                                     init_mds_subset = bookmark["dac-mds-subset"];
+
+                                    // check that subset is correct length
+                                    if (init_mds_subset.length != num_points) {
+                                        init_mds_subset = [];
+                                    }
+                                }
+
+                                // initialize difference button order and position
+                                var init_fisher_order = null;
+                                var init_fisher_pos = null;
+                                if ("dac-fisher-order" in bookmark) {
+
+                                    // get bookmarked fisher order and position
+                                    // (both are stored at the same time when bookmarked)
+                                    init_fisher_order = bookmark["dac-fisher-order"];
+                                    init_fisher_pos = bookmark["dac-fisher-pos"];
+
+                                    // check that order is correct length
+                                    if (init_fisher_order.length != num_vars) {
+                                        init_fisher_order = null;
+                                        init_fisher_pos = null;
+                                    }
+                                }
+
+                                // initialize difference button status
+                                var init_diff_desired_state = null;
+                                if ("dac-diff-desired-state" in bookmark) {
+                                    init_diff_desired_state = bookmark["dac-diff-desired-state"];
                                 }
 
 		   	                    // set up the alpha sliders
@@ -425,7 +466,7 @@ $(document).ready(function() {
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_mds_subset);
+					                init_mds_subset, init_fisher_order, init_fisher_pos, init_diff_desired_state);
 
                                 // set up table with editable columns
                                 setup_editable_columns (data_table_meta, data_table, meta_include_columns);
@@ -592,7 +633,7 @@ $(document).ready(function() {
 
 		// bookmark selections
 		bookmarker.updateState ({"dac-sel-1": selections.sel_1(), "dac-sel-2": selections.sel_2(),
-		                         "dac-sel-focus": selections.focus()})
+		                         "dac-sel-focus": selections.focus(), "dac-diff-desired-state": false})
     }
 
     // custom event for jumping to an individual selection in the table
@@ -622,8 +663,19 @@ $(document).ready(function() {
     // custom event for difference calculation
     function difference_computed (diff_values)
     {
+        // get variables passed
+        var fisher_order = diff_values.detail.fisher_order;
+        var fisher_pos = diff_values.detail.fisher_pos;
+        var diff_desired_state = diff_values.detail.diff_desired_state;
+
         // show first three most different plots
-        plots.change_selections(diff_values.detail);
+        plots.change_selections(fisher_order.slice(fisher_pos));
+
+        // bookmark difference values
+        bookmarker.updateState({"dac-fisher-order": fisher_order,
+                                "dac-fisher-pos": fisher_pos,
+                                "dac-diff-desired-state": diff_desired_state});
+
     }
 
     // user changed subset (can change selections as well)
