@@ -1494,7 +1494,14 @@ $.widget("parameter_image.scatterplot",
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
 
-        if ( sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image") || sourceEventTarget.classed("bootstrap-styles") || d3.event.sourceEvent.target.nodeName == "VIDEO") {
+        if ( sourceEventTarget.classed("image-frame") || 
+             sourceEventTarget.classed("image") || 
+             // For when dragging the black footer bar with icons
+             sourceEventTarget.classed("frame-footer") || 
+             sourceEventTarget.classed("bootstrap-styles") || 
+             d3.event.sourceEvent.target.nodeName == "VIDEO"
+           ) 
+        {
           frame = d3.select(this);
 
           if (frame.classed("hover-image")) {
