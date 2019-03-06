@@ -35,6 +35,7 @@ var mid = URI(window.location).segment(-1);
 
 // current plots being shown (indices & data)
 var plots_selected = [];
+var plots_displayed = [];
 var plots_selected_time = new Array(3);	// a vector of time values for plot {0,1,2}
 var plots_selected_data = new Array(3);	// a matrix of y-values for plot {0,1,2}
 
@@ -148,8 +149,10 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	// init plot order (up to number of plots available)
 	var num_init_plots = init_plots_selected.length;
 	plots_selected = init_plots_selected;
+	plots_displayed = [1, 1, 1];
     for (var i = num_init_plots; i < Math.min(num_included_plots,3); i++) {
         plots_selected.push(var_include_columns[i]);
+        plots_displayed[i] = 0;
     }
 
 	// initialize zoom level
@@ -241,9 +244,9 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	}
 
 	// set up initial size, axis labels, etc.
-	module.update_plots(num_init_plots);
+	module.update_plots();
 
-    // hide any initial plots that were not meant to be shown (but do not remove)
+    // do not show initial plots, if they are unavailable
     hide_plots(num_init_plots);
 
 }
@@ -288,12 +291,23 @@ function display_plot_pull_down(i)
 			// change value of selection
 			plots_selected[select_id] = select_value;
 
+            // show plot
+            plots_displayed[select_id] = 1;
+
 			// update newly selected plot
 			draw_plot(select_id);
 
+            // update plots selected in bookmark
+            var curr_plot_selection = []
+            for (var i = 0; i < Math.min(num_included_plots, 3); i ++) {
+                if (plots_displayed[i] == 1) {
+                    curr_plot_selection.push(plots_selected[i]);
+                }
+            }
+
 			// plot changed event
-            var plotEvent = new CustomEvent("DACPlotsChanged",
-                                          {detail: plots_selected});
+            var plotEvent = new CustomEvent("DACPlotsChanged", {detail:
+                                            curr_plot_selection});
             document.body.dispatchEvent(plotEvent);
 
 		});
@@ -373,11 +387,17 @@ function link_check_box()
 }
 
 // update selections based on other input
-module.change_selections = function(plot_selections)
+module.change_selections = function(change_plot_selections)
 {
 
 	// change number of plots to match the number of selections
-	num_plots = Math.min(3,plot_selections.length);
+	num_plots = Math.min(3,change_plot_selections.length);
+
+    // change plots to display
+    plots_displayed = [0, 0, 0];
+    for (var i = 0; i < Math.min(num_plots,3); i++) {
+        plots_displayed[i] = 1;
+    }
 
 	// update selections/unhide plots if necessary
 	var new_selection = [];
@@ -393,24 +413,21 @@ module.change_selections = function(plot_selections)
 		$("#dac-link-plot-" + (i+1)).show();
 		$("#dac-link-label-plot-" + (i+1)).show();
 
-		// show display indicator
-		plots_selected_displayed[i] = 1;
-
         // update plot
-		$("#dac-select-plot-" + (i+1)).val(plot_selections[i]).change();
+		$("#dac-select-plot-" + (i+1)).val(change_plot_selections[i]).change();
 
 		// add to new selection
-		new_selection.push(plot_selections[i]);
+		new_selection.push(change_plot_selections[i]);
 
 	}
 
-	// hide last plots if user selected less than three
-    hide_plots(num_plots);
+    // hide plots not in selection
+    hide_plots (num_plots);
 
 	// plot changed event (note this is redundant due to update plot calls,
 	// but makes sure that the correct number of plots is in the new selection)
-    var plotEvent = new CustomEvent("DACPlotsChanged",
-                                    {detail: new_selection});
+    var plotEvent = new CustomEvent("DACPlotsChanged", { detail:
+                                    new_selection});
     document.body.dispatchEvent(plotEvent);
 
 }
@@ -439,7 +456,7 @@ var hide_plots = function (num_plots)
 // refresh all plots, including size, scale, etc.
 // num_to_draw should be <= 3 (maximum of three plots
 // are ever drawn).
-module.draw = function(num_to_draw)
+module.draw = function()
 {
 
 	// draw each plot to size of container
@@ -452,7 +469,7 @@ module.draw = function(num_to_draw)
 	var num_y_ticks = Math.round(height/plot_adjustments.y_tick_freq);
 
 	// the sizes and ranges of the plots are all the same
-	for (var i = 0; i < Math.min(num_included_plots,num_to_draw); ++i) {
+	for (var i = 0; i < Math.min(num_included_plots,3); ++i) {
 
 		// change scale
 		x_scale[i].range([plot_adjustments.padding_left +
@@ -500,8 +517,10 @@ module.draw = function(num_to_draw)
 					 plot_adjustments.x_label_padding) + ")");
 		y_axis[i].ticks(num_y_ticks);
 
-		// draw actual plot
-		draw_plot(i);
+		// draw actual plot (if it should be displayed -- only for initial load)
+		if (plots_displayed[i] == 1) {
+		    draw_plot(i);
+		}
 
 	}
 }
@@ -1074,7 +1093,7 @@ function vertical_line_end ()
 // update data/plots
 // num_to_draw should be <= 3 (maximum of three plots
 // are ever drawn)
-module.update_plots = function (num_to_draw)
+module.update_plots = function ()
 {
 
 	// update plot limit indicator color
@@ -1097,7 +1116,7 @@ module.update_plots = function (num_to_draw)
 	}
 
 	// re-draw all plots
-	module.draw(num_to_draw);
+	module.draw();
 }
 
 export default module;

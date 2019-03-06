@@ -638,7 +638,7 @@ $(document).ready(function() {
         scatter_plot.toggle_difference(false);
 
         // update selections in time series plot
-        plots.update_plots(3);
+        plots.update_plots();
 
 		// update table - select corresponding rows (assumes they are stored in manage_selections.js)
 		metadata_table.select_rows();
@@ -658,7 +658,7 @@ $(document).ready(function() {
         selections.set_focus(active_selection.detail.active_sel);
 
         // re-draw curves to show active selection
-        plots.draw(3);
+        plots.draw();
 
         // highlight in scatter plot
         scatter_plot.draw();
@@ -700,7 +700,7 @@ $(document).ready(function() {
         var jump_to = selections.update_subset (new_subset.detail.new_subset);
 
         // re-draw curves to show new selections
-        plots.draw(3);
+        plots.draw();
 
         // re-draw scatter plot, before updating coordinates
         scatter_plot.draw();
