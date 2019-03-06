@@ -899,19 +899,34 @@
   z-index: 3
 }
 
+.ui-sticky-wrapper {
+  border-color: black;
+}
+
 .ui-sticky-header {
   cursor: move;
+  height: 20px;
+  border: 0;
+  font-size: 14px;
 }
 
 .ui-sticky-header i.fa {
-  padding-right: 2px;
-  padding-left: 2px;
+  padding-right: 3px;
+  padding-left: 5px;
   cursor: pointer;
   visibility: hidden;
 }
 
+.ui-sticky-header .fa-close {
+  padding-top: 2px;
+}
+
 .ui-sticky:hover i.fa, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
   visibility: visible;
+}
+
+.ui-sticky-text {
+  border-width: 0;
 }
 
 .ui-resizable-handle.ui-resizable-e {

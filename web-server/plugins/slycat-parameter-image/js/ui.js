@@ -30,6 +30,8 @@ import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
+// resizable required for stickies.core.js
+import "jquery-ui/ui/widgets/resizable";
 import "jquery-ui/ui/widget";
 import "layout";
 import "js/slycat-range-slider"; 
