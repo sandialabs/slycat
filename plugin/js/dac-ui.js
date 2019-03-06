@@ -333,6 +333,9 @@ $(document).ready(function() {
                 // set up zoom change (mainly to keep bookmarking in this module)
                 document.body.addEventListener("DACZoomChanged", zoom_changed);
 
+                // set up plot selections change (to keep bookmarking in this module)
+                document.body.addEventListener("DACPlotsChanged", plots_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -446,6 +449,18 @@ $(document).ready(function() {
                                     init_diff_desired_state = bookmark["dac-diff-desired-state"];
                                 }
 
+                                // initialize plots selected
+                                var init_plots_selected = [];
+                                if ("dac-plots-selected" in bookmark) {
+
+                                    init_plots_selected = bookmark["dac-plots-selected"];
+
+                                    // check if plots are in correct range
+                                    if (Math.max(...init_plots_selected) >= num_vars) {
+                                        init_plots_selected = [];
+                                    }
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -457,7 +472,7 @@ $(document).ready(function() {
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_meta, variables,
-				                            var_include_columns);
+				                            var_include_columns, init_plots_selected);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -623,7 +638,7 @@ $(document).ready(function() {
         scatter_plot.toggle_difference(false);
 
         // update selections in time series plot
-        plots.update_plots();
+        plots.update_plots(3);
 
 		// update table - select corresponding rows (assumes they are stored in manage_selections.js)
 		metadata_table.select_rows();
@@ -643,7 +658,7 @@ $(document).ready(function() {
         selections.set_focus(active_selection.detail.active_sel);
 
         // re-draw curves to show active selection
-        plots.draw();
+        plots.draw(3);
 
         // highlight in scatter plot
         scatter_plot.draw();
@@ -685,7 +700,7 @@ $(document).ready(function() {
         var jump_to = selections.update_subset (new_subset.detail.new_subset);
 
         // re-draw curves to show new selections
-        plots.draw();
+        plots.draw(3);
 
         // re-draw scatter plot, before updating coordinates
         scatter_plot.draw();
@@ -710,6 +725,13 @@ $(document).ready(function() {
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
                               "dac-subset-center": new_subset.detail.subset_center});
 
+    }
+
+    // event for changing time series plot selections
+    function plots_changed (new_selections)
+    {
+        // bookmark new plot selections
+        bookmarker.updateState({"dac-plots-selected": new_selections.detail});
     }
 
     // event for changing coloring of scatter plot
