@@ -45,8 +45,15 @@ def register_slycat_plugin(context):
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(columns)
 
-  def update_table(database, model, verb, type, command, **kwargs):
-    slycat.web.server.delete_model_parameter(database, model, aid="data-table")
+  def update_table(database, current_selected_model, verb, type, command, **kwargs):
+    did = current_selected_model["project_data"][0]
+    pid = current_selected_model["project"]
+    models = [current_selected_model for current_selected_model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
+    for model in models:
+      if model["project_data"][0] == did:
+        slycat.web.server.delete_model_parameter(database, model, aid="data-table")
+        model["project_data"] = []
+
     success = "Success"
     return json.dumps(success)
 
