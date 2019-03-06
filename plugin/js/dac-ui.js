@@ -451,13 +451,17 @@ $(document).ready(function() {
 
                                 // initialize plots selected
                                 var init_plots_selected = [];
+                                var init_plots_displayed = [1,1,1];
                                 if ("dac-plots-selected" in bookmark) {
 
+                                    // both selected and displayed plots are bookmarked simultaneously
                                     init_plots_selected = bookmark["dac-plots-selected"];
+                                    init_plots_displayed = bookmark["dac-plots-displayed"];
 
                                     // check if plots are in correct range
                                     if (Math.max(...init_plots_selected) >= num_vars) {
                                         init_plots_selected = [];
+                                        init_plots_displayed = [1,1,1];
                                     }
                                 }
 
@@ -472,7 +476,7 @@ $(document).ready(function() {
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_meta, variables,
-				                            var_include_columns, init_plots_selected);
+				                            var_include_columns, init_plots_selected, init_plots_displayed);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -731,7 +735,8 @@ $(document).ready(function() {
     function plots_changed (new_selections)
     {
         // bookmark new plot selections
-        bookmarker.updateState({"dac-plots-selected": new_selections.detail});
+        bookmarker.updateState({"dac-plots-selected": new_selections.detail.plots_selected,
+                                "dac-plots-displayed": new_selections.detail.plots_displayed});
     }
 
     // event for changing coloring of scatter plot

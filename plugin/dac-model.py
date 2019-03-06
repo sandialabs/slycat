@@ -182,8 +182,6 @@ def register_slycat_plugin(context):
         sel_2 = numpy.array(kwargs["selection_2"])
         include_columns = numpy.array(kwargs["include_columns"])
 
-        cherrypy.log.error(str(include_columns))
-
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
         num_vars = len(meta_dist)

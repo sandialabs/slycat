@@ -95,7 +95,7 @@ var mouse_over_line = [];
 // set up initial private variables, user interface
 module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data,
-						 INCLUDE_VARS, init_plots_selected)
+						 INCLUDE_VARS, init_plots_selected, init_plots_displayed)
 {
 
 	// set ui constants
@@ -146,13 +146,30 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 
 	}
 
-	// init plot order (up to number of plots available)
-	var num_init_plots = init_plots_selected.length;
+    // initialize selected plots to display
 	plots_selected = init_plots_selected;
-	plots_displayed = [1, 1, 1];
-    for (var i = num_init_plots; i < Math.min(num_included_plots,3); i++) {
-        plots_selected.push(var_include_columns[i]);
-        plots_displayed[i] = 0;
+	plots_displayed = init_plots_displayed;
+
+	// count number of initial plots to dipslay
+	var num_init_plots = 0;
+	for (var i = 0; i < Math.min(num_included_plots,3); i++ ) {
+	    num_init_plots = num_init_plots + init_plots_displayed[i];
+	}
+
+	// check for bookmarks
+	if (init_plots_selected.length == 0) {
+
+        // no bookmarks detected -- display first three variables
+	    for (var i = 0; i < Math.min(num_included_plots,3); i++) {
+            plots_selected.push(var_include_columns[i]);
+        }
+
+    } else {
+
+        // restore from bookmarks
+        for (var i = num_init_plots; i < Math.min(num_included_plots,3); i++) {
+            plots_selected[i] = var_include_columns[i];
+        }
     }
 
 	// initialize zoom level
@@ -297,17 +314,10 @@ function display_plot_pull_down(i)
 			// update newly selected plot
 			draw_plot(select_id);
 
-            // update plots selected in bookmark
-            var curr_plot_selection = []
-            for (var i = 0; i < Math.min(num_included_plots, 3); i ++) {
-                if (plots_displayed[i] == 1) {
-                    curr_plot_selection.push(plots_selected[i]);
-                }
-            }
-
 			// plot changed event
-            var plotEvent = new CustomEvent("DACPlotsChanged", {detail:
-                                            curr_plot_selection});
+            var plotEvent = new CustomEvent("DACPlotsChanged", {detail: {
+                                            plots_selected: plots_selected,
+                                            plots_displayed: plots_displayed}});
             document.body.dispatchEvent(plotEvent);
 
 		});
@@ -400,7 +410,6 @@ module.change_selections = function(change_plot_selections)
     }
 
 	// update selections/unhide plots if necessary
-	var new_selection = [];
 	for (var i = 0; i < Math.min(num_plots,3); ++i) {
 
 		// everything is different so we also unlink the plots
@@ -416,18 +425,19 @@ module.change_selections = function(change_plot_selections)
         // update plot
 		$("#dac-select-plot-" + (i+1)).val(change_plot_selections[i]).change();
 
-		// add to new selection
-		new_selection.push(change_plot_selections[i]);
-
 	}
 
     // hide plots not in selection
     hide_plots (num_plots);
 
+    console.log("change selection: " + plots_selected);
+    console.log("change selection: " + plots_displayed);
+
 	// plot changed event (note this is redundant due to update plot calls,
 	// but makes sure that the correct number of plots is in the new selection)
-    var plotEvent = new CustomEvent("DACPlotsChanged", { detail:
-                                    new_selection});
+    var plotEvent = new CustomEvent("DACPlotsChanged", { detail: {
+                                    plots_selected: plots_selected,
+                                    plots_displayed: plots_displayed}});
     document.body.dispatchEvent(plotEvent);
 
 }
