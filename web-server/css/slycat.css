@@ -292,6 +292,36 @@ slycat-navbar nav .alert pre
   background: #eee;
 }
 
+/* slycat-remote-browser uses flex layout to size itself to available space when displayed with other components  */
+.slycat-remote-browser-flex-layout
+{
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+.slycat-remote-browser-flex-layout slycat-remote-browser
+{
+  flex-grow: 1;
+  flex-shrink: 1;
+  /* Seems that flex needs a height to grow and shrink, so assigning arbitrary one here. */
+  height: 100px;
+  margin-bottom: 15px;
+}
+.slycat-remote-browser-flex-layout slycat-remote-browser:last-child
+{
+  margin-bottom: 0px;
+}
+.slycat-remote-browser-flex-layout slycat-parser-controls
+{
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.slycat-remote-browser-flex-layout slycat-parser-controls > .form-group
+{
+  margin-bottom: 0;
+}
+
+
 /* slycat-scrollbar component */
 
 .slycat-scrollbar
