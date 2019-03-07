@@ -2128,11 +2128,13 @@ $.widget("parameter_image.scatterplot",
               "height": (pdfWidth*(11/8.5))+10 + "px",
             })
           }
-
           // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
           // other media, but caused PDF frame to grow by 20px each time the page is refreshed. So this
           // adjustment fixes that.
-          frame_html.style({"height": image.height + 'px'});
+          else 
+          {
+            frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
+          }
 
           // Adding on overlay div to fix mouse event issues when resizing and dragging PDFs because the <object>, <iframe>,
           // and <embed> elements capture mouse events and don't propagate them to parent elements.
