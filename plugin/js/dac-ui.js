@@ -336,6 +336,9 @@ $(document).ready(function() {
                 // set up plot selections change (to keep bookmarking in this module)
                 document.body.addEventListener("DACPlotsChanged", plots_changed);
 
+                // zoom change event for time series plots
+                document.body.addEventListener("DACPlotZoomChanged", plot_zoom_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -465,6 +468,22 @@ $(document).ready(function() {
                                     }
                                 }
 
+                                // initialize plot zoom values
+                                var init_plots_zoom_x = new Array(3);
+                                var init_plots_zoom_y = new Array(3);
+                                for (var i = 0; i < 3; i++) {
+		                            init_plots_zoom_x[i] = ["-Inf", "Inf"];
+                                    init_plots_zoom_y[i] = ["-Inf", "Inf"];
+                                }
+
+                                // check for plot zoom bookmarks
+                                if ("dac-plots-zoom-x" in bookmark) {
+
+                                    // both x and y are bookmarked at the same time
+                                    init_plots_zoom_x = bookmark["dac-plots-zoom-x"];
+                                    init_plots_zoom_y = bookmark["dac-plots-zoom-y"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -476,7 +495,8 @@ $(document).ready(function() {
 				                // set up the time series plots
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_meta, variables,
-				                            var_include_columns, init_plots_selected, init_plots_displayed);
+				                            var_include_columns, init_plots_selected, init_plots_displayed,
+				                            init_plots_zoom_x, init_plots_zoom_y);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -758,6 +778,14 @@ $(document).ready(function() {
     {
         // bookmark new zoom extent
         bookmarker.updateState({"dac-zoom-extent": new_extent.detail});
+    }
+
+    // event for zoom changes in time series plots
+    function plot_zoom_changed (new_plot_zoom)
+    {
+        // bookmark new zoom extents (all three)
+        bookmarker.updateState({"dac-plots-zoom-x": new_plot_zoom.detail.plots_zoom_x,
+                                "dac-plots-zoom-y": new_plot_zoom.detail.plots_zoom_y})
     }
 
 });

@@ -40,8 +40,8 @@ var plots_selected_time = new Array(3);	// a vector of time values for plot {0,1
 var plots_selected_data = new Array(3);	// a matrix of y-values for plot {0,1,2}
 
 // zoom scale for current plots
-var plots_selected_zoom_x = new Array(3); // vectors with x-min, x-max for plot {0,1,2}
-var plots_selected_zoom_y = new Array(3); // vectors with y-min, y-max for plot {0,1,2}
+var plots_selected_zoom_x = null; // vectors with x-min, x-max for plot {0,1,2}
+var plots_selected_zoom_y = null; // vectors with y-min, y-max for plot {0,1,2}
 
 // plot resolution indicators (-1 do not show)
 var plots_selected_resolution = [];     // resolution as returned by server
@@ -95,7 +95,8 @@ var mouse_over_line = [];
 // set up initial private variables, user interface
 module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data,
-						 INCLUDE_VARS, init_plots_selected, init_plots_displayed)
+						 INCLUDE_VARS, init_plots_selected, init_plots_displayed, init_plots_zoom_x,
+						 init_plots_zoom_y)
 {
 
 	// set ui constants
@@ -172,11 +173,9 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
         }
     }
 
-	// initialize zoom level
-	for (var i = 0; i < 3; i++) {
-		plots_selected_zoom_x[i] = ["-Inf", "Inf"];
-		plots_selected_zoom_y[i] = ["-Inf", "Inf"];
-	}
+    // initialize plot zooming
+    plots_selected_zoom_x = init_plots_zoom_x;
+    plots_selected_zoom_y = init_plots_zoom_y;
 
 	// initialize full resolution and all displayed (do not show)
 	plots_selected_displayed = [0, 0, 0];
@@ -261,7 +260,8 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	}
 
 	// set up initial size, axis labels, etc.
-	module.update_plots();
+	update_plot_limit_indicator();
+	module.draw();
 
     // do not show initial plots, if they are unavailable
     hide_plots(num_init_plots);
@@ -319,6 +319,12 @@ function display_plot_pull_down(i)
                                             plots_selected: plots_selected,
                                             plots_displayed: plots_displayed}});
             document.body.dispatchEvent(plotEvent);
+
+            // plot zoom change event
+            var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
+                                 plots_zoom_x: plots_selected_zoom_x,
+                                 plots_zoom_y: plots_selected_zoom_y} });
+            document.body.dispatchEvent(plotZoomEvent);
 
 		});
 
@@ -916,9 +922,14 @@ function zoom()
 
 					// re-draw plot
 					draw_plot(j);
-
 				}
 			}
+
+            // plot zoom change event
+            var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
+                                 plots_zoom_x: plots_selected_zoom_x,
+                                 plots_zoom_y: plots_selected_zoom_y} });
+            document.body.dispatchEvent(plotZoomEvent);
 
 	} else {  // reset zoom
 
@@ -937,6 +948,12 @@ function zoom()
 
 			}
 		}
+
+        // plot zoom change event
+        var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
+                             plots_zoom_x: plots_selected_zoom_x,
+                             plots_zoom_y: plots_selected_zoom_y} });
+        document.body.dispatchEvent(plotZoomEvent);
 	};
 };
 
@@ -1107,6 +1124,30 @@ module.update_plots = function ()
 {
 
 	// update plot limit indicator color
+    update_plot_limit_indicator();
+
+	// unzoom plots (leave linked)
+	for (var i = 0; i < 3; i++) {
+
+		// unzoom plots
+		plots_selected_zoom_x[i] = ["-Inf", "Inf"];
+		plots_selected_zoom_y[i] = ["-Inf", "Inf"];
+
+	}
+
+    // plot zoom change event
+    var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
+                         plots_zoom_x: plots_selected_zoom_x,
+                         plots_zoom_y: plots_selected_zoom_y} });
+    document.body.dispatchEvent(plotZoomEvent);
+
+	// re-draw all plots
+	module.draw();
+}
+
+// update plot limit indicator color
+function update_plot_limit_indicator ()
+{
 	limit_indicator_color = "green";
 	if ((selections.len_sel_1() > max_num_plots) & (selections.len_sel_2() > max_num_plots)) {
 		limit_indicator_color = "purple";
@@ -1115,18 +1156,6 @@ module.update_plots = function ()
 	} else if (selections.len_sel_2() > max_num_plots) {
 		limit_indicator_color = "blue";
 	}
-
-	// unzoom plots (leave linked)
-	for (var i = 0; i < num_plots; i++) {
-
-		// unzoom plots
-		plots_selected_zoom_x[i] = ["-Inf", "Inf"];
-		plots_selected_zoom_y[i] = ["-Inf", "Inf"];
-
-	}
-
-	// re-draw all plots
-	module.draw();
 }
 
 export default module;
