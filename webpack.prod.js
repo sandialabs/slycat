@@ -4,6 +4,8 @@ const common = require('./webpack.common.js');
 const Visualizer = require('webpack-visualizer-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+// Commenting out ExportNodeModules plugin because it crashes with Babel7
+// const ExportNodeModules = require('webpack-node-modules-list');
 
 module.exports = merge(common, {
   mode: 'production',
@@ -36,5 +38,7 @@ module.exports = merge(common, {
       generateStatsFile: true,
       statsFilename: 'webpack-bundle-analyzer-stats.json',
     }),
+    // Commenting out ExportNodeModules plugin because it crashes with Babel7
+    // new ExportNodeModules(),
   ]
 });

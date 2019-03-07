@@ -31,23 +31,22 @@ $.widget("timeseries.controls",
     var self = this;
     var general_controls = $("#general-controls", this.element);
 
-    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
+    this.color_control = $('<div class="btn-group"></div>')
       .appendTo(general_controls)
       ;
     this.color_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Line Color"> \
+      <button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="false" title="Change Line Color"> \
         Line Color \
-        <span class="caret"></span> \
       </button> \
       ')
       .appendTo(self.color_control)
       ;
-    this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
+    this.color_items = $('<div id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
       .appendTo(self.color_control)
       ;
 
     this.csv_button = $("\
-      <button class='btn btn-default' title='Download Data Table'> \
+      <button class='btn btn-sm btn-outline-dark' title='Download Data Table'> \
         <span class='fa fa-download' aria-hidden='true'></span> \
       </button> \
       ")
@@ -64,7 +63,7 @@ $.widget("timeseries.controls",
     function openCSVSaveChoiceDialog(){
       var txt = "";
       var buttons_save = [
-        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-light", label:"Cancel"}, 
         {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
       var filteredHighlight;
@@ -187,25 +186,22 @@ $.widget("timeseries.controls",
     var self = this;
     this.color_items.empty();
     for(let value of this.options.color_variables) {
-      $("<li role='presentation'>")
+      $("<a href='#' class='dropdown-item'>")
         .toggleClass("active", self.options["color-variable"] == value)
         .attr("data-colorvariable", value)
         .appendTo(self.color_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(this.options.metadata['column-names'][value])
-            .click(function()
-            {
-              let menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
+        .html(this.options.metadata['column-names'][value])
+        .click(function()
+        {
+          let menu_item = $(this);
+          if(menu_item.hasClass("active"))
+            return false;
 
-              self.color_items.find("li").removeClass("active");
-              menu_item.addClass("active");
+          self.color_items.find("a").removeClass("active");
+          menu_item.addClass("active");
 
-              self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-            })
-        )
+          self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+        })
         ;
     }
   },
@@ -213,8 +209,8 @@ $.widget("timeseries.controls",
   _set_selected_color: function()
   {
     var self = this;
-    self.color_items.find("li").removeClass("active");
-    self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
+    self.color_items.find("a").removeClass("active");
+    self.color_items.find('a[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
   },
 
   // Clones an ArrayBuffer or Array

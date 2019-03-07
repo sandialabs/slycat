@@ -19,7 +19,7 @@ export function dialog(params)
   component.placeholder = ko.observable(params.placeholder || "");
   component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
   component.alert = ko.observable(params.alert || "");
-  component.buttons = params.buttons || [{className: "btn-default", label:"OK"}];
+  component.buttons = params.buttons || [{className: "btn-primary", label:"OK"}];
   component.container = $($.parseHTML(template)).appendTo($("body"));
   component.container.children().on("hidden.bs.modal", function()
   {
@@ -33,24 +33,24 @@ export function dialog(params)
 
 export function prompt(params)
 {
-  this.dialog({
+  dialog({
     title: params.title || "Prompt",
     message: params.message || "",
     input: true,
     value: params.value || "",
     alert: params.alert || "",
-    buttons: params.buttons || [{className: "btn-default", label: "OK"}, {className: "btn-default", label: "Cancel"}],
+    buttons: params.buttons || [{className: "btn-primary", label: "OK"}, {className: "btn-light", label: "Cancel"}],
     callback: params.callback,
   });
 }
 
 export function confirm(params)
 {
-  this.dialog(
+  dialog(
   {
     title: params.title || "Confirm",
     message: params.message || "",
-    buttons: [{className: "btn-default", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
+    buttons: [{className: "btn-light", label: "Cancel"}, {className: "btn-primary", label: "OK"}],
     callback: function(button)
     {
       if(button.label === "OK")

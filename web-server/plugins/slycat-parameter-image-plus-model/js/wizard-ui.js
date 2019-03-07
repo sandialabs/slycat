@@ -99,9 +99,6 @@ function constructor(params)
   ]);
   component.distance_measure = ko.observable('correlation-distance');
 
-  // Let's use a large dialog for this wizard because there are so many steps
-  $(".modal-dialog").addClass("modal-lg");
-
   component.create_model = function() {
     client.post_project_models({
       pid: component.project._id(),

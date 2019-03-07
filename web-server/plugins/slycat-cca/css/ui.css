@@ -17,6 +17,7 @@
 
 .ui-layout-pane, .ui-layout-container
 {
+  background: white;
   padding: 0;
   border: 0;
   margin: 0;
@@ -55,6 +56,9 @@
 #barplot-table {
   /*height: 250px;*/
   overflow: hidden;
+}
+#barplot-table * {
+  box-sizing: content-box;
 }
 .barplotHeader {
   /*overflow: hidden;*/
@@ -164,10 +168,6 @@
 .barplotCell {
   display: inline-block;
   text-align: right;
-}
-#rsquared-label sup {
-  position: absolute;
-  margin-top: -3px;
 }
 .rowInput,
 .rowOutput
@@ -309,25 +309,11 @@ a
 {
   cursor: pointer;
 }
-.bootstrap-styles .btn-default:hover,
-.bootstrap-styles .btn-default.focus,
-.bootstrap-styles .btn-default:focus
-{
-    background-color: white;
-}
-.bootstrap-styles .btn-default:active, 
-.bootstrap-styles .btn-default.active,
-.bootstrap-styles .btn-default.focus.active,
-.bootstrap-styles .open > .btn-default.dropdown-toggle,
-.bootstrap-styles .open > .btn-default.dropdown-toggle:hover
-{
-    background-color: #E6E6E6;
-}
 #controls-pane .bootstrap-styles .dropdown-menu
 {
   max-height: 500px;
   overflow-y: auto;
 }
-#controls-pane .center {
-  margin: 2px 0;
+#cca-controls {
+  height: 100%;
 }

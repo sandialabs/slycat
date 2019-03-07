@@ -253,12 +253,12 @@ class Agent(agent.Agent):
         f.write("module load %s\n" % module_name)
         f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)\n")
         f.write("echo \"Creating profile ${profile}\"\n")
-        f.write("ipython profile create --parallel --profile=${profile}\n")
+        f.write("ipython profile create --parallel \n")
         f.write("echo \"Launching controller\"\n")
-        f.write("ipcontroller --ip='*' --profile=${profile} &\n")
+        f.write("ipcontroller --ip='*' &\n")
         f.write("sleep 1m\n")
         f.write("echo \"Launching engines\"\n")
-        f.write("srun ipengine --profile=${profile} --location=$(hostname) &\n")
+        f.write("srun ipengine &\n")
         f.write("sleep 1m\n")
         f.write("echo \"Launching job\"\n")
 
@@ -305,3 +305,4 @@ class Agent(agent.Agent):
 if __name__ == "__main__":
     slurm_cluster_agent = Agent()
     slurm_cluster_agent.run()
+

@@ -1,53 +1,53 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
 <div class="modal-header">
+  <h3 class="modal-title">Project Details</h3>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">Project Details</h3>
 </div>
 <div class="modal-body">
-  <form class="form-horizontal" data-bind="with: viewModel.project">
-    <div class="panel panel-default">
-      <div class="panel-heading">
+  <form data-bind="with: viewModel.project">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Name</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <p id="slycat-edit-project-name" type="text" placeholder="Name" data-bind="text:name"></p>
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Description</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <p data-bind="text:description"></p>
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Members</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <div class="row">
           <div class="col-sm-12">
           <!-- ko foreach: acl.administrators -->
             <div style="margin: 5px;" class="btn-group" role="group">
-              <div class="btn btn-xs btn-danger" style="pointer-events: none;">
+              <div class="btn btn-sm btn-danger" style="pointer-events: none;">
                 <span data-bind="text:user"></span>
               </div>
             </div>
           <!-- /ko -->
           <!-- ko foreach: acl.writers -->
             <div style="margin: 5px;" class="btn-group" role="group">
-              <div class="btn btn-xs btn-warning" style="pointer-events: none;">
+              <div class="btn btn-sm btn-warning" style="pointer-events: none;">
                 <span data-bind="text:user"></span>
               </div>
             </div>
           <!-- /ko -->
           <!-- ko foreach: acl.readers -->
             <div style="margin: 5px;" class="btn-group" role="group">
-              <div class="btn btn-xs btn-primary" style="pointer-events: none;">
+              <div class="btn btn-sm btn-primary" style="pointer-events: none;">
                 <span data-bind="text:user"></span>
               </div>
             </div>
@@ -59,6 +59,6 @@
   </form>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" data-dismiss="modal">Close</button>
+  <button class="btn btn-primary" data-dismiss="modal">Close</button>
 </div>
 

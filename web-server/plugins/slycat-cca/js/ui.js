@@ -1,10 +1,7 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import jquery_ui_css from "jquery-ui/themes/base/jquery-ui.css";
-import slick_grid_css from "css/slickgrid/slick.grid.css";
-import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
+import jquery_ui_css from "jquery-ui/themes/base/all.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
 
@@ -14,16 +11,22 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import URI from "urijs";
 import * as chunker from "js/chunker";
-import "./cca-legend";
 import "./cca-table";
+import "./cca-legend";
 import "./cca-controls";
 import "./cca-barplot";
 import "./cca-scatterplot";
 import "./color-switcher";
+
 import "jquery-ui";
-import "js/jquery.layout-latest.min";
+// disable-selection and draggable required for jquery.layout resizing functionality
+import "jquery-ui/ui/disable-selection";
+import "jquery-ui/ui/widgets/draggable";
+// resizable required for CCA barplotGroupInputs
+import "jquery-ui/ui/widgets/resizable";
+import "layout";
+
 import "js/jquery.scrollintoview.min";
-import "js/slycat-navbar"
 
 // Wait for document ready
 $(document).ready(function() {
@@ -267,35 +270,49 @@ $(document).ready(function() {
     applyDefaultStyles: false,
     north:
     {
-      size: 28,
+      size: 39,
       resizable: false,
     },
     west:
     {
       size: $("#cca-model").width() / 2,
       resizeWhileDragging: false,
-      onresize: function() { $("#barplot-table").barplot("resize_canvas"); },
+      onresize_end: function() { 
+        if($("#barplot-table").data("cca-barplot")) {
+          $("#barplot-table").barplot("resize_canvas"); 
+        }
+      },
     },
     center:
     {
       resizeWhileDragging: false,
-      onresize: function() { $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); },
+      onresize_end: function() { 
+        if($("#scatterplot").data("cca-scatterplot")) {
+          $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
+        }
+      },
     },
     east:
     {
       size: 130,
       resizeWhileDragging: false,
-      onresize: function() { $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); },
+      onresize_end: function() { 
+        if($("#legend").data("cca-legend")) {
+          $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+        }
+      },
     },
     south:
     {
       size: $("body").height() / 2,
       resizeWhileDragging: false,
-      onresize: function()
+      onresize_end: function()
       {
-        $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
-      }
+        if($("#table").data("cca-table")) {
+          $("#table").css("height", $("#table-pane").height());
+          $("#table").table("resize_canvas");
+        }
+      },
     },
   });
 

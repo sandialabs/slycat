@@ -12,7 +12,7 @@ ko.components.register("slycat-table-ingestion",
   viewModel: function(params)
   {
     var component = this;
-    component.variables = params.variables;
+    component.variables = ko.isObservable(params.variables) ? params.variables : ko.mapping.fromJS(params.variables);
     component.properties = params.properties;
 
     component.selected = ko.pureComputed(function(){

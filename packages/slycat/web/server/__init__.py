@@ -15,14 +15,27 @@ import slycat.hyperchunks
 import slycat.web.server.hdf5
 import slycat.web.server.remote
 from slycat.web.server.cache import Cache
-from cherrypy._cpcompat import base64_decode
 import urlparse
 import functools
 import threading
+import base64
+import six
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
 model_locks = {}
+
+def tonative(n, encoding='ISO-8859-1'):
+    """Return the given string as a native string in the given encoding."""
+    # In Python 2, the native string type is bytes.
+    if isinstance(n, six.text_type):  # unicode for Python 2
+        return n.encode(encoding)
+    return n
+
+def base64_decode(n, encoding='ISO-8859-1'):	
+    """Return the native string base64-decoded (as a native string)."""	
+    decoded = base64.decodestring(n.encode('ascii'))	
+    return tonative(decoded, encoding)
 
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -104,6 +117,22 @@ def update_model(database, model, **kwargs):
             model[name] = value
     database.save(model)
 
+def parse_existing_file(database, parser, input, attachment, model, aid):
+    """
+    calls the parse function specified by the registered parser
+    :return: not used
+    """
+    kwargs = {}
+    aids = []
+    aids.append(aid)
+    try:
+        slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
+                                                                  aids, **kwargs)
+    except Exception as e:
+        cherrypy.log.error("[MICROSERVICE] Exception parsing posted files: %s" % e)
+        import traceback
+        cherrypy.log.error(traceback.format_exc())
+    cherrypy.log.error("[MICROSERVICE] Upload parsing finished.")
 
 @cache_it
 def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
@@ -497,6 +526,24 @@ def get_remote_file(sid, path):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path)
 
+def write_remote_file(sid, path, data):
+    """Returns the content of a file from a remote system.
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  path : string
+    Path for the requested file
+
+  Returns
+  -------
+  content : string
+    Content of the requested file
+  """
+    with slycat.web.server.remote.get_session(sid) as session:
+        return session.write_file(path, data)
+
 def get_remote_file_server(client, sid, path):
     """Returns the content of a file from a remote system.
 
@@ -555,29 +602,31 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 def ssh_connect(hostname=None, username=None, password=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    
+
     if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] == "certificate":
         import traceback
         _certFn = "gen-rsa-ssh-cert"
         if _certFn not in slycat.web.server.plugin.manager.utilities:
             raise Exception("Unknown ssh_connect plugin: %s." % _certFn)
-        
+
         try:
             # get SSH cert from SSO server
-            RSAcert = slycat.web.server.plugin.manager.utilities[_certFn]( )
+            RSAcert = slycat.web.server.plugin.manager.utilities[_certFn]()
             ssh.connect(hostname=hostname, username=cherrypy.request.login, pkey=RSAcert,
                         port=slycat.web.server.config["slycat-web-server"]["remote-authentication"]["port"])
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (cherrypy.request.login, hostname, str(e)))
+            cherrypy.log.error("ssh_connect cert method, authentication failed for %s@%s: %s" % (
+                cherrypy.request.login, hostname, str(e)))
             cherrypy.log.error("ssh_connect cert method, called ssh.connect traceback: %s" % traceback.print_exc())
             raise cherrypy.HTTPError("403 Remote authentication failed.")
     else:
         try:
             ssh.connect(hostname=hostname, username=username, password=password)
         except paramiko.AuthenticationException as e:
-            cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (username, hostname, str(e)))
+            cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (
+                username, hostname, str(e)))
             raise cherrypy.HTTPError("403 Remote authentication failed.")
-    
+
     ssh.get_transport().set_keepalive(5)
     return ssh
 
@@ -593,10 +642,14 @@ def get_password_function():
             slycat.email.send_error("slycat-standard-authentication.py authenticate",
                                     "cherrypy.HTTPError 500 no password check plugin found.")
             raise cherrypy.HTTPError("500 No password check plugin found.")
-        get_password_function.password_check = functools.partial(slycat.web.server.plugin.manager.password_checks[plugin], *args,
-                                                 **kwargs)
+        get_password_function.password_check = functools.partial(
+            slycat.web.server.plugin.manager.password_checks[plugin], *args,
+            **kwargs)
     return get_password_function.password_check
+
+
 get_password_function.password_check = None
+
 
 def response_url():
     """
@@ -649,12 +702,13 @@ def decode_username_and_password():
     return user_name, password
 
 
-def clean_up_old_session():
+def clean_up_old_session(user_name=None):
     """
     try and delete any outdated sessions
     for the user if they have the cookie for it
     :return:no-op
     """
+    cherrypy.log.error("cleaning all sessions for %s" % user_name)
     if "slycatauth" in cherrypy.request.cookie:
         try:
             # cherrypy.log.error("found old session trying to delete it ")
@@ -666,9 +720,22 @@ def clean_up_old_session():
         except:
             # if an exception was throw there is nothing to be done
             pass
+    if user_name is not None:
+        try:
+            couchdb = slycat.web.server.database.couchdb.connect()
+            sessions = [session for session in couchdb.scan("slycat/sessions") if
+                        session["creator"] == user_name]
+            if sessions:
+                cherrypy.log.error("sessions found %s" % user_name)
+                for session in sessions:
+                    couchdb.delete(session)
+                    cherrypy.log.error("sessions deleted %s" % user_name)
+        except:
+            # if an exception was throw there is nothing to be done
+            pass
 
 
-def check_user(session_user, apache_user, couchdb, sid, session):
+def check_user(session_user, apache_user, sid):
     """
     check to see if the session user is equal to the apache user raise 403 and delete the
     session if they are not equal
@@ -682,11 +749,19 @@ def check_user(session_user, apache_user, couchdb, sid, session):
     if session_user != apache_user:
         cherrypy.log.error("session_user::%s is not equal to apache_user::%s in standard auth"
                            "deleting session and throwing 403 error to the browser" % (session_user, apache_user))
-        couchdb.delete(session)
+        # force a lock so only one delete is called at a time
+        with slycat.web.server.database.couchdb.db_lock:
+            # we need to wrap this in a try catch in case the session is already removed
+            try:
+                couchdb = slycat.web.server.database.couchdb.connect()
+                session = couchdb.get("session", sid)
+                couchdb.delete(session)
+            except:
+                # if we errored here the session has already been removed so we just need to return
+                pass
         # expire the old cookie
         cherrypy.response.cookie["slycatauth"] = sid
         cherrypy.response.cookie["slycatauth"]['expires'] = 0
-        session = None
         cherrypy.response.status = "403 Forbidden"
         raise cherrypy.HTTPError(403)
 
@@ -698,7 +773,6 @@ def create_single_sign_on_session(remote_ip, auth_user):
     create a session and return.
     :return: not used
     """
-    clean_up_old_session()
     # must define groups but not populating at the moment !!!
     groups = []
 
@@ -706,10 +780,12 @@ def create_single_sign_on_session(remote_ip, auth_user):
     cherrypy.log.error("++ create_single_sign_on_session creating session for %s" % auth_user)
     sid = uuid.uuid4().hex
     session = {"created": datetime.datetime.utcnow(), "creator": auth_user}
-    database = slycat.web.server.database.couchdb.connect()
-    database.save(
-        {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
-         'groups': groups, 'ip': remote_ip, "sessions": []})
+    with slycat.web.server.database.couchdb.db_lock:
+        clean_up_old_session(auth_user)
+        database = slycat.web.server.database.couchdb.connect()
+        database.save(
+            {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
+             'groups': groups, 'ip': remote_ip, "sessions": []})
 
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
@@ -762,6 +838,7 @@ def check_rules(groups):
                     pass
             if deny:
                 raise cherrypy.HTTPError("403 User denied by authentication rules.")
+
 
 def check_https_get_remote_ip():
     """

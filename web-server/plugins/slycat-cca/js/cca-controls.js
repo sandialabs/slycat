@@ -25,23 +25,22 @@ $.widget("cca.controls",
   {
   	var self = this;
 
-    this.color_control = $('<div class="btn-group btn-group-xs"></div>')
+    this.color_control = $('<div class="btn-group"></div>')
       .appendTo(this.element)
       ;
     this.color_button = $('\
-      <button class="btn btn-default dropdown-toggle" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Point Color"> \
+      <button class="btn dropdown-toggle btn-sm btn-outline-dark" type="button" id="color-dropdown" data-toggle="dropdown" aria-expanded="false" title="Change Point Color"> \
         Point Color \
-        <span class="caret"></span> \
       </button> \
       ')
       .appendTo(self.color_control)
       ;
-    this.color_items = $('<ul id="y-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="color-dropdown">')
+    this.color_items = $('<div id="y-axis-switcher" class="dropdown-menu" aria-labelledby="color-dropdown">')
       .appendTo(self.color_control)
       ;
 
   	this.csv_button = $("\
-      <button class='btn btn-default' title='Download Data Table'> \
+      <button class='btn btn-sm btn-outline-dark' title='Download Data Table'> \
         <span class='fa fa-download' aria-hidden='true'></span> \
       </button> \
       ")
@@ -58,7 +57,7 @@ $.widget("cca.controls",
     function openCSVSaveChoiceDialog(){
       var txt = "";
       var buttons_save = [
-        {className: "btn-default", label:"Cancel"}, 
+        {className: "btn-light", label:"Cancel"}, 
         {className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"}
       ];
 
@@ -155,25 +154,22 @@ $.widget("cca.controls",
     var self = this;
     this.color_items.empty();
     for(var i = 0; i < this.options.color_variables.length; i++) {
-      $("<li role='presentation'>")
+      $("<a href='#' class='dropdown-item'>")
         .toggleClass("active", self.options["color-variable"] == self.options.color_variables[i])
         .attr("data-colorvariable", this.options.color_variables[i])
         .appendTo(self.color_items)
-        .append(
-          $('<a role="menuitem" tabindex="-1">')
-            .html(this.options.metadata['column-names'][this.options.color_variables[i]])
-            .click(function()
-            {
-              var menu_item = $(this).parent();
-              if(menu_item.hasClass("active"))
-                return false;
+        .html(this.options.metadata['column-names'][this.options.color_variables[i]])
+        .click(function()
+        {
+          var menu_item = $(this);
+          if(menu_item.hasClass("active"))
+            return false;
 
-              self.color_items.find("li").removeClass("active");
-              menu_item.addClass("active");
+          self.color_items.find("a").removeClass("active");
+          menu_item.addClass("active");
 
-              self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
-            })
-        )
+          self.element.trigger("color-selection-changed", menu_item.attr("data-colorvariable"));
+        })
         ;
     }
   },
@@ -181,8 +177,8 @@ $.widget("cca.controls",
   _set_selected_color: function()
   {
     var self = this;
-    self.color_items.find("li").removeClass("active");
-    self.color_items.find('li[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
+    self.color_items.find("a").removeClass("active");
+    self.color_items.find('a[data-colorvariable="' + self.options["color-variable"] + '"]').addClass("active");
   },
 
   _setOption: function(key, value)

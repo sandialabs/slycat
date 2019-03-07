@@ -1,122 +1,122 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
 <div class="modal-header">
+  <h3 class="modal-title">Model Details</h3>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">Model Details</h3>
 </div>
 <div class="modal-body">
-  <form class="form-horizontal">
-    <div class="panel panel-default">
-      <div class="panel-heading">
+  <form>
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Name</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span id="slycat-edit-project-name" type="text" placeholder="Name" data-bind="text:model.name"></span>
       </div>
     </div>
-    <div class="panel panel-default" data-bind="visible:model.description">
-      <div class="panel-heading">
+    <div class="card mb-3" data-bind="visible:model.description">
+      <div class="card-header">
         <strong>Description</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:model.description"></span>
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Delta Creation Time</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.delta_creation_time"></span> minutes
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Analysis Computation Time</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.analysis_computation_time"></span> seconds
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Database Creation Time</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.db_creation_time"></span> seconds
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Job Queue Time</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.job_pending_time"></span> minutes
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Job Running Time</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.job_running_time"></span> minutes
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Model Computation Time</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.model_compute_time"></span> minutes
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>CouchDB Doc Size</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.couchdb_doc_size"></span> mb
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Model HDF5 File Size</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.hdf5_file_size"></span> mb
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Total Model Data Size</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.total_server_data_size"></span> mb
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>% of total server HDF5 file store</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.hdf5_footprint"></span> % of <span data-bind="text:details.hdf5_store_size"></span> mb
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Server cache size</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <span data-bind="text:details.server_cache_size"></span> mb
       </div>
     </div>
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <div class="card mb-3">
+      <div class="card-header">
         <strong>Model Raw Data</strong>
       </div>
-      <div class="panel-body">
+      <div class="card-body">
         <pre><code data-bind="text:JSON.stringify(ko.toJS(details.model()), null, 2)"></code></pre>
       </div>
     </div>
@@ -124,6 +124,6 @@
   </form>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" data-dismiss="modal">Close</button>
+  <button class="btn btn-primary" data-dismiss="modal">Close</button>
 </div>
 

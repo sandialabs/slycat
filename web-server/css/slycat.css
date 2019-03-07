@@ -5,20 +5,26 @@
 html
 {
   font-family: sans-serif;
-  font-size: 10px;
+  font-size: 16px;
   -ms-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-text-size-adjust: 100%;
+  background-color: #f2f2f2;
 }
 
 body
 {
-  background-color: rgb(215, 215, 215);
   color: #333333;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 14px;
   line-height: 1.42857;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+html#slycat-model-page,
+html#slycat-model-page body
+{
+  height: 100%;
 }
 
 .bootstrap-styles .navbar
@@ -35,44 +41,28 @@ body
 
 .bootstrap-styles .navbar-brand
 {
-  background: url("slycat-logo-navbar.png") transparent 0 15px no-repeat;
+  background: url("slycat-logo-navbar.png") transparent 0 center no-repeat;
+  min-height: 38px;
   background-size: auto 20px;
   padding-right: 0;
   text-align: right;
   padding-left: 110px;
   color: #353535 !important;
 }
-.bootstrap-styles .navbar > .container .navbar-brand {
+.bootstrap-styles .navbar > .container .navbar-brand 
+{
   margin-left: 0;
 }
-
 .bootstrap-styles .navbar .breadcrumb
 {
+  margin-bottom: 0;
   background-color: transparent;
-  margin: 8px 0 0 0;
-  padding-left: 0;
-  padding-right: 0;
-  height: 36px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.navbar .breadcrumb .project,
-.navbar .breadcrumb .model
-{
-  display: inline;
-}
 
+}
 .bootstrap-styles .navbar .breadcrumb a
 {
   color: rgb(136, 0, 0);
 }
-
-.bootstrap-styles .navbar .breadcrumb > li + li:before
-{
-  color: rgb(119, 119, 119);
-}
-
 .bootstrap-styles .navbar-btn
 {
   margin-left: 0;
@@ -99,13 +89,18 @@ body
   position: relative;
   padding-right: 95px !important;
 }
-.nav-bookmarks .bookmark-delete {
+.nav-bookmarks .bookmark-delete,
+.nav-bookmarks .bookmark-edit {
   position: absolute;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.775rem;
+  line-height: 1.4;
+}
+.nav-bookmarks .bookmark-delete {
   right: 20px;
 }
 .nav-bookmarks .bookmark-edit {
-  position: absolute;
-  right: 43px;
+  right: 49px;
 }
 
 .bootstrap-styles .modal .jumbotron
@@ -135,18 +130,6 @@ slycat-navbar nav .alert pre
 #slycat-wizard .nav-tabs, #slycat-wizard .nav-pills
 {
   margin-bottom: 24px;
-}
-
-#slycat-wizard .modal-body
-{
-  height: calc(100% - 65px - 64px);
-  min-height: 200px;
-  overflow: auto;
-}
-
-#slycat-wizard .modal-content {
-  resize: both;
-  overflow: auto;
 }
 
 #slycat-wizard .steps
@@ -239,17 +222,20 @@ slycat-navbar nav .alert pre
 
 .slycat-content
 {
+  flex: 1;
   background-color: #f2f2f2;
   display: -webkit-flex;
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
-  min-height: calc(100vh - 50px);
 }
 
-#slycat-projects .container
+#slycat-projects .container,
+#slycat-models .container,
+#slycat-templates .container
 {
   padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 /* slycat-remote-browser component */
@@ -305,6 +291,36 @@ slycat-navbar nav .alert pre
 {
   background: #eee;
 }
+
+/* slycat-remote-browser uses flex layout to size itself to available space when displayed with other components  */
+.slycat-remote-browser-flex-layout
+{
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+.slycat-remote-browser-flex-layout slycat-remote-browser
+{
+  flex-grow: 1;
+  flex-shrink: 1;
+  /* Seems that flex needs a height to grow and shrink, so assigning arbitrary one here. */
+  height: 100px;
+  margin-bottom: 15px;
+}
+.slycat-remote-browser-flex-layout slycat-remote-browser:last-child
+{
+  margin-bottom: 0px;
+}
+.slycat-remote-browser-flex-layout slycat-parser-controls
+{
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.slycat-remote-browser-flex-layout slycat-parser-controls > .form-group
+{
+  margin-bottom: 0;
+}
+
 
 /* slycat-scrollbar component */
 
@@ -464,12 +480,6 @@ slycat-navbar nav .alert pre
   text-decoration: none;
 }
 
-.zoom-sensitive
-{
-  max-height: 90%;
-  overflow: auto;
-}
-
 /* slycat-table-ingestion component */
 
 .slycat-table-ingestion table
@@ -558,21 +568,8 @@ slycat-navbar nav .alert pre
   color: #777777;
   font-weight: normal;
 }
-.bootstrap-styles .navbar-menus {
-  margin: 14px 15px;
-}
-.navbar-personal .dropdown-toggle {
-  padding-right: 0 !important;
-}
-.bootstrap-styles .navbar-default .navbar-nav > .open > a,
-.bootstrap-styles .navbar-default .navbar-nav > .open > a:hover,
-.bootstrap-styles .navbar-default .navbar-nav > .open > a:focus
-{
-  background-color: transparent;
-}
 textarea,
 input,
-#slycat-wizard .modal-body
 {
   resize: none;
 }
@@ -596,4 +593,18 @@ input,
 label.bottom-margin 
 {
   margin-bottom: 20px;
+}
+
+/* Making sure table ingestion component inside variable options dialog does not extend past viewport */
+#varOptionsModal .modal-dialog {
+  max-height: 90%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+/* toggle buttons can't show hover effect when not active because it looks like the button was never toggled from active state */
+.slycatControlsButtonToggle:not(.active):hover
+{
+  background-color: transparent;
+  color: #343a40;
 }

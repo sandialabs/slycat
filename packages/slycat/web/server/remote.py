@@ -31,6 +31,7 @@ the same client IP address is allowed to access the session.
 import datetime
 import json
 import os
+import base64
 import stat
 import sys
 import threading
@@ -38,7 +39,7 @@ import time
 import uuid
 import cherrypy
 import paramiko
-
+import socket
 import slycat.email
 import slycat.mime_type
 import slycat.web.server.authentication
@@ -89,9 +90,10 @@ class Session(object):
 
   """
 
-    def __init__(self, client, username, hostname, ssh, sftp, agent=None):
+    def __init__(self, sid, client, username, hostname, ssh, sftp, agent=None):
         now = datetime.datetime.utcnow()
         self._client = client
+        self._sid = sid
         self._username = username
         self._hostname = hostname
         self._ssh = ssh
@@ -578,9 +580,10 @@ class Session(object):
             raise cherrypy.HTTPError(404, "no Slycat agent present on remote host.")
 
         # get the name of our slycat module on the hpc
-        command["module-name"] = None
-        if "module-name" in slycat.web.server.config["slycat-web-server"]:
-            command["module-name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
+        if command["hpc"]["is_hpc_job"] and "parameters" in command["hpc"]:
+            command["hpc"]["parameters"]["module_name"] = None
+            if "module-name" in slycat.web.server.config["slycat-web-server"]:
+                command["hpc"]["parameters"]["module_name"] = slycat.web.server.config["slycat-web-server"]["module-name"]
         stdin, stdout, stderr = self._agent
         payload = {
             "action": "run-remote-command",
@@ -704,9 +707,12 @@ class Session(object):
                 command["directory-reject"] = directory_reject
             if directory_allow is not None:
                 command["directory-allow"] = directory_allow
-
-            stdin.write("%s\n" % json.dumps(command))
-            stdin.flush()
+            try:
+                stdin.write("%s\n" % json.dumps(command))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
@@ -755,6 +761,96 @@ class Session(object):
             slycat.email.send_error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s" % str(e))
             raise cherrypy.HTTPError(400)
 
+    def write_file(self, path, data, **kwargs):
+        '''
+        Todo: fill this section out
+        '''
+        cache = kwargs.get("cache", None)
+        project = kwargs.get("project", None)
+        key = kwargs.get("key", None)
+
+        # Sanity-check arguments.
+        if cache not in [None, "project"]:
+            slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                    "cherrypy.HTTPError 400 unknown cache type: %s." % cache)
+            raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
+        if cache is not None:
+            if project is None:
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 must specify project ID.")
+                raise cherrypy.HTTPError("400 Must specify project id.")
+            if key is None:
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 must specify cache key.")
+                raise cherrypy.HTTPError("400 Must specify cache key.")
+
+        # Use the agent to retrieve a file.
+        if self._agent is not None:
+            stdin, stdout, stderr = self._agent
+            try:
+                cherrypy.log.error("Writing to the agent")
+                stdin.write("%s\n" % json.dumps({"action": "write-file", 
+                    "path": path, "data": base64.encodestring(data)}))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
+            metadata = json.loads(stdout.readline())
+            cherrypy.log.error("reading %s" % metadata)
+
+            if metadata["message"] == "Path must be absolute.":
+                cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
+                    self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (
+                                            self.hostname, path))
+                raise cherrypy.HTTPError("400 Path not absolute.")
+            elif metadata["message"] == "No read permission.":
+                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
+                    self.hostname, path)
+                cherrypy.response.headers[
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has" \
+                                       " access to %s, and don't forget to set appropriate permissions" \
+                                       " on all the parent directories!" % (
+                                           self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 you do not have permission to "
+                                        "retrieve %s:%s. Check the filesystem on %s to verify that"
+                                        " your user has access to %s, and don't forget to set appropriate "
+                                        "permissions on all the parent directories." % (
+                                            self.hostname, path, self.hostname, path))
+                raise cherrypy.HTTPError("400 Access denied.")
+            elif metadata["message"] == "Path not found.":
+                cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
+                    self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
+                                            self.hostname, path))
+                raise cherrypy.HTTPError("400 File not found.")
+            elif metadata["message"] == "Directory unreadable.":
+                cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (
+                    self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
+                raise cherrypy.HTTPError("400 Can't read directory.")
+            elif metadata["message"] == "Access denied.":
+                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
+                    self.hostname, path)
+                cherrypy.response.headers[
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access" \
+                                       " to %s, and don't forget to set appropriate permissions on all" \
+                                       " the parent directories!" % (
+                                           self.hostname, path)
+                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 you do not have permission to"
+                                        " retrieve %s:%s. Check the filesystem on %s to verify "
+                                        "that your user has access to %s, and don't forget to set"
+                                        " appropriate permissions on all the parent directories." % (
+                                            self.hostname, path, self.hostname, path))
+                raise cherrypy.HTTPError("400 Access denied.")
+            return metadata
+        return "failed to write"
+
     def get_file(self, path, **kwargs):
         cache = kwargs.get("cache", None)
         project = kwargs.get("project", None)
@@ -778,8 +874,12 @@ class Session(object):
         # Use the agent to retrieve a file.
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
-            stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
-            stdin.flush()
+            try:
+                stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
             metadata = json.loads(stdout.readline())
 
             if metadata["message"] == "Path must be absolute.":
@@ -1123,10 +1223,10 @@ def create_session(hostname, username, password, agent):
                 raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
             agent = (stdin, stdout, stderr)
             with session_cache_lock:
-                session_cache[sid] = Session(client, username, hostname, ssh, sftp, agent)
+                session_cache[sid] = Session(sid, client, username, hostname, ssh, sftp, agent)
         else:
             with session_cache_lock:
-                session_cache[sid] = Session(client, username, hostname, ssh, sftp)
+                session_cache[sid] = Session(sid, client, username, hostname, ssh, sftp)
         return sid
     except cherrypy.HTTPError as e:
         cherrypy.log.error("Agent startup failed for %s@%s: %s" % (username, hostname, e.status))

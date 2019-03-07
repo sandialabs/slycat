@@ -2,33 +2,30 @@
 
 <div class="parameter-image" id="parameter-image-plus-layout">
 
-	<div id="controls-pane" class="ui-layout-north">
-    <div class="center bootstrap-styles" id="controls">
+	<div id="controls-pane" class="ui-layout-north bootstrap-styles">
+    <div class="d-flex justify-content-center align-items-center mx-2" id="controls" style="height: 100%;">
       <div class="form-inline">
         <div class="form-group">
 
-          <div id="filter-controls" class="btn-group btn-group-xs">
+          <div id="filter-controls" class="btn-group">
             <!-- ko if: allFilters().length > 0 -->
-              <button id="filter-dropdown" class="btn btn-xs btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="true" title="Select Filter Variables"
+              <button id="filter-dropdown" class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" title="Select Filter Variables"
                 data-bind="css: { disabled: allFilters().length == activeFilters().length }">
                 Filter
-                <span class="caret"></span>
               </button>
-              <ul id="x-axis-switcher" class="dropdown-menu" role="menu" aria-labelledby="filter-dropdown">
+              <div id="x-axis-switcher" class="dropdown-menu" aria-labelledby="filter-dropdown">
                 <!-- ko foreach: availableFilters -->
-                  <li role="presentation" data-bind="visible: !active()">
-                    <a role="menuitem" tabindex="-1" href="#" data-bind="text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
-                  </li>
+                  <a href="#" class="dropdown-item" data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
                 <!-- /ko -->
-              </ul>
+              </div>
             <!-- /ko -->
           </div>
 
           <div class="form-group" id="react-controls"></div>
 
-          <div id="color-switcher" class="btn-group btn-group-xs"></div>
+          <div id="color-switcher" class="btn-group ml-3"></div>
 
-          <div id="add-note" class="btn-group btn-group-xs"></div>
+          <div id="add-note" class="btn-group ml-3"></div>
 
         </div>
       </div>

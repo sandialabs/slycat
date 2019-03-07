@@ -161,10 +161,6 @@
   display: inline-block;
   text-align: right;
 }
-#rsquared-label sup {
-  position: absolute;
-  margin-top: -3px;
-}
 .rowInput,
 .rowOutput
 {
@@ -366,13 +362,6 @@
 {
   background-color: #337AB7;
 }
-#controls
-{
-
-}
-#controls {
-  margin: 2px 0;
-}
 #controls label {
   font-weight: bold;
   margin-right: 5px;
@@ -392,10 +381,6 @@
 }
 #controls #filter-selector {
   width: 90px;
-}
-
-#scatterplot-controls {
-  margin-right: 4px;
 }
 
 .ControlsGroup {
@@ -924,19 +909,34 @@
   z-index: 3
 }
 
+.ui-sticky-wrapper {
+  border-color: black;
+}
+
 .ui-sticky-header {
   cursor: move;
+  height: 20px;
+  border: 0;
+  font-size: 14px;
 }
 
 .ui-sticky-header i.fa {
-  padding-right: 2px;
-  padding-left: 2px;
+  padding-right: 3px;
+  padding-left: 5px;
   cursor: pointer;
   visibility: hidden;
 }
 
+.ui-sticky-header .fa-close {
+  padding-top: 2px;
+}
+
 .ui-sticky:hover i.fa, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
   visibility: visible;
+}
+
+.ui-sticky-text {
+  border-width: 0;
 }
 
 .ui-resizable-handle.ui-resizable-e {
@@ -999,20 +999,6 @@ a {
     white-space: nowrap;
     margin-left: -7px;
 }
-.bootstrap-styles .btn-default:hover,
-.bootstrap-styles .btn-default.focus,
-.bootstrap-styles .btn-default:focus
-{
-    background-color: white;
-}
-.bootstrap-styles .btn-default:active,
-.bootstrap-styles .btn-default.active,
-.bootstrap-styles .btn-default.focus.active,
-.bootstrap-styles .open > .btn-default.dropdown-toggle,
-.bootstrap-styles .open > .btn-default.dropdown-toggle:hover
-{
-    background-color: #E6E6E6;
-}
 #controls-pane .bootstrap-styles .dropdown-menu
 {
   max-height: 500px;
@@ -1061,4 +1047,15 @@ slycat-3d-viewer .header-bar {
   top: 0;
   left: 0;
   display: none;
+}
+/* Making axis ticks visible by setting the stroke color */
+.tick line
+{
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+/* avoiding double border between this button and the previous one because the button is prececed by a hidden modal dialog div */
+button#controls-button-var-options {
+  margin-left: -1px;
 }

@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Time Series Parameters Dialog &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="High Performance Computing Parameters Dialog" href="HPCParams.html" />
+    <link rel="prev" title="Find Data Dialog" href="FindData.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="time-series-parameters-dialog">
+<h1>Time Series Parameters Dialog<a class="headerlink" href="#time-series-parameters-dialog" title="Permalink to this headline">¶</a></h1>
+<p>The next screen of the wizard will depend on which data format you selected.  If you selected <em>Xyce</em> or <em>CSV</em>, the next screen
+will be a file browser on the remote host.  Navigate to the location of the ensemble data table (a <em>dakota_tabular</em> file within
+the directory hierarchy described above for <em>Xyce</em> inputs, or a <em>CSV</em> file containing full paths to each time series file for
+<em>CSV</em> inputs).  Navigation is identical to that described in the earlier section on Remote Files. Click on the data table file
+in the remote file browser to select it, then click <em>Continue</em>.  If you selected <em>HDF5</em>, the wizard skips this step since there
+is no need to select a table file.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="_images/Figure50.png"><img alt="_images/Figure50.png" src="_images/Figure50.png" style="width: 675.75px; height: 316.5px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 50: Timeseries Parameters for Xyce data sets.</strong></span></p>
+</div>
+<p>For all three input types, the next step is setting the parameters to be used for binning and clustering the time series.
+<em>Xyce</em>, <em>CSV</em>, and <em>HDF5</em> have slightly different interfaces for this step, which are shown in Figure 50, Figure 51, and
+Figure 52, respectively.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="_images/Figure51.png"><img alt="_images/Figure51.png" src="_images/Figure51.png" style="width: 675.75px; height: 390.75px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 51: Timeseries Parameters for CSV data sets.</strong></span></p>
+</div>
+<div class="figure align-center" id="id3">
+<a class="reference internal image-reference" href="_images/Figure52.png"><img alt="_images/Figure52.png" src="_images/Figure52.png" style="width: 675.75px; height: 317.25px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 52: Timeseries Parameters for HDF5 data sets.</strong></span></p>
+</div>
+<p>The <em>CSV</em> screen includes two additional fields that are not needed by the other formats, <em>Table File Delimiter</em> and
+<em>Timeseries Column Name</em>.  <em>Table File Delimiter</em> allows you to use other delimiters besides commas in the data table, such
+as <em>tabs</em> or <em>spaces</em>.  <em>Tabs</em> are difficult to specify because the web interface uses <em>tabs</em> to move between fields, but if
+you cut-and-paste a <em>tab</em> into the field, enclosing it with single quotes, Slycat™ will accept a tab-delimited table.  To
+designate a <em>space</em> as a delimiter, enclose it with single quotes, since otherwise the field is interpreted as being empty.
+<em>Commas</em> do not require quotes.</p>
+<p>Since <em>CSV</em> data tables can have multiple columns of time series data (e.g. if you sampled a set of variables over time at
+various locations within the simulation), the <em>Timeseries Column Name</em> identifies which time series data set to analyze.
+Type in the column name, taking care to exactly match the header as it appears in the table.</p>
+<p>The remaining parameters are shared by all three input types.  <em>Timeseries Bin Count</em> controls how finely the time series
+is sampled.  The resulting binned sequences are used for calculating similarities and the reduced representations are drawn
+in the model visualization.  Generally, bin counts between 500 and 1000 produce a reasonable tradeoff between speed and
+accuracy.  Although increasing the number of bins increases both the analysis and rendering times, a greater bin count also
+helps preserve spikes or other localized features that could be lost when using a smaller number.</p>
+<p>The <em>Resampling Algorithm</em> dropdown has two options.  Both algorithms use a uniform set of bins, with the choice between
+using <em>uniform piecewise linear approximation</em> or <em>uniform piecewise aggregate approximation</em> as the resampling method.
+<em>Uniform piecewise aggregate approximation</em> is the default.</p>
+<p>The <em>Cluster Linkage Measure</em> dropdown selects the metric used when evaluating distance between groups of elements.  There
+are four choices:</p>
+<ul class="simple">
+<li><em>single: Nearest Point Algorithm</em></li>
+<li><em>complete: Farthest Point Algorithm</em></li>
+<li><em>average: Unweighted Pair Group Method with Arithmetic Mean (UPGMA) Algorithm</em></li>
+<li><em>weighted: Weighted Pair Group Method with Arithmetic Mean (WPGMA) Algorithm</em></li>
+</ul>
+<p><em>Single</em> evaluates the distance using the closest elements/minimum linkage; <em>complete</em> uses the farthest elements/maximum
+linkage; <em>average</em> uses the distance between the group averages; and <em>weighted</em> uses the values from the distance matrix.
+<em>Average</em> is the default.  We are using SciPy to perform the clustering, so a more complete description of the linkage
+choices can be found at <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html</a>.</p>
+<p>The <em>Cluster Metric</em> currently only has a single choice, <em>Euclidean</em>, so it cannot be changed (hence the field is grayed
+out).  This field is provided to inform you that we are using Euclidean distances in our algorithms.</p>
+<p>Once you are satisfied with these parameter choices, click <em>Continue</em> to go to the next screen.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="TimeSeriesData.html">Time Series Data</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="CreatingTSModel.html">Creating a Time Series Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TSModelVis.html">Time Series Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+  <li><a href="timeseries.model.html">Timeseries Model</a><ul>
+  <li><a href="CreatingTSModel.html">Creating a Time Series Model</a><ul>
+      <li>Previous: <a href="FindData.html" title="previous chapter">Find Data Dialog</a></li>
+      <li>Next: <a href="HPCParams.html" title="next chapter">High Performance Computing Parameters Dialog</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/TSParams.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

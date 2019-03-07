@@ -4,7 +4,7 @@
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 import api_root from "js/slycat-api-root";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import _ from "lodash";
@@ -40,6 +40,9 @@ $.widget("parameter_image.scatterplot",
     x_string : false,
     y_string : false,
     v_string : false,
+    x_index : null,
+    y_index : null,
+    v_index : null,
     images : [],
     selection : [],
     colorscale : d3.scale.linear().domain([-1, 0, 1]).range(["blue", "white", "red"]),
@@ -76,6 +79,12 @@ $.widget("parameter_image.scatterplot",
     "video-sync-time" : 0,
     frameLength : 1/25,
     highest_z_index: 0,
+    axes_font_size: 12,
+    axes_font_family: "Arial",
+    axes_variables_scale: {},
+    x_axis_type: 'Linear',
+    y_axis_type: 'Linear',
+    v_axis_type: 'Linear',
   },
 
   syncing_videos : [],
@@ -115,6 +124,8 @@ $.widget("parameter_image.scatterplot",
     self.current_drag = null;
     self.end_drag = null;
     self.login_open = false;
+
+    self.set_x_y_v_axes_types();
 
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
@@ -290,8 +301,8 @@ $.widget("parameter_image.scatterplot",
 
           for(var i = 0; i != count; ++i)
           {
-            x_coord = self.x_scale(x[i]);
-            y_coord = self.y_scale(y[i]);
+            x_coord = self.x_scale_format(x[i]);
+            y_coord = self.y_scale_format(y[i]);
             if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
             {
               var index = self.options.selection.indexOf(self.options.indices[i]);
@@ -310,8 +321,8 @@ $.widget("parameter_image.scatterplot",
 
         for(var i = count - 1; i > -1; i--)
         {
-          x_coord = self.x_scale(x[i]);
-          y_coord = self.y_scale(y[i]);
+          x_coord = self.x_scale_format(x[i]);
+          y_coord = self.y_scale_format(y[i]);
           if(x1 <= x_coord && x_coord <= x2 && y1 <= y_coord && y_coord <= y2)
           {
             // Update the list of selected points ...
@@ -342,6 +353,72 @@ $.widget("parameter_image.scatterplot",
       self.element.trigger("selection-changed", [self.options.selection]);
     });
     self._filterIndices();
+
+    const update_axes_font_size = () => {
+      if(self.options.axes_font_size != store.getState().fontSize)
+      {
+        self.options.axes_font_size = store.getState().fontSize;
+        self.x_axis_layer.selectAll("text")
+          .style("font-size", self.options.axes_font_size + 'px')
+          ;
+        self.y_axis_layer.selectAll("text")
+          .style("font-size", self.options.axes_font_size + 'px')
+          ;
+        self.legend_layer.selectAll("text")
+          .style("font-size", self.options.axes_font_size + 'px')
+          ;
+        self._schedule_update({update_y_label:true});
+        self._schedule_update({update_x_label:true});
+      }
+    };
+
+    const update_axes_font_family = () => {
+      if(self.options.axes_font_family != store.getState().fontFamily)
+      {
+        self.options.axes_font_family = store.getState().fontFamily;
+        self.x_axis_layer.selectAll("text")
+          .style("font-family", self.options.axes_font_family)
+          ;
+        self.y_axis_layer.selectAll("text")
+          .style("font-family", self.options.axes_font_family)
+          ;
+        self.legend_layer.selectAll("text")
+          .style("font-family", self.options.axes_font_family)
+          ;
+        self._schedule_update({update_y_label:true});
+        self._schedule_update({update_x_label:true});
+      }
+    };
+
+    const update_axes_variables_scale = () => {
+      if(self.options.axes_variables_scale != store.getState().axesVariables)
+      {
+        self.options.axes_variables_scale = store.getState().axesVariables;
+        self.set_x_y_v_axes_types();
+        self._schedule_update({
+          update_x:true, 
+          update_x_label:true, 
+          update_y:true, 
+          update_y_label:true, 
+          update_leaders:true, 
+          render_data:true, 
+          render_selection:true, 
+          update_legend_axis:true
+        });
+      }
+    };
+
+    window.store.subscribe(update_axes_font_size);
+    window.store.subscribe(update_axes_font_family);
+    window.store.subscribe(update_axes_variables_scale);
+  },
+
+  set_x_y_v_axes_types: function()
+  {
+    var self = this;
+    self.options.x_axis_type = self.options.axes_variables_scale[self.options.x_index] != undefined ? self.options.axes_variables_scale[self.options.x_index] : 'Linear';
+    self.options.y_axis_type = self.options.axes_variables_scale[self.options.y_index] != undefined ? self.options.axes_variables_scale[self.options.y_index] : 'Linear';
+    self.options.v_axis_type = self.options.axes_variables_scale[self.options.v_index] != undefined ? self.options.axes_variables_scale[self.options.v_index] : 'Linear';
   },
 
   _filterIndices: function()
@@ -404,20 +481,68 @@ $.widget("parameter_image.scatterplot",
     return clone;
   },
 
-  _createScale: function(string, values, range, reverse)
+  _createScale: function(string, values, range, reverse, type)
   {
-    if(!string)
+    // console.log("_createScale: " + type);
+    // Make a time scale for 'Date & Time' variable types
+    if(type == 'Date & Time')
     {
-      var domain = [d3.min(values), d3.max(values)];
+      let dates = [];
+      let date = NaN;
+      for(let date of values)
+      {
+        // Make sure Date is valid before adding it to array, so we get a scale with usable min and max
+        date = new Date(date.toString())
+        if(!isNaN(date))
+          dates.push(date);
+      }
+      // console.log("unsorted dates: " + dates);
+      dates.sort(function(a, b){
+        return a - b;
+      });
+      // console.log('sorted dates: ' + dates);
+      var domain = [dates[0], dates[dates.length-1]];
+      // console.log('domain: ' + domain);
       if(reverse === true)
       {
         domain.reverse();
       }
-      return d3.scale.linear()
+      return d3.time.scale()
         .domain(domain)
         .range(range)
         ;
     }
+    // For numeric variables
+    else if(!string)
+    {
+      // Log scale if 'Log' variable types
+      if(type == 'Log')
+      {
+        var domain = [d3.min(values), d3.max(values)];
+        if(reverse === true)
+        {
+          domain.reverse();
+        }
+        return d3.scale.log()
+          .domain(domain)
+          .range(range)
+          ;
+      }
+      // Linear scale otherwise
+      else 
+      {
+        var domain = [d3.min(values), d3.max(values)];
+        if(reverse === true)
+        {
+          domain.reverse();
+        }
+        return d3.scale.linear()
+          .domain(domain)
+          .range(range)
+          ;
+      }
+    }
+    // For string variables, make an ordinal scale
     else
     {
       var uniqueValues = d3.set(values).values().sort();
@@ -439,7 +564,7 @@ $.widget("parameter_image.scatterplot",
     var width = self.svg.attr("width");
     var range = self.x_scale.range();
     var rangeLast = range.length - 1;
-    var relx = (self.x_scale(self.options.x[imageIndex]) - range[0]) / (range[rangeLast] - range[0]);
+    var relx = (self.x_scale_format(self.options.x[imageIndex]) - range[0]) / (range[rangeLast] - range[0]);
     var x;
 
     if(relx < 0.5)
@@ -454,7 +579,7 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
     var height = self.svg.attr("height");
-    var target_y = self.y_scale(self.options.y[imageIndex]);
+    var target_y = self.y_scale_format(self.options.y[imageIndex]);
     return parseInt((target_y / height) * (height - imageHeight));
   },
 
@@ -511,11 +636,13 @@ $.widget("parameter_image.scatterplot",
       }
       self._filterIndices();
       self._close_hidden_simulations();
+      self.set_x_y_v_axes_types();
       self._schedule_update({update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "y")
     {
+      self.set_x_y_v_axes_types();
       if(self.options["auto-scale"])
       {
         self.options.filtered_y = self._filterValues(self.options.y);
@@ -532,6 +659,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "v")
     {
+      self.set_x_y_v_axes_types();
       if(self.options["auto-scale"])
       {
         self.options.filtered_v = self._filterValues(self.options.v);
@@ -561,7 +689,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
@@ -640,6 +768,7 @@ $.widget("parameter_image.scatterplot",
   update_color_scale_and_v: function(data)
   {
     var self = this;
+    self.set_x_y_v_axes_types();
     self.options.colorscale = data.colorscale;
     self.options.v = data.v;
     if(data.v_string !== undefined)
@@ -737,17 +866,36 @@ $.widget("parameter_image.scatterplot",
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
       var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false);
-      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false);
+      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false, self.options.x_axis_type);
+      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false, self.options.x_axis_type);
 
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
       self.x_axis_offset = total_height - height_offset - self.options.border - 40;
-      self.x_axis = d3.svg.axis().scale(self.x_scale).orient("bottom");
+      self.x_axis = d3.svg.axis()
+        .scale(self.x_scale)
+        .orient("bottom")
+        // Set number of ticks based on width of axis.
+        .ticks(range_canvas[1]/85)
+        // .tickSize(15)
+        ;
       self.x_axis_layer
         .attr("transform", "translate(0," + self.x_axis_offset + ")")
         .call(self.x_axis)
+        // Selecting all the labels and rotating them 45 degrees around their start
+        .selectAll("text")  
+          // .style("text-anchor", "end")
+          .style("text-anchor", "start")
+          .style("font-size", self.options.axes_font_size + 'px')
+          .style("font-family", self.options.axes_font_family)
+          // .attr("dx", "0em")
+          // .attr("dy", "0em")
+          // .attr("x", "0")
+          // .attr("y", "0")
+          .attr("transform", "rotate(15)")
         ;
+      // Updating the x_label here because updating_x clears the label for some reason
+      self._schedule_update({update_x_label:true});
     }
 
     if (self.updates.update_y) {
@@ -761,13 +909,21 @@ $.widget("parameter_image.scatterplot",
       var range_canvas = [height - (2 * self.options.border) - 40, 0];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false);
-      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false);
+      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false, self.options.y_axis_type);
+      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false, self.options.y_axis_type);
 
-      self.y_axis = d3.svg.axis().scale(self.y_scale).orient("left");
+      self.y_axis = d3.svg.axis()
+        .scale(self.y_scale)
+        .orient("left")
+        // Set number of ticks based on height of axis.
+        .ticks(range_canvas[0]/50)
+        ;
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
         .call(self.y_axis)
+        .selectAll("text")  
+          .style("font-size", self.options.axes_font_size + 'px')
+          .style("font-family", self.options.axes_font_family)
         ;
     }
 
@@ -779,16 +935,24 @@ $.widget("parameter_image.scatterplot",
     }
 
     if (self.updates.update_x_label) {
-      var x = self.svg.attr("width") / 2;
-      var y = 40;
+      // This is the vertical offset of the x-axis label.
+      var y = 5;
+
+      // This is the horizontal offset of the x-axis label. Set to align with the end of the axis.
+      var width = Math.min(self.options.width, self.options.height);
+      var x_axis_width = width - (2 * self.options.border) - xoffset;
+      var x_remaining_width = self.svg.attr("width") - x_axis_width;
+      var x = (x_remaining_width / 2) + x_axis_width + 40;
 
       self.x_axis_layer.selectAll(".label").remove()
       self.x_axis_layer.append("text")
         .attr("class", "label")
         .attr("x", x)
         .attr("y", y)
-        .style("text-anchor", "middle")
+        .style("text-anchor", "start")
         .style("font-weight", "bold")
+        .style("font-size", self.options.axes_font_size + 'px')
+        .style("font-family", self.options.axes_font_family)
         .text(self.options.x_label)
         ;
     }
@@ -807,6 +971,8 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "rotate(-90," + x +"," + y + ")")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
+        .style("font-size", self.options.axes_font_size + 'px')
+        .style("font-family", self.options.axes_font_family)
         .text(self.options.y_label)
         ;
     }
@@ -848,8 +1014,11 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        cx = Math.round( self.x_scale_canvas( x[index] ) );
-        cy = Math.round( self.y_scale_canvas( y[index] ) );
+        cx = Math.round(self.x_scale_canvas_format(x[index]));
+        cy = Math.round(self.y_scale_canvas_format(y[index]));
+        // Skip this point if its x or y coordinates are NaN
+        if(isNaN(cx) || isNaN(cy))
+          continue;
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
@@ -892,8 +1061,8 @@ $.widget("parameter_image.scatterplot",
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
-        cx = Math.round( self.x_scale_canvas( x[index] ) );
-        cy = Math.round( self.y_scale_canvas( y[index] ) );
+        cx = Math.round(self.x_scale_canvas_format(x[index]));
+        cy = Math.round(self.y_scale_canvas_format(y[index]));
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
         canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
       }
@@ -931,8 +1100,8 @@ $.widget("parameter_image.scatterplot",
             y : height * image.rely,
             width : image.width,
             height : image.height,
-            target_x : self.x_scale(self.options.x[image.index]),
-            target_y : self.y_scale(self.options.y[image.index]),
+            target_x : self.x_scale_format(self.options.x[image.index]),
+            target_y : self.y_scale_format(self.options.y[image.index]),
             video : image.video,
             currentTime : image.currentTime,
             current_frame : image.current_frame,
@@ -955,10 +1124,10 @@ $.widget("parameter_image.scatterplot",
         var image_index = Number(frame.attr("data-index"));
         var uri = frame.attr("data-uri");
         self.line_layer.select("line[data-uri='" + uri + "']")
-          .attr("x2", self.x_scale(self.options.x[image_index]) )
-          .attr("y2", self.y_scale(self.options.y[image_index]) )
-          .attr("data-targetx", self.x_scale(self.options.x[image_index]))
-          .attr("data-targety", self.y_scale(self.options.y[image_index]))
+          .attr("x2", self.x_scale_format(self.options.x[image_index]) )
+          .attr("y2", self.y_scale_format(self.options.y[image_index]) )
+          .attr("data-targetx", self.x_scale_format(self.options.x[image_index]))
+          .attr("data-targety", self.y_scale_format(self.options.y[image_index]))
           ;
       });
     }
@@ -1024,12 +1193,20 @@ $.widget("parameter_image.scatterplot",
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
 
+      // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
+      // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
       self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
 
-      self.legend_axis = d3.svg.axis().scale(self.legend_scale).orient("right");
+      self.legend_axis = d3.svg.axis()
+        .scale(self.legend_scale)
+        .orient("right")
+        .ticks(range[1]/50)
+        ;
       self.legend_axis_layer
         .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
         .call(self.legend_axis)
+        .style("font-size", self.options.axes_font_size + 'px')
+        .style("font-family", self.options.axes_font_family)
         ;
     }
 
@@ -1049,6 +1226,8 @@ $.widget("parameter_image.scatterplot",
         .attr("transform", "rotate(-90," + x +"," + y + ")")
         .style("text-anchor", "middle")
         .style("font-weight", "bold")
+        .style("font-size", self.options.axes_font_size + 'px')
+        .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label)
         ;
     }
@@ -1335,7 +1514,14 @@ $.widget("parameter_image.scatterplot",
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
 
-        if ( sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image") || sourceEventTarget.classed("bootstrap-styles") || d3.event.sourceEvent.target.nodeName == "VIDEO") {
+        if ( sourceEventTarget.classed("image-frame") || 
+             sourceEventTarget.classed("image") || 
+             // For when dragging the black footer bar with icons
+             sourceEventTarget.classed("frame-footer") || 
+             sourceEventTarget.classed("bootstrap-styles") || 
+             d3.event.sourceEvent.target.nodeName == "VIDEO"
+           ) 
+        {
           frame = d3.select(this);
 
           if (frame.classed("hover-image")) {
@@ -1537,7 +1723,7 @@ $.widget("parameter_image.scatterplot",
 
         // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
         // Alex is commenting it out and always assigning the open-image class to the frame instead.
-        // if (frame.select('.resize').size())
+        // if (frame.select('.resize').length)
         //   theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
         // else
         //   theImage = frame.classed("hover-image", false).classed("open-image", true);
@@ -1619,7 +1805,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     // Don't open image if it's already open
-    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").size() > 0) {
+    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
       self._open_images(images.slice(1));
       return;
     }
@@ -2193,8 +2379,8 @@ $.widget("parameter_image.scatterplot",
           y : height * image.rely,
           width : image.width,
           height : image.height,
-          target_x : self.x_scale(self.options.x[image.index]),
-          target_y : self.y_scale(self.options.y[image.index]),
+          target_x : self.x_scale_format(self.options.x[image.index]),
+          target_y : self.y_scale_format(self.options.y[image.index]),
           });
       }
     });
@@ -2250,8 +2436,8 @@ $.widget("parameter_image.scatterplot",
         yvalues = self.options.y;
     for(var i = indices.length-1; i > -1; i-- ) {
       let index = indices[i];
-      let x1 = Math.round( self.x_scale( xvalues[index] ) ) - shift;
-      let y1 = Math.round( self.y_scale( yvalues[index] ) ) - shift;
+      let x1 = Math.round( self.x_scale_format( xvalues[index] ) ) - shift;
+      let y1 = Math.round( self.y_scale_format( yvalues[index] ) ) - shift;
       let x2 = x1 + size;
       let y2 = y1 + size;
 
@@ -2285,12 +2471,12 @@ $.widget("parameter_image.scatterplot",
       index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]].trim(),
       image_class : "hover-image",
-      x : Math.min(self.x_scale(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
-      y : Math.min(self.y_scale(self.options.y[image_index]) + 10, height - hover_height - self.options.border - 10),
+      x : Math.min(self.x_scale_format(self.options.x[image_index]) + 10, width  - hover_width  - self.options.border - 10),
+      y : Math.min(self.y_scale_format(self.options.y[image_index]) + 10, height - hover_height - self.options.border - 10),
       width : hover_width,
       height : hover_height,
-      target_x : self.x_scale(self.options.x[image_index]),
-      target_y : self.y_scale(self.options.y[image_index]),
+      target_x : self.x_scale_format(self.options.x[image_index]),
+      target_y : self.y_scale_format(self.options.y[image_index]),
       no_sync : true,
     }]);
   },
@@ -2486,8 +2672,8 @@ $.widget("parameter_image.scatterplot",
         y : self._getDefaultYPosition(image_index, imageHeight),
         width : imageWidth,
         height : imageHeight,
-        target_x : self.x_scale(self.options.x[image_index]),
-        target_y : self.y_scale(self.options.y[image_index]),
+        target_x : self.x_scale_format(self.options.x[image_index]),
+        target_y : self.y_scale_format(self.options.y[image_index]),
         });
     });
     self._open_images(images);
@@ -2698,5 +2884,34 @@ $.widget("parameter_image.scatterplot",
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
       self._sync_open_images();
     }
+  },
+
+  x_scale_canvas_format: function(coordinate)
+  {
+    var self = this;
+    return self.x_scale_canvas(self.format_for_scale(coordinate, self.options.x_axis_type));
+  },
+
+  y_scale_canvas_format: function(coordinate)
+  {
+    var self = this;
+    return self.y_scale_canvas(self.format_for_scale(coordinate, self.options.y_axis_type));
+  },
+
+  x_scale_format: function(coordinate)
+  {
+    var self = this;
+    return self.x_scale(self.format_for_scale(coordinate, self.options.x_axis_type));
+  },
+
+  y_scale_format: function(coordinate)
+  {
+    var self = this;
+    return self.y_scale(self.format_for_scale(coordinate, self.options.y_axis_type));
+  },
+
+  format_for_scale: function(coordinate, scale_type)
+  {
+    return scale_type == 'Date & Time' ? new Date(coordinate.toString()) : coordinate;
   },
 });

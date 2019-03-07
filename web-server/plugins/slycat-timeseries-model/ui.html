@@ -3,10 +3,10 @@
 <div id="timeseries-model" style="-webkit-flex:1; flex:1;">
   <slycat-job-checker></slycat-job-checker>
 
-  <div id="cluster-pane" class="ui-layout-north">
-  	<div class="center bootstrap-styles" id="controls">
-  		<div id="general-controls" class="btn-group btn-group-xs"></div>
-  		<div id="color-switcher" class="btn-group btn-group-xs"></div>
+  <div id="cluster-pane" class="ui-layout-north bootstrap-styles">
+  	<div class="d-flex justify-content-center align-items-center mx-2" id="controls">
+  		<div id="general-controls" class="btn-group"></div>
+  		<div id="color-switcher" class="btn-group ml-3"></div>
   	</div>
     <div class="load-status"></div>
   </div>
@@ -23,14 +23,13 @@
       </defs>
     </svg>
     <div id="dendrogram-controls" class="bootstrap-styles">
-      <div id="dendrogram-general-controls" class="btn-group btn-group-xs">
+      <div id="dendrogram-general-controls" class="btn-group">
         <!-- The following div is only necessary when there is more than one button, so leaving commented out for when we add another button here -->
         <!-- <div class="btn-group btn-group-xs"> -->
-          <button class="outputs btn btn-default dropdown-toggle" type="button" id="outputs-dropdown" data-toggle="dropdown" aria-expanded="true" title="Change Outputs">
+          <button class="outputs btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="outputs-dropdown" data-toggle="dropdown" aria-expanded="false" title="Change Outputs">
             <span class="buttonLabel">Outputs</span>
-            <span class="caret"></span>
           </button>
-          <ul class="outputs dropdown-menu" role="menu" aria-labelledby="outputs-dropdown"></ul>
+          <div class="outputs dropdown-menu" role="menu" aria-labelledby="outputs-dropdown"></div>
         <!-- </div> -->
       </div>
     </div>

@@ -1,4 +1,6 @@
-// This is the front-end slycat plugin configuartion file. 
+
+
+// This is the front-end slycat plugin configuartion file.
 // Import plugin registrations below for any plugin you want available on the system.
 
 // Model wizards
@@ -13,9 +15,13 @@ import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
 import 'plugins/slycat-cca/slycat-cca';
 import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
 import '../../../dial-a-cluster/plugin/dial-a-cluster-model';
+import '../../../VideoSwarm/plugin/vs-model';
 
 // Remap wizard, which is probably not working as of August 2018
 import 'plugins/slycat-remap-wizard/slycat-remap-wizard';
+
+// Column wizard
+import 'plugins/slycat-column-wizard/slycat-column-wizard';
 
 // For any plugin that needs to load resources, add the appropriate case statements below in loadTemplate and loadModule
 export async function loadTemplate(name) {
@@ -39,6 +45,12 @@ export async function loadTemplate(name) {
       break;
     case "run-command":
       html = await import(/* webpackChunkName: "run_command_template" */ 'plugins/slycat-run-command/ui.html');
+      break;
+    case "DAC":
+      html = await import(/* webpackChunkName: "ui_dial_a_cluster_template" */ '../../../dial-a-cluster/plugin/html/dac-ui.html');
+      break;
+    case "VS":
+      html = await import(/* webpackChunkName: "ui_video_swarm_template" */ '../../../VideoSwarm/plugin/html/vs-ui.html');
       break;
     default:
       console.log("We don't recognize this template type, so not loading a template.");
@@ -71,6 +83,12 @@ export async function loadModule(name) {
       break;
     case "run-command":
       module = await import(/* webpackChunkName: "run_command_module" */ 'plugins/slycat-run-command/ui.js');
+      break;
+    case "DAC":
+      module = await import(/* webpackChunkName: "ui_dial_a_cluster_module" */ '../../../dial-a-cluster/plugin/js/dac-ui.js');
+      break;
+    case "VS":
+      module = await import(/* webpackChunkName: "ui_video_swarm_module" */ '../../../VideoSwarm/plugin/js/vs-ui.js');
       break;
     default:
       console.log("We don't recognize this module type, so not loading a module.");

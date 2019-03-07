@@ -112,8 +112,10 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-references", "/projects/:pid/references", slycat.web.server.handlers.get_project_references, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.get_project_cache_object, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
+  dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
+  dispatcher.connect("get-project-file-names", "/projects/:pid/name", slycat.web.server.handlers.get_project_file_names, conditions={"method": ["GET"]})
   #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
 
@@ -123,7 +125,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-show-user-password", "/remotes/show/user-password", slycat.web.server.handlers.get_remote_show_user_password, conditions={"method": ["GET"]})
 
-  dispatcher.connect("get-user", "/users/:uid", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-user", "/users/:uid/:time", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
   dispatcher.connect("model-command", "/models/:mid/commands/:type/:command", slycat.web.server.handlers.model_command, conditions={"method" : ["GET", "POST", "PUT"]})
   dispatcher.connect("model-sensitive-command", "/models/:mid/sensitive/:type/:command", slycat.web.server.handlers.model_sensitive_command, conditions={"method" : ["POST"]})
@@ -132,7 +134,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-references", "/projects/:pid/references", slycat.web.server.handlers.post_project_references, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-project-models", "/projects/:pid/models",slycat.web.server.handlers.post_project_models, conditions={"method": ["POST"]})
   dispatcher.connect("post-log", "/log", slycat.web.server.handlers.post_log, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
 

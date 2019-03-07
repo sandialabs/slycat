@@ -30,6 +30,7 @@ web-server/config.ini
 
 ## Directory-based project format:
 .idea/
+.vscode/
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
@@ -62,6 +63,7 @@ web-server/config.ini
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
+web-server/dist/
 
 # JIRA plugin
 atlassian-ide-plugin.xml

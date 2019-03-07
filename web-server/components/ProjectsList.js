@@ -22,8 +22,8 @@ class ProjectsList extends React.Component {
     {
       return (
         <div className="container">
-          <div className="panel panel-default">
-            <div className="list-group">
+          <div className="card">
+            <div className="list-group list-group-flush">
               <React.Fragment>
                 {projects}
               </React.Fragment>
@@ -42,16 +42,16 @@ class ProjectsList extends React.Component {
 class Project extends React.Component {
   render() {
     return (
-      <a className="list-group-item" href={server_root + 'projects/' + this.props.id}>
-        <span className="label label-default">project</span> <strong>{this.props.name}</strong>
-        <p>
-          <small>
-            <span>{this.props.description}</span>
-            <em>
-            Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
-            </em>
-          </small>
-        </p>
+      <a className="list-group-item list-group-item-action" href={server_root + 'projects/' + this.props.id}>
+        <div className="h6">
+          <span className="badge badge-secondary mr-1">project</span> {this.props.name}
+        </div>
+        <p className="mb-2">{this.props.description}</p>
+        <small>
+          <em>
+          Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
+          </em>
+        </small>
       </a>
     );
   }
