@@ -16,15 +16,18 @@ def register_slycat_plugin(context):
     import imp
     import cherrypy
 
+
     def finish(database, model):
         slycat.web.server.update_model(database, model,
                                        state="finished", result="succeeded",
                                        finished=datetime.datetime.utcnow().isoformat(),
                                        progress=1.0, message="")
 
+
     def page_html(database, model):
         return open(os.path.join(os.path.dirname(__file__),
                                  "html/dac-ui.html"), "r").read()
+
 
     def init_mds_coords(database, model, verb, type, command, **kwargs):
         """
@@ -139,6 +142,7 @@ def register_slycat_plugin(context):
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
 
+
     # computes new MDS coordinate representation using alpha values
     def update_mds_coords(database, model, verb, type, command, **kwargs):
 
@@ -173,6 +177,7 @@ def register_slycat_plugin(context):
             yield json.dumps({"mds_coords": scaled_mds_coords.tolist()})
 
         return content()
+
 
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
@@ -225,6 +230,7 @@ def register_slycat_plugin(context):
         # return unsorted discriminant values as JSON array
         return json.dumps({"fisher_disc": fisher_disc.tolist()})
 
+
     # sub-samples time and variable data from database and pushes to "dac-sub-time-points"
     # and "dac-sub-var-data"
     def subsample_time_var(database, model, verb, type, command, **kwargs):
@@ -248,15 +254,10 @@ def register_slycat_plugin(context):
         num_subsample = int(kwargs["3"])
 
         # range of samples (x-value)
-        if kwargs["4"] == "-Inf":
-            x_min = -float("Inf")
-        else:
-            x_min = float(kwargs["4"])
-
-        if kwargs["5"] == "Inf":
-            x_max = float("Inf")
-        else:
-            x_max = float(kwargs["5"])
+        x_min = str2float(kwargs["4"])
+        x_max = str2float(kwargs["5"])
+        y_min = str2float(kwargs["6"])
+        y_max = str2float(kwargs["7"])
 
         # load time points and data from database
         time_points = slycat.web.server.get_model_arrayset_data(
@@ -287,6 +288,23 @@ def register_slycat_plugin(context):
             var_data = numpy.array(slycat.web.server.get_model_arrayset_data(database, model,
                                                                              "dac-var-data", "%s/0/%s" % (database_ind, hyper_rows)))
 
+        # get actual time (x) range
+        time_points_min = numpy.amin(time_points)
+        time_points_max = numpy.amax(time_points)
+
+        # test requested range time (x)
+        x_min, x_max, range_change_x = test_range(x_min, x_max, time_points_min, time_points_max)
+
+        # get data range in y
+        data_min = numpy.amin(var_data)
+        data_max = numpy.amax(var_data)
+
+        # test requested range data (y)
+        y_min, y_max, range_change_y = test_range(y_min, y_max, data_min, data_max)
+
+        # combine range changes (if anything changed, a change is recorded)
+        range_change = range_change_x or range_change_y
+
         # find indices within user selected range
         range_inds = numpy.where((time_points >= x_min) & (time_points <= x_max))[0]
 
@@ -312,14 +330,71 @@ def register_slycat_plugin(context):
         else:
             var_data_subsample = []
 
+        # convert ranges to java-script returnable result
+        data_range_x = [float2str(x_min), float2str(x_max)]
+        data_range_y = [float2str(y_min), float2str(y_max)]
+
         # return data using content function
         def content():
             yield json.dumps({"time_points": time_points_subsample.tolist(),
                               "var_data": var_data_subsample,
                               "resolution": subsample_stepsize,
+                              "data_range_x": data_range_x,
+                              "data_range_y": data_range_y,
+                              "range_change": range_change,
                               "plot_id": plot_id})
 
         return content()
+
+    # helper function for subsample_time_var
+    # converts string number to numpy value, including +/- "Inf"
+    def str2float (str_val):
+
+        if str_val == "-Inf":
+            numpy_val = -float("Inf")
+        else:
+            numpy_val = float(str_val)
+
+        return numpy_val
+
+    # helper function for subsample_time_var
+    # converts numpy value to string, including +/- "Inf"
+    def float2str (numpy_val):
+
+        if numpy_val == -float("Inf"):
+            str_val = "-Inf"
+
+        elif numpy_val == float("Inf"):
+            str_val = "Inf"
+
+        else:
+            str_val = str(numpy_val)
+
+        return str_val
+
+    # helper function for subsample_time_var
+    # tests requested data range versus actual range
+    # returns changed range and flag indicating change performed
+    def test_range (req_min, req_max, act_min, act_max):
+
+        range_change = False
+
+        # is requested x min in data range?
+        if req_min >= act_max:
+
+            # no -- reset x min
+            req_min = -float("Inf")
+            range_change = True
+
+        # is requested x max in data range?
+        if req_max <= req_min:
+
+            # no -- reset y max
+            req_max = float("Inf")
+            range_change = True
+
+        return req_min, req_max, range_change
+
 
     # adds, removes, and updates the editable columns in the metadata table.
     # inputs are described below, if no inputs for a particular command, use -1 in call.
@@ -405,6 +480,7 @@ def register_slycat_plugin(context):
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
 
+
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords',
                           os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
@@ -417,38 +493,6 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
-
-    # # registry css resources with slycat
-    # context.register_page_bundle("DAC", "text/css", [
-    #     os.path.join(os.path.dirname(__file__), "css/dac-ui.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-    # ])
-    #
-    # # register js resources with slycat
-    # context.register_page_bundle("DAC", "text/javascript", [
-    #     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-layout.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-request-data.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-alpha-sliders.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-alpha-buttons.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-manage-selections.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-plots.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-scatter-plot.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-ui.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/dac-table.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.dataview.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-    # ])
 
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})

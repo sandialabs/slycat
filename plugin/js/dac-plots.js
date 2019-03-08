@@ -255,8 +255,6 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 							.attr("text-anchor", "end")
 							.attr("transform", "rotate(-90)");
 
-
-
 	}
 
 	// set up initial size, axis labels, etc.
@@ -582,7 +580,8 @@ function draw_plot(i)
 		type: "DAC",
 		command: "subsample_time_var",
 		parameters: [i, plots_selected[i], refresh_selections, max_time_points,
-					 plots_selected_zoom_x[i][0], plots_selected_zoom_x[i][1]],
+					 plots_selected_zoom_x[i][0], plots_selected_zoom_x[i][1],
+					 plots_selected_zoom_y[i][0], plots_selected_zoom_y[i][1]],
 		success: function (result)
 		{
 			// recover plot id
@@ -599,6 +598,21 @@ function draw_plot(i)
 			} else {
 				plots_selected_resolution[plot_id] = -1;
 			}
+
+            // was zoom range changed?
+            if (result["range_change"]) {
+
+                // reset zoom
+                plots_selected_zoom_x[i] = result["data_range_x"];
+                plots_selected_zoom_y[i] = result["data_range_y"];
+
+                // plot zoom change event
+                var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
+                                     plots_zoom_x: plots_selected_zoom_x,
+                                     plots_zoom_y: plots_selected_zoom_y} });
+                document.body.dispatchEvent(plotZoomEvent);
+
+            }
 
 			// now update data in d3
 			update_data_d3(i);
