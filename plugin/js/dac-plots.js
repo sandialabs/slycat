@@ -184,6 +184,13 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	// initialize check boxes
 	link_plots = init_link_plots;
 
+    // check link boxes
+    for (var i = 0; i < 3; i++) {
+        if (link_plots[i] == 1) {
+    	    $("#dac-link-plot-" + (i+1).toString()).prop("checked", true);
+    	}
+	}
+
 	// remove unused plot pull downs
 	for (var i = num_included_plots; i < 3; i++) {
 		$("#dac-select-plot-" + (i+1)).remove();
@@ -264,13 +271,6 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
     // do not show initial plots, if they are unavailable
     hide_plots(num_init_plots);
 
-    // check link boxes
-    for (var i = 0; i < 3; i++) {
-        if (link_plots[i] == 1) {
-    	    $("#dac-link-plot-" + (i+1).toString()).prop("checked", true);
-    	}
-	}
-
 }
 
 // populate pull down menu i in {0,1,2} with plot names
@@ -344,11 +344,6 @@ function display_plot_pull_down(i)
 function link_check_box()
 {
 
-	// uncheck boxes, if checked
-	for (var j = 0; j < Math.min(num_included_plots, 3); j ++) {
-		$("#dac-link-plot-" + (j+1).toString()).prop("checked", false);
-	};
-
 	// called when user checks or unchecks a link box
 	this.change(function () {
 
@@ -365,36 +360,8 @@ function link_check_box()
 
 		} else {
 
-			// yes -- check compatibility with previously checked links
-			var compatible_link = true;
-			for (var j = 0; j < Math.min(num_included_plots, 3); j++) {
-
-				// only check axes that are linked
-				if (link_plots[j] != 0) {
-
-					// are axes same length?
-					if (plots_selected_time[j].length == plots_selected_time[check_id].length) {
-
-						// compute difference between time vectors
-						var abs_diff = 0;
-						for (var k = 0; k < plots_selected_time[j].length; k++) {
-							abs_diff = abs_diff + Math.abs(plots_selected_time[j][k] -
-										plots_selected_time[check_id][k]);
-						}
-
-						// are vectors different?
-						if (abs_diff != 0) {
-							compatible_link = false;
-						}
-
-					} else {
-						compatible_link = false;
-					}
-				}
-			}
-
 			// is the link compatible with previous links?
-			if (compatible_link) {
+			if (check_compatible_link(check_id)) {
 
 				// yes -- add to list
 				link_plots[check_id] = 1;
@@ -416,6 +383,41 @@ function link_check_box()
 
 	});
 
+}
+
+// check that linked plots are compatible
+function check_compatible_link(check_id)
+{
+
+    // yes -- check compatibility with previously checked links
+    var compatible_link = true;
+    for (var j = 0; j < Math.min(num_included_plots, 3); j++) {
+
+        // only check axes that are linked
+        if (link_plots[j] != 0) {
+
+            // are axes same length?
+            if (plots_selected_time[j].length == plots_selected_time[check_id].length) {
+
+                // compute difference between time vectors
+                var abs_diff = 0;
+                for (var k = 0; k < plots_selected_time[j].length; k++) {
+                    abs_diff = abs_diff + Math.abs(plots_selected_time[j][k] -
+                                plots_selected_time[check_id][k]);
+                }
+
+                // are vectors different?
+                if (abs_diff != 0) {
+                    compatible_link = false;
+                }
+
+            } else {
+                compatible_link = false;
+            }
+        }
+    }
+
+    return compatible_link;
 }
 
 // update selections based on other input
@@ -619,18 +621,28 @@ function draw_plot(i)
 				plots_selected_resolution[plot_id] = -1;
 			}
 
-            // was zoom range changed?
+            // was zoom range changed?  (this is an error condition,
+            // likely from a template application)
             if (result["range_change"]) {
 
                 // reset zoom
                 plots_selected_zoom_x[i] = result["data_range_x"];
                 plots_selected_zoom_y[i] = result["data_range_y"];
 
+                // unlink plot
+                $("#dac-link-plot-" + (i+1).toString()).prop("checked", false);
+                link_plots[i] = 0;
+
                 // plot zoom change event
                 var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
                                      plots_zoom_x: plots_selected_zoom_x,
                                      plots_zoom_y: plots_selected_zoom_y} });
                 document.body.dispatchEvent(plotZoomEvent);
+
+                // link plot change event
+                var linkPlotEvent = new CustomEvent("DACLinkPlotsChanged", {detail:
+                                                    link_plots});
+                document.body.dispatchEvent(linkPlotEvent);
 
             }
 
