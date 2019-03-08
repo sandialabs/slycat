@@ -52,10 +52,15 @@ def register_slycat_plugin(context):
                   database.scan("slycat/project-models", startkey=pid, endkey=pid)]
         linked_models = []
         for model in models:
-            if "project_data" in model and model["model-type"] == "parameter-image" and model["project_data"][0] == did:
-                linked_models.append(model["_id"])
-                slycat.web.server.delete_model_parameter(database, model, aid="data-table")
-                model["project_data"] = []
+            if "project_data" in model and model["model-type"] == "parameter-image" \
+              and len(model["project_data"]) > 0 and model["project_data"][0] == did:
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    model["project_data"] = []
+                    database.save(model)
+                if current_selected_model["_id"] != model["_id"]:
+                    linked_models.append(model["_id"])
+                    if "artifact:data-table" in model:
+                        slycat.web.server.delete_model_parameter(database, model, aid="data-table")
         response = {"success": "success", "linked_models": linked_models}
         return json.dumps(response)
 
@@ -64,13 +69,14 @@ def register_slycat_plugin(context):
         did = model["project_data"][0]
         project_data = database.get("project_data", did)
         attachment = database.get_attachment(project_data, "content")
-        models = [current_selected_model for current_selected_model in
+        file_attachment = attachment.read()
+        models = [model for model in
                   database.scan("slycat/project-models", startkey=model["project"], endkey=model["project"])]
         for model in models:
             for linked_model_id in kwargs["linked_models"]:
                 if model["_id"] == linked_model_id:
-                    slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [attachment], model,
-                                                          ["data-table"])
+                    slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [file_attachment], model,
+                                                          "data-table")
 
     def finish(database, model):
         """
