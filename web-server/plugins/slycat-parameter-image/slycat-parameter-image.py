@@ -48,7 +48,7 @@ def register_slycat_plugin(context):
     def delete_table(database, current_selected_model, verb, type, command, **kwargs):
         did = current_selected_model["project_data"][0]
         pid = current_selected_model["project"]
-        models = [current_selected_model for current_selected_model in
+        models = [model for model in
                   database.scan("slycat/project-models", startkey=pid, endkey=pid)]
         linked_models = []
         for model in models:
@@ -66,6 +66,10 @@ def register_slycat_plugin(context):
 
     # database, parser, input, attachment, model, aid
     def update_table(database, model, verb, type, command, **kwargs):
+        linked_models = kwargs["linked_models"]
+        if len(linked_models) <= 0:
+            response = {"success": "success nothing to change"}
+            return json.dumps(response)
         did = model["project_data"][0]
         project_data = database.get("project_data", did)
         attachment = database.get_attachment(project_data, "content")
@@ -73,10 +77,17 @@ def register_slycat_plugin(context):
         models = [model for model in
                   database.scan("slycat/project-models", startkey=model["project"], endkey=model["project"])]
         for model in models:
-            for linked_model_id in kwargs["linked_models"]:
+            for linked_model_id in linked_models:
                 if model["_id"] == linked_model_id:
+                    if "project_data" not in model:
+                        model["project_data"] = []
+                    with slycat.web.server.get_model_lock(model["_id"]):
+                        model["project_data"].append(project_data["_id"])
+                        database.save(model)
                     slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [file_attachment], model,
                                                           "data-table")
+        response = {"success": "success changed linked models"}
+        return json.dumps(response)
 
     def finish(database, model):
         """
@@ -97,7 +108,7 @@ def register_slycat_plugin(context):
     # Register custom commands for use by wizards.
     context.register_model_command("GET", "parameter-image", "media-columns", media_columns)
     context.register_model_command("GET", "parameter-image", "delete-table", delete_table)
-    context.register_model_command("GET", "parameter-image", "update-table", update_table)
+    context.register_model_command("POST", "parameter-image", "update-table", update_table)
 
     # Register custom wizards for creating PI models.
     context.register_wizard("parameter-image", "New Parameter Space Model",

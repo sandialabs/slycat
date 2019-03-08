@@ -53,18 +53,18 @@ export default function ControlsButtonUpdateTable(props) {
              success: function(){
                //upload_success(component.browser);
                //location.reload();
-
-               client.get_model_command({
-               mid: mid,
-               type: "parameter-image",
-               command: "update-table",
-               parameters: {
-                    linked_models: result_delete["linked_models"],
+               client.post_sensitive_model_command({
+                mid: mid,
+                type: "parameter-image",
+                command: "update-table",
+                parameters: {
+                  linked_models: result_delete["linked_models"],
                 },
-               success: function (result_update) {
-                   console.log(result_update);
-               }
-            });
+                success: function (result_update) {
+                  console.log(result_update);
+                },
+                error: console.log("There was a problem uploading the new data")
+              });
              },
              error: function(){
                 //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
