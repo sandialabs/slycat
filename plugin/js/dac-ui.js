@@ -342,6 +342,9 @@ $(document).ready(function() {
                 // link plots event for time series
                 document.body.addEventListener("DACLinkPlotsChanged", link_plots_changed);
 
+                // table order event
+                document.body.addEventListener("DACTableOrderChanged", table_order_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -493,6 +496,14 @@ $(document).ready(function() {
                                     init_link_plots = bookmark["dac-link-plots"];
                                 }
 
+                                // check for sort order bookmark
+                                var init_sort_order = null;
+                                var init_sort_col = null;
+                                if ("dac-table-order" in bookmark) {
+                                    init_sort_order = bookmark["dac-table-order"];
+                                    init_sort_col = bookmark["dac-table-sort-col"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -517,7 +528,8 @@ $(document).ready(function() {
 					                init_mds_subset, init_fisher_order, init_fisher_pos, init_diff_desired_state);
 
                                 // set up table with editable columns
-                                setup_editable_columns (data_table_meta, data_table, meta_include_columns);
+                                setup_editable_columns (data_table_meta, data_table, meta_include_columns,
+                                                        init_sort_order, init_sort_col);
 
 		   	                },
 		   	                function () {
@@ -588,7 +600,8 @@ $(document).ready(function() {
     }
 
     // set up table with editable columns
-    function setup_editable_columns (data_table_meta, data_table, meta_include_columns)
+    function setup_editable_columns (data_table_meta, data_table, meta_include_columns,
+                                     init_sort_order, init_sort_col)
     {
 
         // set up table
@@ -617,7 +630,8 @@ $(document).ready(function() {
                             editable_columns = result;
 
                             metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, MAX_FREETEXT_LEN);
+                                                 editable_columns, MAX_FREETEXT_LEN, init_sort_order,
+                                                 init_sort_col);
 
                             },
                         error: function () {
@@ -802,6 +816,14 @@ $(document).ready(function() {
     {
         // bookmark new links
         bookmarker.updateState({"dac-link-plots": new_links.detail});
+    }
+
+    // event for table order changes
+    function table_order_changed (new_order)
+    {
+        // bookmark new order
+        bookmarker.updateState({"dac-table-order": new_order.detail.sort_order,
+                                "dac-table-sort-col": new_order.detail.sort_col});
     }
 
 });

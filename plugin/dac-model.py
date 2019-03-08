@@ -308,6 +308,12 @@ def register_slycat_plugin(context):
         # find indices within user selected range
         range_inds = numpy.where((time_points >= x_min) & (time_points <= x_max))[0]
 
+        # make sure something was selected
+        if len(range_inds) == 0:
+            range_inds_min = numpy.amax(numpy.where(time_points < x_min)[0])
+            range_inds_max = numpy.amin(numpy.where(time_points > x_max)[0])
+            range_inds = range(range_inds_min, range_inds_max+1)
+
         # add indices just before and just after user selected range
         if range_inds[0] > 0:
             range_inds = numpy.insert(range_inds, 0, range_inds[0] - 1)

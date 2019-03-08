@@ -74,7 +74,8 @@ function make_column(id_index, name, editor, options)
 }
 
 // load grid data and set up colors for selections
-module.setup = function (metadata, data, include_columns, editable_columns, max_freetext_len)
+module.setup = function (metadata, data, include_columns, editable_columns, max_freetext_len,
+                         init_sort_order, init_sort_col)
 {
 	// set up callback for data download button
 	var download_button = document.querySelector("#dac-download-table-button");
@@ -169,6 +170,23 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 	// show selections, if any
 	module.select_rows()
 
+    // check for bookmarked sort order
+    if (init_sort_order != null) {
+
+        // check if sort col is valid
+        if (init_sort_col < (num_cols + num_editable_cols)) {
+
+            // sort by bookmarked column
+            grid_view.setSortColumn(init_sort_col, init_sort_order);
+
+            var comparer = function (a,b) {
+	        	return (a[init_sort_col] > b[init_sort_col]) ? 1 : -1;
+	        }
+
+	        data_view.sort(comparer, init_sort_order);
+        }
+    }
+    
 	// jump to current selection (focus then selection 1)
 	if (selections.focus() != null) {
 	    module.jump_to([selections.focus()]);
@@ -451,11 +469,19 @@ function color_rows(old_metadata) {
 // slick grid column sort
 function col_sort (e, args)
 {
+
 	var comparer = function (a,b) {
 		return (a[args.sortCol.field] > b[args.sortCol.field]) ? 1 : -1;
 	}
 
 	data_view.sort(comparer, args.sortAsc);
+
+    // table order sort event
+    var tableOrderEvent = new CustomEvent("DACTableOrderChanged", { detail: {
+										  sort_col: args.sortCol.field,
+										  sort_order: args.sortAsc} });
+	document.body.dispatchEvent(tableOrderEvent);
+
 }
 
 // slick grid custom cell editor for text
