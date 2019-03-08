@@ -51,8 +51,6 @@ export default function ControlsButtonUpdateTable(props) {
              aids: [["data-table"], file.name],
              parser: "slycat-csv-parser",
              success: function(){
-               //upload_success(component.browser);
-               //location.reload();
                client.post_sensitive_model_command({
                 mid: mid,
                 type: "parameter-image",
@@ -62,6 +60,7 @@ export default function ControlsButtonUpdateTable(props) {
                 },
                 success: function (result_update) {
                   console.log(result_update);
+                  location.reload();
                 },
                 error: console.log("There was a problem uploading the new data")
               });
