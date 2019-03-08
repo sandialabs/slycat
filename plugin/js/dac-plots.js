@@ -53,6 +53,11 @@ var limit_indicator_color = null;
 // linked plot check box values
 var link_plots = [];
 
+// check axes for links after a draw call
+var check_link_count = 0;
+var plots_expected = 0;
+var draw_called = false;
+
 // meta data for plots
 var num_plots = null;
 var num_included_plots = null;
@@ -504,6 +509,16 @@ module.draw = function()
 	var num_x_ticks = Math.round(width/plot_adjustments.x_tick_freq);
 	var num_y_ticks = Math.round(height/plot_adjustments.y_tick_freq);
 
+    // start counter for check links
+    check_link_count = 0;
+    draw_called = true;
+
+    // and count number plots expected
+    plots_expected = 0;
+    for (var i = 0; i < Math.min(num_included_plots,3); i++){
+        plots_expected = plots_expected + plots_displayed[i];
+    }
+
 	// the sizes and ranges of the plots are all the same
 	for (var i = 0; i < Math.min(num_included_plots,3); ++i) {
 
@@ -559,6 +574,39 @@ module.draw = function()
 		}
 
 	}
+}
+
+// this function checks links after everything is drawn
+// it is called by each instance of draw_plot(i) when finished
+function check_links(i)
+{
+    // another plot has been drawn
+    check_link_count = check_link_count + 1;
+
+    // is it the final plot?
+    if (draw_called && (check_link_count == plots_expected))
+    {
+
+        // check links
+        for (var i = 0; i < 3; i++) {
+            if ((plots_displayed[i] == 1) && (link_plots[i])) {
+                if (!check_compatible_link(i)) {
+
+                    // found one incompatible link, reset all links
+                    link_plots = [0,0,0];
+                    for (var i = 0; i < 3; i++) {
+                        $("#dac-link-plot-" + (i+1).toString()).prop("checked", false);
+                    }
+
+                    // done
+                    break;
+                }
+            }
+        }
+
+        // draw is done
+        draw_called = false;
+    }
 }
 
 // this routine sets off the following actions:
@@ -654,6 +702,9 @@ function draw_plot(i)
 
 			// update indicators for this plot
 			update_indicators(i);
+
+			// done, check links
+			check_links(i);
 
 		},
 		error: function ()
