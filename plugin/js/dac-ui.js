@@ -339,6 +339,9 @@ $(document).ready(function() {
                 // zoom change event for time series plots
                 document.body.addEventListener("DACPlotZoomChanged", plot_zoom_changed);
 
+                // link plots event for time series
+                document.body.addEventListener("DACLinkPlotsChanged", link_plots_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -484,6 +487,12 @@ $(document).ready(function() {
                                     init_plots_zoom_y = bookmark["dac-plots-zoom-y"];
                                 }
 
+                                // check for plot links bookmark
+                                var init_link_plots = [0,0,0];
+                                if ("dac-link-plots" in bookmark) {
+                                    init_link_plots = bookmark["dac-link-plots"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -496,7 +505,7 @@ $(document).ready(function() {
 				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_meta, variables,
 				                            var_include_columns, init_plots_selected, init_plots_displayed,
-				                            init_plots_zoom_x, init_plots_zoom_y);
+				                            init_plots_zoom_x, init_plots_zoom_y, init_link_plots);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -786,6 +795,13 @@ $(document).ready(function() {
         // bookmark new zoom extents (all three)
         bookmarker.updateState({"dac-plots-zoom-x": new_plot_zoom.detail.plots_zoom_x,
                                 "dac-plots-zoom-y": new_plot_zoom.detail.plots_zoom_y})
+    }
+
+    // event for link plots changes in time series
+    function link_plots_changed (new_links)
+    {
+        // bookmark new links
+        bookmarker.updateState({"dac-link-plots": new_links.detail});
     }
 
 });

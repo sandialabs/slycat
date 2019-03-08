@@ -96,7 +96,7 @@ var mouse_over_line = [];
 module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data,
 						 INCLUDE_VARS, init_plots_selected, init_plots_displayed, init_plots_zoom_x,
-						 init_plots_zoom_y)
+						 init_plots_zoom_y, init_link_plots)
 {
 
 	// set ui constants
@@ -181,8 +181,8 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	plots_selected_displayed = [0, 0, 0];
 	plots_selected_resolution = [-1, -1, -1];
 
-	// initialize check boxes to all false
-	link_plots = [0, 0, 0];
+	// initialize check boxes
+	link_plots = init_link_plots;
 
 	// remove unused plot pull downs
 	for (var i = num_included_plots; i < 3; i++) {
@@ -264,6 +264,13 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
     // do not show initial plots, if they are unavailable
     hide_plots(num_init_plots);
 
+    // check link boxes
+    for (var i = 0; i < 3; i++) {
+        if (link_plots[i] == 1) {
+    	    $("#dac-link-plot-" + (i+1).toString()).prop("checked", true);
+    	}
+	}
+
 }
 
 // populate pull down menu i in {0,1,2} with plot names
@@ -317,6 +324,11 @@ function display_plot_pull_down(i)
                                             plots_selected: plots_selected,
                                             plots_displayed: plots_displayed}});
             document.body.dispatchEvent(plotEvent);
+
+            // link plots changed
+            var linkPlotEvent = new CustomEvent("DACLinkPlotsChanged", {detail:
+                                                link_plots});
+            document.body.dispatchEvent(linkPlotEvent);
 
             // plot zoom change event
             var plotZoomEvent = new CustomEvent("DACPlotZoomChanged", { detail: {
@@ -396,6 +408,12 @@ function link_check_box()
 							  "zoomed relative to another.")("","","");
 			}
 		}
+
+        // link plots changed
+        var linkPlotEvent = new CustomEvent("DACLinkPlotsChanged", {detail:
+                                            link_plots});
+        document.body.dispatchEvent(linkPlotEvent);
+
 	});
 
 }
@@ -434,15 +452,17 @@ module.change_selections = function(change_plot_selections)
     // hide plots not in selection
     hide_plots (num_plots);
 
-    console.log("change selection: " + plots_selected);
-    console.log("change selection: " + plots_displayed);
-
 	// plot changed event (note this is redundant due to update plot calls,
 	// but makes sure that the correct number of plots is in the new selection)
     var plotEvent = new CustomEvent("DACPlotsChanged", { detail: {
                                     plots_selected: plots_selected,
                                     plots_displayed: plots_displayed}});
     document.body.dispatchEvent(plotEvent);
+
+    // link plots changed
+    var linkPlotEvent = new CustomEvent("DACLinkPlotsChanged", {detail:
+                                        link_plots});
+    document.body.dispatchEvent(linkPlotEvent);
 
 }
 
