@@ -39,8 +39,9 @@ export default function ControlsButtonUpdateTable(props) {
     client.get_model_command({
         mid: mid,
         type: "parameter-image",
-        command: "update-table",
-        success: function (result) {
+        command: "delete-table",
+        success: function (result_delete) {
+            console.log(result_delete);
             var file = files[0];
 
             var fileObject ={
@@ -51,7 +52,19 @@ export default function ControlsButtonUpdateTable(props) {
              parser: "slycat-csv-parser",
              success: function(){
                //upload_success(component.browser);
-               location.reload();
+               //location.reload();
+
+               client.get_model_command({
+               mid: mid,
+               type: "parameter-image",
+               command: "update-table",
+               parameters: {
+                    linked_models: result_delete["linked_models"],
+                },
+               success: function (result_update) {
+                   console.log(result_update);
+               }
+            });
              },
              error: function(){
                 //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
@@ -59,14 +72,13 @@ export default function ControlsButtonUpdateTable(props) {
               }
             };
             fileUploader.uploadFile(fileObject);
+
           console.log("Success!");
         },
         error: function(){
         console.log("Failure.");
       }
     });
-
-
     closeModal();
   };
 
