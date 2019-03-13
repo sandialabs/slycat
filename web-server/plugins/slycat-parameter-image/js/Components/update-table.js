@@ -105,7 +105,8 @@ export default function ControlsButtonUpdateTable(props) {
           </div>
         </div>
       </div>
-      <ControlsButton label='Update Table' title={title} data_toggle='modal' data_target={'#' + modalId} button_style={props.button_style} id='controls-button-death' />
+      <ControlsButton label='Update Table' title={title} data_toggle='modal' data_target={'#' + modalId}
+                      button_style={props.button_style} id='controls-button-death' />
     </React.Fragment>
   );
 }
