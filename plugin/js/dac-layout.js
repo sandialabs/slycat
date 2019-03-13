@@ -12,145 +12,72 @@ import metadata_table from "./dac-table.js";
 export default {
 
     setup: function(ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
-        SCATTER_BUTTONS_HEIGHT, CONTROL_BAR_POSITION)
+        SCATTER_BUTTONS_HEIGHT)
     {
 
-        if (CONTROL_BAR_POSITION == "scatter-plot")
+        // set up control bar above scatter plot
+
+        // Set up the outer layout (includes center and east)
+        $("#dac-model").layout(
         {
-
-            // set up control bar above scatter plot
-
-            // remove top control bar
-            $("#dac-control-bar-top").remove();
-
-            // remove middle mds-pane
-            $("#dac-mds-pane-bar-top").remove();
-
-            // Set up the outer layout (includes center and east)
-            $("#dac-model").layout(
+            applyDefaultStyles: true,
+            east:
             {
-                applyDefaultStyles: true,
-                east:
-                {
-                    size: $(window).width() / 3,
-                },
-                onresize_end: function()
-                {
-                    plots.draw();
-                }
-            });
-
-            // setup inner window layout.
-            $("#dac-model > .ui-layout-center").layout(
+                size: $(window).width() / 3,
+            },
+            onresize_end: function()
             {
-                applyDefaultStyles: true,
-                south:
-                {
-                    size: $(window).height() / 4,
-                },
-                onresize_end: function ()
-                {
-                    metadata_table.resize();
-                },
-                west:
-                {
-                    size: ALPHA_SLIDER_WIDTH,
-                },
-            });
+                plots.draw();
+            }
+        });
 
-            // set up inner window with scatter plot & buttons
-            $("#dac-model > .ui-layout-center > .ui-layout-center").layout(
+        // setup inner window layout.
+        $("#dac-model > .ui-layout-center").layout(
+        {
+            applyDefaultStyles: true,
+            south:
             {
-                applyDefaultStyles: true,
-                north:
-                {
-                    size: SCATTER_BUTTONS_HEIGHT,
-                },
-                onresize_end: function()
-                {
-                    scatter_plot.draw();
-                },
-            });
-
-            // set up the west window layout (with alpha buttons)
-            $("#dac-model > .ui-layout-center > .ui-layout-west").layout(
+                size: $(window).height() / 4,
+            },
+            onresize_end: function ()
             {
-                applyDefaultStyles: true,
-                south:
-                {
-                    size: ALPHA_BUTTONS_HEIGHT,
-                },
-            });
-
-            // when resizing the window, adjust the height of the layout.
-            $(window).resize(function()
+                metadata_table.resize();
+            },
+            west:
             {
-                $("#dac-model").height($(window).height());
-            });
+                size: ALPHA_SLIDER_WIDTH,
+            },
+        });
 
-        } else {
-
-            // set up control bar at very top of UI
-
-            // remove scatter plot control bar
-            $("#dac-control-bar-scatter-plot").remove();
-
-            // rename mds-pane
-            $("#dac-mds-pane-bar-top").attr("id", "dac-mds-pane");
-
-            // set up remainder of jquery layout
-            $("#dac-model").layout(
+        // set up inner window with scatter plot & buttons
+        $("#dac-model > .ui-layout-center > .ui-layout-center").layout(
+        {
+            applyDefaultStyles: true,
+            north:
             {
-                applyDefaultStyles: true,
-                east:
-                {
-                    size: $(window).width() / 3,
-                },
-                onresize_end: function()
-                {
-                    plots.draw();
-                }
-            });
-
-            // setup inner window layout.
-            $("#dac-model > .ui-layout-center").layout(
+                size: SCATTER_BUTTONS_HEIGHT,
+            },
+            onresize_end: function()
             {
-                applyDefaultStyles: true,
-                north:
-                {
-                    size: SCATTER_BUTTONS_HEIGHT,
-                },
-                south:
-                {
-                    size: $(window).height() / 4,
-                },
-                west:
-                {
-                    size: ALPHA_SLIDER_WIDTH,
-                },
-                onresize_end: function ()
-                {
-                    scatter_plot.draw();
-                    metadata_table.resize();
-                },
-            });
+                scatter_plot.draw();
+            },
+        });
 
-            // set up the west window layout (with alpha buttons)
-            $("#dac-model > .ui-layout-center > .ui-layout-west").layout(
+        // set up the west window layout (with alpha buttons)
+        $("#dac-model > .ui-layout-center > .ui-layout-west").layout(
+        {
+            applyDefaultStyles: true,
+            south:
             {
-                applyDefaultStyles: true,
-                south:
-                {
-                    size: ALPHA_BUTTONS_HEIGHT,
-                },
-            });
+                size: ALPHA_BUTTONS_HEIGHT,
+            },
+        });
 
-            // when resizing the window, adjust the height of the layout.
-            $(window).resize(function()
-            {
-                $("#dac-model").height($(window).height());
-            });
+        // when resizing the window, adjust the height of the layout.
+        $(window).resize(function()
+        {
+            $("#dac-model").height($(window).height());
+        });
 
-        }
     }
 };

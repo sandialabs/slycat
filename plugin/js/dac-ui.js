@@ -39,9 +39,6 @@ $(document).ready(function() {
     // bookmark is the actual book mark state
     var bookmark = null;
 
-    // controls on top or above scatter plot
-    var CONTROL_BAR = "scatter-plot";
-
     // maximum number of points to display for plots
     var MAX_TIME_POINTS = 500;
 
@@ -211,7 +208,6 @@ $(document).ready(function() {
                     MAX_NUM_PLOTS = bookmark_preference("dac-MAX-NUM-PLOTS", MAX_NUM_PLOTS);
                     MAX_POINTS_ANIMATE = bookmark_preference("dac-MAX-POINTS-ANIMATE", MAX_POINTS_ANIMATE);
                     SCATTER_PLOT_TYPE = bookmark_preference("dac-SCATTER-PLOT-TYPE", SCATTER_PLOT_TYPE);
-                    CONTROL_BAR = bookmark_preference("dac-CONTROL-BAR",CONTROL_BAR);
                     MAX_CATS = bookmark_preference("dac-MAX-CATS", MAX_CATS);
                     MAX_FREETEXT_LEN = bookmark_preference("dac-MAX-FREETEXT-LEN", MAX_FREETEXT_LEN);
 
@@ -307,7 +303,7 @@ $(document).ready(function() {
 
 	            // set up jQuery layout for user interface
 				layout.setup (ALPHA_SLIDER_WIDTH, ALPHA_BUTTONS_HEIGHT,
-							  SCATTER_BUTTONS_HEIGHT, CONTROL_BAR);
+							  SCATTER_BUTTONS_HEIGHT);
 
                 // set up alpha slider value change event
                 document.body.addEventListener("DACAlphaValuesChanged", alpha_values_changed);

@@ -295,9 +295,12 @@ def register_slycat_plugin(context):
         # test requested range time (x)
         x_min, x_max, range_change_x = test_range(x_min, x_max, time_points_min, time_points_max)
 
-        # get data range in y
-        data_min = numpy.amin(var_data)
-        data_max = numpy.amax(var_data)
+        # get data range in y (if any data was requested)
+        data_min = -float("Inf")
+        data_max = float("Inf")
+        if len(var_data) > 0:
+            data_min = numpy.amin(var_data)
+            data_max = numpy.amax(var_data)
 
         # test requested range data (y)
         y_min, y_max, range_change_y = test_range(y_min, y_max, data_min, data_max)

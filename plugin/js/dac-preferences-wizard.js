@@ -101,7 +101,6 @@ function constructor(params)
     component.dac_max_num_plots = ko.observable(DEF_MAX_NUM_PLOTS);
     component.dac_max_points_animate = ko.observable(DEF_MAX_POINTS_ANIMATE);
     component.dac_scatter_plot_type = ko.observable(DEF_SCATTER_PLOT_TYPE);
-    component.dac_control_bar_position = ko.observable(DEF_CONTROL_BAR_POSITION);
     component.dac_max_cats = ko.observable(DEF_MAX_CATS);
     component.dac_max_freetext_len = ko.observable(DEF_MAX_FREETEXT_LEN);
 
@@ -500,9 +499,6 @@ function constructor(params)
             if ("dac-SCATTER-PLOT-TYPE" in bookmark) {
                 component.dac_scatter_plot_type(bookmark["dac-SCATTER-PLOT-TYPE"]); };
 
-            if ("dac-CONTROL-BAR" in bookmark) {
-                component.dac_control_bar_position(bookmark["dac-CONTROL-BAR"]); };
-
             if ("dac-MAX-CATS" in bookmark) {
                 component.dac_max_cats(bookmark["dac-MAX-CATS"]); };
 
@@ -580,7 +576,6 @@ function constructor(params)
         component.dac_max_num_plots(DEF_MAX_NUM_PLOTS);
         component.dac_max_points_animate(DEF_MAX_POINTS_ANIMATE);
         component.dac_scatter_plot_type(DEF_SCATTER_PLOT_TYPE);
-        component.dac_control_bar_position(DEF_CONTROL_BAR_POSITION);
         component.dac_max_cats(DEF_MAX_CATS);
         component.dac_max_freetext_len(DEF_MAX_FREETEXT_LEN);
 
@@ -619,7 +614,6 @@ function constructor(params)
                                 "dac-MAX-NUM-PLOTS": dac_max_num_plots,
                                 "dac-MAX-POINTS-ANIMATE": dac_max_points_animate,
                                 "dac-SCATTER-PLOT-TYPE": component.dac_scatter_plot_type(),
-                                "dac-CONTROL-BAR": component.dac_control_bar_position(),
                                 "dac-MAX-CATS": dac_max_cats,
                                 "dac-MAX-FREETEXT-LEN": dac_max_freetext_len});
 
