@@ -405,84 +405,118 @@ def register_slycat_plugin(context):
     # adds, removes, and updates the editable columns in the metadata table.
     # inputs are described below, if no inputs for a particular command, use -1 in call.
     def manage_editable_cols(database, model, verb, type, command, **kwargs):
+
         # check if user is a reader (if so do not change table)
         project = database.get("project", model["project"])
         if slycat.web.server.authentication.is_project_reader(project):
             return json.dumps({"error": "reader"})
+
         # get input parameters (-1 means ignore)
         # manage column command ('add', 'remove', or 'update')
         col_cmd = kwargs["0"]
+
         # type of column to add ('freetext' or 'categorical')
         col_type = kwargs["1"]
+
         # name of column to add
         col_name = kwargs["2"]
+
         # categories in the case of a categorical column
         col_cats = kwargs["3"]
+
         # column to remove (for remove), or update (for update)
         if isinstance(kwargs["4"], (list,)):
             col_id = [int(id) for id in kwargs["4"]]
         else:
-            col_id = int(kwargs["4"])
+            col_id = [int(kwargs["4"])]
+
         # row to update (for update)
         row_id = int(kwargs["5"])
+
         # value to update (for update)
         col_value = kwargs["6"]
+
         # get number of rows in meta data table
         meta_data = slycat.web.server.get_model_arrayset_metadata(
             database, model, "dac-datapoints-meta")
         num_rows = int(meta_data[0]["dimensions"][0]["end"])
+
         # initialize any existing editable columns
         editable_cols = {"num_rows": num_rows,
                          "attributes": [],
                          "categories": [],
                          "data": []}
         if 'artifact:dac-editable-columns' in model:
+
             # load editable column attribute data
             editable_cols = slycat.web.server.get_model_parameter(
                 database, model, "dac-editable-columns")
+
         # parse command
         if col_cmd == 'add':
+
             # add command, freetext or categorical?
             if col_type == 'freetext':
+
                 # add free text column to current editable columns
                 editable_cols["attributes"].append(dict(name=col_name, type="freetext"))
                 editable_cols["categories"].append([unicode('')])
                 editable_cols["data"].append([unicode('') for i in range(num_rows)])
+
                 # update editable column categories
                 slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+
             elif col_type == 'categorical':
+
                 # add categorical column
                 editable_cols["attributes"].append(dict(name=col_name, type="categorical"))
                 editable_cols["categories"].append(col_cats)
                 editable_cols["data"].append(["No Value" for i in range(num_rows)])
+
                 # update editable column categories
                 slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+
             else:
+
                 # called with un-implemented column type (should never happen)
                 cherrypy.log.error("DAC error: un-implemented column type for manage editable columns.")
                 return json.dumps({"error": 0})
+
         elif col_cmd == 'remove':
+
+            cherrypy.log.error(str(col_id))
+
             # remove columns in editable cols
             for id in reversed(col_id):
                 del editable_cols["attributes"][id]
                 del editable_cols["categories"][id]
                 del editable_cols["data"][id]
+
             # check to see if anything is left
             if len(editable_cols["attributes"]) == 0:
+
                 # erase entire variable from slycat database
                 slycat.web.server.delete_model_parameter(database, model, "dac-editable-columns")
+
             else:
+
                 # update editable column categories
                 slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+
         elif col_cmd == 'update':
+
             # update column data
-            editable_cols["data"][col_id][row_id] = col_value
+            editable_cols["data"][col_id[0]][row_id] = col_value
+
             # push to server
             slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+
         else:
+
             # called with invalid command (should never happen)
             cherrypy.log.error("DAC error: un-implemented command for manage editable columns.")
             return json.dumps({"error": 0})
+
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
 

@@ -186,7 +186,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 	        data_view.sort(comparer, init_sort_order);
         }
     }
-    
+
 	// jump to current selection (focus then selection 1)
 	if (selections.focus() != null) {
 	    module.jump_to([selections.focus()]);
@@ -487,74 +487,104 @@ function col_sort (e, args)
 // slick grid custom cell editor for text
 // modified from slick grid text editor
 function TextEditor(args) {
+
 	var $input;
 	var defaultValue;
 	var scope = this;
-		this.init = function () {
-			$input = $("<INPUT type=text class='editor-text' maxlength='" +
+
+	this.init = function () {
+
+		$input = $("<INPUT type=text class='editor-text' maxlength='" +
 					String(MAX_FREETEXT_LEN) + "'/>");
+
 		$input.appendTo(args.container);
-			$input.bind("keydown.nav", function (e) {
-				if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {
-					e.stopImmediatePropagation();
-				}
-				if (e.keyCode === $.ui.keyCode.ENTER) {
-					// get cell position
-					var cell_pos = grid_view.getActiveCell();
-					var row_id = cell_pos["row"];
-					var col_id = cell_pos["cell"] - num_cols;
-					// get new value
-					var cell_val = $input.val();
-					// update value by in table and database
-					update_editable_col (row_id, col_id, cell_val);
-					// reset active cell so no problems with focus
-					grid_view.resetActiveCell();
-				}
-			});
-			$input.focus();
+
+        $input.bind("keydown.nav", function (e) {
+
+            console.log($.ui);
+            console.log(e.keyCode);
+
+            if (e.keyCode === $.ui.keyCode.LEFT ||
+                e.keyCode === $.ui.keyCode.RIGHT) {
+                e.stopImmediatePropagation();
+            }
+
+            if (e.keyCode === $.ui.keyCode.ENTER) {
+
+                // get cell position
+                var cell_pos = grid_view.getActiveCell();
+                var row_id = cell_pos["row"];
+                var col_id = cell_pos["cell"] - num_cols;
+
+                // get new value
+                var cell_val = $input.val();
+
+                // update value by in table and database
+                update_editable_col (row_id, col_id, cell_val);
+
+                // reset active cell so no problems with focus
+                grid_view.resetActiveCell();
+            }
+        });
+
+		$input.focus();
+
 		$input.select();
-		};
-		this.destroy = function () {
+	};
+
+	this.destroy = function () {
 		$input.remove();
 	};
-		this.focus = function () {
+
+	this.focus = function () {
 		$input.focus();
 	};
-		this.getValue = function () {
+
+	this.getValue = function () {
 		return $input.val();
 	};
-		this.setValue = function (val) {
+
+	this.setValue = function (val) {
 		$input.val(val);
 	};
-		this.loadValue = function (item) {
+
+	this.loadValue = function (item) {
 		defaultValue = item[args.column.field] || "";
 		$input.val(defaultValue);
 		$input[0].defaultValue = defaultValue;
 		$input.select();
 	};
-		this.serializeValue = function () {
+
+	this.serializeValue = function () {
 		return $input.val();
 	};
-		this.applyValue = function (item, state) {
+
+	this.applyValue = function (item, state) {
 		item[args.column.field] = state;
 	};
-		this.isValueChanged = function () {
+
+	this.isValueChanged = function () {
 		return (!($input.val() == "" && defaultValue == null)) && ($input.val() != defaultValue);
 	};
-		this.validate = function () {
-			if (args.column.validator) {
+
+	this.validate = function () {
+
+		if (args.column.validator) {
 			var validationResults = args.column.validator($input.val());
 			if (!validationResults.valid) {
 				return validationResults;
 			}
 		}
-			return {
+
+		return {
 			valid: true,
 			msg: null
 		};
 	};
-		this.init();
+
+	this.init();
 }
+
 // slick grid custom cell editor for categorical values
 // modified from slick grid yes-no-select editor
 function SelectCellEditor(args) {
@@ -576,7 +606,7 @@ function SelectCellEditor(args) {
 		$select.width(args.column.width - SEL_BORDER_WIDTH);
 		$select.appendTo(args.container);
 
-			// remove select on change and update database
+		// remove select on change and update database
 		$select.on("change", function (value) {
 
 			// get cell position
@@ -627,6 +657,7 @@ function SelectCellEditor(args) {
 	};
 		this.init();
 }
+
 // update click grid cell and editable data in slycat
 function update_editable_col(row, col, val)
 {

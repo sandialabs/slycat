@@ -46,8 +46,14 @@ function constructor(params)
     // parser for category list file
     component.parser_cat_list_file = ko.observable(null);
 
-    // want a normal dialog size for this wizard
-    $(".modal-dialog").removeClass("modal-lg");
+    // need a large dialog for color palettes
+    $(".modal-dialog").addClass("modal-lg");
+
+    // if the user selects the cancel button we quit, doing nothing
+    component.cancel = function() {
+        // revert to normal modal dialog size
+       $(".modal-dialog").removeClass("modal-lg");
+    };
 
     // keep track of editable columns (for possible removal)
     component.dac_remove_cols = mapping.fromJS([]);
@@ -58,9 +64,6 @@ function constructor(params)
 
     // constant max number of categories (can be changed in preferences)
     var MAX_CATS = 50;
-
-    // if the user selects the cancel button we quit, doing nothing
-    component.cancel = function() { };
 
     // init removable columns information & update max categories
     var init_wizard = function () {
@@ -488,6 +491,7 @@ function constructor(params)
 
     // very last function called to launch model
     component.go_to_model = function() {
+      $(".modal-dialog").removeClass("modal-lg");
       location = 'models/' + component.model._id();
     };
 
