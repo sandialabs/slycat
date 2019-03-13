@@ -57,6 +57,7 @@ var grid_options = {
 
 // maximum freetext length for editable columns
 var MAX_FREETEXT_LEN = 0;
+
 // hardcoded pixel values for editable columns
 var SEL_BORDER_WIDTH = 11;
 
@@ -211,6 +212,7 @@ var download_button_callback = function ()
 		openCSVSaveChoiceDialog(sel);
 	 }
  }
+
 // write data table (modified from parameter space model code)
 function write_data_table (rows_to_output, defaultFilename)
 {
@@ -501,9 +503,6 @@ function TextEditor(args) {
 		$input.appendTo(args.container);
 
         $input.bind("keydown.nav", function (e) {
-
-            console.log($.ui);
-            console.log(e.keyCode);
 
             if (e.keyCode === $.ui.keyCode.LEFT ||
                 e.keyCode === $.ui.keyCode.RIGHT) {

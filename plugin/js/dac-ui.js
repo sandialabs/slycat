@@ -286,9 +286,13 @@ $(document).ready(function() {
 
 				// pixel adjustments for d3 time series plots
 				var PLOT_ADJUSTMENTS = {
-					PLOTS_PULL_DOWN_HEIGHT: parseInt(ui_parms["PLOTS_PULL_DOWN_HEIGHT"]),
-					PADDING_TOP: parseInt(ui_parms["PADDING_TOP"]),
-					PADDING_BOTTOM: parseInt(ui_parms["PADDING_BOTTOM"]),
+				    // hard-coded after change to bootstrap 4
+				    PLOTS_PULL_DOWN_HEIGHT: 29,
+                    PADDING_TOP: 10,
+                    PADDING_BOTTOM: 30,
+					// PLOTS_PULL_DOWN_HEIGHT: parseInt(ui_parms["PLOTS_PULL_DOWN_HEIGHT"]),
+					// PADDING_TOP: parseInt(ui_parms["PADDING_TOP"]),
+					// PADDING_BOTTOM: parseInt(ui_parms["PADDING_BOTTOM"]),
 					PADDING_LEFT: parseInt(ui_parms["PADDING_LEFT"]),
 					PADDING_RIGHT: parseInt(ui_parms["PADDING_RIGHT"]),
 					X_LABEL_PADDING: parseInt(ui_parms["X_LABEL_PADDING"]),
