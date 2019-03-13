@@ -41,15 +41,13 @@ S. Martin
 						</label>
 						<label class="btn btn-outline-secondary btn-sm"
 							id="dac-scatter-button-sel-2" 
-							title="Select group 2. 
-							       Use shift to add to group.">
+							title="Select group 2. Use shift to add to group.">
 							<input type="radio" name="options" autocomplete="off"
 								value="selection_2"><b style="padding:2px 5px 1px;border:dashed 2px">2</b></input>
 						</label>
 						<label class="btn btn-outline-secondary btn-sm"
 							id="dac-scatter-button-subset" 
-							title="Select subset for all analysis.
-                                   Use shift to exclude subset.">
+							title="Select subset for all analysis. Use shift to exclude subset.">
 							<input type="radio" name="options" autocomplete="off"
 								value="subset"><b>&sube;</b></input>
 						</label>
@@ -66,8 +64,7 @@ S. Martin
 							<i class="fa fa-chevron-left" aria-hidden="true"></i>
 						</button>
 						<button id="dac-scatter-diff-button" class="btn btn-outline-secondary btn-sm"
-							title="Order variable plots to maximize difference
-									between selection 1 and selection 2."><i class="fa fa-minus"></i>
+							title="Order variable plots to maximize difference between selection 1 and selection 2."><i class="fa fa-minus"></i>
 						</button>
 						<button id="dac-next-three-button" class="btn btn-outline-secondary btn-sm disabled"
 							   title="Next three most different plots.">
@@ -75,11 +72,9 @@ S. Martin
 						</button>
 					</div>
 					<label><i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
-title="The difference calculation is
-out of sync with the current selection."> </i></label>
+							  title="The difference calculation is out of sync with the current selection."> </i></label>
 					<label><i class="fa fa-refresh" id="dac-selection-synced"
-title="The difference calculation is in
-sync with the current selection"> </i></label>
+							  title="The difference calculation is in sync with the current selection."> </i></label>
         			
         			<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
         					
@@ -94,71 +89,6 @@ sync with the current selection"> </i></label>
 
 			</div>
 			
-		</div>
-
-		<div class="ui-layout-center" id="dac-mds-pane-bar-top">
-
-			<!-- MDS Scatter Plot -->
-			<svg id="dac-mds-scatterplot"></svg>
-
-		</div>
-
-		<div class="ui-layout-north" id="dac-control-bar-top">
-
-			<!-- MDS Scatter Plot Buttons (above entire interface-->
-			<div class="bootstrap-styles">
-
-				<div class="btn-group ml-3"
-					id="dac-scatter-select-buttons">
-					<div class="form-check form-check-inline" 
-						title="Select group 1. &#10;Use shift to add to group.">
-					  <input class="form-check-input" type="radio" id="dac-scatter-button-sel-1" name="options" autocomplete="off" value="selection_1">
-					  <label class="form-check-label" for="dac-scatter-button-sel-1">Selection 1</label>
-					</div>
-					<div class="form-check form-check-inline" 
-						title="Select group 2. &#10;Use shift to add to group.">
-					  <input class="form-check-input" type="radio" id="dac-scatter-button-sel-2" name="options" autocomplete="off" value="selection_2">
-					  <label class="form-check-label" for="dac-scatter-button-sel-2">Selection 2</label>
-					</div>
-					<div class="form-check form-check-inline" 
-						title="Select subset for all analysis. &#10;Use shift to exclude subset.">
-					  <input class="form-check-input" type="radio" id="dac-scatter-button-subset" name="options" autocomplete="off" value="subset">
-					  <label class="form-check-label" for="dac-scatter-button-subset">Subset</label>
-					</div>
-					<div class="form-check form-check-inline" 
-						title="Zoom for scatter plot.">
-					  <input class="form-check-input" type="radio" id="dac-scatter-button-zoom" name="options" autocomplete="off" value="zoom">
-					  <label class="form-check-label" for="dac-scatter-button-zoom">Zoom</label>
-					</div>
-				</div>
-
-				<div id="dac-difference-buttons" class="btn-group mt-1" role="group" aria-label="Basic example">
-				  <button id="dac-previous-three-button" 
-				  	title="Previous three most different plots." type="button" class="btn btn-sm btn-outline-dark"
-				  	disabled>
-				  	<i class="fa fa-chevron-left" aria-hidden="true"></i>
-				  </button>
-				  <button id="dac-scatter-diff-button" 
-				  	title="Order variable plots to maximize difference &#10;between selection 1 and selection 2." 
-				  	type="button" class="btn btn-sm btn-outline-dark">
-				  	Difference
-				  </button>
-				  <button id="dac-next-three-button" 
-				  	title="Next three most different plots." type="button" class="btn btn-sm btn-outline-dark"
-				  	disabled>
-				  	<i class="fa fa-chevron-right" aria-hidden="true"></i>
-				  </button>
-				</div>
-
-				<label><i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
-				   title="The difference calculation is &#10;out of sync with the current selection."> </i></label>
-				<label><i class="fa fa-refresh"  id="dac-selection-synced"
-				   title="The difference calculation is in &#10;sync with the current selection"> </i></label>
-
-				<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
-
-			</div>
-
 		</div>
 
 		<div class="ui-layout-south" id="dac-datapoints-pane">
@@ -193,8 +123,7 @@ sync with the current selection"> </i></label>
 					</button>
 					<button type="button" class="btn btn-sm btn-outline-secondary"
 							id="dac-alpha-cluster-button"
-							title='Adjust sliders to optimize scatter plot for selected
-								   (from "Do Not Color" pulldown) table column.'>
+							title='Adjust sliders to optimize scatter plot for selected (from "Do Not Color" pulldown) table column.'>
 						<i class="fa fa-sliders"></i>
 					</button>
 				</div>
@@ -215,8 +144,7 @@ sync with the current selection"> </i></label>
 
 		<!-- Plot limiter indicator -->
 		<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
-title="You selected too many plots to display:
-not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i></label>
+				  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i></label>
 		<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
 			id="dac-plots-displayed-1"></i></label>
 
@@ -236,8 +164,7 @@ not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i><
 		</label>
 
 		<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
-title="You selected too many plots to display:
-not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i></label>
+				  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i></label>
 		<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
 			id="dac-plots-displayed-2"></i></label>
 
@@ -255,15 +182,14 @@ not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i><
 		</label>
 
 		<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
-title="You selected too many plots to display:
-not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i></label>
+				  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i></label>
 		<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
 			id="dac-plots-displayed-3"></i></label>
 
 		<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
-		   title="Plots are low resolution." id="dac-low-resolution-plot-3"></i></label>
+				  title="Plots are low resolution." id="dac-low-resolution-plot-3"></i></label>
 		<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
-		   title="Plots are full resolution." id="dac-full-resolution-plot-3"></i></label>
+				  title="Plots are full resolution." id="dac-full-resolution-plot-3"></i></label>
 
 		<select class="dac-select" id="dac-select-plot-3" title="Variable plotted below."></select>
 		<svg class="dac-plot" id="dac-plot-3"></svg>
