@@ -16,6 +16,7 @@ import selections from "./dac-manage-selections.js";
 import d3 from "d3";
 import client from "js/slycat-web-client";
 import URI from "urijs";
+import "jquery-ui/ui/keycode";
 import * as dialog from "js/slycat-dialog";
 import "slickgrid/lib/jquery.event.drag-2.3.0";
 import "slickgrid/lib/jquery.event.drop-2.3.0";
