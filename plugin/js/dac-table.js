@@ -109,7 +109,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 			// set up freetext editor
 			grid_columns.push(make_column(num_cols + i,
 				editable_columns["attributes"][i].name, TextEditor, null));
+
 		} else {
+
 			// set up categorical editor
 			grid_columns.push(make_column(num_cols + i,
 				editable_columns["attributes"][i].name, SelectCellEditor,
@@ -677,6 +679,7 @@ function update_editable_col(row, col, val)
 		command: "manage_editable_cols",
 		parameters: ['update', -1, -1, -1, col, data_row, val],
 		success: function(result) {
+
 				if (result["error"] === "reader") {
 					dialog.ajax_error("Access denied.  You must be a project writer or administrator to change the table data.")
 					("","","");
@@ -687,10 +690,12 @@ function update_editable_col(row, col, val)
 
 				// put row back in table
 				data_view.updateItem(data_row, item);
-				}
+				
+			    }
 
 			// finish update
 			data_view.endUpdate();
+
 			},
 		error: function ()
 		{

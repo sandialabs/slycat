@@ -495,16 +495,8 @@ def register_slycat_plugin(context):
                 del editable_cols["categories"][id]
                 del editable_cols["data"][id]
 
-            # check to see if anything is left
-            if len(editable_cols["attributes"]) == 0:
-
-                # erase entire variable from slycat database
-                slycat.web.server.delete_model_parameter(database, model, "dac-editable-columns")
-
-            else:
-
-                # update editable column categories
-                slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
+            # update editable column categories
+            slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
 
         elif col_cmd == 'update':
 
@@ -520,7 +512,7 @@ def register_slycat_plugin(context):
             cherrypy.log.error("DAC error: un-implemented command for manage editable columns.")
             return json.dumps({"error": 0})
 
-        # returns dummy argument indicating success
+        # returns argument indicating success
         return json.dumps({"success": 1})
 
 

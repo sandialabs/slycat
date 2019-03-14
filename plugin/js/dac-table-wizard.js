@@ -198,6 +198,7 @@ function constructor(params)
                 parameters: ['add', 'freetext', component.dac_freetext_name(), -1, -1, -1, -1],
                 success: function(result)
                 {
+
                     // if user was a reader, then error, otherwise go to model
                     if (result["error"] === "reader") {
                         dialog.ajax_error("Access denied.  You must be a project writer or administrator to change the table data.")
@@ -419,7 +420,7 @@ function constructor(params)
 
                     // if user was a reader, then error, otherwise go to model
                     if (result["error"] === "reader") {
-                        dialog.ajax_error("Access denied.  You must be a project writer or administrator to change the table data.")
+                        dialog.ajax_error("Access denied. You must be a project writer or administrator to change the table data.")
                             ("","","");
                         $(".browser-continue").toggleClass("disabled", false);
                     } else {
@@ -491,8 +492,9 @@ function constructor(params)
 
     // very last function called to launch model
     component.go_to_model = function() {
-      $(".modal-dialog").removeClass("modal-lg");
-      location = 'models/' + component.model._id();
+        // launch model
+        $(".modal-dialog").removeClass("modal-lg");
+        location = 'models/' + component.model._id();
     };
 
     // function for operating the back button in the wizard

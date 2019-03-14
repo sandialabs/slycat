@@ -25,7 +25,8 @@ S. Martin
     <div class="tab-content">
     <div data-bind="visible:tab() == 0">
 
-        <label>Would you like to add or remove a column?</label>
+        <label>Would you like to add or remove a column? <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Once you add columns with this wizard, you will no longer be able to apply column templates from other models."></i>
+        </label></label>
         <div class="form-check" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" value="add-freetext" data-bind="checked: dac_add_remove">
@@ -42,9 +43,7 @@ S. Martin
         <label>
             <input type="radio" id="dac-table-wizard-remove-cols-radio" name="local-or-remote-radios" value="remove-column"
                    disabled data-bind="checked: dac_add_remove">
-            Remove column <i id="dac-table-wizard-remove-help" class="fa fa-question-circle inline-help" aria-hidden="true" title="Original meta data is not removable, so this
-option is only available if columns have already
-been added using this wizard."></i>
+            Remove column <i id="dac-table-wizard-remove-help" class="fa fa-question-circle inline-help" aria-hidden="true" title="Original meta data is not removable, so this option is only available if columns have already been added using this wizard."></i>
         </label>
         </div>
 
@@ -75,8 +74,7 @@ been added using this wizard."></i>
         </div>
 
         <label>Select categories for the new column.
-            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections,
-shift-click a range of names then click the include switch."></i>
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
         </label>
         <slycat-table-ingestion params="
             variables: dac_categories,
@@ -86,8 +84,7 @@ shift-click a range of names then click the include switch."></i>
         <div style="margin-top: 20px">
             <label>Add a new cateogry.
                 <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                    title='To add a new category, type a name here
-and use the "Add Category" button below.'></i>
+                    title='To add a new category, type a name here and use the "Add Category" button below.'></i>
             </label>
         </div>
         <div>
@@ -96,10 +93,7 @@ and use the "Add Category" button below.'></i>
          </div>
 
         <div style="margin-top: 20px">
-        <label>Upload a list of categories. <i class="fa fa-question-circle inline-help" aria-hidden="true" title='To add multiple categories, select a text file
-and use the "Upload Categories" button below.
-The text file should have the format of one
-category per line.'></i>
+        <label>Upload a list of categories. <i class="fa fa-question-circle inline-help" aria-hidden="true" title='To add multiple categories, select a text file and use the "Upload Categories" button below. The text file should have the format of one category per line.'></i>
         </label>
         <slycat-local-browser params="
             selection:browser_category_list.selection,
@@ -113,8 +107,7 @@ category per line.'></i>
     <div data-bind="visible:tab() == 3">
 
         <label>Select columns to remove.
-            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections,
-shift-click a range of names then click the remove switch."></i>
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the remove switch."></i>
         </label>
         <slycat-table-ingestion params="
             variables: dac_remove_cols,
