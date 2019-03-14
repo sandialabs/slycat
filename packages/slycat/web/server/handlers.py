@@ -2077,6 +2077,11 @@ def post_remotes():
     username = cherrypy.request.json["username"]
     hostname = cherrypy.request.json["hostname"]
     password = cherrypy.request.json["password"]
+    # username/password are not guaranteed to exist within the incoming json
+    # (they don't exist for rsa-cert auth)
+    if username == None:
+        username = cherry.request.login
+        
     msg = ""
     agent = cherrypy.request.json.get("agent", None)
     sid = slycat.web.server.remote.create_session(hostname, username, password, agent)

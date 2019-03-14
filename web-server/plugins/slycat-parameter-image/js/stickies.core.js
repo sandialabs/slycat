@@ -1,24 +1,28 @@
 //jQuery UI Stickies
 //@VERSION 0.0.5
 
-(function( factory ) {
-	// if ( typeof define === "function" && define.amd ) {
+// Note that this file has been modified by the Slycat team from its original at:
+// https://github.com/reesewill/stickies/blob/5d7fdef8a23a69dd2706f35411e85842efc4903d/src/core.js
 
-	// 	// AMD. Register as an anonymous module.
-	// 	define([
-	// 		"jquery",
-	// 		"./core",
-	// 		"./widget",
-	// 		"./draggable",
-	// 		"./mouse",
-	// 		"./position",
-	// 		"./resizable"
-	// 	], factory );
-	// } else {
+(function( factory ) {
+
+	if ( typeof define === "function" && define.amd ) {
+
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"./core",
+			"./widget",
+			"./draggable",
+			"./mouse",
+			"./position",
+			"./resizable"
+		], factory );
+	} else {
 
 		// Browser globals
 		factory( jQuery );
-	// }
+	}
 }(function($) {
 
 	return $.widget("ot.stickies", {
@@ -42,6 +46,7 @@
 
 			this._createWrapper();
 			this._createHeader();
+			// Slycat commenting out
 			//this._createPin();
 			this._createCloseButton();
 
@@ -53,12 +58,20 @@
 				.resizable()
 				.draggable( { containment: "window" } )
 				.position( this.options.position )
-        .css('position', 'absolute'); // hack to address position conflict between draggable() and resizable() as per http://bugs.jqueryui.com/ticket/5335
+				; 
 		},
 		_createCloseButton: function() {
-      this.uiStickyCloseButton = $('<i>')
-        .addClass("fa fa-close float-right")
-        .appendTo(this.uiStickyHeader);
+
+			// Slycat changing format of Close button
+			// this.uiStickyCloseButton = $( "<span>" )
+			// 	.addClass( "ui-sticky-close-button ui-icon ui-icon-closethick" )
+			// 	.appendTo( this.uiStickyHeader );
+
+			this.uiStickyCloseButton = $('<i title="Close">')
+				.addClass("fa fa-close float-right")
+				.appendTo(this.uiStickyHeader);
+			// End Slycat changing format of Close button
+			
 			this._on( this.uiStickyCloseButton, {
 				"click": function() {
 					this._destroy();

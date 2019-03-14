@@ -18,7 +18,7 @@ module.exports = {
     slycat_project:     './web-server/js/slycat-project-main.js',
     slycat_page:        './web-server/js/slycat-page-main.js',
     slycat_model:       './web-server/js/slycat-model-main.js',
-    slycat_login:       './web-server/slycat-login-react/index.js',
+    slycat_login:       './web-server/slycat-login/index.js',
   },
   output: {
     // Use this to add the chunk hash into the filename. 
@@ -85,7 +85,7 @@ module.exports = {
       chunks: ['slycat_model'],
     }),
     new HtmlWebpackPlugin({
-      template: 'web-server/slycat-login-react/index.html',
+      template: 'web-server/slycat-login/index.html',
       filename: 'slycat_login.html',
       chunks: ['slycat_login'],
     }),

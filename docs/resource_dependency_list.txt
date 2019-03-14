@@ -88,7 +88,7 @@ jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
 jquery-ui              1.12.1   https://jqueryui.com
 knockout                3.2.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
-layout                  1.4.3   https://github.com/alexsielicki/layout.git
+layout                  1.7.0   https://github.com/GedMarc/layout.git
 lodash                4.17.11   https://lodash.com/
 object-assign           4.1.1   https://github.com/sindresorhus/object-assign
 papaparse               4.6.3   https://github.com/mholt/PapaParse
@@ -103,12 +103,14 @@ redux                   4.0.1   https://redux.js.org
 regenerator-runtime    0.12.1   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
 scheduler      0.13.0-alpha.1   https://reactjs.org
 slickgrid               2.4.3   https://github.com/6pac/SlickGrid
+sphinx                  1.8.4   https://www.sphinx-doc.org/en/master/
 style-loader           0.23.1   https://github.com/webpack-contrib/style-loader#readme
-symbol-observable       1.2.0 
+symbol-observable       1.2.0   https://www.npmjs.com/package/symbol-observable
 three                  0.92.0   https://yarnpkg.com/en/package/three
 three-stl-loader        1.0.6   https://yarnpkg.com/en/package/three-stl-loader
 three-trackballcontrols 0.0.7   https://yarnpkg.com/en/package/three-trackballcontrols
 urijs                  1.19.1   https://medialize.github.io/URI.js/
+vtk                    8.3.15   https://www.npmjs.com/package/vtk.js
 
 Directly included in Slycat in slycat/web_server/js:
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview

@@ -689,7 +689,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "width")
     {
-      self._schedule_update({update_width:true, update_x_label:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
+      self._schedule_update({update_width:true, update_x:true, update_leaders:true, render_data:true, render_selection:true});
     }
 
     else if(key == "height")
@@ -894,6 +894,8 @@ $.widget("parameter_image.scatterplot",
           // .attr("y", "0")
           .attr("transform", "rotate(15)")
         ;
+      // Updating the x_label here because updating_x clears the label for some reason
+      self._schedule_update({update_x_label:true});
     }
 
     if (self.updates.update_y) {
@@ -1492,7 +1494,14 @@ $.widget("parameter_image.scatterplot",
         self.state = "moving";
         sourceEventTarget = d3.select(d3.event.sourceEvent.target);
 
-        if ( sourceEventTarget.classed("image-frame") || sourceEventTarget.classed("image") || sourceEventTarget.classed("bootstrap-styles") || d3.event.sourceEvent.target.nodeName == "VIDEO") {
+        if ( sourceEventTarget.classed("image-frame") || 
+             sourceEventTarget.classed("image") || 
+             // For when dragging the black footer bar with icons
+             sourceEventTarget.classed("frame-footer") || 
+             sourceEventTarget.classed("bootstrap-styles") || 
+             d3.event.sourceEvent.target.nodeName == "VIDEO"
+           ) 
+        {
           frame = d3.select(this);
 
           if (frame.classed("hover-image")) {
@@ -1611,7 +1620,7 @@ $.widget("parameter_image.scatterplot",
 
         // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
         // Alex is commenting it out and always assigning the open-image class to the frame instead.
-        // if (frame.select('.resize').size())
+        // if (frame.select('.resize').length)
         //   theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
         // else
         //   theImage = frame.classed("hover-image", false).classed("open-image", true);
@@ -1687,7 +1696,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     // Don't open image if it's already open
-    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").size() > 0) {
+    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
       self._open_images(images.slice(1));
       return;
     }

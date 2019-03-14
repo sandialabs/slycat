@@ -264,14 +264,6 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("slycat-login"),
     "tools.staticdir.on": True,
     }
-  configuration["/login-react"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.%s.on" % authentication : False,
-    "tools.staticdir.dir": abspath("slycat-login-react"),
-    "tools.staticdir.on": True,
-    }
   configuration["/openid-login"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,

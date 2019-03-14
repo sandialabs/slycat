@@ -171,9 +171,7 @@ class Agent(agent.Agent):
             "ok": True,
             "command": command["command"]
         }
-
         results["output"], results["errors"] = self.run_shell_command(command["command"])
-
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
@@ -183,9 +181,7 @@ class Agent(agent.Agent):
             "filename": command["command"],
             "output": -1
         }
-
         results["output"], results["errors"] = self.run_shell_command("qsub %s" % results["filename"])
-
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
@@ -194,24 +190,66 @@ class Agent(agent.Agent):
             "ok": True,
             "jid": command["command"]
         }
-
-        results["output"], results["errors"] = self.run_shell_command("qstat %s" % results["jid"]["jid"])
-        # above: PBS_JOBID is not available, must have the JID
-#        results["output"], results["errors"] = self.run_shell_command("qstat $PBS_JOBID")
-
+        queryStdout = ""
+        queryStderr = ""
+        
+        queryStdout, queryStderr = self.run_shell_command("qstat -x %s" % results["jid"] ) 
+    
+        # parse the returned stdout & stderr
+        results["output"] = self.parseQuery(queryStdout, queryStderr)
+        results["errors"] = queryStderr
+        
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
+
+    def parseQuery(self, sOut, sErr):
+        # from slycat-timeseries-model.py, here are the recognized job state categories:
+        # ["RUNNING", "PENDING"]
+        # ["CANCELLED", "REMOVED", "VACATED", "REMOVED"]
+        # COMPLETED
+        # ["FAILED", "UNKNOWN", "NOTQUEUED"]
+        #
+        # this fn will return:
+        # running    if pbs returns:  E, H, Q, R, B, X, S, W
+        # completed  if pbs returns:  F
+        # cancelled  if pbs returns:  M, T, U, 
+        # unknown    if pbs returns:  a stderr msg
+        #
+        # example query output
+        #61 excal06> qstat -x 153256
+        #Job id            Name             User              Time Use S Queue
+        #----------------  ---------------- ----------------  -------- - -----
+        #153256.excal      slycat           aSlyUser          00:00:07 F debug
+        
+        if sErr != "":
+            return "UNKNOWN"
+        if sOut == "":
+            return "UNKNOWN"
+        
+        # pull out the state code from the stdout string
+        try:
+            stLine = sOut.split('\n')[2]  # get the 3rd line
+            stCode = stLine.split()[4]    # get the 5th field
+        except Exception as e:
+            # TODO, need logging here
+            #print "++ PBS agent parseQuery exception: %s" % e
+            return "UNKNOWN"
+        
+        if stCode in ["R", "Q", "E", "H", "B", "X", "S", "W"]:
+            return "RUNNING"
+        if stCode in ["F"]:
+            return "COMPLETED"
+        if stCode in ["M", "T", "U"]:
+            return "CANCELLED"
+        
+        return "UNKNOWN"
 
     def cancel_job(self, command):
         results = {
             "ok": True,
             "jid": command["command"]
         }
-
-        results["output"], results["errors"] = self.run_shell_command(
-            "qdel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
-#           "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
-
+        results["output"], results["errors"] = self.run_shell_command("qdel %s" % results["jid"])
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
@@ -220,10 +258,13 @@ class Agent(agent.Agent):
             "ok": True,
             "jid": command["command"]["jid"]
         }
-
+        # caution, jid has the form       :  123456.excal-wlm1 
+        # the job output file has the form:  slycat.o123456
+        # must rmv the trailing text from the jid to find the file 
         path = command["command"]["path"]
-        f = path + "slycat.o%s" % results["jid"]
-#       f = path + "slurm-%s.out" % results["jid"]
+        numericJID = results["jid"].split('.')[0]
+        f = path + "slycat.o%s" % numericJID
+        #f = path + "slycat.o%s" % results["jid"]
         if os.path.isfile(f):
             results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
         else:
@@ -233,14 +274,15 @@ class Agent(agent.Agent):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 
-    def generateRootScript(tmp_file, scriptName, eScript, fn):
-        f = open(os.path.dirname(tmp_file.name()) + os.sep + scriptName, mode='w')
+    def generateRootScript(self, tmp_file, scriptName, eScript, fn):
+        f = open(os.path.dirname(tmp_file.name) + os.sep + scriptName, mode='w')
         f.write("#!/bin/bash -l \n")
         f.write("# This script requires that the slycat working dir be passed in as only arg \n")
         f.write("# modules not avail on compute nodes, load Slycat env \n")
         f.write(". /p/app/unsupported/slycat/modules/slycatEnv \n")
         f.write("slyDir=$1 \n")
         f.write("slyNodeFile=\"slycatNodes.txt\" \n")
+        f.write("profile=\"default\" \n")
         f.write("cd $slyDir \n")
         f.write("hn=`hostname` \n")
         f.write("# create list of nodes in this job, this script executes on \n")
@@ -269,8 +311,8 @@ class Agent(agent.Agent):
             f.write("%s \n" % c)
         f.close()
         
-    def generateEnginesScript(tmp_file, scriptName):
-        f = open(os.path.dirname(tmp_file.name()) + os.sep + scriptName, mode='w')
+    def generateEnginesScript(self, tmp_file, scriptName):
+        f = open(os.path.dirname(tmp_file.name) + os.sep + scriptName, mode='w')
         f.write("#!/bin/bash -l \n")
         f.write("# This script requires that the slycat working dir be passed in as only arg \n")
         f.write("hn=`hostname` \n")
@@ -303,7 +345,7 @@ class Agent(agent.Agent):
         self.generateRootScript(tmp_file, rootScriptName, engineScriptName, fn)
         self.generateEnginesScript(tmp_file, engineScriptName)
         
-        workDir = os.path.dirname(tmp_file.name())
+        workDir = os.path.dirname(tmp_file.name)
         f = tmp_file
         
         f.write("#!/bin/bash -l \n")

@@ -50,18 +50,20 @@
     </div>
 
     <div data-bind="visible:tab() == 1" style="height: 400px">
-      <slycat-remote-browser params="
-        type:'remote',
-        sid:remote.sid,
-        hostname:remote.hostname,
-        selection:remote.selection,
-        path:remote.path,
-        open_file_callback:load_table,
-        session_exists:remote.session_exists,
-        persistence_id:'pip-table-file',
-        progress:remote.progress,
-        progress_status:remote.progress_status"></slycat-remote-browser>
-      <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+      <div class="slycat-remote-browser-flex-layout">
+        <slycat-remote-browser params="
+          type:'remote',
+          sid:remote.sid,
+          hostname:remote.hostname,
+          selection:remote.selection,
+          path:remote.path,
+          open_file_callback:load_table,
+          session_exists:remote.session_exists,
+          persistence_id:'pip-table-file',
+          progress:remote.progress,
+          progress_status:remote.progress_status"></slycat-remote-browser>
+        <slycat-parser-controls params="parser:parser,category:'table'"></slycat-parser-controls>
+      </div>
     </div>
 
     <div data-bind="visible:tab() == 2">

@@ -20,6 +20,9 @@ import '../../../VideoSwarm/plugin/vs-model';
 // Remap wizard, which is probably not working as of August 2018
 import 'plugins/slycat-remap-wizard/slycat-remap-wizard';
 
+// Column wizard
+import 'plugins/slycat-column-wizard/slycat-column-wizard';
+
 // For any plugin that needs to load resources, add the appropriate case statements below in loadTemplate and loadModule
 export async function loadTemplate(name) {
   // console.log("loadModelTemplate, page.model_type is " + page.model_type);
