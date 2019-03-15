@@ -55,6 +55,11 @@ def register_slycat_plugin(context):
             if "project_data" in model and model["model-type"] == "parameter-image" \
               and len(model["project_data"]) > 0 and model["project_data"][0] == did:
                 with slycat.web.server.get_model_lock(model["_id"]):
+                    project_data = database.get("project_data", did)
+                    for index, pd_mid in enumerate(project_data["mid"]):
+                        if pd_mid == model['_id']:
+                            del project_data["mid"][index]
+                            database.save(project_data)
                     model["project_data"] = []
                     database.save(model)
                 if current_selected_model["_id"] != model["_id"]:
@@ -83,6 +88,8 @@ def register_slycat_plugin(context):
                         model["project_data"] = []
                     with slycat.web.server.get_model_lock(model["_id"]):
                         model["project_data"].append(project_data["_id"])
+                        project_data["mid"].append(model["_id"])
+                        database.save(project_data)
                         database.save(model)
                     slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [file_attachment], model,
                                                           "data-table")
