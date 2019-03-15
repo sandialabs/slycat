@@ -1364,7 +1364,6 @@ $.widget("parameter_image.scatterplot",
     var add_min_button = function(fh) {
       fh.append("i")
         .attr('class', 'min-button frame-button fa fa-window-minimize')
-        .style('display', 'none')
         .attr('title', 'Minimize')
         .attr("aria-hidden", "true")
         .on("click", handlers["minimize"])
@@ -1634,8 +1633,9 @@ $.widget("parameter_image.scatterplot",
       maximize: function() {
         let target = d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
-        target.style.display = 'none';
-        frame.select('.min-button').style('display', 'block');
+
+        // Add maximized class to frame
+        frame.classed("maximized", true);
 
         // Get the SVG pane's size
         var $svg = $('#scatterplot svg');
@@ -1685,8 +1685,9 @@ $.widget("parameter_image.scatterplot",
       minimize: function() {
         let target = d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
-        target.style.display = 'none';
-        frame.select('.max-button').style('display', 'block');
+
+        // Remove maximized class from frame
+        frame.classed("maximized", false);
 
         // Get the frame's previous location and size
         let target_x = frame.attr('data-minx');
