@@ -1640,9 +1640,6 @@ $.widget("parameter_image.scatterplot",
         let target = d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
 
-        // Add maximized class to frame
-        frame.classed("maximized", true);
-
         // Get the SVG pane's size
         var $svg = $('#scatterplot svg');
         var svgh = $svg.height();
@@ -1661,11 +1658,23 @@ $.widget("parameter_image.scatterplot",
         frame.attr('data-minwidth', width);
         frame.attr('data-minheight', height);
 
-        // Calculate new maxmized frame size and location
+        // Calculate new maxmized frame size
         let ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
         let target_height = svgh;
         let target_width = svgh * ratio;
-        let target_x = 1;
+
+        // Calculate new maxmized frame location
+        let spacing = 100;
+        let max_x = 1 - spacing;
+        // Find all other maximized frames
+        let maximized_frames = $(".media-layer div.image-frame.maximized");
+        // Calculate max x of maximized frames
+        maximized_frames.each(function(index){
+          let x = $(this).attr('data-transx');
+          max_x = Math.max(max_x, x);
+        });
+
+        let target_x = max_x + spacing;
         let target_y = 1;
 
         // Maximize the frame and write its new size and location into its data attributes
@@ -1681,6 +1690,9 @@ $.widget("parameter_image.scatterplot",
             height: target_height + "px",
           })
           ;
+
+        // Add maximized class to frame
+        frame.classed("maximized", true);
 
         self._adjust_leader_line(frame);
         self._sync_open_images();
