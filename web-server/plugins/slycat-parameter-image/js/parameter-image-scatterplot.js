@@ -1523,6 +1523,9 @@ $.widget("parameter_image.scatterplot",
         {
           frame = d3.select(this);
 
+          // Remove maximized class from frame
+          frame.classed("maximized", false);
+
           if (frame.classed("hover-image")) {
             self.opening_image = null;
             clear_hover_timer(self);
@@ -1613,6 +1616,9 @@ $.widget("parameter_image.scatterplot",
           frame.classed("hover-image", false).classed("open-image", true);
           image.image_class = "open-image";
         }
+
+        // Remove maximized class from frame
+        frame.classed("maximized", false);
 
         // Need to stopPropagation here otherwise the system thinks we are moving the frame and does that instead of resize
         d3.event.sourceEvent.stopPropagation();
@@ -1729,6 +1735,9 @@ $.widget("parameter_image.scatterplot",
         // else
         //   theImage = frame.classed("hover-image", false).classed("open-image", true);
         theImage = frame.classed("hover-image", false).classed("open-image", true);
+
+        // Remove maximized class from frame
+        frame.classed("maximized", false);
 
         imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
         imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
