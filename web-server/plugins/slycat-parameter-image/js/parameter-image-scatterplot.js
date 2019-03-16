@@ -1663,19 +1663,33 @@ $.widget("parameter_image.scatterplot",
         let target_height = svgh;
         let target_width = svgh * ratio;
 
+        // Calculate available maximized frame x coordinates
+        // Horizontal spacing between maximized frames
+        let spacing = 120;
+        let available = [0];
+        while(svgw >= (available[available.length - 1] + target_width + spacing))
+        {
+          available.push(available[available.length - 1] + spacing);
+        }
+
         // Calculate new maxmized frame location
-        let spacing = 100;
-        let max_x = 1 - spacing;
         // Find all other maximized frames
         let maximized_frames = $(".media-layer div.image-frame.maximized");
+        let used = [];
         // Calculate max x of maximized frames
         maximized_frames.each(function(index){
-          let x = $(this).attr('data-transx');
-          max_x = Math.max(max_x, x);
+          used.push(Number($(this).attr('data-transx')));
         });
+        // Find first unused slot
+        let next = _.head(_.difference(available, used));
+        // If there are no unused slots, get the least used one
+        if (next == undefined)
+        {
+          next = _.head(_(used).countBy().entries().minBy('[1]'));
+        }
 
-        let target_x = max_x + spacing;
-        let target_y = 1;
+        let target_x = next;
+        let target_y = 0;
 
         // Maximize the frame and write its new size and location into its data attributes
         frame
