@@ -1502,6 +1502,9 @@ $.widget("parameter_image.scatterplot",
           });
           self._adjust_leader_line(theElement);
         }
+
+        // Remove maximized class from frame
+        d3.select(this).classed("maximized", false);
       },
       move_start: function() {
         // console.log("move_start");
@@ -1523,8 +1526,10 @@ $.widget("parameter_image.scatterplot",
         {
           frame = d3.select(this);
 
-          // Remove maximized class from frame
-          frame.classed("maximized", false);
+          // Can't remove maximized class here, because move_start gets called
+          // on a click of the frame footer.
+          // // Remove maximized class from frame
+          // frame.classed("maximized", false);
 
           if (frame.classed("hover-image")) {
             self.opening_image = null;
