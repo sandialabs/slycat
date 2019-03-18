@@ -4,7 +4,7 @@
 // d3js.org scatterplot visualization, for use with the parameter-image model.
 
 import api_root from "js/slycat-api-root";
-import d3 from "js/d3.min";
+import d3 from "d3";
 import URI from "urijs";
 import * as remotes from "js/slycat-remotes";
 import "jquery-ui";
@@ -792,10 +792,10 @@ _update: function()
         strokeHeight = strokeWidth;
 
     // Draw points on canvas ...
-    var time = Date;
-    if(window.performance)
-      time = window.performance;
-    var start = time.now();
+    // var time = Date;
+    // if(window.performance)
+    //   time = window.performance;
+    // var start = time.now();
     
     canvas.clearRect(0, 0, self.canvas_datum.width, self.canvas_datum.height);
     canvas.strokeStyle = "black";
@@ -818,8 +818,8 @@ _update: function()
     // canvas.fillStyle = "white";
     // canvas.fillRect(0 + 0.5, 0 + 0.5, width, height);
     // canvas.strokeRect(0 + 0.5, 0 + 0.5, width, height);
-    var end = time.now();
-    console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
+    // var end = time.now();
+    // console.log("Time to render " + filtered_indices.length + " canvas points: " + (end-start) + " milliseconds.");
 
     // Draw points on svg ...
     // var start = performance.now();
@@ -1063,7 +1063,7 @@ _update: function()
 
   if(self.updates["update_v_label"])
   {
-    console.log("updating v label.");
+    // console.log("updating v label.");
     self.legend_layer.selectAll(".label").remove();
 
     var rectHeight = parseInt(self.legend_layer.select("rect.color").attr("height"));
@@ -1125,7 +1125,7 @@ _open_images: function(images)
   }
 
   // // Don't open image if it's already open
-  // if($(".open-image[data-uri='" + image.uri + "']").size() > 0) {
+  // if($(".open-image[data-uri='" + image.uri + "']").length > 0) {
   //   self._open_images(images.slice(1));
   //   return;
   // }
@@ -1706,7 +1706,7 @@ _schedule_hover: function(image_index)
 
   // // Disable hovering on points that already have open imges ...
   // var uri = self.options.images[self.options.indices[image_index]];
-  // if($(".open-image[data-uri='" + uri + "']").size() != 0)
+  // if($(".open-image[data-uri='" + uri + "']").length != 0)
   //   return;
 
   // Cancel any pending hover ...

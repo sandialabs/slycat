@@ -178,6 +178,8 @@ class Session(object):
         """Files and file parts must be loaded in numeric, not lexicographical, order."""
         return int(x.split("-")[-1])
 
+      # we no longer support multi file uploads 
+      # TODO: need to decide if we should remove this or refactor for multi files again
       files = []
       storage = path(self._uid)
       for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
@@ -190,12 +192,20 @@ class Session(object):
         files.append(file)
 
       try:
-        slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input, files, self._aids, **self._kwargs)
+      # adding this check for backwards compatibility 
+      # new way self._aids[0] is the file name being added to the model and hdf5
+      # self._aids[1] is the name of the file being pushed to the project_data data object
+        if isinstance(self._aids[0], list):
+          slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
+                                                                          files, self._aids[0], **self._kwargs)
+        else:
+          slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
+                                                                          files, self._aids, **self._kwargs)
+        slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
       except Exception as e:
         cherrypy.log.error("Exception parsing posted files: %s" % e)
         import traceback
         cherrypy.log.error(traceback.format_exc())
-
       cherrypy.log.error("Upload parsing finished.")
 
   def close(self):

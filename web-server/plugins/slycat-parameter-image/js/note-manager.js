@@ -25,7 +25,7 @@ function NoteManager(model_id, bookmarker, bookmark) {
     self.id_counter = 0;
   }
 
-  self.button = $("<button class='btn btn-default' title='Add Note'> \
+  self.button = $("<button class='btn btn-sm btn-outline-dark' title='Add Note'> \
                      <span class='fa fa-comment-o' aria-hidden='true'></span> \
                    </button>")
                 .prependTo($('#controls #add-note'))
@@ -53,10 +53,13 @@ NoteManager.prototype.build_note_in_dom = function(attributes) {
     'width': attributes.width,
     'height': attributes.height
   });
-  text_area.css({
-    'width': parseInt(header.css('width')) - 7,
-    'height': note.outerHeight() - header.outerHeight() - 7
-  });
+
+  // Alex commenting out because no longer needed as of March 2019. 
+  // Text area sizes itself to full width and height without this.
+  // text_area.css({
+  //   'width': parseInt(header.css('width')) - 8,
+  //   'height': note.outerHeight() - header.outerHeight() - 7
+  // });
 
   if (attributes.title) {
     note.addClass('title');
@@ -95,10 +98,12 @@ NoteManager.prototype.build_note_in_dom = function(attributes) {
   });
 
   note.on('resize', function(event) {
-    text_area.css({
-      'width': parseInt(header.css('width')) - 7,
-      'height': note.outerHeight() - header.outerHeight() - 7
-    });
+    // Alex commenting out because no longer needed as of March 2019
+    // Text area sizes itself to full width and height without this.
+    // text_area.css({
+    //   'width': parseInt(header.css('width')) - 7,
+    //   'height': note.outerHeight() - header.outerHeight() - 7
+    // });
   });
 
   note.on('resizestop', function(event) {

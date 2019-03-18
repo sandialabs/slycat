@@ -1,9 +1,10 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
  retains certain rights in this software. */
 
 // CSS resources
-import "css/namespaced-bootstrap.less";
+import "css/slycat-bootstrap.scss";
 import "css/slycat.css";
 
 import React from "react";
@@ -16,7 +17,7 @@ import "bootstrap";
 
 // These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.
 import ko from 'knockout';
-import "js/slycat-navbar";
+import {renderNavBar} from "js/slycat-navbar";
 
 export default function renderTemplates(project_id) {
   // Create a React TemplatesList component after getting the list of templates in this project
@@ -36,7 +37,7 @@ export default function renderTemplates(project_id) {
 
 // Wait for document ready
 $(document).ready(function() {
-
+  renderNavBar();
   // Get the project ID from the URL
   const project_id = URI(window.location).segment(-1);
 
@@ -45,24 +46,23 @@ $(document).ready(function() {
     pid: project_id,
     success: function(result) {
       document.title = result.name + " - Slycat Project";
+      // Create a React ModelsList component after getting the list of models in this project
+      client.get_project_models({
+        pid: project_id,
+        success: function(result) {
+          const models_list = <ModelsList models={result} />
+          ReactDOM.render(
+            models_list,
+            document.getElementById('slycat-models')
+          );
+        },
+        error: function(request, status, reason_phrase) {
+          console.log("Unable to retrieve project models.");
+        }
+      });
     },
     error: function(request, status, reason_phrase) {
       console.log("Unable to retrieve project.");
-    }
-  });
-
-  // Create a React ModelsList component after getting the list of models in this project
-  client.get_project_models({
-    pid: project_id,
-    success: function(result) {
-      const models_list = <ModelsList models={result} />
-      ReactDOM.render(
-        models_list,
-        document.getElementById('slycat-models')
-      );
-    },
-    error: function(request, status, reason_phrase) {
-      console.log("Unable to retrieve project models.");
     }
   });
 

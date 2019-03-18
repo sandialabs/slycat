@@ -15,15 +15,27 @@ import slycat.hyperchunks
 import slycat.web.server.hdf5
 import slycat.web.server.remote
 from slycat.web.server.cache import Cache
-from cherrypy._cpcompat import base64_decode
 import urlparse
 import functools
 import threading
+import base64
+import six
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
 model_locks = {}
 
+def tonative(n, encoding='ISO-8859-1'):
+    """Return the given string as a native string in the given encoding."""
+    # In Python 2, the native string type is bytes.
+    if isinstance(n, six.text_type):  # unicode for Python 2
+        return n.encode(encoding)
+    return n
+
+def base64_decode(n, encoding='ISO-8859-1'):	
+    """Return the native string base64-decoded (as a native string)."""	
+    decoded = base64.decodestring(n.encode('ascii'))	
+    return tonative(decoded, encoding)
 
 def mix(a, b, amount):
     """Linear interpolation between two numbers.  Useful for computing model progress."""
@@ -105,6 +117,22 @@ def update_model(database, model, **kwargs):
             model[name] = value
     database.save(model)
 
+def parse_existing_file(database, parser, input, attachment, model, aid):
+    """
+    calls the parse function specified by the registered parser
+    :return: not used
+    """
+    kwargs = {}
+    aids = []
+    aids.append(aid)
+    try:
+        slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, attachment,
+                                                                  aids, **kwargs)
+    except Exception as e:
+        cherrypy.log.error("[MICROSERVICE] Exception parsing posted files: %s" % e)
+        import traceback
+        cherrypy.log.error(traceback.format_exc())
+    cherrypy.log.error("[MICROSERVICE] Upload parsing finished.")
 
 @cache_it
 def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=None, unique=None):
@@ -498,6 +526,23 @@ def get_remote_file(sid, path):
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path)
 
+def write_remote_file(sid, path, data):
+    """Returns the content of a file from a remote system.
+
+  Parameters
+  ----------
+  sid : int
+    Session identifier
+  path : string
+    Path for the requested file
+
+  Returns
+  -------
+  content : string
+    Content of the requested file
+  """
+    with slycat.web.server.remote.get_session(sid) as session:
+        return session.write_file(path, data)
 
 def get_remote_file_server(client, sid, path):
     """Returns the content of a file from a remote system.

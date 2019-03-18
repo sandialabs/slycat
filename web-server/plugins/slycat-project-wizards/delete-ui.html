@@ -1,14 +1,15 @@
 
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+  <h3 class="modal-title">Delete Project &ldquo;<span data-bind="text:project.name()"></span>&rdquo;?</h3>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">Delete Project &ldquo;<span data-bind="text:project.name()"></span>&rdquo;?</h3>
 </div>
 <div class="modal-body">
   <p class="lead">Every model in the project and all data will be deleted immediately, and this cannot be undone.</p>
 </div>
 <div class="modal-footer">
+  <button class="btn btn-primary" data-dismiss="modal">Cancel</button>
   <button class="btn btn-danger" data-bind="click:delete_project">Delete Project</button>
 </div>

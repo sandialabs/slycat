@@ -43,11 +43,17 @@ class ColorBar extends React.Component {
 
     render() {
 
-        return (
-            <ControlsDropdown key={this.props.dropdown[0].id} id={this.props.dropdown[0].id} label={this.props.dropdown[0].label} title={this.props.dropdown[0].title}
-                              state_label={this.props.dropdown[0].state_label} trigger={this.props.dropdown[0].trigger}
-                              items={this.props.dropdown[0].items}
-                              selected={this.state.selection} single={this.props.dropdown[0].single} set_selected={this.set_selected}/>);
+      // Define default button style
+      const button_style = 'btn-outline-dark';
+
+      return (
+        <ControlsDropdown key={this.props.dropdown[0].id} id={this.props.dropdown[0].id} label={this.props.dropdown[0].label} title={this.props.dropdown[0].title}
+                          state_label={this.props.dropdown[0].state_label} trigger={this.props.dropdown[0].trigger}
+                          items={this.props.dropdown[0].items}
+                          selected={this.state.selection} single={this.props.dropdown[0].single} set_selected={this.set_selected}
+                          button_style={button_style}
+        />
+      );
     }
 }
 

@@ -112,8 +112,10 @@ def start(root_path, config_file):
   dispatcher.connect("get-project-references", "/projects/:pid/references", slycat.web.server.handlers.get_project_references, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project", "/projects/:pid", slycat.web.server.handlers.get_project, conditions={"method" : ["GET"]})
   dispatcher.connect("get-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.get_project_cache_object, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects, conditions={"method" : ["GET"]})
+  dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
+  dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
+  dispatcher.connect("get-project-file-names", "/projects/:pid/name", slycat.web.server.handlers.get_project_file_names, conditions={"method": ["GET"]})
   #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
 
@@ -132,7 +134,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-model-finish", "/models/:mid/finish", slycat.web.server.handlers.post_model_finish, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-bookmarks", "/projects/:pid/bookmarks", slycat.web.server.handlers.post_project_bookmarks, conditions={"method" : ["POST"]})
   dispatcher.connect("post-project-references", "/projects/:pid/references", slycat.web.server.handlers.post_project_references, conditions={"method" : ["POST"]})
-  dispatcher.connect("post-project-models", "/projects/:pid/models", slycat.web.server.handlers.post_project_models, conditions={"method" : ["POST"]})
+  dispatcher.connect("post-project-models", "/projects/:pid/models",slycat.web.server.handlers.post_project_models, conditions={"method": ["POST"]})
   dispatcher.connect("post-log", "/log", slycat.web.server.handlers.post_log, conditions={"method" : ["POST"]})
   dispatcher.connect("post-projects", "/projects", slycat.web.server.handlers.post_projects, conditions={"method" : ["POST"]})
 
@@ -260,14 +262,6 @@ def start(root_path, config_file):
     "tools.expires.secs": 3600,
     "tools.%s.on" % authentication : False,
     "tools.staticdir.dir": abspath("slycat-login"),
-    "tools.staticdir.on": True,
-    }
-  configuration["/login-react"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.%s.on" % authentication : False,
-    "tools.staticdir.dir": abspath("slycat-login-react"),
     "tools.staticdir.on": True,
     }
   configuration["/openid-login"] = {

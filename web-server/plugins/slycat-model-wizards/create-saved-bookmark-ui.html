@@ -1,17 +1,17 @@
 <!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
 
 <div class="modal-header">
+  <h3 class="modal-title">Create Saved Bookmark</h3>
   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">Create Saved Bookmark</h3>
 </div>
 <div class="modal-body">
   <div>
     <p class="lead">A saved bookmark stores the current model and visualization as part of the project so you can open them again later.</p>
-    <form class="form-horizontal" onsubmit="$('#submit-saved-bookmark').click(); return false">
-      <div class="form-group">
-        <label for="slycat-template-name" class="col-sm-2 control-label">Name</label>
+    <form onsubmit="$('#submit-saved-bookmark').click(); return false">
+      <div class="form-group row">
+        <label for="slycat-template-name" class="col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
           <input id="slycat-template-name" class="form-control" type="text" placeholder="Name" data-bind="value:name"></input>
         </div>
@@ -20,5 +20,5 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button id="submit-saved-bookmark" class="btn btn-default" data-bind="click:save_bookmark" data-dismiss="modal">Save Bookmark</button>
+  <button id="submit-saved-bookmark" class="btn btn-primary" data-bind="click:save_bookmark" data-dismiss="modal">Save Bookmark</button>
 </div>

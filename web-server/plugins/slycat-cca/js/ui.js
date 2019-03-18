@@ -1,11 +1,7 @@
+"use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
-
-import slick_grid_css from "css/slickgrid/slick.grid.css";
-import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
 
@@ -31,7 +27,6 @@ import "jquery-ui/ui/widgets/resizable";
 import "layout";
 
 import "js/jquery.scrollintoview.min";
-import "js/slycat-navbar"
 
 // Wait for document ready
 $(document).ready(function() {
@@ -275,7 +270,7 @@ $(document).ready(function() {
     applyDefaultStyles: false,
     north:
     {
-      size: 28,
+      size: 39,
       resizable: false,
     },
     west:
@@ -283,14 +278,18 @@ $(document).ready(function() {
       size: $("#cca-model").width() / 2,
       resizeWhileDragging: false,
       onresize_end: function() { 
-        $("#barplot-table").barplot("resize_canvas"); 
+        if($("#barplot-table").data("cca-barplot")) {
+          $("#barplot-table").barplot("resize_canvas"); 
+        }
       },
     },
     center:
     {
       resizeWhileDragging: false,
       onresize_end: function() { 
-        $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
+        if($("#scatterplot").data("cca-scatterplot")) {
+          $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
+        }
       },
     },
     east:
@@ -298,7 +297,9 @@ $(document).ready(function() {
       size: 130,
       resizeWhileDragging: false,
       onresize_end: function() { 
-        $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+        if($("#legend").data("cca-legend")) {
+          $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+        }
       },
     },
     south:
@@ -307,8 +308,10 @@ $(document).ready(function() {
       resizeWhileDragging: false,
       onresize_end: function()
       {
-        $("#table").css("height", $("#table-pane").height());
-        $("#table").table("resize_canvas");
+        if($("#table").data("cca-table")) {
+          $("#table").css("height", $("#table-pane").height());
+          $("#table").table("resize_canvas");
+        }
       },
     },
   });

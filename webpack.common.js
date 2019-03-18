@@ -18,13 +18,14 @@ module.exports = {
     slycat_project:     './web-server/js/slycat-project-main.js',
     slycat_page:        './web-server/js/slycat-page-main.js',
     slycat_model:       './web-server/js/slycat-model-main.js',
-    slycat_login:       './web-server/slycat-login-react/index.js',
+    slycat_login:       './web-server/slycat-login/index.js',
   },
   output: {
-    // Use this to add the chunk hash into the filename. Great for caching, but can't
-    // find a way to make it work with dynamic model code imports yet.
-    // filename: '[name].[chunkhash].js',
-    filename: '[name].js',
+    // Use this to add the chunk hash into the filename. 
+    // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
+    filename: '[name].[chunkhash].js',
+    // If problems arise, remove chuckhash from the filename like so:
+    // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
     // Public URL of js bundle files. We want them available at the root URL.
     publicPath: '/',
@@ -84,23 +85,13 @@ module.exports = {
       chunks: ['slycat_model'],
     }),
     new HtmlWebpackPlugin({
-      template: 'web-server/slycat-login-react/index.html',
+      template: 'web-server/slycat-login/index.html',
       filename: 'slycat_login.html',
       chunks: ['slycat_login'],
     }),
   ],
   module: {
     rules: [
-      // These next two rules are needed to make jQuery Migrate 3.0.1 work, per
-      // https://github.com/jquery/jquery-migrate/issues/273#issuecomment-332527584
-      {
-        test: require.resolve("jquery-migrate"),
-        use: "imports-loader?define=>false",
-      },
-      {
-        test: require.resolve("jquery-migrate/dist/jquery-migrate.min"),
-        use: "imports-loader?define=>false",
-      },
       // This enables Babel
       { test: /\.js$/, 
         exclude: /node_modules/, 
@@ -155,25 +146,31 @@ module.exports = {
           'less-loader' // compiles Less to CSS
         ]
       },
+      // This handles SCSS files
       {
         test: /\.(scss)$/,
-        use: [{
-          loader: 'style-loader', // inject CSS to page
-        }, {
-          loader: 'css-loader', // translates CSS into CommonJS modules
-        }, {
-          loader: 'postcss-loader', // Run post css actions
-          options: {
-            plugins: function () { // post css plugins, can be exported to postcss.config.js
-              return [
-                require('precss'),
-                require('autoprefixer')
-              ];
+        use: [
+          {
+            loader: 'style-loader', // inject CSS to page
+          }, 
+          {
+            loader: 'css-loader', // translates CSS into CommonJS modules
+          }, 
+          {
+            loader: 'postcss-loader', // Run post css actions
+            options: {
+              plugins: function () { // post css plugins, can be exported to postcss.config.js
+                return [
+                  require('precss'),
+                  require('autoprefixer')
+                ];
+              }
             }
+          }, 
+          {
+            loader: 'sass-loader' // compiles Sass to CSS
           }
-        }, {
-          loader: 'sass-loader' // compiles Sass to CSS
-        }]
+        ]
       },
     ],
   },

@@ -2,9 +2,9 @@
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 
-import slick_grid_css from "css/slickgrid/slick.grid.css";
-import slick_default_theme_css from "css/slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "css/slickgrid/slick.headerbuttons.css";
+import slick_grid_css from "slickgrid/slick.grid.css";
+import slick_default_theme_css from "slickgrid/slick-default-theme.css";
+import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import stickies_css from "../css/stickies.css";
@@ -19,7 +19,7 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import NoteManager from "./note-manager";
 import FilterManager from "./filter-manager";
-import d3 from "js/d3.min";
+// import d3 from "d3";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 import "./parameter-image-scatterplot";
@@ -30,6 +30,8 @@ import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
+// resizable required for stickies.core.js
+import "jquery-ui/ui/widgets/resizable";
 import "jquery-ui/ui/widget";
 import "layout";
 import "js/slycat-range-slider"; 
@@ -103,7 +105,7 @@ $(document).ready(function() {
   {
     north:
     {
-      size: 28,
+      size: 39,
       resizable: false,
     },
     center:

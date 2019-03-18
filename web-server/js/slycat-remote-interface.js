@@ -176,39 +176,39 @@ ko.components.register('slycat-remote-interface', {
     };
 
     var invalid_form = function() {
-      $('.form-group').removeClass('has-error');
+      $('.form-group').removeClass('is-invalid');
 
       var invalid = false;
       var out = '';
 
       if (vm.wckey().trim() === '') {
         out += '\n' + 'Please enter a valid WCID.';
-        $('#form-group-wcid').addClass('has-error');
+        $('#form-group-wcid').addClass('is-invalid');
         invalid = true;
       }
 
       if (vm.partition().trim() === '') {
         out += '\n' + 'Please enter a partition.';
-        $('#form-group-partition').addClass('has-error');
+        $('#form-group-partition').addClass('is-invalid');
         invalid = true;
       }
 
       if (vm.nnodes() === undefined || vm.nnodes() === "" || !Number.isInteger(Number(vm.nnodes())) || parseInt(vm.nnodes(), 10) < 1) {
         out += '\n' + 'Number of nodes must be an integer of 1 or greater.';
-        $('#form-group-nnodes').addClass('has-error');
+        $('#form-group-nnodes').addClass('is-invalid');
         invalid = true;
       }
 
       if (vm.ntasks_per_node() === undefined || vm.ntasks_per_node() === "" || !Number.isInteger(Number(vm.ntasks_per_node())) || parseInt(vm.ntasks_per_node(), 10) < 1) {
         out += '\n' + 'Number of tasks / node(s) must be an integer of 1 or greater.';
-        $('#form-group-tasks-per-node').addClass('has-error');
+        $('#form-group-tasks-per-node').addClass('is-invalid');
         invalid = true;
       }
 
       if( !Number.isInteger(Number(  vm.time_hours())) || !Number.isInteger(Number(vm.time_minutes())) || !Number.isInteger(Number(vm.time_seconds())) )
       {
         out += '\n' + 'Please enter a valid time.';
-        $('#form-group-time').addClass('has-error');
+        $('#form-group-time').addClass('is-invalid');
         invalid = true;
       }
 
@@ -218,13 +218,13 @@ ko.components.register('slycat-remote-interface', {
 
       if (hr == null || min == null || sec == null || hr < 0 || min < 0 || sec < 0 || ((hr + min + sec) < 1)) {
         out += '\n' + 'Please enter a valid time.';
-        $('#form-group-time').addClass('has-error');
+        $('#form-group-time').addClass('is-invalid');
         invalid = true;
       }
 
       if (vm.workdir().trim() === '') {
         out += '\n' + 'Please enter a working directory.';
-        $('#form-group-workdir').addClass('has-error');
+        $('#form-group-workdir').addClass('is-invalid');
         invalid = true;
       }
 

@@ -212,12 +212,11 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
             # check if an index column is present or flag it otherwise
             # if isinstance(t_first_row[0], float):
             t_add_index_column = False
-            for _ in xrange(5):
-                if getType(t_first_five_rows[_][0]) is not int:
-                    t_add_index_column = True
-                    t_column_names = ["Index"] + t_column_names  # always add index column
-                else:
-                    t_column_names[0] = "Index"
+            if "time" in str(t_column_names[0]).lower():
+                t_add_index_column = True
+                t_column_names = ["Index"] + t_column_names  # always add index column
+            else:
+                t_column_names[0] = "Index"
 
             t_column_types = ["float64" for _ in t_column_names]
             t_column_names[1] = "TIME"
@@ -244,19 +243,18 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
                 array.set_data(attribute, slice(0, column.shape[0]), column)
     except IOError, err:
         log.error("Failed reading %s: %s", path, err)
-    except:
-        log.error("Unexpected error reading %s", path)
-
+    except Exception as e:
+        log.error("Unexpected error reading %s \n msg%s" % (path, e.message))
 
 def convert_timeseries(timeseries_index, eval_id, row):
     """
-  Iterate over the data for the input row and checks for file paths. If file
-  extension is valid, run process_timeseries method.
+    Iterate over the data for the input row and checks for file paths. If file
+    extension is valid, run process_timeseries method.
 
-  :param timeseries_index: 0-based index
-  :param eval_id: ID from ID column
-  :param row: row data
-  """
+    :param timeseries_index: 0-based index
+    :param eval_id: ID from ID column
+    :param row: row data
+    """
     for i, val in enumerate(row):
         if column_types[i] is "string":
             val = val.strip()

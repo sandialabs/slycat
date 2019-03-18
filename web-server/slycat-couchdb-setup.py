@@ -224,7 +224,20 @@ design = {
         }
         """,
       },
+    "project_datas": {
+      "map": """
+       function(doc)
+       {
+         if(doc["type"] != "project_data")
+           return;
+           
+         emit(doc["project"], null);
+       }
+       """,
     },
+  },
+
+
 
   "validate_doc_update": """
     function(new_document, old_document, user_context)
@@ -330,6 +343,14 @@ design = {
         {
           require(new_document["created"] == old_document["created"], "Session creation time cannot be modified.");
           require(new_document["creator"] == old_document["creator"], "Session creator cannot be modified.");
+        }
+      }
+      else if(new_document["type"] == "project_data")
+      {
+        require(new_document["project"] != null, "Must contain project id.");
+        if(old_document)
+        {
+          require(new_document["project"] == old_document["project"], "Project id cannot be modified.");
         }
       }
       else

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 # Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
 # DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
 # retains certain rights in this software.
@@ -38,7 +39,6 @@ import threading
 import time
 import uuid
 import functools
-from cherrypy._cpcompat import base64_decode
 import datetime
 import urlparse
 
@@ -149,9 +149,15 @@ def get_sid(hostname):
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        for host_session in session["sessions"]:
+        for index, host_session in enumerate(session["sessions"]):
             if host_session["hostname"] == hostname:
                 sid = host_session["sid"]
+                if(not slycat.web.server.remote.check_session(sid)):
+                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, slycat.web.server.remote.session_cache.keys()))
+                    slycat.web.server.remote.delete_session(sid)
+                    del session["sessions"][index]
+                    database.save(session)
+                    raise cherrypy.HTTPError("404")
                 break
     except Exception as e:
         cherrypy.log.error("could not retrieve host session for remotes %s" % e)
@@ -359,6 +365,9 @@ def delete_project(pid):
         couchdb.delete(bookmark)
     for model in couchdb.scan("slycat/project-models", startkey=pid, endkey=pid):
         couchdb.delete(model)
+    for project_data in couchdb.scan("slycat/project_datas", startkey=pid, endkey=pid):
+        couchdb.delete(project_data)
+
     couchdb.delete(project)
     slycat.web.server.cleanup.arrays()
 
@@ -375,6 +384,74 @@ def get_project_models(pid, **kwargs):
     models = sorted(models, key=lambda x: x["created"], reverse=True)
     return models
 
+@cherrypy.tools.json_out(on=True)
+def put_project_csv_data(pid, file_key, parser, mid, aids):
+    """
+    returns a project based on "content-type" header
+    :param pid: project ID
+    :param file_key: file_name
+    :param parser: parser name
+    :param mid: model ID
+    :param aids: artifact IDs
+    :return: status 404 if no file found or with json {"Status": "Success"}
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_writer(project)
+    project_datas = [data for data in database.scan("slycat/project_datas")]
+    attachment = []
+    fid = None
+
+    # check for existing project_datas data types
+    if not project_datas:
+        cherrypy.log.error("[MICROSERVICE] The project_datas list is empty.")
+        raise cherrypy.HTTPError("404 There is no project data stored for this project. %s" % file_key)
+    else:
+        for item in project_datas:
+            if item["project"] == pid and item["file_name"] == file_key:
+                fid = item["_id"]
+                http_response = database.get_attachment(item, "content")
+                file = http_response.read()
+                attachment.append(file)
+    # if we didnt fined the file repspond with not found
+    if fid is None:
+        raise cherrypy.HTTPError("404 There was no file with name %s found." % file_key)
+    try:
+        project_data = database.get("project_data", fid)
+        project_data["mid"].append(mid)
+        database.save(project_data)
+    except Exception as e:
+        cherrypy.log.error(e.message)
+    # clean up the attachment by removing white space
+    attachment[0] = attachment[0].replace('\\n', '\n')
+    attachment[0] = attachment[0].replace('["', '')
+    attachment[0] = attachment[0].replace('"]', '')
+
+    model = database.get("model", mid)
+    slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
+    return {"Status": "Success"}
+
+def get_project_file_names(pid):
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_writer(project)
+    project_datas = [data for data in database.scan("slycat/project_datas")]
+    data = []
+
+    if not project_datas:
+        cherrypy.log.error("The project_datas list is empty.")
+    else:
+        cherrypy.log.error("Files found.")
+        for item in project_datas:
+            if item["project"] == pid:
+                # data_id = item["_id"]
+                temp_json_data = {"file_name": item["file_name"]}
+                cherrypy.log.error("The file name is: ")
+                cherrypy.log.error(str(temp_json_data))
+                data.append(temp_json_data)
+
+    json_data = json.dumps(data)
+    return json_data
 
 @cherrypy.tools.json_out(on=True)
 def get_project_references(pid):
@@ -422,6 +499,7 @@ def post_project_models(pid):
 
     model = {
         "_id": mid,
+        "bookmark": "none",
         "type": "model",
         "model-type": model_type,
         "marking": marking,
@@ -445,6 +523,53 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
+def create_project_data(mid, aid, file):
+    """
+    creates a project level data object that can be used to create new
+    models in the current project
+    :param mid: model ID
+    :param aid: artifact ID
+    :param file: file attachment
+    :return: not used
+    """
+    content_type = "text/csv"
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    pid = project["_id"]
+    timestamp = time.time()
+    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    did = uuid.uuid4().hex
+    #TODO review how we pass files to this
+    # our file got passed as a list by someone...
+    if isinstance(file, list):
+        file = file[0]
+    #TODO review how we pass aids to this
+    # if true we are using the new file naming structure
+    if len(aid) > 1:
+        # looks like we got passed a list(list()) lets extract the name
+        if isinstance(aid[1], list):
+            aid[1] = aid[1][0]
+    # for backwards compatibility for not passing the file name
+    else:
+        aid.append("unnamed_file")
+    data = {
+        "_id": did,
+        "type": "project_data",
+        "file_name": formatted_timestamp + "_" + aid[1],
+        "data_table": aid[0],
+        "project": pid,
+        "mid": [mid],
+        "created": datetime.datetime.utcnow().isoformat(),
+        "creator": cherrypy.request.login,
+    }
+    if "project_data" not in model:
+        model["project_data"] = []
+    model["project_data"].append(did)
+    database.save(model)
+    database.save(data)
+    database.put_attachment(data, filename="content", content_type=content_type, content=file)
+    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
@@ -566,75 +691,10 @@ def get_model(mid, **kwargs):
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
 
-    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
+    accept = cherrypy.lib.cptools.accept(media=["application/json"])
     cherrypy.response.headers["content-type"] = accept
 
-    if accept == "application/json":
-        return json.dumps(model)
-
-    elif accept == "text/html":
-        mtype = model.get("model-type", None)
-        ptype = kwargs.get("ptype", None)
-        cherrypy.log.error("mtype: %s ptype: %s" % (mtype, ptype))
-        context = {}
-
-        # Setting slycat_model_page and whether global JS and CSS bundles are emitted based on global_bundles flag set by model plugin when it registers.
-        slycat_model_page = 'slycat-model-page.html'
-        if mtype in slycat.web.server.plugin.manager.global_bundles and slycat.web.server.plugin.manager.global_bundles[mtype] == False:
-            context["slycat-js-bundle"] = None
-            context["slycat-css-bundle"] = None
-            # slycat_model_page = 'slycat-model-page-webpack.html'
-            cherrypy.log.error("Global bundle will NOT be emitted for '%s'." % (mtype))
-        else:
-            context["slycat-js-bundle"] = js_bundle()
-            context["slycat-css-bundle"] = css_bundle()
-            cherrypy.log.error("Global bundle will be emitted for '%s'." % (mtype))
-
-        marking = slycat.web.server.plugin.manager.markings[model["marking"]]
-        
-        context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-        context["slycat-marking-before-html"] = marking["badge"] if marking["page-before"] is None else marking[
-            "page-before"]
-        context["slycat-marking-after-html"] = marking["badge"] if marking["page-after"] is None else marking[
-            "page-after"]
-        context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-
-        context["slycat-model"] = model
-        context["slycat-model-name"] = model.get("name", "").replace("'", "\\'")
-
-        context["slycat-project"] = project
-        context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
-
-        context["slycat-model-type"] = mtype
-
-        if mtype not in slycat.web.server.plugin.manager.models.keys():
-            context["slycat-page-html"] = u"""
-      <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-        <p>No plugin available for model type \u201c%s\u201d.</p>
-      </div>""" % mtype
-            return slycat.web.server.template.render(slycat_model_page, context)
-
-        if ptype is None:
-            ptype = slycat.web.server.plugin.manager.models[mtype]["ptype"]
-
-        if ptype not in slycat.web.server.plugin.manager.pages:
-            context["slycat-page-html"] = u"""
-      <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-        <p>No plugin available for page type \u201c%s\u201d.</p>
-      </div>""" % ptype
-            return slycat.web.server.template.render(slycat_model_page, context)
-
-        context["slycat-page-type"] = ptype
-        context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model)
-        if ptype in slycat.web.server.plugin.manager.page_bundles:
-            context["slycat-page-css-bundles"] = [{"bundle": key} for key, (content_type, content) in
-                                                  slycat.web.server.plugin.manager.page_bundles[ptype].items() if
-                                                  content_type == "text/css"]
-            context["slycat-page-js-bundles"] = [{"bundle": key} for key, (content_type, content) in
-                                                 slycat.web.server.plugin.manager.page_bundles[ptype].items() if
-                                                 content_type == "text/javascript"]
-
-        return slycat.web.server.template.render(slycat_model_page, context)
+    return json.dumps(model)
 
 
 def model_command(mid, type, command, **kwargs):
@@ -707,7 +767,7 @@ def put_model(mid):
     save_model = False
     for key, value in cherrypy.request.json.items():
         if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
-                       "marking"]:
+                       "marking", "bookmark"]:
             slycat.email.send_error("slycat.web.server.handlers.py put_model",
                                     "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
             raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
@@ -721,6 +781,18 @@ def put_model(mid):
                 raise cherrypy.HTTPError("400 Timestamp fields must use ISO-8601.")
 
         if value != model.get(key):
+            model[key] = value
+            save_model = True
+
+            # Revisit this, how booksmark IDs get added to model
+
+            #if key == "bookmark":
+            #    model[key].append(value)
+            #    save_model = True
+            #else:
+            #    model[key] = value
+            #    save_model = True
+
             model[key] = value
             save_model = True
 
@@ -806,8 +878,9 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
 
     try:
         slycat.web.server.plugin.manager.parsers[parser]["parse"](database, model, input, files, aids, **kwargs)
+        create_project_data(mid, aids, files)
     except Exception as e:
-        cherrypy.log.error("Exception parsing posted files: %s" % e)
+        cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 %s" % e.message)
         raise cherrypy.HTTPError("400 %s" % e.message)
@@ -1159,8 +1232,18 @@ def delete_model(mid):
     project = couchdb.get("project", model["project"])
     slycat.web.server.authentication.require_project_writer(project)
 
+    for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
+        updated = False
+        for index, pd_mid in enumerate(project_data["mid"]):
+            if pd_mid == mid:
+                updated = True
+                del project_data["mid"][index]
+        if updated:
+            couchdb.save(project_data)
+
     couchdb.delete(model)
     slycat.web.server.cleanup.arrays()
+
 
     cherrypy.response.status = "204 Model deleted."
 
@@ -1991,6 +2074,11 @@ def post_remotes():
     username = cherrypy.request.json["username"]
     hostname = cherrypy.request.json["hostname"]
     password = cherrypy.request.json["password"]
+    # username/password are not guaranteed to exist within the incoming json
+    # (they don't exist for rsa-cert auth)
+    if username == None:
+        username = cherry.request.login
+        
     msg = ""
     agent = cherrypy.request.json.get("agent", None)
     sid = slycat.web.server.remote.create_session(hostname, username, password, agent)
@@ -2002,14 +2090,12 @@ def post_remotes():
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        hostname_not_found = True
         for i in xrange(len(session["sessions"])):
             if session["sessions"][i]["hostname"] == hostname:
-                session["sessions"][i]["sid"] = sid
-                session["sessions"][i]["username"] = username
-                hostname_not_found = False
-        if hostname_not_found:
-            session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+                if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
+                    slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
+                del session["sessions"][i]
+        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
         database.save(session)
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)

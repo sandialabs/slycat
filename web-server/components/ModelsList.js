@@ -31,9 +31,9 @@ class ModelsList extends React.Component {
     {
       return (
         <div className="container">
-          <h3>Models</h3>
-          <div className="panel panel-default">
-            <div className="list-group">
+          <h3 className="pl-4">Models</h3>
+          <div className="card">
+            <div className="list-group list-group-flush">
               <React.Fragment>
                 {models}
               </React.Fragment>
@@ -46,9 +46,9 @@ class ModelsList extends React.Component {
     {
       return (
         <div className="container">
-          <h3>Models</h3>
-          <div className="panel panel-default">
-            <div className="list-group">
+          <h3 className="pl-4">Models</h3>
+          <div className="card">
+            <div className="list-group list-group-flush">
               <div className="list-group-item">There are no models in this project. You can add a model by using the Create menu above.</div>
             </div>
           </div>
@@ -71,24 +71,24 @@ class Model extends React.Component {
     }
 
     return (
-      <a className="list-group-item" href={server_root + 'models/' + this.props.id}>
-        <span className="label label-default">{model_names.translate_model_type(this.props.model_type) + ' model'}</span>
-        &nbsp;
-        <strong>{this.props.name} </strong>
+      <a className="list-group-item list-group-item-action" href={server_root + 'models/' + this.props.id}>
+        <div className="h6">
+          <span className="badge badge-secondary mr-1">{model_names.translate_model_type(this.props.model_type) + ' model'}</span>
+          &nbsp;
+          <strong>{this.props.name}</strong>
+        </div>
         {/* badge() function returns HTML, which React escapes, so we need to use
             dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml */}
-        <div className="pull-right" style={{display: 'inline-block'}} dangerouslySetInnerHTML={{__html: badge(this.props.marking)}}></div>
+        <div className="float-right" style={{display: 'inline-block'}} dangerouslySetInnerHTML={{__html: badge(this.props.marking)}}></div>
         {this.props.result == 'failed' &&
-        <span className="label label-danger" title={this.props.message}>Failed</span>
+        <span className="badge badge-danger" title={this.props.message}>Failed</span>
         }
-        <p>
-          <small>
-            <span>{this.props.description}</span>
-            <em>
-              Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
-            </em>
-          </small>
-        </p>
+        <p className="mb-2">{this.props.description}</p>
+        <small>
+          <em>
+            Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
+          </em>
+        </small>
       </a>
     );
   }
@@ -120,9 +120,9 @@ class TemplatesList extends React.Component {
     {
       return (
         <div className="container">
-          <h3>Templates</h3>
-          <div className="panel panel-default">
-            <div className="list-group">
+          <h3 className="pl-4">Templates</h3>
+          <div className="card">
+            <div className="list-group list-group-flush">
               <React.Fragment>
                 {templates}
               </React.Fragment>
@@ -152,7 +152,7 @@ class Template extends React.Component {
     {
       title: "Delete Template?",
       message: 'The template "' + this.props.name + '" will be deleted immediately and there is no undo.  This will not affect any existing models.',
-      buttons: [{className: "btn-default", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
+      buttons: [{className: "btn-light", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
       callback: function(button)
       {
         if(button.label != "OK")
@@ -172,8 +172,8 @@ class Template extends React.Component {
 
   render() {
     return (
-      <div className="list-group-item">
-        <span className="label label-default">{model_names.translate_model_type(this.props.model_type) + ' model'}</span>
+      <div className="list-group-item list-group-item-action">
+        <span className="badge badge-secondary mr-1">{model_names.translate_model_type(this.props.model_type) + ' model'}</span>
         &nbsp;
         <strong>{this.props.name} </strong>
         <small>
@@ -181,9 +181,9 @@ class Template extends React.Component {
             Created <span>{this.props.created}</span> by <span>{this.props.creator}</span>
           </em>
         </small>
-        <span className="pull-right">
-          {/* <button type="button" class="btn btn-xs btn-warning" data-bind="click: $parent.edit_template"><span class="fa fa-pencil"></span></button> */}
-          <button type="button" className="btn btn-xs btn-danger" name={this.props.id} onClick={this.delete_template} title="Delete this template"><span className="fa fa-trash-o"></span></button>
+        <span className="float-right">
+          {/* <button type="button" className="btn btn-sm btn-warning" data-bind="click: $parent.edit_template"><span className="fa fa-pencil"></span></button> */}
+          <button type="button" className="btn btn-sm btn-danger" name={this.props.id} onClick={this.delete_template} title="Delete this template"><span className="fa fa-trash-o"></span></button>
         </span>
       </div>
     );

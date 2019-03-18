@@ -160,10 +160,6 @@
   display: inline-block;
   text-align: right;
 }
-#rsquared-label sup {
-  position: absolute;
-  margin-top: -3px;
-}
 .rowInput,
 .rowOutput
 {
@@ -608,4 +604,7 @@
 #scatterplot-pane #image-preview-image {
   max-height: 100%;
   max-width: 100%;
+}
+#auto-scale-option {
+  margin-right: 4px;
 }
