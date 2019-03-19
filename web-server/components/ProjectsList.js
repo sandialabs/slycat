@@ -65,6 +65,12 @@ class ProjectsList extends React.Component {
     {
       return (
         <div className="container">
+          <div className="d-flex justify-content-between">
+            <h3 className="px-4">Projects</h3>
+            <form className="form-inline mb-2">
+              <input className="form-control" type="search" placeholder="Filter projects" aria-label="Filter projects" />
+          </form>
+            </div>
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
