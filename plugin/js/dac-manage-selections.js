@@ -217,14 +217,24 @@ module.zero_sel = function()
 }
 
 // updates selection variables
+// 1. if not present, add to selection
+// 2. if present, but in other selection, add to current selection
+// 3. if present, and in same selection, remove
 module.update_sel = function(i)
 {
 	if (curr_sel_type == 1) {
 
-		// add to selection, if not already in selection
+		// check if present in current selection
 		var sel_1_ind = selection_1.indexOf(i);
 		if (sel_1_ind == -1) {
+
+		    // not present, add
 			selection_1.push(i);
+
+		} else {
+
+		    // present, remove
+		    selection_1.splice(sel_1_ind, 1);
 		}
 
 		// remove from other selection, if necessary
@@ -235,16 +245,76 @@ module.update_sel = function(i)
 
 	} else {
 
+        // check if present in current selection
 		var sel_2_ind = selection_2.indexOf(i);
 		if (sel_2_ind == -1) {
+
+		    // not present, add
 			selection_2.push(i);
+		} else {
+
+		    // present, remove
+		    selection_2.splice(sel_2_ind, 1);
 		}
 
+        // remove for other selection, if necessary
 		var sel_1_ind = selection_1.indexOf(i);
 		if (sel_1_ind != -1) {
 			selection_1.splice(sel_1_ind, 1);
 		}
 	}
+}
+
+// update selection range (all at once)
+module.update_sel_range = function(sel)
+{
+
+    console.log(sel);
+
+    // update range according to current selection type
+    for (var i = 0; i < sel.length; i++) {
+
+        if (curr_sel_type == 1) {
+
+            // check if present in current selection
+            var sel_1_ind = selection_1.indexOf(sel[i]);
+            if (sel_1_ind == -1) {
+
+                // not present, add
+                selection_1.push(sel[i]);
+
+            }
+
+            // remove from other selection, if necessary
+            var sel_2_ind = selection_2.indexOf(sel[i]);
+            if (sel_2_ind != -1) {
+                selection_2.splice(sel_2_ind, 1);
+            }
+
+        } else {
+
+            // check if present in current selection
+            var sel_2_ind = selection_2.indexOf(sel[i]);
+            if (sel_2_ind == -1) {
+
+                // not present, add
+                selection_2.push(sel[i]);
+            }
+
+            // remove for other selection, if necessary
+            var sel_1_ind = selection_1.indexOf(sel[i]);
+            if (sel_1_ind != -1) {
+                selection_1.splice(sel_1_ind, 1);
+            }
+        }
+
+    }
+
+    // update selection event
+    var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+                                         active_sel: sel} });
+    document.body.dispatchEvent(selectionEvent);
+
 }
 
 // update selection accounting for focus

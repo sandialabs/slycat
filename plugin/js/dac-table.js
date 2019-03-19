@@ -48,6 +48,9 @@ var num_editable_cols = [];
 
 var curr_sel_type = null;
 
+// multiple selections
+var prev_row_selected = null;
+
 // slick grid options
 var grid_options = {
 	enableColumnReorder: false,
@@ -156,7 +159,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 
 	// set up row selection
 	grid_view.setSelectionModel (new Slick.RowSelectionModel());
-	//grid_view.onSelectedRowsChanged.subscribe(row_selected);
+	//grid_view.onSelectedRowsChanged.subscribe(multiple_rows_selected);
 
 	// helpers for grid to respond to data_view changes
 	data_view.onRowCountChanged.subscribe(change_rows);
@@ -363,6 +366,24 @@ function one_row_selected(e, args) {
 	// convert row clicked to data table row
 	var data_clicked = convert_row_ids([args.row])[0];
 
+    // check for range selection
+    var range_sel = [];
+    if (prev_row_selected != null) {
+        if (selections.shift_key() == true) {
+
+            // get range of data
+            var range_sel_inds = [];
+            for (var i = Math.min(args.row, prev_row_selected);
+                     i <= Math.max(args.row, prev_row_selected); i++) {
+
+                range_sel_inds.push(i);
+            }
+
+            // convert to data ids
+            range_sel = convert_row_ids(range_sel_inds);
+        }
+    }
+
 	// check if row is in the subset (and not an editable column)
 	if (selections.in_subset(data_clicked) &&
             args.cell < num_cols) {
@@ -371,9 +392,17 @@ function one_row_selected(e, args) {
 		if (selections.sel_type() == 1 ||
 			selections.sel_type() == 2) {
 
-			// check if row is already selected
-			// update selection and/or focus
-			selections.update_sel_focus(data_clicked);
+            // check for range selection
+            if (range_sel.length > 1) {
+
+                // user selected a range in the table
+                selections.update_sel_range(range_sel);
+
+            } else {
+                // check if row is already selected
+                // update selection and/or focus
+                selections.update_sel_focus(data_clicked);
+            }
 
 		// in zoom or subset mode, we can still do focus/de-focus
 		} else if (selections.sel_type() == 0 ||
@@ -383,11 +412,15 @@ function one_row_selected(e, args) {
 
 		}
 
+		// update previous selection
+	    prev_row_selected = args.row;
+
 	}
+
 }
 
 // slick grid row selected on click (for multiple rows)
-function row_selected (e, args)
+function multiple_rows_selected (e, args)
 {
 
 	// get rows selected
@@ -395,6 +428,8 @@ function row_selected (e, args)
 
 	// convert to table ids
 	var row_ids = convert_row_ids(rows);
+
+    console.log(row_ids);
 
 	// add selections (unless in zoom mode)
 	if (selections.sel_type() > 0) {

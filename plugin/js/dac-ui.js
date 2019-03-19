@@ -778,6 +778,7 @@ $(document).ready(function() {
 		metadata_table.select_rows();
 
 		// jump to top row in table for current selection (if there is one)
+		console.log(new_selections.detail.active_sel);
 		metadata_table.jump_to (new_selections.detail.active_sel);
 
 		// bookmark selections
