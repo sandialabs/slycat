@@ -84,6 +84,12 @@
 	text-align: right;
 }
 
+/* wrapper around controls above each plot*/
+.dac-plot-controls
+{
+	white-space: nowrap;
+}
+
 /* low resolution indicator */
 .dac-low-resolution-plot
 {
