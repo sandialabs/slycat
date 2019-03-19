@@ -429,8 +429,6 @@ function multiple_rows_selected (e, args)
 	// convert to table ids
 	var row_ids = convert_row_ids(rows);
 
-    console.log(row_ids);
-
 	// add selections (unless in zoom mode)
 	if (selections.sel_type() > 0) {
 		selections.zero_sel();

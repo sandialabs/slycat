@@ -269,8 +269,6 @@ module.update_sel = function(i)
 module.update_sel_range = function(sel)
 {
 
-    console.log(sel);
-
     // update range according to current selection type
     for (var i = 0; i < sel.length; i++) {
 
@@ -340,13 +338,22 @@ module.update_sel_focus = function(i)
 		// otherwise, we test for shift/meta key before adding to selection
 		if (shift_key_pressed) {
 
-			// update selection
-			module.update_sel(i);
+            // check for focus event
+            if (focus == i) {
 
-			// fire selection change event
-			var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
-												 active_sel: [i]} });
-			document.body.dispatchEvent(selectionEvent);
+                // focus chagned
+                module.change_focus(i);
+
+            } else {
+
+                // selection changed
+                module.update_sel(i);
+
+                // fire selection change event
+                var selectionEvent = new CustomEvent("DACSelectionsChanged", { detail: {
+                                                     active_sel: [i]} });
+                document.body.dispatchEvent(selectionEvent);
+            }
 
 		} else {
 
