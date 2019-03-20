@@ -1,70 +1,5 @@
 import React from "react";
-import client from 'js/slycat-web-client';
 import server_root from 'js/slycat-server-root';
-
-class SearchWrapper extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      initialProjects: this.props.projects,
-      projects: [],
-      searchQuery: '',
-    };
-    this.filterList = this.filterList.bind(this);
-    // console.log(this.props.projects);
-  }
-  componentWillMount() {
-      this.setState({projects: this.state.initialProjects});
-  }
-  filterList(e) {
-    // console.log(`filter ${this}`);
-    var updatedList = this.state.initialProjects;
-    updatedList = updatedList.filter(function(item){
-      // console.log('item: ' + item);
-      return item.name.toLowerCase().search(e.target.value.toLowerCase()) !== -1
-             || item.description.toLowerCase().search(e.target.value.toLowerCase()) !== -1
-             // Why is this line here, it's identical to the previous one? Alex commenting out for now.
-             // || item.description.toLowerCase().search(e.target.value.toLowerCase()) !== -1 
-             ;
-    });
-    this.setState({projects: updatedList, searchQuery: e.target.value});
-  };
-  render() {
-
-    let message = '';
-
-    if(this.state.projects.length == 0)
-    {
-      message = 
-        <div className="container">
-          <div className="alert alert-warning" role="alert">
-            <p>No {this.props.type} match the current search - <strong>{this.state.searchQuery}</strong></p>
-            <p className="mb-0">Clear it to see all {this.props.type}, or change it to search again.</p>
-          </div>
-        </div>
-      ;
-    }
-
-    return (
-      <React.Fragment>
-        <div className="container pb-0">
-          <div className="d-flex justify-content-between">
-            <h3 className="px-4 text-capitalize">{this.props.type}</h3>
-            <input className="form-control mb-2" 
-              style={{width: '13rem'}}
-              type="search" 
-              placeholder={`Filter ${this.props.type}`} 
-              aria-label={`Filter ${this.props.type}`} 
-              onChange={this.filterList}
-            />
-          </div>
-        </div>
-        <ProjectsList projects={this.state.projects} />
-        {message}
-      </React.Fragment>
-    );
-  }
-}
 
 class ProjectsList extends React.Component {
   render() {
@@ -121,4 +56,4 @@ class Project extends React.Component {
   }
 }
 
-export default SearchWrapper;
+export default ProjectsList;

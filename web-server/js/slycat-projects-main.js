@@ -9,21 +9,20 @@ import "css/slycat.css";
 
 import React from "react";
 import ReactDOM from "react-dom";
-import SearchWrapper from 'components/ProjectsList';
+import SearchWrapper from 'components/SearchWrapper';
 import client from 'js/slycat-web-client';
-import ga from "js/slycat-ga";
-import "bootstrap";
 
 // These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.
 import ko from 'knockout';
-import {renderNavBar} from "js/slycat-navbar";
+import { renderNavBar } from "js/slycat-navbar";
 
 // Wait for document ready
 $(document).ready(function() {
   renderNavBar();
   client.get_projects({
     success: function(result) {
-      const projects_list = <SearchWrapper projects={result.projects} type="projects" />
+      const projects_list = <SearchWrapper items={result.projects} type="projects" />
+      // console.log('got projects');
       ReactDOM.render(
         projects_list,
         document.getElementById('slycat-projects')
@@ -37,5 +36,4 @@ $(document).ready(function() {
   // These next 2 lines render the navbar using knockout. Remove them once we convert it to react.
   var page = {}
   ko.applyBindings(page, document.querySelector("html"));
-
 });

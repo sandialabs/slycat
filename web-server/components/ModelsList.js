@@ -5,7 +5,6 @@ import server_root from 'js/slycat-server-root';
 import model_names from 'js/slycat-model-names';
 import markings from 'js/slycat-markings';
 import * as dialog from 'js/slycat-dialog';
-import renderTemplates from 'js/slycat-project-main';
 
 class ModelsList extends React.Component {
   render() {
@@ -30,8 +29,7 @@ class ModelsList extends React.Component {
     if(models.length > 0)
     {
       return (
-        <div className="container">
-          <h3 className="pl-4">Models</h3>
+        <div className="container pt-0">
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
@@ -44,16 +42,7 @@ class ModelsList extends React.Component {
     }
     else
     {
-      return (
-        <div className="container">
-          <h3 className="pl-4">Models</h3>
-          <div className="card">
-            <div className="list-group list-group-flush">
-              <div className="list-group-item">There are no models in this project. You can add a model by using the Create menu above.</div>
-            </div>
-          </div>
-        </div>
-      );
+      return null;
     }
   }
 }
@@ -190,4 +179,20 @@ class Template extends React.Component {
   }
 }
 
-export { ModelsList, TemplatesList };
+function renderTemplates(project_id) {
+  // Create a React TemplatesList component after getting the list of templates in this project
+  client.get_project_references(
+  {
+    pid: project_id,
+    success: function(result)
+    {
+      const templates_list = <TemplatesList templates={result} />
+      ReactDOM.render(
+        templates_list,
+        document.getElementById('slycat-templates')
+      );
+    }
+  });
+}
+
+export { ModelsList, TemplatesList, renderTemplates };
