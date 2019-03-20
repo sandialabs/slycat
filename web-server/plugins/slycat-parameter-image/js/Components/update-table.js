@@ -1,5 +1,6 @@
 'use strict';
 import React, { useState } from 'react';
+import ProgressBar from 'components/ProgressBar';
 import ControlsButton from './controls-button';
 import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
@@ -93,6 +94,12 @@ export default function ControlsButtonUpdateTable(props) {
             </div>
             <div className='modal-body'>
               <FileSelector handleChange = {handleFileSelection} />
+            </div>
+            <div>
+              <ProgressBar
+                hidden={false}
+                progress={50}
+              />
             </div>
             <div className='modal-footer'>
               <button type='button' disabled={disabled} className='btn btn-danger' onClick={uploadFile}>
