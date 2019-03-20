@@ -28,8 +28,6 @@ class SearchWrapper extends React.Component {
       // console.log('item: ' + item);
       return item.name.toLowerCase().search(lowerTrimSearchQuery) !== -1
              || item.description.toLowerCase().search(lowerTrimSearchQuery) !== -1
-             // Why is this line here, it's identical to the previous one? Alex commenting out for now.
-             // || item.description.toLowerCase().search(e.target.value.toLowerCase()) !== -1 
              || item.creator.toLowerCase().search(lowerTrimSearchQuery) !== -1
              || item.created.toLowerCase().search(lowerTrimSearchQuery) !== -1
              ;
