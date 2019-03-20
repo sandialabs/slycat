@@ -1348,8 +1348,27 @@ $.widget("parameter_image.scatterplot",
         .attr('class', 'pin-button frame-button fa fa-thumb-tack')
         .attr('title', 'Pin')
         .attr("aria-hidden", "true")
-        .on("click", handlers["pin"]);
+        .on("click", handlers["pin"])
+        ;
     };
+
+    var add_max_button = function(fh) {
+      fh.append("i")
+        .attr('class', 'max-button frame-button fa fa-window-maximize')
+        .attr('title', 'Maximize')
+        .attr("aria-hidden", "true")
+        .on("click", handlers["maximize"])
+        ;
+    }
+
+    var add_min_button = function(fh) {
+      fh.append("i")
+        .attr('class', 'min-button frame-button fa fa-window-minimize')
+        .attr('title', 'Minimize')
+        .attr("aria-hidden", "true")
+        .on("click", handlers["minimize"])
+        ;
+    }
 
     var add_download_button = function(fh, uri, filename) {
       fh.append("a")
@@ -1483,6 +1502,9 @@ $.widget("parameter_image.scatterplot",
           });
           self._adjust_leader_line(theElement);
         }
+
+        // Remove maximized class from frame
+        d3.select(this).classed("maximized", false);
       },
       move_start: function() {
         // console.log("move_start");
@@ -1503,6 +1525,11 @@ $.widget("parameter_image.scatterplot",
            ) 
         {
           frame = d3.select(this);
+
+          // Can't remove maximized class here, because move_start gets called
+          // on a click of the frame footer.
+          // // Remove maximized class from frame
+          // frame.classed("maximized", false);
 
           if (frame.classed("hover-image")) {
             self.opening_image = null;
@@ -1595,6 +1622,9 @@ $.widget("parameter_image.scatterplot",
           image.image_class = "open-image";
         }
 
+        // Remove maximized class from frame
+        frame.classed("maximized", false);
+
         // Need to stopPropagation here otherwise the system thinks we are moving the frame and does that instead of resize
         d3.event.sourceEvent.stopPropagation();
       },
@@ -1611,6 +1641,117 @@ $.widget("parameter_image.scatterplot",
         // d3.event.sourceEvent.stopPropagation();
       },
 
+      maximize: function() {
+        let target = d3.event.target;
+        let frame = d3.select(target.closest(".image-frame"));
+
+        // Get the SVG pane's size
+        var $svg = $('#scatterplot svg');
+        var svgh = $svg.height();
+        var svgw = $svg.width();
+
+        // Get the frame's current location and size
+        let x = frame.attr('data-transx');
+        let y = frame.attr('data-transy');
+        let width = $(frame.node()).outerWidth();
+        let height = $(frame.node()).outerHeight();
+
+        // Save the frame's current location and size in its data attributes, 
+        // as minimized location and size, so we can restore to this size on minimize.
+        frame.attr('data-minx', x);
+        frame.attr('data-miny', y);
+        frame.attr('data-minwidth', width);
+        frame.attr('data-minheight', height);
+
+        // Calculate new maxmized frame size
+        let ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
+        let target_height = svgh;
+        let target_width = svgh * ratio;
+
+        // Calculate available maximized frame x coordinates
+        // Horizontal spacing between maximized frames
+        let spacing = 120;
+        let available = [0];
+        while(svgw >= (available[available.length - 1] + target_width + spacing))
+        {
+          available.push(available[available.length - 1] + spacing);
+        }
+
+        // Calculate new maxmized frame location
+        // Find all other maximized frames
+        let maximized_frames = $(".media-layer div.image-frame.maximized");
+        let used = [];
+        // Calculate max x of maximized frames
+        maximized_frames.each(function(index){
+          used.push(Number($(this).attr('data-transx')));
+        });
+        // Find first unused slot
+        let next = _.head(_.difference(available, used));
+        // If there are no unused slots, get the least used one
+        if (next == undefined)
+        {
+          next = _.head(_(used).countBy().entries().minBy('[1]'));
+        }
+
+        let target_x = next;
+        let target_y = 0;
+
+        // Maximize the frame and write its new size and location into its data attributes
+        frame
+          .attr("data-transx", target_x)
+          .attr("data-transy", target_y)
+          // .attr("data-width", target_width)
+          // .attr("data-height", target_height)
+          .style({
+            left: target_x + "px",
+            top: target_y + "px",
+            width: target_width + "px",
+            height: target_height + "px",
+          })
+          ;
+
+        // Add maximized class to frame
+        frame.classed("maximized", true);
+
+        self._adjust_leader_line(frame);
+        self._sync_open_images();
+
+        $(window).trigger('resize');
+      },
+
+      minimize: function() {
+        let target = d3.event.target;
+        let frame = d3.select(target.closest(".image-frame"));
+
+        // Remove maximized class from frame
+        frame.classed("maximized", false);
+
+        // Get the frame's previous location and size
+        let target_x = frame.attr('data-minx');
+        let target_y = frame.attr('data-miny');
+        let target_width = frame.attr('data-minwidth');
+        let target_height = frame.attr('data-minheight');
+
+        // Restore the frame and write its new size and location into its data attributes
+        frame
+          .attr("data-transx", target_x)
+          .attr("data-transy", target_y)
+          .attr("data-width", target_width)
+          .attr("data-height", target_height)
+          .style({
+            left: target_x + "px",
+            top: target_y + "px",
+            width: target_width + "px",
+            height: target_height + "px",
+          })
+          ;
+
+        self._adjust_leader_line(frame);
+        self._sync_open_images();
+
+        $(window).trigger('resize');
+      },
+
       pin: function() {
         // console.log("pin event handler running");
         var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
@@ -1625,6 +1766,9 @@ $.widget("parameter_image.scatterplot",
         // else
         //   theImage = frame.classed("hover-image", false).classed("open-image", true);
         theImage = frame.classed("hover-image", false).classed("open-image", true);
+
+        // Remove maximized class from frame
+        frame.classed("maximized", false);
 
         imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
         imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
@@ -1646,12 +1790,18 @@ $.widget("parameter_image.scatterplot",
         x = self._getDefaultXPosition(image.index, imageWidth);
         y = self._getDefaultYPosition(image.index, imageHeight);
 
-        frame.attr("data-transx", x).attr("data-transy", y).style({
-          left: x + "px",
-          top: y + "px",
-          width: target_width + "px",
-          height: target_height + "px",
-        });
+        frame
+          .attr("data-transx", x)
+          .attr("data-transy", y)
+          // .attr("data-width", target_width)
+          // .attr("data-height", target_height)
+          .style({
+            left: x + "px",
+            top: y + "px",
+            width: target_width + "px",
+            height: target_height + "px",
+          })
+          ;
 
         if (isStl)
           frame.style('height', (imageHeight + 20) + 'px');
@@ -1927,6 +2077,7 @@ $.widget("parameter_image.scatterplot",
 
         } else if(blob.type.indexOf('application/pdf') == 0) {
           // Create the pdf ...
+
           var pdfWidth = 320;
 
           // Using an embed element
@@ -1986,11 +2137,6 @@ $.widget("parameter_image.scatterplot",
           // Using an <object> with an <iframe> fallback will reach the most users.
           // https://pdfobject.com/static.html
           var pdf = frame_html
-            // Overriding width and height to keep 8.5/11 ratio that's more applicable to PDFs
-            .style({
-              "width": pdfWidth + "px",
-              "height": (pdfWidth*(11/8.5))+10 + "px",
-            })
             .attr("data-ratio", 8.5/11)
             .append("object")
             .attr("data-uri", image.uri)
@@ -2011,6 +2157,25 @@ $.widget("parameter_image.scatterplot",
             .attr("download", "download")
             .text("Download " + image.uri)
             ;
+
+          // Overriding width and height to keep 8.5/11 ratio that's more applicable to PDFs
+          // This needs to happen only for new PDFs. Ones that are being re-opened at startup need to keep their restored size.
+          // So we check for a width & height of 200, which only happens when new media is opened.
+          if(image.width == 200 && image.height == 200)
+          {
+            // console.log('overriding initial pdf size');
+            frame_html.style({
+              "width": pdfWidth + "px",
+              "height": (pdfWidth*(11/8.5))+10 + "px",
+            })
+          }
+          // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
+          // other media, but caused PDF frame to grow by 20px each time the page is refreshed. So this
+          // adjustment fixes that.
+          else 
+          {
+            frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
+          }
 
           // Adding on overlay div to fix mouse event issues when resizing and dragging PDFs because the <object>, <iframe>,
           // and <embed> elements capture mouse events and don't propagate them to parent elements.
@@ -2086,6 +2251,12 @@ $.widget("parameter_image.scatterplot",
 
       // Create a pin button ...
       add_pin_button(footer);
+
+      // Create a maximize button ...
+      add_max_button(footer);
+
+      // Create a maximize button ...
+      add_min_button(footer);
 
       // Create a download button for non-links ...
       if(!link)

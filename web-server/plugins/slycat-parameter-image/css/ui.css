@@ -438,6 +438,23 @@
   float: left;
   padding: 3px 4px;
 }
+.frame-button.max-button {
+  float: left;
+  padding: 5px 4px;
+  font-size: 12px;
+}
+.frame-button.min-button {
+  float: left;
+  padding: 5px 4px;
+  font-size: 12px;
+  display: none;
+}
+#scatterplot .image-frame.maximized .frame-button.max-button {
+  display: none;
+}
+#scatterplot .image-frame.maximized .frame-button.min-button {
+  display: block;
+}
 .frame-button.pin-button {
   padding: 4px 22px 4px 4px;
 }
