@@ -23,7 +23,7 @@ $(document).ready(function() {
   renderNavBar();
   client.get_projects({
     success: function(result) {
-      const projects_list = <SearchWrapper projects={result.projects} />
+      const projects_list = <SearchWrapper projects={result.projects} type="projects" />
       ReactDOM.render(
         projects_list,
         document.getElementById('slycat-projects')

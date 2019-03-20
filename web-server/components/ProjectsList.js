@@ -7,7 +7,8 @@ class SearchWrapper extends React.Component {
     super(props);
     this.state = {
       initialProjects: this.props.projects,
-      projects: []
+      projects: [],
+      searchQuery: '',
     };
     this.filterList = this.filterList.bind(this);
     console.log(this.props.projects);
@@ -16,31 +17,49 @@ class SearchWrapper extends React.Component {
       this.setState({projects: this.state.initialProjects});
   }
   filterList(e) {
-    console.log(`filter ${this}`);
+    // console.log(`filter ${this}`);
     var updatedList = this.state.initialProjects;
     updatedList = updatedList.filter(function(item){
+      // console.log('item: ' + item);
       return item.name.toLowerCase().search(
         e.target.value.toLowerCase()) !== -1 || item.description.toLowerCase().search(
           e.target.value.toLowerCase()) !== -1 || item.description.toLowerCase().search(
           e.target.value.toLowerCase()) !== -1 ;
     });
-    this.setState({projects: updatedList});
+    this.setState({projects: updatedList, searchQuery: e.target.value});
   };
   render() {
 
+    let message = '';
+
+    if(this.state.projects.length == 0)
+    {
+      message = 
+        <div className="container">
+          <div className="alert alert-warning" role="alert">
+            <p>No {this.props.type} match the current search - <strong>{this.state.searchQuery}</strong></p>
+            <p className="mb-0">Clear it to see all {this.props.type}, or change it to search again.</p>
+          </div>
+        </div>
+      ;
+    }
+
     return (
-      <div>
-      <div className="filter-list">
-        <form>
-        <fieldset className="form-group">
-        <input type="text" className="form-control form-control-lg" placeholder="Search" onChange={this.filterList}/>
-        </fieldset>
-        </form>
-      </div>
-      <div>
+      <React.Fragment>
+        <div className="container pb-0">
+          <div className="d-flex justify-content-between">
+            <h3 className="px-4 text-capitalize">{this.props.type}</h3>
+            <form className="form-inline mb-2">
+              <input className="form-control" type="search" 
+                placeholder={`Filter ${this.props.type}`} aria-label={`Filter ${this.props.type}`} 
+                onChange={this.filterList}
+              />
+            </form>
+          </div>
+        </div>
         <ProjectsList projects={this.state.projects} />
-      </div>
-      </div>
+        {message}
+      </React.Fragment>
     );
   }
 }
@@ -64,13 +83,7 @@ class ProjectsList extends React.Component {
     if(projects.length > 0)
     {
       return (
-        <div className="container">
-          <div className="d-flex justify-content-between">
-            <h3 className="px-4">Projects</h3>
-            <form className="form-inline mb-2">
-              <input className="form-control" type="search" placeholder="Filter projects" aria-label="Filter projects" />
-          </form>
-            </div>
+        <div className="container pt-0">
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
