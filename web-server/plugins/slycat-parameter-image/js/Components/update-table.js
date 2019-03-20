@@ -12,6 +12,8 @@ export default function ControlsButtonUpdateTable(props) {
   const title = 'Update Table';
   const [files, setfiles] = useState([new File([""], "filename")]);
   const [disabled, setDisabled] = useState(true);
+  const [progressBarHidden, setProgressBarHidden] = useState(true);
+  const [progressBarProgress, setProgressBarProgress] = useState(0);
   const mid = props.mid;
   const pid = props.pid;
 
@@ -19,6 +21,8 @@ export default function ControlsButtonUpdateTable(props) {
   {
     setfiles([new File([""], "filename")]);
     setDisabled(true);
+    setProgressBarHidden(true);
+    setProgressBarProgress(0);
   };
 
   const closeModal = (e) =>
@@ -36,12 +40,14 @@ export default function ControlsButtonUpdateTable(props) {
   const uploadFile = () => 
   {
     console.log(files[0].name);
-
+    setProgressBarHidden(false);
+    setDisabled(true);
     client.get_model_command({
         mid: mid,
         type: "parameter-image",
         command: "delete-table",
         success: function (result_delete) {
+            setProgressBarProgress(33);
             console.log(result_delete);
             var file = files[0];
 
@@ -52,6 +58,7 @@ export default function ControlsButtonUpdateTable(props) {
              aids: [["data-table"], file.name],
              parser: "slycat-csv-parser",
              success: function(){
+               setProgressBarProgress(75);
                client.post_sensitive_model_command({
                 mid: mid,
                 type: "parameter-image",
@@ -60,7 +67,9 @@ export default function ControlsButtonUpdateTable(props) {
                   linked_models: result_delete["linked_models"],
                 },
                 success: function (result_update) {
+                  setProgressBarProgress(100);
                   console.log(result_update);
+                  closeModal();
                   location.reload();
                 },
                 error: console.log("There was a problem uploading the new data")
@@ -79,9 +88,7 @@ export default function ControlsButtonUpdateTable(props) {
         console.log("Failure.");
       }
     });
-    closeModal();
   };
-
   return (
     <React.Fragment>
       <div className='modal fade' data-backdrop='false' id={modalId}>
@@ -95,10 +102,10 @@ export default function ControlsButtonUpdateTable(props) {
             <div className='modal-body'>
               <FileSelector handleChange = {handleFileSelection} />
             </div>
-            <div>
+            <div className='slycat-progress-bar'>
               <ProgressBar
-                hidden={false}
-                progress={50}
+                hidden={progressBarHidden}
+                progress={progressBarProgress}
               />
             </div>
             <div className='modal-footer'>

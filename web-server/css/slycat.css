@@ -601,3 +601,7 @@ label.bottom-margin
   background-color: transparent;
   color: #343a40;
 }
+
+.slycat-progress-bar {
+  padding:16px;
+}

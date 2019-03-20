@@ -2,7 +2,7 @@
 import React from "react";
 
 const ProgressBar = (props) => {
-    styling = `"width : ${props.progress}%"`;
+    let styling = `"width : ${props.progress}%"`;
     return props.hidden ? null : (
       <div className="progress">
         <div className="progress-bar progress-bar-striped progress-bar-animated" 
@@ -10,7 +10,7 @@ const ProgressBar = (props) => {
           aria-valuemin="0" 
           aria-valuemax="100"
           aria-valuenow={props.progress}
-          style={styling}
+          style={{width: props.progress+'%'}}
         >
           {props.progress}%
         </div>
