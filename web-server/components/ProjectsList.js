@@ -11,7 +11,7 @@ class SearchWrapper extends React.Component {
       searchQuery: '',
     };
     this.filterList = this.filterList.bind(this);
-    console.log(this.props.projects);
+    // console.log(this.props.projects);
   }
   componentWillMount() {
       this.setState({projects: this.state.initialProjects});
@@ -21,10 +21,11 @@ class SearchWrapper extends React.Component {
     var updatedList = this.state.initialProjects;
     updatedList = updatedList.filter(function(item){
       // console.log('item: ' + item);
-      return item.name.toLowerCase().search(
-        e.target.value.toLowerCase()) !== -1 || item.description.toLowerCase().search(
-          e.target.value.toLowerCase()) !== -1 || item.description.toLowerCase().search(
-          e.target.value.toLowerCase()) !== -1 ;
+      return item.name.toLowerCase().search(e.target.value.toLowerCase()) !== -1
+             || item.description.toLowerCase().search(e.target.value.toLowerCase()) !== -1
+             // Why is this line here, it's identical to the previous one? Alex commenting out for now.
+             // || item.description.toLowerCase().search(e.target.value.toLowerCase()) !== -1 
+             ;
     });
     this.setState({projects: updatedList, searchQuery: e.target.value});
   };
@@ -49,12 +50,13 @@ class SearchWrapper extends React.Component {
         <div className="container pb-0">
           <div className="d-flex justify-content-between">
             <h3 className="px-4 text-capitalize">{this.props.type}</h3>
-            <form className="form-inline mb-2">
-              <input className="form-control" type="search" 
-                placeholder={`Filter ${this.props.type}`} aria-label={`Filter ${this.props.type}`} 
-                onChange={this.filterList}
-              />
-            </form>
+            <input className="form-control mb-2" 
+              style={{width: '13rem'}}
+              type="search" 
+              placeholder={`Filter ${this.props.type}`} 
+              aria-label={`Filter ${this.props.type}`} 
+              onChange={this.filterList}
+            />
           </div>
         </div>
         <ProjectsList projects={this.state.projects} />
