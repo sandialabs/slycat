@@ -94,7 +94,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
-	init_subset_center, init_mds_subset, init_fisher_order,
+	init_subset_center, init_fisher_order,
 	init_fisher_pos, init_diff_desired_state)
 {
 
@@ -212,14 +212,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
             subset_center = init_subset_center;
 
             // set subset to full mds_coord set, unless subset is available
-            if (init_mds_subset.length == 0) {
-                for (i = 0; i < mds_coords.length; i++) {
-                    mds_subset.push(1);
-                }
-            } else {
-                mds_subset = init_mds_subset;
-            }
-            selections.update_subset(mds_subset);
+            mds_subset = selections.get_subset();
 
 			// call server to compute new coords (in case of bookmarks)
             client.post_sensitive_model_command(

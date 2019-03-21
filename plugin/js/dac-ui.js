@@ -434,6 +434,7 @@ $(document).ready(function() {
                                         init_mds_subset = [];
                                     }
                                 }
+                                selections.update_subset(init_mds_subset);
 
                                 // initialize difference button order and position
                                 var init_fisher_order = null;
@@ -525,7 +526,7 @@ $(document).ready(function() {
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_mds_subset, init_fisher_order, init_fisher_pos, init_diff_desired_state);
+					                init_fisher_order, init_fisher_pos, init_diff_desired_state);
 
                                 // set up table with editable columns
                                 setup_editable_columns (data_table_meta, data_table, meta_include_columns,
@@ -857,7 +858,7 @@ $(document).ready(function() {
 
         // bookmark subset data
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
-                              "dac-subset-center": new_subset.detail.subset_center});
+                                "dac-subset-center": new_subset.detail.subset_center});
 
     }
 
