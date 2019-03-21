@@ -86,6 +86,9 @@ var max_color_by_name_length = null;
 // variables to use in analysis
 var var_include_columns = null;
 
+// keep track of number of metadata columns (not counting editable columns)
+var num_metadata_cols = null;
+
 // initial setup: read in MDS coordinates & plot
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
@@ -95,7 +98,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
 	init_subset_center, init_fisher_order,
-	init_fisher_pos, init_diff_desired_state)
+	init_fisher_pos, init_diff_desired_state, editable_columns)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -173,7 +176,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
     // set up color by menu
 
 	// look for columns with numbers/strings for color by menu
-	for (var i = 0; i < datapoints_meta["column-count"]; i++)
+	num_metadata_cols = datapoints_meta["column-count"];
+	for (var i = 0; i < num_metadata_cols; i++)
 	{
 
 		// we accept number and string data, only for included columns
@@ -184,17 +188,30 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 			color_by_cols.push(i);
 
 			// make sure names aren't too long (if they are then truncate)
-			var name_i = datapoints_meta["column-names"][i];
-			if (name_i.length > max_color_by_name_length) {
-				name_i = name_i.substring(0,max_color_by_name_length) + " ...";
-			}
+			var name_i = truncate_color_by_name(datapoints_meta["column-names"][i]);
 			color_by_names.push(name_i);
 		};
 
 	};
 
+	// add editable columns to menu as well
+	for (var i = 0; i < editable_columns["attributes"].length; i++) {
+
+	    // only color categorical columns
+	    if (editable_columns["attributes"][i]["type"] == "categorical") {
+
+            // add to list in drop down
+	        color_by_type.push("string");
+	        color_by_cols.push(i + num_metadata_cols);
+
+	        // make sure names aren't too long (if they are then truncate)
+			var name_i = truncate_color_by_name(editable_columns["attributes"][i]["name"]);
+	        color_by_names.push(name_i);
+	    }
+	}
+
     // check init color by value (make sure it fits on list)
-    if (init_color_by_sel >= (color_by_names.length-1)) {
+    if (init_color_by_sel > (color_by_names.length-1)) {
         init_color_by_sel = -1;
     }
 
@@ -271,6 +288,16 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 		}
 	);
 
+}
+
+// truncate name to max color by name
+function truncate_color_by_name (name_i) {
+
+    if (name_i.length > max_color_by_name_length) {
+        name_i = name_i.substring(0,max_color_by_name_length) + " ...";
+    }
+
+    return name_i;
 }
 
 // toggle shift key flag
@@ -871,87 +898,120 @@ function color_plot(select_col)
         curr_color_by_col = [];
         module.draw();
 
+    } else if (select_col >= num_metadata_cols) {
+
+        // load editable columns
+        client.get_model_parameter({
+            mid: mid,
+            aid: "dac-editable-columns",
+            success: function (data)
+            {
+                color_plot_draw (data, select_col - num_metadata_cols);
+            },
+            error: function () {
+
+                // notify user that editable columns exist, but could not be loaded
+                dialog.ajax_error('Server error: could not load editable column data.')
+                ("","","")
+
+                // revert to no color & re-draw
+                curr_color_by_col = [];
+                module.draw();
+
+            }
+        });
+
     } else {
 
         // request new data from server
         $.when(request.get_table("dac-datapoints-meta", mid)).then(
             function (data)
             {
-
-                // check for string data
-                if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
-
-                    // use alphabetical order by number to color
-
-                    // get string data
-                    var color_by_string_data = data["data"][select_col];
-
-                    // get unique sorted string data
-                    var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
-
-
-                    // get indices or original string data in the unique sorted string data
-                    curr_color_by_col = [];
-                    for (var i=0; i < color_by_string_data.length; i++) {
-                        curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
-                    }
-
-                    // set colormap to discrete color map if present
-                    if (disc_colormap == null) {
-
-                        // revert to default color map
-                        color_scale = d3.scale.linear()
-                            .range([color_by_low, color_by_high])
-                            .interpolate(d3.interpolateRgb);
-
-                    } else {
-
-                        // use selected color brewer scale
-                        color_scale = d3.scale.quantize()
-                            .range(disc_colormap);
-
-                    };
-
-                } else {
-
-                    // get selected column from data base (number data)
-                    curr_color_by_col = data["data"][select_col];
-
-                    // set colormap to continuous color map if present
-                    if (cont_colormap == null) {
-
-                        // revert to default color map
-                        color_scale = d3.scale.linear()
-                            .range([color_by_low, color_by_high])
-                            .interpolate(d3.interpolateRgb);
-
-                    } else {
-
-                        // use selected color brewer scale
-                        color_scale = d3.scale.quantize()
-                            .range(cont_colormap);
-
-                    };
-
-                }
-
-                // get max and min of appropriate column in metadata table
-                var max_color_val = d3.max(curr_color_by_col);
-                var min_color_val = d3.min(curr_color_by_col);
-
-                // set domain of color scale
-                color_scale.domain([min_color_val, max_color_val]);
-
-                // draw new color scale
-                module.draw();
-
+                color_plot_draw(data, select_col);
             },
             function ()
             {
                 dialog.ajax_error ('Server failure: could not load color by data column.')("","","");
+
+                // revert to no color & re-draw
+                curr_color_by_col = [];
+                module.draw();
             }
         );
     };
+
+}
+
+// actual color plotting
+function color_plot_draw(data, select_col)
+{
+
+    // check for string data
+    if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
+
+        // use alphabetical order by number to color
+
+        // get string data
+        var color_by_string_data = data["data"][select_col];
+
+        // get unique sorted string data
+        var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
+
+
+        // get indices or original string data in the unique sorted string data
+        curr_color_by_col = [];
+        for (var i=0; i < color_by_string_data.length; i++) {
+            curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
+        }
+
+        // set colormap to discrete color map if present
+        if (disc_colormap == null) {
+
+            // revert to default color map
+            color_scale = d3.scale.linear()
+                .range([color_by_low, color_by_high])
+                .interpolate(d3.interpolateRgb);
+
+        } else {
+
+            // use selected color brewer scale
+            color_scale = d3.scale.quantize()
+                .range(disc_colormap);
+
+        };
+
+    } else {
+
+        // get selected column from data base (number data)
+        curr_color_by_col = data["data"][select_col];
+
+        // set colormap to continuous color map if present
+        if (cont_colormap == null) {
+
+            // revert to default color map
+            color_scale = d3.scale.linear()
+                .range([color_by_low, color_by_high])
+                .interpolate(d3.interpolateRgb);
+
+        } else {
+
+            // use selected color brewer scale
+            color_scale = d3.scale.quantize()
+                .range(cont_colormap);
+
+        };
+
+    }
+
+    // get max and min of appropriate column in metadata table
+    var max_color_val = d3.max(curr_color_by_col);
+    var min_color_val = d3.min(curr_color_by_col);
+
+    // set domain of color scale
+    color_scale.domain([min_color_val, max_color_val]);
+
+    // draw new color scale
+    module.draw();
 
 }
 

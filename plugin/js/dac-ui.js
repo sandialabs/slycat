@@ -76,8 +76,15 @@ $(document).ready(function() {
 
     // constant for maximum number of editable column categories
     var MAX_CATS = 50;
-     // constant for maximum length of freetext in editable column
+
+    // constant for maximum length of freetext in editable column
     var MAX_FREETEXT_LEN = 500;
+
+    // editable column data (initialize to empty)
+    var editable_columns = {num_rows: 0,
+                            attributes: [],
+                            categories: [],
+                            data: []};
 
     // waits 1 minute past last successful progress update
     var endTime = Number(new Date()) + ONE_MINUTE;
@@ -213,8 +220,8 @@ $(document).ready(function() {
 
                 });
 
-                // continue to model
-                launch_model();
+                // set up editable column data
+                setup_editable_columns();
 
             },
             error: function () {
@@ -241,6 +248,144 @@ $(document).ready(function() {
             }
 
         return bookmark_pref;
+    }
+
+    // set up table with editable columns
+    function setup_editable_columns ()
+    {
+
+        // set up table
+        client.get_model(
+        {
+            mid: mid,
+            success: function (result)
+            {
+
+                // check for editable columns
+                if ('artifact:dac-editable-columns' in result)
+                {
+
+                    // load editable columns
+                    client.get_model_parameter({
+                        mid: mid,
+                        aid: "dac-editable-columns",
+                        success: function (result)
+                        {
+                            // initialize table with editable columns
+                            editable_columns = result;
+
+                            // bookmark editable columns
+                            bookmarker.updateState ({"dac-editable-cols-attributes": editable_columns["attributes"],
+                                                     "dac-editable-cols-categories": editable_columns["categories"]});
+
+                            // continue to model
+                            launch_model();
+
+
+                        },
+                        error: function () {
+
+                            // notify user that editable columns exist, but could not be loaded
+                            dialog.ajax_error('Server error: could not load editable column data.')
+                            ("","","")
+
+                            // continue to model
+                            launch_model();
+                        }
+                    });
+
+                } else {
+
+                    // check for existing bookmark (template)
+                    var ec_attributes = [];
+                    var ec_categories = [];
+
+                    if ("dac-editable-cols-attributes" in bookmark)
+                    {
+
+                        ec_attributes = bookmark["dac-editable-cols-attributes"];
+                        ec_categories = bookmark["dac-editable-cols-categories"];
+
+                        // found non-empty bookmark
+                        if (ec_attributes.length > 0) {
+
+                            // create new columns from bookmark
+                            editable_columns["num_rows"] = data_table[0]["data"][0].length;
+                            editable_columns["attributes"] = ec_attributes;
+                            editable_columns["categories"] = ec_categories;
+
+                            // create empty data
+                            for (var i = 0; i < editable_columns["attributes"].length; i++) {
+
+                                // create column
+                                var col = [];
+                                for (var j = 0; j < editable_columns["num_rows"]; j++) {
+
+                                    if (editable_columns["attributes"][i].type == "freetext") {
+
+                                        // freetext column
+                                        col.push("");
+
+                                    } else {
+
+                                        // categorical column
+                                        col.push("No Value");
+                                    }
+                                }
+
+                                // add column to data
+                                editable_columns["data"].push(col);
+                            }
+
+                            // push new columns to server
+                            client.put_model_parameter ({
+                                mid: mid,
+                                aid: "dac-editable-columns",
+                                value: editable_columns,
+                                success: function () {
+
+                                    // initialize table with templated editable columns
+
+                                    // continue to model
+                                    launch_model();
+
+                                },
+                                error: function () {
+
+                                    dialog.ajax_error("Error creating templated columns.")("","","");
+
+                                    // initialize table with empty editable columns
+                                    editable_columns = {num_rows: 0,
+                                        attributes: [],
+                                        categories: [],
+                                        data: []};
+
+                                    // continue to model
+                                    launch_model();
+
+                                },
+                            });
+
+                        } else {
+
+                            // initialize table with no editable columns
+
+                            // continue to model
+                            launch_model();
+
+                        }
+
+                    } else {
+
+                        // initialize table with no editable columns
+
+                        // continue to model
+                        launch_model();
+                    }
+                }
+            }
+        });
+
     }
 
     // setup and launch model
@@ -526,11 +671,12 @@ $(document).ready(function() {
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_fisher_order, init_fisher_pos, init_diff_desired_state);
+					                init_fisher_order, init_fisher_pos, init_diff_desired_state, editable_columns);
 
                                 // set up table with editable columns
-                                setup_editable_columns (data_table_meta, data_table, meta_include_columns,
-                                                        init_sort_order, init_sort_col);
+                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                                 editable_columns, MAX_FREETEXT_LEN, init_sort_order,
+                                                 init_sort_col);
 
 		   	                },
 		   	                function () {
@@ -597,150 +743,6 @@ $(document).ready(function() {
 
         // return columns to include
         return include_columns;
-
-    }
-
-    // set up table with editable columns
-    function setup_editable_columns (data_table_meta, data_table, meta_include_columns,
-                                     init_sort_order, init_sort_col)
-    {
-
-        // set up table
-        client.get_model(
-        {
-            mid: mid,
-            success: function (result)
-            {
-
-                // editable column data (initialize to empty)
-                var editable_columns = {num_rows: 0,
-                                        attributes: [],
-                                        categories: [],
-                                        data: []};
-
-                // check for editable columns
-                if ('artifact:dac-editable-columns' in result)
-                {
-
-                    // load editable columns
-                    client.get_model_parameter({
-                        mid: mid,
-                        aid: "dac-editable-columns",
-                        success: function (result)
-                        {
-                            // initialize table with editable columns
-                            editable_columns = result;
-
-                            metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, MAX_FREETEXT_LEN, init_sort_order,
-                                                 init_sort_col);
-
-                            // bookmark editable columns
-                            bookmarker.updateState ({"dac-editable-cols-attributes": editable_columns["attributes"],
-                                                     "dac-editable-cols-categories": editable_columns["categories"]});
-
-
-                        },
-                        error: function () {
-
-                            // notify user that editable columns exist, but could not be loaded
-                            dialog.ajax_error('Server error: could not load editable column data.')
-                            ("","","")
-
-                            metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, MAX_FREETEXT_LEN, init_sort_order,
-                                                 init_sort_col);
-                        }
-                    });
-
-                } else {
-
-                    // check for existing bookmark (template)
-                    var ec_attributes = [];
-                    var ec_categories = [];
-
-                    if ("dac-editable-cols-attributes" in bookmark)
-                    {
-
-                        ec_attributes = bookmark["dac-editable-cols-attributes"];
-                        ec_categories = bookmark["dac-editable-cols-categories"];
-
-                        // found non-empty bookmark
-                        if (ec_attributes.length > 0) {
-
-                            // create new columns from bookmark
-                            editable_columns["num_rows"] = data_table[0]["data"][0].length;
-                            editable_columns["attributes"] = ec_attributes;
-                            editable_columns["categories"] = ec_categories;
-
-                            // create empty data
-                            for (var i = 0; i < editable_columns["attributes"].length; i++) {
-
-                                // create column
-                                var col = [];
-                                for (var j = 0; j < editable_columns["num_rows"]; j++) {
-
-                                    if (editable_columns["attributes"][i].type == "freetext") {
-
-                                        // freetext column
-                                        col.push("");
-
-                                    } else {
-
-                                        // categorical column
-                                        col.push("No Value");
-                                    }
-                                }
-
-                                // add column to data
-                                editable_columns["data"].push(col);
-                            }
-
-                            // push new columns to server
-                            client.put_model_parameter ({
-                                mid: mid,
-                                aid: "dac-editable-columns",
-                                value: editable_columns,
-                                success: function () {
-
-                                    // initialize table with templated editable columns
-                                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
-
-                                },
-                                error: function () {
-
-                                    dialog.ajax_error("Error creating templated columns.")("","","");
-
-                                    // initialize table with empty editable columns
-                                    editable_columns = {num_rows: 0,
-                                        attributes: [],
-                                        categories: [],
-                                        data: []};
-
-                                    metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
-
-                                },
-                            });
-
-                        } else {
-
-                            // initialize table with no editable columns
-                            metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
-
-                        }
-
-                    } else {
-
-                        // initialize table with no editable columns
-                        metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
-                    }
-                }
-            }
-        });
 
     }
 
