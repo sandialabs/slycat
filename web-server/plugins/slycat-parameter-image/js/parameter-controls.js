@@ -129,6 +129,7 @@ $.widget("parameter_image.controls",
       disable_hide_show={self.options.disable_hide_show}
       open_images={self.options.open_images}
       selection={self.options.selection}
+      pid={self.options.pid}
       mid={self.options.mid}
       aid={self.options.aid}
       model_name={self.options.model_name}

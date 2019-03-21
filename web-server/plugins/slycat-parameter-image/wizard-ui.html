@@ -34,15 +34,17 @@
     </div>
 
     <div data-bind="visible:tab() == 0">
-        <div class="radio server" style="margin-left: 15px;">
+        <div class="form-check">
             <label>
               <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server" data-bind="checked: ps_type">
               Server
             </label>
           </div>
+          <div class="form-check">
             <select id="selectmenu1" name="" data-theme="c"
-                     data-bind="options: server_files, value: selected_file" style="margin-left: 15px;">
+                     data-bind="options: server_files, value: selected_file, visible: ps_type() == 'server'">
             </select>
+          </div>
           <div class="local-browser form-horizontal">
             <slycat-server-browser params="
               disabled: ko.computed(function(){return ps_type() == 'server' ? false : true;}),

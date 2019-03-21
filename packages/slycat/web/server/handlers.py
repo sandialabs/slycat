@@ -428,6 +428,9 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     attachment[0] = attachment[0].replace('"]', '')
 
     model = database.get("model", mid)
+    if "project_data" not in model:
+        model["project_data"] = []
+    model["project_data"].append(project_data["_id"])
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 

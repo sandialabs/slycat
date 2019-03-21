@@ -26,7 +26,7 @@ class Manager(object):
     self.tools = {}
     self.wizard_resources = {}
     self.wizards = {}
-    self.global_bundles = {}
+    self.utilities = {}
 
   def _load_directory(self, plugin_directory):
     try:

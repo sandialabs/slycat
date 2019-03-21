@@ -19,31 +19,114 @@ def register_slycat_plugin(context):
   from urlparse import urlparse
 
   def media_columns(database, model, verb, type, command, **kwargs):
-    """Identify columns in the input data that contain media URIs (image or video).
-    :param kwargs:
-    :param command:
-    :param type:
-    :param verb:
-    :param model:
-      model ID in the data base
-    :param database:
-      our connection to couch db
     """
+    Identify columns in the input data that contain media URIs (image or video).
+    
+    Arguments:
+      database {Object} -- connection to the database
+      current_selected_model {object} -- json meta data for a model
+      verb {object} -- not used
+      type {object} -- not used
+      command {string} -- command name
+    
+    Returns:
+      [type] -- [description]
+    """
+
     expression = re.compile('file://|http')
-    search = numpy.vectorize(lambda x:bool(expression.search(x)))
+    search = numpy.vectorize(lambda x: bool(expression.search(x)))
 
     columns = []
     metadata = slycat.web.server.get_model_arrayset_metadata(database, model, "data-table", "0")["arrays"][0]
     for index, attribute in enumerate(metadata["attributes"]):
-      if attribute["type"] != "string":
-        continue
-      column = slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index)
-      if not numpy.any(search(column)):
-        continue
-      columns.append(index)
+        if attribute["type"] != "string":
+            continue
+        column = slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % index)
+        if not numpy.any(search(column)):
+            continue
+        columns.append(index)
 
     cherrypy.response.headers["content-type"] = "application/json"
     return json.dumps(columns)
+
+  def delete_table(database, current_selected_model, verb, type, command, **kwargs):
+    """
+    deletes project data from a parameter space model as well as any other model 
+    that is using the data.
+
+    Arguments:
+      database {Object} -- connection to the database
+      current_selected_model {object} -- json meta data for a model
+      verb {object} -- not used
+      type {object} -- not used
+      command {string} -- command name
+    
+    Returns:
+      [json] -- {"success": "success", "linked_models": linked_models}
+    """
+    did = current_selected_model["project_data"][0]
+    pid = current_selected_model["project"]
+    models = [model for model in
+              database.scan("slycat/project-models", startkey=pid, endkey=pid)]
+    linked_models = []
+    for model in models:
+      if "project_data" in model and model["model-type"] == "parameter-image" \
+        and len(model["project_data"]) > 0 and model["project_data"][0] == did:
+          with slycat.web.server.get_model_lock(model["_id"]):
+            project_data = database.get("project_data", did)
+            for index, pd_mid in enumerate(project_data["mid"]):
+              if pd_mid == model['_id']:
+                del project_data["mid"][index]
+                database.save(project_data)
+            model["project_data"] = []
+            database.save(model)
+          if current_selected_model["_id"] != model["_id"]:
+            linked_models.append(model["_id"])
+            if "artifact:data-table" in model:
+              slycat.web.server.delete_model_parameter(database, model, aid="data-table")
+    response = {"success": "success", "linked_models": linked_models}
+    return json.dumps(response)
+
+  # database, parser, input, attachment, model, aid
+  def update_table(database, model, verb, type, command, **kwargs):
+    """
+    updates all linked models to use the current project data
+    
+    Arguments:
+      database {Object} -- connection to the database
+      current_selected_model {object} -- json meta data for a model
+      verb {object} -- not used
+      type {object} -- not used
+      command {string} -- command name
+    
+    Returns:
+      [json] -- {"success": "success changed linked models"}
+    """
+
+    linked_models = kwargs["linked_models"]
+    if len(linked_models) <= 0:
+      response = {"success": "success nothing to change"}
+      return json.dumps(response)
+    did = model["project_data"][0]
+    project_data = database.get("project_data", did)
+    attachment = database.get_attachment(project_data, "content")
+    file_attachment = attachment.read()
+    models = [model for model in
+              database.scan("slycat/project-models", startkey=model["project"], endkey=model["project"])]
+    for model in models:
+      for linked_model_id in linked_models:
+        if model["_id"] == linked_model_id:
+          if "project_data" not in model:
+            model["project_data"] = []
+          with slycat.web.server.get_model_lock(model["_id"]):
+            model["project_data"].append(project_data["_id"])
+            project_data["mid"].append(model["_id"])
+            database.save(project_data)
+            database.save(model)
+          slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [file_attachment], model,
+                                              "data-table")
+    response = {"success": "success changed linked models"}
+    return json.dumps(response)
 
   def finish(database, model):
     """
@@ -55,13 +138,17 @@ def register_slycat_plugin(context):
     :param database:
       our connection to couch db
     """
-    slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
+    slycat.web.server.update_model(database, model, state="finished", result="succeeded",
+                                    finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
   # Register our new model type
   context.register_model("parameter-image", finish)
 
   # Register custom commands for use by wizards.
   context.register_model_command("GET", "parameter-image", "media-columns", media_columns)
+  context.register_model_command("GET", "parameter-image", "delete-table", delete_table)
+  context.register_model_command("POST", "parameter-image", "update-table", update_table)
 
   # Register custom wizards for creating PI models.
-  context.register_wizard("parameter-image", "New Parameter Space Model", require={"action":"create", "context":"project"})
+  context.register_wizard("parameter-image", "New Parameter Space Model",
+                          require={"action": "create", "context": "project"})
