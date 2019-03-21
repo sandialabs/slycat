@@ -90,7 +90,7 @@ def register_slycat_plugin(context):
   # database, parser, input, attachment, model, aid
   def update_table(database, model, verb, type, command, **kwargs):
     """
-    updateds all linked models to use the current project data
+    updates all linked models to use the current project data
     
     Arguments:
       database {Object} -- connection to the database
