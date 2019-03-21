@@ -48,8 +48,9 @@ var num_editable_cols = [];
 
 var curr_sel_type = null;
 
-// multiple selections
+// keep track of current and previous rows selected
 var prev_row_selected = null;
+var curr_row_selected = null;
 
 // slick grid options
 var grid_options = {
@@ -366,27 +367,33 @@ function one_row_selected(e, args) {
 	// convert row clicked to data table row
 	var data_clicked = convert_row_ids([args.row])[0];
 
-    // check for range selection
-    var range_sel = [];
-    if (prev_row_selected != null) {
-        if (selections.shift_key() == true) {
-
-            // get range of data
-            var range_sel_inds = [];
-            for (var i = Math.min(args.row, prev_row_selected);
-                     i <= Math.max(args.row, prev_row_selected); i++) {
-
-                range_sel_inds.push(i);
-            }
-
-            // convert to data ids
-            range_sel = convert_row_ids(range_sel_inds);
-        }
-    }
-
 	// check if row is in the subset (and not an editable column)
 	if (selections.in_subset(data_clicked) &&
             args.cell < num_cols) {
+
+        // keep track of current selection
+        curr_row_selected = args.row;
+
+        // highlight clicked row
+        highlight_curr_row();
+
+        // check for range selection
+        var range_sel = [];
+        if (prev_row_selected != null) {
+            if (selections.shift_key() == true) {
+
+                // get range of data
+                var range_sel_inds = [];
+                for (var i = Math.min(args.row, prev_row_selected);
+                         i <= Math.max(args.row, prev_row_selected); i++) {
+
+                    range_sel_inds.push(i);
+                }
+
+                // convert to data ids
+                range_sel = convert_row_ids(range_sel_inds);
+            }
+        }
 
 		// make sure we are in a selection mode
 		if (selections.sel_type() == 1 ||
@@ -404,6 +411,8 @@ function one_row_selected(e, args) {
                 selections.update_sel_focus(data_clicked);
             }
 
+
+
 		// in zoom or subset mode, we can still do focus/de-focus
 		} else if (selections.sel_type() == 0 ||
 				   selections.sel_type() == 3 ) {
@@ -413,9 +422,46 @@ function one_row_selected(e, args) {
 		}
 
 		// update previous selection
-	    prev_row_selected = args.row;
+	    prev_row_selected = curr_row_selected;
 
 	}
+
+}
+
+// hihglight the current row by drawing a box around it
+function highlight_curr_row()
+{
+
+	// temporarily turn off table rendering
+	data_view.beginUpdate();
+
+    // get current row
+	var curr_data_row = convert_row_ids([curr_row_selected])[0];
+    var item = data_view.getItemById(curr_data_row);
+    var num_cols = item.length;
+
+    // update current row (set to draw box around it -- see select_rows())
+    item[num_cols-1] = item[num_cols-1] + 10;
+
+    // put row back in table
+    data_view.updateItem(curr_data_row, item);
+
+    // update previous row
+    if (prev_row_selected != null) {
+
+        // get previous row
+        var prev_data_row = convert_row_ids([prev_row_selected])[0];
+        item = data_view.getItemById(prev_data_row);
+
+        // remove box around previous row
+        item[num_cols-1] = item[num_cols-1] - 10;
+
+        // put row back in table
+        data_view.updateItem(prev_data_row, item);
+    }
+
+	// turn on table rendering
+	data_view.endUpdate();
 
 }
 
@@ -486,17 +532,23 @@ function color_rows(old_metadata) {
 			var num_cols = item.length;
 
 			// set css class according to selection
-			if (item[num_cols-1] == 1) {
+			if (item[num_cols-1] % 10 == 1) {
 				meta.cssClasses = 'selection-1';
-			} else if (item[num_cols-1] == 2) {
+			} else if (item[num_cols-1] % 10 == 2) {
 				meta.cssClasses = 'selection-2';
-			} else if (item[num_cols-1] == 3) {
+			} else if (item[num_cols-1] % 10 == 3) {
 				meta.cssClasses = 'focus-selection';
-			} else if (item[num_cols-1] == 4) {
+			} else if (item[num_cols-1] % 10 == 4) {
 				meta.cssClasses = 'not-in-subset';
 			} else {
 				meta.cssClasses = 'no-selection';
 			}
+
+			// set css class for currently clicked item
+			if (Math.floor(item[num_cols-1] / 10) == 1) {
+			    meta.cssClasses += ' clicked';
+			}
+
 		}
 
 		return meta;
@@ -801,6 +853,13 @@ module.select_rows = function ()
 			sel_vec[i] = 4;
 		}
 	}
+
+	// show current selected row
+	var data_row_selected = null;
+	if (curr_row_selected != null) {
+	    data_row_selected = convert_row_ids([curr_row_selected])[0];
+	}
+	sel_vec[data_row_selected] = sel_vec[data_row_selected] + 10;
 
 	// temporarily turn off table rendering
 	data_view.beginUpdate();

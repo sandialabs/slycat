@@ -112,6 +112,11 @@
 	color: ghostwhite;
 }
 
+/* clicked row -- to show where user last clicked */
+.slick-row.clicked {
+    box-shadow: inset 0px 0px 0px 2px;
+}
+
 /* No customizations from slick.grid.css */
 
 /* No customizations from slick.headerbuttons.css */
