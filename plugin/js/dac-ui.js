@@ -648,7 +648,8 @@ $(document).ready(function() {
                             ("","","")
 
                             metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, MAX_FREETEXT_LEN);
+                                                 editable_columns, MAX_FREETEXT_LEN, init_sort_order,
+                                                 init_sort_col);
                         }
                     });
 
@@ -704,7 +705,7 @@ $(document).ready(function() {
 
                                     // initialize table with templated editable columns
                                     metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN);
+                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
 
                                 },
                                 error: function () {
@@ -718,7 +719,7 @@ $(document).ready(function() {
                                         data: []};
 
                                     metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN);
+                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
 
                                 },
                             });
@@ -727,7 +728,7 @@ $(document).ready(function() {
 
                             // initialize table with no editable columns
                             metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN);
+                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
 
                         }
 
@@ -735,7 +736,7 @@ $(document).ready(function() {
 
                         // initialize table with no editable columns
                         metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                         editable_columns, MAX_FREETEXT_LEN);
+                                         editable_columns, MAX_FREETEXT_LEN, init_sort_order, init_sort_col);
                     }
                 }
             }
