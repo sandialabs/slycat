@@ -9,31 +9,14 @@ import "css/slycat.css";
 
 import React from "react";
 import ReactDOM from "react-dom";
-import { ModelsList, TemplatesList } from 'components/ModelsList';
+import { renderTemplates } from 'components/ModelsList';
+import SearchWrapper from 'components/SearchWrapper';
 import client from 'js/slycat-web-client';
 import URI from 'urijs';
-import ga from "js/slycat-ga";
-import "bootstrap";
 
 // These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.
 import ko from 'knockout';
-import {renderNavBar} from "js/slycat-navbar";
-
-export default function renderTemplates(project_id) {
-  // Create a React TemplatesList component after getting the list of templates in this project
-  client.get_project_references(
-  {
-    pid: project_id,
-    success: function(result)
-    {
-      const templates_list = <TemplatesList templates={result} />
-      ReactDOM.render(
-        templates_list,
-        document.getElementById('slycat-templates')
-      );
-    }
-  });
-}
+import { renderNavBar } from "js/slycat-navbar";
 
 // Wait for document ready
 $(document).ready(function() {
@@ -46,11 +29,12 @@ $(document).ready(function() {
     pid: project_id,
     success: function(result) {
       document.title = result.name + " - Slycat Project";
-      // Create a React ModelsList component after getting the list of models in this project
+      // Create a React SearchWrapper component after getting the list of models in this project
       client.get_project_models({
         pid: project_id,
         success: function(result) {
-          const models_list = <ModelsList models={result} />
+          // console.log('got models');
+          const models_list = <SearchWrapper items={result} type="models" />
           ReactDOM.render(
             models_list,
             document.getElementById('slycat-models')

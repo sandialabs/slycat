@@ -1,5 +1,4 @@
 import React from "react";
-import client from 'js/slycat-web-client';
 import server_root from 'js/slycat-server-root';
 
 class ProjectsList extends React.Component {
@@ -21,7 +20,7 @@ class ProjectsList extends React.Component {
     if(projects.length > 0)
     {
       return (
-        <div className="container">
+        <div className="container pt-0">
           <div className="card">
             <div className="list-group list-group-flush">
               <React.Fragment>
