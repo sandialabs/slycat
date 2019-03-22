@@ -211,7 +211,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	}
 
     // check init color by value (make sure it fits on list)
-    if (init_color_by_sel > (color_by_names.length-1)) {
+    if (color_by_cols.indexOf(init_color_by_sel) == -1) {
         init_color_by_sel = -1;
     }
 

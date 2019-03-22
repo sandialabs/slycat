@@ -310,48 +310,67 @@ $(document).ready(function() {
                         // found non-empty bookmark
                         if (ec_attributes.length > 0) {
 
-                            // create new columns from bookmark
-                            editable_columns["num_rows"] = data_table[0]["data"][0].length;
-                            editable_columns["attributes"] = ec_attributes;
-                            editable_columns["categories"] = ec_categories;
+                            // get data table meta info
+                            $.when(request.get_table_metadata("dac-datapoints-meta", mid)).then(
+                                function (data_table_meta) {
 
-                            // create empty data
-                            for (var i = 0; i < editable_columns["attributes"].length; i++) {
+                                // create new columns from bookmark
+                                editable_columns["num_rows"] = data_table_meta["row-count"];
+                                editable_columns["attributes"] = ec_attributes;
+                                editable_columns["categories"] = ec_categories;
 
-                                // create column
-                                var col = [];
-                                for (var j = 0; j < editable_columns["num_rows"]; j++) {
+                                // create empty data
+                                for (var i = 0; i < editable_columns["attributes"].length; i++) {
 
-                                    if (editable_columns["attributes"][i].type == "freetext") {
+                                    // create column
+                                    var col = [];
+                                    for (var j = 0; j < editable_columns["num_rows"]; j++) {
 
-                                        // freetext column
-                                        col.push("");
+                                        if (editable_columns["attributes"][i].type == "freetext") {
 
-                                    } else {
+                                            // freetext column
+                                            col.push("");
 
-                                        // categorical column
-                                        col.push("No Value");
+                                        } else {
+
+                                            // categorical column
+                                            col.push("No Value");
+                                        }
                                     }
+
+                                    // add column to data
+                                    editable_columns["data"].push(col);
                                 }
 
-                                // add column to data
-                                editable_columns["data"].push(col);
-                            }
+                                // push new columns to server
+                                client.put_model_parameter ({
+                                    mid: mid,
+                                    aid: "dac-editable-columns",
+                                    value: editable_columns,
+                                    success: function () {
 
-                            // push new columns to server
-                            client.put_model_parameter ({
-                                mid: mid,
-                                aid: "dac-editable-columns",
-                                value: editable_columns,
-                                success: function () {
+                                        // initialize table with templated editable columns
 
-                                    // initialize table with templated editable columns
+                                        // continue to model
+                                        launch_model();
 
-                                    // continue to model
-                                    launch_model();
+                                    },
+                                    error: function () {
 
-                                },
-                                error: function () {
+                                        dialog.ajax_error("Error creating templated columns.")("","","");
+
+                                        // initialize table with empty editable columns
+                                        editable_columns = {num_rows: 0,
+                                            attributes: [],
+                                            categories: [],
+                                            data: []};
+
+                                        // continue to model
+                                        launch_model();
+
+                                    },
+                                })},
+                                function() {
 
                                     dialog.ajax_error("Error creating templated columns.")("","","");
 
@@ -363,18 +382,16 @@ $(document).ready(function() {
 
                                     // continue to model
                                     launch_model();
+                                });
 
-                                },
-                            });
+                            } else {
 
-                        } else {
+                                // initialize table with no editable columns
 
-                            // initialize table with no editable columns
+                                // continue to model
+                                launch_model();
 
-                            // continue to model
-                            launch_model();
-
-                        }
+                            }
 
                     } else {
 
