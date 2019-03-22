@@ -332,6 +332,7 @@ def put_project(pid):
       'name': 'name of the project',
       'description': 'description of the project',
     }
+    and updates the project json from this object.
     all top order fields are optional
     Arguments:
       pid {string} -- uui for project
