@@ -218,10 +218,11 @@ $(document).ready(function() {
                     MAX_CATS = bookmark_preference("dac-MAX-CATS", MAX_CATS);
                     MAX_FREETEXT_LEN = bookmark_preference("dac-MAX-FREETEXT-LEN", MAX_FREETEXT_LEN);
 
+                    // set up editable column data
+                    setup_editable_columns();
+
                 });
 
-                // set up editable column data
-                setup_editable_columns();
 
             },
             error: function () {
@@ -569,14 +570,17 @@ $(document).ready(function() {
 
                                 // initialize subset itself, if bookmarked
                                 var init_mds_subset = [];
+                                for (var i = 0; i < num_points; i++ ) {
+                                    init_mds_subset.push(1);
+                                }
                                 if ("dac-mds-subset" in bookmark) {
 
                                     // get bookmarked subset
-                                    init_mds_subset = bookmark["dac-mds-subset"];
+                                    var book_mds_subset = bookmark["dac-mds-subset"];
 
                                     // check that subset is correct length
-                                    if (init_mds_subset.length != num_points) {
-                                        init_mds_subset = [];
+                                    if (book_mds_subset.length == num_points) {
+                                        init_mds_subset = book_mds_subset;
                                     }
                                 }
                                 selections.update_subset(init_mds_subset);
