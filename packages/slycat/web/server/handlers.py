@@ -321,6 +321,26 @@ def get_remote_host_dict():
 
 @cherrypy.tools.json_in(on=True)
 def put_project(pid):
+    """
+    Takes json in the format of 
+    {
+      'acl':{
+      'administrators': [{'user':'username'}]
+      'writers': [{'user':'username'}]
+      'readers': [{'user':'username'}]
+      },
+      'name': 'name of the project',
+      'description': 'description of the project',
+    }
+    all top order fields are optional
+    Arguments:
+      pid {string} -- uui for project
+    
+    Raises:
+      cherrypy.HTTPError -- 400 missing administrators
+      cherrypy.HTTPError -- 400 missing writers
+      cherrypy.HTTPError -- 400 missing readers
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
