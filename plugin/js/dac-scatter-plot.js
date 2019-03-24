@@ -864,6 +864,7 @@ var display_pull_down = function(init_color_by_sel)
 
 	// set default option
 	this.val(init_color_by_sel)
+	curr_color_by_sel = init_color_by_sel;
 
 	// define action for changing menu
 	this.change(function()
@@ -888,7 +889,7 @@ var display_pull_down = function(init_color_by_sel)
 }
 
 // set up coloring for scatter plot
-function color_plot(select_col)
+function color_plot (select_col)
 {
 
     // set up coloring
@@ -940,6 +941,15 @@ function color_plot(select_col)
         );
     };
 
+}
+
+// re-color only if selected column is currently being displayed
+module.recolor_plot = function (col)
+{
+    // check if column to use for coloring is currently selected
+    if (curr_color_by_sel == col) {
+        color_plot(col);
+    }
 }
 
 // actual color plotting

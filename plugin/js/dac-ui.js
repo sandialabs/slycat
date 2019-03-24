@@ -508,6 +508,9 @@ $(document).ready(function() {
                 // table order event
                 document.body.addEventListener("DACTableOrderChanged", table_order_changed);
 
+                // editable column event
+                document.body.addEventListener("DACEditableColChanged", editable_col_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -936,6 +939,13 @@ $(document).ready(function() {
         // bookmark new order
         bookmarker.updateState({"dac-table-order": new_order.detail.sort_order,
                                 "dac-table-sort-col": new_order.detail.sort_col});
+    }
+
+    // event for change in editable column
+    function editable_col_changed (col)
+    {
+        // change color in scatter plot if necessary
+        scatter_plot.recolor_plot (col.detail);
     }
 
 });

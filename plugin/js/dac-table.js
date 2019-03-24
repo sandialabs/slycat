@@ -45,6 +45,7 @@ var grid_rows = [];
 var num_rows = [];
 var num_cols = [];
 var num_editable_cols = [];
+var editable_col_types = [];
 
 var curr_sel_type = null;
 
@@ -108,7 +109,8 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 
 	// set up editable column names
 	for (var i = 0; i != num_editable_cols; i++) {
-		if (editable_columns["attributes"][i].type == "freetext") {
+	    editable_col_types.push(editable_columns["attributes"][i].type);
+		if (editable_col_types[i] == "freetext") {
 
 			// set up freetext editor
 			grid_columns.push(make_column(num_cols + i,
@@ -789,7 +791,17 @@ function update_editable_col(row, col, val)
 			data_view.endUpdate();
 		}
 	});
+
+	// if categorical column then alert scatter plot for update of colors
+	if (editable_col_types[col] == "categorical") {
+
+	    // editable column change (to update scatter plot, if needed)
+	    var editableColEvent = new CustomEvent("DACEditableColChanged", { detail: num_cols + col });
+	    document.body.dispatchEvent(editableColEvent);
+
 	}
+
+}
 
 // resize slick grid if container resizes
 module.resize = function()
