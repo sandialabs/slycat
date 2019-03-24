@@ -946,6 +946,7 @@ $(document).ready(function() {
     {
         // change color in scatter plot if necessary
         scatter_plot.recolor_plot (col.detail);
+
     }
 
 });

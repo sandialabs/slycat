@@ -946,6 +946,7 @@ function color_plot (select_col)
 // re-color only if selected column is currently being displayed
 module.recolor_plot = function (col)
 {
+
     // check if column to use for coloring is currently selected
     if (curr_color_by_sel == col) {
         color_plot(col);

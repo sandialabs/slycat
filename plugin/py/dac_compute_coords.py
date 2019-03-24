@@ -278,6 +278,7 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
 # subroutine for compute_alpha_clusters which computes the pairwise
 # distance matrix for the alpha slider optimization
 def compute_prop_dist_vec(prop_vec, vec_length):
+
     # compute pairwise distance matrix for property
     prop_dist_mat = np.absolute(
         np.transpose(np.tile(prop_vec, (vec_length, 1))) - np.tile(prop_vec, (vec_length, 1)))

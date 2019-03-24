@@ -5,6 +5,7 @@
 // S. Martin
 // 2/12/2015
 
+import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import request from "./dac-request-data.js";
 import URI from "urijs";
@@ -73,10 +74,42 @@ var cluster_button_callback = function ()
 		return;
 	}
 
-	// fire alpha value change event with pre-computed alpha values for selected column
-	var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
-		{ detail: alpha_clusters[color_by_col] });
-	document.body.dispatchEvent(alphaEvent);
+    // check for editable column col
+    if (color_by_col >= alpha_clusters.length) {
+
+        // re-compute alpha values for editable column
+        client.post_sensitive_model_command(
+        {
+            mid: mid,
+            type: "DAC",
+            command: "update_alpha_clusters",
+            parameters: {update_col: color_by_col - alpha_clusters.length},
+            success: function (result)
+                {
+                    // record new values in mds_coords
+                    console.log(result);
+                    console.log(JSON.parse(result)["alpha_values"]);
+
+                    // fire alpha value change event with pre-computed alpha values for selected column
+                    var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+                        { detail: JSON.parse(result)["alpha_values"] });
+                    document.body.dispatchEvent(alphaEvent);
+
+                },
+            error: function ()
+                {
+                    dialog.ajax_error ('Server failure: could not update alpha cluster coords.')("","","");
+                }
+        });
+
+    } else {
+
+        // fire alpha value change event with pre-computed alpha values for selected column
+        var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
+            { detail: alpha_clusters[color_by_col] });
+        document.body.dispatchEvent(alphaEvent);
+
+    }
 
 }
 

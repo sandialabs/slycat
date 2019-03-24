@@ -50,23 +50,8 @@ def register_slycat_plugin(context):
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
         num_vars = len(meta_dist)
 
-        # check to see if the user wants to include a subset of variables
-        if "artifact:dac-var-include-columns" in model:
-
-            # load include columns
-            var_include_columns = slycat.web.server.get_model_parameter(database, model, "dac-var-include-columns")
-
-        else:
-
-            # if no columns specified, use all variables
-            var_include_columns = range(0, num_vars)
-
-        # get distance matrices as a list of numpy arrays from slycat server
-        var_dist = []
-        for i in var_include_columns:
-            var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
-                database, model, "dac-var-dist", "%s/0/..." % i)))
-            var_dist.append(var_dist_i)
+        # get distance matrices and included columns
+        var_include_columns, var_dist = load_var_dist(database, model, num_vars)
 
         # compute initial MDS coordinates
         mds_coords, full_mds_coords = dac.init_coords(var_dist)
@@ -141,6 +126,66 @@ def register_slycat_plugin(context):
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
+
+
+    # compute new alpha cluster coordinates for editable columns
+    def update_alpha_clusters(database, model, verb, type, command, **kwargs):
+
+        # get column to update
+        update_col = int(kwargs["update_col"])
+
+        # get number of alpha values using array metadata
+        meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
+        num_vars = len(meta_dist)
+
+        # get distance matrices and included columns
+        var_include_columns, var_dist = load_var_dist(database, model, num_vars)
+
+        # load editable column data
+        editable_cols = slycat.web.server.get_model_parameter(
+            database, model, "dac-editable-columns")
+
+        # compute alpha cluster values for NNLS cluster button
+        alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist,
+                                                [editable_cols["data"][update_col]], ["string"])
+
+        # re-size alpha values to actual number of variables (not just number of included variables)
+        alpha_cluster_mat = numpy.zeros((1, num_vars))
+        alpha_cluster_mat[:, var_include_columns] = alpha_cluster_mat_included
+
+        # return new alpha values
+
+
+        # return data using content function
+        def content():
+            yield json.dumps({"alpha_values": alpha_cluster_mat[0].tolist()})
+
+        return content()
+
+
+    # helper function for init_mds_coords and update_alpha_clusters
+    # loads up distance matrices and include variables
+    def load_var_dist (database, model, num_vars):
+
+        # check to see if the user wants to include a subset of variables
+        if "artifact:dac-var-include-columns" in model:
+
+            # load include columns
+            var_include_columns = slycat.web.server.get_model_parameter(database, model, "dac-var-include-columns")
+
+        else:
+
+            # if no columns specified, use all variables
+            var_include_columns = range(0, num_vars)
+
+        # get distance matrices as a list of numpy arrays from slycat server
+        var_dist = []
+        for i in var_include_columns:
+            var_dist_i = next(iter(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-var-dist", "%s/0/..." % i)))
+            var_dist.append(var_dist_i)
+
+        return var_include_columns, var_dist
 
 
     # computes new MDS coordinate representation using alpha values
@@ -487,8 +532,6 @@ def register_slycat_plugin(context):
 
         elif col_cmd == 'remove':
 
-            cherrypy.log.error(str(col_id))
-
             # remove columns in editable cols
             for id in reversed(col_id):
                 del editable_cols["attributes"][id]
@@ -524,6 +567,7 @@ def register_slycat_plugin(context):
     context.register_model("DAC", finish)
     context.register_page("DAC", page_html)
     context.register_model_command("POST", "DAC", "update_mds_coords", update_mds_coords)
+    context.register_model_command("POST", "DAC", "update_alpha_clusters", update_alpha_clusters)
     context.register_model_command("POST", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
