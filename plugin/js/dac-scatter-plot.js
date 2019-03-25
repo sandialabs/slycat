@@ -881,7 +881,7 @@ var display_pull_down = function(init_color_by_sel)
 
             // fire new colorby event
 		    var colorbyEvent = new CustomEvent("DACColorByChanged",
-											  {detail: select_col});
+											  {detail: curr_color_by_sel});
 		    document.body.dispatchEvent(colorbyEvent);
 
 		});
