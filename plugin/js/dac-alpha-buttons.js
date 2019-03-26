@@ -86,10 +86,6 @@ var cluster_button_callback = function ()
             parameters: {update_col: color_by_col - alpha_clusters.length},
             success: function (result)
                 {
-                    // record new values in mds_coords
-                    console.log(result);
-                    console.log(JSON.parse(result)["alpha_values"]);
-
                     // fire alpha value change event with pre-computed alpha values for selected column
                     var alphaEvent = new CustomEvent("DACAlphaValuesChanged",
                         { detail: JSON.parse(result)["alpha_values"] });
