@@ -31,14 +31,17 @@ function constructor(params)
     success: function(user){ component.user(user); }
   })
 
-  //Suppress default key binding if "Enter" key is pressed
-  component.selecting_key = function(metadata, event){
-      if(event.keyCode == 13){
-              event.preventDefault();
-          }
-      else {
-        return true;
-      }
+  // Call add_project_memeber if enter key is pressed
+  component.username_enter_key = function(metadata, event)
+  {
+    if(event.keyCode == 13)
+    {
+      component.add_project_member();
+    }
+    else 
+    {
+      return true;
+    }
   }
 
   component.add_project_member = function()
@@ -57,7 +60,9 @@ function constructor(params)
             ok: function()
             {
               component.remove_user(user.uid);
-              component.modified.acl.readers.push({user:ko.observable(user.uid)})
+              component.modified.acl.readers.push({user:ko.observable(user.uid)});
+              // Clear new user name because you won't want to add them twice
+              component.new_user("");
             }
           });
         }
@@ -70,7 +75,9 @@ function constructor(params)
             ok: function()
             {
               component.remove_user(user.uid);
-              component.modified.acl.writers.push({user:ko.observable(user.uid)})
+              component.modified.acl.writers.push({user:ko.observable(user.uid)});
+              // Clear new user name because you won't want to add them twice
+              component.new_user("");
             }
           });
         }
@@ -83,7 +90,9 @@ function constructor(params)
             ok: function()
             {
               component.remove_user(user.uid);
-              component.modified.acl.administrators.push({user:ko.observable(user.uid)})
+              component.modified.acl.administrators.push({user:ko.observable(user.uid)});
+              // Clear new user name because you won't want to add them twice
+              component.new_user("");
             }
           });
         }
@@ -143,20 +152,31 @@ function constructor(params)
     }
   }
 
-  component.save_project = function()
+  component.save_project = function(formElement)
   {
-    client.put_project(
+    console.log('save_project');
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      pid: component.project._id(),
-      name: mapping.toJS(component.modified.name),
-      description: mapping.toJS(component.modified.description),
-      acl: mapping.toJS(component.modified.acl),
-      success: function()
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Updating project
+      client.put_project(
       {
-        window.location.reload(true);
-      },
-      error: dialog.ajax_error("Error updating project."),
-    });
+        pid: component.project._id(),
+        name: mapping.toJS(component.modified.name),
+        description: mapping.toJS(component.modified.description),
+        acl: mapping.toJS(component.modified.acl),
+        success: function()
+        {
+          window.location.reload(true);
+        },
+        error: dialog.ajax_error("Error updating project."),
+      });
+    }
   }
 
   component.delete_project_cache = function()

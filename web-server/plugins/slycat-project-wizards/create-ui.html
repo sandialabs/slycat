@@ -7,21 +7,28 @@
   </button>
 </div>
 <div class="modal-body">
-  <form data-bind="submit:finish" action="">
-    <div class="form-group row">
+  <form data-bind="submit:finish" action="" id="create-project-form" novalidate>
+    <div class="form-group row required">
       <label for="slycat-create-project-name" class="col-sm-2 col-form-label">Name</label>
       <div class="col-sm-10">
-        <input id="slycat-create-project-name" class="form-control" type="text" placeholder="Name" data-bind="value:name"></input>
+        <input id="slycat-create-project-name" class="form-control" type="text" data-bind="value:name" required></input>
+        <div class="invalid-feedback">
+          Please choose a project name.
+        </div>
       </div>
     </div>
     <div class="form-group row">
       <label for="slycat-create-project-description" class="col-sm-2 col-form-label">Description</label>
       <div class="col-sm-10">
-        <textarea id="slycat-create-project-description" class="form-control" placeholder="Description" rows="5" data-bind="value:description"></textarea>
+        <textarea id="slycat-create-project-description" class="form-control" rows="5" data-bind="value:description"></textarea>
       </div>
     </div>
   </form>
 </div>
 <div class="modal-footer">
-  <li class="btn btn-primary" data-bind="visible:tab() == 0,click:finish">Finish</li>
+  <li class="btn btn-primary" 
+    data-bind="
+      visible: tab() == 0,
+      click: function(data, event) { finish(document.getElementById('create-project-form'), data, event) }
+    ">Create New Project</li>
 </div>

@@ -605,3 +605,9 @@ label.bottom-margin
 .slycat-progress-bar {
   padding:16px;
 }
+
+/* labels for required fields are followed by a red asterisk */
+.form-group.required label:after {
+  content: " *";
+  color: red;
+}
