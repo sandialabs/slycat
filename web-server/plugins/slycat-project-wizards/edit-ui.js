@@ -44,79 +44,89 @@ function constructor(params)
     }
   }
 
-  component.add_project_member = function()
+  component.add_project_member = function(formElement)
   {
-    client.get_user(
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      uid: component.new_user(),
-      success: function(user)
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Updating project members
+      client.get_user(
       {
-        if(component.permission() == "reader")
+        uid: component.new_user(),
+        success: function(user)
         {
-          dialog.confirm(
+          if(component.permission() == "reader")
           {
-            title: "Add Project Reader",
-            message: "Add " + user.name + " to the project?  They will have read access to all project data.",
-            ok: function()
+            dialog.confirm(
             {
-              component.remove_user(user.uid);
-              component.modified.acl.readers.push({user:ko.observable(user.uid)});
-              // Clear new user name because you won't want to add them twice
-              component.new_user("");
-            }
-          });
-        }
-        if(component.permission() == "writer")
-        {
-          dialog.confirm(
+              title: "Add Project Reader",
+              message: "Add " + user.name + " to the project?  They will have read access to all project data.",
+              ok: function()
+              {
+                component.remove_user(user.uid);
+                component.modified.acl.readers.push({user:ko.observable(user.uid)});
+                // Clear new user name because you won't want to add them twice
+                component.new_user("");
+              }
+            });
+          }
+          if(component.permission() == "writer")
           {
-            title: "Add Project Writer",
-            message: "Add " + user.name + " to the project?  They will have read and write access to all project data.",
-            ok: function()
+            dialog.confirm(
             {
-              component.remove_user(user.uid);
-              component.modified.acl.writers.push({user:ko.observable(user.uid)});
-              // Clear new user name because you won't want to add them twice
-              component.new_user("");
-            }
-          });
-        }
-        if(component.permission() == "administrator")
-        {
-          dialog.confirm(
+              title: "Add Project Writer",
+              message: "Add " + user.name + " to the project?  They will have read and write access to all project data.",
+              ok: function()
+              {
+                component.remove_user(user.uid);
+                component.modified.acl.writers.push({user:ko.observable(user.uid)});
+                // Clear new user name because you won't want to add them twice
+                component.new_user("");
+              }
+            });
+          }
+          if(component.permission() == "administrator")
           {
-            title: "Add Project Administrator",
-            message: "Add " + user.name + " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members.",
-            ok: function()
+            dialog.confirm(
             {
-              component.remove_user(user.uid);
-              component.modified.acl.administrators.push({user:ko.observable(user.uid)});
-              // Clear new user name because you won't want to add them twice
-              component.new_user("");
-            }
-          });
-        }
-      },
-      error: function(request, status, reason_phrase)
-      {
-        if(request.status == 404)
+              title: "Add Project Administrator",
+              message: "Add " + user.name + " to the project?  They will have read and write access to all project data, and will be able to add and remove other project members.",
+              ok: function()
+              {
+                component.remove_user(user.uid);
+                component.modified.acl.administrators.push({user:ko.observable(user.uid)});
+                // Clear new user name because you won't want to add them twice
+                component.new_user("");
+              }
+            });
+          }
+        },
+        error: function(request, status, reason_phrase)
         {
-          dialog.dialog(
+          if(request.status == 404)
           {
-            title: "Unknown User",
-            message: "User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.",
-          });
-        }
-        else
-        {
-          dialog.dialog(
+            dialog.dialog(
+            {
+              title: "Unknown User",
+              message: "User '" + component.new_user() + "' couldn't be found.  Ensure that you correctly entered their id, not their name.",
+            });
+          }
+          else
           {
-            title: "Error retrieving user information",
-            message: reason_phrase
-          });
+            dialog.dialog(
+            {
+              title: "Error retrieving user information",
+              message: reason_phrase
+            });
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   component.remove_user = function(user)
@@ -154,7 +164,6 @@ function constructor(params)
 
   component.save_project = function(formElement)
   {
-    console.log('save_project');
     // Validating
     formElement.classList.add('was-validated');
 
