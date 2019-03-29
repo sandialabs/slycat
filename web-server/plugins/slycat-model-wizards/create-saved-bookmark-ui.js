@@ -28,7 +28,7 @@ function constructor(params)
     {
       // Clearing form validation
       formElement.classList.remove('was-validated');
-      // Updating project members
+      // Creating saved bookmark
       client.post_project_references(
       {
         pid: component.project._id(),

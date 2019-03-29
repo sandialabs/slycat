@@ -18,16 +18,28 @@ function constructor(params)
   component.model = params.models()[0];
   component.name = ko.observable("");
 
-  component.save_template = function()
+  component.save_template = function(formElement)
   {
-    client.post_project_references(
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      pid: component.project._id(),
-      name: component.name(),
-      "model-type": component.model["model-type"](),
-      bid: bookmark_manager.current_bid(),
-      error: dialog.ajax_error("Error creating template."),
-    });
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating template
+      client.post_project_references(
+      {
+        pid: component.project._id(),
+        name: component.name(),
+        "model-type": component.model["model-type"](),
+        bid: bookmark_manager.current_bid(),
+        error: dialog.ajax_error("Error creating template."),
+      });
+      // Closing modal (actually all .modal modals, but there should only be one open)
+      $('.modal').modal('hide');
+    }
   }
 
   if(!bookmark_manager.current_bid())
