@@ -576,36 +576,47 @@ function constructor(params)
     $('.browser-continue').toggleClass("disabled", false);
   };
 
-  component.name_model = function() {
-    client.put_model(
+  component.name_model = function(formElement)
+  {
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      mid: component.model._id(),
-      name: component.model.name(),
-      description: component.model.description(),
-      marking: component.model.marking(),
-      success: function()
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new model
+      client.put_model(
       {
-        client.put_model_parameter({
-          mid: component.model._id(),
-          aid: "cluster-linkage",
-          value: component.cluster_linkage(),
-          input: true,
-          success: function() {
-            if (component.matrix_type() === "compute")
-              component.go_to_model();
-            else {
-              client.post_model_finish({
-                mid: component.model._id(),
-                success: function() {
-                  component.go_to_model();
-                }
-              });
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function()
+        {
+          client.put_model_parameter({
+            mid: component.model._id(),
+            aid: "cluster-linkage",
+            value: component.cluster_linkage(),
+            input: true,
+            success: function() {
+              if (component.matrix_type() === "compute")
+                component.go_to_model();
+              else {
+                client.post_model_finish({
+                  mid: component.model._id(),
+                  success: function() {
+                    component.go_to_model();
+                  }
+                });
+              }
             }
-          }
-        });
-      },
-      error: dialog.ajax_error("Error updating model."),
-    });
+          });
+        },
+        error: dialog.ajax_error("Error updating model."),
+      });
+    }
   };
 
   component.back = function() {
