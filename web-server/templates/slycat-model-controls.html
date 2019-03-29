@@ -1,7 +1,10 @@
-<div class="form-group row">
+<div class="form-group row required">
   <label for="slycat-model-name" class="col-sm-2 col-form-label">Name</label>
   <div class="col-sm-10">
-    <input id="slycat-model-name" class="form-control" type="text" placeholder="Name" data-bind="value:name"></input>
+    <input id="slycat-model-name" class="form-control" type="text" placeholder="Name" data-bind="value:name" required></input>
+    <div class="invalid-feedback">
+      Please enter a project name.
+    </div>
   </div>
 </div>
 <div class="form-group row">
