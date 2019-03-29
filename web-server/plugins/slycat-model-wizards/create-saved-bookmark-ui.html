@@ -9,16 +9,21 @@
 <div class="modal-body">
   <div>
     <p class="lead">A saved bookmark stores the current model and visualization as part of the project so you can open them again later.</p>
-    <form onsubmit="$('#submit-saved-bookmark').click(); return false">
+    <form data-bind="submit: save_bookmark" id="create-bookmark-form" novalidate>
       <div class="form-group row">
         <label for="slycat-template-name" class="col-sm-2 col-form-label">Name</label>
         <div class="col-sm-10">
-          <input id="slycat-template-name" class="form-control" type="text" placeholder="Name" data-bind="value:name"></input>
+          <input id="slycat-template-name" class="form-control" type="text" data-bind="value:name" required></input>
+          <div class="invalid-feedback">
+          Please enter a bookmark name.
+        </div>
         </div>
       </div>
     </form>
   </div>
 </div>
 <div class="modal-footer">
-  <button id="submit-saved-bookmark" class="btn btn-primary" data-bind="click:save_bookmark" data-dismiss="modal">Save Bookmark</button>
+  <button id="submit-saved-bookmark" class="btn btn-primary" 
+    data-bind="click:function(data, event) { save_bookmark(document.getElementById('create-bookmark-form'), data, event) }" 
+    >Save Bookmark</button>
 </div>
