@@ -375,16 +375,27 @@ function constructor(params) {
     });
   };
 
-  component.name_model = function() {
-    client.put_model({
-      mid: component.model._id(),
-      name: component.model.name(),
-      description: component.model.description(),
-      marking: component.model.marking(),
-      success: function() {
-        component.go_to_model();
-      }
-    })
+  component.name_model = function(formElement)
+  {
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
+    {
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new model
+      client.put_model({
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function() {
+          component.go_to_model();
+        }
+      });
+    }
   }
 
   component.go_to_model = function() {

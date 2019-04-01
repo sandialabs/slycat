@@ -205,7 +205,7 @@
     </div>
 
     <div data-bind="visible:tab() == 6">
-      <form onsubmit="return false">
+      <form data-bind="submit: name_model" id="new-timeseries-name-model-form" novalidate>
         <slycat-model-controls params="
           name:model.name,
           description:model.description,
@@ -229,7 +229,11 @@
     class="btn btn-primary remote-browser-continue-data browser-continue"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button data-bind="visible:tab() == 5,click:compute" 
     class="btn btn-primary"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button data-bind="visible:tab() == 6,click:name_model" 
+  <button 
+    data-bind="
+      visible: tab() == 6,
+      click: function(data, event) { name_model(document.getElementById('new-timeseries-name-model-form'), data, event) }
+    " 
     class="btn btn-primary">Finish & Go To Model</button>
 
 </div>
