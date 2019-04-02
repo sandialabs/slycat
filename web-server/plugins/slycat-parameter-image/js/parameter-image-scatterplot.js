@@ -1323,13 +1323,6 @@ $.widget("parameter_image.scatterplot",
       return 0 <= e.y && e.y <= options.height && 0 <= e.x && e.x <= options.width;
     }
 
-    var clear_hover_timer = function(widget) {
-      if (widget.close_hover_timer) {
-        window.clearTimeout(widget.close_hover_timer);
-        return widget.close_hover_timer = null;
-      }
-    }
-
     var add_resize_handle = function(fh) {
       fh.append("i")
         .attr("class", "resize-handle frame-button fa fa-expand fa-rotate-90")
@@ -1531,12 +1524,7 @@ $.widget("parameter_image.scatterplot",
           // // Remove maximized class from frame
           // frame.classed("maximized", false);
 
-          if (frame.classed("hover-image")) {
-            self.opening_image = null;
-            clear_hover_timer(self);
-            frame.classed("hover-image", false).classed("open-image", true);
-            image.image_class = "open-image";
-          }
+          self._cancel_hover_state(frame, image);
         }
       },
       move_end: function() {
@@ -1572,7 +1560,7 @@ $.widget("parameter_image.scatterplot",
         self._move_frame_to_front(this);
       },
       hover: function() {
-        clear_hover_timer(self);
+        self._clear_hover_timer();
         return self.close_hover_timer = window.setTimeout((function() {
           return self._hover_timeout(image.index, 0);
         }), 1000);
@@ -1615,12 +1603,7 @@ $.widget("parameter_image.scatterplot",
         // Add resizing class to scatterplot to use CSS to keep cursor as arrow while resizing
         d3.select("#scatterplot").classed("resizing", true);
 
-        if (frame.classed("hover-image")) {
-          self.opening_image = null;
-          clear_hover_timer(self);
-          frame.classed("hover-image", false).classed("open-image", true);
-          image.image_class = "open-image";
-        }
+        self._cancel_hover_state(frame, image);
 
         // Remove maximized class from frame
         frame.classed("maximized", false);
@@ -1644,6 +1627,9 @@ $.widget("parameter_image.scatterplot",
       maximize: function() {
         let target = d3.event.target;
         let frame = d3.select(target.closest(".image-frame"));
+
+        // Remove frame's hover state
+        self._cancel_hover_state(frame, image);
 
         // Get the SVG pane's size
         var $svg = $('#scatterplot svg');
@@ -1754,18 +1740,9 @@ $.widget("parameter_image.scatterplot",
 
       pin: function() {
         // console.log("pin event handler running");
-        var frame, imageHeight, imageWidth, target_width, target_height, theImage, x, y;
-        self.opening_image = null;
-        clear_hover_timer(self);
+        var frame, imageHeight, imageWidth, target_width, target_height, x, y;
         frame = d3.select(d3.event.target.closest(".image-frame"));
-
-        // This was causing Issue #565 because it was assigning the open-image class to the image instead of its frame.
-        // Alex is commenting it out and always assigning the open-image class to the frame instead.
-        // if (frame.select('.resize').length)
-        //   theImage = frame.select(".resize").classed("hover-image", false).classed("open-image", true);
-        // else
-        //   theImage = frame.classed("hover-image", false).classed("open-image", true);
-        theImage = frame.classed("hover-image", false).classed("open-image", true);
+        self._cancel_hover_state(frame, image);
 
         // Remove maximized class from frame
         frame.classed("maximized", false);
@@ -2035,7 +2012,8 @@ $.widget("parameter_image.scatterplot",
               {
                 self.options["video-sync-time"] = this.currentTime;
                 handlers["seeked_video"]();
-                pinVideo(self, this, image);
+                let frame = d3.select(this.parentElement);
+                self._cancel_hover_state(frame, image);
                 // Need to explicitly move the frame to the front when interacting with video controls because
                 // Chrome does not propagate any mouse events after controls are clicked.
                 self._move_frame_to_front(this.closest(".image-frame"));
@@ -2047,7 +2025,8 @@ $.widget("parameter_image.scatterplot",
             })
             .on("play", function(event){
               // console.log("onplay");
-              pinVideo(self, this, image);
+              let frame = d3.select(this.parentElement);
+              self._cancel_hover_state(frame, image);
 
               var playing_index = self.playing_videos.indexOf(image.index);
               // If video was directly played by user
@@ -2224,18 +2203,6 @@ $.widget("parameter_image.scatterplot",
             .attr("download", "download")
             .text("Download " + image.uri)
             ;
-        }
-
-        function pinVideo(self, video)
-        {
-          var frame = d3.select(video.parentElement);
-
-          if (frame.classed("hover-image")) {
-            self.opening_image = null;
-            clear_hover_timer(self);
-            frame.classed("hover-image", false).classed("open-image", true);
-            image.image_class = "open-image";
-          }
         }
       }
 
@@ -2522,6 +2489,25 @@ $.widget("parameter_image.scatterplot",
       target_y : self.y_scale_format(self.options.y[image_index]),
       no_sync : true,
     }]);
+  },
+
+  _clear_hover_timer: function() {
+    let self = this;
+    if (self.close_hover_timer) {
+      window.clearTimeout(self.close_hover_timer);
+      return self.close_hover_timer = null;
+    }
+  },
+
+  _cancel_hover_state: function(frame, image)
+  {
+    let self = this;
+    if (frame.classed("hover-image")) {
+      self.opening_image = null;
+      self._clear_hover_timer();
+      frame.classed("hover-image", false).classed("open-image", true);
+      image.image_class = "open-image";
+    }
   },
 
   _cancel_hover_canvas: function()
