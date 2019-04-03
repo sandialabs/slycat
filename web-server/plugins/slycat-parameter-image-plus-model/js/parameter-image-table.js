@@ -14,6 +14,7 @@ import "slickgrid/plugins/slick.rowselectionmodel";
 import "slickgrid/plugins/slick.headerbuttons";
 import "slickgrid/plugins/slick.autotooltips";
 import * as chunker from "js/chunker";
+import * as table_helpers from "js/slycat-table-helpers";
 
 $.widget("parameter_image.table",
 {
@@ -70,16 +71,9 @@ $.widget("parameter_image.table",
     function set_sort(column, order)
     {
       self.data.set_sort(column, order);
-      self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
-      {
-        self.grid.invalidate();
-        self.trigger_row_selection = false;
-        self.grid.setSelectedRows(sorted_rows);
-        self.grid.resetActiveCell();
-        if(sorted_rows.length)
-          self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
-        self.element.trigger("variable-sort-changed", [column, order]);
-      });
+      self.grid.invalidate();
+      table_helpers._set_selected_rows_no_trigger(self);
+      self.element.trigger("variable-sort-changed", [column, order]);
     }
 
     function make_column(column_index, header_class, cell_class, formatter)
@@ -291,14 +285,7 @@ $.widget("parameter_image.table",
 
     self.grid.init();
 
-    self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
-    {
-      self.trigger_row_selection = false;
-      self.grid.setSelectedRows(sorted_rows);
-      self.grid.resetActiveCell();
-      if(sorted_rows.length)
-        self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
-    });
+    table_helpers._set_selected_rows_no_trigger(self);
   },
 
   resize_canvas: function()
@@ -312,14 +299,7 @@ $.widget("parameter_image.table",
     var self = this;
     self.data.invalidate();
     self.grid.invalidate();
-    self.data.get_indices("sorted", self.options["row-selection"], function(sorted_rows)
-    {
-      self.trigger_row_selection = false;
-      self.grid.setSelectedRows(sorted_rows);
-      self.grid.resetActiveCell();
-      if(sorted_rows.length)
-        self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
-    });
+    table_helpers._set_selected_rows_no_trigger(self);
   },
 
   _setOption: function(key, value)
@@ -328,19 +308,8 @@ $.widget("parameter_image.table",
 
     if(key == "row-selection")
     {
-      // Unexpectedly at this point self.options[key] has already been set to value, so this always returns even when the row-selection is unique
-      // if(self._array_equal(self.options[key], value))
-      //   return;
-
       self.options[key] = value;
-      self.data.get_indices("sorted", value, function(sorted_rows)
-      {
-        self.trigger_row_selection = false;
-        self.grid.setSelectedRows(sorted_rows);
-        self.grid.resetActiveCell();
-        if(sorted_rows.length)
-          self.grid.scrollRowToTop(Math.min.apply(Math, sorted_rows));
-      });
+      table_helpers._set_selected_rows_no_trigger(self);
     }
     else if(key == "variable-selection")
     {

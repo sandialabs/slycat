@@ -1948,7 +1948,6 @@ $.widget("parameter_image.scatterplot",
               // console.log("video onclick");
             })
             .on("loadedmetadata", function(){
-              // debugger;
               // console.log("onloadedmetadata");
               var width = this.videoWidth;
               var height = this.videoHeight;
