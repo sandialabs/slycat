@@ -100,7 +100,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-chunk", "/models/:mid/tables/:aid/arrays/:array/chunk", slycat.web.server.handlers.get_model_table_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-metadata", "/models/:mid/tables/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_table_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-sorted-indices", "/models/:mid/tables/:aid/arrays/:array/sorted-indices", slycat.web.server.handlers.get_model_table_sorted_indices, conditions={"method" : ["GET"]})
@@ -240,11 +239,6 @@ def start(root_path, config_file):
     "tools.staticdir.dir": abspath("fonts"),
     "tools.staticdir.on": True,
     }
-  configuration["/resources"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    }
 
   configuration["/templates"] = {
     "tools.expires.force": True,
@@ -267,14 +261,7 @@ def start(root_path, config_file):
     "tools.expires.secs": 3600,
     "tools.%s.on" % authentication : False,
     }
-  configuration["/resources/global/slycat-logo-navbar.png"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.%s.on" % authentication : False,
-    "tools.staticfile.filename": abspath("css/slycat-logo-navbar.png"),
-    "tools.staticfile.on": True,
-    }
+    
   # Load plugin modules.
   manager = slycat.web.server.plugin.manager
   for item in configuration["slycat-web-server"]["plugins"]:

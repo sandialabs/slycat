@@ -27,7 +27,6 @@ import slycat.web.server.database.couchdb
 import slycat.web.server.hdf5
 import slycat.web.server.plugin
 import slycat.web.server.remote
-import slycat.web.server.resource
 import slycat.web.server.streaming
 import slycat.web.server.template
 import slycat.web.server.upload
@@ -606,17 +605,6 @@ def model_sensitive_command(mid, type, command):
     cherrypy.log.error("slycat.web.server.handlers.py model_sensitive_command",
                             "cherrypy.HTTPError 400 unknown command: %s" % command)
     raise cherrypy.HTTPError("400 Unknown command: %s" % command)
-
-
-def get_wizard_resource(wtype, resource):
-    if wtype in slycat.web.server.plugin.manager.wizard_resources:
-        for wizard_resource, wizard_path in slycat.web.server.plugin.manager.wizard_resources[wtype].items():
-            if wizard_resource == resource:
-                return cherrypy.lib.static.serve_file(wizard_path)
-
-    cherrypy.log.error("slycat.web.server.handlers.py get_wizard_resource",
-                            "cherrypy.HTTPError 404 invalid input wizard type: %s" % wtype)
-    raise cherrypy.HTTPError("404")
 
 
 @cherrypy.tools.json_in(on=True)

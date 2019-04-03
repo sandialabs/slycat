@@ -8,7 +8,7 @@ import cv2
 import glob
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input', default='', help='a parameter.')
+parser.add_argument('--input', default='~/Desktop/movie_images/', help='a parameter.')
 arguments = parser.parse_args()
 
 img_array = []
