@@ -17,7 +17,6 @@ import time
 import Queue
 import cPickle
 import re
-import slycat.email
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.uri
@@ -41,100 +40,6 @@ import uuid
 import functools
 import datetime
 import urlparse
-
-
-def css_bundle():
-    with css_bundle._lock:
-        if css_bundle._bundle is None:
-            css_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/css",
-                                                                               [
-                                                                                   "css/namespaced-bootstrap.css",
-                                                                                   "css/font-awesome.css",
-                                                                                   "css/slycat.css",
-                                                                               ])
-            slycat.web.server.resource.manager.add_directory("fonts/bootstrap", "fonts/bootstrap")
-            slycat.web.server.resource.manager.add_directory("fonts/font-awesome", "fonts/font-awesome")
-    return css_bundle._bundle
-
-
-css_bundle._lock = threading.Lock()
-css_bundle._bundle = None
-
-
-def js_bundle():
-    with js_bundle._lock:
-        if js_bundle._bundle is None:
-            js_bundle._bundle = slycat.web.server.resource.manager.add_bundle("text/javascript",
-                                                                              [
-                                                                                  # # Alex: indented files are already handled through Webpack
-                                                                                  #   "js/curl.js",
-                                                                                  #   # "js/curl-debug.js", # Uncomment this to debug problems loading modules with curl
-                                                                                  #   "js/slycat-curl-config.js",
-                                                                                  #   # Load this immediately following curl to configure it.
-                                                                                  #   "js/uri.min.js",
-                                                                                  #   # "js/react.development.js",
-                                                                                  #   # "js/react-dom.development.js",
-                                                                                  #   "js/jquery-2.1.1.min.js",
-                                                                                  #   "js/lodash.min.js",
-                                                                                  #   "js/slycat-lodash-wrap.js",
-                                                                                  #   "js/bootstrap.js",
-                                                                                  #   "js/knockout-3.2.0.js",
-                                                                                  #   "js/knockout.mapping.js",
-                                                                                  #   "js/knockout-projections.js",
-                                                                                  # # We might not be using knockstrap anywhere
-                                                                                  # "js/knockstrap.js",
-                                                                                  #   "js/papaparse.min.js",
-                                                                                  #   "js/slycat-server-root.js",
-                                                                                  #   "js/slycat-server-ispasswordrequired.js",
-                                                                                  #   "js/slycat-bookmark-manager.js",
-                                                                                  #   "js/slycat-web-client.js",
-                                                                                  #   # Used by wizards
-                                                                                  #   "js/slycat_file_uploader_factory.js",
-                                                                                  #   "js/slycat-dialog.js",
-                                                                                  #   "js/slycat-markings.js",
-                                                                                  #   "js/slycat-nag.js",
-                                                                                  #   # Only used by slycat-parser-controls.js
-                                                                                  #   "js/slycat-parsers.js",
-                                                                                  #   # Used by wizards
-                                                                                  #   "js/slycat-model-controls.js",
-                                                                                  #   # Used by creation wizards for CCA, Parameter Image Plus, and Parameter Space
-                                                                                  #   "js/slycat-parser-controls.js",
-                                                                                  # # Used by wizards, a bunch of old ones but also the remap wizard. None of the main ones use it.
-                                                                                  # "js/slycat-model-results.js",
-                                                                                  #   # Used by slycat-navbar(-webpack) and slycat-project-main.js
-                                                                                  #   "js/slycat-model-names.js",
-                                                                                  #   "js/slycat-navbar.js",
-                                                                                  #   # Used by creation wizards
-                                                                                  #   "js/slycat-local-browser.js",
-                                                                                  #   # Used by creation wizards
-                                                                                  #   "js/slycat-remote-browser.js",
-                                                                                  #   # Used by creation wizards
-                                                                                  #   "js/slycat-remote-controls.js",
-                                                                                  #   "js/slycat-remotes.js",
-                                                                                  #   "js/slycat-login-controls.js",
-                                                                                  #   "js/slycat-range-slider.js",
-                                                                                  #   # Useb by /web-server/templates/slycat-page.html, which is served up by get_page() function in this file
-                                                                                  #   "js/slycat-page-main.js",
-                                                                                  #   # Used by /web-server/templates/slycat-projects.html
-                                                                                  #   "js/slycat-projects-main.js",
-                                                                                  #   # Used by /web-server/templates/slycat-project.html
-                                                                                  #   "js/slycat-project-main.js",
-                                                                                  #   "js/slycat-model-main.js",
-                                                                                  #   # Seems to only affect /web-server/templates/slycat-navbar.html
-                                                                                  #   "js/slycat-resizing-modals.js",
-                                                                                  #   # Used by wizards
-                                                                                  #   "js/slycat-table-ingestion.js",
-                                                                                  #   "js/slycat-3d-viewer.js",
-                                                                                  #   # Used by wizards (Parameter Image Plus, SLURM, Timeseries)
-                                                                                  #   "js/slycat-remote-interface.js",
-                                                                                  #   # Seems to be only used in Parameter Image Plus and Timeseries
-                                                                                  #   "js/slycat-job-checker.js"
-                                                                              ])
-    return js_bundle._bundle
-
-
-js_bundle._lock = threading.Lock()
-js_bundle._bundle = None
 
 
 def get_sid(hostname):
@@ -175,7 +80,7 @@ def require_json_parameter(name):
       :return: value of the json param
     """
     if name not in cherrypy.request.json:
-        slycat.email.send_error("slycat.web.server.handlers.py require_json_parameter",
+        cherrypy.log.error("slycat.web.server.handlers.py require_json_parameter",
                                 "cherrypy.HTTPError 404 missing '%s' parameter." % name)
         raise cherrypy.HTTPError("400 Missing '%s' parameter." % name)
     return cherrypy.request.json[name]
@@ -184,7 +89,7 @@ def require_json_parameter(name):
 def require_boolean_json_parameter(name):
     value = require_json_parameter(name)
     if value is not True and value is not False:
-        slycat.email.send_error("slycat.web.server.handlers.py require_boolean_json_parameter",
+        cherrypy.log.error("slycat.web.server.handlers.py require_boolean_json_parameter",
                                 "cherrypy.HTTPError 400 '%s' parameter must be true or false." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be true or false." % name)
     return value
@@ -193,7 +98,7 @@ def require_boolean_json_parameter(name):
 def require_array_json_parameter(name):
     array = require_json_parameter(name)
     if not isinstance(array, list):
-        slycat.email.send_error("slycat.web.server.handlers.py require_array_json_parameter",
+        cherrypy.log.error("slycat.web.server.handlers.py require_array_json_parameter",
                                 "cherrypy.HTTPError 400 '%s' parameter must be an array." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be an array." % name)
     return array
@@ -204,7 +109,7 @@ def require_integer_array_json_parameter(name):
     try:
         array = [int(value) for value in array]
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py require_integer_array_json_parameter",
+        cherrypy.log.error("slycat.web.server.handlers.py require_integer_array_json_parameter",
                                 "cherrypy.HTTPError 400 '%s' parameter must be an array of integers." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be an array of integers." % name)
     return array
@@ -214,29 +119,15 @@ def require_integer_parameter(value, name):
     try:
         return int(value)
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py require_integer_parameter",
+        cherrypy.log.error("slycat.web.server.handlers.py require_integer_parameter",
                                 "cherrypy.HTTPError 400 '%s' parameter must be an integer." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
-
-
-def get_projects(_=None):
-    """
-    returns either and array of projects or html for displaying the projects
-    :param _: 
-    :return: 
-    """
-    context = {}
-    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-    context["slycat-css-bundle"] = css_bundle()
-    context["slycat-js-bundle"] = js_bundle()
-    context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-    return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_projects.html")), context)
 
 
 @cherrypy.tools.json_out(on=True)
 def get_projects_list(_=None):
     """
-    returns either and array of projects or html for displaying the projects
+    returns an array of projects
     :param _: 
     :return: 
     """
@@ -253,9 +144,14 @@ def get_projects_list(_=None):
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
 def post_projects():
+    """
+    creates a new project
+    Raises:
+      cherrypy.HTTPError -- if the project name is missing from the post json raises 400
+    Returns:
+      [json] -- project id that was created
+    """
     if "name" not in cherrypy.request.json:
-        slycat.email.send_error("slycat.web.server.handlers.py post_projects",
-                                "cherrypy.HTTPError 400 missing project name.")
         raise cherrypy.HTTPError("400 Missing project name.")
 
     database = slycat.web.server.database.couchdb.connect()
@@ -290,22 +186,8 @@ def get_project(pid):
 
     if accept == "application/json":
         return json.dumps(project)
-
-    if accept == "text/html":
-        models = [model for model in database.scan("slycat/project-models", startkey=pid, endkey=pid)]
-        models = sorted(models, key=lambda x: x["created"], reverse=True)
-
-        for model in models:
-            model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
-
-        context = {}
-        context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-        context["slycat-css-bundle"] = css_bundle()
-        context["slycat-js-bundle"] = js_bundle()
-        context["slycat-project"] = project
-        context["slycat-project-name"] = project.get("name", "").replace("'", "\\'")
-        context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-        return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_project.html")), context)
+    # for model in models:
+    #     model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
 
 
 def get_remote_host_dict():
@@ -350,15 +232,15 @@ def put_project(pid):
     if "acl" in cherrypy.request.json:
         slycat.web.server.authentication.require_project_administrator(project)
         if "administrators" not in cherrypy.request.json["acl"]:
-            slycat.email.send_error("slycat.web.server.handlers.py put_project",
+            cherrypy.log.error("slycat.web.server.handlers.py put_project",
                                     "cherrypy.HTTPError 400 missing administrators.")
             raise cherrypy.HTTPError("400 missing administrators")
         if "writers" not in cherrypy.request.json["acl"]:
-            slycat.email.send_error("slycat.web.server.handlers.py put_project",
+            cherrypy.log.error("slycat.web.server.handlers.py put_project",
                                     "cherrypy.HTTPError 400 missing writers.")
             raise cherrypy.HTTPError("400 missing writers")
         if "readers" not in cherrypy.request.json["acl"]:
-            slycat.email.send_error("slycat.web.server.handlers.py put_project",
+            cherrypy.log.error("slycat.web.server.handlers.py put_project",
                                     "cherrypy.HTTPError 400 missing readers.")
             raise cherrypy.HTTPError("400 missing readers")
         project["acl"] = cherrypy.request.json["acl"]
@@ -505,13 +387,13 @@ def post_project_models(pid):
     model_type = require_json_parameter("model-type")
     allowed_model_types = slycat.web.server.plugin.manager.models.keys()
     if model_type not in allowed_model_types:
-        slycat.email.send_error("slycat.web.server.handlers.py post_project_models",
+        cherrypy.log.error("slycat.web.server.handlers.py post_project_models",
                                 "cherrypy.HTTPError allowed model types: %s" % ", ".join(allowed_model_types))
         raise cherrypy.HTTPError("400 Allowed model types: %s" % ", ".join(allowed_model_types))
 
     marking = require_json_parameter("marking")
     if marking not in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]:
-        slycat.email.send_error("slycat.web.server.handlers.py post_project_models",
+        cherrypy.log.error("slycat.web.server.handlers.py post_project_models",
                                 "cherrypy.HTTPError 400 allowed marking types: %s" % ", ".join(
                                     cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]))
         raise cherrypy.HTTPError("400 Allowed marking types: %s" % ", ".join(
@@ -680,35 +562,6 @@ def put_reference(rid):
     cherrypy.response.status = "201 Reference updated."
 
 
-def get_page(ptype):
-    database = slycat.web.server.database.couchdb.connect()
-
-    context = {}
-    context["slycat-server-root"] = cherrypy.request.app.config["slycat-web-server"]["server-root"]
-    context["slycat-css-bundle"] = css_bundle()
-    context["slycat-js-bundle"] = js_bundle()
-    context["slycat-page-type"] = ptype
-    context["slycat-injected-code"] = cherrypy.request.app.config["slycat-web-server"].get("injected-code", "")
-
-    if ptype not in slycat.web.server.plugin.manager.pages:
-        context["slycat-page-html"] = u"""
-    <div style="-webkit-flex:1;flex:1;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center; text-align:center; font-size: 21px;">
-      <p>No plugin available for page type \u201c%s\u201d.</p>
-    </div>""" % ptype
-        return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_page.html")), context)
-
-    context["slycat-page-html"] = slycat.web.server.plugin.manager.pages[ptype]["html"](database, model=None)
-    if ptype in slycat.web.server.plugin.manager.page_bundles:
-        context["slycat-page-css-bundles"] = [{"bundle": key} for key, (content_type, content) in
-                                              slycat.web.server.plugin.manager.page_bundles[ptype].items() if
-                                              content_type == "text/css"]
-        context["slycat-page-js-bundles"] = [{"bundle": key} for key, (content_type, content) in
-                                             slycat.web.server.plugin.manager.page_bundles[ptype].items() if
-                                             content_type == "text/javascript"]
-
-    return slycat.web.server.template.render(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../web-server/dist/slycat_page.html")), context)
-
-
 def get_model(mid, **kwargs):
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -732,7 +585,7 @@ def model_command(mid, type, command, **kwargs):
         return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type,
                                                                     command, **kwargs)
 
-    slycat.email.send_error("slycat.web.server.handlers.py model_command",
+    cherrypy.log.error("slycat.web.server.handlers.py model_command",
                             "cherrypy.HTTPError 400 unknown command: %s" % command)
     raise cherrypy.HTTPError("400 Unknown command: %s" % command)
 
@@ -750,24 +603,9 @@ def model_sensitive_command(mid, type, command):
         return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type,
                                                                     command, **kwargs)
 
-    slycat.email.send_error("slycat.web.server.handlers.py model_sensitive_command",
+    cherrypy.log.error("slycat.web.server.handlers.py model_sensitive_command",
                             "cherrypy.HTTPError 400 unknown command: %s" % command)
     raise cherrypy.HTTPError("400 Unknown command: %s" % command)
-
-
-def get_page_resource(ptype, resource):
-    if ptype in slycat.web.server.plugin.manager.page_bundles:
-        if resource in slycat.web.server.plugin.manager.page_bundles[ptype]:
-            content_type, content = slycat.web.server.plugin.manager.page_bundles[ptype][resource]
-            cherrypy.response.headers["content-type"] = content_type
-            return content
-    if ptype in slycat.web.server.plugin.manager.page_resources:
-        for page_resource, page_path in slycat.web.server.plugin.manager.page_resources[ptype].items():
-            if page_resource == resource:
-                return cherrypy.lib.static.serve_file(page_path)
-
-    # slycat.email.send_error("slycat.web.server.handlers.py get_page_resource", "cherrypy.HTTPError 404 invalid input type: %s" % ptype)
-    raise cherrypy.HTTPError("404")
 
 
 def get_wizard_resource(wtype, resource):
@@ -776,7 +614,7 @@ def get_wizard_resource(wtype, resource):
             if wizard_resource == resource:
                 return cherrypy.lib.static.serve_file(wizard_path)
 
-    slycat.email.send_error("slycat.web.server.handlers.py get_wizard_resource",
+    cherrypy.log.error("slycat.web.server.handlers.py get_wizard_resource",
                             "cherrypy.HTTPError 404 invalid input wizard type: %s" % wtype)
     raise cherrypy.HTTPError("404")
 
@@ -792,7 +630,7 @@ def put_model(mid):
     for key, value in cherrypy.request.json.items():
         if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
                        "marking", "bookmark"]:
-            slycat.email.send_error("slycat.web.server.handlers.py put_model",
+            cherrypy.log.error("slycat.web.server.handlers.py put_model",
                                     "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
             raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
 
@@ -800,7 +638,7 @@ def put_model(mid):
             try:
                 datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
             except:
-                slycat.email.send_error("slycat.web.server.handlers.py put_model",
+                cherrypy.log.error("slycat.web.server.handlers.py put_model",
                                         "cherrypy.HTTPError 400 timestamp fields must use ISO-8601.")
                 raise cherrypy.HTTPError("400 Timestamp fields must use ISO-8601.")
 
@@ -832,12 +670,12 @@ def post_model_finish(mid):
 
     # check state of the model
     if model["state"] != "waiting":
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_finish",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_finish",
                                 "cherrypy.HTTPError 400 only waiting models can be finished.")
         raise cherrypy.HTTPError("400 Only waiting models can be finished.")
     # check if the model type exists
     if model["model-type"] not in slycat.web.server.plugin.manager.models.keys():
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_finish",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_finish",
                                 "cherrypy.HTTPError 500 cannot finish unknown model type.")
         raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
     #
@@ -849,7 +687,7 @@ def post_model_finish(mid):
 
 def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=None, parser=None, **kwargs):
     if input is None:
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 required input parameter is missing.")
         raise cherrypy.HTTPError("400 Required input parameter is missing.")
     input = True if input == "true" else False
@@ -864,7 +702,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
         if not isinstance(paths, list):
             paths = [paths]
         if len(sids) != len(paths):
-            slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+            cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                     "cherrypy.HTTPError 400 sids and paths parameter must have the same length.")
             raise cherrypy.HTTPError("400 sids and paths parameters must have the same length.")
         files = []
@@ -872,12 +710,12 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
             with slycat.web.server.remote.get_session(sid) as session:
                 filename = "%s@%s:%s" % (session.username, session.hostname, path)
                 if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-                    slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+                    cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                             "cherrypy.HTTPError 400 cannot load directory %s." % filename)
                     raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
                 files.append(session.sftp.file(path).read())
     else:
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 must supply files parameter, or sids and path parameters.")
         raise cherrypy.HTTPError("400 Must supply files parameter, or sids and paths parameters.")
 
@@ -887,11 +725,11 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
         aids = [aids]
 
     if parser is None:
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 required parser parameter is missing.")
         raise cherrypy.HTTPError("400 Required parser parameter is missing.")
     if parser not in slycat.web.server.plugin.manager.parsers:
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 unknown parser plugin: %s" % parser)
         raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
 
@@ -905,7 +743,7 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
         create_project_data(mid, aids, files)
     except Exception as e:
         cherrypy.log.error("handles Exception parsing posted files: %s" % e)
-        slycat.email.send_error("slycat.web.server.handlers.py post_model_files",
+        cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
                                 "cherrypy.HTTPError 400 %s" % e.message)
         raise cherrypy.HTTPError("400 %s" % e.message)
 
@@ -922,7 +760,7 @@ def post_uploads():
     parser = require_json_parameter("parser")
     aids = require_json_parameter("aids")
     if parser not in slycat.web.server.plugin.manager.parsers:
-        slycat.email.send_error("slycat.web.server.handlers.py post_uploads",
+        cherrypy.log.error("slycat.web.server.handlers.py post_uploads",
                                 "cherrypy.HTTPError 400 unknown parser plugin: %s." % parser)
         raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
 
@@ -947,12 +785,12 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
         with slycat.web.server.remote.get_session(sid) as session:
             filename = "%s@%s:%s" % (session.username, session.hostname, path)
             if stat.S_ISDIR(session.sftp.stat(path).st_mode):
-                slycat.email.send_error("slycat.web.server.handlers.py put_upload_file_part",
+                cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
                                         "cherrypy.HTTPError 400 cannot load directory %s." % filename)
                 raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
             data = session.sftp.file(path).read()
     else:
-        slycat.email.send_error("slycat.web.server.handlers.py put_upload_file_part",
+        cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
                                 "cherrypy.HTTPError 400 must supply file parameter, or sid and path parameters.")
         raise cherrypy.HTTPError("400 Must supply file parameter, or sid and path parameters.")
 
@@ -1099,7 +937,7 @@ def put_model_inputs(mid):
     deep_copy = cherrypy.request.json.get("deep-copy", False)
     source = database.get("model", sid)
     if source["project"] != model["project"]:
-        slycat.email.send_error("slycat.web.server.handlers.py put_model_inputs",
+        cherrypy.log.error("slycat.web.server.handlers.py put_model_inputs",
                                 "cherrypy.HTTPError 400 cannot duplicate a model from another project.")
         raise cherrypy.HTTPError("400 Cannot duplicate a model from another project.")
 
@@ -1178,13 +1016,13 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
     try:
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data",
+        cherrypy.log.error("slycat.web.server.handlers.py put_model_arrayset_data",
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
     if byteorder is not None:
         if byteorder not in ["big", "little"]:
-            slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data",
+            cherrypy.log.error("slycat.web.server.handlers.py put_model_arrayset_data",
                                     "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
             raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
 
@@ -1229,7 +1067,7 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                                         array_dimension["end"] - array_dimension["begin"])
                                     data_shape.append(stop - start)
                                 else:
-                                    slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data",
+                                    cherrypy.log.error("slycat.web.server.handlers.py put_model_arrayset_data",
                                                             "Unexpected hyperslice: %s" % hyperslice_dimension)
                                     raise ValueError("Unexpected hyperslice: %s" % hyperslice_dimension)
 
@@ -1243,7 +1081,7 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                             hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(
                                 data_shape)
                         else:
-                            slycat.email.send_error("slycat.web.server.handlers.py put_model_arrayset_data",
+                            cherrypy.log.error("slycat.web.server.handlers.py put_model_arrayset_data",
                                                     "Not implemented error.")
                             raise NotImplementedError()
 
@@ -1307,7 +1145,7 @@ def delete_project_cache_object(pid, key):
         cherrypy.response.status = "204 Cache object deleted."
         return
 
-    slycat.email.send_error("slycat.web.server.handlers.py delete_project_cache_object", "cherrypy.HTTPError 404")
+    cherrypy.log.error("slycat.web.server.handlers.py delete_project_cache_object", "cherrypy.HTTPError 404")
     raise cherrypy.HTTPError(404)
 
 
@@ -1399,33 +1237,33 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_metadata",
                                 "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_metadata",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
     try:
         arrays = slycat.hyperchunks.parse(kwargs["arrays"]) if "arrays" in kwargs else None
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_metadata",
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
     try:
         statistics = slycat.hyperchunks.parse(kwargs["statistics"]) if "statistics" in kwargs else None
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_metadata",
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
     try:
         unique = slycat.hyperchunks.parse(kwargs["unique"]) if "unique" in kwargs else None
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_metadata",
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
@@ -1454,13 +1292,13 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
     try:
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
     except Exception as e:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data",
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.%s%s" % (e, traceback.print_exc()))
 
     if byteorder is not None:
         if byteorder not in ["big", "little"]:
-            slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data",
+            cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data",
                                     "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
             raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
         accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
@@ -1475,11 +1313,11 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 404")
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 404")
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
@@ -1536,7 +1374,7 @@ def post_model_arrayset_data(mid, aid):
     try:
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data",
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET Model Arrayset Data: arrayset %s hyperchunks calculated" % (aid))
@@ -1544,7 +1382,7 @@ def post_model_arrayset_data(mid, aid):
     #
     if byteorder is not None:
         if byteorder not in ["big", "little"]:
-            slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data",
+            cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data",
                                     "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
             raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
         accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
@@ -1559,11 +1397,11 @@ def post_model_arrayset_data(mid, aid):
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 404")
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data", "cherrypy.HTTPError 404")
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_arrayset_data",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_arrayset_data",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
@@ -1601,13 +1439,13 @@ def validate_table_rows(rows):
         rows = numpy.concatenate([numpy.arange(begin, end) for begin, end in rows])
         return rows
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py validate_table_rows",
+        cherrypy.log.error("slycat.web.server.handlers.py validate_table_rows",
                                 "cherrypy.HTTPError 400 malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
         raise cherrypy.HTTPError(
             "400 Malformed rows argument must be a comma separated collection of row indices or half-open index ranges.")
 
     if numpy.any(rows < 0):
-        slycat.email.send_error("slycat.web.server.handlers.py validate_table_rows",
+        cherrypy.log.error("slycat.web.server.handlers.py validate_table_rows",
                                 "cherrypy.HTTPError 400 row values must be non-negative.")
         raise cherrypy.HTTPError("400 Row values must be non-negative.")
 
@@ -1622,13 +1460,13 @@ def validate_table_columns(columns):
         columns = columns[columns >= 0]
         return columns
     except:
-        slycat.email.send_error("slycat.web.server.handlers.py validate_table_columns",
+        cherrypy.log.error("slycat.web.server.handlers.py validate_table_columns",
                                 "cherrypy.HTTPError 400 malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
         raise cherrypy.HTTPError(
             "400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
 
     if numpy.any(columns < 0):
-        slycat.email.send_error("slycat.web.server.handlers.py validate_table_columns",
+        cherrypy.log.error("slycat.web.server.handlers.py validate_table_columns",
                                 "cherrypy.HTTPError 400 column values must be non-negative.")
         raise cherrypy.HTTPError("400 Column values must be non-negative.")
 
@@ -1641,7 +1479,7 @@ def validate_table_sort(sort):
             sort = [spec.split(":") for spec in sort.split(",")]
             sort = [(column, order) for column, order in sort]
         except:
-            slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort",
+            cherrypy.log.error("slycat.web.server.handlers.py validate_table_sort",
                                     "cherrypy.HTTPError 400 malformed order argument must be a comma separated collection of column:order tuples.")
             raise cherrypy.HTTPError(
                 "400 Malformed order argument must be a comma separated collection of column:order tuples.")
@@ -1649,22 +1487,22 @@ def validate_table_sort(sort):
         try:
             sort = [(int(column), order) for column, order in sort]
         except:
-            slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort",
+            cherrypy.log.error("slycat.web.server.handlers.py validate_table_sort",
                                     "cherrypy.HTTPError 400 sort column must be an integer.")
             raise cherrypy.HTTPError("400 Sort column must be an integer.")
 
         for column, order in sort:
             if column < 0:
-                slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort",
+                cherrypy.log.error("slycat.web.server.handlers.py validate_table_sort",
                                         "cherrypy.HTTPError 400 sort column must be non-negative.")
                 raise cherrypy.HTTPError("400 Sort column must be non-negative.")
             if order not in ["ascending", "descending"]:
-                slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort",
+                cherrypy.log.error("slycat.web.server.handlers.py validate_table_sort",
                                         "cherrypy.HTTPError 400 sort-order must be 'ascending' or 'descending'")
                 raise cherrypy.HTTPError("400 Sort-order must be 'ascending' or 'descending'.")
 
         if len(sort) != 1:
-            slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort",
+            cherrypy.log.error("slycat.web.server.handlers.py validate_table_sort",
                                     "cherrypy.HTTPError 400 currently, only one column can be sorted.")
             raise cherrypy.HTTPError("400 Currently, only one column can be sorted.")
 
@@ -1674,7 +1512,7 @@ def validate_table_sort(sort):
 def validate_table_byteorder(byteorder):
     if byteorder is not None:
         if byteorder not in ["little", "big"]:
-            slycat.email.send_error("slycat.web.server.handlers.py validate_table_sort",
+            cherrypy.log.error("slycat.web.server.handlers.py validate_table_sort",
                                     "cherrypy.HTTPError 400 malformed byteorder argument must be 'little' or 'big'.")
             raise cherrypy.HTTPError("400 Malformed byteorder argument must be 'little' or 'big'.")
         accept = cherrypy.lib.cptools.accept(["application/octet-stream"])
@@ -1711,7 +1549,7 @@ def get_table_metadata(file, array_index, index):
     array = arrayset[array_index]
 
     if array.ndim != 1:
-        slycat.email.send_error("slycat.web.server.handlers.py get_table_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_table_metadata",
                                 "cherrypy.HTTPError 400 not a table (1D array) artifact.")
         raise cherrypy.HTTPError("400 Not a table (1D array) artifact.")
 
@@ -1747,12 +1585,12 @@ def get_model_table_metadata(mid, aid, array, index=None):
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_metadata",
                                 "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_metadata",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_metadata",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
@@ -1776,12 +1614,12 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_chunk",
                                 "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_chunk",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
@@ -1792,13 +1630,13 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
             # Constrain end <= count along both dimensions
             rows = rows[rows < metadata["row-count"]]
             if numpy.any(columns >= metadata["column-count"]):
-                slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk",
+                cherrypy.log.error("slycat.web.server.handlers.py get_model_table_chunk",
                                         "cherrypy.HTTPError 400 column out-of-range.")
                 raise cherrypy.HTTPError("400 Column out-of-range.")
             if sort is not None:
                 for column, order in sort:
                     if column >= metadata["column-count"]:
-                        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_chunk",
+                        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_chunk",
                                                 "400 sort column out-of-range.")
                         raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
@@ -1842,12 +1680,12 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_sorted_indices",
                                 "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_sorted_indices",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
@@ -1860,7 +1698,7 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
             if sort is not None:
                 for column, order in sort:
                     if column >= metadata["column-count"]:
-                        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_sorted_indices",
+                        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_sorted_indices",
                                                 "cherrypy.HTTPError 400 sort column out-of-range.")
                         raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
@@ -1889,12 +1727,12 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_unsorted_indices",
                                 "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type not in ["hdf5"]:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_unsorted_indices",
                                 "cherrypy.HTTPError 400 %s is not an array artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not an array artifact." % aid)
 
@@ -1907,7 +1745,7 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
             if sort is not None:
                 for column, order in sort:
                     if column >= metadata["column-count"]:
-                        slycat.email.send_error("slycat.web.server.handlers.py get_model_table_unsorted_indices",
+                        cherrypy.log.error("slycat.web.server.handlers.py get_model_table_unsorted_indices",
                                                 "cherrypy.HTTPError 400 sort column out-of-range.")
                         raise cherrypy.HTTPError("400 Sort column out-of-range.")
 
@@ -1932,12 +1770,12 @@ def get_model_file(mid, aid):
 
     artifact = model.get("artifact:%s" % aid, None)
     if artifact is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_file",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_file",
                                 "cherrypy.HTTPError 404 artifact is None for aid: %s" % aid)
         raise cherrypy.HTTPError(404)
     artifact_type = model["artifact-types"][aid]
     if artifact_type != "file":
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_file",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_file",
                                 "cherrypy.HTTPError 400 %s is not a file artifact." % aid)
         raise cherrypy.HTTPError("400 %s is not a file artifact." % aid)
     fid = artifact
@@ -1956,7 +1794,7 @@ def get_model_parameter(mid, aid):
     try:
         return slycat.web.server.get_model_parameter(database, model, aid)
     except KeyError as e:
-        slycat.email.send_error("slycat.web.server.handlers.py get_model_parameter",
+        cherrypy.log.error("slycat.web.server.handlers.py get_model_parameter",
                                 "cherrypy.HTTPError 404 unknown artifact: %s" % aid)
         raise cherrypy.HTTPError("404 Unknown artifact: %s" % aid)
 
@@ -1979,7 +1817,7 @@ def get_user(uid, time):
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
     if user is None:
-        slycat.email.send_error("slycat.web.server.handlers.py get_user",
+        cherrypy.log.error("slycat.web.server.handlers.py get_user",
                                 "cherrypy.HTTPError 404 user is None for uid: %s" % uid)
         raise cherrypy.HTTPError(404)
     # Add the uid to the record, since the caller may not know it.
@@ -2502,28 +2340,6 @@ get_configuration_version.commit = None
 def get_configuration_wizards():
     return [dict([("type", type)] + wizard.items()) for type, wizard in
             slycat.web.server.plugin.manager.wizards.items()]
-
-
-@cherrypy.tools.expires(on=True, force=True, secs=60 * 60 * 24 * 30)
-def get_global_resource(resource):
-    if not get_global_resource._ready:
-        with get_global_resource._lock:
-            slycat.web.server.resource.manager.add_file("slycat-logo-navbar.png", "css/slycat-logo-navbar.png")
-            get_global_resource._ready = True
-    if resource in slycat.web.server.resource.manager.bundles:
-        content_type, content = slycat.web.server.resource.manager.bundles[resource]
-        cherrypy.response.headers["content-type"] = content_type
-        return content
-    if resource in slycat.web.server.resource.manager.files:
-        return cherrypy.lib.static.serve_file(slycat.web.server.resource.manager.files[resource])
-
-    slycat.email.send_error("slycat.web.server.handlers.py get_global_resource",
-                            "cherrypy.HTTPError 404 invalid resource: %s" % resource)
-    raise cherrypy.HTTPError(404)
-
-
-get_global_resource._lock = threading.Lock()
-get_global_resource._ready = False
 
 
 def tests_request(*arguments, **keywords):

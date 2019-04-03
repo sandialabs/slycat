@@ -15,7 +15,7 @@ import couchdb.client
 import threading
 import time
 import uuid
-import slycat.email
+
 
 db_lock = threading.Lock()
 class Database:
@@ -42,7 +42,7 @@ class Database:
     try:
       return self._database.save(*arguments, **keywords)
     except couchdb.http.ServerError as e:
-      slycat.email.send_error("slycat.web.server.database.couchdb.py save", "%s %s" % (e.message[0], e.message[1][1]))
+      cherrypy.log.error("slycat.web.server.database.couchdb.py save", "%s %s" % (e.message[0], e.message[1][1]))
       raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
 
   def view(self, *arguments, **keywords):
@@ -59,7 +59,7 @@ class Database:
     except couchdb.client.http.ResourceNotFound:
       raise cherrypy.HTTPError(404)
     if document["type"] != type:
-      slycat.email.send_error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404 document type %s is different than input type: %s" % (document["type"], type))
+      cherrypy.log.error("slycat.web.server.database.couchdb.py get", "cherrypy.HTTPError 404 document type %s is different than input type: %s" % (document["type"], type))
       raise cherrypy.HTTPError(404)
     return document
 

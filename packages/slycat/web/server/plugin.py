@@ -7,7 +7,7 @@ import hashlib
 import imp
 import os
 import traceback
-import slycat.email
+
 
 class Manager(object):
   """Manages server plugin modules."""
@@ -54,7 +54,7 @@ class Manager(object):
     (non-recursive).  Otherwise, assumes the path is a module and loads it.
     """
     if not os.path.isabs(plugin_path):
-      slycat.email.send_error("slycat.web.server.plugin.py load", "Plugin module path must be absolute: %s" % plugin_path)
+      cherrypy.log.error("slycat.web.server.plugin.py load", "Plugin module path must be absolute: %s" % plugin_path)
       raise Exception("Plugin module path must be absolute: %s" % plugin_path)
     if os.path.isdir(plugin_path):
       self._load_directory(plugin_path)
@@ -87,7 +87,7 @@ class Manager(object):
       a dictionary containing user metadata.
     """
     if type in self.directories:
-      slycat.email.send_error("slycat.web.server.plugin.py register_directory", "Directory type '%s' has already been registered." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_directory", "Directory type '%s' has already been registered." % type)
       raise Exception("Directory type '%s' has already been registered." % type)
 
     self.directories[type] = {"init":init, "user":user}
@@ -117,7 +117,7 @@ class Manager(object):
     may be used together to define a "container" that encloses the page markup.
     """
     if type in self.markings:
-      slycat.email.send_error("slycat.web.server.plugin.py register_marking", "Marking type '%s' has already been registered." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_marking", "Marking type '%s' has already been registered." % type)
       raise Exception("Marking type '%s' has already been registered." % type)
 
     self.markings[type] = {"label":label, "badge":badge, "page-before":page_before, "page-after": page_after}
@@ -125,7 +125,7 @@ class Manager(object):
 
   def register_page_bundle(self, type, content_type, paths):
     if type not in self.pages:
-      slycat.email.send_error("slycat.web.server.plugin.py register_marking", "Unknown page type: %s." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_marking", "Unknown page type: %s." % type)
       raise Exception("Unknown page type: %s." % type)
     if type not in self.page_bundles:
       self.page_bundles[type] = {}
@@ -138,7 +138,7 @@ class Manager(object):
 
     for path in paths:
       if not os.path.isabs(path):
-        slycat.email.send_error("slycat.web.server.plugin.py register_page_bundle", "Bundle file '%s' must be an absolute path." % (path))
+        cherrypy.log.error("slycat.web.server.plugin.py register_page_bundle", "Bundle file '%s' must be an absolute path." % (path))
         raise Exception("Bundle file '%s' must be an absolute path." % (path))
       cherrypy.log.error("  %s" % path)
       cherrypy.engine.autoreload.files.add(path)
@@ -182,11 +182,11 @@ class Manager(object):
       Called with the database, model, verb, type, command, and optional keyword parameters to handle a matching client request.
     """
     if verb not in ["GET", "POST", "PUT"]:
-      slycat.email.send_error("slycat.web.server.plugin.py register_model_command", "Not an allowed HTTP verb: %s" % verb)
+      cherrypy.log.error("slycat.web.server.plugin.py register_model_command", "Not an allowed HTTP verb: %s" % verb)
       raise Exception("Not an allowed HTTP verb: %s" % verb)
     key = (verb, type, command)
     if key in self.model_commands:
-      slycat.email.send_error("slycat.web.server.plugin.py register_model_command", "Command '%s %s %s' has already been registered." % (verb, type, command))
+      cherrypy.log.error("slycat.web.server.plugin.py register_model_command", "Command '%s %s %s' has already been registered." % (verb, type, command))
       raise Exception("Command '%s %s %s' has already been registered." % (verb, type, command))
 
     self.model_commands[key] = handler
@@ -206,18 +206,18 @@ class Manager(object):
       The resource may be a single file, or a directory.
     """
     if type not in self.pages:
-      slycat.email.send_error("slycat.web.server.plugin.py register_page_resource", "Unknown page type: %s." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_page_resource", "Unknown page type: %s." % type)
       raise Exception("Unknown page type: %s." % type)
     if type not in self.page_resources:
       self.page_resources[type] = {}
     if resource in self.page_resources[type]:
-      slycat.email.send_error("slycat.web.server.plugin.py register_page_resource", "Resource '%s' has already been registered with page '%s'." % (resource, type))
+      cherrypy.log.error("slycat.web.server.plugin.py register_page_resource", "Resource '%s' has already been registered with page '%s'." % (resource, type))
       raise Exception("Resource '%s' has already been registered with page '%s'." % (resource, type))
     if not os.path.isabs(path):
-      slycat.email.send_error("slycat.web.server.plugin.py register_page_resource", "Resource '%s' must have an absolute path." % (resource))
+      cherrypy.log.error("slycat.web.server.plugin.py register_page_resource", "Resource '%s' must have an absolute path." % (resource))
       raise Exception("Resource '%s' must have an absolute path." % (resource))
     if not os.path.exists(path):
-      slycat.email.send_error("slycat.web.server.plugin.py register_page_resource", "Resource '%s' does not exist." % (resource))
+      cherrypy.log.error("slycat.web.server.plugin.py register_page_resource", "Resource '%s' does not exist." % (resource))
       raise Exception("Resource '%s' does not exist." % (resource))
     if os.path.isdir(path):
       cherrypy.log.error("Registered page '%s' resources" % type)
@@ -247,14 +247,14 @@ class Manager(object):
       viewing the model.  Defaults to the same string as the model type.
     """
     if type in self.models:
-      slycat.email.send_error("slycat.web.server.plugin.py register_model", "Model type '%s' has already been registered." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_model", "Model type '%s' has already been registered." % type)
       raise Exception("Model type '%s' has already been registered." % type)
 
     if ptype is None:
       ptype = type
 
     if not isinstance(ptype, basestring):
-      slycat.email.send_error("slycat.web.server.plugin.py register_model", "Page type '%s' must be a string." % ptype)
+      cherrypy.log.error("slycat.web.server.plugin.py register_model", "Page type '%s' must be a string." % ptype)
       raise Exception("Page type '%s' must be a string." % ptype)
 
     self.models[type] = {"finish": finish, "ptype": ptype}
@@ -271,7 +271,7 @@ class Manager(object):
       Called to generate an HTML representation of the page.
     """
     if type in self.pages:
-      slycat.email.send_error("slycat.web.server.plugin.py register_page", "Page type '%s' has already been registered." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_page", "Page type '%s' has already been registered." % type)
       raise Exception("Page type '%s' has already been registered." % type)
 
     self.pages[type] = {"html": html}
@@ -295,7 +295,7 @@ class Manager(object):
       successful, otherwise False.
     """
     if type in self.parsers:
-      slycat.email.send_error("slycat.web.server.plugin.py register_parser", "Parser type '%s' has already been regiitered.")
+      cherrypy.log.error("slycat.web.server.plugin.py register_parser", "Parser type '%s' has already been regiitered.")
       raise Exception("Parser type '%s' has already been registered." % type)
     self.parsers[type] = {"label": label, "categories": categories, "parse": parse}
     cherrypy.log.error("Registered parser '%s'." % type)
@@ -314,7 +314,7 @@ class Manager(object):
       groups to which the user belongs.
     """
     if type in self.password_checks:
-      slycat.email.send_error("slycat.web.server.plugin.py register_password_check", "Password check type '%s' has already been registered.")
+      cherrypy.log.error("slycat.web.server.plugin.py register_password_check", "Password check type '%s' has already been registered.")
       raise Exception("Password check type '%s' has already been registered." % type)
 
     self.password_checks[type] = check
@@ -333,7 +333,7 @@ class Manager(object):
       Called for every client request.
     """
     if name in self.tools:
-      slycat.email.send_error("slycat.web.server.plugin.py register_tool", "Tool '%s' has already been registered.")
+      cherrypy.log.error("slycat.web.server.plugin.py register_tool", "Tool '%s' has already been registered.")
       raise Exception("Tool '%s' has already been registered." % name)
     self.tools[name] = (hook_point, callable)
     setattr(cherrypy.tools, name, cherrypy.Tool(hook_point, callable))
@@ -352,18 +352,18 @@ class Manager(object):
       Absolute filesystem path of the resource to be retrieved.
     """
     if type not in self.wizards:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard_resource", "Unknown wizard type: %s." % type)
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard_resource", "Unknown wizard type: %s." % type)
       raise Exception("Unknown wizard type: %s." % type)
     if type not in self.wizard_resources:
       self.wizard_resources[type] = {}
     if resource in self.wizard_resources[type]:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard_resource", "Resource '%s' has already been registered with wizard '%s'." % (resource, type))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard_resource", "Resource '%s' has already been registered with wizard '%s'." % (resource, type))
       raise Exception("Resource '%s' has already been registered with wizard '%s'." % (resource, type))
     if not os.path.isabs(path):
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard_resource", "Resource '%s' must have an absolute path.")
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard_resource", "Resource '%s' must have an absolute path.")
       raise Exception("Resource '%s' must have an absolute path." % (path))
     if not os.path.exists(path):
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard_resource", "Resource '%s' does not exist." % (path))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard_resource", "Resource '%s' does not exist." % (path))
       raise Exception("Resource '%s' does not exist." % (path))
     self.wizard_resources[type][resource] = path
     cherrypy.log.error("Registered wizard '%s' resource" % type)
@@ -393,19 +393,19 @@ class Manager(object):
 
     """
     if type in self.wizards:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' has already been registered." % (type))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' has already been registered." % (type))
       raise Exception("Wizard '%s' has already been registered." % (type))
     if "action" not in require:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' must specify an action." % (type))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' must specify an action." % (type))
       raise Exception("Wizard '%s' must specify an action." % (type))
     if require["action"] not in ["create", "edit", "info", "delete"]:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' unknown action: %s." % (type, require["action"]))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' unknown action: %s." % (type, require["action"]))
       raise Exception("Wizard '%s' unknown action: %s." % (type, require["action"]))
     if "context" not in require:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' must specify a context." % (type))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' must specify a context." % (type))
       raise Exception("Wizard '%s' must specify a context." % (type))
     if require["context"] not in ["global", "project", "model"]:
-      slycat.email.send_error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' unknown context: %s." % (type, require["context"]))
+      cherrypy.log.error("slycat.web.server.plugin.py register_wizard", "Wizard '%s' unknown context: %s." % (type, require["context"]))
       raise Exception("Wizard '%s' unknown context: %s." % (type, require["context"]))
     self.wizards[type] = {"label": label, "require": require}
     cherrypy.log.error("Registered wizard '%s'." % (type))

@@ -9,7 +9,7 @@ import logging
 import os
 import shutil
 import slycat.hdf5
-import slycat.email
+
 import sys
 
 parser = argparse.ArgumentParser()

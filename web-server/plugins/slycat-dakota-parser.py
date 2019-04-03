@@ -4,7 +4,7 @@
 
 import numpy
 import slycat.web.server
-import slycat.email
+
 import StringIO
 
 
@@ -26,7 +26,7 @@ def parse_file(file):
     cherrypy.log.error("parsing:::::::")
     rows = [row.split() for row in StringIO.StringIO(file)]
     if len(rows) < 2:
-        slycat.email.send_error("slycat-dakota-parser.py parse_file", "File must contain at least two rows.")
+        cherrypy.log.error("slycat-dakota-parser.py parse_file", "File must contain at least two rows.")
         raise Exception("File must contain at least two rows.")
 
     attributes = []
@@ -55,7 +55,7 @@ def parse_file(file):
             attributes.append({"name": column[0], "type": "string"})
 
     if len(attributes) < 1:
-        slycat.email.send_error("slycat-dakota-parser.py parse_file", "File must contain at least one column.")
+        cherrypy.log.error("slycat-dakota-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
     return attributes, dimensions, data
@@ -63,7 +63,7 @@ def parse_file(file):
 
 def parse(database, model, input, files, aids, **kwargs):
     if len(files) != len(aids):
-        slycat.email.send_error("slycat-dakota-parser.py parse", "Number of files and artifact IDs must match.")
+        cherrypy.log.error("slycat-dakota-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
     parsed = [parse_file(file) for file in files]

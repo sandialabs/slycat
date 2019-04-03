@@ -11,13 +11,13 @@ def register_slycat_plugin(context):
     import cherrypy
     import datetime
     import slycat.web.server
-    import slycat.email
+    
     import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
         if '"' in realm:
-            slycat.email.send_error("slycat-standard-authentication.py authenticate",
+            cherrypy.log.error("slycat-standard-authentication.py authenticate",
                                     "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 
@@ -27,7 +27,7 @@ def register_slycat_plugin(context):
         current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
         # Require a secure connection.
         if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
-            slycat.email.send_error("slycat-standard-authentication.py authenticate",
+            cherrypy.log.error("slycat-standard-authentication.py authenticate",
                                     "cherrypy.HTTPError 403 secure connection required.")
             raise cherrypy.HTTPError(403, 'Secure connection is required')
 

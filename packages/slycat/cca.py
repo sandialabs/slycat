@@ -6,7 +6,7 @@ import numbers
 import numpy
 import scipy.linalg
 import scipy.stats
-import slycat.email
+
 
 def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
   """Compute Canonical Correlation Analysis (CCA).
@@ -43,35 +43,35 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
 
   # Validate our inputs ...
   if not isinstance(X, numpy.ndarray) or not isinstance(Y, numpy.ndarray):
-    slycat.email.send_error("cca.py", "X and Y must be numpy.ndarray instances.")
+    cherrypy.log.error("cca.py", "X and Y must be numpy.ndarray instances.")
     raise TypeError("X and Y must be numpy.ndarray instances.")
   if X.ndim != 2 or Y.ndim != 2:
-    slycat.email.send_error("cca.py", "X and Y must have two dimensions.")
+    cherrypy.log.error("cca.py", "X and Y must have two dimensions.")
     raise ValueError("X and Y must have two dimensions.")
   if X.shape[0] != Y.shape[0]:
-    slycat.email.send_error("cca.py", "X and Y must contain the same number of rows.")
+    cherrypy.log.error("cca.py", "X and Y must contain the same number of rows.")
     raise ValueError("X and Y must contain the same number of rows.")
   if X.shape[0] < X.shape[1] or X.shape[0] < Y.shape[1]:
-    slycat.email.send_error("cca.py", "Number of rows must be >= the number of column in X, and >= the number of columns in Y.")
+    cherrypy.log.error("cca.py", "Number of rows must be >= the number of column in X, and >= the number of columns in Y.")
     raise ValueError("Number of rows must be >= the number of columns in X, and >= the number of columns in Y.")
   if X.shape[1] < 1 or Y.shape[1] < 1:
-    slycat.email.send_error("cca.py", "X and Y must each contain at least one column.")
+    cherrypy.log.error("cca.py", "X and Y must each contain at least one column.")
     raise ValueError("X and Y must each contain at least one column.")
   for column in numpy.column_stack((X, Y)).T:
     if column.min() == column.max():
-      slycat.email.send_error("cca.py", "Columns in X and Y cannot be constant.")
+      cherrypy.log.error("cca.py", "Columns in X and Y cannot be constant.")
       raise ValueError("Columns in X and Y cannot be constant.")
   if not isinstance(scale_inputs, bool):
-    slycat.email.send_error("cca.py", "scale_inputs must be a boolean.")
+    cherrypy.log.error("cca.py", "scale_inputs must be a boolean.")
     raise TypeError("scale_inputs must be a boolean.")
   if not isinstance(force_positive, (type(None), numbers.Integral)):
-    slycat.email.send_error("cca.py", "force_positive must be an integer or None.")
+    cherrypy.log.error("cca.py", "force_positive must be an integer or None.")
     raise TypeError("force_positive must be an integer or None.")
   if force_positive is not None and (force_positive < 0 or force_positive >= Y.shape[1]):
-    slycat.email.send_error("cca.py", "force_positive must be in the range [0, number of Y columns).")
+    cherrypy.log.error("cca.py", "force_positive must be in the range [0, number of Y columns).")
     raise ValueError("force_positive must be in the range [0, number of Y columns).")
   if not isinstance(significant_digits, (type(None), numbers.Integral)):
-    slycat.email.send_error("cca.py", "significant_digits must be an integer or None.")
+    cherrypy.log.error("cca.py", "significant_digits must be an integer or None.")
     raise TypeError("significant_digits must be an integer or None.")
 
   eps = numpy.finfo("double").eps
@@ -97,7 +97,7 @@ def cca(X, Y, scale_inputs=True, force_positive=None, significant_digits=None):
 
   # We validate this here, to avoid computing the rank twice.
   if X.shape[0] < Xrank or X.shape[0] < Yrank:
-    slycat.email.send_error("cca.py", "Number of rows must be >= rank(X), and >= rank(Y).")
+    cherrypy.log.error("cca.py", "Number of rows must be >= rank(X), and >= rank(Y).")
     raise ValueError("Number of rows must be >= rank(X), and >= rank(Y).")
 
   L, D, M = scipy.linalg.svd(numpy.dot(Q1.T, Q2), full_matrices=False)

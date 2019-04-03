@@ -36,7 +36,7 @@ import os
 import shutil
 import slycat.web.server.authentication
 import slycat.web.server.database
-import slycat.email
+
 import StringIO
 import threading
 import time
@@ -215,7 +215,7 @@ class Session(object):
     """
     if self._parsing_thread is not None and self._parsing_thread.is_alive():
       # Commenting out the error email since it seems like a frequent one as well...
-      # slycat.email.send_error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
+      # cherrypy.log.error("slycat.web.server.upload.py close", "cherrypy.HTTPError 409 parsing in progress.")
       raise cherrypy.HTTPError("409 Parsing in progress.")
 
     storage = path(self._uid)
@@ -277,11 +277,11 @@ def get_session(uid):
       if client != session.client:
         cherrypy.log.error("Client %s attempted to access upload session from %s" % (client, session.client))
         del session_cache[uid]
-        slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404 client %s attempted to access upload session from %s" % (client, session.client))
+        cherrypy.log.error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404 client %s attempted to access upload session from %s" % (client, session.client))
         raise cherrypy.HTTPError("404")
 
     if uid not in session_cache:
-      slycat.email.send_error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404 uid is not in session_cache")
+      cherrypy.log.error("slycat.web.server.upload.py get_session", "cherrypy.HTTPError 404 uid is not in session_cache")
       raise cherrypy.HTTPError("404")
 
     session = session_cache[uid]

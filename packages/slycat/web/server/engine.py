@@ -17,7 +17,7 @@ import sys
 import slycat.web.server.cleanup
 import slycat.web.server.handlers
 import slycat.web.server.plugin
-import slycat.email
+
 
 class SessionIdFilter(logging.Filter):
   """Python log filter to keep session ids out of logfiles."""
@@ -39,7 +39,7 @@ def start(root_path, config_file):
   configuration = {}
   config_file = abspath(config_file)
   if not os.path.exists(config_file):
-    slycat.email.send_error("slycat.web.server.engine.py start", "Configuration file %s does not exist." % config_file)
+    cherrypy.log.error("slycat.web.server.engine.py start", "Configuration file %s does not exist." % config_file)
     raise Exception("Configuration file %s does not exist." % config_file)
 
   # below, simply tell engine to watch config file for potential reload, reloading may be ON or OFF
@@ -91,7 +91,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-ga-tracking-id", "/configuration/ga-tracking-id", slycat.web.server.handlers.get_configuration_ga_tracking_id, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-version", "/configuration/version", slycat.web.server.handlers.get_configuration_version, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-global-resource", "/resources/global/{resource:.*}", slycat.web.server.handlers.get_global_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.get_model_arrayset_data, conditions={"method" : ["GET"]})
 
@@ -101,8 +100,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-parameter", "/models/:mid/parameters/:aid", slycat.web.server.handlers.get_model_parameter, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-page", "/pages/:ptype", slycat.web.server.handlers.get_page, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-page-resource", "/resources/pages/:ptype/{resource:.*}", slycat.web.server.handlers.get_page_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-wizard-resource", "/resources/wizards/:wtype/{resource:.*}", slycat.web.server.handlers.get_wizard_resource, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-chunk", "/models/:mid/tables/:aid/arrays/:array/chunk", slycat.web.server.handlers.get_model_table_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-table-metadata", "/models/:mid/tables/:aid/arrays/:array/metadata", slycat.web.server.handlers.get_model_table_metadata, conditions={"method" : ["GET"]})
@@ -287,14 +284,14 @@ def start(root_path, config_file):
   # Sanity-check to ensure that we have a marking plugin for every allowed marking type.
   for allowed_marking in configuration["slycat-web-server"]["allowed-markings"]:
     if allowed_marking not in manager.markings.keys():
-      slycat.email.send_error("slycat.web.server.engine.py start", "No marking plugin for type: %s" % allowed_marking)
+      cherrypy.log.error("slycat.web.server.engine.py start", "No marking plugin for type: %s" % allowed_marking)
       raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Setup the requested directory plugin.
   # wsgi: this is the ldap fn to lookup a username and rtn/cache uid, name, email
   directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
   if directory_type not in manager.directories.keys():
-    slycat.email.send_error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory_type)
+    cherrypy.log.error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory_type)
     raise Exception("No directory plugin for type: %s" % directory_type)
   directory_args = configuration["slycat-web-server"]["directory"].get("args", [])
   directory_kwargs = configuration["slycat-web-server"]["directory"].get("kwargs", {})

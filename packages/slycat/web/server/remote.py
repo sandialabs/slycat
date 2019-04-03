@@ -40,7 +40,7 @@ import uuid
 import cherrypy
 import paramiko
 import socket
-import slycat.email
+
 import slycat.mime_type
 import slycat.web.server.authentication
 import slycat.web.server.database
@@ -170,7 +170,7 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py submit_batch",
+                cherrypy.log.error("slycat.web.server.remote.py submit_batch",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
 
@@ -180,7 +180,7 @@ class Session(object):
             return {"filename": response["filename"], "jid": jid, "errors": response["errors"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py submit_batch",
+            cherrypy.log.error("slycat.web.server.remote.py submit_batch",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
@@ -208,7 +208,7 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py checkjob",
+                cherrypy.log.error("slycat.web.server.remote.py checkjob",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
 
@@ -221,7 +221,7 @@ class Session(object):
             return {"jid": response["jid"], "status": status, "errors": response["errors"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py checkjob",
+            cherrypy.log.error("slycat.web.server.remote.py checkjob",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
@@ -249,14 +249,14 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py cancel_job",
+                cherrypy.log.error("slycat.web.server.remote.py cancel_job",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
 
             return {"jid": response["jid"], "output": response["output"], "errors": response["errors"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py cancel_job",
+            cherrypy.log.error("slycat.web.server.remote.py cancel_job",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
@@ -286,13 +286,13 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py get_job_output",
+                cherrypy.log.error("slycat.web.server.remote.py get_job_output",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
             return {"jid": response["jid"], "output": response["output"], "errors": response["errors"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py get_job_output",
+            cherrypy.log.error("slycat.web.server.remote.py get_job_output",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
@@ -315,13 +315,13 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py get_user_config",
+                cherrypy.log.error("slycat.web.server.remote.py get_user_config",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
             return {"config": response["config"], "errors": response["errors"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py get_user_config",
+            cherrypy.log.error("slycat.web.server.remote.py get_user_config",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
@@ -343,13 +343,13 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py set_user_config",
+                cherrypy.log.error("slycat.web.server.remote.py set_user_config",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
             return {"errors": response["errors"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py set_user_config",
+            cherrypy.log.error("slycat.web.server.remote.py set_user_config",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
@@ -401,14 +401,14 @@ class Session(object):
         # check for an agent in none available die
         if self._agent is None:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(500)
 
         # check if we can run the function
         if fn not in restricted_fns:
             cherrypy.response.headers["x-slycat-message"] = "Function %s is not available for the agent" % fn
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 500 function %s is not available for the agent." % fn)
             raise cherrypy.HTTPError(500)
 
@@ -531,7 +531,7 @@ class Session(object):
         if not response["ok"]:
             cherrypy.response.headers["x-slycat-message"] = response["message"]
             cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 400 %s" % response["message"])
             raise cherrypy.HTTPError(status=400, message="run_agent_function response was not ok")
 
@@ -575,7 +575,7 @@ class Session(object):
         # check for an agent if none available die
         if self._agent is None:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(404, "no Slycat agent present on remote host.")
 
@@ -597,7 +597,7 @@ class Session(object):
         if not response["ok"]:
             cherrypy.response.headers["x-slycat-message"] = response["message"]
             cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 400 %s" % response["message"])
             raise cherrypy.HTTPError(status=400,
                                      message="run_agent_function response was not ok: %s" % response["message"])
@@ -623,7 +623,7 @@ class Session(object):
         # check for an agent if none available die
         if self._agent is None:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 500 no Slycat agent present on remote host.")
             raise cherrypy.HTTPError(404, "no Slycat agent present on remote host.")
 
@@ -644,7 +644,7 @@ class Session(object):
         if not response["ok"]:
             cherrypy.response.headers["x-slycat-message"] = response["message"]
             cherrypy.log.error("agent response was not OK msg: %s" % response["message"])
-            slycat.email.send_error("slycat.web.server.remote.py run_agent_function",
+            cherrypy.log.error("slycat.web.server.remote.py run_agent_function",
                                     "cherrypy.HTTPError 400 %s" % response["message"])
             raise cherrypy.HTTPError(status=400,
                                      message="run_agent_function response was not ok: %s" % response["message"])
@@ -675,7 +675,7 @@ class Session(object):
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
-                slycat.email.send_error("slycat.web.server.remote.py launch",
+                cherrypy.log.error("slycat.web.server.remote.py launch",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
             return {"command": response["command"], "output": response["output"], "errors": response["errors"]}
@@ -687,11 +687,11 @@ class Session(object):
             return response
         except paramiko.SSHException as e:
             cherrypy.response.headers["x-slycat-message"] = str(e)
-            slycat.email.send_error("slycat.web.server.remote.py launch", "cherrypy.HTTPError 500 %s" % str(e))
+            cherrypy.log.error("slycat.web.server.remote.py launch", "cherrypy.HTTPError 500 %s" % str(e))
             raise cherrypy.HTTPError(500)
         except Exception as e:
             cherrypy.response.headers["x-slycat-message"] = str(e)
-            slycat.email.send_error("slycat.web.server.remote.py launch", "cherrypy.HTTPError 400 %s" % str(e))
+            cherrypy.log.error("slycat.web.server.remote.py launch", "cherrypy.HTTPError 400 %s" % str(e))
             raise cherrypy.HTTPError(400)
 
     def browse(self, path, file_reject, file_allow, directory_reject, directory_allow):
@@ -758,7 +758,7 @@ class Session(object):
             return response
         except Exception as e:
             cherrypy.response.headers["x-slycat-message"] = str(e)
-            slycat.email.send_error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s" % str(e))
+            cherrypy.log.error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s" % str(e))
             raise cherrypy.HTTPError(400)
 
     def write_file(self, path, data, **kwargs):
@@ -771,16 +771,16 @@ class Session(object):
 
         # Sanity-check arguments.
         if cache not in [None, "project"]:
-            slycat.email.send_error("slycat.web.server.remote.py get_file",
+            cherrypy.log.error("slycat.web.server.remote.py get_file",
                                     "cherrypy.HTTPError 400 unknown cache type: %s." % cache)
             raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
         if cache is not None:
             if project is None:
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 must specify project ID.")
                 raise cherrypy.HTTPError("400 Must specify project id.")
             if key is None:
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 must specify cache key.")
                 raise cherrypy.HTTPError("400 Must specify cache key.")
 
@@ -801,7 +801,7 @@ class Session(object):
             if metadata["message"] == "Path must be absolute.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 Path not absolute.")
@@ -813,7 +813,7 @@ class Session(object):
                                        " access to %s, and don't forget to set appropriate permissions" \
                                        " on all the parent directories!" % (
                                            self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to "
                                         "retrieve %s:%s. Check the filesystem on %s to verify that"
                                         " your user has access to %s, and don't forget to set appropriate "
@@ -823,14 +823,14 @@ class Session(object):
             elif metadata["message"] == "Path not found.":
                 cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 File not found.")
             elif metadata["message"] == "Directory unreadable.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
                 raise cherrypy.HTTPError("400 Can't read directory.")
             elif metadata["message"] == "Access denied.":
@@ -841,7 +841,7 @@ class Session(object):
                                        " to %s, and don't forget to set appropriate permissions on all" \
                                        " the parent directories!" % (
                                            self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to"
                                         " retrieve %s:%s. Check the filesystem on %s to verify "
                                         "that your user has access to %s, and don't forget to set"
@@ -858,16 +858,16 @@ class Session(object):
 
         # Sanity-check arguments.
         if cache not in [None, "project"]:
-            slycat.email.send_error("slycat.web.server.remote.py get_file",
+            cherrypy.log.error("slycat.web.server.remote.py get_file",
                                     "cherrypy.HTTPError 400 unknown cache type: %s." % cache)
             raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
         if cache is not None:
             if project is None:
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 must specify project ID.")
                 raise cherrypy.HTTPError("400 Must specify project id.")
             if key is None:
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 must specify cache key.")
                 raise cherrypy.HTTPError("400 Must specify cache key.")
 
@@ -885,7 +885,7 @@ class Session(object):
             if metadata["message"] == "Path must be absolute.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 Path not absolute.")
@@ -897,7 +897,7 @@ class Session(object):
                                        " access to %s, and don't forget to set appropriate permissions" \
                                        " on all the parent directories!" % (
                                            self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to "
                                         "retrieve %s:%s. Check the filesystem on %s to verify that"
                                         " your user has access to %s, and don't forget to set appropriate "
@@ -907,14 +907,14 @@ class Session(object):
             elif metadata["message"] == "Path not found.":
                 cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 File not found.")
             elif metadata["message"] == "Directory unreadable.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
                 raise cherrypy.HTTPError("400 Can't read directory.")
             elif metadata["message"] == "Access denied.":
@@ -925,7 +925,7 @@ class Session(object):
                                        " to %s, and don't forget to set appropriate permissions on all" \
                                        " the parent directories!" % (
                                            self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to"
                                         " retrieve %s:%s. Check the filesystem on %s to verify "
                                         "that your user has access to %s, and don't forget to set"
@@ -947,7 +947,7 @@ class Session(object):
             if stat.S_ISDIR(self._sftp.stat(path).st_mode):
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
                 raise cherrypy.HTTPError("400 Can't read directory.")
 
@@ -967,7 +967,7 @@ class Session(object):
 
             if str(e) == "Garbage packet received":
                 cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 500 remote access failed: %s" % str(e))
                 raise cherrypy.HTTPError("500 Remote access failed.")
 
@@ -976,7 +976,7 @@ class Session(object):
                 # 404 to handle an unknown sessions, and clients need to make the distinction.
                 cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
                     self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 File not found.")
@@ -990,7 +990,7 @@ class Session(object):
                                        "to %s, and don't forget to set appropriate permissions on all " \
                                        "the parent directories!" % (
                                            self.hostname, path)
-                slycat.email.send_error("slycat.web.server.remote.py get_file",
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 you do not have permission to "
                                         "retrieve %s:%s. Check the filesystem on %s to verify that your "
                                         "user has access to %s, and don't forget to set appropriate permissions"
@@ -1000,7 +1000,7 @@ class Session(object):
 
             # Catchall
             cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
-            slycat.email.send_error("slycat.web.server.remote.py get_file",
+            cherrypy.log.error("slycat.web.server.remote.py get_file",
                                     "cherrypy.HTTPError 400 remote access failed: %s" % str(e))
             raise cherrypy.HTTPError("400 Remote access failed.")
 
@@ -1016,16 +1016,16 @@ class Session(object):
 
         # Sanity-check arguments.
         if cache not in [None, "project"]:
-            slycat.email.send_error("slycat.web.server.remote.py get_image",
+            cherrypy.log.error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 unknown cache type: %s.")
             raise cherrypy.HTTPError("400 Unknown cache type: %s." % cache)
         if cache is not None:
             if project is None:
-                slycat.email.send_error("slycat.web.server.remote.py get_image",
+                cherrypy.log.error("slycat.web.server.remote.py get_image",
                                         "cherrypy.HTTPError 400 must specify project id.")
                 raise cherrypy.HTTPError("400 Must specify project id.")
             if key is None:
-                slycat.email.send_error("slycat.web.server.remote.py get_image",
+                cherrypy.log.error("slycat.web.server.remote.py get_image",
                                         "cherrypy.HTTPError 400 must specify cache key.")
                 raise cherrypy.HTTPError("400 Must specify cache key.")
 
@@ -1033,7 +1033,7 @@ class Session(object):
             cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
             cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (
                 self.hostname)
-            slycat.email.send_error("slycat.web.server.remote.py get_image",
+            cherrypy.log.error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 no agent for %s." % (self.hostname))
             raise cherrypy.HTTPError("400 Agent required.")
 
@@ -1056,19 +1056,19 @@ class Session(object):
 
         if metadata["message"] == "Path must be absolute.":
             cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (self.hostname, path)
-            slycat.email.send_error("slycat.web.server.remote.py get_image",
+            cherrypy.log.error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (self.hostname, path))
             raise cherrypy.HTTPError("400 Path not absolute.")
         elif metadata["message"] == "Path not found.":
             cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
                 self.hostname, path)
-            slycat.email.send_error("slycat.web.server.remote.py get_image",
+            cherrypy.log.error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
                                         self.hostname, path))
             raise cherrypy.HTTPError("400 File not found.")
         elif metadata["message"] == "Directory unreadable.":
             cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (self.hostname, path)
-            slycat.email.send_error("slycat.web.server.remote.py get_image",
+            cherrypy.log.error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 can't read directory for the remote path %s:%s." % (
                                         self.hostname, path))
             raise cherrypy.HTTPError("400 Can't read directory.")
@@ -1080,7 +1080,7 @@ class Session(object):
                                    "to %s, and don't forget to set appropriate permissions on all " \
                                    "the parent directories!" % (
                                        self.hostname, path)
-            slycat.email.send_error("slycat.web.server.remote.py get_image",
+            cherrypy.log.error("slycat.web.server.remote.py get_image",
                                     "cherrypy.HTTPError 400 you do not have permission to "
                                     "retrieve %s:%s. Check the filesystem on %s:%s to verify that "
                                     "your user has access to %s, and don't forget to set appropriate "
@@ -1102,7 +1102,7 @@ class Session(object):
             cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
             cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (
                 self.hostname)
-            slycat.email.send_error("slycat.web.server.remote.py get_video_status",
+            cherrypy.log.error("slycat.web.server.remote.py get_video_status",
                                     "cherrypy.HTTPError 400 no agent for %s." % (self.hostname))
             raise cherrypy.HTTPError("400 Agent required.")
 
@@ -1125,7 +1125,7 @@ class Session(object):
             cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
             cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (
                 self.hostname)
-            slycat.email.send_error("slycat.web.server.remote.py get_video",
+            cherrypy.log.error("slycat.web.server.remote.py get_video",
                                     "cherrypy.HTTPError 400 no agent for %s." % (self.hostname))
             raise cherrypy.HTTPError("400 Agent required.")
 
@@ -1167,7 +1167,7 @@ def create_session(hostname, username, password, agent):
         # Detect problematic startup scripts.
         stdin, stdout, stderr = ssh.exec_command("/bin/true")
         if stdout.read():
-            slycat.email.send_error("slycat.web.server.remote.py create_session",
+            cherrypy.log.error("slycat.web.server.remote.py create_session",
                                     "cherrypy.HTTPError 500 Slycat can't connect because you "
                                     "have a startup script (~/.ssh/rc, ~/.bashrc, ~/.cshrc or similar)"
                                     " that writes data to stdout. Startup scripts should only write to "
@@ -1188,15 +1188,15 @@ def create_session(hostname, username, password, agent):
 
         if agent:
             if hostname not in remote_hosts:
-                slycat.email.send_error("slycat.web.server.remote.py create_session",
+                cherrypy.log.error("slycat.web.server.remote.py create_session",
                                         "cherrypy.HTTPError 400 host %s not in allowed remote hosts." % hostname)
                 raise cherrypy.HTTPError("400 Missing agent configuration.")
             if "agent" not in remote_hosts[hostname]:
-                slycat.email.send_error("slycat.web.server.remote.py create_session",
+                cherrypy.log.error("slycat.web.server.remote.py create_session",
                                         "cherrypy.HTTPError 400 missing agent configuration for host %s." % hostname)
                 raise cherrypy.HTTPError("400 Missing agent configuration.")
             if "command" not in remote_hosts[hostname]["agent"]:
-                slycat.email.send_error("slycat.web.server.remote.py create_session",
+                cherrypy.log.error("slycat.web.server.remote.py create_session",
                                         "cherrypy.HTTPError 500 missing agent configuration"
                                         " for host %s: missing command keyword." % hostname)
                 raise cherrypy.HTTPError("500 Missing agent configuration.")
@@ -1210,14 +1210,14 @@ def create_session(hostname, username, password, agent):
                 startup = json.loads(stdout.readline())
             except Exception as e:
                 cherrypy.log.error("500 agent startup failed for host %s: %s." % (hostname, str(e)))
-                slycat.email.send_error("slycat.web.server.remote.py create_session",
+                cherrypy.log.error("slycat.web.server.remote.py create_session",
                                         "cherrypy.HTTPError 500 agent startup failed for host %s: %s." % (
                                             hostname, str(e)))
                 raise cherrypy.HTTPError("500 Agent startup failed: %s" % str(e))
             # Handle clean startup failures (the agent process started, but reported an error).
             if not startup["ok"]:
                 cherrypy.log.error("500 agent startup failed for host %s: %s." % (hostname, startup["message"]))
-                slycat.email.send_error("slycat.web.server.remote.py create_session",
+                cherrypy.log.error("slycat.web.server.remote.py create_session",
                                         "cherrypy.HTTPError 500 agent startup failed for host %s: %s." % (
                                             hostname, startup["message"]))
                 raise cherrypy.HTTPError("500 Agent startup failed: %s" % startup["message"])
@@ -1230,18 +1230,18 @@ def create_session(hostname, username, password, agent):
         return sid
     except cherrypy.HTTPError as e:
         cherrypy.log.error("Agent startup failed for %s@%s: %s" % (username, hostname, e.status))
-        slycat.email.send_error("slycat.web.server.remote.py create_session",
+        cherrypy.log.error("slycat.web.server.remote.py create_session",
                                 "Agent startup failed for %s@%s: %s" % (username, hostname, e.status))
         raise
     except paramiko.AuthenticationException as e:
         cherrypy.log.error("Authentication failed for %s@%s: %s" % (username, hostname, str(e)))
-        slycat.email.send_error("slycat.web.server.remote.py create_session",
+        cherrypy.log.error("slycat.web.server.remote.py create_session",
                                 "cherrypy.HTTPError 403 authentication failed for %s@%s: %s." % (
                                     username, hostname, str(e)))
         raise cherrypy.HTTPError("403 Remote authentication failed.")
     except Exception as e:
         cherrypy.log.error("Unknown exception for %s@%s: %s %s" % (username, hostname, type(e), str(e)))
-        slycat.email.send_error("slycat.web.server.remote.py create_session",
+        cherrypy.log.error("slycat.web.server.remote.py create_session",
                                 "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s." % (
                                     username, hostname, type(e), str(e)))
         raise cherrypy.HTTPError("500 Remote connection failed: %s" % str(e))
@@ -1274,7 +1274,7 @@ def get_session(sid):
                 cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (
                     client, session.username, session.hostname, session.client))
                 del session_cache[sid]
-                slycat.email.send_error("slycat.web.server.remote.py get_session",
+                cherrypy.log.error("slycat.web.server.remote.py get_session",
                                         "cherrypy.HTTPError 404: client %s attempted to "
                                         "access remote session for %s@%s from %s" % (
                                             client, session.username, session.hostname, session.client))
@@ -1315,7 +1315,7 @@ def get_session_server(client, sid):
                 cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (
                     client, session.username, session.hostname, session.client))
                 del session_cache[sid]
-                slycat.email.send_error("slycat.web.server.remote.py get_session",
+                cherrypy.log.error("slycat.web.server.remote.py get_session",
                                         "cherrypy.HTTPError 404: client %s attempted to "
                                         "access remote session for %s@%s from %s" % (
                                             client, session.username, session.hostname, session.client))
