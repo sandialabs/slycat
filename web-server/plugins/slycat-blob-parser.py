@@ -4,11 +4,11 @@
 
 import numpy
 import slycat.web.server
-import slycat.email
+
 
 def parse(database, model, input, files, aids, **kwargs):
   if len(files) != len(aids):
-    slycat.email.send_error("slycat-blob-parser.py parse", "Number of files and artifact ids must match.")
+    cherrypy.log.error("slycat-blob-parser.py parse", "Number of files and artifact ids must match.")
     raise Exception("Number of files and artifact ids must match.")
 
   content_type = kwargs.get("content-type", "application/octet-stream")

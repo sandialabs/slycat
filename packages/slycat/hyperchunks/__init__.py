@@ -7,7 +7,7 @@
 import numbers
 import numpy
 import slycat.hyperchunks.grammar
-import slycat.email
+
 
 def parse(string):
   """Parse a string hyperchunks representation.
@@ -94,7 +94,7 @@ def arrays(hyperchunks, array_count):
         for index in numpy.arange(start, stop, step):
           yield Array(index, hyperchunk.attributes, hyperchunk.order, hyperchunk.hyperslices)
       else:
-        slycat.email.send_error("hyperchunks.__init__.py", "Unexpected array: %r" % arrays)
+        cherrypy.log.error("hyperchunks.__init__.py", "Unexpected array: %r" % arrays)
         raise ValueError("Unexpected array: %r" % arrays)
 
 def tostring(value):
@@ -154,6 +154,6 @@ def tostring(value):
   if isinstance(value, slice):
     return ("%s:%s" % ("" if value.start is None else value.start, "" if value.stop is None else value.stop)) + ("" if value.step is None else ":%s" % value.step)
 
-  slycat.email.send_error("hyperchunks.__init__.py", "Unknown value: %s" % value)
+  cherrypy.log.error("hyperchunks.__init__.py", "Unknown value: %s" % value)
   raise ValueError("Unknown value: %s" % value)
 

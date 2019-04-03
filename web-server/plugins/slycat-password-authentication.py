@@ -8,13 +8,13 @@ def register_slycat_plugin(context):
     import datetime
     import slycat.web.server.database.couchdb
     import slycat.web.server.plugin
-    import slycat.email
+    
     from urlparse import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
         if '"' in realm:
-            slycat.email.send_error("slycat-standard-authentication.py authenticate",
+            cherrypy.log.error("slycat-standard-authentication.py authenticate",
                                     "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 

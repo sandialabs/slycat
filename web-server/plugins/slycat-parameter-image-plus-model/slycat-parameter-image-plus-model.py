@@ -16,7 +16,7 @@ def register_slycat_plugin(context):
   import scipy.spatial.distance
   import slycat.web.server.database.couchdb
   import slycat.web.server
-  import slycat.email
+  
   import threading
   import traceback
   import urlparse
@@ -355,7 +355,7 @@ def register_slycat_plugin(context):
         response = slycat.web.server.checkjob(sid, jid)
       except Exception as e:
         fail_model(mid, "Something went wrong while checking on job %s status: check for the slurm-%s.out file when the job completes." % (jid, jid))
-        slycat.email.send_error("slycat-parameter-image-plus-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
+        cherrypy.log.error("slycat-parameter-image-plus-model.py checkjob_thread", "An error occurred while checking on a remote job: %s" % e.message)
         raise Exception("An error occurred while checking on a remote job: %s" % e.message)
         stop_event.set()
 

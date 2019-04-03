@@ -13,7 +13,7 @@ from __future__ import absolute_import
 import cherrypy
 import abc
 import uuid
-import slycat.email
+
 import couchdb
 
 class Database:

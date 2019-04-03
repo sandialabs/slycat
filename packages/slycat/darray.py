@@ -28,7 +28,7 @@ memory use manageable.
 """
 
 import numpy
-import slycat.email
+
 
 class Prototype(object):
   """Abstract interface for all darray implementations."""
@@ -73,10 +73,10 @@ class Stub(Prototype):
   """darray implementation that only stores array metadata (dimensions and attributes)."""
   def __init__(self, dimensions, attributes):
     if len(dimensions) < 1:
-      slycat.email.send_error("darray.py Stub.__init__", "At least one dimension is required.")
+      cherrypy.log.error("darray.py Stub.__init__", "At least one dimension is required.")
       raise ValueError("At least one dimension is required.")
     if len(attributes) < 1:
-      slycat.email.send_error("darray.py Stub.__init__", "At least one attribute is required.")
+      cherrypy.log.error("darray.py Stub.__init__", "At least one attribute is required.")
       raise ValueError("At least one attribute is required.")
 
     self._dimensions = [dict(name=_require_dimension_name(dimension["name"]), type=_require_dimension_type(dimension.get("type", "int64")), begin=_require_dimension_bound(dimension.get("begin", 0)), end=_require_dimension_bound(dimension["end"])) for dimension in dimensions]
@@ -84,7 +84,7 @@ class Stub(Prototype):
 
     for dimension in self._dimensions:
       if dimension["begin"] != 0:
-        slycat.email.send_error("darray.py Stub.__init__", "Dimension range must being with 0.")
+        cherrypy.log.error("darray.py Stub.__init__", "Dimension range must being with 0.")
         raise ValueError("Dimension range must begin with 0.")
 
   @property
@@ -118,14 +118,14 @@ class MemArray(Stub):
     Stub.__init__(self, dimensions, attributes)
 
     if len(attributes) != len(data):
-      slycat.email.send_error("darray.py MemArray.__init__", "Attribute and data counts must match.")
+      cherrypy.log.error("darray.py MemArray.__init__", "Attribute and data counts must match.")
       raise ValueError("Attribute and data counts must match.")
 
     self._data = [numpy.array(attribute) for attribute in data]
 
     for attribute in self._data:
       if attribute.shape != self.shape:
-        slycat.email.send_error("darray.py MemArray.__init__", "Attribute data must match array shape.")
+        cherrypy.log.error("darray.py MemArray.__init__", "Attribute data must match array shape.")
         raise ValueError("Attribute data must match array shape.")
 
   def get_statistics(self, attribute=0):
@@ -151,33 +151,33 @@ class MemArray(Stub):
 
 def _require_attribute_name(name):
   if not isinstance(name, basestring):
-    slycat.email.send_error("darray.py _require_attribute_name", "Attribute name must be a string.")
+    cherrypy.log.error("darray.py _require_attribute_name", "Attribute name must be a string.")
     raise ValueError("Attribute name must be a string.")
   return name
 
 def _require_attribute_type(type):
   if type not in _require_attribute_type.allowed_types:
-    slycat.email.send_error("darray.py _require_attribute_type", "Attribute type must be one of %s" % ",".join(_require_attribute_type.allowed_types))
+    cherrypy.log.error("darray.py _require_attribute_type", "Attribute type must be one of %s" % ",".join(_require_attribute_type.allowed_types))
     raise ValueError("Attribute type must be one of %s" % ",".join(_require_attribute_type.allowed_types))
   return type
 _require_attribute_type.allowed_types = set(["int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "string", "bool"])
 
 def _require_dimension_name(name):
   if not isinstance(name, basestring):
-    slycat.email.send_error("darray.py _require_attribute_name", "Dimension name must be a string.")
+    cherrypy.log.error("darray.py _require_attribute_name", "Dimension name must be a string.")
     raise ValueError("Dimension name must be a string.")
   return name
 
 def _require_dimension_type(type):
   if type not in _require_dimension_type.allowed_types:
-    slycat.email.send_error("darray.py _require_dimension_type", "Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
+    cherrypy.log.error("darray.py _require_dimension_type", "Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
     raise ValueError("Dimension type must be one of %s" % ",".join(_require_dimension_type.allowed_types))
   return type
 _require_dimension_type.allowed_types = set(["int64"])
 
 def _require_dimension_bound(bound):
   if not isinstance(bound, int):
-    slycat.email.send_error("darray.py _require_dimension_bound", "Dimension bound must be an integer.")
+    cherrypy.log.error("darray.py _require_dimension_bound", "Dimension bound must be an integer.")
     raise ValueError("Dimension bound must be an integer.")
   return bound
 
