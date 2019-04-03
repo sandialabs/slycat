@@ -16,6 +16,7 @@ export default function ControlsButtonUpdateTable(props) {
   const [progressBarProgress, setProgressBarProgress] = useState(0);
   const mid = props.mid;
   const pid = props.pid;
+  const [selectedOption, setSelectedOption] = useState("local");
 
   const cleanup = () =>
   {
@@ -23,6 +24,7 @@ export default function ControlsButtonUpdateTable(props) {
     setDisabled(true);
     setProgressBarHidden(true);
     setProgressBarProgress(0);
+    setSelectedOption("local");
   };
 
   const closeModal = (e) =>
@@ -36,6 +38,13 @@ export default function ControlsButtonUpdateTable(props) {
     setfiles(selectorFiles);
     setDisabled(false);
   };
+
+  const sourceSelect = (sourceSelected) =>
+  {
+      console.log(sourceSelected.target.value);
+      setSelectedOption(sourceSelected.target.value);
+      console.log(selectedOption);
+  }
 
   const uploadFile = () => 
   {
@@ -100,6 +109,16 @@ export default function ControlsButtonUpdateTable(props) {
               </button>
             </div>
             <div className='modal-body'>
+            <div className='radio'>
+              <label>
+                <input type='radio' value='local' checked={selectedOption === 'local'} onChange={sourceSelect}/>
+                Local
+              </label>
+              <label>
+                <input type='radio' value='remote' checked={selectedOption === 'remote'} onChange={sourceSelect}/>
+                Remote
+              </label>
+            </div>
               <FileSelector handleChange = {handleFileSelection} />
             </div>
             <div className='slycat-progress-bar'>
