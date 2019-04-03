@@ -5,7 +5,7 @@
 import csv
 import time
 import numpy
-import slycat.email
+
 import slycat.web.server
 import cherrypy
 
@@ -36,7 +36,7 @@ def parse_file(file, model, database):
             csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"',
                        quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
     if len(rows) < 2:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
+        cherrypy.log.error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
         raise Exception("File must contain at least two rows.")
 
     attributes = []
@@ -83,7 +83,7 @@ def parse_file(file, model, database):
             column_headers.append(column[0])
 
     if len(attributes) < 1:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
+        cherrypy.log.error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
     for attribute in attributes:
@@ -137,7 +137,7 @@ def parse(database, model, input, files, aids, **kwargs):
     """
     start = time.time()
     if len(files) != len(aids):
-        slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
+        cherrypy.log.error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
     parsed = [parse_file(file, model, database) for file in files]

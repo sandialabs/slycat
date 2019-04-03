@@ -9,7 +9,7 @@ def register_slycat_plugin(context):
   import os
   import re
   import slycat.web.server
-  import slycat.email
+  
   from urlparse import urlparse
 
   def media_columns(database, model, verb, type, command, **kwargs):

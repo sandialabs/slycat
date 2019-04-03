@@ -9,7 +9,7 @@ def register_slycat_plugin(context):
   import os
   import re
   import slycat.web.server
-  import slycat.email
+  
   from urlparse import urlparse
 
   def set_tree_node(node, column):
@@ -97,7 +97,7 @@ def register_slycat_plugin(context):
     try:
       columns = [int(column) for column in kwargs["columns"]]
     except:
-      slycat.email.send_error("slycat-remap-wizard.py list_uris", "cherrypy.HTTPError 400 missing / invalid columns parameter.")
+      cherrypy.log.error("slycat-remap-wizard.py list_uris", "cherrypy.HTTPError 400 missing / invalid columns parameter.")
       raise cherrypy.HTTPError("400 Missing / invalid columns parameter.")
 
     forest = {}
@@ -122,19 +122,19 @@ def register_slycat_plugin(context):
     try:
       columns = [int(column) for column in kwargs["columns"]]
     except:
-      slycat.email.send_error("slycat-remap-wizard.py search_and_replace", "cherrypy.HTTPError 400 missing / invalid columns parameter.")
+      cherrypy.log.error("slycat-remap-wizard.py search_and_replace", "cherrypy.HTTPError 400 missing / invalid columns parameter.")
       raise cherrypy.HTTPError("400 Missing / invalid columns parameter.")
 
     try:
       replace = kwargs["replace"]
     except:
-      slycat.email.send_error("slycat-remap-wizard.py search_and_replace", "cherrypy.HTTPError 400 missing / invalid replace parameter.")
+      cherrypy.log.error("slycat-remap-wizard.py search_and_replace", "cherrypy.HTTPError 400 missing / invalid replace parameter.")
       raise cherrypy.HTTPError("400 Missing / invalid replace parameter.")
 
     try:
       search = re.compile(kwargs["search"])
     except:
-      slycat.email.send_error("slycat-remap-wizard.py search_and_replace", "cherrypy.HTTPError 400 missing / invalid search parameter.")
+      cherrypy.log.error("slycat-remap-wizard.py search_and_replace", "cherrypy.HTTPError 400 missing / invalid search parameter.")
       raise cherrypy.HTTPError("400 Missing / invalid search parameter.")
 
     for attribute in columns:

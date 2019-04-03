@@ -7,7 +7,7 @@ import numbers
 import numpy
 import os
 import slycat.darray
-import slycat.email
+
 import cherrypy
 
 class DArray(slycat.darray.Prototype):
@@ -175,17 +175,17 @@ class DArray(slycat.darray.Prototype):
     """
 
     if not (0 <= attribute and attribute < len(self.attributes)):
-      slycat.email.send_error("hdf5.py set_data", "Attribute index %s out-of-range." % attribute)
+      cherrypy.log.error("hdf5.py set_data", "Attribute index %s out-of-range." % attribute)
       raise ValueError("Attribute index %s out-of-range." % attribute)
     if isinstance(hyperslice, (numbers.Integral, slice, type(Ellipsis))):
       pass
     elif isinstance(hyperslice, tuple):
       for i in hyperslice:
         if not isinstance(i, (numbers.Integral, slice, type(Ellipsis))):
-          slycat.email.send_error("hdf5.py set_data", "Unsupported hyperslice type.")
+          cherrypy.log.error("hdf5.py set_data", "Unsupported hyperslice type.")
           raise ValueError("Unsupported hyperslice type.")
     else:
-      slycat.email.send_error("hdf5.py set_data", "Unsupported hyperslice type.")
+      cherrypy.log.error("hdf5.py set_data", "Unsupported hyperslice type.")
       raise ValueError("Unsupported hyperslice type.")
 
     # Store the data.
@@ -292,7 +292,7 @@ class ArraySet(object):
     array : :class:`slycat.hdf5.DArray`
     """
     if not isinstance(array, slycat.darray.Prototype):
-      slycat.email.send_error("hdf5.py store_array", "A slycat.darray is required.")
+      cherrypy.log.error("hdf5.py store_array", "A slycat.darray is required.")
       raise ValueError("A slycat.darray is required.")
 
     index = tuple([slice(dimension["begin"], dimension["end"]) for dimension in array.dimensions])
@@ -322,7 +322,7 @@ def start_arrayset(file):
   arrayset : :class:`slycat.hdf5.ArraySet`
   """
   if not isinstance(file, h5py.File):
-    slycat.email.send_error("hdf5.py start_arrayset", "An open h5py.File is required.")
+    cherrypy.log.error("hdf5.py start_arrayset", "An open h5py.File is required.")
     raise ValueError("An open h5py.File is required.")
   file.create_group("array")
   return ArraySet(file)
@@ -333,7 +333,7 @@ def start_arrayset(file):
 def dtype(type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""
   if type not in dtype.type_map.keys():
-    slycat.email.send_error("hdf5.py dtype", "Unsupported type: {}".format(type))
+    cherrypy.log.error("hdf5.py dtype", "Unsupported type: {}".format(type))
     raise Exception("Unsupported type: {}".format(type))
   return dtype.type_map[type]
 dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=unicode), "float":"float32", "double":"float64"}

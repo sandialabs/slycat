@@ -17,21 +17,33 @@ def is_server_administrator():
 
 def is_project_administrator(project):
   """Return True if the current request is from a project administrator."""
-  return cherrypy.request.login in [administrator["user"] for administrator in project_acl(project)["administrators"]]
+  try:
+    return cherrypy.request.login in [administrator["user"] for administrator in project_acl(project)["administrators"]]
+  except TypeError:
+    cherrypy.log.error("error in acl for project %s" % project["_id"])
+    return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
 
 def is_project_writer(project):
   """Return True if the current request is from a project writer."""
-  return cherrypy.request.login in [writer["user"] for writer in project_acl(project)["writers"]]
+  try:
+    return cherrypy.request.login in [writer["user"] for writer in project_acl(project)["writers"]]
+  except TypeError:
+    cherrypy.log.error("error in acl for project %s" % project["_id"])
+    return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
 
 def is_project_reader(project):
   """Return True if the current request is from a project reader."""
-  return cherrypy.request.login in [reader["user"] for reader in project_acl(project)["readers"]]
+  try:
+    return cherrypy.request.login in [reader["user"] for reader in project_acl(project)["readers"]]
+  except TypeError:
+    cherrypy.log.error("error in acl for project %s" % project["_id"])
+    return cherrypy.request.login in {"administrators":{}, "writers":{}, "readers":{}}
 
 def test_server_administrator():
   """Return True if the current request has server administrator privileges."""
   if is_server_administrator():
     return True
-  raise False
+  return  False
 
 def test_project_administrator(project):
   """Return True if the current request has project administrator privileges."""
