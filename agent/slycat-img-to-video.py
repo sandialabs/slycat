@@ -9,11 +9,9 @@ import glob
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input', default='/Desktop/movie_images/', help='a parameter.')
-parser.add_argument('--width', default=500, help='a parameter.')
-parser.add_argument('--height', default=500, help='a parameter.')
 parser.add_argument('--verbose', default=False, help='a parameter.')
-
 arguments = parser.parse_args()
+
 size = None
 def print_verbose(*args):
     if arguments.verbose:
