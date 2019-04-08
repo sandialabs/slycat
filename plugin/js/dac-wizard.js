@@ -24,7 +24,10 @@ function constructor(params)
 
     // project/model information
     component.project = params.projects()[0];
-    component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
+    // Alex removing default model name per team meeting discussion
+    // component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
+    //                         description: "", marking: markings.preselected()});
+    component.model = mapping.fromJS({_id: null, name: "",
                             description: "", marking: markings.preselected()});
 
     // DAC generic format file selections
