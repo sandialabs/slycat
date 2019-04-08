@@ -92,7 +92,7 @@ layout                  1.7.0   https://github.com/GedMarc/layout.git
 lodash                4.17.11   https://lodash.com/
 object-assign           4.1.1   https://github.com/sindresorhus/object-assign
 papaparse               4.6.3   https://github.com/mholt/PapaParse
-popper.js              1.14.7   https://popper.js.org
+popper.js              1.15.0   https://popper.js.org
 prop-types             15.6.2   https://facebook.github.io/react/
 react                  16.8.6   https://reactjs.org
 react-dom              16.8.6   https://reactjs.org
@@ -102,7 +102,7 @@ react-redux             6.0.1   https://github.com/reduxjs/react-redux
 redux                   4.0.1   https://redux.js.org
 regenerator-runtime    0.12.1   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
 scheduler      0.13.0-alpha.1   https://reactjs.org
-slickgrid               2.4.5   https://github.com/6pac/SlickGrid
+slickgrid               2.4.6   https://github.com/6pac/SlickGrid
 sphinx                  1.8.4   https://www.sphinx-doc.org/en/master/
 style-loader           0.23.1   https://github.com/webpack-contrib/style-loader#readme
 symbol-observable       1.2.0   https://www.npmjs.com/package/symbol-observable
