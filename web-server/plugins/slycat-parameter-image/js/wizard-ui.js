@@ -25,7 +25,9 @@ function constructor(params)
   component.selected_file = ko.observable("");
   component.current_aids = ko.observable("");
   component.csv_data = ko.observableArray();
-  component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
+  // Alex removing default model name per team meeting discussion
+  // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
+  component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
   component.remote = mapping.fromJS({
     hostname: null, 
     username: null, 

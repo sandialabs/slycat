@@ -28,7 +28,9 @@ function constructor(params)
   component.image_columns_names = ko.observableArray();
   component.ps_type = ko.observable("remote"); // local is selected by default...
   component.matrix_type = ko.observable("remote"); // remote is selected by default...
-  component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
+  // Alex removing default model name per team meeting discussion
+  // component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
+  component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
   component.remote = mapping.fromJS({
     hostname: null, 
     username: null, 

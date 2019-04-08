@@ -18,7 +18,9 @@ function constructor(params) {
   var component = {};
   component.tab = ko.observable(0);
   component.project = params.projects()[0];
-  component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
+  // Alex removing default model name per team meeting discussion
+  // component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
+  component.model = mapping.fromJS({ _id: null, name: '', description: '', marking: markings.preselected() });
   component.timeseries_type = ko.observable('xyce');
   component.remote = mapping.fromJS({
     hostname: null, 
