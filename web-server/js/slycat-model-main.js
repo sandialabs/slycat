@@ -13,6 +13,7 @@ import URI from "urijs";
 import {renderNavBar} from "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import {loadTemplate, loadModule} from 'js/slycat-plugins';
+import markings from "js/slycat-markings";
 
 // Wait for document ready
 $(document).ready(function() {
@@ -32,15 +33,44 @@ $(document).ready(function() {
       page.title(page.model_name + " - Slycat Model");
       page.project_id = result.project;
       page.model_type = result["model-type"];
+      page.marking = result.marking;
+      ko.applyBindings(page, document.querySelector("head"));
       ko.applyBindings(page, document.querySelector("slycat-navbar"));
-      loadTemplate(page.model_type).then(component => {
-        // console.log("inside loadModelTemplate().then()");
-        document.querySelector(".slycat-content").appendChild(component);
-        ko.applyBindings(page, document.querySelector("head"));
-        loadModule(page.model_type).then(component => {
-          // console.log("inside loadModelModule().then()");
-          // ko.applyBindings(page, document.querySelector(".slycat-content"));
-        });
+      loadTemplate(page.model_type, "html").then(component => {
+        let slycat_content = document.querySelector(".slycat-content");
+        // Match the model's marking with the ones currently registered
+        let current_marking = markings.allowed().find(obj => obj.type() == page.marking);
+        // If we have marking code for the model, let's wrap it around its template
+        if(current_marking !== undefined)
+        {
+          let template = document.createElement('template');
+          let html = "";
+
+          // Check if the current marking has code that needs to be prepended to the template
+          if(current_marking['page-before']() != null)
+            html += current_marking['page-before']().trim();
+
+          // Add the template code
+          html += component;
+
+          // Check if the current marking has code that needs to be appended to the template
+          if(current_marking['page-after']() != null)
+            html += current_marking['page-after']().trim();
+
+          // Inject the code into the .slycat-content node
+          template.innerHTML = html;
+          slycat_content.appendChild(template.content);
+
+          // Load the JS module
+          loadModule(page.model_type).then(component => {
+            // console.log("inside loadModelModule().then()");
+            // ko.applyBindings(page, document.querySelector(".slycat-content"));
+          });
+        }
+        else
+        {
+          console.log("Oops, we don't have code for the current model's marking. We should probably not display it.");
+        }
       });
 
     },

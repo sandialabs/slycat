@@ -21,7 +21,9 @@ client.get_configuration_markings(
     });
     mapping.fromJS(markings, module.allowed);
     if(markings.length)
+    {
       module.preselected(markings[0].type);
+    }
   },
 });
 
