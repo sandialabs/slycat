@@ -49,26 +49,16 @@ class ModelsList extends React.Component {
 
 class Model extends React.Component {
   render() {
-    let markings_allowed = markings.allowed;
-    let badge = function(marking)
-    {
-      for(var i = 0; i != markings_allowed().length; ++i)
-      {
-        if(markings_allowed()[i].type() == marking)
-          return markings_allowed()[i].badge();
-      }
-    }
-
+    let recognized_marking = markings.allowed().find(obj => obj.type() == this.props.marking);
     return (
-      <a className="list-group-item list-group-item-action" href={server_root + 'models/' + this.props.id}>
+      <a className={`list-group-item list-group-item-action ${recognized_marking === undefined ? 'list-group-item-warning' : ''}`} 
+        href={server_root + 'models/' + this.props.id}>
         <div className="h6">
           <span className="badge badge-secondary mr-1">{model_names.translate_model_type(this.props.model_type) + ' model'}</span>
           &nbsp;
           <strong>{this.props.name}</strong>
         </div>
-        {/* badge() function returns HTML, which React escapes, so we need to use
-            dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml */}
-        <div className="float-right" style={{display: 'inline-block'}} dangerouslySetInnerHTML={{__html: badge(this.props.marking)}}></div>
+        <MarkingsBadge marking={this.props.marking} recognized_marking={recognized_marking} />
         {this.props.result == 'failed' &&
         <span className="badge badge-danger" title={this.props.message}>Failed</span>
         }
@@ -80,6 +70,36 @@ class Model extends React.Component {
         </small>
       </a>
     );
+  }
+}
+
+class MarkingsBadge extends React.Component {
+  render() {
+    let badge;
+
+    if(this.props.recognized_marking === undefined)
+    {
+      return (
+        <div className="float-right marking-badge" style={{display: 'inline-block'}}>
+          <span className="badge badge-danger">
+            Unrecognized Marking
+            {this.props.marking &&
+              <span>: </span>
+            }
+            {this.props.marking}
+          </span>
+        </div>
+      );
+    }
+    else {
+      {/* badge() function returns HTML, which React escapes, so we need to use
+          dangerouslySetInnerHTML per https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml */}
+      return (
+        <div className="float-right marking-badge" 
+          style={{display: 'inline-block'}} 
+          dangerouslySetInnerHTML={{__html: this.props.recognized_marking.badge()}}></div>
+      );
+    }
   }
 }
 
