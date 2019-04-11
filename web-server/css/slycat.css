@@ -222,6 +222,7 @@ slycat-navbar nav .alert pre
 
 .slycat-content
 {
+  position: relative;
   flex: 1;
   background-color: #f2f2f2;
   display: -webkit-flex;
@@ -610,4 +611,9 @@ label.bottom-margin
 .form-group.required label:after {
   content: " *";
   color: red;
+}
+#unrecognized-marking-warning {
+  position: absolute;
+  background-color: #f2f2f2;
+  z-index: 3;
 }
