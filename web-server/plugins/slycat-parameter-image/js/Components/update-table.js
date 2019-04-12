@@ -6,6 +6,7 @@ import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
+import SlycatRemoteControls from 'components/SlycatRemoteControls';
 
 export default function ControlsButtonUpdateTable(props) {
   const modalId = 'varUpdateTableModal';
@@ -100,7 +101,7 @@ export default function ControlsButtonUpdateTable(props) {
     });
   };
   return (
-    <div>
+    <React.Fragment>
       <div className='modal fade' data-backdrop='false' id={modalId}>
         <div className='modal-dialog'>
           <div className='modal-content'>
@@ -110,6 +111,7 @@ export default function ControlsButtonUpdateTable(props) {
               </button>
             </div>
             <div className='modal-body'>
+            <SlycatRemoteControls/>
             <div className='radio'>
               <label>
                 <input type='radio' value='local' checked={selectedOption === 'local'} onChange={sourceSelect}/>
@@ -141,6 +143,6 @@ export default function ControlsButtonUpdateTable(props) {
       </div>
       <ControlsButton label='Update Table' title={title} data_toggle='modal' data_target={'#' + modalId}
                       button_style={props.button_style} id='controls-button-death' />
-    </div>
+    </React.Fragment>
   );
 }
