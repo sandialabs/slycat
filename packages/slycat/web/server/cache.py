@@ -149,7 +149,7 @@ class Cache(object):
     """
     get the item from the cache
     :param key: hashed key for item in cache
-    :return: value associate with key
+    :return: value associate with key or None if not found
     """
     self.check_fs_path()
 
@@ -165,10 +165,9 @@ class Cache(object):
       self.write(cached_contents, path)
       self._loaded[digest] = cached_contents
 
-
     else:
-      msg = "key not found in cache: '%s'" % key
-      raise KeyError(msg)
+      msg = "[Cache] Key not found in cache after being detected: "
+      return None
     return value
 
   def __setitem__(self, key, value):
@@ -257,6 +256,11 @@ class Cache(object):
       if key in self:
         cherrypy.log.error("[CACHE] Found in cache")
         result = self[key]
+        # adding a null guard
+        if result is None:
+          cherrypy.log.error("[CACHE] Cache Key error adding object to cache")
+          result = f(*args, **kwargs)
+          self[key] = result
       #we have not cached the result so lets get it
       else:
         cherrypy.log.error("[CACHE] NOT found in cache")
