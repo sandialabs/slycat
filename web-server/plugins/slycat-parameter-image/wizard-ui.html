@@ -21,21 +21,21 @@
     <div data-bind="visible:tab() == 0">
 
       <div class="form-check">
-        <label>
+        <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: ps_type">
           Local
         </label>
       </div>
 
       <div class="form-check">
-        <label>
+        <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: ps_type">
           Remote
         </label>
       </div>
 
       <div class="form-check">
-        <label>
+        <label class="font-weight-bold">
           <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server" data-bind="checked: ps_type">
           Server
         </label>
@@ -56,8 +56,6 @@
       </div>
 
     </div>
-
-      
 
     <div data-bind="visible:tab() == 1" class="form-horizontal">
       <slycat-local-browser params="
