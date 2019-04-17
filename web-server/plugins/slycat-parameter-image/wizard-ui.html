@@ -44,6 +44,7 @@
             <select id="selectmenu1" name="" data-theme="c"
                      data-bind="options: server_files, value: selected_file, visible: ps_type() == 'server'">
             </select>
+            <slycat-parser-controls params="parser:parser,category:'table'" data-bind="visible: ps_type() == 'server'"></slycat-parser-controls>
           </div>
           <div class="local-browser form-horizontal">
             <slycat-server-browser params="
