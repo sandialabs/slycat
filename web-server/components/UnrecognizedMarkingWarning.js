@@ -12,30 +12,26 @@ let UnrecognizedMarkingWarning = (params) =>
   return (
     <div className="card mt-5 mx-5">
       <div className="card-header bg-warning text-center">
-        <h4 className="card-title mb-0">Warning</h4>
+        <h4 className="card-title mb-0">Unrecognized Marking</h4>
       </div>
       <div className="card-body bg-light text-center">
-        <h5 className="card-title">Unrecognized Marking</h5>
-        <p className="card-text">This model has a marking that is not recognize.</p>
+        <p className="card-text">This model has a marking that is not recognized.</p>
         {params.marking &&
-          <p><code>{params.marking}</code></p>
+          <p className="mb-0"><code>{params.marking}</code></p>
         }
+        {/* 
         <p className="mb-0">Choose one of the options below.</p>
+        */}
       </div>
       <ul className="list-group list-group-flush">
         <li className="list-group-item pb-3">
-          <h5>Go Back To Project</h5>
-          <p>If you do not wish to view this model, you can go back to the project.</p>
-          <a href={`${server_root}projects/${params.project_id}`} className="btn btn-primary">Go Back To Project</a>
-        </li>
-        <li className="list-group-item pb-3">
-          <h5>Edit Marking & Display Model</h5>
+          <h5>Edit Marking to Display Model</h5>
           <p>
             If you wish to edit this model's marking and then display it:
           </p>
 
           <ol className="mb-4">
-            <li>Click the <strong className="text-nowrap">Edit</strong> menu above.</li>
+            <li>Click the <strong className="text-nowrap">Edit</strong> dropdown button at the top of the page.</li>
             <li>Select <strong className="text-nowrap">Model Name & Info</strong>.</li>
             <li>Choose a new marking.</li>
             <li>Click the <strong className="text-nowrap">Save Changes</strong> button.</li>
@@ -46,6 +42,16 @@ let UnrecognizedMarkingWarning = (params) =>
           </div>
         </li>
         <li className="list-group-item pb-3">
+          {/*
+          <h5>Go Back To Project</h5>
+          <p>If you do not wish to view this model, you can go back to the project.</p>
+          */}
+          <a href={`${server_root}projects/${params.project_id}`} 
+
+          >&larr; Go back to project</a>
+        </li>
+        {/*
+        <li className="list-group-item pb-3">
           <h5>Display Model Now</h5>
           <p>If you wish to view this model now, you can display it even with its unrecognized marking.</p>
           <button type="button" className="btn btn-danger" 
@@ -53,6 +59,7 @@ let UnrecognizedMarkingWarning = (params) =>
             Display Model Now
           </button>
         </li>
+        */}
       </ul>
     </div>
   )
