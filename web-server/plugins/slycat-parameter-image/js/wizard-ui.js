@@ -71,7 +71,7 @@ function constructor(params)
     client.put_project_csv_data({
         pid: component.project._id(),
         file_key: component.selected_file(),
-        parser: "slycat-csv-parser",
+        parser: component.parser(),
         mid: component.model._id(),
         aids: 'data-table',
 
