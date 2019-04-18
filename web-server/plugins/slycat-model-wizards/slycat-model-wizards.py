@@ -5,7 +5,7 @@
 def register_slycat_plugin(context):
   import os
   context.register_wizard("slycat-delete-model", "Delete Model", require={"action":"delete", "context":"model"})
-  context.register_wizard("slycat-edit-model", "Name Model", require={"action":"edit", "context":"model"})
+  context.register_wizard("slycat-edit-model", "Model Name & Info", require={"action":"edit", "context":"model"})
   context.register_wizard("slycat-create-template", "Template", require={"action":"create", "context":"model"})
   # Alex commenting this out and instead using the line below because the Save As functionality is not ready yet.
   # context.register_wizard("slycat-create-saved-bookmark", "Save As", require={"action":"create", "context":"model"})

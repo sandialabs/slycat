@@ -28,7 +28,9 @@ function constructor(params)
   component.image_columns_names = ko.observableArray();
   component.ps_type = ko.observable("remote"); // local is selected by default...
   component.matrix_type = ko.observable("remote"); // remote is selected by default...
-  component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
+  // Alex removing default model name per team meeting discussion
+  // component.model = mapping.fromJS({_id: null, name: "New Parameter Image Model", description: "", marking: markings.preselected()});
+  component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
   component.remote = mapping.fromJS({
     hostname: null, 
     username: null, 
@@ -576,36 +578,47 @@ function constructor(params)
     $('.browser-continue').toggleClass("disabled", false);
   };
 
-  component.name_model = function() {
-    client.put_model(
+  component.name_model = function(formElement)
+  {
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      mid: component.model._id(),
-      name: component.model.name(),
-      description: component.model.description(),
-      marking: component.model.marking(),
-      success: function()
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new model
+      client.put_model(
       {
-        client.put_model_parameter({
-          mid: component.model._id(),
-          aid: "cluster-linkage",
-          value: component.cluster_linkage(),
-          input: true,
-          success: function() {
-            if (component.matrix_type() === "compute")
-              component.go_to_model();
-            else {
-              client.post_model_finish({
-                mid: component.model._id(),
-                success: function() {
-                  component.go_to_model();
-                }
-              });
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function()
+        {
+          client.put_model_parameter({
+            mid: component.model._id(),
+            aid: "cluster-linkage",
+            value: component.cluster_linkage(),
+            input: true,
+            success: function() {
+              if (component.matrix_type() === "compute")
+                component.go_to_model();
+              else {
+                client.post_model_finish({
+                  mid: component.model._id(),
+                  success: function() {
+                    component.go_to_model();
+                  }
+                });
+              }
             }
-          }
-        });
-      },
-      error: dialog.ajax_error("Error updating model."),
-    });
+          });
+        },
+        error: dialog.ajax_error("Error updating model."),
+      });
+    }
   };
 
   component.back = function() {

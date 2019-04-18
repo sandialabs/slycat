@@ -213,24 +213,35 @@ function constructor(params)
     }
   }
 
-  component.name_model = function() {
-    client.put_model(
+  component.name_model = function(formElement) 
+  {
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      mid: component.model._id(),
-      name: component.model.name(),
-      description: component.model.description(),
-      marking: component.model.marking(),
-      success: function()
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new model
+      client.put_model(
       {
-        client.post_model_finish({
-          mid: component.model._id(),
-          success: function() {
-            component.go_to_model();
-          }
-        });
-      },
-      error: dialog.ajax_error("Error updating model."),
-    });
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function()
+        {
+          client.post_model_finish({
+            mid: component.model._id(),
+            success: function() {
+              component.go_to_model();
+            }
+          });
+        },
+        error: dialog.ajax_error("Error updating model."),
+      });
+    }
   };
 
   component.back = function() {

@@ -24,10 +24,9 @@ import 'plugins/slycat-remap-wizard/slycat-remap-wizard';
 import 'plugins/slycat-column-wizard/slycat-column-wizard';
 
 // For any plugin that needs to load resources, add the appropriate case statements below in loadTemplate and loadModule
-export async function loadTemplate(name) {
+export async function loadTemplate(name, format) {
   // console.log("loadModelTemplate, page.model_type is " + page.model_type);
 
-  let template = document.createElement('template');
   let html = "";
 
   switch(name) {
@@ -56,10 +55,18 @@ export async function loadTemplate(name) {
       console.log("We don't recognize this template type, so not loading a template.");
   }
 
-  if (html.default) {
+  if(html.default) 
+  {
     html = html.default;
   }
   html = html.trim();
+
+  // If caller just wants the raw HTML, let's return that
+  if(format == 'html')
+    return html;
+
+  // Otherwise, let's use the template element to create nodes based on the html
+  let template = document.createElement('template');
   template.innerHTML = html;
   return template.content;
 }

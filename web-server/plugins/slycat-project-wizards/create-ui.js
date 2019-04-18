@@ -15,17 +15,27 @@ function constructor(params)
   component.name = ko.observable("");
   component.description = ko.observable("");
 
-  component.finish = function()
+  component.finish = function(formElement)
   {
-    client.post_projects(
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      name : component.name(),
-      description : component.description(),
-      success : function(pid)
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new project
+      client.post_projects(
       {
-        window.location.href = server_root + "projects/" + pid;
-      }
-    });
+        name : component.name(),
+        description : component.description(),
+        success : function(pid)
+        {
+          window.location.href = server_root + "projects/" + pid;
+        }
+      });
+    }
   }
   return component;
 }

@@ -141,33 +141,43 @@ function constructor(params)
     });
   };
 
-  component.create_model = function()
+  component.create_model = function(formElement)
   {
-    client.post_project_models(
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
     {
-      pid: component.project._id(),
-      type: component.model.type(),
-      name: component.model.name(),
-      description: component.model.description(),
-      marking: component.model.marking(),
-      success: function(mid)
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new model
+      client.post_project_models(
       {
-        component.model._id(mid);
-        client.put_model_inputs(
+        pid: component.project._id(),
+        type: component.model.type(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function(mid)
         {
-          mid: component.model._id(),
-          sid: component.original._id(),
-          "deep-copy": true,
-          success: function()
+          component.model._id(mid);
+          client.put_model_inputs(
           {
-            list_uris();
-            component.tab(1);
-          },
-          error: dialog.ajax_error("Error duplicating model artifacts: "),
-        });
-      },
-      error: dialog.ajax_error("Error creating model."),
-    });
+            mid: component.model._id(),
+            sid: component.original._id(),
+            "deep-copy": true,
+            success: function()
+            {
+              list_uris();
+              component.tab(1);
+            },
+            error: dialog.ajax_error("Error duplicating model artifacts: "),
+          });
+        },
+        error: dialog.ajax_error("Error creating model."),
+      });
+    }
   };
 
   var callSearchAndReplace = function(search, replace, onSuccess) {

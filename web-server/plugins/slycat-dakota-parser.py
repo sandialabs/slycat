@@ -74,6 +74,9 @@ def parse(database, model, input, files, aids, **kwargs):
         slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, data)
 
+    # Parameter Space model, and possibly others, need an error-messages parameter in order for creation wizard to work
+    slycat.web.server.put_model_parameter(database, model, "error-messages", "")
+
 
 def register_slycat_plugin(context):
     context.register_parser("slycat-dakota-parser", "Dakota tabular", ["table"], parse)

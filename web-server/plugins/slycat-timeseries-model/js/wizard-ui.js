@@ -18,7 +18,9 @@ function constructor(params) {
   var component = {};
   component.tab = ko.observable(0);
   component.project = params.projects()[0];
-  component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
+  // Alex removing default model name per team meeting discussion
+  // component.model = mapping.fromJS({ _id: null, name: 'New Timeseries Model', description: '', marking: markings.preselected() });
+  component.model = mapping.fromJS({ _id: null, name: '', description: '', marking: markings.preselected() });
   component.timeseries_type = ko.observable('xyce');
   component.remote = mapping.fromJS({
     hostname: null, 
@@ -375,16 +377,27 @@ function constructor(params) {
     });
   };
 
-  component.name_model = function() {
-    client.put_model({
-      mid: component.model._id(),
-      name: component.model.name(),
-      description: component.model.description(),
-      marking: component.model.marking(),
-      success: function() {
-        component.go_to_model();
-      }
-    })
+  component.name_model = function(formElement)
+  {
+    // Validating
+    formElement.classList.add('was-validated');
+
+    // If valid...
+    if (formElement.checkValidity() === true)
+    {
+      // Clearing form validation
+      formElement.classList.remove('was-validated');
+      // Creating new model
+      client.put_model({
+        mid: component.model._id(),
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function() {
+          component.go_to_model();
+        }
+      });
+    }
   }
 
   component.go_to_model = function() {

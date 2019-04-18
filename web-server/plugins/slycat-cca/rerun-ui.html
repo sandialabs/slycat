@@ -31,8 +31,13 @@
     </div>
 
     <div data-bind="visible:tab() == 1">
-      <form role="form" onsubmit="return false">
-        <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+      <form data-bind="submit: name_model" id="rerun-cca-name-model-form" novalidate>
+        <slycat-model-controls 
+          params="
+            name: model.name,
+            description: model.description,
+            marking: model.marking
+          "></slycat-model-controls>
       </form>
     </div>
 
@@ -40,6 +45,11 @@
 </div>
 <div class="modal-footer">
   <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 0,click:finish">Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 1,click:name_model">Finish & Go To Model</button>
+  <button class="btn btn-primary" data-bind="visible: tab() == 0, click: finish">Continue</button>
+  <button class="btn btn-primary" 
+    data-bind="
+      visible: tab() == 1, 
+      click: function(data, event) { name_model(document.getElementById('rerun-cca-name-model-form'), data, event) }
+    "
+  >Finish & Go To Model</button>
 </div>

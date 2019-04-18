@@ -19,39 +19,42 @@
   <div class="tab-content">
 
     <div data-bind="visible:tab() == 0">
+
       <div class="form-check">
-        <label>
+        <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: ps_type">
           Local
         </label>
       </div>
+
       <div class="form-check">
-        <label>
+        <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: ps_type">
           Remote
         </label>
       </div>
-    </div>
 
-    <div data-bind="visible:tab() == 0">
-        <div class="form-check">
-            <label>
-              <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server" data-bind="checked: ps_type">
-              Server
-            </label>
-          </div>
-          <div class="form-check">
-            <select id="selectmenu1" name="" data-theme="c"
-                     data-bind="options: server_files, value: selected_file, visible: ps_type() == 'server'">
+      <div class="form-check">
+        <label class="font-weight-bold">
+          <input type="radio" name="matrix-local-or-remote-radios" id="server-radio" value="server" data-bind="checked: ps_type">
+          Server
+        </label>
+      </div>
+
+      <div class="form-check ml-5" data-bind="visible: ps_type() == 'server'">
+        <div class="form-group row">
+          <label for="selectmenu1" class="col-sm-2 col-form-label">
+            File
+          </label>
+          <div class="col-sm-10">
+            <select id="selectmenu1" class="form-control" name="" data-theme="c"
+                     data-bind="options: server_files, value: selected_file">
             </select>
           </div>
-          <div class="local-browser form-horizontal">
-            <slycat-server-browser params="
-              disabled: ko.computed(function(){return ps_type() == 'server' ? false : true;}),
-              progress:browser.progress,
-              progress_status:browser.progress_status"></slycat-server-browser>
-            <!--<slycat-parser-controls params="parser:parser, category:'table', disabled: ko.computed(function(){return ps_type() == 'local' ? false : true;})"></slycat-parser-controls>-->
         </div>
+        <slycat-parser-controls params="parser:parser,category:'table'" data-bind="visible: ps_type() == 'server'"></slycat-parser-controls>
+      </div>
+
     </div>
 
     <div data-bind="visible:tab() == 1" class="form-horizontal">
@@ -101,7 +104,7 @@
     </div>
 
     <div data-bind="visible:tab() == 5">
-      <form role="form" onsubmit="return false">
+      <form data-bind="submit: name_model" id="new-parameter-image-name-model-form" novalidate>
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
     </div>
@@ -114,5 +117,10 @@
   <button class="btn btn-primary" data-bind="visible:tab() == 2,click:connect,enable:remote.enable">Continue</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 5,click:name_model">Finish & Go To Model</button>
+  <button class="btn btn-primary" 
+    data-bind="
+      visible: tab() == 5,
+      click: function(data, event) { name_model(document.getElementById('new-parameter-image-name-model-form'), data, event) }
+    "
+  >Finish & Go To Model</button>
 </div>
