@@ -10,12 +10,11 @@ export default class SlycatRemoteControls extends Component {
         use_remote: () =>{},
         session_exists: false,
       };
-      this.getRemoteHosts = this.getRemoteHosts.bind(this)
     }
     componentDidMount(){
       // this.getRemoteHosts();
     }
-    getRemoteHosts() {
+    getRemoteHosts = () => {
       client.get_configuration_remote_hosts(
       {
         success: function(remote_hosts)
