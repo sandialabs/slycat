@@ -7,36 +7,27 @@ export default class SlycatRemoteControls extends Component {
       const display = this.populateDisplay();
       this.state = {
         remote_hosts: [],
-        enable: true,
         hostName: display.hostName?display.hostName:null,
         userName: display.userName?display.userName:null,
         session_exists: false,
         password: "",
         hostNames : []
       };
-      console.log(this.state);
     }
-    componentDidMount(){
-      console.log(this.getRemoteHosts());
+    buildHostNames = (json) => {
+      this.setState({hostNames:json});
+    }
+    checkRemoteStatus(hostName){
+      console.log(hostName);
+    }
+    updateRemoteStatus(json){
+      console.log(json);
     }
     getRemoteHosts = () => {
-      // fetch(`http://jsonplaceholder.typicode.com/posts`)
-      // .then(result=>result.json())
-      // .then(items=>this.setState({items}))
-      client.get_configuration_remote_hosts(
-      {
-        success: function(remote_hosts)
-        {
-          // var current_host = component.hostname();
-          remote_hosts.sort(function(left, right)
-          {
-            return left.hostname == right.hostname ? 0 : left.hostname < right.hostname ? -1 : 1;
-          });
-          // this.setState({password:"word"});
-          console.log(remote_hosts);
-          // component.hostname(current_host || component.hostname());
-        }
-      });
+      client.get_configuration_remote_hosts_fetch(this.buildHostNames)
+    }
+    componentDidMount(){
+      this.getRemoteHosts();
     }
     populateDisplay = () => {
       const display = {};
@@ -51,8 +42,6 @@ export default class SlycatRemoteControls extends Component {
       return display;
     }
     onValueChange = (value, type) => {
-      console.log(value);
-      console.log(type);
       switch(type) {
         case "userName":
           localStorage.setItem("slycat-remote-controls-username", value);
@@ -60,6 +49,7 @@ export default class SlycatRemoteControls extends Component {
           break;
         case "hostName":
           localStorage.setItem("slycat-remote-controls-hostname", value);
+          this.checkRemoteStatus(value)
           this.setState({hostName: value})
           break;
         case "password":
@@ -83,8 +73,14 @@ export default class SlycatRemoteControls extends Component {
       };
       this.setState(state);
     }
+
     render() {
       console.log(`state ${JSON.stringify(this.state)}`)
+      const hostNamesJSX = this.state.hostNames.map((hostnameObject, i) => {
+        return (
+        <a className="dropdown-item" key={i} onClick={(e)=>this.onValueChange(e.target.text, "hostName")}>{hostnameObject.hostname}</a>
+        )
+      })
       return (
         <div>
           <div className="form-group row">
@@ -93,10 +89,9 @@ export default class SlycatRemoteControls extends Component {
               <div className="input-group">
                 <div className="dropdown">
                   <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  {this.state.hostName}
                   </button>
                   <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a className="dropdown-item" onClick={(e)=>this.onValueChange(e.target.text, "hostName")}>Action</a>
+                  {hostNamesJSX}
                   </div>
                 </div>
                 <input className="form-control" value={this.state.hostName?this.state.hostName:""} type="text" 
@@ -105,6 +100,7 @@ export default class SlycatRemoteControls extends Component {
             </div>
           </div>
           {/* <!-- ko if: ispasswordrequired.ssh_passwordrequired --> */}
+          {true?<div>
           <div className="form-group row" data-bind-old="visible: !session_exists()">
             <label className="col-sm-2 col-form-label">Username</label>
             <div className="col-sm-10">
@@ -120,6 +116,7 @@ export default class SlycatRemoteControls extends Component {
               onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
             </div>
           </div>
+          </div>:null}
           <div className="row">
             <div className="col-sm-offset-2 col-sm-10">
               <div className="alert fade" role="alert"></div>

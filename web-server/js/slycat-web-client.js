@@ -308,7 +308,24 @@ module.get_configuration_remote_hosts = function(params)
     },
   });
 }
-
+module.get_configuration_remote_hosts_fetch = function(successFunction, errorFunction)
+{
+  fetch(`${api_root}configuration/remote-hosts`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).then((json)=>{
+    successFunction(json);
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+}
 module.get_configuration_version = function(params)
 {
   $.ajax(
@@ -609,6 +626,24 @@ module.get_remotes = function(params)
     {
       if(params.error)
         params.error(request, status, reason_phrase);
+    }
+  });
+};
+module.get_remotes_fetch = function(hostname, successFunction, errorFunction)
+{
+  fetch(`${api_root}remotes/${hostname}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).then((json)=>{
+    successFunction(json);
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
     }
   });
 };
