@@ -50,35 +50,35 @@ export default class SlycatRemoteControls extends Component {
       return (
         <div>
           <div className="form-group row">
-            <label className="col-sm-2 col-form-label" data-bind="css: {'disabled' : !enable()}">Hostname</label>
+            <label className="col-sm-2 col-form-label" data-bind-old="css: {'disabled' : !enable()}">Hostname</label>
             <div className="col-sm-10">
               <div className="input-group">
                 <div className="input-group-prepend">
                   <button type="button" className="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false"></button>
-                  <ul className="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
-                    <li><a data-bind="click:$parent.use_remote($data),text:hostname"></a></li>
+                  <ul className="dropdown-menu" role="menu" data-bind-old="foreach:remote_hosts">
+                    <li><a data-bind-old="click:$parent.use_remote($data),text:hostname"></a></li>
                   </ul>
                 </div>
-                <input className="form-control" type="text" data-bind="enable:enable, textInput:hostname"></input>
+                <input className="form-control" type="text" data-bind-old="enable:enable, textInput:hostname"></input>
               </div>
             </div>
           </div>
           {/* <!-- ko if: ispasswordrequired.ssh_passwordrequired --> */}
-          <div className="form-group row" data-bind="visible: !session_exists()">
-            <label className="col-sm-2 col-form-label" data-bind="css: {'disabled' : !enable()}">Username</label>
+          <div className="form-group row" data-bind-old="visible: !session_exists()">
+            <label className="col-sm-2 col-form-label" data-bind-old="css: {'disabled' : !enable()}">Username</label>
             <div className="col-sm-10">
-              <input className="form-control" type="text" data-bind="enable:enable, textInput:username"></input>
+              <input className="form-control" type="text" data-bind-old="enable:enable, textInput:username"></input>
             </div>
           </div>
-          <div className="form-group row" data-bind="visible: !session_exists()">
-            <label className="col-sm-2 col-form-label" data-bind="css: {'disabled' : !enable()}">Password</label>
+          <div className="form-group row" data-bind-old="visible: !session_exists()">
+            <label className="col-sm-2 col-form-label" data-bind-old="css: {'disabled' : !enable()}">Password</label>
             <div className="col-sm-10">
-              <input className="form-control" type="password" data-bind="enable:enable, textInput:password"></input>
+              <input className="form-control" type="password" data-bind-old="enable:enable, textInput:password"></input>
             </div>
           </div>
           <div className="row">
             <div className="col-sm-offset-2 col-sm-10">
-              <div className="alert fade" role="alert" data-bind="css:status_classNamees,text:status"></div>
+              <div className="alert fade" role="alert" data-bind-old="css:status_classNamees,text:status"></div>
             </div>
           </div>
 
