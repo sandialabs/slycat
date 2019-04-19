@@ -13,7 +13,7 @@
                 data-bind="css: { disabled: allFilters().length == activeFilters().length }">
                 Filter
               </button>
-              <div id="x-axis-switcher" class="dropdown-menu" aria-labelledby="filter-dropdown">
+              <div class="dropdown-menu" aria-labelledby="filter-dropdown">
                 <!-- ko foreach: availableFilters -->
                   <a href="#" class="dropdown-item" data-bind="visible: !active(), text: name, attr: {'data-value': index}, event: { click: $parent.activateFilter }"></a>
                 <!-- /ko -->
