@@ -93,7 +93,7 @@ module.exports = {
   module: {
     rules: [
       // This enables Babel
-      { test: /\.js$/, 
+      { test: /\.(js|jsx)$/, 
         exclude: /node_modules/, 
         use: "babel-loader",
       },

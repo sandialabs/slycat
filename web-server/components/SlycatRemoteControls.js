@@ -7,6 +7,8 @@ export default class SlycatRemoteControls extends Component {
       this.state = {
         remote_hosts: [],
         enable: true,
+        hostname: '',
+        username: '',
         use_remote: () =>{},
         session_exists: false,
       };
@@ -15,6 +17,7 @@ export default class SlycatRemoteControls extends Component {
       // this.getRemoteHosts();
     }
     getRemoteHosts = () => {
+
       client.get_configuration_remote_hosts(
       {
         success: function(remote_hosts)
@@ -29,7 +32,21 @@ export default class SlycatRemoteControls extends Component {
         }
       });
     }
+    populateDisplay = () => {
+      const display = {};
+      if(localStorage.getItem("slycat-remote-controls-hostname")){
+        display.hostName = localStorage.getItem("slycat-remote-controls-hostname") ?
+        localStorage.getItem("slycat-remote-controls-hostname"):"";
+      };
+      if(localStorage.getItem("slycat-remote-controls-username")){
+        display.userName = localStorage.getItem("slycat-remote-controls-username") ?
+        localStorage.getItem("slycat-remote-controls-username"):null;
+      };
+      return display;
+    }
     render() {
+      const display = this.populateDisplay();
+      console.log(`in Render hostname ${display.hostName} username ${display.userName}`)
       return (
         <div>
           <div className="form-group row">
@@ -37,7 +54,7 @@ export default class SlycatRemoteControls extends Component {
             <div className="col-sm-10">
               <div className="input-group">
                 <div className="input-group-prepend">
-                  <button type="button" className="btn btn-secondary dropdown-toggle" data-bind="css:{disabled:!enable()}"  data-toggle="dropdown" aria-expanded="false"></button>
+                  <button type="button" className="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false"></button>
                   <ul className="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
                     <li><a data-bind="click:$parent.use_remote($data),text:hostname"></a></li>
                   </ul>
