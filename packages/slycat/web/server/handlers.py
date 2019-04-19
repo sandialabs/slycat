@@ -1976,7 +1976,7 @@ def get_remotes(hostname):
                     database.save(session)
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
-    return {"status": status, "msg": msg}
+    return {"status": status, "msg": msg, "hostName": hostname}
 
 
 @cherrypy.tools.json_out(on=True)
