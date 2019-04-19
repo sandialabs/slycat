@@ -101,7 +101,7 @@ export default function ControlsButtonUpdateTable(props) {
     });
   };
   return (
-    <React.Fragment>
+    <div>
       <div className='modal fade' data-backdrop='false' id={modalId}>
         <div className='modal-dialog'>
           <div className='modal-content'>
@@ -143,6 +143,6 @@ export default function ControlsButtonUpdateTable(props) {
       </div>
       <ControlsButton label='Update Table' title={title} data_toggle='modal' data_target={'#' + modalId}
                       button_style={props.button_style} id='controls-button-death' />
-    </React.Fragment>
+    </div>
   );
 }
