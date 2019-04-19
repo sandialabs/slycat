@@ -128,49 +128,51 @@ export default class ControlsButtonUpdateTable extends Component {
       }
     });
   };
-  return (
-    <div>
-      <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
-        <div className='modal-dialog'>
-          <div className='modal-content'>
-            <div className='modal-header'>
-              <h3 className='modal-title'>{this.state.title}</h3>
-              <button type='button' className='close' data-dismiss='modal' aria-label='Close'>
-              </button>
-            </div>
-            <div className='modal-body'>
-            <SlycatRemoteControls callBack={this.callBack}/>
-            <div className='radio'>
-              <label>
-                <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
-                Local {this.state.selectedOption === 'local' ? this.state.selectedOption: ''}
-              </label>
-              <label>
-                <input type='radio' value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>
-                Remote {this.state.selectedOption === 'remote' ? this.state.selectedOption: ''}
-              </label>
-            </div>
-              <FileSelector handleChange = {this.handleFileSelection} />
-            </div>
-            <div className='slycat-progress-bar'>
-              <ProgressBar
-                hidden={this.state.progressBarHidden}
-                progress={this.state.progressBarProgress}
-              />
-            </div>
-            <div className='modal-footer'>
-              <button type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
-               Update Data Table
-              </button>
-              <button type='button' className='btn btn-primary' onClick={this.closeModal}>
-                Close
-              </button>
+  render() {
+    return (
+      <div>
+        <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
+          <div className='modal-dialog'>
+            <div className='modal-content'>
+              <div className='modal-header'>
+                <h3 className='modal-title'>{this.state.title}</h3>
+                <button type='button' className='close' data-dismiss='modal' aria-label='Close'>
+                </button>
+              </div>
+              <div className='modal-body'>
+              <SlycatRemoteControls callBack={this.callBack}/>
+              <div className='radio'>
+                <label>
+                  <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
+                  Local {this.state.selectedOption === 'local' ? this.state.selectedOption: ''}
+                </label>
+                <label>
+                  <input type='radio' value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>
+                  Remote {this.state.selectedOption === 'remote' ? this.state.selectedOption: ''}
+                </label>
+              </div>
+                <FileSelector handleChange = {this.handleFileSelection} />
+              </div>
+              <div className='slycat-progress-bar'>
+                <ProgressBar
+                  hidden={this.state.progressBarHidden}
+                  progress={this.state.progressBarProgress}
+                />
+              </div>
+              <div className='modal-footer'>
+                <button type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
+                Update Data Table
+                </button>
+                <button type='button' className='btn btn-primary' onClick={this.closeModal}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
+        <ControlsButton label='Update Table' title={this.state.title} data_toggle='modal' data_target={'#' + this.state.modalId}
+                        button_style={this.props.button_style} id='controls-button-death' />
       </div>
-      <ControlsButton label='Update Table' title={this.state.title} data_toggle='modal' data_target={'#' + this.state.modalId}
-                      button_style={this.props.button_style} id='controls-button-death' />
-    </div>
-  );
+    );
+  };
 }
