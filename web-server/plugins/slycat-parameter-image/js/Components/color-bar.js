@@ -1,5 +1,5 @@
 import React from "react";
-import ControlsDropdown from './ControlsDropdown';
+import ControlsDropdown from 'components/ControlsDropdown';
 
 class ColorBar extends React.Component {
     constructor(props) {

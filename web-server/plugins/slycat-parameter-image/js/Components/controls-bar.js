@@ -1,7 +1,7 @@
 import React from "react";
 import { Provider } from 'react-redux';
 import ControlsPlayback from './controls-playback';
-import ControlsDropdown from './ControlsDropdown';
+import ControlsDropdown from 'components/ControlsDropdown';
 import ControlsVideo from './controls-video';
 import ControlsSelection from './controls-selection';
 import ControlsGroup from 'components/ControlsGroup';
