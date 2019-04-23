@@ -121,25 +121,28 @@ $.widget("parameter_image.controls",
       },
     ];
 
-    const controls_bar = <ControlsBar element={self.element} 
-      dropdowns={dropdowns}
-      axes_variables={axes_items}
-      auto_scale={self.options["auto-scale"]} 
-      hidden_simulations={self.options.hidden_simulations}
-      disable_hide_show={self.options.disable_hide_show}
-      open_images={self.options.open_images}
-      selection={self.options.selection}
-      pid={self.options.pid}
-      mid={self.options.mid}
-      aid={self.options.aid}
-      model_name={self.options.model_name}
-      metadata={self.options.metadata}
-      indices={self.options.indices}
-      media_variables={self.options.image_variables}
-      rating_variables={self.options.rating_variables}
-      video_sync={self.options["video-sync"]}
-      video_sync_time={self.options["video-sync-time"]}
-    />;
+    const controls_bar = 
+      <ControlsBar 
+        element={self.element} 
+        dropdowns={dropdowns}
+        axes_variables={axes_items}
+        auto_scale={self.options["auto-scale"]} 
+        hidden_simulations={self.options.hidden_simulations}
+        disable_hide_show={self.options.disable_hide_show}
+        open_images={self.options.open_images}
+        selection={self.options.selection}
+        pid={self.options.pid}
+        mid={self.options.mid}
+        aid={self.options.aid}
+        model_name={self.options.model_name}
+        metadata={self.options.metadata}
+        indices={self.options.indices}
+        media_variables={self.options.image_variables}
+        rating_variables={self.options.rating_variables}
+        video_sync={self.options["video-sync"]}
+        video_sync_time={self.options["video-sync-time"]}
+      />
+    ;
 
     self.ControlsBarComponent = ReactDOM.render(
       controls_bar,
