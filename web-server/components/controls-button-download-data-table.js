@@ -197,7 +197,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
     let clone = [];
     for(let i = 0; i < source.length; i++)
     {
-      clone.concat([source[i]]);
+      clone.push([source[i]]);
     }
     return clone;
   }
