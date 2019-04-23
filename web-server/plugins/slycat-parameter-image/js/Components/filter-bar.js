@@ -1,5 +1,5 @@
 // import React from "react";
-// import ControlsDropdown from './controls-dropdown';
+// import ControlsDropdown from './ControlsDropdown';
 //
 // class FilterBar extends React.Component {
 //     constructor(props) {

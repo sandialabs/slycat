@@ -1,10 +1,10 @@
 import React from "react";
 import { Provider } from 'react-redux';
 // import ControlsPlayback from './controls-playback';
-import ControlsDropdown from './controls-dropdown';
+import ControlsDropdown from './ControlsDropdown';
 // import ControlsVideo from './controls-video';
 // import ControlsSelection from './controls-selection';
-import ControlsGroup from './ControlsGroup';
+import ControlsGroup from 'components/ControlsGroup';
 // import ControlsButtonToggle from './controls-button-toggle';
 // import ControlsButton from './controls-button';
 // import FileSelector from './file-selector';
