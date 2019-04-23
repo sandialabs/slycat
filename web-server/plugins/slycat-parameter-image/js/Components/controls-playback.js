@@ -1,5 +1,5 @@
 import React from "react";
-import ControlsButton from "./controls-button";
+import ControlsButton from "components/controls-button";
 
 const ControlsPlayback = (props) => {
     return !props.any_video_open ? null : (

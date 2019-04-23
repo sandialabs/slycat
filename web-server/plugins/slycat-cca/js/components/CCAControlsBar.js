@@ -6,10 +6,10 @@ import ControlsDropdown from 'components/ControlsDropdown';
 // import ControlsSelection from './controls-selection';
 import ControlsGroup from 'components/ControlsGroup';
 // import ControlsButtonToggle from './controls-button-toggle';
-// import ControlsButton from './controls-button';
+// import ControlsButton from 'components/controls-button';
 // import FileSelector from './file-selector';
 // import ControlsButtonUpdateTable from './update-table';
-// import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
+import ControlsButtonDownloadDataTable from 'components/controls-button-download-data-table';
 // import VisibleVarOptions from './visible-var-options';
 
 class CCAControlsBar extends React.Component {
@@ -171,34 +171,31 @@ class CCAControlsBar extends React.Component {
     const button_style = 'btn-outline-dark';
 
     return (
-      <Provider store={window.store}>
         <React.Fragment>
         <React.StrictMode>
           <ControlsGroup id="controls" class="btn-group ml-3">
             <ControlsDropdown 
-              key={dropdown.id} 
-              id={dropdown.id} 
-              label={dropdown.label} 
-              title={dropdown.title}
-              state_label={dropdown.state_label} 
-              trigger={dropdown.trigger} 
-              items={dropdown.items}
-              selected={this.state[dropdown.state_label]} 
+              id="color-dropdown" 
+              label="Point Color" 
+              title="Change Point Color"
+              state_label="color_variable" 
+              trigger="color-selection-changed"
+              items={this.props.color_variables}
+              selected={this.props.color_variable} 
               set_selected={this.set_selected} 
               button_style={button_style}
             />
             <ControlsButtonDownloadDataTable 
-              selection={this.state.selection}
-              aid={this.props.aid} mid={this.props.mid} 
+              selection={this.props.selection} 
+              aid={this.props.aid} 
+              mid={this.props.mid} 
               model_name={this.props.model_name} 
               metadata={this.props.metadata}
               indices={this.props.indices} 
-              button_style={button_style} 
-            />
+              button_style={button_style} />
           </ControlsGroup>
         </React.StrictMode>
         </React.Fragment>
-      </Provider>
     );
   }
 }

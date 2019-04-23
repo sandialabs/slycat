@@ -1,7 +1,7 @@
 'use strict';
 import React, { useState } from 'react';
 import ProgressBar from 'components/ProgressBar';
-import ControlsButton from './controls-button';
+import ControlsButton from 'components/controls-button';
 import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";

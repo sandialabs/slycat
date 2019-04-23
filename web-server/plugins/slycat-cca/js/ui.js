@@ -1,6 +1,10 @@
 "use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
+import React from "react";
+import ReactDOM from "react-dom";
+import CCAControlsBar from "./components/CCAControlsBar";
+
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
@@ -594,6 +598,34 @@ $(document).ready(function() {
         "color-variable" : color_variable,
         selection : selected_simulations,
       });
+
+      // Create the React CCAControlsBar component
+      const color_variable_dropdown_items = [];
+      for(let color_variable of color_variables) {
+        color_variable_dropdown_items.push({
+          key: color_variable, 
+          name: table_metadata['column-names'][color_variable]
+        });
+      }
+
+      const cca_controls_bar = 
+        <CCAControlsBar 
+          element={self.element}
+          selection={selected_simulations}
+          mid={model._id}
+          aid={"data-table"}
+          model_name={window.model_name}
+          metadata={table_metadata}
+          color_variables={color_variable_dropdown_items}
+          color_variable={color_variable}
+          indices={indices}
+        />
+      ;
+
+      self.CCAControlsBarComponent = ReactDOM.render(
+        cca_controls_bar,
+        document.getElementById('cca-controls-bar')
+      );
     }
 
   }
@@ -758,5 +790,4 @@ $(document).ready(function() {
       });
     }
   }
-
 });

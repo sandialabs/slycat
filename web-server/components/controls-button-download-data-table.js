@@ -3,7 +3,7 @@ import api_root from "js/slycat-api-root";
 import _ from "lodash";
 import {dialog} from "js/slycat-dialog";
 import React from "react";
-import ControlsButton from './controls-button';
+import ControlsButton from 'components/controls-button';
 
 /***
  * react component for downloading a data table
@@ -19,8 +19,10 @@ class ControlsButtonDownloadDataTable extends React.Component {
    * download button
    */
   handleClick() {
-    if (this.props.selection.length === 0
-        && this.props.hidden_simulations.length === 0) {
+    if ((this.props.selection === undefined || this.props.selection.length === 0)
+        &&
+        (this.props.hidden_simulations === undefined || this.props.hidden_simulations.length === 0)) 
+    {
       this._write_data_table();
     } else {
       this.openCSVSaveChoiceDialog();
@@ -111,7 +113,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
           icon_class:"fa fa-table"}
     ];
 
-    if(this.props.selection.length > 0)
+    if(this.props.selection !== undefined && this.props.selection.length > 0)
     {
       txt += "You have " + this.props.selection.length
           + " rows selected. ";
@@ -119,7 +121,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
           0, {className: "btn-primary",
           label:"Save Selected", icon_class:"fa fa-check"});
     }
-    if(this.props.hidden_simulations.length > 0)
+    if(this.props.hidden_simulations !== undefined && this.props.hidden_simulations.length > 0)
     {
       let visibleRows = this.props.metadata['row-count']
           - this.props.hidden_simulations.length;
@@ -154,6 +156,7 @@ class ControlsButtonDownloadDataTable extends React.Component {
    * Remove hidden_simulations from indices
    */
   _filterIndices() {
+    debugger;
     let indices = this.props.indices;
     let hidden_simulations = this.props.hidden_simulations;
     let filtered_indices = ControlsButtonDownloadDataTable._cloneArrayBuffer(indices);

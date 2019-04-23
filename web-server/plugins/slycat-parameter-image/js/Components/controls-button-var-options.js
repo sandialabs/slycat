@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ControlsButton from './controls-button';
+import ControlsButton from 'components/controls-button';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import "js/slycat-table-ingestion";
 import ko from "knockout";

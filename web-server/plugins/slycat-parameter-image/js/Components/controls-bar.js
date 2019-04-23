@@ -6,10 +6,10 @@ import ControlsVideo from './controls-video';
 import ControlsSelection from './controls-selection';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonToggle from './controls-button-toggle';
-import ControlsButton from './controls-button';
+import ControlsButton from 'components/controls-button';
 import FileSelector from './file-selector';
 import ControlsButtonUpdateTable from './update-table';
-import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
+import ControlsButtonDownloadDataTable from 'components/controls-button-download-data-table';
 import VisibleVarOptions from './visible-var-options';
 
 class ControlsBar extends React.Component {
