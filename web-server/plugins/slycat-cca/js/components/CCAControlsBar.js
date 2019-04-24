@@ -10,6 +10,7 @@ import ControlsGroup from 'components/ControlsGroup';
 // import FileSelector from './file-selector';
 // import ControlsButtonUpdateTable from './update-table';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
+import ControlsDropdownColor from 'components/ControlsDropdownColor';
 // import VisibleVarOptions from './visible-var-options';
 
 class CCAControlsBar extends React.Component {
@@ -193,6 +194,13 @@ class CCAControlsBar extends React.Component {
               metadata={this.props.metadata}
               indices={this.props.indices} 
               button_style={button_style} />
+          </ControlsGroup>
+          <ControlsGroup id="color-switcher" class="btn-group ml-3">
+            <ControlsDropdownColor
+              element={self.element}
+              dropdown={this.props.dropdown_color}
+              selection={this.props.selection_color}
+            />
           </ControlsGroup>
         </React.StrictMode>
         </React.Fragment>

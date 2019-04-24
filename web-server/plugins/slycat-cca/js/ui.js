@@ -4,6 +4,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import CCAControlsBar from "./components/CCAControlsBar";
+import COLOR_LABELS from 'components/color-labels.js';
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 import slycat_additions_css from "css/slycat-additions.css";
@@ -57,6 +58,7 @@ $(document).ready(function() {
   var wilks = null;
   var table_metadata = null;
   var selected_simulations = null;
+  var colormap = null;
 
   var generate_indices = false;
   var barplot_ready = false;
@@ -247,6 +249,7 @@ $(document).ready(function() {
     {
       bookmark = state;
       selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
+      colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
       setup_colorswitcher();
       setup_v();
       setup_widgets();
@@ -373,21 +376,17 @@ $(document).ready(function() {
 
   function setup_colorswitcher()
   {
-    var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-
     $("#color-switcher").colorswitcher({colormap:colormap});
   }
 
   function setup_widgets()
   {
     // Setup the legend ...
-    if(!legend_ready && bookmark && table_metadata)
+    if(!legend_ready && bookmark && table_metadata && (colormap !== null))
     {
       legend_ready = true;
 
       $("#legend-pane .load-status").css("display", "none");
-
-      var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
       $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
@@ -450,14 +449,13 @@ $(document).ready(function() {
     }
 
     // Setup the scatterplot ...
-    if(!scatterplot_ready && bookmark && indices && x && y && v && (selected_simulations !== null))
+    if(!scatterplot_ready && bookmark && indices && x && y && v && (selected_simulations !== null) && (colormap !== null))
     {
       scatterplot_ready = true;
 
       $("#scatterplot-pane .load-status").css("display", "none");
 
       var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
-      var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
       $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
@@ -490,7 +488,7 @@ $(document).ready(function() {
     }
 
     // Setup the table ...
-    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) )
+    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) && (colormap !== null) )
     {
       table_ready = true;
 
@@ -515,7 +513,6 @@ $(document).ready(function() {
         "row-selection" : selected_simulations,
       };
 
-      var colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
       table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
 
       if("sort-variable" in bookmark && "sort-order" in bookmark)
@@ -608,6 +605,17 @@ $(document).ready(function() {
         });
       }
 
+      const dropdown = [{
+        id: 'color-switcher',
+        label: 'Color',
+        title: 'Change color scheme',
+        state_label: 'color',
+        trigger: 'colormap-changed',
+        items: COLOR_LABELS,
+        selected: colormap,
+        single: true,
+      }];
+
       const cca_controls_bar = 
         <CCAControlsBar 
           element={self.element}
@@ -619,6 +627,8 @@ $(document).ready(function() {
           color_variables={color_variable_dropdown_items}
           color_variable={color_variable}
           indices={indices}
+          dropdown_color={dropdown}
+          selection_color={colormap}
         />
       ;
 

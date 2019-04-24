@@ -11,9 +11,9 @@ import d3 from "d3";
 import "jquery-ui";
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ColorBar from './Components/color-bar';
+import ControlsDropdownColor from 'components/ControlsDropdownColor';
 import COLOR_MAP from './Components/color-map.js';
-import COLOR_LABELS from './Components/color-labels.js';
+import COLOR_LABELS from 'components/color-labels.js';
 
 $.widget("slycat.colorswitcher",
 {
@@ -38,7 +38,7 @@ $.widget("slycat.colorswitcher",
                     single: true,
                 }];
 
-    const color_bar = <ColorBar
+    const color_bar = <ControlsDropdownColor
         element={self.element}
         dropdown={dropdown}
         selection={self.options.selection}
