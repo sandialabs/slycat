@@ -4,6 +4,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import CCAControlsBar from "./components/CCAControlsBar";
+import CCABarplot from "./components/CCABarplot";
 import COLOR_LABELS from 'components/color-labels.js';
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
@@ -446,6 +447,24 @@ $(document).ready(function() {
           "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
         });
       }
+
+      const cca_barplot = 
+        <CCABarplot 
+          metadata={table_metadata}
+          inputs={input_columns}
+          outputs={output_columns}
+          r2={r2}
+          wilks={wilks}
+          x_loadings={x_loadings}
+          y_loadings={y_loadings}
+          component={component}
+        />
+      ;
+
+      self.cca_barplot = ReactDOM.render(
+        cca_barplot,
+        document.getElementById('cca-barplot')
+      );
     }
 
     // Setup the scatterplot ...
