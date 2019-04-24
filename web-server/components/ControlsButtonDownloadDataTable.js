@@ -3,7 +3,7 @@ import api_root from "js/slycat-api-root";
 import _ from "lodash";
 import {dialog} from "js/slycat-dialog";
 import React from "react";
-import ControlsButton from 'components/controls-button';
+import ControlsButton from 'components/ControlsButton';
 
 /***
  * react component for downloading a data table
@@ -156,7 +156,6 @@ class ControlsButtonDownloadDataTable extends React.Component {
    * Remove hidden_simulations from indices
    */
   _filterIndices() {
-    debugger;
     let indices = this.props.indices;
     let hidden_simulations = this.props.hidden_simulations;
     let filtered_indices = ControlsButtonDownloadDataTable._cloneArrayBuffer(indices);
