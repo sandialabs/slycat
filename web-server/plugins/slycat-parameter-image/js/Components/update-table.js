@@ -21,8 +21,6 @@ export default class ControlsButtonUpdateTable extends Component {
           hostname: "",
           username: "",
           password: "",
-          mid: props.mid,
-          pid: props.pid,
           selectedOption: "local"
       }
   }
@@ -59,8 +57,7 @@ export default class ControlsButtonUpdateTable extends Component {
 
   handleFileSelection = (selectorFiles) =>
   {
-    // setfiles(selectorFiles);
-    // setDisabled(false);
+    this.setState({files:selectorFiles,disabled:false});
   };
   callBack = (newHostName, newUserName, newPassword) => {
       console.log(`hostname ${newHostName}::username${newUserName}Password::${newPassword}`);
@@ -71,62 +68,44 @@ export default class ControlsButtonUpdateTable extends Component {
   };
   sourceSelect = (e) =>
   {
-      console.log(e.target.value);
-      // setSelectedOption(e.target.value);
-      console.log(e);
+      this.setState({selectedOption:e.target.value});
   };
 
   uploadFile = () =>
   {
-    console.log(files[0].name);
-    // setProgressBarHidden(false);
-    // setDisabled(true);
-    client.get_model_command({
-        mid: mid,
-        type: "parameter-image",
-        command: "delete-table",
-        success: function (result_delete) {
-            // setProgressBarProgress(33);
-            console.log(result_delete);
-            var file = files[0];
+    let mid = this.props.mid;
+    let pid = this.props.pid;
+    this.setState({progressBarHidden:false,disabled:true});
 
-            var fileObject ={
-             // pid: pid,
+    client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
+        .then((json)=>{
+            this.setState({progressBarProgress:33});
+            let file = this.state.files[0];
+            let fileObject ={
+             pid: pid,
              mid: mid,
              file: file,
              aids: [["data-table"], file.name],
              parser: "slycat-csv-parser",
-             success: function(){
-               // setProgressBarProgress(75);
-               client.post_sensitive_model_command({
-                mid: mid,
-                type: "parameter-image",
-                command: "update-table",
-                parameters: {
-                  linked_models: result_delete["linked_models"],
-                },
-                success: function (result_update) {
-                  // setProgressBarProgress(100);
-                  console.log(result_update);
-                  // this.closeModal();
-                  location.reload();
-                },
-                error: console.log("There was a problem uploading the new data")
-              });
-             },
-             error: function(){
-                //dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
-                //$('.local-browser-continue').toggleClass("disabled", false);
-              }
+             success: () => {
+                   this.setState({progressBarProgress:75});
+                   client.post_sensitive_model_command_fetch(
+                    {
+                        mid:mid,
+                        type:"parameter-image",
+                        command: "update-table",
+                        parameters: {
+                          linked_models: json["linked_models"],
+                        },
+                    }).then(() => {
+                        this.setState({progressBarProgress:100});
+                        this.closeModal();
+                        location.reload();
+                    });
+                }
             };
             fileUploader.uploadFile(fileObject);
-
-          console.log("Success!");
-        },
-        error: function(){
-        console.log("Failure.");
-      }
-    });
+        });
   };
   render() {
     return (
@@ -140,18 +119,19 @@ export default class ControlsButtonUpdateTable extends Component {
                 </button>
               </div>
               <div className='modal-body'>
-              <SlycatRemoteControls callBack={this.callBack}/>
+
               <div className='radio'>
                 <label>
                   <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
-                  Local {this.state.selectedOption === 'local' ? this.state.selectedOption: ''}
+                  Local
                 </label>
                 <label>
                   <input type='radio' value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>
-                  Remote {this.state.selectedOption === 'remote' ? this.state.selectedOption: ''}
+                  Remote
                 </label>
               </div>
-                <FileSelector handleChange = {this.handleFileSelection} />
+                {this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:
+                    <FileSelector handleChange = {this.handleFileSelection} />}
               </div>
               <div className='slycat-progress-bar'>
                 <ProgressBar
@@ -174,5 +154,5 @@ export default class ControlsButtonUpdateTable extends Component {
                         button_style={this.props.button_style} id='controls-button-death' />
       </div>
     );
-  };
+  }
 }

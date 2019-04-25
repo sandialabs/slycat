@@ -15,22 +15,26 @@ export default class SlycatRemoteControls extends Component {
       };
       props.callBack(this.state.hostName, this.state.userName, this.state.password)
     }
-    buildHostNames = (json) => {
-      this.setState({hostNames:json});
-    };
+
     checkRemoteStatus = (hostName) => {
-      client.get_remotes_fetch(hostName, this.updateRemoteStatus);
+      client.get_remotes_fetch(hostName)
+        .then((json) => {
+          this.setState({session_exists:json.status});
+          console.log(json);
+      });
     };
-    updateRemoteStatus = (json) => {
-        this.setState({session_exists:json.status});
-      console.log(json);
-    };
+
     getRemoteHosts = () => {
-      client.get_configuration_remote_hosts_fetch(this.buildHostNames)
+      client.get_configuration_remote_hosts_fetch()
+        .then((json)=>{
+          this.setState({hostNames:json});
+        })
     };
+
     componentDidMount(){
       this.getRemoteHosts();
     }
+
     populateDisplay = () => {
       const display = {};
       if(localStorage.getItem("slycat-remote-controls-hostname")){
@@ -43,6 +47,7 @@ export default class SlycatRemoteControls extends Component {
       }
       return display;
     };
+
     onValueChange = (value, type) => {
       switch(type) {
         case "userName":
@@ -60,16 +65,15 @@ export default class SlycatRemoteControls extends Component {
         default:
           throw new Error("bad Case");
       }
-
     };
-    componentWillUnmount = () => {
+
+    componentWillUnmount() {
       const display = this.populateDisplay();
       const state = {
         remote_hosts: [],
         enable: true,
         hostName: display.hostName?display.hostName:null,
         userName: display.userName?display.userName:null,
-        use_remote: () =>{},
         session_exists: false,
         password: null
       };
@@ -102,28 +106,30 @@ export default class SlycatRemoteControls extends Component {
             </div>
           </div>
 
-          {/* <!-- ko if: ispasswordrequired.ssh_passwordrequired --> */}
-          {!this.state.session_exists?<div>
-          <div className="form-group row" data-bind-old="visible: !session_exists()">
-            <label className="col-sm-2 col-form-label">Username</label>
-            <div className="col-sm-10">
-              <input className="form-control" type="text" 
-              value={this.state.userName?this.state.userName:""} 
-              onChange={(e)=>this.onValueChange(e.target.value, "userName")}></input>
+          {!this.state.session_exists?
+          <div>
+            <div className="form-group row">
+              <label className="col-sm-2 col-form-label">Username</label>
+              <div className="col-sm-10">
+                <input className="form-control" type="text"
+                value={this.state.userName?this.state.userName:""}
+                onChange={(e)=>this.onValueChange(e.target.value, "userName")}></input>
+              </div>
             </div>
-          </div>
-          <div className="form-group row" data-bind-old="visible: !session_exists()">
-            <label className="col-sm-2 col-form-label">Password</label>
-            <div className="col-sm-10">
-              <input className="form-control" type="password" 
-              onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
+            <div className="form-group row" data-bind-old="visible: !session_exists()">
+              <label className="col-sm-2 col-form-label">Password</label>
+              <div className="col-sm-10">
+                <input className="form-control" type="password"
+                onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
+              </div>
             </div>
-          </div>
-          </div>:null}
-
-          <div className="row">
-            <div className="col-sm-offset-2 col-sm-10">
-              <div className="alert fade" role="alert"></div>
+          </div>:
+          null}
+          <div className="form-group row" >
+            <div className="col-sm-10">
+              <button type='button' className='btn btn-primary' onClick={this.closeModal}>
+                Continue
+              </button>
             </div>
           </div>
 

@@ -307,25 +307,19 @@ module.get_configuration_remote_hosts = function(params)
         params.error(request, status, reason_phrase);
     },
   });
-}
-module.get_configuration_remote_hosts_fetch = function(successFunction, errorFunction)
+};
+
+module.get_configuration_remote_hosts_fetch = function()
 {
-  fetch(`${api_root}configuration/remote-hosts`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  return fetch(`${api_root}configuration/remote-hosts`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
   .then(function(response) {
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
     return response.json();
-  }).then((json)=>{
-    successFunction(json);
-  }).catch((error) => {
-    if (errorFunction) {
-      errorFunction(error)
-    }else{
-      console.log(error);
-    }
   });
-}
+};
+
 module.get_configuration_version = function(params)
 {
   $.ajax(
@@ -485,6 +479,28 @@ module.get_model_command = function(params)
   });
 };
 
+module.get_model_command_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(URI(api_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 module.post_model_command = function(params)
 {
   $.ajax(
@@ -521,6 +537,34 @@ module.post_sensitive_model_command = function(params) {
     }
   });
 };
+
+module.post_sensitive_model_command_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}models/${params.mid}/sensitive/${params.type}/${params.command}`,
+      {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params.parameters || {})
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 
 module.put_model_command = function(params)
 {
@@ -629,22 +673,14 @@ module.get_remotes = function(params)
     }
   });
 };
-module.get_remotes_fetch = function(hostname, successFunction, errorFunction)
+module.get_remotes_fetch = function(hostname)
 {
-  fetch(`${api_root}remotes/${hostname}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  return fetch(`${api_root}remotes/${hostname}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
   .then(function(response) {
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
     return response.json();
-  }).then((json)=>{
-    successFunction(json);
-  }).catch((error) => {
-    if (errorFunction) {
-      errorFunction(error)
-    }else{
-      console.log(error);
-    }
   });
 };
 
