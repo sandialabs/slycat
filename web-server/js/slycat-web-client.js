@@ -942,6 +942,33 @@ module.post_remotes = function(params)
   });
 };
 
+module.post_remotes_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}remotes`,
+      {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params.parameters || {})
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 module.get_session_status = function(params) {
   $.ajax({
     contentType: 'application/json',

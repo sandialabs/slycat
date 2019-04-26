@@ -13,7 +13,7 @@ export default class SlycatRemoteControls extends Component {
         password: "",
         hostNames : [],
       };
-      props.callBack(this.state.hostName, this.state.userName, this.state.password)
+      props.callBack(this.state.hostName, this.state.userName, this.state.password, this.state.session_exists);
     }
 
     checkRemoteStatus = (hostName) => {
@@ -78,10 +78,52 @@ export default class SlycatRemoteControls extends Component {
         password: null
       };
       this.setState(state);
-    };
+    }
+
+    connect = () => {
+        // component.remote.enable(false);
+        // component.remote.status_type("info");
+        // component.remote.status("Connecting ...");
+
+        if (this.state.session_exists) {
+            console.log("Session already exists.");
+            // component.tab(3);
+            // component.remote.enable(true);
+            // component.remote.status_type(null);
+            // component.remote.status(null);
+        }
+        else {
+            client.post_remotes_fetch({
+                parameters: {
+                    hostname: this.state.hostName,
+                    username: this.state.userName,
+                    password: this.state.password,
+                }
+            }).then(() => {
+                console.log("Remote session created.");
+            });
+            //     success: function(sid) {
+            //       this.setState({session_exists:true})
+            //       // component.remote.sid(sid);
+            //       // component.tab(3);
+            //       // component.remote.enable(true);
+            //       // component.remote.status_type(null);
+            //       // component.remote.status(null);
+            //     },
+            //     error: function(request, status, reason_phrase) {
+            //         console.log("Everything is broken.");
+            //       // component.remote.enable(true);
+            //       // component.remote.status_type("danger");
+            //       // component.remote.status(reason_phrase);
+            //       // component.remote.focus("password");
+            //     }
+            //   });
+            // }
+        }
+    }
 
     render() {
-      console.log(`state ${JSON.stringify(this.state)}`);
+      //console.log(`state ${JSON.stringify(this.state)}`);
       const hostNamesJSX = this.state.hostNames.map((hostnameObject, i) => {
         return (
         <a className="dropdown-item" key={i} onClick={(e)=>this.onValueChange(e.target.text, "hostName")}>{hostnameObject.hostname}</a>
@@ -127,7 +169,7 @@ export default class SlycatRemoteControls extends Component {
           null}
           <div className="form-group row" >
             <div className="col-sm-10">
-              <button type='button' className='btn btn-primary' onClick={this.closeModal}>
+              <button type='button' className='btn btn-primary' onClick={this.connect}>
                 Continue
               </button>
             </div>

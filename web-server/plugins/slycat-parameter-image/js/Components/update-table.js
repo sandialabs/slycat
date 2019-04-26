@@ -59,8 +59,8 @@ export default class ControlsButtonUpdateTable extends Component {
   {
     this.setState({files:selectorFiles,disabled:false});
   };
-  callBack = (newHostName, newUserName, newPassword) => {
-      console.log(`hostname ${newHostName}::username${newUserName}Password::${newPassword}`);
+  callBack = (newHostName, newUserName, newPassword, session_exists) => {
+      console.log(`hostname ${newHostName}::username${newUserName}Password::${newPassword}SessionExists::${session_exists}`);
       // setPassword(newPassword);
       // setUserName(newUserName);
       // setHostName(newHostName);
