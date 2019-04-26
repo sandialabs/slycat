@@ -9,15 +9,14 @@ export default class SlycatRemoteControls extends Component {
         remote_hosts: [],
         hostName: display.hostName?display.hostName:null,
         userName: display.userName?display.userName:null,
-        session_exists: true,
+        session_exists: null,
         password: "",
         hostNames : [],
       };
-      props.callBack(this.state.hostName, this.state.userName, this.state.password, this.state.session_exists);
     }
 
     checkRemoteStatus = (hostName) => {
-      client.get_remotes_fetch(hostName)
+      return client.get_remotes_fetch(hostName)
         .then((json) => {
           this.setState({session_exists:json.status});
           console.log(json);
@@ -32,6 +31,9 @@ export default class SlycatRemoteControls extends Component {
     };
 
     componentDidMount(){
+      this.checkRemoteStatus(this.state.hostName).then(() => {this.props.callBack(this.state.hostName, this.state.userName,
+          this.state.password, this.state.session_exists);
+      });
       this.getRemoteHosts();
     }
 
