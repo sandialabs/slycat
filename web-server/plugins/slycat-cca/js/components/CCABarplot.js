@@ -9,6 +9,18 @@ class CCABarplot extends React.Component {
     };
   }
 
+  handleClick = () => {
+    console.log('this is:', this);
+  }
+
+  select_component = (component) =>
+  {
+    this.element.find(".selected-component").removeClass("selected-component");
+    this.element.find(".col" + (component+1)).addClass("selected-component");
+    this.resize_canvas();
+    this.element.find(".rowOutput.selected-component").first().scrollintoview({direction: "horizontal",});
+  }
+
   render() {
     // Define default button style
     const button_style = 'btn-outline-dark';
