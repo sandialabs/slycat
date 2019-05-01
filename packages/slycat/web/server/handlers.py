@@ -1927,7 +1927,7 @@ def post_remotes():
     # username/password are not guaranteed to exist within the incoming json
     # (they don't exist for rsa-cert auth)
     if username == None:
-        username = cherry.request.login
+        username = cherrypy.request.login
         
     msg = ""
     agent = cherrypy.request.json.get("agent", None)
