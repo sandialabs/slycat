@@ -1940,7 +1940,7 @@ def post_remotes():
     try:
         database = slycat.web.server.database.couchdb.connect()
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        for i in xrange(len(session["sessions"])):
+        for i in range(len(session["sessions"])):
             if session["sessions"][i]["hostname"] == hostname:
                 if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
                     slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
