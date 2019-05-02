@@ -5,20 +5,33 @@ class CCABarplot extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      
+      component: this.props.component,
     };
+
+    // Create a ref to the .cca-barplot-table
+    this.cca_barplot_table = React.createRef();
   }
 
-  handleClick = () => {
-    console.log('this is:', this);
+  componentDidMount() {
+    this.handle_component_change_transition();
   }
 
-  select_component = (component) =>
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.state.component !== prevState.component)
+    {
+      this.handle_component_change_transition();
+    }
+  }
+
+  handle_component_change_transition = () =>
   {
-    this.element.find(".selected-component").removeClass("selected-component");
-    this.element.find(".col" + (component+1)).addClass("selected-component");
-    this.resize_canvas();
-    this.element.find(".rowOutput.selected-component").first().scrollintoview({direction: "horizontal",});
+    // Scroll the first output cell of the selected component into view
+    $(".rowOutput.selected-component", this.cca_barplot_table.current).first().scrollintoview({direction: "horizontal",});
+  }
+
+  clickComponent = (index, e) =>
+  {
+    this.setState({component: index});
   }
 
   render() {
@@ -30,13 +43,15 @@ class CCABarplot extends React.Component {
         className={`
           barplotHeaderColumn 
           col${index+1} 
-          cca${index + 1}`} 
+          cca${index + 1}
+          ${this.state.component == index ? 'selected-component' : ''}
+          `}
         key={index}
       >
         <div className="wrapper">
           <div className="negativeSpacer spacer" />
           <div className="barplotHeaderColumnLabelWrapper">
-            <span className="selectCCAComponent">
+            <span className="selectCCAComponent" onClick={(e) => this.clickComponent(index, e)}>
               CCA {index + 1}
             </span>
             <span className="sortCCAComponent icon-sort-off" />
@@ -47,7 +62,7 @@ class CCABarplot extends React.Component {
     ));
 
     const rSquaredStatistics = this.props.x_loadings.map((item, index) => (
-      <div className={`barplotCell col${index+1}`} key={index}>
+      <div className={`barplotCell col${index+1} ${this.state.component == index ? 'selected-component' : ''}`} key={index}>
         <div className="wrapper">
           <div className="negativeSpacer spacer" />
           <div className="barplotCellValue">
@@ -60,7 +75,7 @@ class CCABarplot extends React.Component {
 
 
     const pStatistics = this.props.x_loadings.map((item, index) => (
-      <div className={`barplotCell col${index+1}`} key={index}>
+      <div className={`barplotCell col${index+1} ${this.state.component == index ? 'selected-component' : ''}`} key={index}>
         <div className="wrapper">
           <div className="negativeSpacer spacer" />
           <div className="barplotCellValue">
@@ -109,7 +124,9 @@ class CCABarplot extends React.Component {
                 className={`barplotCell rowInput \
                   row${inputs_index} \
                   col${x_loadings_index+1} \
-                  variable${this.props.inputs[inputs_index]}`}
+                  variable${this.props.inputs[inputs_index]} \
+                  ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
+                  `}
                 key={x_loadings_index}
               >
                 <div className="wrapper">
@@ -162,7 +179,9 @@ class CCABarplot extends React.Component {
                 className={`barplotCell rowOutput \
                   row${outputs_index + this.props.inputs.length} \
                   col${x_loadings_index+1} \
-                  variable${this.props.outputs[outputs_index]}`}
+                  variable${this.props.outputs[outputs_index]} \
+                  ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
+                  `}
                 key={x_loadings_index}
               >
                 <div className="wrapper">
@@ -190,7 +209,7 @@ class CCABarplot extends React.Component {
     return (
       <React.Fragment>
         <React.StrictMode>
-          <div className="cca-barplot-table">
+          <div className="cca-barplot-table" ref={this.cca_barplot_table}>
             <div className='barplotHeader'>
               <div className="barplotRow">
                 <div className="barplotHeaderColumn mask col0">

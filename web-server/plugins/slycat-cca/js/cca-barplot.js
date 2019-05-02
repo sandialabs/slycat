@@ -400,8 +400,8 @@ $.widget("cca.barplot",
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
     var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
     // Making sure widget exists before calling methods on it.
-    if($(".barplotGroup.inputs").data("ui-resizable"))
-      $(".barplotGroup.inputs").resizable("option", {
+    if($(".barplotGroup.inputs", this.element).data("ui-resizable"))
+      $(".barplotGroup.inputs", this.element).resizable("option", {
         minHeight: Math.max(4, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
         maxHeight: this.options.inputsHeight,
       });
