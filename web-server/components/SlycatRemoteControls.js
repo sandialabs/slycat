@@ -104,7 +104,7 @@ export default class SlycatRemoteControls extends Component {
       return (
         <div>
           <div className="form-group row">
-            <label className="col-sm-2 col-form-label">Hostname</label>
+            <label className="col-sm-3 col-form-label">Hostname</label>
             <div className="col-sm-10">
               <div className="input-group">
                 <div className="dropdown">
@@ -123,7 +123,7 @@ export default class SlycatRemoteControls extends Component {
           {!this.state.session_exists?
           <div>
             <div className="form-group row">
-              <label className="col-sm-2 col-form-label">Username</label>
+              <label className="col-sm-3 col-form-label">Username</label>
               <div className="col-sm-10">
                 <input className="form-control" type="text"
                 value={this.state.userName?this.state.userName:""}
@@ -131,7 +131,7 @@ export default class SlycatRemoteControls extends Component {
               </div>
             </div>
             <div className="form-group row" data-bind-old="visible: !session_exists()">
-              <label className="col-sm-2 col-form-label">Password</label>
+              <label className="col-sm-3 col-form-label">Password</label>
               <div className="col-sm-10">
                 <input className="form-control" type="password"
                 onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>

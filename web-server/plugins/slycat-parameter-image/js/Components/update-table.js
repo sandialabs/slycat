@@ -121,6 +121,8 @@ export default class ControlsButtonUpdateTable extends Component {
         });
   };
   render() {
+    const radioDivStyle = {width: '18%'};
+    const radioDivLocalStyle = {width: '73%'};
     return (
       <div>
         <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
@@ -135,15 +137,8 @@ export default class ControlsButtonUpdateTable extends Component {
 
               {this.state.visible_tab === "0" ?
               <div className='modal-body'>
-
-                  <ul className="nav nav-pills">
-                      <li className="nav-item"><a className="nav-link">Locate
-                          Data</a></li>
-                      <li className="nav-item"/>
-                  </ul>
-
-                  <div className='radio'>
-                    <label>
+                  <div className='radio' style={radioDivStyle}> {/*width 18%*/}
+                    <label style={radioDivLocalStyle}> {/*width 73%*/}
                       <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
                       Local
                     </label>
