@@ -1,5 +1,6 @@
 'use strict';
 import React, { Component } from 'react';
+import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
 import ProgressBar from 'components/ProgressBar';
 import ControlsButton from './controls-button';
 import '../../css/controls-button-var-options.css';
@@ -155,6 +156,7 @@ export default class ControlsButtonUpdateTable extends Component {
                   hidden={this.state.progressBarHidden}
                   progress={this.state.progressBarProgress}
                 />
+                <RemoteFileBrowser compiler={"arg1"} framework={"arg2"} />
               </div>
 
               {this.state.visible_tab === "1" ?

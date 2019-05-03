@@ -8,7 +8,7 @@ import ControlsGroup from './controls-group';
 import ControlsButtonToggle from './controls-button-toggle';
 import ControlsButton from './controls-button';
 import FileSelector from './file-selector';
-import ControlsButtonUpdateTable from './update-table';
+import ControlsButtonUpdateTable from './update-table.jsx';
 import ControlsButtonDownloadDataTable from './controls-button-download-data-table';
 import VisibleVarOptions from './visible-var-options';
 
