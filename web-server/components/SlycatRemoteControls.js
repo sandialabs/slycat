@@ -20,6 +20,8 @@ export default class SlycatRemoteControls extends Component {
         .then((json) => {
           this.setState({session_exists:json.status});
           console.log(json);
+      }).then(() => {this.props.callBack(this.state.hostName, this.state.userName,
+          this.state.password, this.state.session_exists);
       });
     };
 
@@ -31,9 +33,7 @@ export default class SlycatRemoteControls extends Component {
     };
 
     componentDidMount(){
-      this.checkRemoteStatus(this.state.hostName).then(() => {this.props.callBack(this.state.hostName, this.state.userName,
-          this.state.password, this.state.session_exists);
-      });
+      this.checkRemoteStatus(this.state.hostName);
       this.getRemoteHosts();
     }
 
@@ -83,46 +83,16 @@ export default class SlycatRemoteControls extends Component {
     }
 
     connect = () => {
-        // component.remote.enable(false);
-        // component.remote.status_type("info");
-        // component.remote.status("Connecting ...");
-
-        if (this.state.session_exists) {
-            console.log("Session already exists.");
-            // component.tab(3);
-            // component.remote.enable(true);
-            // component.remote.status_type(null);
-            // component.remote.status(null);
+      client.post_remotes_fetch({
+        parameters: {
+          hostname: this.state.hostName,
+          username: this.state.userName,
+          password: this.state.password,
         }
-        else {
-            client.post_remotes_fetch({
-                parameters: {
-                    hostname: this.state.hostName,
-                    username: this.state.userName,
-                    password: this.state.password,
-                }
-            }).then(() => {
-                console.log("Remote session created.");
-            });
-            //     success: function(sid) {
-            //       this.setState({session_exists:true})
-            //       // component.remote.sid(sid);
-            //       // component.tab(3);
-            //       // component.remote.enable(true);
-            //       // component.remote.status_type(null);
-            //       // component.remote.status(null);
-            //     },
-            //     error: function(request, status, reason_phrase) {
-            //         console.log("Everything is broken.");
-            //       // component.remote.enable(true);
-            //       // component.remote.status_type("danger");
-            //       // component.remote.status(reason_phrase);
-            //       // component.remote.focus("password");
-            //     }
-            //   });
-            // }
-        }
-    }
+      }).then(() => {
+        console.log("Remote session created.");
+      });
+    };
 
     render() {
       //console.log(`state ${JSON.stringify(this.state)}`);
@@ -167,15 +137,16 @@ export default class SlycatRemoteControls extends Component {
                 onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
               </div>
             </div>
+            <div className="form-group row" >
+              <div className="col-sm-10">
+                <button type='button' className='btn btn-primary' onClick={this.connect}>
+                  Connect
+                </button>
+              </div>
+            </div>
           </div>:
           null}
-          <div className="form-group row" >
-            <div className="col-sm-10">
-              <button type='button' className='btn btn-primary' onClick={this.connect}>
-                Continue
-              </button>
-            </div>
-          </div>
+
 
         </div>
       );

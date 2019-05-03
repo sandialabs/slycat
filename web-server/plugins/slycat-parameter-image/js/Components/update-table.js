@@ -21,7 +21,9 @@ export default class ControlsButtonUpdateTable extends Component {
           hostname: "",
           username: "",
           password: "",
-          selectedOption: "local"
+          selectedOption: "local",
+          visible_tab: "0",
+          session_exists: null,
       }
   }
 
@@ -55,12 +57,23 @@ export default class ControlsButtonUpdateTable extends Component {
     $('#' + this.state.modalId).modal('hide');
   };
 
+  continue = () =>
+  {
+    this.setState({visible_tab: "1"});
+  };
+
+  back = () =>
+  {
+    this.setState({visible_tab: "0"});
+  }
+
   handleFileSelection = (selectorFiles) =>
   {
     this.setState({files:selectorFiles,disabled:false});
   };
   callBack = (newHostName, newUserName, newPassword, session_exists) => {
       console.log(`hostname ${newHostName}::username${newUserName}Password::${newPassword}SessionExists::${session_exists}`);
+      this.setState({session_exists:session_exists});
       // setPassword(newPassword);
       // setUserName(newUserName);
       // setHostName(newHostName);
@@ -115,37 +128,59 @@ export default class ControlsButtonUpdateTable extends Component {
             <div className='modal-content'>
               <div className='modal-header'>
                 <h3 className='modal-title'>{this.state.title}</h3>
-                <button type='button' className='close' data-dismiss='modal' aria-label='Close'>
+                <button type='button' className='close' onClick={this.closeModal} aria-label='Close'>
+                  X
                 </button>
               </div>
+
+              {this.state.visible_tab === "0" ?
               <div className='modal-body'>
 
-              <div className='radio'>
-                <label>
-                  <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
-                  Local
-                </label>
-                <label>
-                  <input type='radio' value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>
-                  Remote
-                </label>
-              </div>
-                {this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:
+                  <ul className="nav nav-pills">
+                      <li className="nav-item"><a className="nav-link">Locate
+                          Data</a></li>
+                      <li className="nav-item"/>
+                  </ul>
+
+                  <div className='radio'>
+                    <label>
+                      <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
+                      Local
+                    </label>
+                    <label>
+                      <input type='radio' value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>
+                      Remote
+                    </label>
+                  </div>
+                    {this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:
                     <FileSelector handleChange = {this.handleFileSelection} />}
-              </div>
+              </div>:null}
               <div className='slycat-progress-bar'>
                 <ProgressBar
                   hidden={this.state.progressBarHidden}
                   progress={this.state.progressBarProgress}
                 />
               </div>
+
+              {this.state.visible_tab === "1" ?
+                <div className="form-horizontal">
+                    Test
+                </div>:
+              null}
+
               <div className='modal-footer'>
+                {this.state.visible_tab === "1" ?
+                <button type='button' className='btn btn-primary' onClick={this.back}>
+                  Back
+                </button>:null}
+                {this.state.selectedOption === "local" ?
                 <button type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
                 Update Data Table
-                </button>
-                <button type='button' className='btn btn-primary' onClick={this.closeModal}>
-                  Close
-                </button>
+                </button>:null}
+                {this.state.session_exists === true && this.state.selectedOption === "remote" ?
+                <button type='button' className='btn btn-primary' onClick={this.continue}>
+                  Continue
+                </button>:null}
               </div>
             </div>
           </div>

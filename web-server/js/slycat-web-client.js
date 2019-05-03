@@ -942,7 +942,7 @@ module.post_remotes = function(params)
   });
 };
 
-module.post_remotes_fetch = function(params, successFunction, errorFunction)
+module.post_remotes_fetch = function(params)
 {
   return fetch(`${api_root}remotes`,
       {
@@ -960,12 +960,6 @@ module.post_remotes_fetch = function(params, successFunction, errorFunction)
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
     return response.json();
-  }).catch((error) => {
-    if (errorFunction) {
-      errorFunction(error)
-    }else{
-      console.log(error);
-    }
   });
 };
 
