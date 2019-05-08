@@ -88,7 +88,7 @@ jquery.knob            1.2.11   https://github.com/aterrien/jQuery-Knob
 jquery-ui              1.12.1   https://jqueryui.com
 knockout                3.5.0   http://knockoutjs.com
 knockout.mapping        2.6.0   https://github.com/SteveSanderson/knockout.mapping
-layout                  1.7.0   https://github.com/GedMarc/layout.git
+layout                1.7.0.2   https://github.com/GedMarc/layout.git
 lodash                4.17.11   https://lodash.com/
 object-assign           4.1.1   https://github.com/sindresorhus/object-assign
 papaparse               4.6.3   https://github.com/mholt/PapaParse
