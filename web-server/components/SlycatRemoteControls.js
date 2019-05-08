@@ -90,6 +90,7 @@ export default class SlycatRemoteControls extends Component {
           password: this.state.password,
         }
       }).then(() => {
+        this.checkRemoteStatus(this.state.hostName);
         console.log("Remote session created.");
       });
     };

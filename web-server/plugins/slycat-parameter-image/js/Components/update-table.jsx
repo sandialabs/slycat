@@ -156,12 +156,11 @@ export default class ControlsButtonUpdateTable extends Component {
                   hidden={this.state.progressBarHidden}
                   progress={this.state.progressBarProgress}
                 />
-                <RemoteFileBrowser compiler={"arg1"} framework={"arg2"} />
               </div>
 
               {this.state.visible_tab === "1" ?
                 <div className="form-horizontal">
-                    Test
+                  <RemoteFileBrowser compiler={"arg1"} framework={"arg2"} />
                 </div>:
               null}
 
