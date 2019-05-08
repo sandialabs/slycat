@@ -9,8 +9,8 @@ describe("when we load the SlycatRemoteControls", () =>{
   let DefaultInstance: any;
   beforeEach(async () => {
     console.log("begin");
-    global.fetch.mockReset();
-    global.fetch.mockResponses(
+    fetch.mockReset();
+    fetch.mockResponses(
       [
         JSON.stringify([{ status: false }]),
         { status: 200 }
