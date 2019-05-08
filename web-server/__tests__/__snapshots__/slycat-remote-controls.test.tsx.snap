@@ -30,7 +30,12 @@ exports[`when we load the SlycatRemoteControls we expect the correct props to po
           <div
             aria-labelledby="dropdownMenuButton"
             className="dropdown-menu"
-          />
+          >
+            <a
+              className="dropdown-item"
+              onClick={[Function]}
+            />
+          </div>
         </div>
         <input
           className="form-control"

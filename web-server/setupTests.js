@@ -11,3 +11,4 @@ const localStorageMock = {
 global.localStorage = localStorageMock;
 // https://github.com/jefflau/jest-fetch-mock
 global.fetch = require('jest-fetch-mock')
+// global.fetch = require('whatwg-fetch')
