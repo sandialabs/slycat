@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when we load the RemoteFileBrowser we expect the correct props to populate 1`] = `
+<div
+  className="slycat-remote-browser"
+  data-bind-fail="css: persistence_id"
+>
+  runnning
+  <form
+    data-bind-fail="submit: browse_path"
+  >
+    <div
+      className="form-group row path"
+      data-bind-fail="css: {'is-invalid': path_error}"
+    >
+      <label
+        className="col-sm-2 col-form-label"
+        data-bind-fail="text: hostname()"
+      />
+      <div
+        className="col-sm-10"
+      >
+        <div
+          className="input-group"
+          style={
+            Object {
+              "float": "left",
+              "marginRight": "5px",
+              "width": "calc(100% - 44px)",
+            }
+          }
+        >
+          <input
+            className="form-control"
+            data-bind-fail="value: path_input"
+            id="slycat-remote-browser-path"
+            type="text"
+          />
+          <div
+            className="input-group-append"
+          >
+            <button
+              className="btn btn-secondary"
+              type="submit"
+            >
+              Go
+            </button>
+          </div>
+        </div>
+        <div
+          className="btn-group"
+          role="group"
+          style={
+            Object {
+              "float": "right",
+            }
+          }
+        >
+          <button
+            className="btn btn-secondary"
+            data-bind-fail=" click:up, disable:path()=='/' "
+            title="Navigate to parent directory"
+            type="button"
+          >
+            <i
+              aria-hidden="true"
+              className="fa fa-level-up"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+`;

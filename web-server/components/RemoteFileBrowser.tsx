@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-export interface RemoteFileBrowserProps { compiler: string; framework: string; }
+export interface RemoteFileBrowserProps { 
+  userName: string; 
+}
 
 // 'HelloProps' describes the shape of props.
 // State is never set so we use the '{}' type.

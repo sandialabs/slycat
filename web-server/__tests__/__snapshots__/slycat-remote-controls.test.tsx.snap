@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when we load the SlycatRemoteControls we expect the correct props to populate 1`] = `
+<div>
+  <div
+    className="form-group row"
+  >
+    <label
+      className="col-sm-3 col-form-label"
+    >
+      Hostname
+    </label>
+    <div
+      className="col-sm-10"
+    >
+      <div
+        className="input-group"
+      >
+        <div
+          className="dropdown"
+        >
+          <button
+            aria-expanded="false"
+            aria-haspopup="true"
+            className="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown"
+            id="dropdownMenuButton"
+            type="button"
+          />
+          <div
+            aria-labelledby="dropdownMenuButton"
+            className="dropdown-menu"
+          />
+        </div>
+        <input
+          className="form-control"
+          onChange={[Function]}
+          type="text"
+          value=""
+        />
+      </div>
+    </div>
+  </div>
+  <div>
+    <div
+      className="form-group row"
+    >
+      <label
+        className="col-sm-3 col-form-label"
+      >
+        Username
+      </label>
+      <div
+        className="col-sm-10"
+      >
+        <input
+          className="form-control"
+          onChange={[Function]}
+          type="text"
+          value=""
+        />
+      </div>
+    </div>
+    <div
+      className="form-group row"
+      data-bind-old="visible: !session_exists()"
+    >
+      <label
+        className="col-sm-3 col-form-label"
+      >
+        Password
+      </label>
+      <div
+        className="col-sm-10"
+      >
+        <input
+          className="form-control"
+          onChange={[Function]}
+          type="password"
+        />
+      </div>
+    </div>
+    <div
+      className="form-group row"
+    >
+      <div
+        className="col-sm-10"
+      >
+        <button
+          className="btn btn-primary"
+          onClick={[Function]}
+          type="button"
+        >
+          Connect
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

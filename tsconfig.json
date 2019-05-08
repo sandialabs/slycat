@@ -7,19 +7,22 @@
 		// Process & infer types from .js files.
 		"allowJs": true,
 		// Don't emit; allow Babel to transform files.
-		"noEmit": true,
+    "noEmit": true,
+    "module": "commonjs",
 		// Enable strictest settings like strictNullChecks & noImplicitAny.
 		"strict": true,
 		// Disallow features that require cross-file information for emit.
 		"isolatedModules": true,
 		// Import non-ES modules as default imports.
-		"esModuleInterop": true
+    "esModuleInterop": true,
+    "jsx": "preserve"
 	},
   "include": [
     "web-server/**/*"
   ],
   "exclude": [
       "node_modules",
-      "**/*.spec.ts"
+      "**/*.spec.ts",
+      "**/*.test.ts"
   ]
 }
