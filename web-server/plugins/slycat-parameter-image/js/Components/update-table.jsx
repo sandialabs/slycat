@@ -72,9 +72,12 @@ export default class ControlsButtonUpdateTable extends Component {
   {
     this.setState({files:selectorFiles,disabled:false});
   };
-  callBack = (newHostName, newUserName, newPassword, session_exists) => {
-      console.log(`hostname ${newHostName}::username${newUserName}Password::${newPassword}SessionExists::${session_exists}`);
-      this.setState({session_exists:session_exists});
+  callBack = (newHostname, newUsername, newPassword, session_exists) => {
+      this.setState({
+        hostname: newHostname,
+        session_exists: session_exists,
+        username: newUsername
+      });
       // setPassword(newPassword);
       // setUserName(newUserName);
       // setHostName(newHostName);
@@ -160,7 +163,7 @@ export default class ControlsButtonUpdateTable extends Component {
 
               {this.state.visible_tab === "1" ?
                 <div className="form-horizontal">
-                  <RemoteFileBrowser compiler={"arg1"} framework={"arg2"} />
+                  <RemoteFileBrowser hostname={this.state.hostname} />
                 </div>:
               null}
 
