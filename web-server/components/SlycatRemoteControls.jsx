@@ -26,15 +26,15 @@ export default class SlycatRemoteControls extends Component {
     };
 
     getRemoteHosts = () => {
-      client.get_configuration_remote_hosts_fetch()
+      return client.get_configuration_remote_hosts_fetch()
         .then((json)=>{
           this.setState({hostNames:json});
         })
     };
 
-    componentDidMount(){
-      this.checkRemoteStatus(this.state.hostName);
-      this.getRemoteHosts();
+    async componentDidMount(){
+      await this.checkRemoteStatus(this.state.hostName);
+      await this.getRemoteHosts();
     }
 
     populateDisplay = () => {
@@ -82,7 +82,7 @@ export default class SlycatRemoteControls extends Component {
       this.setState(state);
     }
 
-    connect = () => {
+    connect = async () => {
       client.post_remotes_fetch({
         parameters: {
           hostname: this.state.hostName,

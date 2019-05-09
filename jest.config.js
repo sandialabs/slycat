@@ -184,7 +184,8 @@ module.exports = {
   // watchPathIgnorePatterns: [],
 
   // Whether to use watchman for file crawling
-  setupFilesAfterEnv: ["<rootDir>/web-server/setupTests.js"],
+
+  setupFiles: ["<rootDir>/web-server/__tests__/setupTests.js"],
   watchman: true,
   verbose: true,
   collectCoverage: false,

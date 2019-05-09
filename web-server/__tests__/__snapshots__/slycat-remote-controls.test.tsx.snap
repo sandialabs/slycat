@@ -1,5 +1,158 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`when we load the SlycatRemoteControls we can render without crashing 1`] = `
+SlycatRemoteControls {
+  "checkRemoteStatus": [Function],
+  "connect": [Function],
+  "context": Object {},
+  "getRemoteHosts": [Function],
+  "onValueChange": [Function],
+  "populateDisplay": [Function],
+  "props": Object {
+    "callBack": [Function],
+  },
+  "refs": Object {},
+  "setState": [Function],
+  "state": Object {
+    "hostName": null,
+    "hostNames": Array [],
+    "password": "",
+    "remote_hosts": Array [],
+    "session_exists": undefined,
+    "userName": null,
+  },
+  "updater": Updater {
+    "_callbacks": Array [],
+    "_renderer": ReactShallowRenderer {
+      "_context": Object {},
+      "_didScheduleRenderPhaseUpdate": false,
+      "_dispatcher": Object {
+        "readContext": [Function],
+        "useCallback": [Function],
+        "useContext": [Function],
+        "useDebugValue": [Function],
+        "useEffect": [Function],
+        "useImperativeHandle": [Function],
+        "useLayoutEffect": [Function],
+        "useMemo": [Function],
+        "useReducer": [Function],
+        "useRef": [Function],
+        "useState": [Function],
+      },
+      "_element": <SlycatRemoteControls
+        callBack={[Function]}
+      />,
+      "_firstWorkInProgressHook": null,
+      "_forcedUpdate": false,
+      "_instance": [Circular],
+      "_isReRender": false,
+      "_newState": null,
+      "_numberOfReRenders": 0,
+      "_renderPhaseUpdates": null,
+      "_rendered": <div>
+        <div
+          className="form-group row"
+        >
+          <label
+            className="col-sm-3 col-form-label"
+          >
+            Hostname
+          </label>
+          <div
+            className="col-sm-10"
+          >
+            <div
+              className="input-group"
+            >
+              <div
+                className="dropdown"
+              >
+                <button
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                  className="btn btn-secondary dropdown-toggle"
+                  data-toggle="dropdown"
+                  id="dropdownMenuButton"
+                  type="button"
+                />
+                <div
+                  aria-labelledby="dropdownMenuButton"
+                  className="dropdown-menu"
+                />
+              </div>
+              <input
+                className="form-control"
+                onChange={[Function]}
+                type="text"
+                value=""
+              />
+            </div>
+          </div>
+        </div>
+        <div>
+          <div
+            className="form-group row"
+          >
+            <label
+              className="col-sm-3 col-form-label"
+            >
+              Username
+            </label>
+            <div
+              className="col-sm-10"
+            >
+              <input
+                className="form-control"
+                onChange={[Function]}
+                type="text"
+                value=""
+              />
+            </div>
+          </div>
+          <div
+            className="form-group row"
+            data-bind-old="visible: !session_exists()"
+          >
+            <label
+              className="col-sm-3 col-form-label"
+            >
+              Password
+            </label>
+            <div
+              className="col-sm-10"
+            >
+              <input
+                className="form-control"
+                onChange={[Function]}
+                type="password"
+              />
+            </div>
+          </div>
+          <div
+            className="form-group row"
+          >
+            <div
+              className="col-sm-10"
+            >
+              <button
+                className="btn btn-primary"
+                onClick={[Function]}
+                type="button"
+              >
+                Connect
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>,
+      "_rendering": false,
+      "_updater": [Circular],
+      "_workInProgressHook": null,
+    },
+  },
+}
+`;
+
 exports[`when we load the SlycatRemoteControls we expect the correct props to populate 1`] = `
 <div>
   <div

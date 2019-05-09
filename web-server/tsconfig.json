@@ -3,7 +3,6 @@
       "noUnusedLocals": true,
       "noFallthroughCasesInSwitch": true,
       "pretty": true,
-      "module": "system",
       "sourceMap": true,
       "jsx": "react",
       "target": "esnext",
