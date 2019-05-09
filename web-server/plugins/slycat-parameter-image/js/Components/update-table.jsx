@@ -8,7 +8,7 @@ import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
-
+let initialState={};
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
       super(props);
@@ -26,30 +26,12 @@ export default class ControlsButtonUpdateTable extends Component {
           visible_tab: "0",
           session_exists: null,
       }
+      initialState = {...this.state};
   }
-
-  // const modalId = 'varUpdateTableModal';
-  // const title = 'Update Table';
-  // const [files, setfiles] = useState([new File([""], "filename")]);
-  // const [disabled, setDisabled] = useState(true);
-  // const [progressBarHidden, setProgressBarHidden] = useState(true);
-  // const [progressBarProgress, setProgressBarProgress] = useState(0);
-  //
-  // const [hostName, setHostName] = useState("");
-  // const [userName, setUserName] = useState("");
-  // const [password, setPassword] = useState("");
-
-  // const mid = props.mid;
-  // const pid = props.pid;
-  // const [selectedOption, setSelectedOption] = useState("local");
 
   cleanup = () =>
   {
-    // setfiles([new File([""], "filename")]);
-    // setDisabled(true);
-    // setProgressBarHidden(true);
-    // setProgressBarProgress(0);
-    // setSelectedOption("local");
+    this.setState(initialState);
   };
 
   closeModal = (e) =>
@@ -78,10 +60,6 @@ export default class ControlsButtonUpdateTable extends Component {
         session_exists: session_exists,
         username: newUsername
       });
-      // setPassword(newPassword);
-      // setUserName(newUserName);
-      // setHostName(newHostName);
-      // console.log(`hostname:: ${hostName} username${userName} Password::${password}`)
   };
   sourceSelect = (e) =>
   {
@@ -125,12 +103,10 @@ export default class ControlsButtonUpdateTable extends Component {
         });
   };
   render() {
-    const radioDivStyle = {width: '18%'};
-    const radioDivLocalStyle = {width: '73%'};
     return (
       <div>
         <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
-          <div className='modal-dialog'>
+          <div className='modal-dialog modal-lg'>
             <div className='modal-content'>
               <div className='modal-header'>
                 <h3 className='modal-title'>{this.state.title}</h3>
@@ -141,18 +117,20 @@ export default class ControlsButtonUpdateTable extends Component {
 
               {this.state.visible_tab === "0" ?
               <div className='modal-body'>
-                  <div className='radio' style={radioDivStyle}> {/*width 18%*/}
-                    <label style={radioDivLocalStyle}> {/*width 73%*/}
-                      <input type='radio' value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>
-                      Local
-                    </label>
-                    <label>
-                      <input type='radio' value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>
-                      Remote
+                <form>
+                  <div className="form-check-inline">
+                    <label className="form-check-label" htmlFor="radio1">
+                      <input type="radio" className="form-check-input" value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>Local
                     </label>
                   </div>
-                    {this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:
-                    <FileSelector handleChange = {this.handleFileSelection} />}
+                  <div className="form-check-inline">
+                    <label className="form-check-label" htmlFor="radio2">
+                      <input type="radio" className="form-check-input" value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>Remote
+                    </label>
+                  </div>
+                </form>
+                {this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:
+                <FileSelector handleChange = {this.handleFileSelection} />}
               </div>:null}
               <div className='slycat-progress-bar'>
                 <ProgressBar
@@ -162,9 +140,7 @@ export default class ControlsButtonUpdateTable extends Component {
               </div>
 
               {this.state.visible_tab === "1" ?
-                <div className="form-horizontal">
-                  <RemoteFileBrowser hostname={this.state.hostname} />
-                </div>:
+                  <RemoteFileBrowser hostname={this.state.hostname} />:
               null}
 
               <div className='modal-footer'>

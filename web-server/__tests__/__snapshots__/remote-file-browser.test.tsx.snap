@@ -3,73 +3,110 @@
 exports[`when we load the RemoteFileBrowser we expect the correct props to populate 1`] = `
 <div
   className="slycat-remote-browser"
-  data-bind-fail="css: persistence_id"
 >
-  runnning
-  <form
-    data-bind-fail="submit: browse_path"
+  <div
+    className="form-group path"
+    data-bind-fail="css: {'is-invalid': path_error}"
   >
+    <label
+      className="col-sm-3"
+    />
     <div
-      className="form-group row path"
-      data-bind-fail="css: {'is-invalid': path_error}"
+      className="col-sm-10"
     >
-      <label
-        className="col-sm-2 col-form-label"
-        data-bind-fail="text: hostname()"
-      />
       <div
-        className="col-sm-10"
+        className="input-group"
+        style={
+          Object {
+            "float": "left",
+            "marginRight": "5px",
+            "width": "calc(100% - 44px)",
+          }
+        }
       >
+        <input
+          className="form-control"
+          id="slycat-remote-browser-path"
+          onChange={[Function]}
+          type="text"
+          value="/"
+        />
         <div
-          className="input-group"
-          style={
-            Object {
-              "float": "left",
-              "marginRight": "5px",
-              "width": "calc(100% - 44px)",
-            }
-          }
-        >
-          <input
-            className="form-control"
-            data-bind-fail="value: path_input"
-            id="slycat-remote-browser-path"
-            type="text"
-          />
-          <div
-            className="input-group-append"
-          >
-            <button
-              className="btn btn-secondary"
-              type="submit"
-            >
-              Go
-            </button>
-          </div>
-        </div>
-        <div
-          className="btn-group"
-          role="group"
-          style={
-            Object {
-              "float": "right",
-            }
-          }
+          className="input-group-append"
         >
           <button
             className="btn btn-secondary"
-            data-bind-fail=" click:up, disable:path()=='/' "
-            title="Navigate to parent directory"
-            type="button"
+            onClick={[Function]}
           >
-            <i
-              aria-hidden="true"
-              className="fa fa-level-up"
-            />
+            Go
           </button>
         </div>
       </div>
+      <div
+        className="btn-group"
+        role="group"
+        style={
+          Object {
+            "float": "right",
+          }
+        }
+      >
+        <button
+          className="btn btn-secondary"
+          data-bind-fail=" click:up, disable:path()=='/' "
+          title="Navigate to parent directory"
+          type="button"
+        >
+          <i
+            aria-hidden="true"
+            className="fa fa-level-up"
+          />
+        </button>
+      </div>
     </div>
-  </form>
+  </div>
+  <div
+    className="slycat-remote-browser-files"
+    data-bind-fail="updateFeedback: browser_updating"
+  >
+    <table
+      className="table table-hover table-sm"
+    >
+      <thead>
+        <tr>
+          <th />
+          <th>
+            Name
+          </th>
+          <th>
+            Size
+          </th>
+          <th>
+            Date Modified
+          </th>
+        </tr>
+      </thead>
+      <tbody
+        data-bind-fail="foreach: files"
+      >
+        <tr
+          data-bind-fail=" event:{click : $parent.select, dblclick : $parent.open}, css:{directory:type()=='d', file:type()=='f', selected:selected()} "
+        >
+          <td
+            data-bind-fail="html:icon"
+          />
+          <td
+            data-bind-fail="text:name"
+          />
+          <td
+            data-bind-fail="text:size"
+          />
+          <td
+            data-bind-fail="text:mtime"
+          />
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 `;

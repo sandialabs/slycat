@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import client from "js/slycat-web-client";
+import client from "../js/slycat-web-client";
 
 export default class SlycatRemoteControls extends Component {
     constructor(props) {
@@ -12,16 +12,17 @@ export default class SlycatRemoteControls extends Component {
         session_exists: null,
         password: "",
         hostNames : [],
+        loaded: false
       };
     }
 
     checkRemoteStatus = (hostName) => {
       return client.get_remotes_fetch(hostName)
         .then((json) => {
-          this.setState({session_exists:json.status});
+          this.setState({session_exists:json.status,loaded:true});
           console.log(json);
       }).then(() => {this.props.callBack(this.state.hostName, this.state.userName,
-          this.state.password, this.state.session_exists);
+          this.state.password, this.state.session_exists,);
       });
     };
 
@@ -77,7 +78,8 @@ export default class SlycatRemoteControls extends Component {
         hostName: display.hostName?display.hostName:null,
         userName: display.userName?display.userName:null,
         session_exists: false,
-        password: null
+        password: null,
+        loaded: false
       };
       this.setState(state);
     }
@@ -96,7 +98,10 @@ export default class SlycatRemoteControls extends Component {
     };
 
     render() {
-      //console.log(`state ${JSON.stringify(this.state)}`);
+      //make sure our data is loaded before we render
+      if(!this.state.loaded){
+        return (<div></div>)
+      }
       const hostNamesJSX = this.state.hostNames.map((hostnameObject, i) => {
         return (
         <a className="dropdown-item" key={i} onClick={(e)=>this.onValueChange(e.target.text, "hostName")}>{hostnameObject.hostname}</a>
@@ -139,7 +144,7 @@ export default class SlycatRemoteControls extends Component {
               </div>
             </div>
             <div className="form-group row" >
-              <div className="col-sm-10">
+              <div className="col-sm-10" style={{marginTop: '15px'}}>
                 <button type='button' className='btn btn-primary' onClick={this.connect}>
                   Connect
                 </button>

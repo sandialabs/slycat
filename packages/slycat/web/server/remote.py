@@ -1377,7 +1377,11 @@ def delete_session(sid):
             session = session_cache[sid]
             cherrypy.log.error(
                 "Deleting remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
-            session_cache[sid].close()
+            # try to close the session before we delete it
+            try:
+              session_cache[sid].close()
+            except:
+              pass
             del session_cache[sid]
 
 
