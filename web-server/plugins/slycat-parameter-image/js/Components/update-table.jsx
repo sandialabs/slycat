@@ -102,6 +102,11 @@ export default class ControlsButtonUpdateTable extends Component {
             fileUploader.uploadFile(fileObject);
         });
   };
+  onSelectFile = (selectedPath, selectedPathType) => {
+    // this.state.selectedPath, this.state.selectedPathType
+    // type is either 'd' for directory or 'f' for file
+    console.log(`from console path:${selectedPath} type:${selectedPathType}`);
+  }
   render() {
     return (
       <div>
@@ -140,7 +145,10 @@ export default class ControlsButtonUpdateTable extends Component {
               </div>
 
               {this.state.visible_tab === "1" ?
-                  <RemoteFileBrowser hostname={this.state.hostname} />:
+                  <RemoteFileBrowser 
+                  onSelectFileCallBack={this.onSelectFile} 
+                  hostname={this.state.hostname} 
+                  />:
               null}
 
               <div className='modal-footer'>

@@ -16,8 +16,6 @@ export interface RemoteFileBrowserState {
   browseError: boolean
   browserUpdating: boolean
   selected:number
-  selectedPath:string
-  selectedPathType: string
 }
 
 interface FileMetaData {
@@ -40,9 +38,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         browseError: false,
         persistenceId: props.persistenceId === undefined ? '' : props.persistenceId,
         browserUpdating: false,
-        selected:null,
-        selectedPathType: '',
-        selectedPath: ''
+        selected:null
       }
     }
 
@@ -50,7 +46,13 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
     {
       pathInput = (pathInput === ""?"/":pathInput);
       console.log(`pathInput::${pathInput}`)
-      this.setState({browserUpdating:true, selected:null})
+      this.setState({
+        rawFiles:[], 
+        browserUpdating:true, 
+        selected:null,
+        path:pathInput,
+        pathInput
+      })
       client.post_remote_browse(
       {
         hostname : this.props.hostname,
@@ -62,8 +64,6 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           this.setState({
             browseError:false,
             pathError:false,
-            path:pathInput,
-            pathInput
           });
 
           let files: FileMetaData[] = []
@@ -81,6 +81,9 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           if(this.state.path != this.state.pathInput)
           {
             this.setState({pathError:true, browserUpdating:false});
+          }
+          if(results.status == 400){
+            alert("bad file path")
           }
           this.setState({browseError:true, browserUpdating:false});
         }
@@ -119,12 +122,9 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
 
     selectRow = (file:FileMetaData, i:number) => {
       const newPath:string = this.pathJoin(this.state.path, file.name);
-      this.setState({
-        selectedPathType: file.type,
-        selectedPath:newPath,
-        selected:i
-      })
-      //onSelectFileCallBack?
+      this.setState({selected:i})
+      // tell our create what we selected
+      this.props.onSelectFileCallBack(newPath, file.type);
     }
 
     getFilesAsJsx = ():JSX.Element[] => {
@@ -155,11 +155,11 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
     async componentDidMount() {
       const path = localStorage.getItem("slycat-remote-browser-path-" 
         + this.state.persistenceId 
-        + this.props.hostname)
-      await this.browse(this.pathDirname(path))
+        + this.props.hostname);
+      this.setState({path,pathInput:path});
+      await this.browse(this.pathDirname(path));
     }
     public render() {
-      console.log(this.state)
       return (
         <div className="slycat-remote-browser">
             <div className="form-group path" data-bind-fail="css: {'is-invalid': path_error}">
