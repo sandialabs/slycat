@@ -957,7 +957,10 @@ module.post_remotes_fetch = function(params)
       })
   .then(function(response) {
     if (!response.ok) {
-        throw `bad response with: ${response.status} :: ${response.statusText}`;
+        throw {
+          status:response.status, 
+          statusText: response.statusText
+        };
     }
     return response.json();
   });

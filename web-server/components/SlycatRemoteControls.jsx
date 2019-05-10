@@ -12,14 +12,19 @@ export default class SlycatRemoteControls extends Component {
         session_exists: null,
         password: "",
         hostNames : [],
-        loaded: false
+        loadingData: false,
+        initialLoad: false
       };
     }
 
     checkRemoteStatus = (hostName) => {
       return client.get_remotes_fetch(hostName)
         .then((json) => {
-          this.setState({session_exists:json.status,loaded:true});
+          this.setState({
+            session_exists:json.status,
+            initialLoad:true,
+            loadingData:false
+          });
           console.log(json);
       }).then(() => {this.props.callBack(this.state.hostName, this.state.userName,
           this.state.password, this.state.session_exists,);
@@ -79,12 +84,13 @@ export default class SlycatRemoteControls extends Component {
         userName: display.userName?display.userName:null,
         session_exists: false,
         password: null,
-        loaded: false
+        initialLoad: false
       };
       this.setState(state);
     }
 
     connect = async () => {
+      this.setState({loadingData:true})
       client.post_remotes_fetch({
         parameters: {
           hostname: this.state.hostName,
@@ -94,12 +100,28 @@ export default class SlycatRemoteControls extends Component {
       }).then(() => {
         this.checkRemoteStatus(this.state.hostName);
         console.log("Remote session created.");
+      }).catch((errorResponse) => {
+        if (errorResponse.status == 403){
+          alert(`${errorResponse.statusText} \n\n-Make sure your username and password are entered correctly. 
+          \n-Note you also may have tried to many times with bad credentials and been suspended for the next few minutes`)
+        } else if (errorResponse.status == 401){
+          alert(`${errorResponse.statusText} \n\n-Make sure the Hostname is entered correctly.`)
+        } else {
+          alert(`${errorResponse.statusText}`)
+        }
+        this.setState({loadingData:false})
       });
     };
+    handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        console.log('do validate');
+        this.connect();
+      }
+    }
 
     render() {
       //make sure our data is loaded before we render
-      if(!this.state.loaded){
+      if(!this.state.initialLoad){
         return (<div></div>)
       }
       const hostNamesJSX = this.state.hostNames.map((hostnameObject, i) => {
@@ -131,7 +153,7 @@ export default class SlycatRemoteControls extends Component {
             <div className="form-group row">
               <label className="col-sm-3 col-form-label">Username</label>
               <div className="col-sm-10">
-                <input className="form-control" type="text"
+                <input disabled={this.state.loadingData} className="form-control" type="text"
                 value={this.state.userName?this.state.userName:""}
                 onChange={(e)=>this.onValueChange(e.target.value, "userName")}></input>
               </div>
@@ -139,21 +161,20 @@ export default class SlycatRemoteControls extends Component {
             <div className="form-group row" data-bind-old="visible: !session_exists()">
               <label className="col-sm-3 col-form-label">Password</label>
               <div className="col-sm-10">
-                <input className="form-control" type="password"
+                <input disabled={this.state.loadingData} className="form-control" type="password" onKeyDown={this.handleKeyDown}
                 onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
               </div>
             </div>
             <div className="form-group row" >
               <div className="col-sm-10" style={{marginTop: '15px'}}>
-                <button type='button' className='btn btn-primary' onClick={this.connect}>
-                  Connect
+                <button disabled={this.state.loadingData} type='button' className='btn btn-primary' onClick={this.connect}>
+                {this.state.loadingData?<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>:null}
+                {this.state.loadingData?"Loading...":"Connect"}
                 </button>
               </div>
             </div>
           </div>:
           null}
-
-
         </div>
       );
     };

@@ -24,8 +24,7 @@ interface FileMetaData {
   mimeType: string
 }
 
-// 'HelloProps' describes the shape of props.
-// State is never set so we use the '{}' type.
+// TODO: comment all the functions and interfaces
 export default class RemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
     public constructor(props:RemoteFileBrowserProps) {
       super(props)

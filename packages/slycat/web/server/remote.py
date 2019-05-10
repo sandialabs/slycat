@@ -715,8 +715,12 @@ class Session(object):
                 raise socket.error('Socket is closed')
             response = json.loads(stdout.readline())
             if not response["ok"]:
+                cherrypy.log.error("response")
+                cherrypy.log.error(str(response))
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
                 raise cherrypy.HTTPError(400)
+            cherrypy.log.error("response")
+            cherrypy.log.error(str(response))
             return {"path": response["path"], "names": response["names"], "sizes": response["sizes"],
                     "types": response["types"], "mtimes": response["mtimes"], "mime-types": response["mime-types"]}
 
@@ -1244,7 +1248,7 @@ def create_session(hostname, username, password, agent):
         cherrypy.log.error("slycat.web.server.remote.py create_session",
                                 "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s." % (
                                     username, hostname, type(e), str(e)))
-        raise cherrypy.HTTPError("500 Remote connection failed: %s" % str(e))
+        raise cherrypy.HTTPError("401 Remote connection failed: %s" % str(e))
 
 
 def get_session(sid):
@@ -1397,7 +1401,10 @@ def _expire_session(sid):
         if now - session.accessed > slycat.web.server.config["slycat-web-server"]["remote-session-timeout"]:
             cherrypy.log.error(
                 "Timing-out remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
-            session_cache[sid].close()
+            try:    
+              session_cache[sid].close()
+            except:
+              pass
             del session_cache[sid]
 
 
