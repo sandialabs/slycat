@@ -102,10 +102,16 @@ export default class ControlsButtonUpdateTable extends Component {
             fileUploader.uploadFile(fileObject);
         });
   };
-  onSelectFile = (selectedPath, selectedPathType) => {
+  onSelectFile = (selectedPath, selectedPathType, file) => {
     // this.state.selectedPath, this.state.selectedPathType
     // type is either 'd' for directory or 'f' for file
-    console.log(`from console path:${selectedPath} type:${selectedPathType}`);
+
+    //console.log(`from console path:${selectedPath} type:${selectedPathType} file:${file}`);
+    console.log("This is the file being passed in: ");
+    console.log(file);
+    this.setState({files:file, disabled:false});
+    console.log("This is the state file");
+    console.log(this.state.files);
   }
   render() {
     return (
@@ -156,11 +162,11 @@ export default class ControlsButtonUpdateTable extends Component {
                 <button type='button' className='btn btn-primary' onClick={this.back}>
                   Back
                 </button>:null}
-                {this.state.selectedOption === "local" ?
+                {this.state.selectedOption === "local" || this.state.visible_tab === "1"?
                 <button type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
                 Update Data Table
                 </button>:null}
-                {this.state.session_exists === true && this.state.selectedOption === "remote" ?
+                {this.state.session_exists === true && this.state.selectedOption === "remote" && this.state.visible_tab === "0"?
                 <button type='button' className='btn btn-primary' onClick={this.continue}>
                   Continue
                 </button>:null}

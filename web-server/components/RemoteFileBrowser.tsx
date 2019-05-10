@@ -124,7 +124,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       const newPath:string = this.pathJoin(this.state.path, file.name);
       this.setState({selected:i})
       // tell our create what we selected
-      this.props.onSelectFileCallBack(newPath, file.type);
+      this.props.onSelectFileCallBack(newPath, file.type, file);
     }
 
     getFilesAsJsx = ():JSX.Element[] => {
