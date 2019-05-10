@@ -1,0 +1,55 @@
+<!-- Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. -->
+
+<div class="modal-header">
+  <h3 class="modal-title">Modified CCA Model</h3>
+  <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <ul class="nav nav-pills">
+    <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Select Columns</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Name Model</a></li>
+  </ul>
+
+  <div class="tab-content">
+
+    <div data-bind="visible:tab() == 0">
+      <slycat-table-ingestion params="
+        variables: attributes,
+        properties: [{name: 'Classification', type: 'select', values: ['Input','Output','Neither']}]
+      "></slycat-table-ingestion>
+      <form role="form">
+        <div class="form-group mt-3">
+          <div class="form-check pl-1">
+            <label>
+              <input type="checkbox" data-bind="checked: scale_inputs"/> Scale to unit variance
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div data-bind="visible:tab() == 1">
+      <form data-bind="submit: name_model" id="rerun-cca-name-model-form" novalidate>
+        <slycat-model-controls 
+          params="
+            name: model.name,
+            description: model.description,
+            marking: model.marking
+          "></slycat-model-controls>
+      </form>
+    </div>
+
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+  <button class="btn btn-primary" data-bind="visible: tab() == 0, click: finish">Continue</button>
+  <button class="btn btn-primary" 
+    data-bind="
+      visible: tab() == 1, 
+      click: function(data, event) { name_model(document.getElementById('rerun-cca-name-model-form'), data, event) }
+    "
+  >Finish & Go To Model</button>
+</div>

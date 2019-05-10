@@ -13,9 +13,10 @@ import 'plugins/slycat-project-wizards/slycat-project-wizards';
 import 'plugins/slycat-parameter-image/slycat-parameter-image';
 import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
 import 'plugins/slycat-cca/slycat-cca';
+import 'plugins/slycat-cca-old/slycat-cca-old';
 import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
 import '../../../dial-a-cluster/plugin/dial-a-cluster-model';
-import '../../../VideoSwarm/plugin/vs-model';
+// import '../../../VideoSwarm/plugin/vs-model';
 
 // Remap wizard, which is probably not working as of August 2018
 import 'plugins/slycat-remap-wizard/slycat-remap-wizard';
@@ -39,6 +40,9 @@ export async function loadTemplate(name, format) {
     case "cca":
       html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca/ui.html');
       break;
+    case "cca-old":
+      html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca-old/ui.html');
+      break;
     case "parameter-image-plus":
       html = await import(/* webpackChunkName: "ui_parameter_image_plus_template" */ 'plugins/slycat-parameter-image-plus-model/ui.html');
       break;
@@ -48,9 +52,9 @@ export async function loadTemplate(name, format) {
     case "DAC":
       html = await import(/* webpackChunkName: "ui_dial_a_cluster_template" */ '../../../dial-a-cluster/plugin/html/dac-ui.html');
       break;
-    case "VS":
-      html = await import(/* webpackChunkName: "ui_video_swarm_template" */ '../../../VideoSwarm/plugin/html/vs-ui.html');
-      break;
+    // case "VS":
+    //   html = await import( webpackChunkName: "ui_video_swarm_template"  '../../../VideoSwarm/plugin/html/vs-ui.html');
+    //   break;
     default:
       console.log("We don't recognize this template type, so not loading a template.");
   }
@@ -85,6 +89,9 @@ export async function loadModule(name) {
     case "cca":
       module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca/js/ui.js');
       break;
+    case "cca-old":
+      module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca-old/js/ui.js');
+      break;
     case "parameter-image-plus":
       module = await import(/* webpackChunkName: "ui_parameter_image_plus_module" */ 'plugins/slycat-parameter-image-plus-model/js/ui.js');
       break;
@@ -94,9 +101,9 @@ export async function loadModule(name) {
     case "DAC":
       module = await import(/* webpackChunkName: "ui_dial_a_cluster_module" */ '../../../dial-a-cluster/plugin/js/dac-ui.js');
       break;
-    case "VS":
-      module = await import(/* webpackChunkName: "ui_video_swarm_module" */ '../../../VideoSwarm/plugin/js/vs-ui.js');
-      break;
+    // case "VS":
+    //   module = await import( webpackChunkName: "ui_video_swarm_module"  '../../../VideoSwarm/plugin/js/vs-ui.js');
+    //   break;
     default:
       console.log("We don't recognize this module type, so not loading a module.");
   }

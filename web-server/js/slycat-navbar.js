@@ -194,7 +194,7 @@ export function renderNavBar() {
             alerts.push({"type":"info", "message":"The model is waiting for data to be uploaded.", "detail":null})
 
           if(model.state() == "running")
-            alerts.push({"type":"success", "message":"The model is being computed.  Patience!", "detail":null})
+            alerts.push({"type":"success", "message":"The model is being computed.  Patience...", "detail":null})
 
           if(model.result && model.result() == "failed")
             alerts.push({"type":"danger", "message":"Model failed to build.  Here's what was happening when things went wrong:", "detail": model.message()})
