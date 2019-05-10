@@ -10,7 +10,9 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
   >
     <label
       className="col-sm-3"
-    />
+    >
+      string
+    </label>
     <div
       className="col-sm-10"
     >
@@ -29,7 +31,7 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
           id="slycat-remote-browser-path"
           onChange={[Function]}
           type="text"
-          value="/"
+          value={null}
         />
         <div
           className="input-group-append"
@@ -54,6 +56,7 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
         <button
           className="btn btn-secondary"
           data-bind-fail=" click:up, disable:path()=='/' "
+          onClick={[Function]}
           title="Navigate to parent directory"
           type="button"
         >
@@ -66,13 +69,21 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
     </div>
   </div>
   <div
-    className="slycat-remote-browser-files"
-    data-bind-fail="updateFeedback: browser_updating"
+    style={
+      Object {
+        "display": "block",
+        "height": "384px",
+        "overflow": "auto",
+        "position": "relative",
+      }
+    }
   >
     <table
-      className="table table-hover table-sm"
+      className="table table-hover table-bordered"
     >
-      <thead>
+      <thead
+        className="thead-light"
+      >
         <tr>
           <th />
           <th>
@@ -86,26 +97,7 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
           </th>
         </tr>
       </thead>
-      <tbody
-        data-bind-fail="foreach: files"
-      >
-        <tr
-          data-bind-fail=" event:{click : $parent.select, dblclick : $parent.open}, css:{directory:type()=='d', file:type()=='f', selected:selected()} "
-        >
-          <td
-            data-bind-fail="html:icon"
-          />
-          <td
-            data-bind-fail="text:name"
-          />
-          <td
-            data-bind-fail="text:size"
-          />
-          <td
-            data-bind-fail="text:mtime"
-          />
-        </tr>
-      </tbody>
+      <tbody />
     </table>
   </div>
 </div>

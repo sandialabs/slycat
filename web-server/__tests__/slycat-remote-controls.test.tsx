@@ -16,7 +16,7 @@ describe("when we load the SlycatRemoteControls", () =>{
   beforeEach(() => {
   });
 
-  test('we can render without crashing', async () => {
+  xtest('we can render without crashing', async () => {
     globalAny.fetch.mockResponses(
       [
         JSON.stringify({ status: false }),

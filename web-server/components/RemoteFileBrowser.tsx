@@ -1,10 +1,9 @@
 import * as React from 'react';
 import client from "../js/slycat-web-client";
-import { JSXElement } from '@babel/types';
 export interface RemoteFileBrowserProps { 
   hostname: string
   persistenceId?: string
-  onSelectFileCallBack?: Function
+  onSelectFileCallBack: Function
 }
 
 export interface RemoteFileBrowserState {
@@ -38,7 +37,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         browseError: false,
         persistenceId: props.persistenceId === undefined ? '' : props.persistenceId,
         browserUpdating: false,
-        selected:null
+        selected:-1
       }
     }
 
@@ -49,7 +48,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       this.setState({
         rawFiles:[], 
         browserUpdating:true, 
-        selected:null,
+        selected:-1,
         path:pathInput,
         pathInput
       })
@@ -131,7 +130,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
         return (
           <tr 
-          className={this.state.selected==i?'selected':null} 
+          className={this.state.selected==i?'selected':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
           onDoubleClick={()=> this.browseUpByFile(rawFile)} data-bind-fail="
@@ -156,8 +155,10 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       const path = localStorage.getItem("slycat-remote-browser-path-" 
         + this.state.persistenceId 
         + this.props.hostname);
-      this.setState({path,pathInput:path});
-      await this.browse(this.pathDirname(path));
+      if(path != null){
+        this.setState({path,pathInput:path});
+        await this.browse(this.pathDirname(path));
+      }
     }
     public render() {
       return (
