@@ -1,63 +1,90 @@
-import RemoteFileBrowser from "../components/RemoteFileBrowser";
+import $ from 'jquery';
+import RemoteFileBrowser,{ RemoteFileBrowserProps, RemoteFileBrowserState } from "../components/RemoteFileBrowser";
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { shallow } from 'enzyme';
-import data from './remoteBrowserTestData.json';
+import { mount, ReactWrapper } from 'enzyme';
+import sinon from 'sinon';
+global.$ = global.jQuery = $;
+// import client from "../js/slycat-web-client";
+import mockData from './remoteBrowserTestData.json';
 
 describe("when we load the RemoteFileBrowser", () =>{
-
+  let server = sinon.fakeServer.create();
   let component: renderer.ReactTestRenderer;
   let DefaultInstance: any;
+  let render:ReactWrapper;
   let callbackFileType:string;
   let callbackFilePath:string;
+  const onSelectFile =(path:string, type:string) =>{
+    callbackFileType=type;
+    callbackFilePath=path;
+  }
 
   beforeEach(() => {
-    jest.mock('../js/slycat-web-client', () => ({
-      async onGetBookingList() {
-          return data;
-      }
-    }));
+  });
+
+  test('we can mount without crashing', async () => {
+    server.respondWith('POST', '/api/remotes/string/browse/', JSON.stringify(mockData));
+    server.respond();
+    render = await mount(
+      <RemoteFileBrowser   
+        hostname={"string"}
+        persistenceId={"string"}
+        onSelectFileCallBack={onSelectFile}
+      />
+        );
+    let instance:any = render.instance() as any;
+    server.respond();
+    console.log(await instance.browse('/'));
+    console.log(render.state());
+    expect(render).toBeTruthy();
+    server.restore();
+  });
+
+  test('we can render the component', () => {
     component = renderer.create(
       <RemoteFileBrowser   
       hostname={"string"}
       persistenceId={"string"}
-      onSelectFileCallBack={(path:string, type:string)=>{
-        callbackFileType=type;
-        callbackFilePath=path;
-      }}
+      onSelectFileCallBack={onSelectFile}
       />
     );
-    DefaultInstance = component.getInstance();
-  });
-
-  test('we can render without crashing', () => {
-    expect(shallow(
-    <RemoteFileBrowser   
-      hostname={"string"}
-      persistenceId={"string"}
-      onSelectFileCallBack={(path:string, type:string)=>{
-        callbackFileType=type;
-        callbackFilePath=path;
-      }}
-    />
-      )).toBeTruthy();
-  });
-
-  test('we can render the component', () => {
     expect(component).toBeTruthy();
   });
 
-  test('we have expected props on initial load', () => {
-    
-    expect(DefaultInstance.props.hostname).toBe("string");
+  test('we have expected props on initial load', async () => {
+    render = await mount(
+      <RemoteFileBrowser   
+        hostname={"string"}
+        persistenceId={"string"}
+        onSelectFileCallBack={onSelectFile}
+      />
+        );
+    const props = render.props() as RemoteFileBrowserProps;
+    expect(props).toMatchSnapshot();
   });
 
-  test('we expect the correct state to populate', () => {
-    console.log(data)
-    expect(DefaultInstance.state.path).toBe("/");
+  test('we expect the correct state to populate', async () => {
+    render = await mount(
+      <RemoteFileBrowser   
+        hostname={"string"}
+        persistenceId={"string"}
+        onSelectFileCallBack={onSelectFile}
+      />
+        )
+    const state = render.state() as RemoteFileBrowserState;
+    expect(state).toMatchSnapshot();
   });
 
-  test('we expect the correct props to populate', () => {
+  test('we expect the component to render', () => {
+    component = renderer.create(
+      <RemoteFileBrowser   
+      hostname={"string"}
+      persistenceId={"string"}
+      onSelectFileCallBack={onSelectFile}
+      />
+    );
+    DefaultInstance = component.getInstance();
     expect(DefaultInstance.render()).toMatchSnapshot();
   });
   

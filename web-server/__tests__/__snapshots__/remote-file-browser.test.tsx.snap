@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`when we load the RemoteFileBrowser we expect the correct props to populate 1`] = `
+exports[`when we load the RemoteFileBrowser we expect the component to render 1`] = `
 <div
   className="slycat-remote-browser"
 >
@@ -31,7 +31,7 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
           id="slycat-remote-browser-path"
           onChange={[Function]}
           type="text"
-          value={null}
+          value="/"
         />
         <div
           className="input-group-append"
@@ -101,4 +101,25 @@ exports[`when we load the RemoteFileBrowser we expect the correct props to popul
     </table>
   </div>
 </div>
+`;
+
+exports[`when we load the RemoteFileBrowser we expect the correct state to populate 1`] = `
+Object {
+  "browseError": false,
+  "browserUpdating": false,
+  "path": "/",
+  "pathError": false,
+  "pathInput": "/",
+  "persistenceId": "string",
+  "rawFiles": Array [],
+  "selected": -1,
+}
+`;
+
+exports[`when we load the RemoteFileBrowser we have expected props on initial load 1`] = `
+Object {
+  "hostname": "string",
+  "onSelectFileCallBack": [Function],
+  "persistenceId": "string",
+}
 `;

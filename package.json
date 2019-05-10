@@ -81,6 +81,7 @@
     "precss": "^4.0.0",
     "react-test-renderer": "^16.8.6",
     "sass-loader": "^7.1.0",
+    "sinon": "^7.3.2",
     "style-loader": "^0.23.1",
     "typescript": "^3.4.5",
     "url-loader": "^1.0.1",

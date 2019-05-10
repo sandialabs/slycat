@@ -66,6 +66,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           });
 
           let files: FileMetaData[] = []
+          console.log(`here! ${results}`)
           if(pathInput != "/")
             files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
           for(let i = 0; i != results.names.length; ++i)
