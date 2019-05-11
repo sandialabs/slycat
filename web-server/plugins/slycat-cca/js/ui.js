@@ -414,39 +414,39 @@ $(document).ready(function() {
 
       var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
-      $("#barplot-table").barplot({
-        metadata: table_metadata,
-        inputs: input_columns,
-        outputs: output_columns,
-        r2: r2,
-        wilks: wilks,
-        x_loadings: x_loadings,
-        y_loadings: y_loadings,
-        component: component,
-      });
+      // $("#barplot-table").barplot({
+      //   metadata: table_metadata,
+      //   inputs: input_columns,
+      //   outputs: output_columns,
+      //   r2: r2,
+      //   wilks: wilks,
+      //   x_loadings: x_loadings,
+      //   y_loadings: y_loadings,
+      //   component: component,
+      // });
 
-      if("variable-selection" in bookmark)
-      {
-        $("#barplot-table").barplot("option", "variable", bookmark["variable-selection"]);
-      }
+      // if("variable-selection" in bookmark)
+      // {
+      //   $("#barplot-table").barplot("option", "variable", bookmark["variable-selection"]);
+      // }
 
-      $("#barplot-table").bind("component-changed", function(event, component)
-      {
-        selected_component_changed(component);
-      });
+      // $("#barplot-table").bind("component-changed", function(event, component)
+      // {
+      //   selected_component_changed(component);
+      // });
 
-      $("#barplot-table").bind("component-sort-changed", function(event, component, order)
-      {
-        component_sort_changed(component, order);
-      });
+      // $("#barplot-table").bind("component-sort-changed", function(event, component, order)
+      // {
+      //   component_sort_changed(component, order);
+      // });
 
-      if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
-      {
-        $("#barplot-table").barplot("option",
-        {
-          "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
-        });
-      }
+      // if("sort-cca-component" in bookmark && "sort-direction-cca-component" in bookmark)
+      // {
+      //   $("#barplot-table").barplot("option",
+      //   {
+      //     "sort": [bookmark["sort-cca-component"], bookmark["sort-direction-cca-component"]]
+      //   });
+      // }
 
       const cca_barplot = 
         <CCABarplot 

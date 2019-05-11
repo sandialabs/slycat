@@ -344,78 +344,78 @@ $.widget("cca.barplot",
 
   resize_canvas: function()
   {
-    var tableWidth = 20;  // Adding space for scrollbars
-    $(".barplotHeaderColumn").each(
-      function(index){
-        var maxWidth = Math.max.apply( null, $(".col" + index + " .wrapper").map( function () {
-          return $( this ).outerWidth(true);
-        }).get() );
-        $(".col" + index).width(maxWidth);
-      }
-    );
+    // var tableWidth = 20;  // Adding space for scrollbars
+    // $(".barplotHeaderColumn").each(
+    //   function(index){
+    //     var maxWidth = Math.max.apply( null, $(".col" + index + " .wrapper").map( function () {
+    //       return $( this ).outerWidth(true);
+    //     }).get() );
+    //     $(".col" + index).width(maxWidth);
+    //   }
+    // );
 
-    // Width of table is set to sum of outerWidths(true), which includes content, padding, border, and margin, of all the columns.
-    $(".barplotHeaderColumn").each(
-      function(index){
-        tableWidth += $(this).outerWidth(true);
-      }
-    );
+    // // Width of table is set to sum of outerWidths(true), which includes content, padding, border, and margin, of all the columns.
+    // $(".barplotHeaderColumn").each(
+    //   function(index){
+    //     tableWidth += $(this).outerWidth(true);
+    //   }
+    // );
 
-    var barplotPaneWidth = $('#barplot-pane').width();
-    $('#barplot-table').width(Math.min(tableWidth, barplotPaneWidth));
-    if(tableWidth > barplotPaneWidth) {
-      $('.barplotCanvas.output').css("overflow", "scroll");
-      $('.barplotCanvas.input').css("overflow-y", "scroll");
-    } else {
-      $('.barplotCanvas.output').css("overflow", "auto");
-      $('.barplotCanvas.input').css("overflow-y", "auto");
-    }
+    // var barplotPaneWidth = $('#barplot-pane').width();
+    // $('#barplot-table').width(Math.min(tableWidth, barplotPaneWidth));
+    // if(tableWidth > barplotPaneWidth) {
+    //   $('.barplotCanvas.output').css("overflow", "scroll");
+    //   $('.barplotCanvas.input').css("overflow-y", "scroll");
+    // } else {
+    //   $('.barplotCanvas.output').css("overflow", "auto");
+    //   $('.barplotCanvas.input').css("overflow-y", "auto");
+    // }
 
-    // Assuming we need vertical resize for now. We add this class later after the table size is determined.
-    $("#barplot-table").removeClass("noVerticalResize");
+    // // Assuming we need vertical resize for now. We add this class later after the table size is determined.
+    // $("#barplot-table").removeClass("noVerticalResize");
 
-    var increaseHeight = 0;
-    var barplotPaneHeight = $('#barplot-pane').height();
-    $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
-    var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').outerHeight(true);
-    if(this.options.tableHeight > barplotPaneHeight) {
-      // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
-      var halfViewportHeight = Math.floor(viewportHeight / 2);
-      if(this.options.inputsHeight > halfViewportHeight) {
-        if(this.options.outputsHeight > halfViewportHeight) {
-          // Both inputs and outputs are too big, so inputs get sized to 50% of available area and outputs get the rest. 
-          // Sizing both to 50% of available area was causing problems in Chrome with fractions of pixels. 
-          $(".barplotGroup.inputs").height( halfViewportHeight );
-          $(".barplotGroup.outputs").height( viewportHeight - $(".barplotCanvas").height() );
-        } else {
-          // Only inputs need to be sized down
-          $(".barplotGroup.inputs").height( viewportHeight - this.options.outputsHeight );
-          $(".barplotGroup.outputs").height( this.options.outputsHeight );
-        }
-      } else {
-        // Only outputs needs to be sized down
-        $(".barplotGroup.inputs").height( this.options.inputsHeight );
-        $(".barplotGroup.outputs").height( viewportHeight - this.options.inputsHeight );
-      }
-    } else {
-      // We have room to show everything, so size things to their full height.
-      $(".barplotGroup.inputs").height( this.options.inputsHeight );
-      $(".barplotGroup.outputs").height( this.options.outputsHeight );
-      // Check to see if we have horizontal scrollbars and try to make additional space for it
-      var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
-      var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
-      var extraSpace = barplotPaneHeight - this.options.tableHeight;
-      increaseHeight = Math.min(horizontalScrollbarHeight, extraSpace);
-      if(increaseHeight > 0) {
-        $('#barplot-table').height( $('#barplot-table').height() + increaseHeight );
-        $(".barplotGroup.outputs").height( $(".barplotGroup.outputs").height() + increaseHeight );
-      }
-      // Check to see if we need resizing
-      if(horizontalScrollbarHeight <= extraSpace) {
-        // We don't need resizing, so mark table as such so we can hide the resize handle
-        $("#barplot-table").addClass("noVerticalResize");
-      }
-    }
+    // var increaseHeight = 0;
+    // var barplotPaneHeight = $('#barplot-pane').height();
+    // $('#barplot-table').height(Math.min(this.options.tableHeight, barplotPaneHeight));
+    // var viewportHeight = $("#barplot-table").height() - $('.barplotHeader').outerHeight(true);
+    // if(this.options.tableHeight > barplotPaneHeight) {
+    //   // Table is taller than pane, so need to size down inputs and/or output and make them scrollable
+    //   var halfViewportHeight = Math.floor(viewportHeight / 2);
+    //   if(this.options.inputsHeight > halfViewportHeight) {
+    //     if(this.options.outputsHeight > halfViewportHeight) {
+    //       // Both inputs and outputs are too big, so inputs get sized to 50% of available area and outputs get the rest. 
+    //       // Sizing both to 50% of available area was causing problems in Chrome with fractions of pixels. 
+    //       $(".barplotGroup.inputs").height( halfViewportHeight );
+    //       $(".barplotGroup.outputs").height( viewportHeight - $(".barplotCanvas").height() );
+    //     } else {
+    //       // Only inputs need to be sized down
+    //       $(".barplotGroup.inputs").height( viewportHeight - this.options.outputsHeight );
+    //       $(".barplotGroup.outputs").height( this.options.outputsHeight );
+    //     }
+    //   } else {
+    //     // Only outputs needs to be sized down
+    //     $(".barplotGroup.inputs").height( this.options.inputsHeight );
+    //     $(".barplotGroup.outputs").height( viewportHeight - this.options.inputsHeight );
+    //   }
+    // } else {
+    //   // We have room to show everything, so size things to their full height.
+    //   $(".barplotGroup.inputs").height( this.options.inputsHeight );
+    //   $(".barplotGroup.outputs").height( this.options.outputsHeight );
+    //   // Check to see if we have horizontal scrollbars and try to make additional space for it
+    //   var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
+    //   var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
+    //   var extraSpace = barplotPaneHeight - this.options.tableHeight;
+    //   increaseHeight = Math.min(horizontalScrollbarHeight, extraSpace);
+    //   if(increaseHeight > 0) {
+    //     $('#barplot-table').height( $('#barplot-table').height() + increaseHeight );
+    //     $(".barplotGroup.outputs").height( $(".barplotGroup.outputs").height() + increaseHeight );
+    //   }
+    //   // Check to see if we need resizing
+    //   if(horizontalScrollbarHeight <= extraSpace) {
+    //     // We don't need resizing, so mark table as such so we can hide the resize handle
+    //     $("#barplot-table").addClass("noVerticalResize");
+    //   }
+    // }
 
     // Resetting the inputs resizer max height after table resize
     var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
