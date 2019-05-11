@@ -261,85 +261,85 @@ $.widget("cca.barplot",
 
     
 
-    /* Sizing table */
-    this.options.tableHeight = $('#barplot-table').height();
-    this.options.inputsHeight = barplotGroupInputs.height();
-    this.options.outputsHeight = barplotGroupOutputs.height();
-    // No need to call resize_canvas here since select_component calls it anyway.
-    //this.resize_canvas();
-    this.select_component(this.options.component);
+    // /* Sizing table */
+    // this.options.tableHeight = $('#barplot-table').height();
+    // this.options.inputsHeight = barplotGroupInputs.height();
+    // this.options.outputsHeight = barplotGroupOutputs.height();
+    // // No need to call resize_canvas here since select_component calls it anyway.
+    // //this.resize_canvas();
+    // this.select_component(this.options.component);
 
-    $(".barplotCanvas.input").bind("scroll", function(){
-      $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
-      $(".barplotColumn.input").css("margin-top", "-" + $(this).scrollTop() + "px");
-    });
+    // $(".barplotCanvas.input").bind("scroll", function(){
+    //   $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+    //   $(".barplotColumn.input").css("margin-top", "-" + $(this).scrollTop() + "px");
+    // });
 
-    $(".barplotCanvas.output").bind("scroll", function(){
-      $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
-      $(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
-      $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
-    });
+    // $(".barplotCanvas.output").bind("scroll", function(){
+    //   $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+    //   $(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
+    //   $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
+    // });
 
-    // Resizing functionality
-    var barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
-    barplotGroupInputs.resizable({
-      containment: barplotViewport,
-      handles: "s",
-      minHeight: Math.max(4, barplotViewport.height()-this.options.outputsHeight),
-      maxHeight: this.options.inputsHeight,
-      resize: function(event,ui){
-        // ui.size.height is unreliable, so getting the new height directly from element
-        barplotGroupOutputs.height( barplotGroupOutputsOriginalHeight + (ui.originalSize.height - ui.element.height()) );
-      },
-      start: function(event,ui){
-        barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
-      },
-    });
-    // Shifting default resize handle to left to stop overlap over scrollbar.
-    var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
-    var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
-    var resizeHandle = $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
+    // // Resizing functionality
+    // var barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+    // barplotGroupInputs.resizable({
+    //   containment: barplotViewport,
+    //   handles: "s",
+    //   minHeight: Math.max(4, barplotViewport.height()-this.options.outputsHeight),
+    //   maxHeight: this.options.inputsHeight,
+    //   resize: function(event,ui){
+    //     // ui.size.height is unreliable, so getting the new height directly from element
+    //     barplotGroupOutputs.height( barplotGroupOutputsOriginalHeight + (ui.originalSize.height - ui.element.height()) );
+    //   },
+    //   start: function(event,ui){
+    //     barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+    //   },
+    // });
+    // // Shifting default resize handle to left to stop overlap over scrollbar.
+    // var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
+    // var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
+    // var resizeHandle = $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
 
-    // Adding hover class to resize handle
-    resizeHandle.hover(function(){$(this).addClass("ui-resizable-hover");}, function(){$(this).removeClass("ui-resizable-hover");});
+    // // Adding hover class to resize handle
+    // resizeHandle.hover(function(){$(this).addClass("ui-resizable-hover");}, function(){$(this).removeClass("ui-resizable-hover");});
 
-    // Adding toggle control to resize handle
-    var toggleControl = $("<div class='toggle-control-s' />").appendTo(resizeHandle);
-    toggleControl
-      .hover(
-        function(){
-          $(this).addClass("toggle-control-hover");
-          resizeHandle.removeClass("ui-resizable-hover");
-        }, 
-        function(){
-          $(this).removeClass("toggle-control-hover");
-          resizeHandle.addClass("ui-resizable-hover");
-        }
-      )
-      .click(
-        function(){
-          var barplotGroupInputsHeight = barplotGroupInputs.height();
-          var barplotGroupOutputsHeight = barplotGroupOutputs.height();
-          var expanded = barplotGroupInputsHeight >= barplotGroupInputs.resizable("option", "maxHeight") || barplotGroupOutputsHeight == 0;
-          if(expanded){
-            var amountToCollapse = barplotGroupOutputsOriginalHeight - barplotGroupOutputsHeight;
-            // In some edge cases, the amountToCollapse can come out to a negative number, in which case we don't want to expand
-            if(amountToCollapse < 0)
-              amountToCollapse = 0;
-            barplotGroupInputs.height(barplotGroupInputsHeight - amountToCollapse);
-            barplotGroupOutputs.height(barplotGroupOutputsHeight + amountToCollapse);
-          } else {
-            barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
-            var inputsMaxHeight = self.options.inputsHeight;
-            var amountToExpand = Math.min(barplotGroupOutputsHeight, inputsMaxHeight-barplotGroupInputsHeight);
-            barplotGroupOutputs.height(barplotGroupOutputsHeight - amountToExpand);
-            barplotGroupInputs.height(barplotGroupInputsHeight + amountToExpand);
-          }
-        }
-      );
+    // // Adding toggle control to resize handle
+    // var toggleControl = $("<div class='toggle-control-s' />").appendTo(resizeHandle);
+    // toggleControl
+    //   .hover(
+    //     function(){
+    //       $(this).addClass("toggle-control-hover");
+    //       resizeHandle.removeClass("ui-resizable-hover");
+    //     }, 
+    //     function(){
+    //       $(this).removeClass("toggle-control-hover");
+    //       resizeHandle.addClass("ui-resizable-hover");
+    //     }
+    //   )
+    //   .click(
+    //     function(){
+    //       var barplotGroupInputsHeight = barplotGroupInputs.height();
+    //       var barplotGroupOutputsHeight = barplotGroupOutputs.height();
+    //       var expanded = barplotGroupInputsHeight >= barplotGroupInputs.resizable("option", "maxHeight") || barplotGroupOutputsHeight == 0;
+    //       if(expanded){
+    //         var amountToCollapse = barplotGroupOutputsOriginalHeight - barplotGroupOutputsHeight;
+    //         // In some edge cases, the amountToCollapse can come out to a negative number, in which case we don't want to expand
+    //         if(amountToCollapse < 0)
+    //           amountToCollapse = 0;
+    //         barplotGroupInputs.height(barplotGroupInputsHeight - amountToCollapse);
+    //         barplotGroupOutputs.height(barplotGroupOutputsHeight + amountToCollapse);
+    //       } else {
+    //         barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+    //         var inputsMaxHeight = self.options.inputsHeight;
+    //         var amountToExpand = Math.min(barplotGroupOutputsHeight, inputsMaxHeight-barplotGroupInputsHeight);
+    //         barplotGroupOutputs.height(barplotGroupOutputsHeight - amountToExpand);
+    //         barplotGroupInputs.height(barplotGroupInputsHeight + amountToExpand);
+    //       }
+    //     }
+    //   );
 
-    // Can't figure out how to do this in CSS so setting explicit height here :(
-    $(".barplotHeaderColumn.mask.col0").height( $(".barplotHeader .barplotRow:first-child").height() );
+    // // Can't figure out how to do this in CSS so setting explicit height here :(
+    // $(".barplotHeaderColumn.mask.col0").height( $(".barplotHeader .barplotRow:first-child").height() );
   },
 
   resize_canvas: function()
@@ -417,19 +417,19 @@ $.widget("cca.barplot",
     //   }
     // }
 
-    // Resetting the inputs resizer max height after table resize
-    var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
-    var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
-    // Making sure widget exists before calling methods on it.
-    if($(".barplotGroup.inputs").data("ui-resizable"))
-      $(".barplotGroup.inputs").resizable("option", {
-        minHeight: Math.max(4, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
-        maxHeight: this.options.inputsHeight,
-      });
-    // Shifting default resize handle to left to stop overlap over scrollbar.
-    var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
-    var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
-    $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
+    // // Resetting the inputs resizer max height after table resize
+    // var barplotCanvasOutputElement = $(".barplotCanvas.output")[0];
+    // var horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
+    // // Making sure widget exists before calling methods on it.
+    // if($(".barplotGroup.inputs").data("ui-resizable"))
+    //   $(".barplotGroup.inputs").resizable("option", {
+    //     minHeight: Math.max(4, viewportHeight-(this.options.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
+    //     maxHeight: this.options.inputsHeight,
+    //   });
+    // // Shifting default resize handle to left to stop overlap over scrollbar.
+    // var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
+    // var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
+    // $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
   },
 
   _setOption: function(key, value)

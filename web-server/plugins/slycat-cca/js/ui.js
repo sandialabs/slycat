@@ -463,7 +463,7 @@ $(document).ready(function() {
 
       self.cca_barplot = ReactDOM.render(
         cca_barplot,
-        document.getElementById('cca-barplot')
+        document.getElementById('barplot-table')
       );
     }
 

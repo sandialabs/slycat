@@ -18,8 +18,100 @@ class CCABarplot extends React.Component {
   outputsHeight = null;
 
   componentDidMount() {
-    this.handle_component_change_transition();
+    let barplotGroupOutputs = $('.barplotGroup.outputs');
+    let barplotGroupInputs = $('.barplotGroup.inputs');
+    let barplotViewport = $('.barplotViewport');
 
+    /* Sizing table */
+    this.tableHeight = $('#barplot-table').height();
+    this.inputsHeight = $('.barplotGroup.inputs').height();
+    this.outputsHeight = $('.barplotGroup.outputs').height();
+
+    this.handle_component_change_transition();
+    this.resize_canvas();
+
+    $(".barplotCanvas.input").bind("scroll", function(){
+      $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+      $(".barplotColumn.input").css("margin-top", "-" + $(this).scrollTop() + "px");
+    });
+
+    $(".barplotCanvas.output").bind("scroll", function(){
+      $(".barplotHeaderColumns").css("margin-left", "-" + $(this).scrollLeft() + "px");
+      $(".barplotColumn.output").css("margin-top", "-" + $(this).scrollTop() + "px");
+      $(".barplotCanvas.input").scrollLeft( $(this).scrollLeft() );
+    });
+
+    // Resizing functionality
+    let barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+    barplotGroupInputs.resizable({
+      containment: barplotViewport,
+      handles: "s",
+      minHeight: Math.max(4, barplotViewport.height()-this.outputsHeight),
+      maxHeight: this.inputsHeight,
+      resize: function(event,ui){
+        // ui.size.height is unreliable, so getting the new height directly from element
+        barplotGroupOutputs.height( barplotGroupOutputsOriginalHeight + (ui.originalSize.height - ui.element.height()) );
+      },
+      start: function(event,ui){
+        barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+      },
+    });
+    // Shifting default resize handle to left to stop overlap over scrollbar.
+    var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
+    var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
+    var resizeHandle = $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
+
+    // Adding hover class to resize handle
+    resizeHandle.hover(function(){$(this).addClass("ui-resizable-hover");}, function(){$(this).removeClass("ui-resizable-hover");});
+
+    // Adding toggle control to resize handle
+    var toggleControl = $("<div class='toggle-control-s' />").appendTo(resizeHandle);
+    toggleControl
+      .hover(
+        function(){
+          $(this).addClass("toggle-control-hover");
+          resizeHandle.removeClass("ui-resizable-hover");
+        }, 
+        function(){
+          $(this).removeClass("toggle-control-hover");
+          resizeHandle.addClass("ui-resizable-hover");
+        }
+      )
+      .click(
+        function(){
+          var barplotGroupInputsHeight = barplotGroupInputs.height();
+          var barplotGroupOutputsHeight = barplotGroupOutputs.height();
+          var expanded = barplotGroupInputsHeight >= barplotGroupInputs.resizable("option", "maxHeight") || barplotGroupOutputsHeight == 0;
+          if(expanded){
+            var amountToCollapse = barplotGroupOutputsOriginalHeight - barplotGroupOutputsHeight;
+            // In some edge cases, the amountToCollapse can come out to a negative number, in which case we don't want to expand
+            if(amountToCollapse < 0)
+              amountToCollapse = 0;
+            barplotGroupInputs.height(barplotGroupInputsHeight - amountToCollapse);
+            barplotGroupOutputs.height(barplotGroupOutputsHeight + amountToCollapse);
+          } else {
+            barplotGroupOutputsOriginalHeight = barplotGroupOutputs.height();
+            var inputsMaxHeight = this.inputsHeight;
+            var amountToExpand = Math.min(barplotGroupOutputsHeight, inputsMaxHeight-barplotGroupInputsHeight);
+            barplotGroupOutputs.height(barplotGroupOutputsHeight - amountToExpand);
+            barplotGroupInputs.height(barplotGroupInputsHeight + amountToExpand);
+          }
+        }
+      );
+
+    // Can't figure out how to do this in CSS so setting explicit height here :(
+    $(".barplotHeaderColumn.mask.col0").height( $(".barplotHeader .barplotRow:first-child").height() );
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (this.state.component !== prevState.component)
+    {
+      this.handle_component_change_transition();
+    }
+  }
+
+  resize_canvas = () =>
+  {
     let tableWidth = 20;  // Adding space for scrollbars
     $(".barplotHeaderColumn", this.cca_barplot_table.current).each(
       function(index){
@@ -49,11 +141,6 @@ class CCABarplot extends React.Component {
 
     // Assuming we need vertical resize for now. We add this class later after the table size is determined.
     $("#barplot-table").removeClass("noVerticalResize");
-
-    /* Sizing table */
-    this.tableHeight = $('#barplot-table').height();
-    this.inputsHeight = $('.barplotGroup.inputs').height();
-    this.outputsHeight = $('.barplotGroup.outputs').height();
 
     let increaseHeight = 0;
     let barplotPaneHeight = $('#barplot-pane').height();
@@ -111,14 +198,6 @@ class CCABarplot extends React.Component {
     let barplotCanvasInputElement = $(".barplotCanvas.input")[0];
     let verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
     $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
-
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.state.component !== prevState.component)
-    {
-      this.handle_component_change_transition();
-    }
   }
 
   handle_component_change_transition = () =>
@@ -150,7 +229,7 @@ class CCABarplot extends React.Component {
           <div className="negativeSpacer spacer" />
           <div className="barplotHeaderColumnLabelWrapper">
             <span className="selectCCAComponent" onClick={(e) => this.clickComponent(index, e)}>
-              CCA {index + 1}
+              CCA{index + 1}
             </span>
             <span className="sortCCAComponent icon-sort-off" />
           </div>
