@@ -43,12 +43,31 @@ export default class ControlsButtonUpdateTable extends Component {
 
   continue = () =>
   {
-    this.setState({visible_tab: "1"});
+    if (this.state.visible_tab === "0" && this.state.selectedOption === "local")
+    {
+      this.setState({visible_tab: "1"});
+    }
+    else if (this.state.visible_tab === "0" && this.state.selectedOption === "remote")
+    {
+      this.setState({visible_tab: "2"});
+    }
+    else if (this.state.visible_tab === "2")
+    {
+      this.setState({visible_tab: "3"});
+    }
   };
 
-  back = () =>
-  {
-    this.setState({visible_tab: "0"});
+  back = () => {
+    if (this.state.visible_tab === "1") {
+      this.setState({visible_tab: "0"});
+    }
+    else if (this.state.visible_tab === "2") {
+      this.setState({visible_tab: "0"});
+    }
+    else if (this.state.visible_tab === "3")
+    {
+      this.setState({visible_tab: "2"});
+    }
   }
 
   handleFileSelection = (selectorFiles) =>
@@ -156,13 +175,7 @@ export default class ControlsButtonUpdateTable extends Component {
   onSelectFile = (selectedPath, selectedPathType, file) => {
     // this.state.selectedPath, this.state.selectedPathType
     // type is either 'd' for directory or 'f' for file
-
-    //console.log(`from console path:${selectedPath} type:${selectedPathType} file:${file}`);
-    console.log("This is the file being passed in: ");
-    console.log(file);
     this.setState({files:file, disabled:false, selected_path:selectedPath});
-    console.log("This is the state file");
-    console.log(this.state.files);
   }
   render() {
     return (
@@ -180,20 +193,25 @@ export default class ControlsButtonUpdateTable extends Component {
               {this.state.visible_tab === "0" ?
               <div className='modal-body'>
                 <form>
-                  <div className="form-check-inline">
-                    <label className="form-check-label" htmlFor="radio1">
+                  <div className="form-check">
+                    <label className="form-check-label" style={{marginRight: '92%'}} htmlFor="radio1">
                       <input type="radio" className="form-check-input" value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>Local
                     </label>
                   </div>
-                  <div className="form-check-inline">
-                    <label className="form-check-label" htmlFor="radio2">
+                  <div className="form-check">
+                    <label className="form-check-label" style={{marginRight: '89.7%'}} htmlFor="radio2">
                       <input type="radio" className="form-check-input" value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>Remote
                     </label>
                   </div>
                 </form>
-                {this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:
-                <FileSelector handleChange = {this.handleFileSelection} />}
+                {/*{this.state.selectedOption === 'remote'?<SlycatRemoteControls callBack={this.callBack}/>:*/}
+                {/*<FileSelector handleChange = {this.handleFileSelection} />}*/}
               </div>:null}
+
+              {this.state.visible_tab === "1"?<FileSelector handleChange = {this.handleFileSelection} />:null}
+              {this.state.visible_tab === "2"?<SlycatRemoteControls callBack={this.callBack}/>:null}
+
+
               <div className='slycat-progress-bar'>
                 <ProgressBar
                   hidden={this.state.progressBarHidden}
@@ -201,7 +219,7 @@ export default class ControlsButtonUpdateTable extends Component {
                 />
               </div>
 
-              {this.state.visible_tab === "1" ?
+              {this.state.visible_tab === "3" ?
                   <RemoteFileBrowser 
                   onSelectFileCallBack={this.onSelectFile} 
                   hostname={this.state.hostname} 
@@ -209,15 +227,15 @@ export default class ControlsButtonUpdateTable extends Component {
               null}
 
               <div className='modal-footer'>
-                {this.state.visible_tab === "1" ?
+                {this.state.visible_tab != "0" ?
                 <button type='button' className='btn btn-primary' onClick={this.back}>
                   Back
                 </button>:null}
-                {this.state.selectedOption === "local" || this.state.visible_tab === "1"?
+                {this.state.visible_tab === "1" || this.state.visible_tab === "3" ?
                 <button type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
                 Update Data Table
                 </button>:null}
-                {this.state.session_exists === true && this.state.selectedOption === "remote" && this.state.visible_tab === "0"?
+                {(this.state.session_exists === true && this.state.visible_tab === "2") || this.state.visible_tab === "0"?
                 <button type='button' className='btn btn-primary' onClick={this.continue}>
                   Continue
                 </button>:null}
