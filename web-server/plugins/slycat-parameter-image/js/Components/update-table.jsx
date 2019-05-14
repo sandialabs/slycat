@@ -25,6 +25,7 @@ export default class ControlsButtonUpdateTable extends Component {
           selectedOption: "local",
           visible_tab: "0",
           session_exists: null,
+          selected_path: "",
       }
       initialState = {...this.state};
   }
@@ -68,6 +69,16 @@ export default class ControlsButtonUpdateTable extends Component {
 
   uploadFile = () =>
   {
+    if (this.state.selectedOption == "local") {
+      this.uploadLocalFile();
+    }
+    else {
+      this.uploadRemoteFile();
+    }
+  }
+
+  uploadLocalFile = () =>
+  {
     let mid = this.props.mid;
     let pid = this.props.pid;
     this.setState({progressBarHidden:false,disabled:true});
@@ -102,6 +113,46 @@ export default class ControlsButtonUpdateTable extends Component {
             fileUploader.uploadFile(fileObject);
         });
   };
+
+  uploadRemoteFile = () => {
+    let mid = this.props.mid;
+    let pid = this.props.pid;
+    this.setState({progressBarHidden:false,disabled:true});
+
+    client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
+        .then((json)=>{
+            this.setState({progressBarProgress:33});
+            let file = this.state.files;
+            const file_name = file.name;
+            let fileObject ={
+             pid: pid,
+             hostname: this.state.hostname,
+             mid: mid,
+             paths: this.state.selected_path,
+             aids: [["data-table"], file_name],
+             parser: "slycat-csv-parser",
+             progress_final: 90,
+             success: () => {
+                   this.setState({progressBarProgress:75});
+                   client.post_sensitive_model_command_fetch(
+                    {
+                        mid:mid,
+                        type:"parameter-image",
+                        command: "update-table",
+                        parameters: {
+                          linked_models: json["linked_models"],
+                        },
+                    }).then(() => {
+                        this.setState({progressBarProgress:100});
+                        this.closeModal();
+                        location.reload();
+                    });
+                }
+            };
+            fileUploader.uploadFile(fileObject);
+        });
+  }
+
   onSelectFile = (selectedPath, selectedPathType, file) => {
     // this.state.selectedPath, this.state.selectedPathType
     // type is either 'd' for directory or 'f' for file
@@ -109,7 +160,7 @@ export default class ControlsButtonUpdateTable extends Component {
     //console.log(`from console path:${selectedPath} type:${selectedPathType} file:${file}`);
     console.log("This is the file being passed in: ");
     console.log(file);
-    this.setState({files:file, disabled:false});
+    this.setState({files:file, disabled:false, selected_path:selectedPath});
     console.log("This is the state file");
     console.log(this.state.files);
   }
