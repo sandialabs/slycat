@@ -35,9 +35,9 @@ module.exports = {
   coverageReporters: [
     // "json",
     "text",
-    // "lcov",
-    // "clover"
-    // "html"
+    "lcov",
+    // "clover",
+    "html"
   ],
 
   // An object that configures minimum threshold enforcement for coverage results
