@@ -212,9 +212,6 @@ class CCABarplot extends React.Component {
   }
 
   render() {
-    // Define default button style
-    const button_style = 'btn-outline-dark';
-
     const barplotHeaderColumns = this.props.x_loadings.map((item, index) => (
       <div 
         className={`
