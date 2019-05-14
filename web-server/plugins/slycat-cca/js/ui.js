@@ -5,6 +5,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import CCAControlsBar from "./components/CCAControlsBar";
 import CCABarplot from "./components/CCABarplot";
+import CCATable from "./components/CCATable";
 import COLOR_LABELS from 'components/color-labels.js';
 
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
@@ -60,6 +61,10 @@ $(document).ready(function() {
   var table_metadata = null;
   var selected_simulations = null;
   var colormap = null;
+
+  var sort_variable = null;
+  var sort_order = null;
+  var variable_selection = null;
 
   var generate_indices = false;
   var barplot_ready = false;
@@ -251,6 +256,11 @@ $(document).ready(function() {
       bookmark = state;
       selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
       colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+      sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : null;
+      sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
+      variable_selection = bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : null;
+
       setup_colorswitcher();
       setup_v();
       setup_widgets();
@@ -520,58 +530,80 @@ $(document).ready(function() {
           other_columns.push(i);
       }
 
-      var table_options =
-      {
-        api_root : api_root,
-        mid : model._id,
-        aid : "data-table",
-        metadata : table_metadata,
-        inputs : input_columns,
-        outputs : output_columns,
-        others : other_columns,
-        "row-selection" : selected_simulations,
-      };
+      // var table_options =
+      // {
+      //   api_root : api_root,
+      //   mid : model._id,
+      //   aid : "data-table",
+      //   metadata : table_metadata,
+      //   inputs : input_columns,
+      //   outputs : output_columns,
+      //   others : other_columns,
+      //   "row-selection" : selected_simulations,
+      // };
 
-      table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
+      // table_options.colormap = $("#color-switcher").colorswitcher("get_color_scale", colormap);
 
-      if("sort-variable" in bookmark && "sort-order" in bookmark)
-      {
-        table_options["sort-variable"] = bookmark["sort-variable"];
-        table_options["sort-order"] = bookmark["sort-order"];
-      }
+      // if("sort-variable" in bookmark && "sort-order" in bookmark)
+      // {
+      //   table_options["sort-variable"] = bookmark["sort-variable"];
+      //   table_options["sort-order"] = bookmark["sort-order"];
+      // }
 
-      if("variable-selection" in bookmark)
-      {
-        table_options["variable-selection"] = [bookmark["variable-selection"]];
-      }
-      else
-      {
-        table_options["variable-selection"] = [table_metadata["column-count"] - 1];
-      }
+      // if("variable-selection" in bookmark)
+      // {
+      //   table_options["variable-selection"] = [bookmark["variable-selection"]];
+      // }
+      // else
+      // {
+      //   table_options["variable-selection"] = [table_metadata["column-count"] - 1];
+      // }
 
-      $("#table").table(table_options);
+      // $("#table").table(table_options);
 
-      // Log changes to the table sort order ...
-      $("#table").bind("variable-sort-changed", function(event, variable, order)
-      {
-        variable_sort_changed(variable, order);
-      });
+      // // Log changes to the table sort order ...
+      // $("#table").bind("variable-sort-changed", function(event, variable, order)
+      // {
+      //   variable_sort_changed(variable, order);
+      // });
 
-      // Log changes to the table row selection ...
-      $("#table").bind("row-selection-changed", function(event, selection)
-      {
-        // The table selection is an array buffer which can't be
-        // serialized as JSON, so convert it to an array.
-        var temp = [];
-        for(var i = 0; i != selection.length; ++i)
-          temp.push(selection[i]);
-        selected_simulations = temp;
+      // // Log changes to the table row selection ...
+      // $("#table").bind("row-selection-changed", function(event, selection)
+      // {
+      //   // The table selection is an array buffer which can't be
+      //   // serialized as JSON, so convert it to an array.
+      //   var temp = [];
+      //   for(var i = 0; i != selection.length; ++i)
+      //     temp.push(selection[i]);
+      //   selected_simulations = temp;
 
-        // Changing the table row selection updates the scatterplot ...
-        $("#scatterplot").scatterplot("option", "selection",  selected_simulations);
+      //   // Changing the table row selection updates the scatterplot ...
+      //   $("#scatterplot").scatterplot("option", "selection",  selected_simulations);
 
-        selected_simulations_changed(selected_simulations);
-      });
+      //   selected_simulations_changed(selected_simulations);
+      // });
+
+      const cca_table = 
+        <CCATable 
+          mid={model._id}
+          aid="data-table"
+          metadata={table_metadata}
+          inputs={input_columns}
+          outputs={output_columns}
+          others={other_columns}
+          component={component}
+          row_selection={selected_simulations}
+          colormap={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
+          sort_variable={sort_variable}
+          sort_order={sort_order}
+          variable_selection={variable_selection !== null ? variable_selection : [table_metadata["column-count"] - 1]}
+        />
+      ;
+
+      self.cca_table = ReactDOM.render(
+        cca_table,
+        document.getElementById('table')
+      );
     }
 
     // Setup controls ...
