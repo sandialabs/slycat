@@ -602,7 +602,7 @@ $(document).ready(function() {
 
       self.cca_table = ReactDOM.render(
         cca_table,
-        document.getElementById('table')
+        document.getElementById('table-pane')
       );
     }
 
