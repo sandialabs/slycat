@@ -1,15 +1,6 @@
 import d3 from "d3";
 import * as chunker from "js/chunker";
 
-import "jquery-ui";
-import "slickgrid/lib/jquery.event.drag-2.3.0";
-import "slickgrid/lib/jquery.event.drop-2.3.0";
-import "slickgrid/slick.core";
-import "slickgrid/slick.grid";
-import "slickgrid/plugins/slick.rowselectionmodel";
-import "slickgrid/plugins/slick.headerbuttons";
-import "slickgrid/plugins/slick.autotooltips";
-
 var SlickGridDataProvider = function(parameters)
 {
   var self = this;

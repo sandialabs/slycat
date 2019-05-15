@@ -1,13 +1,6 @@
 "use strict";
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import React from "react";
-import ReactDOM from "react-dom";
-import CCAControlsBar from "./components/CCAControlsBar";
-import CCABarplot from "./components/CCABarplot";
-import CCATable from "./components/CCATable";
-import COLOR_LABELS from 'components/color-labels.js';
-
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
@@ -34,6 +27,15 @@ import "jquery-ui/ui/widgets/resizable";
 import "layout";
 
 import "js/jquery.scrollintoview.min";
+
+// These need to imported after jquery-ui's CSS because they import their own CSS,
+// which needs to override the CSS from jquery-ui.
+import React from "react";
+import ReactDOM from "react-dom";
+import CCAControlsBar from "./components/CCAControlsBar";
+import CCABarplot from "./components/CCABarplot";
+import CCATable from "./components/CCATable";
+import COLOR_LABELS from 'components/color-labels.js';
 
 // Wait for document ready
 $(document).ready(function() {

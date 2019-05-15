@@ -88,9 +88,40 @@ class CCATable extends React.Component {
   }
 
   value_formatter = (value) =>
+  {
+    return value == null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  _color_variables = (variables) =>
+  {
+    var self = this;
+
+    var columns = self.grid.getColumns();
+    for(var i in columns)
     {
-      return value == null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      var column = columns[i];
+      if(this.props.colormap !== null && $.inArray(column.id, variables) != -1)
+      {
+        // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
+        column.colormap = self.props.colormap.copy();
+
+        var new_domain = []
+        var domain_scale = d3.scale.linear().domain([0, column.colormap.range().length]).range([self.props.metadata["column-min"][column.id], self.props.metadata["column-max"][column.id]]);
+        for(var i in column.colormap.range())
+          new_domain.push(domain_scale(i));
+        column.colormap.domain(new_domain);
+
+        column.cssClass = column.cssClass.split(" ")[0] + " highlight";
+      }
+      else
+      {
+        column.colormap = null;
+        column.cssClass = column.cssClass.split(" ")[0];
+      }
     }
+
+    self.grid.invalidate();
+  }
 
   componentDidMount() {
     var self = this;
@@ -165,7 +196,7 @@ class CCATable extends React.Component {
       // }
     });
 
-    // this._color_variables(self.options["variable-selection"]);
+    this._color_variables(this.props.variable_selection);
 
     this.grid.init();
 
