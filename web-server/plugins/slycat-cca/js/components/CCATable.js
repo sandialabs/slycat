@@ -123,6 +123,20 @@ class CCATable extends React.Component {
     self.grid.invalidate();
   }
 
+  set_sort = (column, order) =>
+  {
+    let self = this;
+
+    self.data.set_sort(column, order);
+    self.data.get_indices("sorted", self.props.row_selection, function(sorted_rows)
+    {
+      self.grid.invalidate();
+      table_helpers._set_selected_rows_no_trigger(self);
+      // ToDo: set state of sort
+      // self.element.trigger("variable-sort-changed", [column, order]);
+    });
+  }
+
   componentDidMount() {
     var self = this;
 
@@ -156,14 +170,14 @@ class CCATable extends React.Component {
         button.cssClass = 'icon-sort-ascending';
         button.command = 'sort-descending';
         button.tooltip = 'Sort descending';
-        set_sort(column.id, "ascending");
+        self.set_sort(column.id, "ascending");
       }
       else if(command == "sort-descending")
       {
         button.cssClass = 'icon-sort-descending';
         button.command = 'sort-ascending';
         button.tooltip = 'Sort ascending';
-        set_sort(column.id, "descending");
+        self.set_sort(column.id, "descending");
       }
     });
 
