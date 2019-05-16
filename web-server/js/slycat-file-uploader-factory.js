@@ -136,6 +136,7 @@ function uploadFileSlices(pid, mid, uid, sliceNumber, file, fileObject, progress
   // Split the file into slices.
   //TODO: add incrementing file id in upload file
   var fileSlice = getFileSlice(sliceNumber, file);
+  var running = true;
     // Upload each part separately.
     // console.log("Uploading part", sliceNumber);
     client.put_upload_file_part({
