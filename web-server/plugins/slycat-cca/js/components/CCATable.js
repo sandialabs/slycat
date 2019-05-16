@@ -228,7 +228,8 @@ class CCATable extends React.Component {
 
   resize_canvas = () =>
   {
-    
+    let self = this;
+    self.grid.resizeCanvas();
   }
 
   handle_component_change_transition = () =>

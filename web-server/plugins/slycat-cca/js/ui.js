@@ -328,10 +328,8 @@ $(document).ready(function() {
       resizeWhileDragging: false,
       onresize_end: function()
       {
-        if($("#table").data("cca-table")) {
-          $("#table").css("height", $("#table-pane").height());
-          $("#table").table("resize_canvas");
-        }
+        if(self.cca_table)
+          self.cca_table.resize_canvas();
       },
     },
   });
