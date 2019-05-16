@@ -151,4 +151,5 @@ libcurl-devel        7.29.0
 erlang               R16B
 js-devel             1.8.5
 libicu-devel         50.1.2
+python-progressbar   2.3
 
