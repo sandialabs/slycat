@@ -11,10 +11,10 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import URI from "urijs";
 import * as chunker from "js/chunker";
-import "./cca-table";
+// import "./cca-table";
 import "./cca-legend";
 import "./cca-controls";
-import "./cca-barplot";
+// import "./cca-barplot";
 import "./cca-scatterplot";
 import "./color-switcher";
 

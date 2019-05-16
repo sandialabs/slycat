@@ -3,44 +3,44 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Slickgrid-based data table widget, for use with the CCA model.
 
-import slick_grid_css from "slickgrid/slick.grid.css";
-import slick_default_theme_css from "slickgrid/slick-default-theme.css";
-import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
-import slick_slycat_theme_css from "css/slick-slycat-theme.css";
+// import slick_grid_css from "slickgrid/slick.grid.css";
+// import slick_default_theme_css from "slickgrid/slick-default-theme.css";
+// import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
+// import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 
-import d3 from "d3";
-import "jquery-ui";
-import "slickgrid/lib/jquery.event.drag-2.3.0";
-import "slickgrid/lib/jquery.event.drop-2.3.0";
-import "slickgrid/slick.core";
-import "slickgrid/slick.grid";
-import "slickgrid/plugins/slick.rowselectionmodel";
-import "slickgrid/plugins/slick.headerbuttons";
-import "slickgrid/plugins/slick.autotooltips";
-import * as chunker from "js/chunker";
-import * as table_helpers from "js/slycat-table-helpers";
+// import d3 from "d3";
+// import "jquery-ui";
+// import "slickgrid/lib/jquery.event.drag-2.3.0";
+// import "slickgrid/lib/jquery.event.drop-2.3.0";
+// import "slickgrid/slick.core";
+// import "slickgrid/slick.grid";
+// import "slickgrid/plugins/slick.rowselectionmodel";
+// import "slickgrid/plugins/slick.headerbuttons";
+// import "slickgrid/plugins/slick.autotooltips";
+// import * as chunker from "js/chunker";
+// import * as table_helpers from "js/slycat-table-helpers";
 
 $.widget("cca.table",
 {
-  options:
-  {
-    api_root : "",
-    mid : null,
-    aid : null,
-    metadata : null,
-    inputs : [],
-    outputs : [],
-    others : [],
-    "row-selection" : [],
-    "variable-selection": [],
-    "sort-variable" : null,
-    "sort-order" : null,
-    colormap : null,
-  },
+  // options:
+  // {
+  //   api_root : "",
+  //   mid : null,
+  //   aid : null,
+  //   metadata : null,
+  //   inputs : [],
+  //   outputs : [],
+  //   others : [],
+  //   "row-selection" : [],
+  //   "variable-selection": [],
+  //   "sort-variable" : null,
+  //   "sort-order" : null,
+  //   colormap : null,
+  // },
 
-  _create: function()
-  {
-    var self = this;
+  // _create: function()
+  // {
+  //   var self = this;
 
     // function value_formatter(value)
     // {
@@ -67,126 +67,126 @@ $.widget("cca.table",
     //   });
     // }
 
-    function make_column(column_index, header_class, cell_class)
-    {
-      return {
-        id : column_index,
-        field : column_index,
-        name : self.options.metadata["column-names"][column_index],
-        sortable : false,
-        headerCssClass : header_class,
-        cssClass : cell_class,
-        formatter : cell_formatter,
-        header :
-        {
-          buttons :
-          [
-            {
-              cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
-              tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
-              command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
-            }
-          ]
-        }
-      };
-    }
+    // function make_column(column_index, header_class, cell_class)
+    // {
+    //   return {
+    //     id : column_index,
+    //     field : column_index,
+    //     name : self.options.metadata["column-names"][column_index],
+    //     sortable : false,
+    //     headerCssClass : header_class,
+    //     cssClass : cell_class,
+    //     formatter : cell_formatter,
+    //     header :
+    //     {
+    //       buttons :
+    //       [
+    //         {
+    //           cssClass : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "icon-sort-ascending" : "icon-sort-descending") : "icon-sort-off",
+    //           tooltip : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "Sort descending" : "Sort ascending") : "Sort ascending",
+    //           command : self.options["sort-variable"] == column_index ? (self.options["sort-order"] == "ascending" ? "sort-descending" : "sort-ascending") : "sort-ascending"
+    //         }
+    //       ]
+    //     }
+    //   };
+    // }
 
-    self.columns = [];
-    self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
-    for(var i in self.options.inputs)
-      self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
-    for(var i in self.options.outputs)
-      self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
-    for(var i in self.options.others)
-      self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
+    // self.columns = [];
+    // self.columns.push(make_column(self.options.metadata["column-count"]-1, "headerSimId", "rowSimId"));
+    // for(var i in self.options.inputs)
+    //   self.columns.push(make_column(self.options.inputs[i], "headerInput", "rowInput"));
+    // for(var i in self.options.outputs)
+    //   self.columns.push(make_column(self.options.outputs[i], "headerOutput", "rowOutput"));
+    // for(var i in self.options.others)
+    //   self.columns.push(make_column(self.options.others[i], "headerOther", "rowOther"));
 
-    self.data = new self._data_provider({
-      api_root : self.options.api_root,
-      mid : self.options.mid,
-      aid : self.options.aid,
-      metadata : self.options.metadata,
-      sort_column : self.options["sort-variable"],
-      sort_order : self.options["sort-order"],
-      inputs : self.options.inputs,
-      outputs : self.options.outputs,
-      });
+    // self.data = new self._data_provider({
+    //   api_root : self.options.api_root,
+    //   mid : self.options.mid,
+    //   aid : self.options.aid,
+    //   metadata : self.options.metadata,
+    //   sort_column : self.options["sort-variable"],
+    //   sort_order : self.options["sort-order"],
+    //   inputs : self.options.inputs,
+    //   outputs : self.options.outputs,
+    //   });
 
-    self.trigger_row_selection = true;
+    // self.trigger_row_selection = true;
 
-    self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
+    // self.grid = new Slick.Grid(self.element, self.data, self.columns, {explicitInitialization : true, enableColumnReorder : false});
 
-    self.data.onDataLoaded.subscribe(function (e, args) {
-      for (var i = args.from; i <= args.to; i++) {
-        self.grid.invalidateRow(i);
-      }
-      self.grid.render();
-    });
+    // self.data.onDataLoaded.subscribe(function (e, args) {
+    //   for (var i = args.from; i <= args.to; i++) {
+    //     self.grid.invalidateRow(i);
+    //   }
+    //   self.grid.render();
+    // });
 
-    var header_buttons = new Slick.Plugins.HeaderButtons();
-    header_buttons.onCommand.subscribe(function(e, args)
-    {
-      var column = args.column;
-      var button = args.button;
-      var command = args.command;
-      var grid = args.grid;
+    // var header_buttons = new Slick.Plugins.HeaderButtons();
+    // header_buttons.onCommand.subscribe(function(e, args)
+    // {
+    //   var column = args.column;
+    //   var button = args.button;
+    //   var command = args.command;
+    //   var grid = args.grid;
 
-      for(var i in self.columns)
-      {
-        self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
-        self.columns[i].header.buttons[0].tooltip = "Sort ascending";
-        self.columns[i].header.buttons[0].command = "sort-ascending";
-        grid.updateColumnHeader(self.columns[i].id);
-      }
+    //   for(var i in self.columns)
+    //   {
+    //     self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+    //     self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+    //     self.columns[i].header.buttons[0].command = "sort-ascending";
+    //     grid.updateColumnHeader(self.columns[i].id);
+    //   }
 
-      if(command == "sort-ascending")
-      {
-        button.cssClass = 'icon-sort-ascending';
-        button.command = 'sort-descending';
-        button.tooltip = 'Sort descending';
-        set_sort(column.id, "ascending");
-      }
-      else if(command == "sort-descending")
-      {
-        button.cssClass = 'icon-sort-descending';
-        button.command = 'sort-ascending';
-        button.tooltip = 'Sort ascending';
-        set_sort(column.id, "descending");
-      }
-    });
+    //   if(command == "sort-ascending")
+    //   {
+    //     button.cssClass = 'icon-sort-ascending';
+    //     button.command = 'sort-descending';
+    //     button.tooltip = 'Sort descending';
+    //     set_sort(column.id, "ascending");
+    //   }
+    //   else if(command == "sort-descending")
+    //   {
+    //     button.cssClass = 'icon-sort-descending';
+    //     button.command = 'sort-ascending';
+    //     button.tooltip = 'Sort ascending';
+    //     set_sort(column.id, "descending");
+    //   }
+    // });
 
-    self.grid.registerPlugin(header_buttons);
-    self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
+    // self.grid.registerPlugin(header_buttons);
+    // self.grid.registerPlugin(new Slick.AutoTooltips({enableForHeaderCells:true}));
 
-    self.grid.setSelectionModel(new Slick.RowSelectionModel());
-    self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
-    {
-      // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
-      if(self.trigger_row_selection)
-      {
-        self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
-        {
-          self.options["row-selection"] = unsorted_rows;
-          self.element.trigger("row-selection-changed", [unsorted_rows]);
-        });
-      }
-      self.trigger_row_selection = true;
-    });
-    self.grid.onHeaderClick.subscribe(function (e, args)
-    {
-      if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
-      {
-        self.options["variable-selection"] = [args.column.field];
-        self._color_variables(self.options["variable-selection"]);
-        self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
-      }
-    });
+    // self.grid.setSelectionModel(new Slick.RowSelectionModel());
+    // self.grid.onSelectedRowsChanged.subscribe(function(e, selection)
+    // {
+    //   // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
+    //   if(self.trigger_row_selection)
+    //   {
+    //     self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
+    //     {
+    //       self.options["row-selection"] = unsorted_rows;
+    //       self.element.trigger("row-selection-changed", [unsorted_rows]);
+    //     });
+    //   }
+    //   self.trigger_row_selection = true;
+    // });
+    // self.grid.onHeaderClick.subscribe(function (e, args)
+    // {
+    //   if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
+    //   {
+    //     self.options["variable-selection"] = [args.column.field];
+    //     self._color_variables(self.options["variable-selection"]);
+    //     self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+    //   }
+    // });
 
-    self._color_variables(self.options["variable-selection"]);
+    // self._color_variables(self.options["variable-selection"]);
 
-    self.grid.init();
+    // self.grid.init();
 
-    table_helpers._set_selected_rows_no_trigger(self);
-  },
+    // table_helpers._set_selected_rows_no_trigger(self);
+  // },
 
   resize_canvas: function()
   {
@@ -194,13 +194,13 @@ $.widget("cca.table",
     self.grid.resizeCanvas();
   },
 
-  update_data: function()
-  {
-    var self = this;
-    self.data.invalidate();
-    self.grid.invalidate();
-    table_helpers._set_selected_rows_no_trigger(self);
-  },
+  // update_data: function()
+  // {
+  //   var self = this;
+  //   self.data.invalidate();
+  //   self.grid.invalidate();
+  //   table_helpers._set_selected_rows_no_trigger(self);
+  // },
 
   _setOption: function(key, value)
   {
@@ -460,8 +460,8 @@ $.widget("cca.table",
   //   }
   // },
 
-  _array_equal: function(a, b)
-  {
-    return $(a).not(b).length == 0 && $(b).not(a).length == 0;
-  },
+  // _array_equal: function(a, b)
+  // {
+  //   return $(a).not(b).length == 0 && $(b).not(a).length == 0;
+  // },
 });

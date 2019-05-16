@@ -94,7 +94,7 @@ class CCATable extends React.Component {
 
   _color_variables = (variables) =>
   {
-    var self = this;
+    let self = this;
 
     var columns = self.grid.getColumns();
     for(var i in columns)
@@ -137,8 +137,13 @@ class CCATable extends React.Component {
     });
   }
 
+  _array_equal = (a, b) =>
+  {
+    return $(a).not(b).length == 0 && $(b).not(a).length == 0;
+  }
+
   componentDidMount() {
-    var self = this;
+    let self = this;
 
     this.grid = new Slick.Grid(this.cca_table.current, this.data, this.columns, {explicitInitialization : true, enableColumnReorder : false});
 
@@ -157,12 +162,12 @@ class CCATable extends React.Component {
       var command = args.command;
       var grid = args.grid;
 
-      for(var i in this.columns)
+      for(var i in self.columns)
       {
-        this.columns[i].header.buttons[0].cssClass = "icon-sort-off";
-        this.columns[i].header.buttons[0].tooltip = "Sort ascending";
-        this.columns[i].header.buttons[0].command = "sort-ascending";
-        grid.updateColumnHeader(this.columns[i].id);
+        self.columns[i].header.buttons[0].cssClass = "icon-sort-off";
+        self.columns[i].header.buttons[0].tooltip = "Sort ascending";
+        self.columns[i].header.buttons[0].command = "sort-ascending";
+        grid.updateColumnHeader(self.columns[i].id);
       }
 
       if(command == "sort-ascending")
@@ -188,26 +193,26 @@ class CCATable extends React.Component {
     this.grid.onSelectedRowsChanged.subscribe(function(e, selection)
     {
       // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
-      if(this.trigger_row_selection)
+      if(self.trigger_row_selection)
       {
-        this.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
+        self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
         {
           // ToDo: update state here
           // self.options["row-selection"] = unsorted_rows;
           // self.element.trigger("row-selection-changed", [unsorted_rows]);
         });
       }
-      this.trigger_row_selection = true;
+      self.trigger_row_selection = true;
     });
     this.grid.onHeaderClick.subscribe(function (e, args)
     {
-      // ToDo: update state here
-      // if( !self._array_equal([args.column.field], self.options["variable-selection"]) && (self.options.metadata["column-types"][args.column.id] != "string") )
-      // {
-      //   self.options["variable-selection"] = [args.column.field];
-      //   self._color_variables(self.options["variable-selection"]);
-      //   self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
-      // }
+      if( !self._array_equal([args.column.field], self.props.variable_selection) && (self.props.metadata["column-types"][args.column.id] != "string") )
+      {
+        self._color_variables([args.column.field]);
+        // ToDo: update state here
+        //   self.options["variable-selection"] = [args.column.field];
+        //   self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+      }
     });
 
     this._color_variables(this.props.variable_selection);
