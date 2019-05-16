@@ -17,7 +17,7 @@ export interface ConnectButtonState {
   text: string
 }
 
-export default class RemoteFileBrowser extends React.Component<ConnectButtonProps, ConnectButtonState> {
+export default class ConnectButton extends React.Component<ConnectButtonProps, ConnectButtonState> {
   public constructor(props:ConnectButtonProps) {
     super(props)
     this.state = {

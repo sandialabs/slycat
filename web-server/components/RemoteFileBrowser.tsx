@@ -133,10 +133,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           className={this.state.selected==i?'selected':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}
-          onDoubleClick={()=> this.browseUpByFile(rawFile)} data-bind-fail="
-          event:{click : $parent.select, dblclick : $parent.open},
-          css:{directory:type()=='d', file:type()=='f', selected:selected()}
-          ">
+          onDoubleClick={()=> this.browseUpByFile(rawFile)}>
             <td data-bind-fail="html:icon">
               {rawFile.mimeType === "application/x-directory"?
               <span className='fa fa-folder'></span>:
@@ -149,6 +146,22 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         )
       })
       return rawFilesJSX;
+      // if(file.mime_type() in component.icon_map)
+      // {
+      //   icon = component.icon_map[file.mime_type()];
+      // }
+      // else if(_.startsWith(file.mime_type(), "text/"))
+      // {
+      //   icon = "<span class='fa fa-file-text-o'></span>";
+      // }
+      // else if(_.startsWith(file.mime_type(), "image/"))
+      // {
+      //   icon = "<span class='fa fa-file-image-o'></span>";
+      // }
+      // else if(_.startsWith(file.mime_type(), "video/"))
+      // {
+      //   icon = "<span class='fa fa-file-video-o'></span>";
+      // }
     }
 
     public async componentDidMount() {
