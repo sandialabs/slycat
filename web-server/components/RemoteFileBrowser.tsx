@@ -41,7 +41,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
     }
 
-    browse = (pathInput:string) =>
+    private browse = (pathInput:string) =>
     {
       pathInput = (pathInput === ""?"/":pathInput);
       console.log(`pathInput::${pathInput}`)
@@ -66,7 +66,6 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           });
 
           let files: FileMetaData[] = []
-          console.log(`here! ${results}`)
           if(pathInput != "/")
             files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
           for(let i = 0; i != results.names.length; ++i)
@@ -90,7 +89,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       });
     }
 
-    pathDirname = (path:string):string =>
+    private pathDirname = (path:string):string =>
     {
       var new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
       if(new_path == "")
@@ -98,7 +97,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       return new_path;
     }
 
-    pathJoin = (left:string, right:string):string =>
+    private pathJoin = (left:string, right:string):string =>
     {
       var new_path = left;
       if(new_path.slice(-1) != "/")
@@ -107,7 +106,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       return new_path;
     }
 
-    browseUpByFile = (file:FileMetaData) => {
+    private browseUpByFile = (file:FileMetaData) => {
       // If the file is our parent directory, move up the hierarchy.
       if(file.name === "..")
       {
@@ -120,14 +119,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
     }
 
-    selectRow = (file:FileMetaData, i:number) => {
+    private selectRow = (file:FileMetaData, i:number) => {
       const newPath:string = this.pathJoin(this.state.path, file.name);
       this.setState({selected:i})
       // tell our create what we selected
       this.props.onSelectFileCallBack(newPath, file.type, file);
     }
 
-    getFilesAsJsx = ():JSX.Element[] => {
+    private getFilesAsJsx = ():JSX.Element[] => {
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
         return (
           <tr 
@@ -152,7 +151,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       return rawFilesJSX;
     }
 
-    async componentDidMount() {
+    public async componentDidMount() {
       const path = localStorage.getItem("slycat-remote-browser-path-" 
         + this.state.persistenceId 
         + this.props.hostname);
@@ -234,18 +233,6 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
-          {/* <div className="progress" data-bind-fail="visible: progress() != undefined && progress() > 0">
-            <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
-              aria-valuemin="0" 
-              aria-valuemax="100" 
-              data-bind-fail="
-                attr: {'aria-valuenow' : progress},
-                style: {'width' : progress() + '%'},
-                text: progress_status,
-            ">
-              Uploading
-            </div>
-          </div> */}
         </div>
     );
     }

@@ -8,6 +8,8 @@ import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
+import ConnectButton from 'components/connectButton.tsx';
+
 let initialState={};
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
@@ -24,8 +26,9 @@ export default class ControlsButtonUpdateTable extends Component {
           password: "",
           selectedOption: "local",
           visible_tab: "0",
-          session_exists: null,
+          sessionExists: null,
           selected_path: "",
+          loadingData: false
       }
       initialState = {...this.state};
   }
@@ -74,11 +77,12 @@ export default class ControlsButtonUpdateTable extends Component {
   {
     this.setState({files:selectorFiles,disabled:false});
   };
-  callBack = (newHostname, newUsername, newPassword, session_exists) => {
+  callBack = (newHostname, newUsername, newPassword, sessionExists) => {
       this.setState({
         hostname: newHostname,
-        session_exists: session_exists,
-        username: newUsername
+        sessionExists: sessionExists,
+        username: newUsername,
+        password: newPassword
       });
   };
   sourceSelect = (e) =>
@@ -177,6 +181,57 @@ export default class ControlsButtonUpdateTable extends Component {
     // type is either 'd' for directory or 'f' for file
     this.setState({files:file, disabled:false, selected_path:selectedPath});
   }
+
+  connectButtonCallBack = (sessionExistsNew, loadingDataNew) => {
+    this.setState({
+      sessionExists: sessionExistsNew,
+      loadingData: loadingDataNew
+    },()=>{
+      console.log(`updating with ${this.state.sessionExists}`)
+      if(this.state.sessionExists){
+        console.log('calling continue')
+        this.continue();
+      }
+    });
+  }
+
+  getFooterJSX = () => {
+    let footerJSX = [];
+    if(this.state.visible_tab != "0"){
+      footerJSX.push(
+      <button key={1} type='button' className='btn btn-light mr-auto' onClick={this.back}>
+        Back
+      </button>
+      );
+    }
+    if (this.state.visible_tab === "1" || this.state.visible_tab === "3") {
+      footerJSX.push(
+        <button key={2} type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
+        Update Data Table
+        </button>
+      );
+    }
+    if (this.state.sessionExists != true && this.state.visible_tab === "2") { 
+      footerJSX.push(            
+        <ConnectButton
+          key={3}
+          text="Continue"
+          loadingData={this.state.loadingData}
+          hostname = {this.state.hostname}
+          username = {this.state.username}
+          password = {this.state.password}
+          callBack = {this.connectButtonCallBack}
+        />
+      );
+    } else if (this.state.visible_tab != "1" && this.state.visible_tab != "3") {
+      footerJSX.push( 
+        <button key={4} type='button' className='btn btn-primary' onClick={this.continue}>
+        Continue
+        </button>
+      )
+    }
+    return footerJSX;
+  }
   render() {
     return (
       <div>
@@ -208,8 +263,11 @@ export default class ControlsButtonUpdateTable extends Component {
                 {/*<FileSelector handleChange = {this.handleFileSelection} />}*/}
               </div>:null}
 
-              {this.state.visible_tab === "1"?<FileSelector handleChange = {this.handleFileSelection} />:null}
-              {this.state.visible_tab === "2"?<SlycatRemoteControls callBack={this.callBack}/>:null}
+              {this.state.visible_tab === "1"?
+              <FileSelector handleChange = {this.handleFileSelection} />:null}
+              {this.state.visible_tab === "2"?
+              <SlycatRemoteControls loadingData={this.state.loadingData} callBack={this.callBack}/>:
+              null}
 
 
               <div className='slycat-progress-bar'>
@@ -227,18 +285,7 @@ export default class ControlsButtonUpdateTable extends Component {
               null}
 
               <div className='modal-footer'>
-                {this.state.visible_tab != "0" ?
-                <button type='button' className='btn btn-primary' onClick={this.back}>
-                  Back
-                </button>:null}
-                {this.state.visible_tab === "1" || this.state.visible_tab === "3" ?
-                <button type='button' disabled={this.state.disabled} className='btn btn-danger' onClick={this.uploadFile}>
-                Update Data Table
-                </button>:null}
-                {(this.state.session_exists === true && this.state.visible_tab === "2") || this.state.visible_tab === "0"?
-                <button type='button' className='btn btn-primary' onClick={this.continue}>
-                  Continue
-                </button>:null}
+                {this.getFooterJSX()}
               </div>
             </div>
           </div>
