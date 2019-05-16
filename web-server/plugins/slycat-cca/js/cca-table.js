@@ -188,11 +188,11 @@ $.widget("cca.table",
     // table_helpers._set_selected_rows_no_trigger(self);
   // },
 
-  resize_canvas: function()
-  {
-    var self = this;
-    self.grid.resizeCanvas();
-  },
+  // resize_canvas: function()
+  // {
+  //   var self = this;
+  //   self.grid.resizeCanvas();
+  // },
 
   // update_data: function()
   // {
