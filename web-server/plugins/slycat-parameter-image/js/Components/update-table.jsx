@@ -12,7 +12,8 @@ import ConnectButton from 'components/connectButton.tsx';
 import NavBar from 'components/NavBar.tsx';
 
 let initialState={};
-// const
+const localNavBar = ['Locate Data', 'Upload Table'];
+const remoteNavBar = ['Locate Data', 'Choose Host', 'Select Table'];
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
       super(props);
@@ -250,8 +251,8 @@ export default class ControlsButtonUpdateTable extends Component {
 
               <div className='modal-body' id="slycat-wizard">
                 {this.state.selectedOption==='local'?
-                <NavBar navNames ={['Locate Data', 'Upload Table']} selectedNameIndex={this.state.selectedNameIndex} />:
-                <NavBar navNames ={['Locate Data', 'Choose Host', 'Select Table',]} selectedNameIndex={this.state.selectedNameIndex} />}
+                <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
+                <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
                 {this.state.visible_tab === "0" ?
                   <form>
                     <div className="form-check">
@@ -272,7 +273,6 @@ export default class ControlsButtonUpdateTable extends Component {
                 {this.state.visible_tab === "2"?
                 <SlycatRemoteControls loadingData={this.state.loadingData} callBack={this.callBack}/>:
                 null}
-
 
                 <div className='slycat-progress-bar'>
                   <ProgressBar

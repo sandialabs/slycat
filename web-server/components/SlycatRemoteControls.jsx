@@ -24,7 +24,7 @@ export default class SlycatRemoteControls extends Component {
     console.log(`loading data ${props.loadingData}`)
     this.state = {
       remote_hosts: [],
-      connectButton: this.props.connectButton?this.props.connectButton:false,
+      showConnectButton: this.props.showConnectButton?this.props.showConnectButton:false,
       hostname: display.hostname?display.hostname:null,
       username: display.username?display.username:null,
       session_exists: null,
