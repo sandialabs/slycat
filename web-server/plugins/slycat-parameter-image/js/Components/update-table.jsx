@@ -188,6 +188,7 @@ export default class ControlsButtonUpdateTable extends Component {
   }
 
   onSelectParser = (type) => {
+    console.log(type);
     this.setState({parserType:type});
   }
 
@@ -304,7 +305,8 @@ export default class ControlsButtonUpdateTable extends Component {
 
                 {this.state.visible_tab === "3" ?
                     <RemoteFileBrowser 
-                    onSelectFileCallBack={this.onSelectFile} 
+                    onSelectFileCallBack={this.onSelectFile}
+                    onSelectParserCallBack={this.onSelectParser}
                     hostname={this.state.hostname} 
                     />:
                 null}
