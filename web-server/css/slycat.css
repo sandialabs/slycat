@@ -580,6 +580,11 @@ input,
   padding: 10px;
 }
 
+#slycat-file-label {
+    align-items: left;
+    justify-content: left;
+}
+
 .slycat-job-checker-controls {
   margin-bottom: 15px;
 }

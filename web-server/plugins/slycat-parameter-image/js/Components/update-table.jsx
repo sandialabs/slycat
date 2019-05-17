@@ -32,7 +32,8 @@ export default class ControlsButtonUpdateTable extends Component {
           sessionExists: null,
           selected_path: "",
           loadingData: false,
-          selectedNameIndex: 0
+          selectedNameIndex: 0,
+          parserType: "csv"
       }
       initialState = {...this.state};
   }
@@ -119,7 +120,7 @@ export default class ControlsButtonUpdateTable extends Component {
              mid: mid,
              file: file,
              aids: [["data-table"], file.name],
-             parser: "slycat-csv-parser",
+             parser: this.state.parserType,
              success: () => {
                    this.setState({progressBarProgress:75});
                    client.post_sensitive_model_command_fetch(
@@ -157,7 +158,7 @@ export default class ControlsButtonUpdateTable extends Component {
              mid: mid,
              paths: this.state.selected_path,
              aids: [["data-table"], file_name],
-             parser: "slycat-csv-parser",
+             parser: this.state.parserType,
              progress_final: 90,
              success: () => {
                    this.setState({progressBarProgress:75});
@@ -184,6 +185,10 @@ export default class ControlsButtonUpdateTable extends Component {
     // this.state.selectedPath, this.state.selectedPathType
     // type is either 'd' for directory or 'f' for file
     this.setState({files:file, disabled:false, selected_path:selectedPath});
+  }
+
+  onSelectParser = (type) => {
+    this.setState({parserType:type});
   }
 
   connectButtonCallBack = (sessionExistsNew, loadingDataNew) => {
@@ -269,10 +274,26 @@ export default class ControlsButtonUpdateTable extends Component {
                 :null}
 
                 {this.state.visible_tab === "1"?
-                <FileSelector handleChange = {this.handleFileSelection} />:null}
+                <div className='tab-content'>
+                  <div className="form-horizontal">
+                      <FileSelector handleChange = {this.handleFileSelection} />
+                    <div className="form-group row">
+                      <label className="col-sm-1 col-form-label">
+                        Filetype
+                      </label>
+                      <div className="col-sm-10">
+                        <select className="form-control" onChange={(e)=>this.onSelectParser(e.target.value)}>
+                        <option value="slycat-csv-parser">Comma separated values (CSV)</option>
+                        <option value="slycat-dakota-parser">Dakota tabular</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>:null}
+
                 {this.state.visible_tab === "2"?
-                <SlycatRemoteControls loadingData={this.state.loadingData} callBack={this.callBack}/>:
-                null}
+                 <SlycatRemoteControls loadingData={this.state.loadingData} callBack={this.callBack}/>
+                :null}
 
                 <div className='slycat-progress-bar'>
                   <ProgressBar
