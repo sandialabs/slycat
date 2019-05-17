@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": false,
+    "baseUrl": "./",
+    "paths": {
+      "components/*": ["js/*"],
+      "js/*": ["src/components/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

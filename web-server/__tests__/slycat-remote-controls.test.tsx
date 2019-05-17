@@ -1,4 +1,4 @@
-import SlycatRemoteControls from "../components/SlycatRemoteControls";
+import SlycatRemoteControls from "components/SlycatRemoteControls.jsx";
 import React from 'react';
 import renderer from 'react-test-renderer';
 import { shallow, mount } from 'enzyme';
