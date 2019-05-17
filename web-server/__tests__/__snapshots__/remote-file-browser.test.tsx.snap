@@ -146,6 +146,7 @@ exports[`when we load the RemoteFileBrowser we have expected props on initial lo
 Object {
   "hostname": "string",
   "onSelectFileCallBack": [Function],
+  "onSelectParserCallBack": [Function],
   "persistenceId": "string",
 }
 `;
