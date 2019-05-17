@@ -146,6 +146,17 @@ $.widget("parameter_image.controls",
       document.getElementById('react-controls')
     );
 
+    $('#controls-pane').on('show.bs.dropdown', function (event) {
+      // Get all dropdown menus inside this element
+      let menus = $('.dropdown-menu', this);
+      // Get the container that holds the model's panes
+      let container = $('.ui-layout-container').first();
+      // Set the max height of each menu to 70px less than the container.
+      // This prevents the menus from sticking out beyond the page and allows
+      // them to be scrollable when they are too long.
+      menus.css('max-height', (container.height() - 70) + 'px');
+    });
+
   },
 
   _setOption: function(key, value)

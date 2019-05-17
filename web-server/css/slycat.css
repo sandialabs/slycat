@@ -622,3 +622,8 @@ label.bottom-margin
   background-color: #f2f2f2;
   z-index: 3;
 }
+
+/* Needed to make bootstrap dropdowns scrollable when they become too long */
+.dropdown-menu {
+  overflow-y: scroll;
+}

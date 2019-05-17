@@ -259,7 +259,7 @@ export default class ControlsButtonUpdateTable extends Component {
                 <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
                 <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
                 {this.state.visible_tab === "0" ?
-                  <form>
+                  <form style={{marginLeft: '16px'}}>
                     <div className="form-check">
                       <label className="form-check-label" style={{marginRight: '92%'}} htmlFor="radio1">
                         <input type="radio" className="form-check-input" value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>Local
