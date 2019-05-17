@@ -8,6 +8,8 @@ import client from "../js/slycat-web-client";
  * @member persistenceId uuid for local storage
  * @member onSelectFileCallBack called every time a file is selected
  * returns the files info (path, file.type, file:FileMetaData)
+ * @member onSelectParserCallBack called every time a parser is selected
+ * returns the parser type (dakota or csv)
  * @export
  * @interface RemoteFileBrowserProps
  */
@@ -15,6 +17,7 @@ export interface RemoteFileBrowserProps {
   hostname: string
   persistenceId?: string
   onSelectFileCallBack: Function
+  onSelectParserCallBack: Function
 }
 
 /**
@@ -329,6 +332,18 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
+
+          <div className="form-group row">
+              <label className="col-sm-1 col-form-label">
+                Filetype
+              </label>
+              <div className="col-sm-10">
+                <select className="form-control" onChange={(e)=>this.props.onSelectParserCallBack(e.target.value)}>
+                <option value="slycat-csv-parser">Comma separated values (CSV)</option>
+                <option value="slycat-dakota-parser">Dakota tabular</option>
+                </select>
+              </div>
+            </div>
         </div>
     );
     }
