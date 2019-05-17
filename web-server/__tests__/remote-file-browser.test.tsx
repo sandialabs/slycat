@@ -15,11 +15,14 @@ describe("when we load the RemoteFileBrowser", () =>{
   let render:ReactWrapper;
   let callbackFileType:string;
   let callbackFilePath:string;
+  let callbackParser:string;
   const onSelectFile =(path:string, type:string) =>{
     callbackFileType=type;
     callbackFilePath=path;
   }
-
+  const onSelectParser =(type:string) =>{
+    callbackParser=type;
+  }
   beforeEach(() => {
   });
 
@@ -31,6 +34,7 @@ describe("when we load the RemoteFileBrowser", () =>{
         hostname={"string"}
         persistenceId={"string"}
         onSelectFileCallBack={onSelectFile}
+        onSelectParserCallBack={onSelectParser}
       />
         );
     let instance:any = render.instance() as any;
@@ -47,6 +51,7 @@ describe("when we load the RemoteFileBrowser", () =>{
       hostname={"string"}
       persistenceId={"string"}
       onSelectFileCallBack={onSelectFile}
+      onSelectParserCallBack={onSelectParser}
       />
     );
     expect(component).toBeTruthy();
@@ -58,6 +63,7 @@ describe("when we load the RemoteFileBrowser", () =>{
         hostname={"string"}
         persistenceId={"string"}
         onSelectFileCallBack={onSelectFile}
+        onSelectParserCallBack={onSelectParser}
       />
         );
     const props = render.props() as RemoteFileBrowserProps;
@@ -70,6 +76,7 @@ describe("when we load the RemoteFileBrowser", () =>{
         hostname={"string"}
         persistenceId={"string"}
         onSelectFileCallBack={onSelectFile}
+        onSelectParserCallBack={onSelectParser}
       />
         )
     const state = render.state() as RemoteFileBrowserState;
@@ -82,6 +89,7 @@ describe("when we load the RemoteFileBrowser", () =>{
       hostname={"string"}
       persistenceId={"string"}
       onSelectFileCallBack={onSelectFile}
+      onSelectParserCallBack={onSelectParser}
       />
     );
     DefaultInstance = component.getInstance();
