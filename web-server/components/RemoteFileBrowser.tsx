@@ -1,11 +1,35 @@
+'use strict';
 import * as React from 'react';
 import client from "../js/slycat-web-client";
+
+/**
+ * @member hostname name of the host we are connecting
+ * (assumes we have a connection already to the host)
+ * @member persistenceId uuid for local storage
+ * @member onSelectFileCallBack called every time a file is selected
+ * returns the files info (path, file.type, file:FileMetaData)
+ * @export
+ * @interface RemoteFileBrowserProps
+ */
 export interface RemoteFileBrowserProps { 
   hostname: string
   persistenceId?: string
   onSelectFileCallBack: Function
 }
 
+/**
+ * @member path path shown in box
+ * @member pathInput path to current file when selected
+ * @member persistenceId uuid add to get local storage say if there were 
+ * two of these classes being used
+ * @member rawFiles list of the current files meta data we are looking at
+ * @member pathError do we have a path error
+ * @member browseError do we have a browsing error
+ * @member browserUpdating are we in the middle of getting data
+ * @member selected id of selected file 
+ * @export
+ * @interface RemoteFileBrowserState
+ */
 export interface RemoteFileBrowserState {
   path:string
   pathInput:string
@@ -17,6 +41,14 @@ export interface RemoteFileBrowserState {
   selected:number
 }
 
+/**
+ * @member type file type
+ * @member name filename
+ * @member size size of file
+ * @member mtime last accessed time
+ * @member mimeType type of file
+ * @interface FileMetaData
+ */
 interface FileMetaData {
   type: string
   name: string
@@ -25,7 +57,13 @@ interface FileMetaData {
   mimeType: string
 }
 
-// TODO: comment all the functions and interfaces
+/**
+ * used to create a file browsing window like using 'ls' and 'cd' in a linux terminal
+ *
+ * @export
+ * @class RemoteFileBrowser
+ * @extends {React.Component<RemoteFileBrowserProps, RemoteFileBrowserState>}
+ */
 export default class RemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
     public constructor(props:RemoteFileBrowserProps) {
       super(props)
@@ -41,10 +79,16 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
     }
 
+    /**
+     * given a path return all the items in said path (like ls)
+     *
+     * @param pathInput path to return all ls properties from
+     * @private
+     * @memberof RemoteFileBrowser
+     */
     private browse = (pathInput:string) =>
     {
       pathInput = (pathInput === ""?"/":pathInput);
-      console.log(`pathInput::${pathInput}`)
       this.setState({
         rawFiles:[], 
         browserUpdating:true, 
@@ -89,6 +133,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       });
     }
 
+    /**
+     * takes a path and returns the directory above it
+     *
+     * @param path string path
+     * @private
+     * @returns new string path one level up
+     * @memberof RemoteFileBrowser
+     */
     private pathDirname = (path:string):string =>
     {
       var new_path = path.replace(/\/\.?(\w|\-|\.)*\/?$/, "");
@@ -97,6 +149,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       return new_path;
     }
 
+    /**
+     * takes left path and right path and joins them
+     * @param right string path
+     * @param left string path
+     * @private
+     * @requires joined paths
+     * @memberof RemoteFileBrowser
+     */
     private pathJoin = (left:string, right:string):string =>
     {
       var new_path = left;
@@ -106,6 +166,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       return new_path;
     }
 
+    /**
+     * given a file(which includes its full path), browse to the path above it
+     * 
+     * @param file meta data for the file selected to browse up 
+     * one level from said path
+     * @private
+     * @memberof RemoteFileBrowser
+     */
     private browseUpByFile = (file:FileMetaData) => {
       // If the file is our parent directory, move up the hierarchy.
       if(file.name === "..")
@@ -119,13 +187,31 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
     }
 
+    /**
+     * Given a row id and file info set the selected file and 
+     * callBack to tell caller Path, file.type, file:FileMetaData
+     * 
+     * @param file an object of FileMetaData
+     * @param i index of selected row in the table
+     * @private
+     * @memberof RemoteFileBrowser
+     */
     private selectRow = (file:FileMetaData, i:number) => {
       const newPath:string = this.pathJoin(this.state.path, file.name);
-      this.setState({selected:i})
-      // tell our create what we selected
-      this.props.onSelectFileCallBack(newPath, file.type, file);
+      this.setState({selected:i},() => {
+        // tell our create what we selected
+        this.props.onSelectFileCallBack(newPath, file.type, file);
+      })
     }
 
+    /**
+     * takes a list of file info from the state and converts it 
+     * to an html 
+     *
+     * @private
+     * @memberof RemoteFileBrowser
+     * @returns JSX.Element[] with the styled file list
+     */
     private getFilesAsJsx = ():JSX.Element[] => {
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
         return (
@@ -173,22 +259,28 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         await this.browse(this.pathDirname(path));
       }
     }
+
     public render() {
+      const pathStyle:any = {
+        width: 'calc(100% - 44px)',
+        float: 'left',
+        marginRight: '5px'
+      }
+      const styleTable:any = {
+        position: "relative",
+        height: (window.innerHeight*0.5)+"px",
+        overflow: "auto",
+        display: "block"
+      }
       return (
         <div className="slycat-remote-browser">
-            <div className="form-group path" data-bind-fail="css: {'is-invalid': path_error}">
-
+            <div className="form-group path">
               <label className="col-sm-3">
               {this.props.hostname}
               </label>
-
               <div className="col-sm-10">
                 <div className="input-group" 
-                  style={{
-                    width: 'calc(100% - 44px)',
-                    float: 'left',
-                    marginRight: '5px'
-                  }}>
+                  style={pathStyle}>
                   <input type="text" className="form-control" id="slycat-remote-browser-path" 
                     value={this.state.pathInput}
                     onChange={(e:React.ChangeEvent<HTMLInputElement>) => {
@@ -205,11 +297,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
                     onClick={() => {
                       this.browse(this.pathDirname(this.state.path))}
                     }
-                    // disabled={this.state.path === '/'}
-                    data-bind-fail="
-                    click:up,
-                    disable:path()=='/'
-                  ">
+                  >
                     <i className="fa fa-level-up" aria-hidden="true"></i>
                   </button>
                 </div>
@@ -221,12 +309,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           
           {!this.state.browserUpdating?
           <div
-          style={{
-            position: "relative",
-            height: (window.innerHeight*0.5)+"px",
-            overflow: "auto",
-            display: "block"
-          }}
+          style={styleTable}
           >
             <table className="table table-hover table-bordered">
               <thead className="thead-light">

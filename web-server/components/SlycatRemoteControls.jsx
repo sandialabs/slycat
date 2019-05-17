@@ -1,3 +1,4 @@
+'use strict';
 import React, {Component} from 'react';
 import client from "../js/slycat-web-client";
 import ConnectButton from 'components/connectButton.tsx';
