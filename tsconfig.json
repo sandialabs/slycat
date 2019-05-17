@@ -17,8 +17,14 @@
       "strictNullChecks": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
-      "moduleResolution": "node"
+      "moduleResolution": "node",
+      "baseUrl": "./",
+      "paths": {
+        "components/*": ["web-server/components/*"],
+        "js/*": ["web-server/js/*"]
+      }
   },
+  
   "include": [
       "web-server/**/*"
   ],

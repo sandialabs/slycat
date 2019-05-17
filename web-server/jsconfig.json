@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": false,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "paths": {
-      "components/*": ["js/*"],
-      "js/*": ["src/components/*"]
+      "components/*": ["web-server/components/*"],
+      "js/*": ["web-server/js/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
