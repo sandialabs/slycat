@@ -189,6 +189,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
     }
 
+    keyPress = (event:any, pathInput:string) => {
+        if (event.key == 'Enter'){
+          // How would I trigger the button that is in the render? I have this so far.
+          this.browse(pathInput);
+        }
+    }
+
+
     /**
      * Given a row id and file info set the selected file and 
      * callBack to tell caller Path, file.type, file:FileMetaData
@@ -285,13 +293,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
                   style={pathStyle}>
                   <input type="text" className="form-control" id="slycat-remote-browser-path" 
                     value={this.state.pathInput}
+                    onKeyPress={() => this.keyPress(event, this.state.pathInput)}
                     onChange={(e:React.ChangeEvent<HTMLInputElement>) => {
                         this.setState({pathInput:e.target.value})
                       }
                     }
                   />
                   <div className="input-group-append">
-                    <button className="btn btn-secondary"  onClick={() => this.browse(this.state.pathInput)}>Go</button>
+                    <button className="btn btn-secondary" onClick={() => this.browse(this.state.pathInput)}>Go</button>
                   </div>
                 </div>
                 <div className="btn-group" role="group" style={{float: 'right'}}>
