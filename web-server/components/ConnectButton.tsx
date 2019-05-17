@@ -65,12 +65,10 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
   private checkRemoteStatus = async (hostname:string) => {
     return client.get_remotes_fetch(hostname)
       .then((json:any) => {
-        console.log(`calling the callback ${json.status}`)
         this.setState({
           sessionExists:json.status,
           loadingData:false
         }, () => {
-          console.log(`calling the callback ${this.state.sessionExists}`)
           this.props.callBack(this.state.sessionExists, this.state.loadingData)
         });
     });
