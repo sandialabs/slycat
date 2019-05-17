@@ -6,7 +6,6 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
 >
   <div
     className="form-group path"
-    data-bind-fail="css: {'is-invalid': path_error}"
   >
     <label
       className="col-sm-3"
@@ -55,7 +54,6 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
       >
         <button
           className="btn btn-secondary"
-          data-bind-fail=" click:up, disable:path()=='/' "
           onClick={[Function]}
           title="Navigate to parent directory"
           type="button"
