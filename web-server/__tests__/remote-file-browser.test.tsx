@@ -1,11 +1,11 @@
 import $ from 'jquery';
-import RemoteFileBrowser,{ RemoteFileBrowserProps, RemoteFileBrowserState } from "../components/RemoteFileBrowser";
+import RemoteFileBrowser,{ RemoteFileBrowserProps, RemoteFileBrowserState } from "components/RemoteFileBrowser";
 import React from 'react';
 import renderer from 'react-test-renderer';
 import { mount, ReactWrapper } from 'enzyme';
 import sinon from 'sinon';
 global.$ = global.jQuery = $;
-// import client from "../js/slycat-web-client";
+// import client from "js/slycat-web-client";
 import mockData from './remoteBrowserTestData.json';
 
 describe("when we load the RemoteFileBrowser", () =>{
@@ -39,8 +39,8 @@ describe("when we load the RemoteFileBrowser", () =>{
         );
     let instance:any = render.instance() as any;
     server.respond();
-    console.log(await instance.browse('/'));
-    console.log(render.state());
+    await instance.browse('/');
+    render.state();
     expect(render).toBeTruthy();
     server.restore();
   });
