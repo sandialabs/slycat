@@ -1,0 +1,1056 @@
+/*
+Copyright 2013 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
+Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government 
+retains certain rights in this software.
+*/
+#mp-model
+{
+  	font-family: sans-serif;
+  	font-size: 100%;
+}
+
+.vs-model-content {
+	display: none;
+}
+
+/* no border for sliding bars */
+.ui-layout-pane
+{
+	border: 0px !important;
+	padding: 0px !important;
+}
+
+/***************************/
+/* mds scatter plot styles */
+/***************************/
+
+/* no scroll bars for scatter plot */
+#mp-mds-pane
+{
+	overflow: hidden !important;
+}
+
+.brush .extent
+{
+	fill-opacity: 0.1;
+	stroke: #fff;
+	shape-rendering: cripsEdges;
+}
+
+/* width of point outlines in scatter plot */
+#mp-mds-scatterplot
+{
+	stroke-width: 1px;
+}
+
+
+/* Page header */
+
+#edit-model-button
+{
+  float: right;
+}
+
+#table
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.x-axis,
+.y-axis
+{
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  shape-rendering: crispEdges;
+}
+
+.x-axis path,
+.y-axis path
+{
+  fill: none;
+  stroke: black;
+}
+
+#remote-error
+{
+  background-color: red;
+  color: yellow;
+  padding: 1em;
+}
+
+/* Model */
+#parameter-image-plus-layout {
+  -webkit-flex: 1;
+  flex: 1;
+}
+
+/* New CCA table styles */
+#barplot-table {
+  /*height: 250px;*/
+  overflow: hidden;
+}
+.barplotHeader {
+  /*overflow: hidden;*/
+  white-space: nowrap;
+}
+.barplotHeaderColumns {
+  /*outline: 1px solid blue;*/
+  white-space: nowrap;
+  display: inline-block;
+}
+.barplotHeaderColumn {
+  text-align: right !important;
+  display: inline-block;
+  /*padding: 3px;*/
+  cursor: pointer;
+  /*outline: 1px solid red;*/
+}
+.wrapper {
+  /*No longer using box-sizing since we are sizing cells based on an wrapper div inside them*/
+/*  box-sizing: border-box;
+  -moz-box-sizing: border-box;*/
+}
+.barplotHeaderColumn .wrapper {
+  padding: 3px;
+}
+.mask
+{
+  background-color: white;
+  position: relative; /* needed to get this cell to cover scrolling header row */
+  z-index: 1;
+}
+.mask .wrapper {
+  padding: 3px;
+}
+.barplotViewport {
+
+}
+.barplotGroup {
+  overflow: hidden;
+  width: auto !important; /* Need to force auto width since jQuery Resizable Widget sets static width on resize, which then breaks horizontal expansion/contraction on pane resize */
+}
+.barplotColumn {
+  float: left;
+  clear: left;
+}
+.barplotGroup.inputs,
+.barplotHeader,
+.barplotColumn,
+.mask,
+.inputs .ui-resizable-s
+{
+  border-color: #C0C0C0;
+  border-style: solid;
+  border-width: 0;
+}
+/*.barplotGroup.inputs,*/
+.barplotHeader
+{
+  border-bottom-width: 1px;
+}
+.barplotColumn,
+.mask
+{
+  border-right-width: 1px;
+}
+.inputs .ui-resizable-s {
+  bottom: 0;
+  height: 3px;
+  border-bottom-width: 1px;
+  border-top-width: 1px;
+  background-color: #DDDDCC;
+}
+.inputs .ui-resizable-s.ui-resizable-hover {
+  background-color: #FFCC66;
+}
+.noVerticalResize .ui-resizable-s {
+  display: none !important;
+}
+.toggle-control-s {
+  width: 50px;
+  height: 100%;
+  margin: 0 auto;
+  background-color: #CCCCBB;
+}
+.toggle-control-s.toggle-control-hover {
+  cursor: pointer;
+  background-color: #FFCC66;
+}
+/*.barplotGroup.inputs {
+  border-bottom: 7px solid red;
+}*/
+.barplotColumn .barplotCell {
+  display: block;
+}
+.barplotCanvas {
+  /*overflow: auto;*/
+  /*display: relative;*/ /* Only needed if using DOM's scrollIntoView() function instead of jQuery plugin */
+  height: 100%;
+}
+.barplotCanvas.input {
+  overflow-x: hidden;
+  /*overflow-y: auto;*/
+}
+.barplotRow {
+  white-space: nowrap;
+}
+.barplotCell {
+  display: inline-block;
+  text-align: right;
+}
+#rsquared-label sup {
+  position: absolute;
+  margin-top: -3px;
+}
+.rowInput,
+.rowOutput
+{
+  cursor: pointer;
+}
+#barplot-table .inputLabel .wrapper,
+#barplot-table .outputLabel .wrapper
+{
+  padding: 3px;
+}
+#barplot-table .inputLabel,
+#barplot-table .outputLabel,
+.barplotCell.col0,
+.barplotHeaderColumn
+{
+  font-weight: bold;
+  text-align: center;
+}
+#barplot-table .inputLabel
+{
+  background: #eeffe0;
+}
+#barplot-table .inputLabel.selected-variable,
+#barplot-table .barplotRow.rowInput.selected-variable,
+#barplot-table .barplotCell.rowInput.selected-variable
+{
+  background: #3ca654;
+  color: white;
+}
+#barplot-table .outputLabel
+{
+  background: #eeeeff;
+}
+#barplot-table .outputLabel.selected-variable,
+#barplot-table .barplotRow.rowOutput.selected-variable,
+#barplot-table .barplotCell.rowOutput.selected-variable
+{
+  background: #7767b0;
+  color: white;
+}
+.barplotHeaderColumnLabelWrapper,
+.selectCCAComponent,
+.wrapper,
+.barplotCellValue,
+.selected-component .spacer,
+.negative,
+.positive
+{
+  display: inline-block;
+}
+.barplotCellValue
+{
+  padding: 3px 23px 3px 18px;
+  width: 40px;
+}
+.selected-component .barplotCellValue,
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
+{
+  background-color: #DDDDDD;
+  border-width: 0px 1px;
+  border-style: solid;
+  border-color: #808080;
+  color: #666655;
+}
+.barplotHeaderColumn.selected-component .wrapper {
+  padding: 0;
+}
+.barplotHeaderColumn.selected-component .barplotHeaderColumnLabelWrapper
+{
+  padding: 3px 3px 3px 3px;
+  width: 75px;
+}
+.spacer
+{
+  width: 100px;
+  display: none;
+}
+.negativeSpacer
+{
+  text-align: right;
+}
+.positiveSpacer
+{
+  text-align: left;
+}
+.negative,
+.positive
+{
+  height: 12px;
+}
+.negative
+{
+  background-color: blue;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+}
+.positive
+{
+  background-color: red;
+  border-top-right-radius: 2px;
+  border-bottom-right-radius: 2px;
+}
+#barplot-table span.sortCCAComponent
+{
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border: 1px solid transparent;
+  cursor: pointer;
+  position: relative;
+  top: 3px;
+  margin-left: 3px;
+}
+.barplotHeaderColumn.mask.col0 {
+  vertical-align: top;
+}
+.slick-header-column {
+  padding-right: 41px !important;
+}
+.icon-sort-off {
+  border: 1px solid transparent;
+  background: transparent url(../../../slycat/web-server/img/sort-asc-light.png) no-repeat center center;
+}
+.icon-sort-off:hover {
+  border: 1px solid transparent !important;
+  background: transparent url(../../../slycat/web-server/img/sort-asc-gray.png) no-repeat center center !important;
+}
+.icon-sort-ascending:hover,
+.icon-sort-descending:hover
+{
+  border: 1px solid transparent;
+}
+.slick-header-button,
+.slick-header-column:hover > .slick-header-button
+{
+  width: 10px;
+}
+.slick-header-button.icon-image-on,
+.slick-header-button.icon-image-off
+{
+  right: 16px;
+  top: 4px;
+}
+.slick-header-button.icon-image-off {
+  background: transparent url(../../../slycat/web-server/img/image-light.png) no-repeat center center;
+}
+.slick-header-button.icon-image-on,
+.slick-header-button.icon-image-off:hover
+{
+  background: transparent url(../../../slycat/web-server/img/image-gray.png) no-repeat center center;
+}
+.slick-header-button.icon-y-on,
+.slick-header-button.icon-y-off
+{
+  right: 16px;
+  top: 4px;
+}
+.slick-header-button.icon-y-off {
+  background: transparent url(../../../slycat/web-server/img/y-light.png) no-repeat center center;
+}
+.slick-header-button.icon-y-on,
+.slick-header-button.icon-y-off:hover
+{
+  background: transparent url(../../../slycat/web-server/img/y-gray.png) no-repeat center center;
+}
+.slick-header-button.icon-x-on,
+.slick-header-button.icon-x-off
+{
+  right: 26px;
+  top: 4px;
+}
+.slick-header-button.icon-x-off {
+  background: transparent url(../../../slycat/web-server/img/x-light.png) no-repeat center center;
+}
+.slick-header-button.icon-x-on,
+.slick-header-button.icon-x-off:hover
+{
+  background: transparent url(../../../slycat/web-server/img/x-gray.png) no-repeat center center;
+}
+#page-title {
+  padding-top: 5px;
+  padding-bottom: 35px;
+}
+#controls-pane {
+  z-index: 3 !important; /* Required to make bootstrap dropdowns appear over lower panes */
+  overflow: visible !important;
+}
+.center {
+  text-align: center;
+}
+#color-switcher ul.dropdown-menu
+{
+  background-color: #F2F2F2;
+}
+.bootstrap-styles #color-switcher .dropdown-menu > li > a:hover
+{
+  background-color: #E4E4E4;
+}
+.bootstrap-styles #color-switcher .dropdown-menu > .active > a:hover
+{
+  background-color: #337AB7;
+}
+#controls {
+  height: 100%;
+}
+#controls label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+#controls label.disabled,
+#controls select:disabled
+{
+  color: gray;
+}
+#controls select {
+  margin-right: 10px;
+  padding: 2px 4px;
+}
+#controls label[for="auto-scale-option"]
+{
+  margin-right: 10px;
+}
+#controls #filter-selector {
+  width: 90px;
+}
+#scatterplot .media-layer .frame-icon,
+#sliders-pane .frame-icon
+{
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-image: url("../../../slycat/web-server/img/ui-icons_222222_256x240.png");
+  background-repeat: no-repeat;
+  display: block;
+  overflow: hidden;
+  text-indent: -99999px;
+  background-color: white;
+}
+#scatterplot .media-layer .resize-handle {
+  bottom: 0px;
+  right: 0px;
+  background-position: -80px -224px;
+}
+#scatterplot .media-layer .pin-button {
+  background-image: url("../../../slycat/web-server/img/pin.png");
+  top: 0px;
+  left: 0px;
+}
+#scatterplot .media-layer .reload-button {
+  position: absolute;
+  left: 1px;
+  font-size: 32px;
+}
+#scatterplot .media-layer .close-button {
+  position: absolute;
+  font-size: 32px;
+}
+#scatterplot .media-layer .close-button {
+  top: 0px;
+  right: 0px;
+  width: 16px;
+  background-position: -96px -128px;
+}
+#scatterplot rect.outline:hover,
+#scatterplot g.image-frame image.image,
+#scatterplot .media-layer .image-frame
+{
+  cursor: move;
+}
+#scatterplot .close-button:hover,
+#scatterplot .pin-button:hover
+{
+  cursor: pointer;
+}
+#scatterplot.resizing,
+#scatterplot.resizing .media-layer .image-frame,
+#scatterplot .resize-handle:hover {
+  cursor: nwse-resize !important;
+}
+#scatterplot g.open-image image.image {
+
+}
+#scatterplot .close-button,
+#scatterplot .resize-handle,
+#scatterplot .pin-button,
+{
+  visibility: hidden;
+}
+#scatterplot g.open-image:hover .close-button,
+#scatterplot g.open-image.resizing .close-button,
+#scatterplot g.image-frame:hover .resize-handle,
+#scatterplot g.open-image.resizing .resize-handle,
+#scatterplot g.hover-image .pin-button,
+#scatterplot g.hover-image .resize-handle,
+#scatterplot .media-layer .image-frame:hover .resize-handle,
+#scatterplot .media-layer .image-frame.resizing .resize-handle,
+#scatterplot .media-layer .image-frame:hover .pin-button,
+#scatterplot .media-layer .open-image:hover .close-button,
+{
+  visibility: visible;
+}
+#scatterplot g.legend:hover {
+  cursor: move;
+}
+#scatterplot .image-frame rect.outline {
+  shape-rendering: crispEdges;
+}
+.legend-axis path,
+.legend-axis line
+{
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+.dialogErrorMessage {
+  color: red;
+}
+#scatterplot canvas {
+  z-index: -1;
+}
+
+/* ui layout */
+.ui-layout-resizer
+{
+  background: #ddc;
+}
+.ui-layout-resizer-hover
+{
+  background: #fc6;
+}
+.ui-layout-resizer-dragging
+{
+  background: #fc6;
+}
+.ui-layout-toggler
+{
+  background: #ccb;
+}
+.ui-layout-toggler-hover
+{
+  background: #fc6;
+}
+.ui-layout-pane, .ui-layout-container
+{
+  background: white;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+/* Image Preview */
+#scatterplot-pane #image-preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  display: none;
+  text-align: center;
+}
+#scatterplot-pane #image-preview-image {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+/* Media Layer */
+#scatterplot .media-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#scatterplot .image-frame.html {
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  height: auto;
+}
+#scatterplot .image-frame.html img {
+  display: block;
+}
+#scatterplot .image-frame.html img.image {
+  width: 100%;
+  height: auto;
+}
+#scatterplot .image-frame.html video {
+  display: block;
+  margin: 20px 0;
+  width: 100%;
+  height: auto;
+}
+#scatterplot .image-frame .loading-image {
+  margin: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+
+  background-image: url("../../../slycat/web-server/img/ajax-loader.gif");
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+#scatterplot .image-frame.selected {
+  box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.8);
+}
+
+/* Sliders */
+#sliders-pane {
+  white-space: nowrap;
+  overflow: auto;
+  background: #e7e7e7;
+}
+#sliders {
+  margin: 20px 0 0 20px;
+}
+.slycat-range-slider.vertical
+{
+  display: inline-block;
+  margin: 28px 0 22px 0;
+  left: 20px;
+}
+/* undoing vertical class cause it's making vertical sliders horizontal */
+.slycat-range-slider.vertical {
+  transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -webkit-transform: rotate(0deg);
+}
+.slycat-pim-filter {
+  position: relative;
+  display: inline-block;
+  width: 115px;
+  padding-left: 5px;
+  margin-right: 20px;
+  background-color: white;
+}
+.category-filter {
+  position: relative;
+  display: inline-block;
+  width: 95px;
+  min-width: 95px;
+  padding-left: 5px;
+  margin-right: 20px;
+}
+.category-filter.auto-width {
+  width: auto;
+}
+.slycat-pim-filter .button
+{
+  cursor: pointer;
+  position: absolute;
+}
+.slycat-pim-filter .close-button
+{
+  top: 4px;
+  left: 6px;
+}
+.slycat-pim-filter .reset-button
+{
+  position: static;
+}
+.category-filter .auto-width-button {
+  top: 5px;
+  right: 5px;
+  font-size: 12px;
+}
+.slycat-pim-filter .invert-button,
+.slycat-pim-filter .select-all-button,
+.slycat-pim-filter .select-none-button,
+.slycat-pim-filter .auto-width-button
+{
+  position: absolute;
+}
+.slycat-pim-filter .fa-arrows-v {
+  left: 28px;
+  bottom: 7px;
+}
+.slycat-pim-filter .fa-compress {
+  transform: rotate(135deg);
+  -ms-transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+  left: 25px;
+  bottom: 7px;
+}
+.category-filter .invert-button {
+  left: 46px;
+  bottom: 7px;
+}
+.category-filter .select-all-button {
+  left: 25px;
+  bottom: 7px;
+}
+.category-filter .select-none-button {
+  left: 65px;
+  bottom: 7px;
+}
+.slycat-pim-filter .minMaxHighLow .max,
+.slycat-pim-filter .minMaxHighLow .min,
+.slycat-pim-filter .minMaxHighLow .high,
+.slycat-pim-filter .minMaxHighLow .low
+{
+  position: absolute;
+  left: 44px;
+}
+.slycat-pim-filter .minMaxHighLow .max
+{
+  top: 3px;
+}
+.slycat-pim-filter .max .editing,
+.slycat-pim-filter .min .editing,
+.slycat-pim-filter .max .edited,
+.slycat-pim-filter .min .edited,
+.slycat-pim-filter .max .hover,
+.slycat-pim-filter .min .hover
+{
+  background-color: #F0AD4E;
+  border: 1px solid #CCC;
+  border-radius: 4px;
+  padding: 0 3px;
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
+}
+.slycat-pim-filter .minMax
+{
+  z-index: 20;
+}
+.slycat-pim-filter .min-max-field
+{
+  display: inline-block;
+}
+.slycat-pim-filter .min
+{
+
+}
+.slycat-pim-filter .varNameContainer,
+.category-filter .varNameContainer
+{
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.slycat-pim-filter .varName,
+.category-filter .varName
+{
+  transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  -webkit-transform: rotate(270deg);
+  position: absolute;
+  width: 1000px;
+  text-align: center;
+  left: -493px;
+  top: 50%;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.category-filter {
+  background-color: white;
+}
+.slycat-category-filter {
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: inline-block;
+  margin: 20px 4px 20px 20px;
+  /*left: 20px;*/
+  position: relative;
+  width: 70px;
+  min-width: 70px;
+}
+.auto-width .slycat-category-filter {
+  width: auto;
+}
+.slycat-category-filter .category-button {
+  border-width: 1px 1px 1px 1px;
+  border-style: solid;
+  border-color: #cfcfcf;
+  /*border-color: #78f;*/
+  background-color: #e7e7e7;
+  color: #8f8f8f;
+  font-size: 13px;
+  padding: 1px 5px;
+  margin-top: -1px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.auto-width .slycat-category-filter .category-button {
+  padding-right: 30px;
+  overflow: visible;
+}
+.slycat-category-filter .category-button:first-child {
+  border-radius: 3px 3px 0 0;
+  margin-top: 0;
+}
+.slycat-category-filter .category-button:last-child {
+  border-bottom-width: 1px;
+  border-radius: 0 0 3px 3px;
+}
+.slycat-category-filter .category-button.active {
+  background-color: #abf;
+  border-color: #97A3FE;
+  color: #333;
+  z-index: 5;
+  position: relative;
+}
+.slycat-category-filter .category-button:hover {
+  cursor: pointer;
+  background-color: #cccccc;
+}
+.slycat-category-filter .category-button.active:hover {
+  background-color: #78f;
+  border-color: #78f;
+}
+.slycat-category-select {
+  /*max-width: 70px;*/
+}
+.slycat-category-select button {
+  /*width: 50px;*/
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-button:hover, .cat-button:focus {
+  outline: none !important;
+  outline-style: none;
+}
+
+.cat-button:focus:not(.active) {
+  background-color: white !important;
+}
+
+/* Note Layer */
+.ui-sticky {
+  z-index: 3
+}
+
+.ui-sticky-header {
+  cursor: move;
+}
+
+.ui-sticky-header i.fa {
+  padding-right: 2px;
+  padding-left: 2px;
+  cursor: pointer;
+  visibility: hidden;
+}
+
+.ui-sticky:hover i.fa, .ui-sticky:hover .ui-icon.ui-icon-gripsmall-diagonal-se {
+  visibility: visible;
+}
+
+.ui-resizable-handle.ui-resizable-e {
+  cursor: ew-resize;
+}
+
+.ui-resizable-handle.ui-resizable-s {
+  cursor: ns-resize;
+}
+
+.ui-icon.ui-icon-gripsmall-diagonal-se {
+  cursor: nwse-resize;
+  visibility: hidden;
+  bottom: 2px;
+  right: 2px;
+  background-position: -80px -224px;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-image: url("../../../slycat/web-server/img/ui-icons_222222_256x240.png");
+  background-repeat: no-repeat;
+  display: block;
+  overflow: hidden;
+  text-indent: -99999px;
+  background-color: white;
+}
+
+.ui-sticky.title textarea {
+  font-size: 28px;
+  padding: 3.5px;
+}
+
+a {
+  cursor: pointer;
+}
+
+.remap-ui-label {
+  display: inline-block;
+  width: 60px;
+}
+
+.remap-ui-label.shorter {
+  width: 57px;
+}
+
+.remap-ui-label.faded {
+  opacity: 0.5;
+}
+
+.remap-ui-input {
+  width: 85%;
+}
+.bootstrap-styles .dropdown-header {
+    display: block;
+    padding: 3px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1.42857;
+    color: #333;
+    white-space: nowrap;
+    margin-left: -7px;
+}
+#controls-pane .bootstrap-styles .dropdown-menu
+{
+  max-height: 500px;
+  overflow-y: auto;
+}
+.image-frame .download-link
+{
+  margin: 20px;
+  display: block;
+  text-align: center;
+  word-break: break-all;
+}
+#video-controls .video-sync-time {
+  width: 75px;
+}
+#playback-controls .play-button,
+#playback-controls .pause-button
+{
+  width: 30px;
+}
+
+/* Movies pane */
+#mp-movies #movie-help-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-align: center;
+  margin: 12px;
+  z-index: -1;
+}
+#mp-movies .videoContainer {
+  border-width: 4px;
+  border-style: solid;
+  margin: 12px;
+  position: relative;
+  padding-bottom: 20px;
+  background-color: black;
+  width: calc(100% - 32px);
+}
+.videoContainer video {
+  display: block;
+  height: auto;
+}
+.videoContainer .frame-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+}
+.frame-button {
+  float: right;
+  font-size: 14px;
+  color: #c8c8c8 !important;
+  padding: 2px 4px;
+}
+.frame-button:hover {
+  color: white !important;
+  cursor: pointer;
+}
+.frame-button.close-button {
+  float: left;
+  padding: 3px 4px;
+}
+.frame-button.download-button {
+  float: left;
+  font-size: 12px;
+  text-decoration: none !important;
+  padding: 5px 4px;
+}
+.frame-button.jump-button {
+  padding: 0;
+}
+.frame-button.table-index {
+  padding: 1px 0px 0px 2px;
+}
+.frame-button.table-button {
+  padding: 4px 6px 4px 0px;
+}
+.frame-button.arrow-button {
+  padding: 3px 0px 4px 2px;
+  font-size: 9px;
+}
+.frame-button.jump-button:hover * { 
+  color: white !important; 
+}
+.videoContainer.selected {
+  box-shadow: 0px 0px 10px 6px rgba(0, 0, 0, 1);
+}
+
+/* Table pane */
+#mp-datapoints-table {position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;position: absolute;
+}
+.slick-cell.flashing {
+  border-width: 0px !important;
+  opacity: 0.5;
+}
+
+/* Trajectories pane */
+/* Waveform Progress Indicator */
+#waveform-progress,
+#waveform-selection-progress
+{
+    background-color: transparent;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 200px;
+    height: 200px;
+    margin: -100px 0 0 -100px;
+    display: none;
+}
+#waveform-selection-progress
+{
+  z-index: 1;
+}
+#waveform-selector-progress {
+  background-color: transparent;
+  position: absolute;
+  left: 0px;
+  top: 3px;
+  width: 100%;
+  height: 15px;
+  text-align: center;
+  display: none;
+}
+#waveform-selector-progress-wrapper {
+  display: none;
+}
+#waveform-pane:hover #waveform-selector-progress-wrapper {
+  display: block;
+}

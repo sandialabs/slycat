@@ -14,7 +14,10 @@ class ControlsDropdown extends React.Component {
 
     let dropdown = 
         <React.Fragment>
-        <button className={`btn dropdown-toggle btn-sm ${this.props.button_style}`} type="button" id={this.props.id} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title={this.props.title}>
+        <button type="button" id={this.props.id} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" 
+          className={`btn dropdown-toggle btn-sm ${this.props.button_style}`}
+          title={this.props.title}
+        >
           {this.props.label}&nbsp;
         </button>
         <div className="dropdown-menu" aria-labelledby={this.props.id}>
