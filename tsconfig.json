@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+      "noUnusedLocals": true,
+      "noFallthroughCasesInSwitch": true,
+      "pretty": true,
+      "sourceMap": true,
+      "jsx": "react",
+      "target": "esnext",
+      "module": "commonjs",
+      "removeComments": true,
+      "skipLibCheck": true,
+      "preserveConstEnums": true,
+      "noImplicitReturns": true,
+      "noImplicitThis": true,
+      "allowJs": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "moduleResolution": "node",
+      "baseUrl": "web-server",
+      "paths": {
+        "components/*": ["components/*"],
+        "js/*": ["js/*"]
+      }
+  },
+  
+  "include": [
+      "web-server/**/*"
+  ],
+  "exclude": [
+      "node_modules",
+      "**/*.spec.ts",
+      "**/*.test.ts",
+  ]
+}

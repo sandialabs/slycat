@@ -1,0 +1,153 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when we load the RemoteFileBrowser we expect the component to render 1`] = `
+<div
+  className="slycat-remote-browser"
+>
+  <div
+    className="form-group path"
+  >
+    <label
+      className="col-sm-3"
+    >
+      string
+    </label>
+    <div
+      className="col-sm-10"
+    >
+      <div
+        className="input-group"
+        style={
+          Object {
+            "float": "left",
+            "marginRight": "5px",
+            "width": "calc(100% - 44px)",
+          }
+        }
+      >
+        <input
+          className="form-control"
+          id="slycat-remote-browser-path"
+          onChange={[Function]}
+          onKeyPress={[Function]}
+          type="text"
+          value="/"
+        />
+        <div
+          className="input-group-append"
+        >
+          <button
+            className="btn btn-secondary"
+            onClick={[Function]}
+          >
+            Go
+          </button>
+        </div>
+      </div>
+      <div
+        className="btn-group"
+        role="group"
+        style={
+          Object {
+            "float": "right",
+          }
+        }
+      >
+        <button
+          className="btn btn-secondary"
+          onClick={[Function]}
+          title="Navigate to parent directory"
+          type="button"
+        >
+          <i
+            aria-hidden="true"
+            className="fa fa-level-up"
+          />
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    style={
+      Object {
+        "display": "block",
+        "height": "384px",
+        "overflow": "auto",
+        "position": "relative",
+      }
+    }
+  >
+    <table
+      className="table table-hover table-bordered"
+    >
+      <thead
+        className="thead-light"
+      >
+        <tr>
+          <th />
+          <th>
+            Name
+          </th>
+          <th>
+            Size
+          </th>
+          <th>
+            Date Modified
+          </th>
+        </tr>
+      </thead>
+      <tbody />
+    </table>
+  </div>
+  <div
+    className="form-group row"
+  >
+    <label
+      className="col-sm-1 col-form-label"
+    >
+      Filetype
+    </label>
+    <div
+      className="col-sm-10"
+    >
+      <select
+        className="form-control"
+        onChange={[Function]}
+      >
+        <option
+          value="slycat-csv-parser"
+        >
+          Comma separated values (CSV)
+        </option>
+        <option
+          value="slycat-dakota-parser"
+        >
+          Dakota tabular
+        </option>
+      </select>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`when we load the RemoteFileBrowser we expect the correct state to populate 1`] = `
+Object {
+  "browseError": false,
+  "browserUpdating": false,
+  "path": "/",
+  "pathError": false,
+  "pathInput": "/",
+  "persistenceId": "string",
+  "rawFiles": Array [],
+  "selected": -1,
+}
+`;
+
+exports[`when we load the RemoteFileBrowser we have expected props on initial load 1`] = `
+Object {
+  "hostname": "string",
+  "onSelectFileCallBack": [Function],
+  "onSelectParserCallBack": [Function],
+  "persistenceId": "string",
+}
+`;

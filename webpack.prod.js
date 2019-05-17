@@ -9,7 +9,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = merge(common, {
   mode: 'production',
-  devtool: 'source-map',
+  // devtool: 'source-map',
   plugins: [
     // Don't need to add UglifyJSPlugin here because production mode automatically does that
     // new UglifyJSPlugin({
