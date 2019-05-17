@@ -172,16 +172,16 @@ export default class SlycatRemoteControls extends Component {
         <div>
           <div className="form-group row">
             <label className="col-sm-1 col-form-label" style={{marginLeft: '3%', marginBottom:'15px'}}>Username</label>
-            <div className="col-sm-8">
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} className="form-control" style={{width: "inherit"}} type="text"
+            <div className="col-sm-9">
+              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} className="form-control" style={{width: "118.5%"}} type="text"
               value={this.state.username?this.state.username:""}
               onChange={(e)=>this.onValueChange(e.target.value, "username")}></input>
             </div>
           </div>
           <div className="form-group row" data-bind-old="visible: !session_exists()">
-            <label className="col-sm-1 col-form-label" style={{marginLeft: '3%'}}>Password</label>
-            <div className="col-sm-8">
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} className="form-control" style={{width: "inherit"}} type="password" onKeyDown={this.handleKeyDown}
+            <label className="col-sm-1 col-form-label" style={{marginLeft: '3%', marginBottom:'15px'}}>Password</label>
+            <div className="col-sm-9">
+              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} className="form-control" style={{width: "118.5%"}} type="password" onKeyDown={this.handleKeyDown}
               onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
             </div>
             {this.state.showConnectButton?
@@ -230,7 +230,7 @@ export default class SlycatRemoteControls extends Component {
     return (
       <form style={{margin: '2%'}}>
         <div className="form-group row">
-          <label className="col-sm-1 col-form-label" style={{marginLeft: '3%'}}>Hostname</label>
+          <label className="col-sm-1 col-form-label" style={{marginLeft: '3%', marginBottom:'15px'}}>Hostname</label>
           <div className="col">
             <div className="input-group">
               <div className="dropdown">
