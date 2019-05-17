@@ -29,6 +29,7 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
           className="form-control"
           id="slycat-remote-browser-path"
           onChange={[Function]}
+          onKeyPress={[Function]}
           type="text"
           value="/"
         />
