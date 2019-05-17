@@ -18,10 +18,10 @@
       "resolveJsonModule": true,
       "esModuleInterop": true,
       "moduleResolution": "node",
-      "baseUrl": "./",
+      "baseUrl": "web-server",
       "paths": {
-        "components/*": ["web-server/components/*"],
-        "js/*": ["web-server/js/*"]
+        "components/*": ["components/*"],
+        "js/*": ["js/*"]
       }
   },
   

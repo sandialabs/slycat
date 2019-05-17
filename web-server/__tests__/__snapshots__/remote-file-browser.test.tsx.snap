@@ -98,6 +98,34 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
       <tbody />
     </table>
   </div>
+  <div
+    className="form-group row"
+  >
+    <label
+      className="col-sm-1 col-form-label"
+    >
+      Filetype
+    </label>
+    <div
+      className="col-sm-10"
+    >
+      <select
+        className="form-control"
+        onChange={[Function]}
+      >
+        <option
+          value="slycat-csv-parser"
+        >
+          Comma separated values (CSV)
+        </option>
+        <option
+          value="slycat-dakota-parser"
+        >
+          Dakota tabular
+        </option>
+      </select>
+    </div>
+  </div>
 </div>
 `;
 

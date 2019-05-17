@@ -1,7 +1,8 @@
-import SlycatRemoteControls from "components/SlycatRemoteControls.jsx";
+import SlycatRemoteControls from "components/SlycatRemoteControls";
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { shallow, mount } from 'enzyme';
+import { shallow } from "enzyme";
+
 
 interface GlobalAny extends NodeJS.Global {
   fetch: any
