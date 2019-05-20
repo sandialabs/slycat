@@ -524,6 +524,7 @@ $(document).ready(function() {
           height={$("#scatterplot-pane").height()}
           color={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
           selection={selected_simulations}
+          border={25}
         />
       ;
 
