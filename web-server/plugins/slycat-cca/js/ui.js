@@ -35,6 +35,7 @@ import ReactDOM from "react-dom";
 import CCAControlsBar from "./components/CCAControlsBar";
 import CCABarplot from "./components/CCABarplot";
 import CCATable from "./components/CCATable";
+import CCAScatterplot from "./components/CCAScatterplot";
 import COLOR_LABELS from 'components/color-labels.js';
 
 // Wait for document ready
@@ -64,6 +65,7 @@ $(document).ready(function() {
   var selected_simulations = null;
   var colormap = null;
 
+  var cca_component = null;
   var sort_variable = null;
   var sort_order = null;
   var variable_selection = null;
@@ -259,6 +261,8 @@ $(document).ready(function() {
       selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
       colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
+      cca_component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
+
       sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : null;
       sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
       variable_selection = bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : null;
@@ -416,13 +420,11 @@ $(document).ready(function() {
     }
 
     // Setup the barplot ...
-    if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings)
+    if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings && (cca_component !== null))
     {
       barplot_ready = true;
 
       $("#barplot-pane .load-status").css("display", "none");
-
-      var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
 
       // $("#barplot-table").barplot({
       //   metadata: table_metadata,
@@ -467,7 +469,7 @@ $(document).ready(function() {
           wilks={wilks}
           x_loadings={x_loadings}
           y_loadings={y_loadings}
-          component={component}
+          component={cca_component}
         />
       ;
 
@@ -478,46 +480,61 @@ $(document).ready(function() {
     }
 
     // Setup the scatterplot ...
-    if(!scatterplot_ready && bookmark && indices && x && y && v && (selected_simulations !== null) && (colormap !== null))
+    if(!scatterplot_ready && bookmark && indices && x && y && v && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null))
     {
       scatterplot_ready = true;
 
       $("#scatterplot-pane .load-status").css("display", "none");
-
-      var component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
-
       $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
-      $("#scatterplot").scatterplot({
-        indices: indices,
-        x: x[component],
-        y: y[component],
-        v: v,
-        width: $("#scatterplot-pane").width(),
-        height: $("#scatterplot-pane").height(),
-        color: $("#color-switcher").colorswitcher("get_color_scale", colormap),
-        selection: selected_simulations,
-        });
+      // $("#scatterplot").scatterplot({
+      //   indices: indices,
+      //   x: x[component],
+      //   y: y[component],
+      //   v: v,
+      //   width: $("#scatterplot-pane").width(),
+      //   height: $("#scatterplot-pane").height(),
+      //   color: $("#color-switcher").colorswitcher("get_color_scale", colormap),
+      //   selection: selected_simulations,
+      //   });
 
-      $("#scatterplot").bind("selection-changed", function(event, selection)
-      {
-        selected_simulations = selection;
+      // $("#scatterplot").bind("selection-changed", function(event, selection)
+      // {
+      //   selected_simulations = selection;
 
-        // Changing the scatterplot selection updates the table row selection ...
-        $("#table").table("option", "row-selection", selected_simulations);
+      //   // Changing the scatterplot selection updates the table row selection ...
+      //   $("#table").table("option", "row-selection", selected_simulations);
 
-        selected_simulations_changed(selected_simulations);
-      });
+      //   selected_simulations_changed(selected_simulations);
+      // });
 
-      // Changing the barplot component updates the scatterplot ...
-      $("#barplot-table").bind("component-changed", function(event, component)
-      {
-        $("#scatterplot").scatterplot("option", {x : x[component], y : y[component]});
-      });
+      // // Changing the barplot component updates the scatterplot ...
+      // $("#barplot-table").bind("component-changed", function(event, component)
+      // {
+      //   $("#scatterplot").scatterplot("option", {x : x[component], y : y[component]});
+      // });
+
+      const cca_scatterplot = 
+        <CCAScatterplot
+          indices={indices}
+          x={x[cca_component]}
+          y={y[cca_component]}
+          v={v}
+          width={$("#scatterplot-pane").width()}
+          height={$("#scatterplot-pane").height()}
+          color={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
+          selection={selected_simulations}
+        />
+      ;
+
+      self.cca_scatterplot = ReactDOM.render(
+        cca_scatterplot,
+        document.getElementById('scatterplot-pane')
+      );
     }
 
     // Setup the table ...
-    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) && (colormap !== null) )
+    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null) )
     {
       table_ready = true;
 
@@ -591,7 +608,7 @@ $(document).ready(function() {
           inputs={input_columns}
           outputs={output_columns}
           others={other_columns}
-          component={component}
+          component={cca_component}
           row_selection={selected_simulations}
           colormap={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
           sort_variable={sort_variable}
