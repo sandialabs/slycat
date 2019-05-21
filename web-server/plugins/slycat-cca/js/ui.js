@@ -15,7 +15,7 @@ import * as chunker from "js/chunker";
 import "./cca-legend";
 import "./cca-controls";
 // import "./cca-barplot";
-import "./cca-scatterplot";
+// import "./cca-scatterplot";
 import "./color-switcher";
 
 import "jquery-ui";
@@ -525,6 +525,8 @@ $(document).ready(function() {
           color={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
           selection={selected_simulations}
           border={25}
+          drag_threshold={3}
+          pick_distance={3}
         />
       ;
 

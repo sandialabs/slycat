@@ -22,124 +22,124 @@ $.widget("cca.scatterplot",
 
   _create: function()
   {
-    this.start_drag = null;
-    this.end_drag = null;
+    // this.start_drag = null;
+    // this.end_drag = null;
 
-    this.main_context = this.element.get(0).getContext("2d");
+    // this.main_context = this.element.get(0).getContext("2d");
 
-    this.data_canvas = $("<canvas>");
-    this.data_context = this.data_canvas.get(0).getContext("2d");
+    // this.data_canvas = $("<canvas>");
+    // this.data_context = this.data_canvas.get(0).getContext("2d");
 
-    this.selection_canvas = $("<canvas>");
-    this.selection_context = this.selection_canvas.get(0).getContext("2d");
+    // this.selection_canvas = $("<canvas>");
+    // this.selection_context = this.selection_canvas.get(0).getContext("2d");
 
     this.updates = {};
     this.update_timer = null;
     this._schedule_update({update_indices:true, update_width:true, update_height:true, update_x:true, update_y:true, update_color_domain:true, render_data:true, render_selection:true});
 
-    var self = this;
+    // var self = this;
 
-    this.element.mousedown(function(e)
-    {
-      self.start_drag = [self._offsetX(e), self._offsetY(e)];
-      self.end_drag = null;
-    });
+    // this.element.mousedown(function(e)
+    // {
+    //   self.start_drag = [self._offsetX(e), self._offsetY(e)];
+    //   self.end_drag = null;
+    // });
 
-    this.element.mousemove(function(e)
-    {
-      if(self.start_drag) // Mouse is down ...
-      {
-        if(self.end_drag) // Already dragging ...
-        {
-          self.end_drag = [self._offsetX(e), self._offsetY(e)];
+    // this.element.mousemove(function(e)
+    // {
+    //   if(self.start_drag) // Mouse is down ...
+    //   {
+    //     if(self.end_drag) // Already dragging ...
+    //     {
+    //       self.end_drag = [self._offsetX(e), self._offsetY(e)];
 
-          var width = self.element.width();
-          var height = self.element.height();
+    //       var width = self.element.width();
+    //       var height = self.element.height();
 
-          self.main_context.clearRect(0, 0, width, height);
-          self.main_context.drawImage(self.data_canvas.get(0), 0, 0);
-          self.main_context.drawImage(self.selection_canvas.get(0), 0, 0);
-          self.main_context.fillStyle = "rgba(255, 255, 0, 0.3)";
-          self.main_context.fillRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
-          self.main_context.strokeStyle = "rgb(255, 255, 0)";
-          self.main_context.lineWidth = 2.0;
-          self.main_context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
-        }
-        else
-        {
-          if(Math.abs(self._offsetX(e) - self.start_drag[0]) > self.options.drag_threshold || Math.abs(self._offsetY(e) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
-          {
-            self.end_drag = [self._offsetX(e), self._offsetY(e)];
-          }
-        }
-      }
-    });
+    //       self.main_context.clearRect(0, 0, width, height);
+    //       self.main_context.drawImage(self.data_canvas.get(0), 0, 0);
+    //       self.main_context.drawImage(self.selection_canvas.get(0), 0, 0);
+    //       self.main_context.fillStyle = "rgba(255, 255, 0, 0.3)";
+    //       self.main_context.fillRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
+    //       self.main_context.strokeStyle = "rgb(255, 255, 0)";
+    //       self.main_context.lineWidth = 2.0;
+    //       self.main_context.strokeRect(self.start_drag[0], self.start_drag[1], self.end_drag[0] - self.start_drag[0], self.end_drag[1] - self.start_drag[1]);
+    //     }
+    //     else
+    //     {
+    //       if(Math.abs(self._offsetX(e) - self.start_drag[0]) > self.options.drag_threshold || Math.abs(self._offsetY(e) - self.start_drag[1]) > self.options.drag_threshold) // Start dragging ...
+    //       {
+    //         self.end_drag = [self._offsetX(e), self._offsetY(e)];
+    //       }
+    //     }
+    //   }
+    // });
 
-    this.element.mouseup(function(e)
-    {
-      if(!e.ctrlKey && !e.metaKey)
-        self.options.selection = [];
+  //   this.element.mouseup(function(e)
+  //   {
+  //     if(!e.ctrlKey && !e.metaKey)
+  //       self.options.selection = [];
 
-      var x = self.options.x;
-      var y = self.options.y;
-      var count = x.length;
+  //     var x = self.options.x;
+  //     var y = self.options.y;
+  //     var count = x.length;
 
-      if(self.start_drag && self.end_drag) // Rubber-band selection ...
-      {
-        var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
-        var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
-        var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
-        var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
+  //     if(self.start_drag && self.end_drag) // Rubber-band selection ...
+  //     {
+  //       var x1 = self.x_scale.invert(Math.min(self.start_drag[0], self.end_drag[0]));
+  //       var y1 = self.y_scale.invert(Math.max(self.start_drag[1], self.end_drag[1]));
+  //       var x2 = self.x_scale.invert(Math.max(self.start_drag[0], self.end_drag[0]));
+  //       var y2 = self.y_scale.invert(Math.min(self.start_drag[1], self.end_drag[1]));
 
-        for(var i = 0; i != count; ++i)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-          {
-            var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
-              self.options.selection.push(self.options.indices[i]);
-          }
-        }
-      }
-      else // Pick selection ...
-      {
-        var x1 = self.x_scale.invert(self._offsetX(e) - self.options.pick_distance);
-        var y1 = self.y_scale.invert(self._offsetY(e) + self.options.pick_distance);
-        var x2 = self.x_scale.invert(self._offsetX(e) + self.options.pick_distance);
-        var y2 = self.y_scale.invert(self._offsetY(e) - self.options.pick_distance);
+  //       for(var i = 0; i != count; ++i)
+  //       {
+  //         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+  //         {
+  //           var index = self.options.selection.indexOf(self.options.indices[i]);
+  //           if(index == -1)
+  //             self.options.selection.push(self.options.indices[i]);
+  //         }
+  //       }
+  //     }
+  //     else // Pick selection ...
+  //     {
+  //       var x1 = self.x_scale.invert(self._offsetX(e) - self.options.pick_distance);
+  //       var y1 = self.y_scale.invert(self._offsetY(e) + self.options.pick_distance);
+  //       var x2 = self.x_scale.invert(self._offsetX(e) + self.options.pick_distance);
+  //       var y2 = self.y_scale.invert(self._offsetY(e) - self.options.pick_distance);
 
-        for(var i = count-1; i > -1; i--)
-        {
-          if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
-          {
-            var index = self.options.selection.indexOf(self.options.indices[i]);
-            if(index == -1)
-              self.options.selection.push(self.options.indices[i]);
-            else
-              self.options.selection.splice(index, 1);
+  //       for(var i = count-1; i > -1; i--)
+  //       {
+  //         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
+  //         {
+  //           var index = self.options.selection.indexOf(self.options.indices[i]);
+  //           if(index == -1)
+  //             self.options.selection.push(self.options.indices[i]);
+  //           else
+  //             self.options.selection.splice(index, 1);
 
-            break;
-          }
-        }
-      }
+  //           break;
+  //         }
+  //       }
+  //     }
 
-      self.start_drag = null;
-      self.end_drag = null;
+  //     self.start_drag = null;
+  //     self.end_drag = null;
 
-      self._schedule_update({render_selection:true});
-      self.element.trigger("selection-changed", [self.options.selection]);
-    });
-  },
+  //     self._schedule_update({render_selection:true});
+  //     self.element.trigger("selection-changed", [self.options.selection]);
+  //   });
+  // },
 
-  _offsetX: function(e)
-  {
-    return e.pageX - e.currentTarget.getBoundingClientRect().left - $(document).scrollLeft();
-  },
+  // _offsetX: function(e)
+  // {
+  //   return e.pageX - e.currentTarget.getBoundingClientRect().left - $(document).scrollLeft();
+  // },
 
-  _offsetY: function(e)
-  {
-    return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
-  },
+  // _offsetY: function(e)
+  // {
+  //   return e.pageY - e.currentTarget.getBoundingClientRect().top - $(document).scrollTop();
+  // },
 
   _setOption: function(key, value)
   {
@@ -226,144 +226,144 @@ $.widget("cca.scatterplot",
       this.selection_canvas.attr("height", this.options.height);
     }
 
-    if(this.updates["update_indices"])
-    {
-      this.inverse_indices = {};
-      var count = this.options.indices.length;
-      for(var i = 0; i != count; ++i)
-        this.inverse_indices[this.options.indices[i]] = i;
-    }
+    // if(this.updates["update_indices"])
+    // {
+    //   this.inverse_indices = {};
+    //   var count = this.options.indices.length;
+    //   for(var i = 0; i != count; ++i)
+    //     this.inverse_indices[this.options.indices[i]] = i;
+    // }
 
-    if(this.updates["update_x"])
-    {
-      this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + this.options.border, this.element.attr("width") - this.options.border]);
-    }
+    // if(this.updates["update_x"])
+    // {
+    //   this.x_scale = d3.scale.linear().domain([d3.min(this.options.x), d3.max(this.options.x)]).range([0 + this.options.border, this.element.attr("width") - this.options.border]);
+    // }
 
-    if(this.updates["update_y"])
-    {
-      this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([this.element.attr("height") - this.options.border, 0 + this.options.border]);
-    }
+    // if(this.updates["update_y"])
+    // {
+    //   this.y_scale = d3.scale.linear().domain([d3.min(this.options.y), d3.max(this.options.y)]).range([this.element.attr("height") - this.options.border, 0 + this.options.border]);
+    // }
 
-    if(this.updates["update_color_domain"])
-    {
-      var v_min = d3.min(this.options.v);
-      var v_max = d3.max(this.options.v);
-      var domain = []
-      var domain_scale = d3.scale.linear().domain([0, this.options.color.domain().length]).range([v_min, v_max]);
-      for(var i in this.options.color.domain())
-        domain.push(domain_scale(i));
-      this.options.color.domain(domain);
-    }
+    // if(this.updates["update_color_domain"])
+    // {
+    //   var v_min = d3.min(this.options.v);
+    //   var v_max = d3.max(this.options.v);
+    //   var domain = []
+    //   var domain_scale = d3.scale.linear().domain([0, this.options.color.domain().length]).range([v_min, v_max]);
+    //   for(var i in this.options.color.domain())
+    //     domain.push(domain_scale(i));
+    //   this.options.color.domain(domain);
+    // }
 
-    var width = this.element.attr("width");
-    var height = this.element.attr("height");
+    // var width = this.element.attr("width");
+    // var height = this.element.attr("height");
 
-    if(this.updates["render_data"])
-    {
-      this.data_context.setTransform(1, 0, 0, 1, 0, 0);
-      this.data_context.clearRect(0, 0, width, height);
+    // if(this.updates["render_data"])
+    // {
+    //   this.data_context.setTransform(1, 0, 0, 1, 0, 0);
+    //   this.data_context.clearRect(0, 0, width, height);
 
-      // Draw labels ...
-      this.data_context.font = "10pt Arial";
-      this.data_context.textAlign = "center";
-      this.data_context.fillStyle = "black";
+    //   // Draw labels ...
+    //   this.data_context.font = "10pt Arial";
+    //   this.data_context.textAlign = "center";
+    //   this.data_context.fillStyle = "black";
 
-      this.data_context.save();
-      this.data_context.textBaseline = "alphabetic";
-      this.data_context.translate(width / 2, height - 5);
-      this.data_context.fillText("Input Metavariable", 0, 0);
-      this.data_context.restore();
+    //   this.data_context.save();
+    //   this.data_context.textBaseline = "alphabetic";
+    //   this.data_context.translate(width / 2, height - 5);
+    //   this.data_context.fillText("Input Metavariable", 0, 0);
+    //   this.data_context.restore();
 
-      this.data_context.save();
-      this.data_context.textBaseline = "top";
-      this.data_context.translate(5, height / 2);
-      this.data_context.rotate(-Math.PI / 2);
-      this.data_context.fillText("Output Metavariable", 0, 0);
-      this.data_context.restore();
+    //   this.data_context.save();
+    //   this.data_context.textBaseline = "top";
+    //   this.data_context.translate(5, height / 2);
+    //   this.data_context.rotate(-Math.PI / 2);
+    //   this.data_context.fillText("Output Metavariable", 0, 0);
+    //   this.data_context.restore();
 
-      var count = this.options.x.length;
-      var x = this.options.x;
-      var y = this.options.y;
-      var v = this.options.v;
-      var indices = this.options.indices;
-      var color = this.options.color;
+    //   var count = this.options.x.length;
+    //   var x = this.options.x;
+    //   var y = this.options.y;
+    //   var v = this.options.v;
+    //   var indices = this.options.indices;
+    //   var color = this.options.color;
 
-      // Draw points using rectangles ...
-      if(count < 50000)
-      {
-        var cx, cy,
-         square_size = 8,
-         border_width = 1,
-         half_border_width = border_width / 2,
-         fillWidth = square_size - (2 * border_width),
-         fillHeight = fillWidth,
-         strokeWidth = square_size - border_width,
-         strokeHeight = strokeWidth;
+    //   // Draw points using rectangles ...
+    //   if(count < 50000)
+    //   {
+    //     var cx, cy,
+    //      square_size = 8,
+    //      border_width = 1,
+    //      half_border_width = border_width / 2,
+    //      fillWidth = square_size - (2 * border_width),
+    //      fillHeight = fillWidth,
+    //      strokeWidth = square_size - border_width,
+    //      strokeHeight = strokeWidth;
 
-        for(var i = 0; i != count; ++i)
-        {
-          cx = Math.round( this.x_scale(x[i]) - (square_size/2) - border_width );
-          cy = Math.round( this.y_scale(y[i]) - (square_size/2) - border_width );
-          this.data_context.fillStyle = color(v[indices[i]]);
-          this.data_context.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
-          this.data_context.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
-        }
-      }
-      // Draw points using tiny rectangles ...
-      else
-      {
-        var size = 2;
-        var offset = size / 2;
-        for(var i = 0; i != count; ++i)
-        {
-          this.data_context.fillStyle = color(v[indices[i]]);
-          this.data_context.fillRect(Math.round(this.x_scale(x[i]) - offset), Math.round(this.y_scale(y[i]) - offset), size, size);
-        }
-      }
-    }
+    //     for(var i = 0; i != count; ++i)
+    //     {
+    //       cx = Math.round( this.x_scale(x[i]) - (square_size/2) - border_width );
+    //       cy = Math.round( this.y_scale(y[i]) - (square_size/2) - border_width );
+    //       this.data_context.fillStyle = color(v[indices[i]]);
+    //       this.data_context.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
+    //       this.data_context.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+    //     }
+    //   }
+    //   // Draw points using tiny rectangles ...
+    //   else
+    //   {
+    //     var size = 2;
+    //     var offset = size / 2;
+    //     for(var i = 0; i != count; ++i)
+    //     {
+    //       this.data_context.fillStyle = color(v[indices[i]]);
+    //       this.data_context.fillRect(Math.round(this.x_scale(x[i]) - offset), Math.round(this.y_scale(y[i]) - offset), size, size);
+    //     }
+    //   }
+    // }
 
-    if(this.updates["render_selection"])
-    {
-      var x = this.options.x;
-      var y = this.options.y;
-      var v = this.options.v;
-      var color = this.options.color;
-      var indices = this.options.indices;
+    // if(this.updates["render_selection"])
+    // {
+    //   var x = this.options.x;
+    //   var y = this.options.y;
+    //   var v = this.options.v;
+    //   var color = this.options.color;
+    //   var indices = this.options.indices;
 
-      this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
-      this.selection_context.clearRect(0, 0, width, height);
+    //   this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
+    //   this.selection_context.clearRect(0, 0, width, height);
 
-      var selection = this.options.selection;
-      var selection_count = selection.length;
-      var cx, cy,
-         square_size = 16,
-         border_width = 2,
-         half_border_width = border_width / 2,
-         fillWidth = fillHeight = square_size - (2 * border_width),
-         strokeWidth = strokeHeight = square_size - border_width;
+    //   var selection = this.options.selection;
+    //   var selection_count = selection.length;
+    //   var cx, cy,
+    //      square_size = 16,
+    //      border_width = 2,
+    //      half_border_width = border_width / 2,
+    //      fillWidth = fillHeight = square_size - (2 * border_width),
+    //      strokeWidth = strokeHeight = square_size - border_width;
 
-      this.selection_context.strokeStyle = "black";
-      this.selection_context.lineWidth = border_width;
+    //   this.selection_context.strokeStyle = "black";
+    //   this.selection_context.lineWidth = border_width;
 
-      for(var i = 0; i != selection_count; ++i)
-      {
-        var global_index = selection[i];
-        var local_index = this.inverse_indices[global_index];
-        this.selection_context.fillStyle = color(v[global_index]);
-        cx = Math.round( this.x_scale(x[local_index]) - (square_size/2) - border_width );
-        cy = Math.round( this.y_scale(y[local_index]) - (square_size/2) - border_width );
-        this.selection_context.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
-        this.selection_context.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
-      }
-    }
+    //   for(var i = 0; i != selection_count; ++i)
+    //   {
+    //     var global_index = selection[i];
+    //     var local_index = this.inverse_indices[global_index];
+    //     this.selection_context.fillStyle = color(v[global_index]);
+    //     cx = Math.round( this.x_scale(x[local_index]) - (square_size/2) - border_width );
+    //     cy = Math.round( this.y_scale(y[local_index]) - (square_size/2) - border_width );
+    //     this.selection_context.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
+    //     this.selection_context.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+    //   }
+    // }
 
-    if(this.updates["render_data"] || this.updates["render_selection"])
-    {
-      this.main_context.clearRect(0, 0, width, height);
-      this.main_context.drawImage(this.data_canvas.get(0), 0, 0);
-      this.main_context.drawImage(this.selection_canvas.get(0), 0, 0);
-    }
+    // if(this.updates["render_data"] || this.updates["render_selection"])
+    // {
+    //   this.main_context.clearRect(0, 0, width, height);
+    //   this.main_context.drawImage(this.data_canvas.get(0), 0, 0);
+    //   this.main_context.drawImage(this.selection_canvas.get(0), 0, 0);
+    // }
 
-    this.updates = {}
+    // this.updates = {}
   }
 });
