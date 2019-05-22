@@ -184,7 +184,6 @@ export default class ControlsButtonUpdateTable extends Component {
   onSelectFile = (selectedPath, selectedPathType, file) => {
     // this.state.selectedPath, this.state.selectedPathType
     // type is either 'd' for directory or 'f' for file
-    console.log(selectedPathType);
     if(selectedPathType === 'f') {
       this.setState({files:file, disabled:false, selected_path:selectedPath});
     }
