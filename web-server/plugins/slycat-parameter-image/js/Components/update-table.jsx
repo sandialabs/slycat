@@ -33,7 +33,7 @@ export default class ControlsButtonUpdateTable extends Component {
           selected_path: "",
           loadingData: false,
           selectedNameIndex: 0,
-          parserType: "csv"
+          parserType: "slycat-csv-parser"
       }
       initialState = {...this.state};
   }
