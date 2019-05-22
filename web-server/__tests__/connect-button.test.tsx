@@ -7,6 +7,9 @@ interface GlobalAny extends NodeJS.Global {
 }
 const globalAny:GlobalAny = global;
 describe('when loading a nav bar',() =>{ 
+  beforeEach(() => {
+    globalAny.fetch.resetMocks()
+  })
   test('we have expected props on initial load', async () => {
     const properties: ConnectButtonProps = {
       text: 'buttonText',
@@ -106,6 +109,32 @@ describe('when loading a nav bar',() =>{
     jest.spyOn(instance, 'connect');
     await instance.connect();
     expect(instance.connect).toHaveBeenCalled();
+  });
+
+  test('we be able to call connect', async () => {
+    jest.spyOn(window, 'alert').mockImplementation(() => {console.log("test")});
+    const properties: ConnectButtonProps = {
+      text: 'buttonText',
+      callBack: jest.fn(),
+      sessionExists:false,
+      loadingData:false,
+      hostname:'testHost',
+      username:'user',
+      password:'password123'
+    };
+    //throw error
+    globalAny.fetch.mockReject(new Error('fake error message'));
+    const render = await mount(
+      <ConnectButton
+        {...properties}
+      />
+    );
+    //make our webservice call
+    const instance:any = render.instance() as any;
+    jest.spyOn(instance, 'connect');
+    await instance.connect();
+    expect(instance.connect).toBeCalled();
+    // expect(window.alert).toBeCalledWith("...");
   });
 });
 
