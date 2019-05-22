@@ -177,6 +177,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
      * @memberof RemoteFileBrowser
      */
     private browseUpByFile = (file:FileMetaData) => {
+      this.setState({selected:-1});
       // If the file is our parent directory, move up the hierarchy.
       if(file.name === "..")
       {
