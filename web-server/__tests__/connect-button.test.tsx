@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { mount } from "enzyme";
-import ConnectButton, {ConnectButtonProps, ConnectButtonState} from 'components/connectButton';
+import ConnectButton, {ConnectButtonProps, ConnectButtonState} from 'components/ConnectButton';
 interface GlobalAny extends NodeJS.Global {
   fetch: any
 }

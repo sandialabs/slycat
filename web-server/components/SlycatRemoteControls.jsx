@@ -1,7 +1,7 @@
 'use strict';
 import React, {Component} from 'react';
 import client from "js/slycat-web-client";
-import ConnectButton from 'components/connectButton.tsx';
+import ConnectButton from 'components/ConnectButton.tsx';
 
 /**
  * this class sets up and tests a remote session to an agent
@@ -10,7 +10,7 @@ export default class SlycatRemoteControls extends Component {
 
   /**
    *Creates an instance of SlycatRemoteControls.
-   * @param {callBack, connectButton} props, 
+   * @param {callBack, ConnectButton} props, 
    * callback: function
    * where hostname, username, password, and session exist are return to the callee
    * every time the hostname is changed. session exist should always be checked before 

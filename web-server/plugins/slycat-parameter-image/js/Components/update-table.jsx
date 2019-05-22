@@ -8,7 +8,7 @@ import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
-import ConnectButton from 'components/connectButton.tsx';
+import ConnectButton from 'components/ConnectButton.tsx';
 import NavBar from 'components/NavBar.tsx';
 
 let initialState={};
