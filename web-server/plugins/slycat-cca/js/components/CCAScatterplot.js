@@ -3,20 +3,20 @@ import { Provider } from 'react-redux';
 
 import d3 from "d3";
 
-import api_root from "js/slycat-api-root";
-
 class CCAScatterplot extends React.Component {
-  constructor(props) {
+  constructor(props) 
+  {
     super(props);
     this.state = {
-      component: this.props.component,
+      
     };
 
     // Create a ref to the .cca-barplot-table
     this.cca_scatterplot = React.createRef();
   }
 
-  componentDidMount() {
+  componentDidMount() 
+  {
     // Cloning the selection array because we will be modifying it as a placeholder for updating state
     // ToDo, fix this, don't update the array, just update state.
     this.selection = this.props.selection.slice();
@@ -47,7 +47,8 @@ class CCAScatterplot extends React.Component {
     this.render_data();
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate(prevProps, prevState, snapshot) 
+  {
     
   }
 
@@ -299,16 +300,10 @@ class CCAScatterplot extends React.Component {
 
   resize_canvas = () =>
   {
-    let self = this;
-  }
-
-  clickComponent = (index, e) =>
-  {
-    this.setState({component: index});
+    
   }
 
   render() {
-
     return (
       <React.Fragment>
         <React.StrictMode>

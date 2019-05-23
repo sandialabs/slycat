@@ -36,6 +36,7 @@ import CCAControlsBar from "./components/CCAControlsBar";
 import CCABarplot from "./components/CCABarplot";
 import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
+import CCALegend from "./components/CCALegend";
 import COLOR_LABELS from 'components/color-labels.js';
 
 // Wait for document ready
