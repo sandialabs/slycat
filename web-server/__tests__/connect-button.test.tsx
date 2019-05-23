@@ -5,6 +5,9 @@ import ConnectButton, {ConnectButtonProps, ConnectButtonState} from 'components/
 interface GlobalAny extends NodeJS.Global {
   fetch: any
 }
+function flushPromises(): any {
+  return new Promise(resolve => setImmediate(resolve));
+}
 const globalAny:GlobalAny = global;
 describe('when loading a nav bar',() =>{ 
   beforeEach(() => {
@@ -31,7 +34,6 @@ describe('when loading a nav bar',() =>{
 
   test('we have proper state', async () => {
     const properties: ConnectButtonProps = {
-      text: 'buttonText',
       callBack: jest.fn(),
       sessionExists:false,
       loadingData:false,
@@ -111,8 +113,8 @@ describe('when loading a nav bar',() =>{
     expect(instance.connect).toHaveBeenCalled();
   });
 
-  test('we be able to call connect', async () => {
-    jest.spyOn(window, 'alert').mockImplementation(() => {console.log("test")});
+  test('connect function should have error handling', async () => {
+    jest.spyOn(window, 'alert').mockImplementation(() => {});
     const properties: ConnectButtonProps = {
       text: 'buttonText',
       callBack: jest.fn(),
@@ -122,8 +124,6 @@ describe('when loading a nav bar',() =>{
       username:'user',
       password:'password123'
     };
-    //throw error
-    globalAny.fetch.mockReject(new Error('fake error message'));
     const render = await mount(
       <ConnectButton
         {...properties}
@@ -132,9 +132,26 @@ describe('when loading a nav bar',() =>{
     //make our webservice call
     const instance:any = render.instance() as any;
     jest.spyOn(instance, 'connect');
+    //throw error 404
+    globalAny.fetch.mockReject({status:404, statusText:'fake error message'});
     await instance.connect();
+    await flushPromises();
     expect(instance.connect).toBeCalled();
-    // expect(window.alert).toBeCalledWith("...");
+    expect(window.alert).toBeCalledWith("fake error message");
+
+    //throw error
+    globalAny.fetch.mockReject({status:403, statusText:'fake error message'});
+    await instance.connect();
+    await flushPromises();
+    expect(instance.connect).toBeCalled();
+    expect(window.alert).toBeCalledTimes(2);
+
+    //throw error
+    globalAny.fetch.mockReject({status:401, statusText:'fake error message'});
+    await instance.connect();
+    await flushPromises();
+    expect(instance.connect).toBeCalled();
+    expect(window.alert).toBeCalledTimes(3);
   });
 });
 
