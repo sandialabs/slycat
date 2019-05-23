@@ -116,11 +116,15 @@ $(document).ready(function() {
 
                     dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
 
+                    // update progress and output log
+                    $("#dac_processing_progress_bar").text("No Data Loaded (See Parse Log)");
+                    $("#dac_processing_progress_bar").width(100 + "%");
+
                 } else {
 
                     // update progress and output log
-                    $("#dac_processing_progress_bar").width(result[1] + "%");
                     $("#dac_processing_progress_bar").text(result[0]);
+                    $("#dac_processing_progress_bar").width(result[1] + "%");
 
                     // request error log
                     $.when(request.get_parameters("dac-parse-log")).then(
@@ -859,13 +863,18 @@ $(document).ready(function() {
     function subset_changed (new_subset)
     {
         // update subset and selections
-        var jump_to = selections.update_subset (new_subset.detail.new_subset);
+        var new_sel = selections.update_subset (new_subset.detail.new_subset);
 
         // re-draw curves to show new selections
         plots.draw();
 
         // re-draw scatter plot, before updating coordinates
         scatter_plot.draw();
+
+        // update change in selection
+        if (new_sel[1]) {
+            scatter_plot.toggle_difference(false);
+        }
 
         // reset zoom, if necessary
         if (new_subset.detail.zoom) {
@@ -879,8 +888,8 @@ $(document).ready(function() {
         metadata_table.select_rows();
 
         // jump to either selection or at least subset
-        if (jump_to.length > 0) {
-            metadata_table.jump_to (jump_to);
+        if (new_sel[0].length > 0) {
+            metadata_table.jump_to (new_sel[0]);
         }
 
         // bookmark subset data

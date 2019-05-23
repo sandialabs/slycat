@@ -601,3 +601,11 @@ def register_slycat_plugin(context):
                                      os.path.join(os.path.dirname(__file__), "js/dac-table-wizard.js"))
     context.register_wizard_resource("dac-table-wizard", "ui.html",
                                      os.path.join(os.path.dirname(__file__), "html/dac-table-wizard.html"))
+
+    # register add data wizard
+    context.register_wizard("dac-add-data-wizard", "New DAC Model by Adding PTS Data",
+                            require={"action": "create", "context": "model", "model-type": ["DAC"]})
+    context.register_wizard_resource("dac-add-data-wizard", "ui.js",
+                                     os.path.join(os.path.dirname(__file__), "js/dac-add-data-wizard.js"))
+    context.register_wizard_resource("dac-add-data-wizard", "ui.html",
+                                     os.path.join(os.path.dirname(__file__), "html/dac-add-data-wizard.html"))

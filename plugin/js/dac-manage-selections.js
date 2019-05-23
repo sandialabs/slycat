@@ -67,17 +67,23 @@ module.set_sel_2 = function(sel)
     selection_2 = sel;
 }
 
-// set subset mask
+// set subset mask, return new selection
+// and a flag if it is changed
 module.update_subset = function(mask)
 {
 	// set new subset mask
 	subset_mask = mask;
+
+    // check for changes in seletions due to subsetting
+    var sel_changed = false;
 
 	// remove non-subset items from selection 1, if required
 	var new_sel_1 = [];
 	for (var i = 0; i < selection_1.length; i++) {
 		if (subset_mask[selection_1[i]] == 1) {
 			new_sel_1.push(selection_1[i]);
+		} else {
+		    sel_changed = true;
 		}
 	}
 	selection_1 = new_sel_1;
@@ -87,6 +93,8 @@ module.update_subset = function(mask)
 	for (var i = 0; i < selection_2.length; i++) {
 		if (subset_mask[selection_2[i]] == 1) {
 			new_sel_2.push(selection_2[i]);
+		} else {
+		    sel_changed = true;
 		}
 	}
 	selection_2 = new_sel_2;
@@ -100,9 +108,9 @@ module.update_subset = function(mask)
 
 	// return non-empty selection, if present
 	if (selection_1.length > 0) {
-		return selection_1;
+		return [selection_1, sel_changed];
 	} else if (selection_2.length > 0) {
-		return selection_2;
+		return [selection_2, sel_changed];
 	} else {
 
 		// otherwise return subset indices
@@ -112,7 +120,7 @@ module.update_subset = function(mask)
 				subset_inds.push(i);
 			}
 		}
-		return subset_inds;
+		return [subset_inds, sel_changed];
 	}
 }
 
