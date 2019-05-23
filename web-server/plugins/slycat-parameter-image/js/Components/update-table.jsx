@@ -259,7 +259,6 @@ export default class ControlsButtonUpdateTable extends Component {
                   X
                 </button>
               </div>
-
               <div className='modal-body' id="slycat-wizard">
                 {this.state.selectedOption==='local'?
                 <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
@@ -324,7 +323,7 @@ export default class ControlsButtonUpdateTable extends Component {
           </div>
         </div>
         <ControlsButton label='Update Table' title={this.state.title} data_toggle='modal' data_target={'#' + this.state.modalId}
-                        button_style={this.props.button_style} id='controls-button-death' />
+                        button_style={this.props.button_style} id='controls-button-death'/>
       </div>
     );
   }
