@@ -16,7 +16,7 @@ exports[`when loading a nav bar we have proper state 1`] = `
 Object {
   "loadingData": false,
   "sessionExists": false,
-  "text": "buttonText",
+  "text": "Connect",
 }
 `;
 
