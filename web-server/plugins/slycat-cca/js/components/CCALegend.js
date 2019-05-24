@@ -24,12 +24,14 @@ class CCALegend extends React.Component
 
     this.update_legend_colors();
     this.update_legend_axis();
+    this.update_legend_position();
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) 
   {
     this.update_legend_colors();
     this.update_legend_axis();
+    this.update_legend_position();
   }
 
   update_legend_colors = () =>
@@ -62,6 +64,62 @@ class CCALegend extends React.Component
       .call(this.legend_axis)
       .style("font-size", this.props.axes_font_size + 'px')
       .style("font-family", this.props.axes_font_family)
+      ;
+  }
+
+  update_legend_position = () =>
+  {
+    // ToDo: need to implement this, for now just assigning a static position
+    // var total_width = Number(self.options.width);
+    // var total_height = Number(self.options.height);
+    // var width = Math.min(self.options.width, self.options.height);
+    // var height = Math.min(self.options.width, self.options.height);
+    // var rectHeight = parseInt((height - self.options.border - 40)/2);
+    // var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
+    // var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
+    // var width_offset = (total_width + x_axis_layer_width) / 2;
+
+    // if( self.legend_layer.attr("data-status") != "moved" )
+    // {
+    //   var transx = parseInt(y_axis_layer_width + 10 + width_offset);
+    //   var transy = parseInt((total_height/2)-(rectHeight/2));
+    //    self.legend_layer
+    //     .attr("transform", "translate(" + transx + "," + transy + ")")
+    //     .attr("data-transx", transx)
+    //     .attr("data-transy", transy)
+    //     ;
+    // }
+
+    // self.legend_layer.select("rect.color")
+    //   .attr("height", rectHeight)
+    //   ;
+
+    this.legend_layer
+        .attr("transform", "translate(" + 100 + "," + 50 + ")")
+        .attr("data-transx", 100)
+        .attr("data-transy", 50)
+        ;
+  }
+
+  update_v_label = () =>
+  {
+    // console.log("updating v label.");
+    this.legend_layer.selectAll(".label").remove();
+
+    let rectHeight = parseInt(this.legend_layer.select("rect.color").attr("height"));
+    let x = -15;
+    let y = rectHeight/2;
+
+    self.legend_layer.append("text")
+      .attr("class", "label")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("transform", "rotate(-90," + x +"," + y + ")")
+      .style("text-anchor", "middle")
+      .style("font-weight", "bold")
+      .style("font-size", self.options.axes_font_size + 'px')
+      .style("font-family", self.options.axes_font_family)
+      .text(self.options.v_label)
       ;
   }
 
@@ -162,6 +220,9 @@ class CCALegend extends React.Component
   }
 
   render() {
+    let label_x = -15;
+    let label_y = this.props.height / 2;
+
     return (
       <React.Fragment>
         <React.StrictMode>
@@ -173,13 +234,22 @@ class CCALegend extends React.Component
             <g className="legend" ref={this.legend_layer_ref} >
               <g className="legend-axis" ref={this.legend_axis_layer_ref}></g>
               <defs>
-                <linearGradient id="color-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-
-                </linearGradient>
+                <linearGradient id="color-gradient" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
               </defs>
-              <rect className="color" width="10" height="200" x="0" y="0"
+              <rect className="color" width="10" height={this.props.height} x="0" y="0"
                 style={{fill: "url(#color-gradient)"}}
               ></rect>
+              <text className="label" 
+                style={{
+                  textAnchor: "middle",
+                  fontWeight: "bold",
+                  fontSize: this.props.axes_font_size + 'px',
+                  fontFamily: this.props.axes_font_family,
+                }}
+                x={label_x} 
+                y={label_y}
+                transform={"rotate(-90," + label_x +"," + label_y + ")"}
+              >{this.props.v_label}</text>
             </g>
           </svg>
         </React.StrictMode>

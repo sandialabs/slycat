@@ -315,6 +315,8 @@ class CCAScatterplot extends React.Component {
             scale_v={this.props.v}
             axes_font_size={12}
             axes_font_family={"Arial"}
+            height={200}
+            v_label={this.props.v_label}
           ></CCALegend>
           <canvas id="scatterplot" 
             ref={this.cca_scatterplot} 

@@ -247,29 +247,29 @@ $(document).ready(function() {
       {
         table_metadata = metadata;
 
+        // Retrieve bookmarked state information ...
+        bookmarker.getState(function(state)
+        {
+          bookmark = state;
+          selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
+          colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
+
+          cca_component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
+
+          sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : null;
+          sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
+          variable_selection = bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : table_metadata["column-count"] - 1;
+
+          setup_colorswitcher();
+          setup_v();
+          setup_widgets();
+        });
+
         setup_indices();
         setup_v();
         setup_widgets();
       },
       error: artifact_missing
-    });
-
-    // Retrieve bookmarked state information ...
-    bookmarker.getState(function(state)
-    {
-      bookmark = state;
-      selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
-      colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-
-      cca_component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
-
-      sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : null;
-      sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
-      variable_selection = bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : null;
-
-      setup_colorswitcher();
-      setup_v();
-      setup_widgets();
     });
   }
 
@@ -356,13 +356,9 @@ $(document).ready(function() {
 
   function setup_v()
   {
-    if(bookmark && table_metadata)
+    if(bookmark && table_metadata && (variable_selection !== null))
     {
-      var index = table_metadata["column-count"] - 1;
-      if("variable-selection" in bookmark)
-        index = bookmark["variable-selection"];
-
-      if(index == table_metadata["column-count"] - 1)
+      if(variable_selection == table_metadata["column-count"] - 1)
       {
         var count = table_metadata["row-count"];
         v = new Float64Array(count);
@@ -377,7 +373,7 @@ $(document).ready(function() {
           mid : model._id,
           aid : "data-table",
           array : 0,
-          attribute : index,
+          attribute : variable_selection,
           success : function(result)
           {
             v = result;
@@ -480,7 +476,10 @@ $(document).ready(function() {
     }
 
     // Setup the scatterplot ...
-    if(!scatterplot_ready && bookmark && table_metadata && indices && x && y && v && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null))
+    if(!scatterplot_ready && bookmark && table_metadata && indices && x && y && v 
+      && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null)
+      && (variable_selection !== null)
+    )
     {
       scatterplot_ready = true;
 
@@ -529,6 +528,7 @@ $(document).ready(function() {
           pick_distance={3}
           gradient={$("#color-switcher").colorswitcher("get_gradient_data", colormap)}
           v_string={table_metadata["column-types"][v_index]=="string"}
+          v_label={table_metadata["column-names"][variable_selection]}
         />
       ;
 
@@ -539,7 +539,10 @@ $(document).ready(function() {
     }
 
     // Setup the table ...
-    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null) )
+    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) 
+      && (colormap !== null) && (cca_component !== null) && (variable_selection !== null)
+
+    )
     {
       table_ready = true;
 
@@ -618,7 +621,7 @@ $(document).ready(function() {
           colormap={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
           sort_variable={sort_variable}
           sort_order={sort_order}
-          variable_selection={variable_selection !== null ? variable_selection : [table_metadata["column-count"] - 1]}
+          variable_selection={[variable_selection]}
         />
       ;
 

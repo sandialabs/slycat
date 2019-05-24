@@ -1132,8 +1132,8 @@ $.widget("parameter_image.scatterplot",
       });
     }
 
-    if(self.updates["render_legend"])
-    {
+    // if(self.updates["render_legend"])
+    // {
       // var gradient = self.legend_layer.append("defs").append("linearGradient");
       // gradient.attr("id", "color-gradient")
       //   .attr("x1", "0%").attr("y1", "0%")
@@ -1148,7 +1148,7 @@ $.widget("parameter_image.scatterplot",
       //   .attr("y", 0)
       //   .style("fill", "url(#color-gradient)")
       //   ;
-    }
+    // }
 
     // if(self.updates["update_legend_colors"])
     // {
@@ -1162,32 +1162,32 @@ $.widget("parameter_image.scatterplot",
     //     ;
     // }
 
-    if(self.updates["update_legend_position"])
-    {
-      var total_width = Number(self.options.width);
-      var total_height = Number(self.options.height);
-      var width = Math.min(self.options.width, self.options.height);
-      var height = Math.min(self.options.width, self.options.height);
-      var rectHeight = parseInt((height - self.options.border - 40)/2);
-      var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
-      var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
-      var width_offset = (total_width + x_axis_layer_width) / 2;
+    // if(self.updates["update_legend_position"])
+    // {
+    //   var total_width = Number(self.options.width);
+    //   var total_height = Number(self.options.height);
+    //   var width = Math.min(self.options.width, self.options.height);
+    //   var height = Math.min(self.options.width, self.options.height);
+    //   var rectHeight = parseInt((height - self.options.border - 40)/2);
+    //   var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
+    //   var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
+    //   var width_offset = (total_width + x_axis_layer_width) / 2;
 
-      if( self.legend_layer.attr("data-status") != "moved" )
-      {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
-         self.legend_layer
-          .attr("transform", "translate(" + transx + "," + transy + ")")
-          .attr("data-transx", transx)
-          .attr("data-transy", transy)
-          ;
-      }
+    //   if( self.legend_layer.attr("data-status") != "moved" )
+    //   {
+    //     var transx = parseInt(y_axis_layer_width + 10 + width_offset);
+    //     var transy = parseInt((total_height/2)-(rectHeight/2));
+    //      self.legend_layer
+    //       .attr("transform", "translate(" + transx + "," + transy + ")")
+    //       .attr("data-transx", transx)
+    //       .attr("data-transy", transy)
+    //       ;
+    //   }
 
-      self.legend_layer.select("rect.color")
-        .attr("height", rectHeight)
-        ;
-    }
+    //   self.legend_layer.select("rect.color")
+    //     .attr("height", rectHeight)
+    //     ;
+    // }
 
     // if(self.updates["update_legend_axis"])
     // {
