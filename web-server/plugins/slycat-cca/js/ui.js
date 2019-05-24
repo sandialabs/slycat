@@ -36,7 +36,6 @@ import CCAControlsBar from "./components/CCAControlsBar";
 import CCABarplot from "./components/CCABarplot";
 import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
-import CCALegend from "./components/CCALegend";
 import COLOR_LABELS from 'components/color-labels.js';
 
 // Wait for document ready
@@ -481,7 +480,7 @@ $(document).ready(function() {
     }
 
     // Setup the scatterplot ...
-    if(!scatterplot_ready && bookmark && indices && x && y && v && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null))
+    if(!scatterplot_ready && bookmark && table_metadata && indices && x && y && v && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null))
     {
       scatterplot_ready = true;
 
@@ -528,6 +527,8 @@ $(document).ready(function() {
           border={25}
           drag_threshold={3}
           pick_distance={3}
+          gradient={$("#color-switcher").colorswitcher("get_gradient_data", colormap)}
+          v_string={table_metadata["column-types"][v_index]=="string"}
         />
       ;
 

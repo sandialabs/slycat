@@ -317,3 +317,8 @@ a
 #cca-controls {
   height: 100%;
 }
+#scatterplot {
+  position: absolute;
+  left: 0;
+  top: 0;
+}

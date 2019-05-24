@@ -3,6 +3,8 @@ import { Provider } from 'react-redux';
 
 import d3 from "d3";
 
+import CCALegend from "./CCALegend";
+
 class CCAScatterplot extends React.Component {
   constructor(props) 
   {
@@ -307,6 +309,13 @@ class CCAScatterplot extends React.Component {
     return (
       <React.Fragment>
         <React.StrictMode>
+          <CCALegend
+            gradient={this.props.gradient}
+            v_string={this.props.v_string}
+            scale_v={this.props.v}
+            axes_font_size={12}
+            axes_font_family={"Arial"}
+          ></CCALegend>
           <canvas id="scatterplot" 
             ref={this.cca_scatterplot} 
             width={this.props.width} 
@@ -318,7 +327,7 @@ class CCAScatterplot extends React.Component {
             onMouseDown={this.handle_mouse_down}
             onMouseMove={this.handle_mouse_move}
             onMouseUp={this.handle_mouse_up}
-            ></canvas>
+          ></canvas>
         </React.StrictMode>
       </React.Fragment>
     );
