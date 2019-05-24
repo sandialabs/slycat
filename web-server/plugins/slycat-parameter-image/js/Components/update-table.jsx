@@ -10,10 +10,14 @@ import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
 import ConnectButton from 'components/ConnectButton.tsx';
 import NavBar from 'components/NavBar.tsx';
+import Warning from 'components/Warning.tsx';
 
 let initialState={};
 const localNavBar = ['Locate Data', 'Upload Table'];
 const remoteNavBar = ['Locate Data', 'Choose Host', 'Select Table'];
+const warningMessage = ['Warning: By using this feature, you run the risk of corrupting your models.\n',
+  'ADDING, REMOVING, OR CHANGING THE ORDER OF COLUMNS IS CURRENTLY NOT SUPPORTED.\n',
+  'IF YOU DO ANY OF THESE THINGS, IT WILL CORRUPT ALL MODELS USING THIS DATA TABLE.\n'];
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
       super(props);
@@ -260,6 +264,9 @@ export default class ControlsButtonUpdateTable extends Component {
                 </button>
               </div>
               <div className='modal-body' id="slycat-wizard">
+
+                <Warning warningMessage={warningMessage}/>
+
                 {this.state.selectedOption==='local'?
                 <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
                 <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
