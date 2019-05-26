@@ -117,7 +117,7 @@ $(document).ready(function() {
                     dialog.ajax_error ("Server error: " + result[1] + ".")("","","");
 
                     // update progress and output log
-                    $("#dac_processing_progress_bar").text("No Data Loaded (See Parse Log)");
+                    $("#dac_processing_progress_bar").text("No Data Loaded (See Info > Parse Log)");
                     $("#dac_processing_progress_bar").width(100 + "%");
 
                 } else {

@@ -27,7 +27,7 @@ function constructor(params)
     // Alex removing default model name per team meeting discussion
     // component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
     //                         description: "", marking: markings.preselected()});
-    component.model = mapping.fromJS({_id: null, name: "",
+    component.model = mapping.fromJS({_id: null, name: "Unfinished Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
 
     // DAC generic format file selections
@@ -610,6 +610,9 @@ function constructor(params)
                     // do not re-upload files
                     csv_meta_upload = true;
 
+                    // set model name back to blank
+                    component.model.name("");
+
                     // go to model naming
                     component.tab(3);
 
@@ -633,76 +636,84 @@ function constructor(params)
 
     component.finish_model = function () {
 
-        // declare import a success
-        client.put_model(
-        {
-            mid: component.model._id(),
-            name: component.model.name(),
-            description: component.model.description(),
-            marking: component.model.marking(),
-            success: function()
+        // check if name is valid
+        if (component.model.name() == "") {
+
+            dialog.ajax_error("Please provide a non-empty model name.")("","","");
+
+        } else {
+
+            // declare import a success
+            client.put_model(
             {
-                client.post_model_finish({
                 mid: component.model._id(),
-                success: function() {
+                name: component.model.name(),
+                description: component.model.description(),
+                marking: component.model.marking(),
+                success: function()
+                {
+                    client.post_model_finish({
+                    mid: component.model._id(),
+                    success: function() {
 
-                        // for pts format we launch a thread to do the work
-                        if (component.dac_format() == "pts") {
+                            // for pts format we launch a thread to do the work
+                            if (component.dac_format() == "pts") {
 
-                            // turn off continue button
-                            $(".dac-launch-thread").toggleClass("disabled", true);
+                                // turn off continue button
+                                $(".dac-launch-thread").toggleClass("disabled", true);
 
-                            // upload zip file
-                            var file = component.browser_zip_file.selection()[0];
-                            console.log("Uploading file: " + file.name);
+                                // upload zip file
+                                var file = component.browser_zip_file.selection()[0];
+                                console.log("Uploading file: " + file.name);
 
-                            // get csv and number digitizer parameters
-                            var csv_parm = Math.round(Number(component.csv_min_size));
-                            var dig_parm = Math.round(Number(component.min_num_dig));
+                                // get csv and number digitizer parameters
+                                var csv_parm = Math.round(Number(component.csv_min_size));
+                                var dig_parm = Math.round(Number(component.min_num_dig));
 
-                            // pass # csv files and digitizers via aids
-                            var fileObject ={
-                                pid: component.project._id(),
-                                mid: component.model._id(),
-                                file: file,
-                                aids: [[csv_parm, dig_parm], ["DAC"]],
-                                parser: "dac-zip-file-parser",
-                                progress: component.browser_zip_file.progress,
-                                progress_increment: 100,
-                                success: function(){
+                                // pass # csv files and digitizers via aids
+                                var fileObject ={
+                                    pid: component.project._id(),
+                                    mid: component.model._id(),
+                                    file: file,
+                                    aids: [[csv_parm, dig_parm], ["DAC"]],
+                                    parser: "dac-zip-file-parser",
+                                    progress: component.browser_zip_file.progress,
+                                    progress_increment: 100,
+                                    success: function(){
 
-                                        // turn on continue button
-                                        $(".dac-launch-thread").toggleClass("disabled", false);
+                                            // turn on continue button
+                                            $(".dac-launch-thread").toggleClass("disabled", false);
 
-                                        // go to model
-                                        component.go_to_model();
+                                            // go to model
+                                            component.go_to_model();
 
-                                    },
-                                error: function(){
-                                    dialog.ajax_error(
-                                        "There was a problem uploading the file: " + file)
-                                        ("","","");
-                                        $('.pts-browser-continue').toggleClass("disabled", false);
-                                    }
-                                };
-                            fileUploader.uploadFile(fileObject);
+                                        },
+                                    error: function(){
+                                        dialog.ajax_error(
+                                            "There was a problem uploading the file: " + file)
+                                            ("","","");
+                                            $('.pts-browser-continue').toggleClass("disabled", false);
+                                        }
+                                    };
+                                fileUploader.uploadFile(fileObject);
 
-                            // show message
-                            $("#dac-do-not-close-browser").show();
+                                // show message
+                                $("#dac-do-not-close-browser").show();
 
-                            // show upload
-                            component.tab(2);
+                                // show upload
+                                component.tab(2);
 
-                        } else {
+                            } else {
 
-                            // for dac-gen format we go directly to the model
-                            component.go_to_model();
+                                // for dac-gen format we go directly to the model
+                                component.go_to_model();
+                            }
                         }
-                    }
-                });
-            },
-            error: dialog.ajax_error("Error updating model."),
-        });
+                    });
+                },
+                error: dialog.ajax_error("Error updating model."),
+            });
+        }
     };
 
     // function for operating the back button in the wizard

@@ -6,7 +6,7 @@ S. Martin
 -->
 
 <div class="modal-header">
-    <h3 class="modal-title">Dial-A-Cluster Add PTS Data</h3>
+    <h3 class="modal-title">Dial-A-Cluster Combined Model</h3>
     <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
@@ -16,7 +16,7 @@ S. Martin
 <div class="modal-body">
     <ul class="nav nav-pills">
         <li class="nav-item" data-bind="css:{active:tab() == 0}" class="btn-secondary"><a class="nav-link">Model Type</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Locate Data</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Choose Models</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 2}"><a class="nav-link">Name Model</a></li>
     </ul>
 
@@ -27,43 +27,28 @@ S. Martin
         <div class="form-check" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" id="local-radio" value="new" data-bind="checked: dac_model_type">
-            Re-compute model
+            Re-compute new model.
         </label>
         </div>
         <div class="form-check" style="margin-left: 15px;">
         <label>
             <input type="radio" name="local-or-remote-radios" id="remote-radio" value="proj" data-bind="checked: dac_model_type">
-            Project onto existing model
+            <text id="dac-add-data-project-model">Project onto this model.</text>
         </label>
         </div>
     </div>
 
-    <!-- This tab is for loading the CSV/META files.  The slycat-parser-controls
-         tag indicates which type of table to load, which in our case is 'dac-table' -->
-    <div data-bind="visible:tab() == 1" class="form-horizontal">
 
-        <div style="margin-top: 40px;">
-        <label>Select CSV/META .zip file:</label>
-        <slycat-local-browser params="
-            selection:browser_zip_file.selection,
-            progress:browser_zip_file.progress,
-            progress_status:browser_zip_file.progress_status"></slycat-local-browser>
-        <slycat-parser-controls params="parser:parser_zip_file,category:'dac-add-zip-file'"></slycat-parser-controls>
-            <label id="dac-do-not-close-browser"
-                   style="display:none; color:red">Please wait for file to upload (do not close browser).</label>
-        </div>
-
-        <div style="margin-top: 30px">
-          <label>Minimum number of time points in a CSV file:</label>
-          <input class="form-control" type="number" min="2" data-bind="value: csv_min_size">
-        </div>
-
-        <div style="margin-top: 20px; margin-bottom: 20px">
-          <label>Minimum number of digitizers in a test:</label>
-          <input class="form-control" type="number" min="3" data-bind="value: min_num_dig">
-        </div>
-
+    <div data-bind="visible:tab() == 1">
+        <label><text id="dac-add-data-select-model">Select models to combine with this model.</text>
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: model_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
     </div>
+
 
     <!-- Inputs the name of the model (final tab). -->
     <div data-bind="visible:tab() == 2">
@@ -80,8 +65,8 @@ S. Martin
 <div class="modal-footer">
     <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click:back">Back</button>
     <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
-    <button class="btn btn-primary pts-browser-continue browser-continue"
-            data-bind="visible:tab() == 1,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary dac-check-compatibility-continue"
+            data-bind="visible:tab() == 1,click:check_models"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary dac-launch-thread"
             data-bind="visible:tab() == 2,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
 

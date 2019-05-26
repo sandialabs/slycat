@@ -620,7 +620,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
             # done polling
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "no data could be imported (see Info -> Parse Log for details)"])
+                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
             # quit early
             stop_event.set()

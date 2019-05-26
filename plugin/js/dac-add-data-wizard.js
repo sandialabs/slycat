@@ -23,6 +23,10 @@ function constructor(params)
     var origin_project = params.projects()[0];
     var origin_model = params.models()[0];
 
+    // global variables to store model names and ids
+    var model_names = [];
+    var model_ids = [];
+
     // tabs in wizard ui
     component.tab = ko.observable(0);
 
@@ -31,74 +35,14 @@ function constructor(params)
     // Alex removing default model name per team meeting discussion
     // component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
     //                         description: "", marking: markings.preselected()});
-    component.model = mapping.fromJS({_id: null, name: "",
+    component.model = mapping.fromJS({_id: null, name: "Unfinished Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
 
-    // DAC generic format file selections
-    component.browser_dac_file = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-    component.browser_var_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-    component.browser_time_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-    component.browser_dist_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-
-    // PTS META/CSV zip file selection
-    component.browser_zip_file = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-
-    // DAC generic parsers
-    component.parser_dac_file = ko.observable(null);
-    component.parser_var_files = ko.observable(null);
-    component.parser_time_files = ko.observable(null);
-    component.parser_dist_files = ko.observable(null);
-
-    // DAC META/CSV parser (now in zip file)
-    component.parser_zip_file = ko.observable(null);
+    // list of models in current project
+    component.model_attributes = mapping.fromJS([]);
 
     // dac-generic format is selected by default
     component.dac_model_type = ko.observable("new");
-
-    // parameters for testing PTS ingestion
-    component.csv_min_size = ko.observable(null);
-    component.min_num_dig = ko.observable(null);
-
-    var num_vars = 0;
-
-    // process pts continue or stop flag
-    var process_continue = false;
-    var already_processed = false;
-
-    // ordering and locations of .var, .time, and .dist files
-    var var_file_inds = [];
-    var time_file_inds = [];
-    var dist_file_inds = [];
-
-    // csv/meta file information
-    var csv_files = [];
-    var csv_file_names = [];
-    var meta_files = [];
-    var meta_file_names = [];
-
-    // upload state information
-    var dac_upload = false;
-    var csv_meta_upload = false;
 
     // creates a model of type "DAC"
     component.create_model = function() {
@@ -106,14 +50,14 @@ function constructor(params)
         // use large dialog format
         // $(".modal-dialog").addClass("modal-lg");
 
-        // make sure upload state says nothing uploaded
-        dac_upload = false;
-        csv_meta_upload = false;
-        var pref_defaults_upload = false;
+        // get origin model name and truncate, if necessary
+        var origin_model_name = origin_model.name();
 
-        // set PTS parameter defaults
-        component.csv_min_size = 10;
-        component.min_num_dig = 3;
+        // set labels to origin model
+        $("#dac-add-data-project-model").text('Project onto this model ("' +
+            origin_model_name + '").');
+        $("#dac-add-data-select-model").text('Select models to combine with this model ("' +
+            origin_model_name + '").');
 
         client.post_project_models({
         pid: component.project._id(),
@@ -124,8 +68,11 @@ function constructor(params)
         success: function(mid) {
             component.model._id(mid);
             assign_pref_defaults();
+            list_models();
         },
-            error: dialog.ajax_error("Error creating model.")
+        error: function() {
+            dialog.ajax_error("Error creating model.")("","","");
+        }
         });
 
     };
@@ -140,7 +87,7 @@ function constructor(params)
             client.delete_model({ mid: component.model._id() });
     };
 
-    // switches between dac generic and pts tabs
+    // switches projection and new model
     component.select_type = function() {
 
         // go to upload page
@@ -214,51 +161,114 @@ function constructor(params)
 
     }
 
-    // PTS format upload code
-    // **********************
+    // populate models to choose from
+    var list_models = function () {
 
-    // this function starts the upload process for the CSV/META format
-    component.upload_pts_format = function() {
+        client.get_project_models({
+            pid: origin_project._id(),
+            error: function () {
 
-        // check PTS parse parameters
-        var csv_parm = Math.round(Number(component.csv_min_size));
-        var dig_parm = Math.round(Number(component.min_num_dig));
-        if (csv_parm < 2 || dig_parm < 1) {
+                console.log(error);
+            },
+            success: function (result) {
 
-            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameter must be >= 1.")("","","");
+                // look through models in this project
+                for (var i = 0; i < result.length; i++) {
 
-        } else if (csv_meta_upload == true) {
+                    // is it a DAC model, and not this model, or the new model?
+                    if ((result[i]["model-type"] == "DAC") &&
+                       (result[i]["_id"] != origin_model._id()) &&
+                       (result[i]["_id"] != component.model._id())) {
 
-            // if already uploaded data, do not re-upload
-            component.tab(2);
+                        // keep model names and id
+                        model_names.push(result[i]["name"]);
+                        model_ids.push(result[i]["_id"]);
+                    }
+                }
+
+                // put model names into gui attributes
+                var attributes = [];
+                for (var i = 0; i != model_names.length; i++) {
+
+                    attributes.push({
+                        name: model_names[i],
+                        type: "string",
+                        constant: null,
+                        disabled: null,
+                        Include: false,
+                        hidden: false,
+                        selected: false,
+                        lastSelected: false,
+                        tooltip: ""
+                    });
+                };
+
+                // give access to gui
+                mapping.fromJS(attributes, component.model_attributes);
+
+            }});
+    }
+
+    // check if models are compatible
+    component.check_models = function () {
+
+        // get models selected (use empty-model for place holder
+        // to prevent conversion from list when calling server)
+        var models_selected = ['empty-model'];
+        for (var i = 0; i != model_ids.length; i++) {
+
+            // was model selected?
+            if (component.model_attributes()[i].Include()) {
+                models_selected.push(model_ids[i]);
+            }
+        }
+
+        // must select at least one model
+        if (models_selected.length == 1) {
+
+            dialog.ajax_error("Please select at least one model to include in the analysis.")("","","");
 
         } else {
 
-            // check for file selected
-            if (component.browser_zip_file.selection().length > 0) {
+            // (turn on wait button)
+            $('.dac-check-compatibility-continue').toggleClass("disabled", true);
 
-                // get file extension
-                var file = component.browser_zip_file.selection()[0];
-                var file_ext = file.name.split(".");
-                file_ext = file_ext[file_ext.length - 1];
+            // call server to check model compatibility
+            client.get_model_command({
+                mid: origin_model._id(),
+                type: "DAC",
+                command: "check_compatible_models",
+                parameters: [models_selected],
+		        success: function (result)
+		        {
+		            // turn off wait button
+		            $('.dac-check-compatibility-continue').toggleClass("disabled", false);
 
-                if (file_ext == 'zip') {
+		            // check for failure
+		            if (result[0] == "Error") {
+		                dialog.ajax_error("Error: " + result[1])("","","");
 
-                    // do not re-upload files
-                    csv_meta_upload = true;
+		            // continue with combination
+		            } else {
 
-                    // go to model naming
-                    component.tab(2);
+                        // change name back to blank
+                        component.model.name("")
 
-                } else {
-                    dialog.ajax_error("Please select a file with the .zip extension.")("","","");
-                }
+                        // go to name model
+                        component.tab(2);
+		            }
 
-            } else {
-                dialog.ajax_error("Please select PTS CSV/META .zip file.")("","","");
-            }
+		        },
+		        error: function ()
+		        {
+		        	// turn off wait button
+		            $('.dac-check-compatibility-continue').toggleClass("disabled", false);
+
+		            dialog.ajax_error("Server error: could not check model compatibility.")("","","");
+		        }
+            });
         }
-    };
+    }
 
     // wizard finish model code
     // ************************
@@ -270,68 +280,39 @@ function constructor(params)
 
     component.finish_model = function () {
 
-        // declare import a success
-        client.put_model(
-        {
-            mid: component.model._id(),
-            name: component.model.name(),
-            description: component.model.description(),
-            marking: component.model.marking(),
-            success: function()
+        // check if name is valid
+        if (component.model.name() == "") {
+
+            dialog.ajax_error("Please provide a non-empty model name.")("","","");
+
+        } else {
+
+            // declare import a success
+            client.put_model(
             {
-                client.post_model_finish({
                 mid: component.model._id(),
-                success: function() {
+                name: component.model.name(),
+                description: component.model.description(),
+                marking: component.model.marking(),
+                success: function()
+                {
+                    client.post_model_finish({
+                    mid: component.model._id(),
+                    success: function() {
 
-                        // turn off continue button
-                        $(".dac-launch-thread").toggleClass("disabled", true);
+                            // turn off continue button
+                            $(".dac-launch-thread").toggleClass("disabled", true);
 
-                        // upload zip file
-                        var file = component.browser_zip_file.selection()[0];
-                        console.log("Uploading file: " + file.name);
+                            // call web-service to combine models
+                            console.log("combine models");
 
-                        // get csv and number digitizer parameters
-                        var csv_parm = Math.round(Number(component.csv_min_size));
-                        var dig_parm = Math.round(Number(component.min_num_dig));
+                        }
+                    });
+                },
+                error: dialog.ajax_error("Error updating model."),
+            });
 
-                        // pass # csv files and digitizers via aids
-                        var fileObject ={
-                            pid: component.project._id(),
-                            mid: component.model._id(),
-                            file: file,
-                            aids: [[csv_parm, dig_parm, origin_model._id()], ["DAC"]],
-                            parser: "dac-zip-file-parser",
-                            progress: component.browser_zip_file.progress,
-                            progress_increment: 100,
-                            success: function(){
-
-                                    // turn on continue button
-                                    $(".dac-launch-thread").toggleClass("disabled", false);
-
-                                    // go to model
-                                    component.go_to_model();
-
-                                },
-                            error: function(){
-                                dialog.ajax_error(
-                                    "There was a problem uploading the file: " + file)
-                                    ("","","");
-                                    $('.pts-browser-continue').toggleClass("disabled", false);
-                                }
-                            };
-                        fileUploader.uploadFile(fileObject);
-
-                        // show message
-                        $("#dac-do-not-close-browser").show();
-
-                        // show upload
-                        component.tab(1);
-
-                    }
-                });
-            },
-            error: dialog.ajax_error("Error updating model."),
-        });
+        }
     };
 
     // function for operating the back button in the wizard
@@ -346,11 +327,6 @@ function constructor(params)
 
 return component;
 }
-
-// export default {
-//     viewModel: constructor,
-//     template: {require: "text!" + api_root + "resources/wizards/DAC/ui.html"}
-// }
 
 export default {
     viewModel: constructor,

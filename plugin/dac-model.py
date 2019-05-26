@@ -331,7 +331,7 @@ def register_slycat_plugin(context):
 
             # load desired rows using hyperchunks
             var_data = numpy.array(slycat.web.server.get_model_arrayset_data(database, model,
-                                                                             "dac-var-data", "%s/0/%s" % (database_ind, hyper_rows)))
+                "dac-var-data", "%s/0/%s" % (database_ind, hyper_rows)))
 
         # get actual time (x) range
         time_points_min = numpy.amin(time_points)
@@ -559,6 +559,91 @@ def register_slycat_plugin(context):
         return json.dumps({"success": 1})
 
 
+    # check compatibility for before combining models
+    def check_compatible_models(database, model, verb, type, command, **kwargs):
+
+        # get models to compare from database
+        model_ids_selected = kwargs["0"][1:]
+        models_selected = []
+        model_names = []
+        for i in range(len(model_ids_selected)):
+            models_selected.append(database.get("model", model_ids_selected[i]))
+            model_names.append(models_selected[-1]["name"])
+
+        # check that model is not empty
+        if "artifact:dac-variables-meta" not in model:
+            return json.dumps(["Error", 'original model "' + model["name"] +
+                               '" is invalid, cannot make a combination model. ' +
+                               'Quit this wizard and restart from a valid model.'])
+
+        # get variable name information for origin model
+        origin_var_names = slycat.web.server.get_model_arrayset_data(database, model,
+            "dac-variables-meta", "0/0/...")[0]
+
+        # load time points for origin model from database
+        origin_time_points = []
+        for j in range(len(origin_var_names)):
+            origin_time_points.append(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-time-points", "%s/0/..." % j)[0])
+
+        # get metadata table information for origin model
+        origin_metadata = slycat.web.server.get_model_arrayset_metadata(database, model,
+                            "dac-datapoints-meta")[0]["attributes"]
+
+        # check new models, one at a time
+        for i in range(len(models_selected)):
+
+            # check that model is not empty
+            if "artifact:dac-variables-meta" not in models_selected[i]:
+                return json.dumps(["Error", 'model "' + model_names[i] + '" is invalid. ' +
+                                   'Select a different model.'])
+
+            # get variable name information for new model
+            new_var_names = slycat.web.server.get_model_arrayset_data(database, models_selected[i],
+                "dac-variables-meta", "0/0/...")[0]
+
+            # same number of variables?
+            if len(origin_var_names) != len(new_var_names):
+                return json.dumps(["Error", 'model "' +
+                                   model_names[i] + '" variables do not match existing model ("' +
+                                   model["name"] + '"). Select a different model.'])
+
+            # same variable names?
+            for j in range(len(origin_var_names)):
+                if origin_var_names[j] != new_var_names[j]:
+                    return json.dumps(["Error", 'model "' +
+                                       model_names[i] + '" variables do not match existing model ("' +
+                                       model["name"] + '"). Select a different model.'])
+
+            # check time points of new model against origin model
+            for j in range(len(origin_var_names)):
+
+                # get new time points
+                new_time_points = slycat.web.server.get_model_arrayset_data(
+                    database, models_selected[i], "dac-time-points", "%s/0/..." % j)[0]
+
+                # check that the time points are the same
+                if not numpy.array_equal(origin_time_points[j], new_time_points):
+                    return json.dumps(["Error", 'model "' +
+                                       model_names[i] + '" time points do not match existing model ("' +
+                                       model["name"] + '").'])
+
+            # check metadata table
+            new_metadata = slycat.web.server.get_model_arrayset_metadata(database, models_selected[i],
+                            "dac-datapoints-meta")[0]["attributes"]
+
+            # compare type and name for metadata tables
+            for j in range(len(origin_metadata)):
+                if (origin_metadata[j]["type"] != new_metadata[j]["type"]) or \
+                   (origin_metadata[j]["name"] != new_metadata[j]["name"]):
+
+                    return json.dumps(["Error", 'model "' +
+                                       model_names[i] + '" table columns do not match existing model ("' +
+                                       model["name"] + '").'])
+
+        return json.dumps(["Success", 1])
+
+
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords',
                           os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
@@ -572,6 +657,7 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
+    context.register_model_command("GET", "DAC", "check_compatible_models", check_compatible_models)
 
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})
@@ -603,7 +689,7 @@ def register_slycat_plugin(context):
                                      os.path.join(os.path.dirname(__file__), "html/dac-table-wizard.html"))
 
     # register add data wizard
-    context.register_wizard("dac-add-data-wizard", "New DAC Model by Adding PTS Data",
+    context.register_wizard("dac-add-data-wizard", "Combined Model",
                             require={"action": "create", "context": "model", "model-type": ["DAC"]})
     context.register_wizard_resource("dac-add-data-wizard", "ui.js",
                                      os.path.join(os.path.dirname(__file__), "js/dac-add-data-wizard.js"))
