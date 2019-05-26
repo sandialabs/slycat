@@ -112,16 +112,18 @@ function constructor(params)
         component.min_num_dig = 3;
 
         client.post_project_models({
-        pid: component.project._id(),
-        type: "DAC",
-        name: component.model.name(),
-        description: component.model.description(),
-        marking: component.model.marking(),
-        success: function(mid) {
-            component.model._id(mid);
-            assign_pref_defaults();
-        },
-            error: dialog.ajax_error("Error creating model.")
+            pid: component.project._id(),
+            type: "DAC",
+            name: component.model.name(),
+            description: component.model.description(),
+            marking: component.model.marking(),
+            success: function(mid) {
+                component.model._id(mid);
+                assign_pref_defaults();
+            },
+            error: function() {
+                dialog.ajax_error("Error creating model.")("","","");
+            }
         });
     };
 
@@ -659,7 +661,7 @@ function constructor(params)
                             // for pts format we launch a thread to do the work
                             if (component.dac_format() == "pts") {
 
-                                // turn off continue button
+                                // turn on continue button
                                 $(".dac-launch-thread").toggleClass("disabled", true);
 
                                 // upload zip file
@@ -681,7 +683,7 @@ function constructor(params)
                                     progress_increment: 100,
                                     success: function(){
 
-                                            // turn on continue button
+                                            // turn off continue button
                                             $(".dac-launch-thread").toggleClass("disabled", false);
 
                                             // go to model
@@ -711,7 +713,9 @@ function constructor(params)
                         }
                     });
                 },
-                error: dialog.ajax_error("Error updating model."),
+                error: function() {
+                    dialog.ajax_error("Error finishing model.")("","","");
+                }
             });
         }
     };

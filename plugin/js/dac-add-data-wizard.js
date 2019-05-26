@@ -26,6 +26,7 @@ function constructor(params)
     // global variables to store model names and ids
     var model_names = [];
     var model_ids = [];
+    var models_selected = [];
 
     // tabs in wizard ui
     component.tab = ko.observable(0);
@@ -214,7 +215,7 @@ function constructor(params)
 
         // get models selected (use empty-model for place holder
         // to prevent conversion from list when calling server)
-        var models_selected = ['empty-model'];
+        models_selected = ['empty-model'];
         for (var i = 0; i != model_ids.length; i++) {
 
             // was model selected?
@@ -230,7 +231,7 @@ function constructor(params)
 
         } else {
 
-            // (turn on wait button)
+            // turn on wait button
             $('.dac-check-compatibility-continue').toggleClass("disabled", true);
 
             // call server to check model compatibility
@@ -300,16 +301,50 @@ function constructor(params)
                     mid: component.model._id(),
                     success: function() {
 
-                            // turn off continue button
+                            // turn on wait spinner
                             $(".dac-launch-thread").toggleClass("disabled", true);
 
                             // call web-service to combine models
-                            console.log("combine models");
+                            if (component.dac_model_type() == 'new') {
+
+                                // replace "empty" model by origin model
+                                models_selected[0] = origin_model._id();
+
+                                // combine by recomputing
+                                client.get_model_command({
+                                    mid: component.model._id(),
+                                    type: "DAC",
+                                    command: "combine_models_recompute",
+                                    parameters: [models_selected],
+                                    success: function (result)
+                                    {
+                                        // turn off wait button
+                                        $('.dac-launch-thread').toggleClass("disabled", false);
+
+                                        console.log(result);
+
+                                    },
+                                    error: function ()
+                                    {
+                                        // turn off wait button
+                                        $('.dac-launch-thread').toggleClass("disabled", false);
+
+                                        dialog.ajax_error("Server error: could not combine models.")("","","");
+                                    }
+                                });
+
+                            } else {
+
+                                console.log('combine by projection');
+
+                            }
 
                         }
                     });
                 },
-                error: dialog.ajax_error("Error updating model."),
+                error: function() {
+                    dialog.ajax_error("Error finishing model.")("","","");
+                }
             });
 
         }

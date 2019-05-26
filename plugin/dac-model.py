@@ -16,6 +16,10 @@ def register_slycat_plugin(context):
     import imp
     import cherrypy
 
+    # for model combination
+    import threading
+    import sys
+    import traceback
 
     def finish(database, model):
         slycat.web.server.update_model(database, model,
@@ -644,6 +648,52 @@ def register_slycat_plugin(context):
         return json.dumps(["Success", 1])
 
 
+    # combine models by recomputing
+    def combine_models_recompute(database, model, verb, type, command, **kwargs):
+
+        # get models to compare from database
+        # (first model is origin model)
+        model_ids_selected = kwargs["0"]
+        models_selected = []
+        model_names = []
+        for i in range(len(model_ids_selected)):
+            models_selected.append(database.get("model", model_ids_selected[i]))
+            model_names.append(models_selected[-1]["name"])
+
+        # start thread to do actual work
+        stop_event = threading.Event()
+        thread = threading.Thread(target=combine_models_recompute_thread,
+                                  args=(database, model, models_selected,
+                                        model_ids_selected, model_names, stop_event))
+        thread.start()
+
+        return json.dumps(["Success", 1])
+
+    # thread that does actual work for combine by recomputing
+    def combine_models_recompute_thread(database, model, models_selected,
+                                        model_ids_selected, model_names, stop_event):
+
+        # put entire thread into a try-except block in order to print
+        # errors to cherrypy.log.error
+        try:
+
+            # load variable metadata
+
+
+            cherrypy.log.error("started thread")
+
+            # start thread for combining models
+            cherrypy.log.error(str(model_names))
+
+            # done -- destroy the thread
+            stop_event.set()
+
+        except Exception as e:
+
+            # print error to cherrypy.log.error
+            cherrypy.log.error(traceback.format_exc())
+
+
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords',
                           os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
@@ -658,6 +708,7 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
     context.register_model_command("GET", "DAC", "check_compatible_models", check_compatible_models)
+    context.register_model_command("GET", "DAC", "combine_models_recompute", combine_models_recompute)
 
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})

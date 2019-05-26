@@ -5,6 +5,10 @@
 # Reads in dial-a-cluster data files from a directory.  Modified from
 # slycat-csv-to-cca-model.py.
 #
+# NOTE: This script is no longer compatible witht he single sign on
+# version of slycat, but will still work with a local copy running
+# in docker.  As of 5/26/2019.
+#
 # S. Martin
 # 11/12/2014
 
@@ -14,7 +18,6 @@ to the Slycat Web Server."""
 import dac_compute_coords as dac
 
 import numpy
-from scipy import optimize
 import slycat.web.client
 import os
 
@@ -89,7 +92,7 @@ if meta_var_col_names[3] != "Plot Type":
 # check to see if alpha_parms.pref file exists
 if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
 
-	# load file
+    # load file
     with open(arguments.dir + '/pref/alpha_parms.pref', 'r') as stream:
         alpha_file = [row.split(',') for row in stream]
     print "Reading alpha_parms.pref file ..."
@@ -118,9 +121,9 @@ if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
     alpha_order = alpha_file_cols[1].astype(numpy.int64) - 1
     
 else:
-	print "No alpha_parms.pref file, constructing defaults ..."
-	alpha_parms = numpy.ones(num_vars)
-	alpha_order = numpy.arange(0,num_vars)
+    print "No alpha_parms.pref file, constructing defaults ..."
+    alpha_parms = numpy.ones(num_vars)
+    alpha_order = numpy.arange(0,num_vars)
 	
 # make sure parameters are lists (to push as model parameters)
 alpha_parms = alpha_parms.tolist()
@@ -145,8 +148,8 @@ if os.path.isfile(arguments.dir + '/pref/variable_defaults.pref'):
     var_plot_order = numpy.array(default_row, dtype="int64") - 1
     
 else:
-	print "No variable_defaults.pref file found, constructing defaults ..."
-	var_plot_order = numpy.arange(0,3)
+    print "No variable_defaults.pref file found, constructing defaults ..."
+    var_plot_order = numpy.arange(0,3)
 
 # make sure parameters are lists (to push as model parameters)
 var_plot_order = var_plot_order.tolist()
@@ -245,7 +248,7 @@ for i in range(num_vars):
     
     # check that variable_i has the right number of data points
     if len(variable_i_file) != num_time_series:
-	    raise Exception ('variable_' + str(i + 1) + 
+        raise Exception ('variable_' + str(i + 1) +
 	        '.var file has wrong number of data points.')
     
     # create a matrix each row has same number of time points
@@ -283,69 +286,14 @@ for i in range(num_vars):
     # store in list of distance matrices
     var_dist.append(var_dist_i)
 
-# compute all distances based coordinates for scaling
-#####################################################
+# initial mds and alpha cluster computations
+############################################
 
-print "Computing MDS scale factors ..."
-full_mds_coords = dac.compute_coords(var_dist, numpy.ones(len(alpha_parms)))
-full_mds_coords = full_mds_coords[0][:,0:3]
+print "Computing initial MDS coordinates ..."
+mds_coords, full_mds_coords = dac.init_coords(var_dist)
 
-# compute preliminary coordinate representation
-###############################################
-
-# keep only first 3 coordinates
-print "Computing MDS coordinates ..."
-unscaled_mds_coords = dac.compute_coords(var_dist, numpy.array(alpha_parms))
-unscaled_mds_coords = unscaled_mds_coords[0][:,0:3]
-
-# scale using full coordinates
-mds_coords = dac.scale_coords(unscaled_mds_coords, full_mds_coords)
-
-# compute cluster button alpha values
-#####################################
-
-# form a matrix with each distance matrix as a column (this is U matrix)
-all_dist_mat = numpy.zeros((num_time_series * num_time_series, num_vars))
-for i in range(num_vars):
-    all_dist_mat[:,i] = numpy.squeeze(numpy.reshape(var_dist[i], 
-        (num_time_series * num_time_series,1)))
-
-# for each quantitative meta variable, compute distances as columns (V matrices)
-prop_dist_mats = []    # store as a list of numpy columns
-num_meta_cols = len(meta_column_types)
-for i in range(num_meta_cols):
-    if meta_column_types[i] == "float64":
-                
-        # compute pairwise distance matrix for property i
-        prop_dist_mat_i = numpy.absolute(
-            numpy.transpose(numpy.tile(meta_columns[i],
-            (num_time_series,1))) - numpy.tile(meta_columns[i],
-            (num_time_series,1)))
-        prop_dist_vec_i = numpy.squeeze(numpy.reshape(prop_dist_mat_i,
-            (num_time_series * num_time_series,1)))
-            
-        # make sure we don't divide by 0
-        prop_dist_vec_max_i = numpy.amax(prop_dist_vec_i)
-        if prop_dist_vec_max_i <= numpy.finfo(float).eps:
-            prop_dist_vec_max_i = 1.0
-        prop_dist_mats.append(prop_dist_vec_i/prop_dist_vec_max_i)
-        
-    else:
-        prop_dist_mats.append(0)
-
-# compute NNLS cluster button alpha values
-alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
-print "Computing alpha values for property clusters ..."
-for i in range(num_meta_cols):
-    if meta_column_types[i] == "float64":
-        beta_i = optimize.nnls(all_dist_mat, prop_dist_mats[i])
-        alpha_i = numpy.sqrt(beta_i[0])
-        
-        # again don't divide by zero
-        alpha_max_i = numpy.amax(alpha_i)
-        if alpha_max_i <= numpy.finfo(float).eps:
-            alpha_max_i = 1
-        alpha_cluster_mat[i,:] = alpha_i/alpha_max_i
+print "Computing alpha clustser values ..."
+alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)
 
 # upload all variables to slycat web server
 ###########################################
@@ -535,4 +483,3 @@ connection.join_model(mid)
 
 # Supply the user with a direct link to the new model.
 slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
-
