@@ -13,10 +13,11 @@ import URI from "urijs";
 import * as chunker from "js/chunker";
 // import "./cca-table";
 // import "./cca-legend";
-import "./cca-controls";
+// import "./cca-controls";
 // import "./cca-barplot";
 // import "./cca-scatterplot";
-import "./color-switcher";
+// import "./color-switcher";
+import color_maps from "js/slycat-color-maps";
 
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
@@ -260,7 +261,7 @@ $(document).ready(function() {
           sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
           variable_selection = bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : table_metadata["column-count"] - 1;
 
-          setup_colorswitcher();
+          // setup_colorswitcher();
           setup_v();
           setup_widgets();
         });
@@ -385,10 +386,10 @@ $(document).ready(function() {
     }
   }
 
-  function setup_colorswitcher()
-  {
-    $("#color-switcher").colorswitcher({colormap:colormap});
-  }
+  // function setup_colorswitcher()
+  // {
+  //   // $("#color-switcher").colorswitcher({colormap:colormap});
+  // }
 
   function setup_widgets()
   {
@@ -420,7 +421,7 @@ $(document).ready(function() {
     {
       barplot_ready = true;
 
-      $("#barplot-pane .load-status").css("display", "none");
+      // $("#barplot-pane .load-status").css("display", "none");
 
       // $("#barplot-table").barplot({
       //   metadata: table_metadata,
@@ -483,8 +484,8 @@ $(document).ready(function() {
     {
       scatterplot_ready = true;
 
-      $("#scatterplot-pane .load-status").css("display", "none");
-      $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+      // $("#scatterplot-pane .load-status").css("display", "none");
+      $("#scatterplot-pane").css("background", color_maps.get_background(colormap).toString());
 
       // $("#scatterplot").scatterplot({
       //   indices: indices,
@@ -521,13 +522,13 @@ $(document).ready(function() {
           v={v}
           width={$("#scatterplot-pane").width()}
           height={$("#scatterplot-pane").height()}
-          color={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
+          color={color_maps.get_color_scale(colormap)}
           selection={selected_simulations}
           border={{top: 40, right: 150, bottom: 40, left: 40}}
           label_offset={{x: 25, y: 25}}
           drag_threshold={3}
           pick_distance={3}
-          gradient={$("#color-switcher").colorswitcher("get_gradient_data", colormap)}
+          gradient={color_maps.get_gradient_data(colormap)}
           v_string={table_metadata["column-types"][variable_selection]=="string"}
           v_label={table_metadata["column-names"][variable_selection]}
           font_size={'14px'}
@@ -549,7 +550,7 @@ $(document).ready(function() {
     {
       table_ready = true;
 
-      $("#table-pane .load-status").css("display", "none");
+      // $("#table-pane .load-status").css("display", "none");
 
       var other_columns = [];
       for(var i = 0; i != table_metadata["column-count"] - 1; ++i)
@@ -621,7 +622,7 @@ $(document).ready(function() {
           others={other_columns}
           component={cca_component}
           row_selection={selected_simulations}
-          colormap={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
+          colormap={color_maps.get_color_scale(colormap)}
           sort_variable={sort_variable}
           sort_order={sort_order}
           variable_selection={[variable_selection]}
@@ -665,15 +666,15 @@ $(document).ready(function() {
         color_variable = [bookmark["variable-selection"]];
       }
 
-      $("#controls-pane #controls").controls({
-        mid : model._id,
-        model_name: window.model_name,
-        aid : "data-table",
-        metadata: table_metadata,
-        color_variables: color_variables,
-        "color-variable" : color_variable,
-        selection : selected_simulations,
-      });
+      // $("#controls-pane #controls").controls({
+      //   mid : model._id,
+      //   model_name: window.model_name,
+      //   aid : "data-table",
+      //   metadata: table_metadata,
+      //   color_variables: color_variables,
+      //   "color-variable" : color_variable,
+      //   selection : selected_simulations,
+      // });
 
       // Create the React CCAControlsBar component
       const color_variable_dropdown_items = [];
@@ -739,7 +740,7 @@ $(document).ready(function() {
     // Changing the barplot variable updates the table ...
     $("#table").table("option", "variable-selection", [variable]);
     // Changing the barplot variable updates the controls ...
-    $("#controls").controls("option", "color-variable", variable);
+    // $("#controls").controls("option", "color-variable", variable);
   });
 
   // Changes to the color map ...
@@ -751,10 +752,10 @@ $(document).ready(function() {
     // $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
     // $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
     // // Changing the color map updates the scatterplot ...
-    $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-    $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_scale", colormap)});
+    // $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    // $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_scale", colormap)});
     // Changing the colormap updates the table ...
-    $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
+    // $("#table").table("option", "colormap", $("#color-switcher").colorswitcher("get_color_scale", colormap));
   });
 
   // Changes to the table variable selection ...
@@ -767,7 +768,7 @@ $(document).ready(function() {
     // Changing the table variable updates the scatterplot ...
     update_scatterplot_value(selection[0]);
     // Changing the table variable updates the controls ...
-    $("#controls").controls("option", "color-variable", selection[0]);
+    // $("#controls").controls("option", "color-variable", selection[0]);
     // Changing the table variable selection updates the legend ...
     // $("#legend").legend("option", {
     //   min: table_metadata["column-min"][selection[0]],
@@ -776,24 +777,24 @@ $(document).ready(function() {
     // });
   });
 
-  // Handle color variable selection ...
-  $("#controls").bind("color-selection-changed", function(event, variable)
-  {
-    // Log changes to the color variable ...
-    selected_variable_changed(variable);
-    // Changing the color variable updates the barplot ...
-    $("#barplot-table").barplot("option", "variable", variable);
-    // Changing the color variable updates the legend ...
-    // $("#legend").legend("option", {
-    //   min: table_metadata["column-min"][variable],
-    //   max: table_metadata["column-max"][variable],
-    //   label: table_metadata["column-names"][variable],
-    // });
-    // Changing the barplot variable updates the scatterplot ...
-    update_scatterplot_value(variable);
-    // Changing the color variable updates the table ...
-    $("#table").table("option", "variable-selection", [Number(variable)]);
-  });
+  // // Handle color variable selection ...
+  // $("#controls").bind("color-selection-changed", function(event, variable)
+  // {
+  //   // Log changes to the color variable ...
+  //   selected_variable_changed(variable);
+  //   // Changing the color variable updates the barplot ...
+  //   $("#barplot-table").barplot("option", "variable", variable);
+  //   // Changing the color variable updates the legend ...
+  //   // $("#legend").legend("option", {
+  //   //   min: table_metadata["column-min"][variable],
+  //   //   max: table_metadata["column-max"][variable],
+  //   //   label: table_metadata["column-names"][variable],
+  //   // });
+  //   // Changing the barplot variable updates the scatterplot ...
+  //   update_scatterplot_value(variable);
+  //   // Changing the color variable updates the table ...
+  //   $("#table").table("option", "variable-selection", [Number(variable)]);
+  // });
 
   function selected_colormap_changed(colormap)
   {
@@ -843,7 +844,7 @@ $(document).ready(function() {
   function selected_simulations_changed(selection)
   {
     // Changing the selection updates controls ...
-    $("#controls").controls("option", "selection", selection);
+    // $("#controls").controls("option", "selection", selection);
 
     // Logging every selected item is too slow, so just log the count instead.
     client.post_event(
