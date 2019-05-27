@@ -62,8 +62,8 @@ class CCALegend extends React.Component
     this.legend_axis_layer
       .attr("transform", "translate(" + parseInt(this.legend_layer.select("rect.color").attr("width")) + ",0)")
       .call(this.legend_axis)
-      .style("font-size", this.props.axes_font_size + 'px')
-      .style("font-family", this.props.axes_font_family)
+      .style("font-size", this.props.font_size)
+      .style("font-family", this.props.font_family)
       ;
   }
 
@@ -122,8 +122,8 @@ class CCALegend extends React.Component
       .attr("transform", "rotate(-90," + x +"," + y + ")")
       .style("text-anchor", "middle")
       .style("font-weight", "bold")
-      .style("font-size", self.options.axes_font_size + 'px')
-      .style("font-family", self.options.axes_font_family)
+      .style("font-size", this.props.font_size)
+      .style("font-family", this.props.font_family)
       .text(self.options.v_label)
       ;
   }
@@ -248,8 +248,8 @@ class CCALegend extends React.Component
                 style={{
                   textAnchor: "middle",
                   fontWeight: "bold",
-                  fontSize: this.props.axes_font_size + 'px',
-                  fontFamily: this.props.axes_font_family,
+                  fontSize: this.props.font_size,
+                  fontFamily: this.props.font_family,
                 }}
                 x={label_x} 
                 y={label_y}

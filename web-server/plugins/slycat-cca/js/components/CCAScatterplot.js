@@ -155,7 +155,7 @@ class CCAScatterplot extends React.Component {
     this.data_context.clearRect(0, 0, width, height);
 
     // Draw labels ...
-    this.data_context.font = "10pt Arial";
+    this.data_context.font = this.props.font_size + " " + this.props.font_family;
     this.data_context.textAlign = "center";
     this.data_context.fillStyle = "black";
 
@@ -319,8 +319,8 @@ class CCAScatterplot extends React.Component {
             gradient={this.props.gradient}
             v_string={this.props.v_string}
             scale_v={this.props.v}
-            axes_font_size={12}
-            axes_font_family={"Arial"}
+            font_size={this.props.font_size}
+            font_family={this.props.font_family}
             height={this.props.height - this.props.border.top - this.props.border.bottom}
             position={{
               x: this.props.width - this.props.border.left - this.props.border.right,

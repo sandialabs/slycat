@@ -530,6 +530,8 @@ $(document).ready(function() {
           gradient={$("#color-switcher").colorswitcher("get_gradient_data", colormap)}
           v_string={table_metadata["column-types"][v_index]=="string"}
           v_label={table_metadata["column-names"][variable_selection]}
+          font_size={'14px'}
+          font_family={'Arial'}
         />
       ;
 
