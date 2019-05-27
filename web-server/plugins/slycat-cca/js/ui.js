@@ -523,7 +523,7 @@ $(document).ready(function() {
           height={$("#scatterplot-pane").height()}
           color={$("#color-switcher").colorswitcher("get_color_scale", colormap)}
           selection={selected_simulations}
-          border={25}
+          border={{top: 25, right: 150, bottom: 25, left: 25}}
           drag_threshold={3}
           pick_distance={3}
           gradient={$("#color-switcher").colorswitcher("get_gradient_data", colormap)}

@@ -263,12 +263,12 @@ class CCAScatterplot extends React.Component {
 
   update_x = () =>
   {
-    this.x_scale = d3.scale.linear().domain([d3.min(this.props.x), d3.max(this.props.x)]).range([0 + this.props.border, this.main_canvas.width - this.props.border]);
+    this.x_scale = d3.scale.linear().domain([d3.min(this.props.x), d3.max(this.props.x)]).range([0 + this.props.border.left, this.main_canvas.width - this.props.border.right]);
   }
 
   update_y = () =>
   {
-    this.y_scale = d3.scale.linear().domain([d3.min(this.props.y), d3.max(this.props.y)]).range([this.main_canvas.height - this.props.border, 0 + this.props.border]);
+    this.y_scale = d3.scale.linear().domain([d3.min(this.props.y), d3.max(this.props.y)]).range([this.main_canvas.height - this.props.border.bottom, 0 + this.props.border.top]);
   }
 
   update_color_domain = () =>
