@@ -228,7 +228,7 @@ class CCABarplot extends React.Component {
             <span className="selectCCAComponent" onClick={(e) => this.clickComponent(index, e)}>
               CCA{index + 1}
             </span>
-            <span className="sortCCAComponent icon-sort-off" />
+            <span className={`sortCCAComponent ${this.props.sort.component == index ? (this.props.sort.direction == 'ascending' ? 'icon-sort-ascending' : 'icon-sort-descending') : 'icon-sort-off'}`} />
           </div>
           <div className="positiveSpacer spacer" />
         </div>

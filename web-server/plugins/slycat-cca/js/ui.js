@@ -467,6 +467,7 @@ $(document).ready(function() {
           x_loadings={x_loadings}
           y_loadings={y_loadings}
           component={cca_component}
+          sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
         />
       ;
 
