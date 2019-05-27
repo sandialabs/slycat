@@ -12,7 +12,7 @@ import * as dialog from "js/slycat-dialog";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 // import "./cca-table";
-import "./cca-legend";
+// import "./cca-legend";
 import "./cca-controls";
 // import "./cca-barplot";
 // import "./cca-scatterplot";
@@ -74,7 +74,7 @@ $(document).ready(function() {
   var barplot_ready = false;
   var scatterplot_ready = false;
   var table_ready = false;
-  var legend_ready = false;
+  // var legend_ready = false;
   var controls_ready = false;
   var previous_state = "";
 
@@ -316,16 +316,16 @@ $(document).ready(function() {
         }
       },
     },
-    east:
-    {
-      size: 130,
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if($("#legend").data("cca-legend")) {
-          $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
-        }
-      },
-    },
+    // east:
+    // {
+    //   size: 130,
+    //   resizeWhileDragging: false,
+    //   onresize_end: function() { 
+    //     if($("#legend").data("cca-legend")) {
+    //       $("#legend").legend("option", {width: $("#legend-pane").width(), height: $("#legend-pane").height()}); 
+    //     }
+    //   },
+    // },
     south:
     {
       size: $("body").height() / 2,
@@ -392,28 +392,28 @@ $(document).ready(function() {
 
   function setup_widgets()
   {
-    // Setup the legend ...
-    if(!legend_ready && bookmark && table_metadata && (colormap !== null))
-    {
-      legend_ready = true;
+    // // Setup the legend ...
+    // if(!legend_ready && bookmark && table_metadata && (colormap !== null))
+    // {
+    //   legend_ready = true;
 
-      $("#legend-pane .load-status").css("display", "none");
+    //   $("#legend-pane .load-status").css("display", "none");
 
-      $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    //   $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
 
-      var v_index = table_metadata["column-count"] - 1;
-      if("variable-selection" in bookmark)
-        v_index = bookmark["variable-selection"];
+    //   var v_index = table_metadata["column-count"] - 1;
+    //   if("variable-selection" in bookmark)
+    //     v_index = bookmark["variable-selection"];
 
-      $("#legend").legend({
-        width: $("#legend-pane").width(),
-        height: $("#legend-pane").height(),
-        gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
-        label: table_metadata["column-names"][v_index],
-        min: table_metadata["column-min"][v_index],
-        max: table_metadata["column-max"][v_index],
-      });
-    }
+    //   $("#legend").legend({
+    //     width: $("#legend-pane").width(),
+    //     height: $("#legend-pane").height(),
+    //     gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap),
+    //     label: table_metadata["column-names"][v_index],
+    //     min: table_metadata["column-min"][v_index],
+    //     max: table_metadata["column-max"][v_index],
+    //   });
+    // }
 
     // Setup the barplot ...
     if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings && (cca_component !== null))
@@ -528,7 +528,7 @@ $(document).ready(function() {
           drag_threshold={3}
           pick_distance={3}
           gradient={$("#color-switcher").colorswitcher("get_gradient_data", colormap)}
-          v_string={table_metadata["column-types"][v_index]=="string"}
+          v_string={table_metadata["column-types"][variable_selection]=="string"}
           v_label={table_metadata["column-names"][variable_selection]}
           font_size={'14px'}
           font_family={'Arial'}
@@ -729,11 +729,11 @@ $(document).ready(function() {
     // Log changes to the barplot variable selection ...
     selected_variable_changed(variable);
     // Changing the barplot variable updates the legend ...
-    $("#legend").legend("option", {
-      min: table_metadata["column-min"][variable],
-      max: table_metadata["column-max"][variable],
-      label: table_metadata["column-names"][variable],
-    });
+    // $("#legend").legend("option", {
+    //   min: table_metadata["column-min"][variable],
+    //   max: table_metadata["column-max"][variable],
+    //   label: table_metadata["column-names"][variable],
+    // });
     // Changing the barplot variable updates the scatterplot ...
     update_scatterplot_value(variable);
     // Changing the barplot variable updates the table ...
@@ -748,9 +748,9 @@ $(document).ready(function() {
     // Log changes to the selected color map ...
     selected_colormap_changed(colormap);
     // Changing the color map updates the legend ...
-    $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
-    $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
-    // Changing the color map updates the scatterplot ...
+    // $("#legend-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
+    // $("#legend").legend("option", {gradient: $("#color-switcher").colorswitcher("get_gradient_data", colormap)});
+    // // Changing the color map updates the scatterplot ...
     $("#scatterplot-pane").css("background", $("#color-switcher").colorswitcher("get_background", colormap).toString());
     $("#scatterplot").scatterplot("option", {color: $("#color-switcher").colorswitcher("get_color_scale", colormap)});
     // Changing the colormap updates the table ...
@@ -769,11 +769,11 @@ $(document).ready(function() {
     // Changing the table variable updates the controls ...
     $("#controls").controls("option", "color-variable", selection[0]);
     // Changing the table variable selection updates the legend ...
-    $("#legend").legend("option", {
-      min: table_metadata["column-min"][selection[0]],
-      max: table_metadata["column-max"][selection[0]],
-      label: table_metadata["column-names"][selection[0]],
-    });
+    // $("#legend").legend("option", {
+    //   min: table_metadata["column-min"][selection[0]],
+    //   max: table_metadata["column-max"][selection[0]],
+    //   label: table_metadata["column-names"][selection[0]],
+    // });
   });
 
   // Handle color variable selection ...
@@ -784,11 +784,11 @@ $(document).ready(function() {
     // Changing the color variable updates the barplot ...
     $("#barplot-table").barplot("option", "variable", variable);
     // Changing the color variable updates the legend ...
-    $("#legend").legend("option", {
-      min: table_metadata["column-min"][variable],
-      max: table_metadata["column-max"][variable],
-      label: table_metadata["column-names"][variable],
-    });
+    // $("#legend").legend("option", {
+    //   min: table_metadata["column-min"][variable],
+    //   max: table_metadata["column-max"][variable],
+    //   label: table_metadata["column-names"][variable],
+    // });
     // Changing the barplot variable updates the scatterplot ...
     update_scatterplot_value(variable);
     // Changing the color variable updates the table ...
