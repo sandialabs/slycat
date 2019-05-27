@@ -417,7 +417,8 @@ $(document).ready(function() {
     // }
 
     // Setup the barplot ...
-    if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings && (cca_component !== null))
+    if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings 
+      && (cca_component !== null) && (variable_selection !== null))
     {
       barplot_ready = true;
 
@@ -468,6 +469,7 @@ $(document).ready(function() {
           y_loadings={y_loadings}
           component={cca_component}
           sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
+          variable_selection={variable_selection}
         />
       ;
 

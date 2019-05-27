@@ -276,13 +276,15 @@ class CCABarplot extends React.Component {
           <div 
             className={`barplotCell col0 rowInput inputLabel \
               row${inputs_index} \
-              variable${this.props.inputs[inputs_index]}`}
+              variable${item} \
+              ${this.props.variable_selection == item ? 'selected-variable' : ''} \
+              `}
             data-loadings_index={inputs_index}
-            data-variable={this.props.inputs[inputs_index]}
+            data-variable={item}
             key={inputs_index}
           >
             <div className="wrapper">
-              {this.props.metadata["column-names"][this.props.inputs[inputs_index]]}
+              {this.props.metadata["column-names"][item]}
             </div>
           </div>
         )}
@@ -291,11 +293,13 @@ class CCABarplot extends React.Component {
 
     const input_values = 
       <div className="barplotCanvas input">
-        {this.props.inputs.map((item, inputs_index) => 
+        {this.props.inputs.map((inputs_item, inputs_index) => 
           <div 
             className={`barplotRow rowInput \
               row${inputs_index} \
-              variable${this.props.inputs[inputs_index]}`}
+              variable${this.props.inputs[inputs_index]} \
+              ${this.props.variable_selection == inputs_item ? 'selected-variable' : ''} \
+              `}
             data-loadings_index={inputs_index}
             data-variable={this.props.inputs[inputs_index]}
             key={inputs_index}
@@ -307,6 +311,7 @@ class CCABarplot extends React.Component {
                   col${x_loadings_index+1} \
                   variable${this.props.inputs[inputs_index]} \
                   ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
+                  ${this.props.variable_selection == inputs_item ? 'selected-variable' : ''} \
                   `}
                 key={x_loadings_index}
               >
@@ -338,13 +343,15 @@ class CCABarplot extends React.Component {
           <div 
             className={`barplotCell col0 rowOutput outputLabel \
               row${outputs_index + this.props.inputs.length} \
-              variable${this.props.outputs[outputs_index]}`}
+              variable${item} \
+              ${this.props.variable_selection == item ? 'selected-variable' : ''} \
+              `}
             data-loadings_index={outputs_index}
-            data-variable={this.props.outputs[outputs_index]}
+            data-variable={item}
             key={outputs_index}
           >
             <div className="wrapper">
-              {this.props.metadata["column-names"][this.props.outputs[outputs_index]]}
+              {this.props.metadata["column-names"][item]}
             </div>
           </div>
         )}
@@ -353,11 +360,13 @@ class CCABarplot extends React.Component {
 
     const output_values =
       <div className="barplotCanvas output">
-        {this.props.outputs.map((item, outputs_index) =>
+        {this.props.outputs.map((outputs_item, outputs_index) =>
           <div 
             className={`barplotRow rowOutput \
               row${outputs_index + this.props.inputs.length} \
-              variable${this.props.outputs[outputs_index]}`}
+              variable${this.props.outputs[outputs_index]} \
+              ${this.props.variable_selection == outputs_item ? 'selected-variable' : ''} \
+              `}
             data-loadings_index={outputs_index}
             data-variable={this.props.outputs[outputs_index]}
             key={outputs_index}
@@ -369,6 +378,7 @@ class CCABarplot extends React.Component {
                   col${x_loadings_index+1} \
                   variable${this.props.outputs[outputs_index]} \
                   ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
+                  ${this.props.variable_selection == outputs_item ? 'selected-variable' : ''} \
                   `}
                 key={x_loadings_index}
               >
