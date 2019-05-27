@@ -161,13 +161,19 @@ class CCAScatterplot extends React.Component {
 
     this.data_context.save();
     this.data_context.textBaseline = "alphabetic";
-    this.data_context.translate(width / 2, height - 5);
+    this.data_context.translate(
+      ((width - this.props.border.left - this.props.border.right) / 2) + this.props.border.left, 
+      height - this.props.border.bottom + this.props.label_offset.x
+    );
     this.data_context.fillText("Input Metavariable", 0, 0);
     this.data_context.restore();
 
     this.data_context.save();
     this.data_context.textBaseline = "top";
-    this.data_context.translate(5, height / 2);
+    this.data_context.translate(
+      this.props.border.left - this.props.label_offset.y, 
+      ((height - this.props.border.top - this.props.border.bottom) / 2) + this.props.border.top
+    );
     this.data_context.rotate(-Math.PI / 2);
     this.data_context.fillText("Output Metavariable", 0, 0);
     this.data_context.restore();
