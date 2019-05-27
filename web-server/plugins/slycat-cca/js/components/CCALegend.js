@@ -94,11 +94,16 @@ class CCALegend extends React.Component
     //   .attr("height", rectHeight)
     //   ;
 
-    this.legend_layer
-        .attr("transform", "translate(" + 100 + "," + 50 + ")")
-        .attr("data-transx", 100)
-        .attr("data-transy", 50)
-        ;
+    if( this.legend_layer.attr("data-status") != "moved" )
+    {
+      this.legend_layer
+          .attr("transform", "translate(" + 
+            (this.props.position.x + 110) + "," + 
+            this.props.position.y + ")")
+          .attr("data-transx", this.props.position.x + 110)
+          .attr("data-transy", this.props.position.y)
+          ;
+    }
   }
 
   update_v_label = () =>

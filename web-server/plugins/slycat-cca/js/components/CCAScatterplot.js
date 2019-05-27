@@ -321,7 +321,11 @@ class CCAScatterplot extends React.Component {
             scale_v={this.props.v}
             axes_font_size={12}
             axes_font_family={"Arial"}
-            height={200}
+            height={this.props.height - this.props.border.top - this.props.border.bottom}
+            position={{
+              x: this.props.width - this.props.border.left - this.props.border.right,
+              y: this.props.border.top
+            }}
             v_label={this.props.v_label}
           ></CCALegend>
           <canvas id="scatterplot" 
