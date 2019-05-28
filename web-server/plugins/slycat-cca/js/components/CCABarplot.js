@@ -1,5 +1,6 @@
 import React from "react";
 import { Provider } from 'react-redux';
+import _ from "lodash";
 
 class CCABarplot extends React.Component {
   constructor(props) {
@@ -10,6 +11,42 @@ class CCABarplot extends React.Component {
 
     // Create a ref to the .cca-barplot-table
     this.cca_barplot_table = React.createRef();
+
+    // Create array of objects that represent rows for inputs and outputs
+    this.inputs_rows =[];
+    this.outputs_rows = [];
+
+    this.props.inputs.map((input, input_index) => {
+      let row = {};
+      row.index = input;
+      row.name = this.props.metadata["column-names"][input]
+      this.props.x_loadings.map((x_loading, x_loading_index) => {
+        row['x_loading_' + x_loading_index] = x_loading[input_index];
+        row['x_loading_' + x_loading_index + '_abs'] = Math.abs(x_loading[input_index]);
+      });
+      this.inputs_rows.push(row);
+    });
+    this.props.outputs.map((output, output_index) => {
+      let row = {};
+      row.index = output;
+      row.name = this.props.metadata["column-names"][output]
+      this.props.y_loadings.map((y_loading, y_loading_index) => {
+        row['y_loading_' + y_loading_index] = y_loading[output_index];
+        row['y_loading_' + y_loading_index + '_abs'] = Math.abs(y_loading[output_index]);
+      });
+      this.outputs_rows.push(row);
+    });
+
+    // Sort rows
+    if(this.props.sort.component != undefined)
+    {
+      // Default sort direction to descending
+      this.sort_direction = this.props.sort.direction != undefined ? this.props.sort.direction : 'descending';
+      // Translate sort direction to lodash terms
+      let lodashDirection = this.sort_direction == 'ascending' ? 'asc' : 'desc';
+      this.inputs_rows =  _.orderBy(this.inputs_rows,  ['x_loading_' + this.props.sort.component + '_abs'], [lodashDirection]);
+      this.outputs_rows = _.orderBy(this.outputs_rows, ['y_loading_' + this.props.sort.component + '_abs'], [lodashDirection]);
+    }
   }
 
   /* Sizing table */
@@ -228,7 +265,10 @@ class CCABarplot extends React.Component {
             <span className="selectCCAComponent" onClick={(e) => this.clickComponent(index, e)}>
               CCA{index + 1}
             </span>
-            <span className={`sortCCAComponent ${this.props.sort.component == index ? (this.props.sort.direction == 'ascending' ? 'icon-sort-ascending' : 'icon-sort-descending') : 'icon-sort-off'}`} />
+            <span className={`sortCCAComponent \
+              ${this.props.sort.component == index ? 
+                (this.props.sort.direction == 'ascending' ? 'icon-sort-ascending' : 'icon-sort-descending') : 
+                'icon-sort-off'}`} />
           </div>
           <div className="positiveSpacer spacer" />
         </div>
@@ -272,19 +312,19 @@ class CCABarplot extends React.Component {
 
     const input_labels =
       <div className="barplotColumn input">
-        {this.props.inputs.map((item, inputs_index) => 
+        {this.inputs_rows.map((inputs_item, inputs_index) => 
           <div 
             className={`barplotCell col0 rowInput inputLabel \
               row${inputs_index} \
-              variable${item} \
-              ${this.props.variable_selection == item ? 'selected-variable' : ''} \
+              variable${inputs_item.index} \
+              ${this.props.variable_selection == inputs_item.index ? 'selected-variable' : ''} \
               `}
             data-loadings_index={inputs_index}
-            data-variable={item}
+            data-variable={inputs_item.index}
             key={inputs_index}
           >
             <div className="wrapper">
-              {this.props.metadata["column-names"][item]}
+              {inputs_item.name}
             </div>
           </div>
         )}
@@ -293,40 +333,40 @@ class CCABarplot extends React.Component {
 
     const input_values = 
       <div className="barplotCanvas input">
-        {this.props.inputs.map((inputs_item, inputs_index) => 
+        {this.inputs_rows.map((inputs_item, inputs_index) => 
           <div 
             className={`barplotRow rowInput \
               row${inputs_index} \
-              variable${this.props.inputs[inputs_index]} \
-              ${this.props.variable_selection == inputs_item ? 'selected-variable' : ''} \
+              variable${inputs_item.index} \
+              ${this.props.variable_selection == inputs_item.index ? 'selected-variable' : ''} \
               `}
             data-loadings_index={inputs_index}
-            data-variable={this.props.inputs[inputs_index]}
+            data-variable={inputs_item.index}
             key={inputs_index}
           >
-            {this.props.x_loadings.map((item, x_loadings_index) =>
+            {this.props.x_loadings.map((x_loadings_item, x_loadings_index) =>
               <div 
                 className={`barplotCell rowInput \
                   row${inputs_index} \
                   col${x_loadings_index+1} \
-                  variable${this.props.inputs[inputs_index]} \
+                  variable${inputs_item.index} \
                   ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
-                  ${this.props.variable_selection == inputs_item ? 'selected-variable' : ''} \
+                  ${this.props.variable_selection == inputs_item.index ? 'selected-variable' : ''} \
                   `}
                 key={x_loadings_index}
               >
                 <div className="wrapper">
                   <div className="negativeSpacer spacer">
                     <div className={`negative cca${x_loadings_index + 1}`} 
-                      style={{width: negative_bar_width(this.props.x_loadings[x_loadings_index][inputs_index])}}
+                      style={{width: negative_bar_width(inputs_item['x_loading_' + x_loadings_index])}}
                     />
                   </div>
                   <div className="barplotCellValue">
-                    {Number(this.props.x_loadings[x_loadings_index][inputs_index]).toFixed(3)}
+                    {Number(inputs_item['x_loading_' + x_loadings_index]).toFixed(3)}
                   </div>
                   <div className="positiveSpacer spacer">
                     <div className={`positive cca${x_loadings_index + 1}`} 
-                      style={{width: positive_bar_width(this.props.x_loadings[x_loadings_index][inputs_index])}}
+                      style={{width: positive_bar_width(inputs_item['x_loading_' + x_loadings_index])}}
                     />
                   </div>
                 </div>
@@ -339,19 +379,19 @@ class CCABarplot extends React.Component {
 
     const output_labels =
       <div className="barplotColumn output">
-        {this.props.outputs.map((item, outputs_index) =>
+        {this.outputs_rows.map((outputs_item, outputs_index) =>
           <div 
             className={`barplotCell col0 rowOutput outputLabel \
               row${outputs_index + this.props.inputs.length} \
-              variable${item} \
-              ${this.props.variable_selection == item ? 'selected-variable' : ''} \
+              variable${outputs_item.index} \
+              ${this.props.variable_selection == outputs_item.index ? 'selected-variable' : ''} \
               `}
             data-loadings_index={outputs_index}
-            data-variable={item}
+            data-variable={outputs_item.index}
             key={outputs_index}
           >
             <div className="wrapper">
-              {this.props.metadata["column-names"][item]}
+              {outputs_item.name}
             </div>
           </div>
         )}
@@ -360,40 +400,40 @@ class CCABarplot extends React.Component {
 
     const output_values =
       <div className="barplotCanvas output">
-        {this.props.outputs.map((outputs_item, outputs_index) =>
+        {this.outputs_rows.map((outputs_item, outputs_index) =>
           <div 
             className={`barplotRow rowOutput \
               row${outputs_index + this.props.inputs.length} \
-              variable${this.props.outputs[outputs_index]} \
-              ${this.props.variable_selection == outputs_item ? 'selected-variable' : ''} \
+              variable${outputs_item.index} \
+              ${this.props.variable_selection == outputs_item.index ? 'selected-variable' : ''} \
               `}
             data-loadings_index={outputs_index}
-            data-variable={this.props.outputs[outputs_index]}
+            data-variable={outputs_item.index}
             key={outputs_index}
           >
-            {this.props.x_loadings.map((item, x_loadings_index) =>
+            {this.props.y_loadings.map((y_loadings_item, y_loadings_index) =>
               <div 
                 className={`barplotCell rowOutput \
                   row${outputs_index + this.props.inputs.length} \
-                  col${x_loadings_index+1} \
-                  variable${this.props.outputs[outputs_index]} \
-                  ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
-                  ${this.props.variable_selection == outputs_item ? 'selected-variable' : ''} \
+                  col${y_loadings_index+1} \
+                  variable${outputs_item.index} \
+                  ${this.state.component == y_loadings_index ? 'selected-component' : ''} \
+                  ${this.props.variable_selection == outputs_item.index ? 'selected-variable' : ''} \
                   `}
-                key={x_loadings_index}
+                key={y_loadings_index}
               >
                 <div className="wrapper">
                   <div className="negativeSpacer spacer">
-                    <div className={`negative cca${x_loadings_index + 1}`} 
-                      style={{width: negative_bar_width(this.props.y_loadings[x_loadings_index][outputs_index])}}
+                    <div className={`negative cca${y_loadings_index + 1}`} 
+                      style={{width: negative_bar_width(outputs_item['y_loading_' + y_loadings_index])}}
                     />
                   </div>
                   <div className="barplotCellValue">
-                    {Number(this.props.y_loadings[x_loadings_index][outputs_index]).toFixed(3)}
+                    {Number(outputs_item['y_loading_' + y_loadings_index]).toFixed(3)}
                   </div>
                   <div className="positiveSpacer spacer">
-                    <div className={`positive cca${x_loadings_index + 1}`} 
-                      style={{width: positive_bar_width(this.props.y_loadings[x_loadings_index][outputs_index])}}
+                    <div className={`positive cca${y_loadings_index + 1}`} 
+                      style={{width: positive_bar_width(outputs_item['y_loading_' + y_loadings_index])}}
                     />
                   </div>
                 </div>

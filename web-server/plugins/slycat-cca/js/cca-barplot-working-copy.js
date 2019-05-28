@@ -49,54 +49,54 @@ $.widget("cca.barplot",
       // this.element.find(".rowOutput.selected-component").first().scrollintoview({direction: "horizontal",});
     }
 
-    this.do_component_sort = function(component, sort_order)
-    {
-      var sort_icon = $(".barplotHeaderColumn." + component_class(component) + " .sortCCAComponent", self.element);
-      $("span.sortCCAComponent", self.element).removeClass("icon-sort-descending icon-sort-ascending").addClass("icon-sort-off");
-      $(sort_icon).removeClass("icon-sort-off").addClass("icon-sort-" + sort_order);
+    // this.do_component_sort = function(component, sort_order)
+    // {
+    //   var sort_icon = $(".barplotHeaderColumn." + component_class(component) + " .sortCCAComponent", self.element);
+    //   $("span.sortCCAComponent", self.element).removeClass("icon-sort-descending icon-sort-ascending").addClass("icon-sort-off");
+    //   $(sort_icon).removeClass("icon-sort-off").addClass("icon-sort-" + sort_order);
 
-      var inputLabels  = $('.inputLabel', self.element);
-      var outputLabels = $('.outputLabel', self.element);
-      var inputRows    = $('.barplotRow.rowInput', self.element);
-      var outputRows   = $('.barplotRow.rowOutput', self.element);
+    //   var inputLabels  = $('.inputLabel', self.element);
+    //   var outputLabels = $('.outputLabel', self.element);
+    //   var inputRows    = $('.barplotRow.rowInput', self.element);
+    //   var outputRows   = $('.barplotRow.rowOutput', self.element);
 
-      inputLabels.sort(inputSortFunction).appendTo($('.barplotColumn.input', self.element));
-      inputRows.sort(inputSortFunction).appendTo($('.barplotCanvas.input', self.element));
+    //   inputLabels.sort(inputSortFunction).appendTo($('.barplotColumn.input', self.element));
+    //   inputRows.sort(inputSortFunction).appendTo($('.barplotCanvas.input', self.element));
 
-      outputLabels.sort(outputSortFunction).appendTo($('.barplotColumn.output', self.element));
-      outputRows.sort(outputSortFunction).appendTo($('.barplotCanvas.output', self.element));
+    //   outputLabels.sort(outputSortFunction).appendTo($('.barplotColumn.output', self.element));
+    //   outputRows.sort(outputSortFunction).appendTo($('.barplotCanvas.output', self.element));
 
-      self.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
+    //   self.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
 
-      self.element.trigger("component-sort-changed", [component, sort_order]);
+    //   self.element.trigger("component-sort-changed", [component, sort_order]);
 
-      function inputSortFunction(a,b){
-        var loadings = self.options.x_loadings;
-        return sortFunction(a,b,loadings);
-      }
+    //   // function inputSortFunction(a,b){
+    //   //   var loadings = self.options.x_loadings;
+    //   //   return sortFunction(a,b,loadings);
+    //   // }
 
-      function outputSortFunction(a,b){
-        var loadings = self.options.y_loadings;
-        return sortFunction(a,b,loadings);
-      }
+    //   // function outputSortFunction(a,b){
+    //   //   var loadings = self.options.y_loadings;
+    //   //   return sortFunction(a,b,loadings);
+    //   // }
 
-      function sortFunction(a,b,loadings){
-        var a_loadings_index = $(a).data('loadings_index');
-        var b_loadings_index = $(b).data('loadings_index');
+    //   // function sortFunction(a,b,loadings){
+    //   //   var a_loadings_index = $(a).data('loadings_index');
+    //   //   var b_loadings_index = $(b).data('loadings_index');
 
-        var aa = loadings[component][a_loadings_index];
-        if (isNaN(aa)) aa = 0;
-        var bb = loadings[component][b_loadings_index];
-        if (isNaN(bb)) bb = 0;
+    //   //   var aa = loadings[component][a_loadings_index];
+    //   //   if (isNaN(aa)) aa = 0;
+    //   //   var bb = loadings[component][b_loadings_index];
+    //   //   if (isNaN(bb)) bb = 0;
 
-        var result;
-        if(sort_order == 'descending')
-          result = Math.abs(bb)-Math.abs(aa);
-        else
-          result = Math.abs(aa)-Math.abs(bb);
-        return result;
-      }
-    }
+    //   //   var result;
+    //   //   if(sort_order == 'descending')
+    //   //     result = Math.abs(bb)-Math.abs(aa);
+    //   //   else
+    //   //     result = Math.abs(aa)-Math.abs(bb);
+    //   //   return result;
+    //   // }
+    // }
 
     function click_component(context, component)
     {
@@ -435,16 +435,16 @@ $.widget("cca.barplot",
   _setOption: function(key, value)
   {
     //console.log("cca.barplot._setOption()", key, value);
-    this.options[key] = value;
+    // this.options[key] = value;
 
-    if(key == "component")
-    {
-      this.select_component(value);
-    }
+    // if(key == "component")
+    // {
+    //   // this.select_component(value);
+    // }
     else if(key == "variable")
     {
-      this.element.find(".selected-variable").removeClass("selected-variable");
-      this.element.find(".variable" + value).addClass("selected-variable");
+      // this.element.find(".selected-variable").removeClass("selected-variable");
+      // this.element.find(".variable" + value).addClass("selected-variable");
       // Using scrollintoview jQuery plugin instead of browser built-in functionality (DOM's scrollIntoView() function).
       // DOM's scrollIntoView() works but has problems: 
       //   1. scrolls each time it's called, even when element is already visible, to bring it to top or bottom of scroll area.
