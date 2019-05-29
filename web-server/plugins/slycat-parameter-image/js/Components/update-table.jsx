@@ -1,7 +1,7 @@
 'use strict';
 import React, { Component } from 'react';
 import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
-import ProgressBar from 'components/ProgressBar';
+import ProgressBar from 'components/ProgressBar.tsx';
 import ControlsButton from './controls-button';
 import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
