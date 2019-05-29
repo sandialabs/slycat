@@ -127,9 +127,11 @@ $(document).ready(function() {
                     $("#dac_processing_progress_bar").width(result[1] + "%");
 
                     // request error log
-                    $.when(request.get_parameters("dac-parse-log")).then(
+                    $.when(request.get_parameters("dac-parse-log", mid)).then(
                         function(error_log)
                         {
+                            console.log(error_log);
+
                             // update text box unless user has focused on it
                             if (user_scroll == false) {
                                 // display text then scroll to bottom

@@ -12,13 +12,17 @@ def register_slycat_plugin(context):
     import os
     import slycat.web.server
     import slycat.web.server.authentication
-    import numpy
-    import imp
     import cherrypy
 
-    # for model combination
+    # to import other dac modules
+    import imp
+
+    # for computations/array manipulations
+    import numpy
+    from scipy import spatial
+
+    # for model combination via threads
     import threading
-    import sys
     import traceback
 
     def finish(database, model):
@@ -677,13 +681,137 @@ def register_slycat_plugin(context):
         # errors to cherrypy.log.error
         try:
 
-            # load variable metadata
+            # init parse error log for UI
+            parse_error_log = []
+            parse_error_log.append("Issues:\n")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
 
+            # init dac polling progress bar for UI
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Combining ...", 50.0])
 
-            cherrypy.log.error("started thread")
+            # load table metadata
+            metadata = slycat.web.server.get_model_arrayset_metadata(database,
+                            models_selected[0], "dac-datapoints-meta")[0]["attributes"]
 
-            # start thread for combining models
-            cherrypy.log.error(str(model_names))
+            # get metadata column names/types
+            meta_column_names = []
+            for i in range(len(metadata)):
+                meta_column_names.append(metadata[i]["name"])
+
+            # add column for model origin
+            meta_column_names.append("From Model")
+
+            # merge tables into new table
+            num_cols = len(meta_column_names) - 1
+            num_models = len(models_selected)
+            meta_rows = []
+            for i in range(num_models):
+
+                # get table data
+                meta_table = meta_columns = slycat.web.server.get_model_arrayset_data(database,
+                                models_selected[i], "dac-datapoints-meta", "0/.../...")
+
+                # convert to rows and append origin model
+                num_rows = len(meta_table[0])
+                for j in range(num_rows):
+                    meta_row_j = []
+                    for k in range(num_cols):
+                        meta_row_j.append(meta_table[k][j])
+                    meta_row_j.append(model_names[i])
+                    meta_rows.append(meta_row_j)
+
+            parse_error_log.append("Added new table column for model origin.")
+
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Combining ...", 53.0])
+
+            # merge editable columns
+
+            # get variable metadata table header
+            var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
+                            models_selected[0], "dac-variables-meta")[0]["attributes"]
+
+            # convert table header to list
+            meta_var_col_names = []
+            for i in range(len(var_table_meta)):
+                meta_var_col_names.append(var_table_meta[i]["name"])
+
+            # get variable table for new model
+            var_table = []
+            for i in range(len(meta_var_col_names)):
+                var_table.append(slycat.web.server.get_model_arrayset_data(database, models_selected[0],
+                    "dac-variables-meta", "0/%s/..." % i)[0])
+
+            # convert variable table columns to rows
+            meta_vars = []
+            num_vars = len(var_table[0])
+            for i in range(num_vars):
+                meta_row_i = []
+                for j in range(len(meta_var_col_names)):
+                    meta_row_i.append(var_table[j][i])
+                meta_vars.append(meta_row_i)
+
+            # copy time points into list
+            time_steps = []
+            for i in range(num_vars):
+
+                # get time points from database
+                time_steps_i = slycat.web.server.get_model_arrayset_data(
+                    database, models_selected[0], "dac-time-points", "%s/0/..." % i)[0]
+                time_steps.append(time_steps_i)
+
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Combining ...", 56.0])
+
+            # merge the variable data for all models selected
+            # and compute distance matrices
+            var_data = []
+            var_dist = []
+            for i in range(num_vars):
+
+                # get variable data for each variable
+                var_data_i = []
+                for j in range(num_models):
+
+                    var_data_j = slycat.web.server.get_model_arrayset_data(database,
+                                    models_selected[j], "dac-var-data", "%s/0/..." % i)[0]
+                    var_data_i.append(var_data_j)
+
+                # concatenate and put into list of variables
+                var_data.append(numpy.concatenate(tuple(var_data_i)))
+
+                # create pairwise distance matrix
+                dist_i = spatial.distance.pdist(var_data[-1])
+                var_dist.append(spatial.distance.squareform(dist_i))
+
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Combining ...", 58.0])
+
+            # summarize results for user
+            parse_error_log.insert(0, "Summary:\n")
+
+            # list models combined
+            models_combined = ""
+            for i in range(num_models-1):
+                models_combined += '"' + model_names[i] + '", '
+            models_combined += '"' + model_names[-1] + '".'
+            parse_error_log.insert(1, "Combined models " + models_combined)
+
+            # list out final stastics
+            parse_error_log.insert(2, "Total number of tests: " + str(len(meta_rows)) + ".")
+            parse_error_log.insert(3, "Each test has " + str(num_vars)
+                                   + " digitizer time series.\n")
+
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+            # finally, we upload the combined data
+            push.init_upload_model (database, model, parse_error_log,
+                                    meta_column_names, meta_rows,
+                                    meta_var_col_names, meta_vars,
+                                    var_data, time_steps, var_dist)
 
             # done -- destroy the thread
             stop_event.set()
@@ -697,6 +825,9 @@ def register_slycat_plugin(context):
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords',
                           os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+
+    push = imp.load_source('dac_upload_model',
+                           os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
     # register plugin with slycat           
     context.register_model("DAC", finish)

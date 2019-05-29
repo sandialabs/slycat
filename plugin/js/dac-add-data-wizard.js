@@ -321,7 +321,8 @@ function constructor(params)
                                         // turn off wait button
                                         $('.dac-launch-thread').toggleClass("disabled", false);
 
-                                        console.log(result);
+                                        // start model
+                                        component.go_to_model();
 
                                     },
                                     error: function ()
