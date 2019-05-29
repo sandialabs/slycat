@@ -1,6 +1,7 @@
 'use strict';
 import * as React from 'react';
-import client from "../js/slycat-web-client";
+import client from '../js/slycat-web-client';
+import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
 
 /**
  * @member hostname name of the host we are connecting
@@ -272,6 +273,14 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
     }
 
     public render() {
+      const options: Option[] = [{
+          text:'Comma separated values (CSV)',
+          value:'slycat-csv-parser'
+        },
+        {
+          text:'Dakota tabular',
+          value:'slycat-dakota-parser'
+      }];
       const pathStyle:any = {
         width: 'calc(100% - 44px)',
         float: 'left',
@@ -341,18 +350,11 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
             <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Loading...
           </button>}
-
-          <div className="form-group row">
-              <label className="col-sm-1 col-form-label">
-                Filetype
-              </label>
-              <div className="col-sm-10">
-                <select className="form-control" onChange={(e)=>this.props.onSelectParserCallBack(e.target.value)}>
-                <option value="slycat-csv-parser">Comma separated values (CSV)</option>
-                <option value="slycat-dakota-parser">Dakota tabular</option>
-                </select>
-              </div>
-            </div>
+          <SlycatSelector
+            onSelectCallBack={this.props.onSelectParserCallBack}
+            label={'Filetype'}
+            options={options}
+          />
         </div>
     );
     }
