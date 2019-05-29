@@ -56,6 +56,8 @@ class CCAScatterplot extends React.Component {
 
   handle_mouse_down = (e) =>
   {
+    // Prevents selecting text in legend when dragging
+    e.preventDefault();
     this.start_drag = [this._offsetX(e), this._offsetY(e)];
     this.end_drag = null;
   }
@@ -92,6 +94,16 @@ class CCAScatterplot extends React.Component {
 
   handle_mouse_up = (e) =>
   {
+    // Break out if the target was acutally inside the legend or the legend itself,
+    // otherwise letting go of the legend after a drag deselects all selected scatterplot points by 
+    // triggering this event.
+    if(document.querySelector('#legend .legend').contains(e.target))
+    {
+      return;
+    }
+
+    console.log("e.target: " + e.target);
+    console.log("e.currentTarget: " + e.currentTarget);
     if(!e.ctrlKey && !e.metaKey)
       this.selection = [];
 
@@ -315,31 +327,40 @@ class CCAScatterplot extends React.Component {
     return (
       <React.Fragment>
         <React.StrictMode>
-          <CCALegend
-            gradient={this.props.gradient}
-            v_string={this.props.v_string}
-            scale_v={this.props.v}
-            font_size={this.props.font_size}
-            font_family={this.props.font_family}
-            height={this.props.height - this.props.border.top - this.props.border.bottom}
-            position={{
-              x: this.props.width - this.props.border.left - this.props.border.right,
-              y: this.props.border.top
-            }}
-            v_label={this.props.v_label}
-          ></CCALegend>
-          <canvas id="scatterplot" 
-            ref={this.cca_scatterplot} 
-            width={this.props.width} 
-            height={this.props.height} 
-            style={{
-              width: this.props.width + 'px', 
-              height: this.props.height + 'px'
-            }}
+          <div 
+            // This container div is necessary because event handlers must be attached to a parent of both 
+            // the legend and the canvas, since the legend's svg element covers up the canvas element
+            style={{width: '100%', height: '100%'}}
             onMouseDown={this.handle_mouse_down}
             onMouseMove={this.handle_mouse_move}
             onMouseUp={this.handle_mouse_up}
-          ></canvas>
+          >
+            <CCALegend
+              gradient={this.props.gradient}
+              v_string={this.props.v_string}
+              scale_v={this.props.v}
+              font_size={this.props.font_size}
+              font_family={this.props.font_family}
+              height={this.props.height - this.props.border.top - this.props.border.bottom}
+              canvas_width={this.props.width} 
+              canvas_height={this.props.height} 
+              position={{
+                x: this.props.width - this.props.border.left - this.props.border.right,
+                y: this.props.border.top
+              }}
+              v_label={this.props.v_label}
+            ></CCALegend>
+            <canvas id="scatterplot" 
+              ref={this.cca_scatterplot} 
+              width={this.props.width} 
+              height={this.props.height} 
+              style={{
+                width: this.props.width + 'px', 
+                height: this.props.height + 'px'
+              }}
+              
+            ></canvas>
+          </div>
         </React.StrictMode>
       </React.Fragment>
     );

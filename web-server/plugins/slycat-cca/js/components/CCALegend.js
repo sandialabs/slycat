@@ -25,6 +25,32 @@ class CCALegend extends React.Component
     this.update_legend_colors();
     this.update_legend_axis();
     this.update_legend_position();
+
+    let self = this;
+    this.legend_layer.call(
+      d3.behavior.drag()
+        .on('drag', function(){
+          // Make sure mouse is inside scatterplot
+          if( 0 <= d3.event.y && d3.event.y <= self.props.canvas_height && 0 <= d3.event.x && d3.event.x <= self.props.canvas_width ){
+            var theElement = d3.select(this);
+            var transx = Number(theElement.attr("data-transx"));
+            var transy = Number(theElement.attr("data-transy"));
+            transx += d3.event.dx;
+            transy += d3.event.dy;
+            theElement.attr("data-transx", transx);
+            theElement.attr("data-transy", transy);
+            theElement.attr('transform', "translate(" + transx + ", " + transy + ")");
+          }
+        })
+        .on("dragstart", function() {
+          self.state = "moving";
+          d3.event.sourceEvent.stopPropagation(); // silence other listeners
+        })
+        .on("dragend", function() {
+          self.state = "";
+          d3.select(this).attr("data-status", "moved");
+        })
+    );
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) 
@@ -69,31 +95,6 @@ class CCALegend extends React.Component
 
   update_legend_position = () =>
   {
-    // ToDo: need to implement this, for now just assigning a static position
-    // var total_width = Number(self.options.width);
-    // var total_height = Number(self.options.height);
-    // var width = Math.min(self.options.width, self.options.height);
-    // var height = Math.min(self.options.width, self.options.height);
-    // var rectHeight = parseInt((height - self.options.border - 40)/2);
-    // var y_axis_layer_width = self.y_axis_layer.node().getBBox().width;
-    // var x_axis_layer_width = self.x_axis_layer.node().getBBox().width;
-    // var width_offset = (total_width + x_axis_layer_width) / 2;
-
-    // if( self.legend_layer.attr("data-status") != "moved" )
-    // {
-    //   var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-    //   var transy = parseInt((total_height/2)-(rectHeight/2));
-    //    self.legend_layer
-    //     .attr("transform", "translate(" + transx + "," + transy + ")")
-    //     .attr("data-transx", transx)
-    //     .attr("data-transy", transy)
-    //     ;
-    // }
-
-    // self.legend_layer.select("rect.color")
-    //   .attr("height", rectHeight)
-    //   ;
-
     if( this.legend_layer.attr("data-status") != "moved" )
     {
       this.legend_layer
@@ -206,17 +207,17 @@ class CCALegend extends React.Component
 
   handle_mouse_down = (e) =>
   {
-    
+    console.log('legend g mouse down');
   }
 
   handle_mouse_move = (e) =>
   {
-    
+    console.log('legend g mouse move');
   }
 
   handle_mouse_up = (e) =>
   {
-    
+    console.log('legend g mouse up');
   }
 
   render_data = () =>
@@ -235,8 +236,15 @@ class CCALegend extends React.Component
             ref={this.cca_legend_ref} 
             width={"100%"} 
             height={"100%"} 
+            // style={{opacity: ".99",}}
           >
-            <g className="legend" ref={this.legend_layer_ref} >
+            <g className="legend" 
+              ref={this.legend_layer_ref} 
+              // These handlers are unused currently, but might be helpful in the future
+              // onMouseDown={this.handle_mouse_down}
+              // onMouseMove={this.handle_mouse_move}
+              // onMouseUp={this.handle_mouse_up}
+            >
               <g className="legend-axis" ref={this.legend_axis_layer_ref}></g>
               <defs>
                 <linearGradient id="color-gradient" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
