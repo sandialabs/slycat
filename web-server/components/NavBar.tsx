@@ -47,9 +47,9 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState> {
 
   public render () {
     return (
-        <ul className="nav nav-pills">
-          {this.getNavItemsJSX()}
-        </ul>
+      <ul className="nav nav-pills">
+        {this.getNavItemsJSX()}
+      </ul>
     )
   }
 }

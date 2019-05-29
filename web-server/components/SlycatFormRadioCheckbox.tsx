@@ -31,12 +31,12 @@ export default class SlycatFormRadioCheckbox extends React.Component<SlycatFormR
 
   public render () {
     return (
-        <div className="form-check">
-          <label className="form-check-label" style={this.props.style} htmlFor="radio1">
-            <input type="radio" className="form-check-input" value='local' checked={this.props.checked} onChange={()=>this.props.onChange}/>
-            {this.props.text}
-          </label>
-        </div>
+      <div className="form-check">
+        <label className="form-check-label" style={this.props.style} htmlFor="radio1">
+          <input type="radio" className="form-check-input" value={this.props.value} checked={this.props.checked} onChange={(e)=>this.props.onChange(e)}/>
+          {this.props.text}
+        </label>
+      </div>
     );
   }
 }
