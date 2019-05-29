@@ -8,6 +8,7 @@ import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
+import SlycatSelector from 'components/SlycatSelector.tsx';
 import ConnectButton from 'components/ConnectButton.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
@@ -252,6 +253,14 @@ export default class ControlsButtonUpdateTable extends Component {
     return footerJSX;
   }
   render() {
+    const options = [{
+      text:'Comma separated values (CSV)',
+      value:'slycat-csv-parser'
+    },
+    {
+      text:'Dakota tabular',
+      value:'slycat-dakota-parser'
+    }];
     return (
       <div>
         <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
@@ -289,17 +298,11 @@ export default class ControlsButtonUpdateTable extends Component {
                 <div className='tab-content'>
                   <div className="form-horizontal">
                       <FileSelector handleChange = {this.handleFileSelection} />
-                    <div className="form-group row">
-                      <label className="col-sm-1 col-form-label">
-                        Filetype
-                      </label>
-                      <div className="col-sm-10">
-                        <select className="form-control" onChange={(e)=>this.onSelectParser(e.target.value)}>
-                        <option value="slycat-csv-parser">Comma separated values (CSV)</option>
-                        <option value="slycat-dakota-parser">Dakota tabular</option>
-                        </select>
-                      </div>
-                    </div>
+                      <SlycatSelector
+                        onSelectCallBack={this.props.onSelectParserCallBack}
+                        label={'Filetype'}
+                        options={options}
+                      />
                   </div>
                 </div>:null}
 
