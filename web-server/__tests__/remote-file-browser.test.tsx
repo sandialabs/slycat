@@ -4,7 +4,7 @@ import React from 'react';
 import renderer from 'react-test-renderer';
 import { mount, ReactWrapper } from 'enzyme';
 import sinon from 'sinon';
-global.$ = global.jQuery = $;
+(global as any).$ = (global as any).jQuery = $;
 // import client from "js/slycat-web-client";
 import mockData from './remoteBrowserTestData.json';
 

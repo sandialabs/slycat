@@ -3,8 +3,8 @@ import ProjectsList from "components/ProjectsList"
 import { ModelsList } from 'components/ModelsList';
 
 /**
- * @param {items} list of item objects
- * @param {type} string type
+ * @param items list of item objects
+ * @param type string type
  */
 export interface SearchWrapperProps { 
   items: Item[]
@@ -12,9 +12,9 @@ export interface SearchWrapperProps {
 }
 
 /**
- * @param {initialItems} list of Item objects
- * @param {items} list of Item objects
- * @param {searchQuery} string to regex on
+ * @param initialItems list of Item objects
+ * @param items list of Item objects
+ * @param searchQuery string to regex on
  */
 export interface SearchWrapperState {
   initialItems: Item[],

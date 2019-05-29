@@ -73,13 +73,15 @@ module.exports = {
   //   "jsx",
   //   "ts",
   //   "tsx",
-  //   "node"
+  //   "node",
+  //   "html"
   // ],
 
   // A map from regular expressions to module names that allow to stub out resources with a single module
   moduleNameMapper: {
     "^js[/](.+)": "<rootDir>/web-server/js/$1",
-    "^components[/](.+)": "<rootDir>/web-server/components/$1"
+    "^components[/](.+)": "<rootDir>/web-server/components/$1",
+    "^templates[/](.+)": "<rootDir>/web-server/templates/$1"
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -185,7 +187,6 @@ module.exports = {
   // watchPathIgnorePatterns: [],
 
   // Whether to use watchman for file crawling
-
   setupFiles: ["<rootDir>/web-server/__tests__/setupTests.js"],
   watchman: true,
   verbose: true,

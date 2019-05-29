@@ -4,6 +4,7 @@
 
 import api_root from "js/slycat-api-root";
 import URI from "urijs";
+import $ from 'jquery';
 
 var module = {};
 
