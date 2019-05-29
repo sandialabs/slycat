@@ -1,10 +1,15 @@
 import * as React from "react";
 
-
+/**
+ * @param warningMessage array of message to be displayed
+ */
 export interface WarningProps {
   warningMessage:Array<string>
 }
 
+/**
+ * takes a list of messages to be displayed as a warning
+ */
 export default class Warning  extends React.Component<WarningProps> {
   public constructor(props:WarningProps) {
     super(props);
