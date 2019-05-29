@@ -307,7 +307,10 @@ export default class ControlsButtonUpdateTable extends Component {
                 </div>:null}
 
                 {this.state.visible_tab === "2"?
-                 <SlycatRemoteControls loadingData={this.state.loadingData} callBack={this.callBack}/>
+                 <SlycatRemoteControls
+                 loadingData={this.state.loadingData} 
+                 callBack={this.callBack}
+                 />
                 :null}
 
                 <div className='slycat-progress-bar'>

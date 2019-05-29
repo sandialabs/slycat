@@ -21,8 +21,6 @@ export default class SlycatRemoteControls extends Component {
   constructor(props) {
     super(props);
     const display = this.populateDisplay();
-    
-    console.log(`loading data ${props.loadingData}`)
     this.state = {
       remote_hosts: [],
       showConnectButton: this.props.showConnectButton?this.props.showConnectButton:false,
@@ -155,8 +153,7 @@ export default class SlycatRemoteControls extends Component {
    * @memberof SlycatRemoteControls
    */
   handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      console.log('do validate');
+    if (this.state.showConnectButton && e.key === 'Enter') {
       this.connect();
     }
   }
