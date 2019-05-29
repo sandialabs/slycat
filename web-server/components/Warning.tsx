@@ -23,12 +23,11 @@ export default class Warning  extends React.Component<WarningProps> {
   getLabels = () => {
     const labels = this.props.warningMessage.map((message, i) => {
       return (
-        <div key={i}>
-          <label style={{color: 'red', fontSize:'15.5px', textAlign:'center', backgroundColor:'#FFFF99', fontWeight:'bold'}}>
+          <label key={i} style={{color: 'red', fontSize:'15.5px', textAlign:'center', backgroundColor:'#FFFF99', fontWeight:'bold'}}>
             {message}
           </label>
-        </div>
-      );})
+      );
+    });
     return labels
   }
 
