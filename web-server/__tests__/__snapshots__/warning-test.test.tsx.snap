@@ -1805,6 +1805,7 @@ Warning {
   },
   "_reactInternalInstance": Object {},
   "context": Object {},
+  "getLabels": [Function],
   "props": Object {
     "warningMessage": Array [
       "test1",

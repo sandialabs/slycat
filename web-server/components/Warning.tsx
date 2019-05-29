@@ -14,19 +14,29 @@ export default class Warning  extends React.Component<WarningProps> {
   public constructor(props:WarningProps) {
     super(props);
   }
+  
+  /**
+   * build a list of label for display based of the props warning messages
+   *
+   * @memberof Warning
+   */
+  getLabels = () => {
+    const labels = this.props.warningMessage.map((message, i) => {
+      return (
+        <div key={i}>
+          <label style={{color: 'red', fontSize:'15.5px', textAlign:'center', backgroundColor:'#FFFF99', fontWeight:'bold'}}>
+            {message}
+          </label>
+        </div>
+      );})
+    return labels
+  }
 
   render () {
     return(
       <div>
-        {this.props.warningMessage.map((message, i) => {
-          return (
-            <div key={i}>
-              <label style={{color: 'red', fontSize:'15.5px', textAlign:'center', backgroundColor:'#FFFF99', fontWeight:'bold'}}>
-                {message}
-              </label>
-            </div>
-          );})}
-        </div>
+        {this.getLabels()}
+      </div>
     );
   }
 }
