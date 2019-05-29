@@ -96,9 +96,9 @@ export default class ControlsButtonUpdateTable extends Component {
       password: newPassword
     });
   };
-  sourceSelect = (e) =>
+  sourceSelect = (value) =>
   {
-    this.setState({selectedOption:e.target.value});
+    this.setState({selectedOption:value});
   };
 
   uploadFile = () =>
