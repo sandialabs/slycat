@@ -14,11 +14,11 @@ exports[`when loading a warning message we should have a full initialization 1`]
 Warning {
   "_reactInternalFiber": FiberNode {
     "_debugHookTypes": null,
-    "_debugID": 93,
+    "_debugID": 90,
     "_debugIsCurrentlyTiming": false,
     "_debugOwner": FiberNode {
       "_debugHookTypes": null,
-      "_debugID": 92,
+      "_debugID": 89,
       "_debugIsCurrentlyTiming": false,
       "_debugOwner": null,
       "_debugSource": null,
@@ -62,7 +62,7 @@ Warning {
       "mode": 0,
       "nextEffect": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 90,
+        "_debugID": 87,
         "_debugIsCurrentlyTiming": false,
         "_debugOwner": null,
         "_debugSource": null,
@@ -70,7 +70,7 @@ Warning {
         "actualStartTime": -1,
         "alternate": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 90,
+          "_debugID": 87,
           "_debugIsCurrentlyTiming": false,
           "_debugOwner": null,
           "_debugSource": null,
@@ -99,27 +99,21 @@ Warning {
           "stateNode": Object {
             "containerInfo": <div>
               <div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test1
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test2
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test3
-                  </label>
-                </div>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test1
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test2
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test3
+                </label>
               </div>
             </div>,
             "context": Object {},
@@ -241,27 +235,21 @@ Warning {
         "stateNode": Object {
           "containerInfo": <div>
             <div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test1
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test2
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test3
-                </label>
-              </div>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test1
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test2
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test3
+              </label>
             </div>
           </div>,
           "context": Object {},
@@ -332,7 +320,7 @@ Warning {
       "ref": null,
       "return": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 90,
+        "_debugID": 87,
         "_debugIsCurrentlyTiming": false,
         "_debugOwner": null,
         "_debugSource": null,
@@ -340,7 +328,7 @@ Warning {
         "actualStartTime": -1,
         "alternate": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 90,
+          "_debugID": 87,
           "_debugIsCurrentlyTiming": false,
           "_debugOwner": null,
           "_debugSource": null,
@@ -369,27 +357,21 @@ Warning {
           "stateNode": Object {
             "containerInfo": <div>
               <div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test1
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test2
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test3
-                  </label>
-                </div>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test1
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test2
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test3
+                </label>
               </div>
             </div>,
             "context": Object {},
@@ -511,27 +493,21 @@ Warning {
         "stateNode": Object {
           "containerInfo": <div>
             <div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test1
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test2
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test3
-                </label>
-              </div>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test1
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test2
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test3
+              </label>
             </div>
           </div>,
           "context": Object {},
@@ -637,7 +613,7 @@ Warning {
     "alternate": null,
     "child": FiberNode {
       "_debugHookTypes": null,
-      "_debugID": 94,
+      "_debugID": 91,
       "_debugIsCurrentlyTiming": false,
       "_debugOwner": [Circular],
       "_debugSource": null,
@@ -646,16 +622,52 @@ Warning {
       "alternate": null,
       "child": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 95,
+        "_debugID": 92,
         "_debugIsCurrentlyTiming": false,
         "_debugOwner": [Circular],
         "_debugSource": null,
         "actualDuration": 0,
         "actualStartTime": -1,
         "alternate": null,
-        "child": FiberNode {
+        "child": null,
+        "childExpirationTime": 0,
+        "contextDependencies": null,
+        "effectTag": 0,
+        "elementType": "label",
+        "expirationTime": 0,
+        "firstEffect": null,
+        "index": 0,
+        "key": "0",
+        "lastEffect": null,
+        "memoizedProps": Object {
+          "children": "test1",
+          "style": Object {
+            "backgroundColor": "#FFFF99",
+            "color": "red",
+            "fontSize": "15.5px",
+            "fontWeight": "bold",
+            "textAlign": "center",
+          },
+        },
+        "memoizedState": null,
+        "mode": 0,
+        "nextEffect": null,
+        "pendingProps": Object {
+          "children": "test1",
+          "style": Object {
+            "backgroundColor": "#FFFF99",
+            "color": "red",
+            "fontSize": "15.5px",
+            "fontWeight": "bold",
+            "textAlign": "center",
+          },
+        },
+        "ref": null,
+        "return": [Circular],
+        "selfBaseDuration": 0,
+        "sibling": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 98,
+          "_debugID": 93,
           "_debugIsCurrentlyTiming": false,
           "_debugOwner": [Circular],
           "_debugSource": null,
@@ -669,11 +681,11 @@ Warning {
           "elementType": "label",
           "expirationTime": 0,
           "firstEffect": null,
-          "index": 0,
-          "key": null,
+          "index": 1,
+          "key": "1",
           "lastEffect": null,
           "memoizedProps": Object {
-            "children": "test1",
+            "children": "test2",
             "style": Object {
               "backgroundColor": "#FFFF99",
               "color": "red",
@@ -686,7 +698,7 @@ Warning {
           "mode": 0,
           "nextEffect": null,
           "pendingProps": Object {
-            "children": "test1",
+            "children": "test2",
             "style": Object {
               "backgroundColor": "#FFFF99",
               "color": "red",
@@ -698,74 +710,9 @@ Warning {
           "ref": null,
           "return": [Circular],
           "selfBaseDuration": 0,
-          "sibling": null,
-          "stateNode": <label
-            style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-          >
-            test1
-          </label>,
-          "tag": 5,
-          "treeBaseDuration": 0,
-          "type": "label",
-          "updateQueue": null,
-        },
-        "childExpirationTime": 0,
-        "contextDependencies": null,
-        "effectTag": 0,
-        "elementType": "div",
-        "expirationTime": 0,
-        "firstEffect": null,
-        "index": 0,
-        "key": "0",
-        "lastEffect": null,
-        "memoizedProps": Object {
-          "children": <label
-            style={
-              Object {
-                "backgroundColor": "#FFFF99",
-                "color": "red",
-                "fontSize": "15.5px",
-                "fontWeight": "bold",
-                "textAlign": "center",
-              }
-            }
-          >
-            test1
-          </label>,
-        },
-        "memoizedState": null,
-        "mode": 0,
-        "nextEffect": null,
-        "pendingProps": Object {
-          "children": <label
-            style={
-              Object {
-                "backgroundColor": "#FFFF99",
-                "color": "red",
-                "fontSize": "15.5px",
-                "fontWeight": "bold",
-                "textAlign": "center",
-              }
-            }
-          >
-            test1
-          </label>,
-        },
-        "ref": null,
-        "return": [Circular],
-        "selfBaseDuration": 0,
-        "sibling": FiberNode {
-          "_debugHookTypes": null,
-          "_debugID": 96,
-          "_debugIsCurrentlyTiming": false,
-          "_debugOwner": [Circular],
-          "_debugSource": null,
-          "actualDuration": 0,
-          "actualStartTime": -1,
-          "alternate": null,
-          "child": FiberNode {
+          "sibling": FiberNode {
             "_debugHookTypes": null,
-            "_debugID": 99,
+            "_debugID": 94,
             "_debugIsCurrentlyTiming": false,
             "_debugOwner": [Circular],
             "_debugSource": null,
@@ -779,11 +726,11 @@ Warning {
             "elementType": "label",
             "expirationTime": 0,
             "firstEffect": null,
-            "index": 0,
-            "key": null,
+            "index": 2,
+            "key": "2",
             "lastEffect": null,
             "memoizedProps": Object {
-              "children": "test2",
+              "children": "test3",
               "style": Object {
                 "backgroundColor": "#FFFF99",
                 "color": "red",
@@ -796,7 +743,7 @@ Warning {
             "mode": 0,
             "nextEffect": null,
             "pendingProps": Object {
-              "children": "test2",
+              "children": "test3",
               "style": Object {
                 "backgroundColor": "#FFFF99",
                 "color": "red",
@@ -812,203 +759,31 @@ Warning {
             "stateNode": <label
               style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
             >
-              test2
+              test3
             </label>,
             "tag": 5,
             "treeBaseDuration": 0,
             "type": "label",
             "updateQueue": null,
           },
-          "childExpirationTime": 0,
-          "contextDependencies": null,
-          "effectTag": 0,
-          "elementType": "div",
-          "expirationTime": 0,
-          "firstEffect": null,
-          "index": 1,
-          "key": "1",
-          "lastEffect": null,
-          "memoizedProps": Object {
-            "children": <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
-              }
-            >
-              test2
-            </label>,
-          },
-          "memoizedState": null,
-          "mode": 0,
-          "nextEffect": null,
-          "pendingProps": Object {
-            "children": <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
-              }
-            >
-              test2
-            </label>,
-          },
-          "ref": null,
-          "return": [Circular],
-          "selfBaseDuration": 0,
-          "sibling": FiberNode {
-            "_debugHookTypes": null,
-            "_debugID": 97,
-            "_debugIsCurrentlyTiming": false,
-            "_debugOwner": [Circular],
-            "_debugSource": null,
-            "actualDuration": 0,
-            "actualStartTime": -1,
-            "alternate": null,
-            "child": FiberNode {
-              "_debugHookTypes": null,
-              "_debugID": 100,
-              "_debugIsCurrentlyTiming": false,
-              "_debugOwner": [Circular],
-              "_debugSource": null,
-              "actualDuration": 0,
-              "actualStartTime": -1,
-              "alternate": null,
-              "child": null,
-              "childExpirationTime": 0,
-              "contextDependencies": null,
-              "effectTag": 0,
-              "elementType": "label",
-              "expirationTime": 0,
-              "firstEffect": null,
-              "index": 0,
-              "key": null,
-              "lastEffect": null,
-              "memoizedProps": Object {
-                "children": "test3",
-                "style": Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                },
-              },
-              "memoizedState": null,
-              "mode": 0,
-              "nextEffect": null,
-              "pendingProps": Object {
-                "children": "test3",
-                "style": Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                },
-              },
-              "ref": null,
-              "return": [Circular],
-              "selfBaseDuration": 0,
-              "sibling": null,
-              "stateNode": <label
-                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-              >
-                test3
-              </label>,
-              "tag": 5,
-              "treeBaseDuration": 0,
-              "type": "label",
-              "updateQueue": null,
-            },
-            "childExpirationTime": 0,
-            "contextDependencies": null,
-            "effectTag": 0,
-            "elementType": "div",
-            "expirationTime": 0,
-            "firstEffect": null,
-            "index": 2,
-            "key": "2",
-            "lastEffect": null,
-            "memoizedProps": Object {
-              "children": <label
-                style={
-                  Object {
-                    "backgroundColor": "#FFFF99",
-                    "color": "red",
-                    "fontSize": "15.5px",
-                    "fontWeight": "bold",
-                    "textAlign": "center",
-                  }
-                }
-              >
-                test3
-              </label>,
-            },
-            "memoizedState": null,
-            "mode": 0,
-            "nextEffect": null,
-            "pendingProps": Object {
-              "children": <label
-                style={
-                  Object {
-                    "backgroundColor": "#FFFF99",
-                    "color": "red",
-                    "fontSize": "15.5px",
-                    "fontWeight": "bold",
-                    "textAlign": "center",
-                  }
-                }
-              >
-                test3
-              </label>,
-            },
-            "ref": null,
-            "return": [Circular],
-            "selfBaseDuration": 0,
-            "sibling": null,
-            "stateNode": <div>
-              <label
-                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-              >
-                test3
-              </label>
-            </div>,
-            "tag": 5,
-            "treeBaseDuration": 0,
-            "type": "div",
-            "updateQueue": null,
-          },
-          "stateNode": <div>
-            <label
-              style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-            >
-              test2
-            </label>
-          </div>,
-          "tag": 5,
-          "treeBaseDuration": 0,
-          "type": "div",
-          "updateQueue": null,
-        },
-        "stateNode": <div>
-          <label
+          "stateNode": <label
             style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
           >
-            test1
-          </label>
-        </div>,
+            test2
+          </label>,
+          "tag": 5,
+          "treeBaseDuration": 0,
+          "type": "label",
+          "updateQueue": null,
+        },
+        "stateNode": <label
+          style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+        >
+          test1
+        </label>,
         "tag": 5,
         "treeBaseDuration": 0,
-        "type": "div",
+        "type": "label",
         "updateQueue": null,
       },
       "childExpirationTime": 0,
@@ -1022,51 +797,45 @@ Warning {
       "lastEffect": null,
       "memoizedProps": Object {
         "children": Array [
-          <div>
-            <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
+          <label
+            style={
+              Object {
+                "backgroundColor": "#FFFF99",
+                "color": "red",
+                "fontSize": "15.5px",
+                "fontWeight": "bold",
+                "textAlign": "center",
               }
-            >
-              test1
-            </label>
-          </div>,
-          <div>
-            <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
+            }
+          >
+            test1
+          </label>,
+          <label
+            style={
+              Object {
+                "backgroundColor": "#FFFF99",
+                "color": "red",
+                "fontSize": "15.5px",
+                "fontWeight": "bold",
+                "textAlign": "center",
               }
-            >
-              test2
-            </label>
-          </div>,
-          <div>
-            <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
+            }
+          >
+            test2
+          </label>,
+          <label
+            style={
+              Object {
+                "backgroundColor": "#FFFF99",
+                "color": "red",
+                "fontSize": "15.5px",
+                "fontWeight": "bold",
+                "textAlign": "center",
               }
-            >
-              test3
-            </label>
-          </div>,
+            }
+          >
+            test3
+          </label>,
         ],
       },
       "memoizedState": null,
@@ -1074,51 +843,45 @@ Warning {
       "nextEffect": null,
       "pendingProps": Object {
         "children": Array [
-          <div>
-            <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
+          <label
+            style={
+              Object {
+                "backgroundColor": "#FFFF99",
+                "color": "red",
+                "fontSize": "15.5px",
+                "fontWeight": "bold",
+                "textAlign": "center",
               }
-            >
-              test1
-            </label>
-          </div>,
-          <div>
-            <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
+            }
+          >
+            test1
+          </label>,
+          <label
+            style={
+              Object {
+                "backgroundColor": "#FFFF99",
+                "color": "red",
+                "fontSize": "15.5px",
+                "fontWeight": "bold",
+                "textAlign": "center",
               }
-            >
-              test2
-            </label>
-          </div>,
-          <div>
-            <label
-              style={
-                Object {
-                  "backgroundColor": "#FFFF99",
-                  "color": "red",
-                  "fontSize": "15.5px",
-                  "fontWeight": "bold",
-                  "textAlign": "center",
-                }
+            }
+          >
+            test2
+          </label>,
+          <label
+            style={
+              Object {
+                "backgroundColor": "#FFFF99",
+                "color": "red",
+                "fontSize": "15.5px",
+                "fontWeight": "bold",
+                "textAlign": "center",
               }
-            >
-              test3
-            </label>
-          </div>,
+            }
+          >
+            test3
+          </label>,
         ],
       },
       "ref": null,
@@ -1126,27 +889,21 @@ Warning {
       "selfBaseDuration": 0,
       "sibling": null,
       "stateNode": <div>
-        <div>
-          <label
-            style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-          >
-            test1
-          </label>
-        </div>
-        <div>
-          <label
-            style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-          >
-            test2
-          </label>
-        </div>
-        <div>
-          <label
-            style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-          >
-            test3
-          </label>
-        </div>
+        <label
+          style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+        >
+          test1
+        </label>
+        <label
+          style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+        >
+          test2
+        </label>
+        <label
+          style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+        >
+          test3
+        </label>
       </div>,
       "tag": 5,
       "treeBaseDuration": 0,
@@ -1182,7 +939,7 @@ Warning {
     "ref": null,
     "return": FiberNode {
       "_debugHookTypes": null,
-      "_debugID": 92,
+      "_debugID": 89,
       "_debugIsCurrentlyTiming": false,
       "_debugOwner": null,
       "_debugSource": null,
@@ -1226,7 +983,7 @@ Warning {
       "mode": 0,
       "nextEffect": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 90,
+        "_debugID": 87,
         "_debugIsCurrentlyTiming": false,
         "_debugOwner": null,
         "_debugSource": null,
@@ -1234,7 +991,7 @@ Warning {
         "actualStartTime": -1,
         "alternate": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 90,
+          "_debugID": 87,
           "_debugIsCurrentlyTiming": false,
           "_debugOwner": null,
           "_debugSource": null,
@@ -1263,27 +1020,21 @@ Warning {
           "stateNode": Object {
             "containerInfo": <div>
               <div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test1
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test2
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test3
-                  </label>
-                </div>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test1
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test2
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test3
+                </label>
               </div>
             </div>,
             "context": Object {},
@@ -1405,27 +1156,21 @@ Warning {
         "stateNode": Object {
           "containerInfo": <div>
             <div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test1
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test2
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test3
-                </label>
-              </div>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test1
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test2
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test3
+              </label>
             </div>
           </div>,
           "context": Object {},
@@ -1496,7 +1241,7 @@ Warning {
       "ref": null,
       "return": FiberNode {
         "_debugHookTypes": null,
-        "_debugID": 90,
+        "_debugID": 87,
         "_debugIsCurrentlyTiming": false,
         "_debugOwner": null,
         "_debugSource": null,
@@ -1504,7 +1249,7 @@ Warning {
         "actualStartTime": -1,
         "alternate": FiberNode {
           "_debugHookTypes": null,
-          "_debugID": 90,
+          "_debugID": 87,
           "_debugIsCurrentlyTiming": false,
           "_debugOwner": null,
           "_debugSource": null,
@@ -1533,27 +1278,21 @@ Warning {
           "stateNode": Object {
             "containerInfo": <div>
               <div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test1
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test2
-                  </label>
-                </div>
-                <div>
-                  <label
-                    style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                  >
-                    test3
-                  </label>
-                </div>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test1
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test2
+                </label>
+                <label
+                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+                >
+                  test3
+                </label>
               </div>
             </div>,
             "context": Object {},
@@ -1675,27 +1414,21 @@ Warning {
         "stateNode": Object {
           "containerInfo": <div>
             <div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test1
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test2
-                </label>
-              </div>
-              <div>
-                <label
-                  style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
-                >
-                  test3
-                </label>
-              </div>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test1
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test2
+              </label>
+              <label
+                style="color: red; font-size: 15.5px; text-align: center; background-color: rgb(255, 255, 153); font-weight: bold;"
+              >
+                test3
+              </label>
             </div>
           </div>,
           "context": Object {},
