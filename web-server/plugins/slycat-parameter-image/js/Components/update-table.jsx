@@ -10,6 +10,7 @@ import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
 import SlycatSelector from 'components/SlycatSelector.tsx';
 import ConnectButton from 'components/ConnectButton.tsx';
+import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
 
@@ -21,26 +22,26 @@ const warningMessage = ['Warning: By using this feature, you run the risk of cor
   'IF YOU DO ANY OF THESE THINGS, IT WILL CORRUPT ALL MODELS USING THIS DATA TABLE.\n'];
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
-      super(props);
-      this.state = {
-          modalId: "varUpdateTableModal",
-          title: "Update Table",
-          files: [new File([""], "filename")],
-          disabled: true,
-          progressBarHidden: true,
-          progressBarProgress: 0,
-          hostname: "",
-          username: "",
-          password: "",
-          selectedOption: "local",
-          visible_tab: "0",
-          sessionExists: null,
-          selected_path: "",
-          loadingData: false,
-          selectedNameIndex: 0,
-          parserType: "slycat-csv-parser"
-      }
-      initialState = {...this.state};
+    super(props);
+    this.state = {
+      modalId: "varUpdateTableModal",
+      title: "Update Table",
+      files: [new File([""], "filename")],
+      disabled: true,
+      progressBarHidden: true,
+      progressBarProgress: 0,
+      hostname: "",
+      username: "",
+      password: "",
+      selectedOption: "local",
+      visible_tab: "0",
+      sessionExists: null,
+      selected_path: "",
+      loadingData: false,
+      selectedNameIndex: 0,
+      parserType: "slycat-csv-parser"
+    }
+    initialState = {...this.state};
   }
 
   cleanup = () =>
@@ -88,16 +89,16 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({files:selectorFiles,disabled:false});
   };
   callBack = (newHostname, newUsername, newPassword, sessionExists) => {
-      this.setState({
-        hostname: newHostname,
-        sessionExists: sessionExists,
-        username: newUsername,
-        password: newPassword
-      });
+    this.setState({
+      hostname: newHostname,
+      sessionExists: sessionExists,
+      username: newUsername,
+      password: newPassword
+    });
   };
   sourceSelect = (e) =>
   {
-      this.setState({selectedOption:e.target.value});
+    this.setState({selectedOption:e.target.value});
   };
 
   uploadFile = () =>
@@ -117,34 +118,34 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
-        .then((json)=>{
-            this.setState({progressBarProgress:33});
-            let file = this.state.files[0];
-            let fileObject ={
-             pid: pid,
-             mid: mid,
-             file: file,
-             aids: [["data-table"], file.name],
-             parser: this.state.parserType,
-             success: () => {
-                   this.setState({progressBarProgress:75});
-                   client.post_sensitive_model_command_fetch(
-                    {
-                        mid:mid,
-                        type:"parameter-image",
-                        command: "update-table",
-                        parameters: {
-                          linked_models: json["linked_models"],
-                        },
-                    }).then(() => {
-                        this.setState({progressBarProgress:100});
-                        this.closeModal();
-                        location.reload();
-                    });
-                }
-            };
-            fileUploader.uploadFile(fileObject);
-        });
+      .then((json)=>{
+        this.setState({progressBarProgress:33});
+        let file = this.state.files[0];
+        let fileObject ={
+          pid: pid,
+          mid: mid,
+          file: file,
+          aids: [["data-table"], file.name],
+          parser: this.state.parserType,
+          success: () => {
+            this.setState({progressBarProgress:75});
+            client.post_sensitive_model_command_fetch(
+            {
+              mid:mid,
+              type:"parameter-image",
+              command: "update-table",
+              parameters: {
+                linked_models: json["linked_models"],
+              },
+            }).then(() => {
+              this.setState({progressBarProgress:100});
+              this.closeModal();
+              location.reload();
+            });
+            }
+        };
+        fileUploader.uploadFile(fileObject);
+      });
   };
 
   uploadRemoteFile = () => {
@@ -153,37 +154,37 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
-        .then((json)=>{
-            this.setState({progressBarProgress:33});
-            let file = this.state.files;
-            const file_name = file.name;
-            let fileObject ={
-             pid: pid,
-             hostname: this.state.hostname,
-             mid: mid,
-             paths: this.state.selected_path,
-             aids: [["data-table"], file_name],
-             parser: this.state.parserType,
-             progress_final: 90,
-             success: () => {
-                   this.setState({progressBarProgress:75});
-                   client.post_sensitive_model_command_fetch(
-                    {
-                        mid:mid,
-                        type:"parameter-image",
-                        command: "update-table",
-                        parameters: {
-                          linked_models: json["linked_models"],
-                        },
-                    }).then(() => {
-                        this.setState({progressBarProgress:100});
-                        this.closeModal();
-                        location.reload();
-                    });
-                }
-            };
-            fileUploader.uploadFile(fileObject);
-        });
+      .then((json)=>{
+        this.setState({progressBarProgress:33});
+        let file = this.state.files;
+        const file_name = file.name;
+        let fileObject ={
+          pid: pid,
+          hostname: this.state.hostname,
+          mid: mid,
+          paths: this.state.selected_path,
+          aids: [["data-table"], file_name],
+          parser: this.state.parserType,
+          progress_final: 90,
+          success: () => {
+            this.setState({progressBarProgress:75});
+            client.post_sensitive_model_command_fetch(
+            {
+              mid:mid,
+              type:"parameter-image",
+              command: "update-table",
+              parameters: {
+                linked_models: json["linked_models"],
+              },
+            }).then(() => {
+              this.setState({progressBarProgress:100});
+              this.closeModal();
+              location.reload();
+            });
+            }
+        };
+        fileUploader.uploadFile(fileObject);
+      });
   }
 
   onSelectFile = (selectedPath, selectedPathType, file) => {
@@ -281,28 +282,32 @@ export default class ControlsButtonUpdateTable extends Component {
                 <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
                 {this.state.visible_tab === "0" ?
                   <form style={{marginLeft: '16px'}}>
-                    <div className="form-check">
-                      <label className="form-check-label" style={{marginRight: '92%'}} htmlFor="radio1">
-                        <input type="radio" className="form-check-input" value='local' checked={this.state.selectedOption === 'local'} onChange={this.sourceSelect}/>Local
-                      </label>
-                    </div>
-                    <div className="form-check">
-                      <label className="form-check-label" style={{marginRight: '89.7%'}} htmlFor="radio2">
-                        <input type="radio" className="form-check-input" value='remote' checked={this.state.selectedOption === 'remote'} onChange={this.sourceSelect}/>Remote
-                      </label>
-                    </div>
+                    <SlycatFormRadioCheckbox
+                      checked={this.state.selectedOption === 'local'}
+                      onChange={this.sourceSelect}
+                      value={'local'}
+                      text={'Local'}
+                      style={{marginRight: '92%'}}
+                    />
+                    <SlycatFormRadioCheckbox
+                      checked={this.state.selectedOption === 'remote'}
+                      onChange={this.sourceSelect}
+                      value={'remote'}
+                      text={'Remote'}
+                      style={{marginRight: '89.7%'}}
+                    />
                   </form>
                 :null}
 
                 {this.state.visible_tab === "1"?
                 <div className='tab-content'>
                   <div className="form-horizontal">
-                      <FileSelector handleChange = {this.handleFileSelection} />
-                      <SlycatSelector
-                        onSelectCallBack={this.props.onSelectParserCallBack}
-                        label={'Filetype'}
-                        options={options}
-                      />
+                    <FileSelector handleChange = {this.handleFileSelection} />
+                    <SlycatSelector
+                      onSelectCallBack={this.props.onSelectParserCallBack}
+                      label={'Filetype'}
+                      options={options}
+                    />
                   </div>
                 </div>:null}
 
@@ -321,11 +326,11 @@ export default class ControlsButtonUpdateTable extends Component {
                 </div>
 
                 {this.state.visible_tab === "3" ?
-                    <RemoteFileBrowser 
-                    onSelectFileCallBack={this.onSelectFile}
-                    onSelectParserCallBack={this.onSelectParser}
-                    hostname={this.state.hostname} 
-                    />:
+                  <RemoteFileBrowser 
+                  onSelectFileCallBack={this.onSelectFile}
+                  onSelectParserCallBack={this.onSelectParser}
+                  hostname={this.state.hostname} 
+                  />:
                 null}
 
                 <div className='modal-footer'>
