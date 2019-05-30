@@ -5,7 +5,7 @@ import $ from 'jquery';
 import SearchWrapper, {SearchWrapperProps, SearchWrapperState} from "components/SearchWrapper";
 import { mount } from "enzyme";
 (global as any).$ = (global as any).jQuery = $;
-describe('when loading a slycat selector',() =>{
+describe('when using the slycat search wrapper',() =>{
 
   const properties: SearchWrapperProps = {
     items:[{
@@ -21,7 +21,6 @@ describe('when loading a slycat selector',() =>{
       {...properties}
     />
   );
-  //TODO: fix jest to use html loader
   test('we have expected props on initial load', () => {
     const props = render.props() as SearchWrapperProps;
     expect(props).toMatchSnapshot();
@@ -36,7 +35,7 @@ describe('when loading a slycat selector',() =>{
     expect(render).toMatchSnapshot();
   });
 
-  test('we should onChange function get value', () => {
+  test('we should call filter and match on search', () => {
     jest.spyOn(render.instance(), 'filterList');
     jest.spyOn(render.instance(), 'matchStrings');
     render.find('input').simulate('change',{ target: { value: 'test' } });
@@ -44,7 +43,12 @@ describe('when loading a slycat selector',() =>{
     expect(render.instance().matchStrings).toHaveBeenCalledWith('test1','test');
   });
 
-  test('we should have null input if there is no list', () => {
+  test('we should see a message displayed for a bad search', () => {
+    render.find('input').simulate('change',{ target: { value: 'no match' } });
+    expect(render).toMatchSnapshot();
+  });
+
+  test('we should have empty item  message if there is no model list', () => {
     const emptyProperties: SearchWrapperProps = {
       items:[],
       type:'models'
@@ -57,6 +61,18 @@ describe('when loading a slycat selector',() =>{
     expect(emptyRender).toMatchSnapshot();
   });
 
+  test('we should have empty item  message if there is no project list', () => {
+    const emptyProperties: SearchWrapperProps = {
+      items:[],
+      type:'projects'
+    };
+    const emptyRender = mount(
+      <SearchWrapper
+        {...emptyProperties}
+      />
+    );
+    expect(emptyRender).toMatchSnapshot();
+  });
 });
 
 export default undefined

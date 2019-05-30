@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`when loading a slycat selector we have expected props on initial load 1`] = `
+exports[`when using the slycat search wrapper we have expected props on initial load 1`] = `
 Object {
   "items": Array [
     Object {
@@ -14,7 +14,7 @@ Object {
 }
 `;
 
-exports[`when loading a slycat selector we see no state 1`] = `
+exports[`when using the slycat search wrapper we see no state 1`] = `
 Object {
   "initialItems": Array [
     Object {
@@ -36,7 +36,7 @@ Object {
 }
 `;
 
-exports[`when loading a slycat selector we should have a full initialization 1`] = `
+exports[`when using the slycat search wrapper we should have a full initialization 1`] = `
 <SearchWrapper
   items={
     Array [
@@ -77,6 +77,7 @@ exports[`when loading a slycat selector we should have a full initialization 1`]
       </div>
     </div>
     <ModelsList
+      key="1"
       models={
         Array [
           Object {
@@ -109,7 +110,7 @@ exports[`when loading a slycat selector we should have a full initialization 1`]
 </SearchWrapper>
 `;
 
-exports[`when loading a slycat selector we should have null input if there is no list 1`] = `
+exports[`when using the slycat search wrapper we should have empty item  message if there is no model list 1`] = `
 <SearchWrapper
   items={Array []}
   type="models"
@@ -129,6 +130,7 @@ exports[`when loading a slycat selector we should have null input if there is no
       </div>
     </div>
     <ModelsList
+      key="1"
       models={Array []}
     >
       <Spinner>
@@ -165,6 +167,145 @@ exports[`when loading a slycat selector we should have null input if there is no
           key="2"
         >
           You can add a model by using the Create menu above.
+        </p>
+      </div>
+    </div>
+  </div>
+</SearchWrapper>
+`;
+
+exports[`when using the slycat search wrapper we should have empty item  message if there is no project list 1`] = `
+<SearchWrapper
+  items={Array []}
+  type="projects"
+>
+  <div>
+    <div
+      className="container pb-0"
+    >
+      <div
+        className="d-flex justify-content-between"
+      >
+        <h3
+          className="px-4 text-capitalize"
+        >
+          projects
+        </h3>
+      </div>
+    </div>
+    <ProjectsList
+      key="2"
+      projects={Array []}
+    />
+    <div
+      className="container"
+    >
+      <div
+        className="alert alert-warning"
+        role="alert"
+      >
+        <p
+          key="1"
+        >
+          There are no projects.
+        </p>
+        <p
+          className="mb-0"
+          key="2"
+        >
+          You can add a project by using the Create menu above.
+        </p>
+      </div>
+    </div>
+  </div>
+</SearchWrapper>
+`;
+
+exports[`when using the slycat search wrapper we should see a message displayed for a bad search 1`] = `
+<SearchWrapper
+  items={
+    Array [
+      Object {
+        "created": "test1",
+        "creator": "test1",
+        "description": "test1",
+        "name": "test1",
+      },
+    ]
+  }
+  type="models"
+>
+  <div>
+    <div
+      className="container pb-0"
+    >
+      <div
+        className="d-flex justify-content-between"
+      >
+        <h3
+          className="px-4 text-capitalize"
+        >
+          models
+        </h3>
+        <input
+          aria-label="Filter models"
+          className="form-control mb-3"
+          onChange={[Function]}
+          placeholder="Filter models"
+          style={
+            Object {
+              "width": "13rem",
+            }
+          }
+          type="search"
+        />
+      </div>
+    </div>
+    <ModelsList
+      key="1"
+      models={Array []}
+    >
+      <Spinner>
+        <div
+          className="d-flex justify-content-center mt-4"
+        >
+          <div
+            className="spinner-border"
+            role="status"
+          >
+            <span
+              className="sr-only"
+            >
+              Loading...
+            </span>
+          </div>
+        </div>
+      </Spinner>
+    </ModelsList>
+    <div
+      className="container"
+    >
+      <div
+        className="alert alert-warning"
+        role="alert"
+      >
+        <p
+          key="1"
+        >
+          No 
+          models
+           match the current search - 
+          <strong>
+            no match
+          </strong>
+        </p>
+        <p
+          className="mb-0"
+          key="2"
+        >
+          Clear it to see all 
+          models
+          , or change it to search again.
         </p>
       </div>
     </div>
