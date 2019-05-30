@@ -2,17 +2,17 @@
 import React from 'react';
 import $ from 'jquery';
 // TODO the html loader breaks here
-// import SearchWrapper, {SearchWrapperProps, SearchWrapperState} from "components/SearchWrapper";
+import SearchWrapper, {SearchWrapperProps, SearchWrapperState} from "components/SearchWrapper";
 import { mount } from "enzyme";
 (global as any).$ = (global as any).jQuery = $;
-xdescribe('when loading a slycat selector',() =>{
+describe('when loading a slycat selector',() =>{
 
   const properties: SearchWrapperProps = {
     items:[{
-      name:'test', 
-      description:'test',
-      created:'test',
-      creator: 'test'
+      name:'test1', 
+      description:'test1',
+      created:'test1',
+      creator: 'test1'
     }],
     type:'models'
   };
@@ -22,26 +22,41 @@ xdescribe('when loading a slycat selector',() =>{
     />
   );
   //TODO: fix jest to use html loader
-  xtest('we have expected props on initial load', () => {
+  test('we have expected props on initial load', () => {
     const props = render.props() as SearchWrapperProps;
     expect(props).toMatchSnapshot();
   });
 
-  xtest('we see no state', () => {
+  test('we see no state', () => {
     const state = render.state() as SearchWrapperState;
     expect(state).toMatchSnapshot();
   });
 
-  xtest('we should have a full initialization', () => {
-    expect(render.instance()).toMatchSnapshot();
+  test('we should have a full initialization', () => {
+    expect(render).toMatchSnapshot();
   });
 
-  xtest('we should onChange function get value', () => {
-    const myEventHandler = jest.fn();
-    render.setProps({ onSelectCallBack: myEventHandler});
-    render.find('select').simulate('change');
-    expect(myEventHandler).toHaveBeenCalledWith('slycat-csv-parser');
+  test('we should onChange function get value', () => {
+    jest.spyOn(render.instance(), 'filterList');
+    jest.spyOn(render.instance(), 'matchStrings');
+    render.find('input').simulate('change',{ target: { value: 'test' } });
+    expect(render.instance().filterList).toHaveBeenCalledWith('test');
+    expect(render.instance().matchStrings).toHaveBeenCalledWith('test1','test');
   });
+
+  test('we should have null input if there is no list', () => {
+    const emptyProperties: SearchWrapperProps = {
+      items:[],
+      type:'models'
+    };
+    const emptyRender = mount(
+      <SearchWrapper
+        {...emptyProperties}
+      />
+    );
+    expect(emptyRender).toMatchSnapshot();
+  });
+
 });
 
 export default undefined
