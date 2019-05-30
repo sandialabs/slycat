@@ -77,7 +77,6 @@ exports[`when using the slycat search wrapper we should have a full initializati
       </div>
     </div>
     <ModelsList
-      key="1"
       models={
         Array [
           Object {
@@ -130,7 +129,6 @@ exports[`when using the slycat search wrapper we should have empty item  message
       </div>
     </div>
     <ModelsList
-      key="1"
       models={Array []}
     >
       <Spinner>
@@ -194,7 +192,6 @@ exports[`when using the slycat search wrapper we should have empty item  message
       </div>
     </div>
     <ProjectsList
-      key="2"
       projects={Array []}
     />
     <div
@@ -262,7 +259,6 @@ exports[`when using the slycat search wrapper we should see a message displayed 
       </div>
     </div>
     <ModelsList
-      key="1"
       models={Array []}
     >
       <Spinner>
