@@ -81,7 +81,10 @@ module.exports = {
   moduleNameMapper: {
     "^js[/](.+)": "<rootDir>/web-server/js/$1",
     "^components[/](.+)": "<rootDir>/web-server/components/$1",
-    "^templates[/](.+)": "<rootDir>/web-server/templates/$1"
+    "^templates[/](.+)": "<rootDir>/web-server/__mocks__/fileMock.js",
+    // "^templates[/](.+)": "<rootDir>/web-server/templates/$1",
+    "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|html)$": "<rootDir>/web-server/__mocks__/fileMock.js",
+    "\\.(css|less)$": "<rootDir>/web-server/__mocks__/styleMock.js",
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
