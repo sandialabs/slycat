@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when loading a bad marking the UnrecognizedMarkingWarning we have no props on initial load 1`] = `
+Object {
+  "created": "1234",
+  "creator": "me",
+  "description": "test",
+  "id": "1234",
+  "name": "test",
+}
+`;
+
+exports[`when loading a bad marking the UnrecognizedMarkingWarning we no state 1`] = `null`;
+
+exports[`when loading a bad marking the UnrecognizedMarkingWarning we should have a full initialization 1`] = `
+<Project
+  created="1234"
+  creator="me"
+  description="test"
+  id="1234"
+  name="test"
+>
+  <a
+    className="list-group-item list-group-item-action"
+    href="/projects/1234"
+  >
+    <div
+      className="h6"
+    >
+      <span
+        className="badge badge-secondary mr-1"
+      >
+        project
+      </span>
+       
+      test
+    </div>
+    <p
+      className="mb-2"
+    >
+      test
+    </p>
+    <small>
+      <em>
+        Created 
+        <span>
+          1234
+        </span>
+         by 
+        <span>
+          me
+        </span>
+      </em>
+    </small>
+  </a>
+</Project>
+`;
