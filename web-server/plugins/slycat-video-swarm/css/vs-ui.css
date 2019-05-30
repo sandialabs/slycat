@@ -329,11 +329,11 @@ retains certain rights in this software.
 }
 .icon-sort-off {
   border: 1px solid transparent;
-  background: transparent url(../../../slycat/web-server/img/sort-asc-light.png) no-repeat center center;
+  background: transparent url(../../../img/sort-asc-light.png) no-repeat center center;
 }
 .icon-sort-off:hover {
   border: 1px solid transparent !important;
-  background: transparent url(../../../slycat/web-server/img/sort-asc-gray.png) no-repeat center center !important;
+  background: transparent url(../../../img/sort-asc-gray.png) no-repeat center center !important;
 }
 .icon-sort-ascending:hover,
 .icon-sort-descending:hover
@@ -352,12 +352,12 @@ retains certain rights in this software.
   top: 4px;
 }
 .slick-header-button.icon-image-off {
-  background: transparent url(../../../slycat/web-server/img/image-light.png) no-repeat center center;
+  background: transparent url(../../../img/image-light.png) no-repeat center center;
 }
 .slick-header-button.icon-image-on,
 .slick-header-button.icon-image-off:hover
 {
-  background: transparent url(../../../slycat/web-server/img/image-gray.png) no-repeat center center;
+  background: transparent url(../../../img/image-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off
@@ -366,12 +366,12 @@ retains certain rights in this software.
   top: 4px;
 }
 .slick-header-button.icon-y-off {
-  background: transparent url(../../../slycat/web-server/img/y-light.png) no-repeat center center;
+  background: transparent url(../../../img/y-light.png) no-repeat center center;
 }
 .slick-header-button.icon-y-on,
 .slick-header-button.icon-y-off:hover
 {
-  background: transparent url(../../../slycat/web-server/img/y-gray.png) no-repeat center center;
+  background: transparent url(../../../img/y-gray.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off
@@ -380,12 +380,12 @@ retains certain rights in this software.
   top: 4px;
 }
 .slick-header-button.icon-x-off {
-  background: transparent url(../../../slycat/web-server/img/x-light.png) no-repeat center center;
+  background: transparent url(../../../img/x-light.png) no-repeat center center;
 }
 .slick-header-button.icon-x-on,
 .slick-header-button.icon-x-off:hover
 {
-  background: transparent url(../../../slycat/web-server/img/x-gray.png) no-repeat center center;
+  background: transparent url(../../../img/x-gray.png) no-repeat center center;
 }
 #page-title {
   padding-top: 5px;
@@ -439,7 +439,7 @@ retains certain rights in this software.
   position: absolute;
   width: 16px;
   height: 16px;
-  background-image: url("../../../slycat/web-server/img/ui-icons_222222_256x240.png");
+  background-image: url("../../../img/ui-icons_222222_256x240.png");
   background-repeat: no-repeat;
   display: block;
   overflow: hidden;
@@ -452,7 +452,7 @@ retains certain rights in this software.
   background-position: -80px -224px;
 }
 #scatterplot .media-layer .pin-button {
-  background-image: url("../../../slycat/web-server/img/pin.png");
+  background-image: url("../../../img/pin.png");
   top: 0px;
   left: 0px;
 }
@@ -607,7 +607,7 @@ retains certain rights in this software.
   right: 0;
   top: 0;
 
-  background-image: url("../../../slycat/web-server/img/ajax-loader.gif");
+  background-image: url("../../../img/ajax-loader.gif");
   background-repeat: no-repeat;
   background-position: 50% 50%;
 }
@@ -875,7 +875,7 @@ retains certain rights in this software.
   position: absolute;
   width: 16px;
   height: 16px;
-  background-image: url("../../../slycat/web-server/img/ui-icons_222222_256x240.png");
+  background-image: url("../../../img/ui-icons_222222_256x240.png");
   background-repeat: no-repeat;
   display: block;
   overflow: hidden;
