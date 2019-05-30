@@ -4,7 +4,7 @@ import client from 'js/slycat-web-client';
 import server_root from 'js/slycat-server-root';
 import model_names from 'js/slycat-model-names';
 import * as dialog from 'js/slycat-dialog';
-import { Spinner } from 'components/Spinner';
+import Spinner from 'components/Spinner.tsx';
 
 class ModelsList extends React.Component {
 

@@ -16,7 +16,7 @@ import {loadTemplate, loadModule} from 'js/slycat-plugins';
 import React from "react";
 import ReactDOM from "react-dom";
 import UnrecognizedMarkingWarning from 'components/UnrecognizedMarkingWarning.tsx';
-import { Spinner } from 'components/Spinner';
+import Spinner from 'components/Spinner.tsx';
 
 // Wait for document ready
 $(document).ready(function() {
