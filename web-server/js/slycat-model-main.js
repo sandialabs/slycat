@@ -15,7 +15,7 @@ import ga from "js/slycat-ga";
 import {loadTemplate, loadModule} from 'js/slycat-plugins';
 import React from "react";
 import ReactDOM from "react-dom";
-import UnrecognizedMarkingWarning from 'components/UnrecognizedMarkingWarning';
+import UnrecognizedMarkingWarning from 'components/UnrecognizedMarkingWarning.tsx';
 import { Spinner } from 'components/Spinner';
 
 // Wait for document ready
