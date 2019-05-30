@@ -1,9 +1,10 @@
 
-// import React from 'react';
-// import $ from 'jquery';
+import React from 'react';
+import $ from 'jquery';
+// TODO the html loader breaks here
 // import SearchWrapper, {SearchWrapperProps, SearchWrapperState} from "components/SearchWrapper";
-// import { mount } from "enzyme";
-// (global as any).$ = (global as any).jQuery = $;
+import { mount } from "enzyme";
+(global as any).$ = (global as any).jQuery = $;
 xdescribe('when loading a slycat selector',() =>{
 
   const properties: SearchWrapperProps = {
