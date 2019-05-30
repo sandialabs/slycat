@@ -8,8 +8,8 @@ import * as React from 'react';
  * @member project_id string id of the project
  */
 export interface UnrecognizedMarkingWarningProps { 
-  warning_element: Element
-  marking: Element
+  warning_element: any
+  marking: string
   project_id:string
 }
 
