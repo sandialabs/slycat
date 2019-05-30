@@ -65,7 +65,7 @@ describe('when loading a nav bar',() =>{
         {...properties}
       />
         );
-    expect(render.instance()).toMatchSnapshot();
+    expect(render).toMatchSnapshot();
   });
 
   test('we be able to check hostname status', async () => {

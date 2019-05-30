@@ -93,7 +93,7 @@ describe("when we load the RemoteFileBrowser", () =>{
       />
     );
     DefaultInstance = component.getInstance();
-    expect(DefaultInstance.render()).toMatchSnapshot();
+    expect(DefaultInstance).toMatchSnapshot();
   });
   
 });

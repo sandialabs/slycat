@@ -34,7 +34,7 @@ describe('when loading a slycat selector',() =>{
   });
 
   test('we should have a full initialization', () => {
-    expect(render.instance()).toMatchSnapshot();
+    expect(render).toMatchSnapshot();
   });
 
   test('we should onChange function get value', () => {

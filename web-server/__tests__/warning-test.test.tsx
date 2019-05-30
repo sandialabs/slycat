@@ -28,7 +28,7 @@ describe('when loading a warning message',() =>{
         {...properties}
       />
         );
-     expect(render.instance()).toMatchSnapshot();
+     expect(render).toMatchSnapshot();
   });
 });
 

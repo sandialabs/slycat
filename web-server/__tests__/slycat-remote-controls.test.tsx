@@ -35,7 +35,7 @@ describe("when we load the SlycatRemoteControls", () =>{
     const shallowComponent:any = shallow(<SlycatRemoteControls callBack={()=>{}}/>);
     await shallowComponent.instance().componentDidMount();
     await shallowComponent.update();
-    expect(shallowComponent.instance()).toMatchSnapshot();
+    expect(shallowComponent).toMatchSnapshot();
   });
 
   xtest('we can render the component', () => {
@@ -56,7 +56,7 @@ describe("when we load the SlycatRemoteControls", () =>{
   });
 
   xtest('we expect the correct props to populate', () => {
-    expect(DefaultInstance.render()).toMatchSnapshot();
+    expect(DefaultInstance).toMatchSnapshot();
   });
   
 });

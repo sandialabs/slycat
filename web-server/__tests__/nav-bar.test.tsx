@@ -26,7 +26,7 @@ describe('when loading a nav bar',() =>{
   });
 
   test('we should have a full initialization', () => {
-    expect(render.instance()).toMatchSnapshot();
+    expect(render).toMatchSnapshot();
   });
 });
 
