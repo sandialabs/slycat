@@ -23,9 +23,7 @@ class ProjectsList extends React.Component {
         <div className="container pt-0">
           <div className="card">
             <div className="list-group list-group-flush">
-              <React.Fragment>
                 {projects}
-              </React.Fragment>
             </div>
           </div>
         </div>
