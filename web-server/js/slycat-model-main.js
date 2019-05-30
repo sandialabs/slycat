@@ -13,10 +13,10 @@ import URI from "urijs";
 import {renderNavBar} from "js/slycat-navbar";
 import ga from "js/slycat-ga";
 import {loadTemplate, loadModule} from 'js/slycat-plugins';
-import markings from "js/slycat-markings";
 import React from "react";
 import ReactDOM from "react-dom";
 import UnrecognizedMarkingWarning from 'components/UnrecognizedMarkingWarning';
+import { Spinner } from 'components/Spinner';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -39,23 +39,36 @@ $(document).ready(function() {
       page.marking = result.marking;
       ko.applyBindings(page, document.querySelector("head"));
       ko.applyBindings(page, document.querySelector("slycat-navbar"));
-      loadTemplate(page.model_type, "html").then(component => {
-        let slycat_content = document.querySelector(".slycat-content");
+
+      let slycat_content = document.querySelector(".slycat-content");
+
+      // Show spinner
+      ReactDOM.render(
+        <Spinner />,
+        slycat_content
+      );
+
+      let loadTemplatePromise = loadTemplate(page.model_type, "html");
+      let loadMarkingPromise = client.get_configuration_markings_fetch();
+      let loadTemplateFinish = (values) => {
+        // Remove spinner
+        ReactDOM.unmountComponentAtNode(slycat_content);
+
         // Match the model's marking with the ones currently registered
-        let current_marking = markings.allowed().find(obj => obj.type() == page.marking);
+        let current_marking = values[1].find(obj => obj.type == page.marking);
         let template = document.createElement('template');
         let html = "";
 
         // Check if the current marking has code that needs to be prepended to the template
-        if(current_marking && current_marking['page-before']() != null)
-          html += current_marking['page-before']().trim();
+        if(current_marking && current_marking['page-before'] != null)
+          html += current_marking['page-before'].trim();
 
         // Add the template code
-        html += component;
+        html += values[0];
 
         // Check if the current marking has code that needs to be appended to the template
-        if(current_marking && current_marking['page-after']() != null)
-          html += current_marking['page-after']().trim();
+        if(current_marking && current_marking['page-after'] != null)
+          html += current_marking['page-after'].trim();
 
         // Inject the code into the .slycat-content node
         template.innerHTML = html;
@@ -80,8 +93,13 @@ $(document).ready(function() {
             warning_element
           );
         }
-      });
+      }
 
+      // For testing purposes, to simulate a slow network, uncomment this setTimeout
+      // setTimeout( () => {
+      Promise.all([loadTemplatePromise, loadMarkingPromise]).then(loadTemplateFinish);
+      // For testing purposes, to simulate a slow network, uncomment this setTimeout
+      // }, 10000);
     },
     error: function(request, status, reason_phrase)
     {
