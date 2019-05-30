@@ -87,17 +87,13 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
    * @memberof SearchWrapper
    */
   getSearchField = () : JSX.Element | null => {
-    if ((this.props.items.length == 0 && this.props.type == 'models')||
-    (this.props.items.length == 0 && this.props.type == 'models')) {
-      return null;
-    };
-    return <input className="form-control mb-3" 
+    return this.props.items.length > 0 ? <input className="form-control mb-3" 
               style={{width: '13rem'}}
               type="search" 
               placeholder={`Filter ${this.props.type}`} 
               aria-label={`Filter ${this.props.type}`} 
               onChange={(e)=>this.filterList(e.target.value.trim().toLowerCase())}
-            />;
+            />:null;
   }
 
   /**
