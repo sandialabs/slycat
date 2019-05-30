@@ -210,6 +210,29 @@ module.get_configuration_markings = function(params)
   });
 };
 
+// Fetch version of get_configuration_markings
+module.get_configuration_markings_fetch = function(params)
+{
+  return fetch(`${api_root}configuration/markings`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 module.get_configuration_parsers = function(params)
 {
   $.ajax(
