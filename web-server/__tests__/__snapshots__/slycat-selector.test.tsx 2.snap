@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when loading a slycat selector we have expected props on initial load 1`] = `
+Object {
+  "label": "Filetype",
+  "onSelectCallBack": [MockFunction],
+  "options": Array [
+    Object {
+      "text": "Comma separated values (CSV)",
+      "value": "slycat-csv-parser",
+    },
+    Object {
+      "text": "Dakota tabular",
+      "value": "slycat-dakota-parser",
+    },
+  ],
+}
+`;
+
+exports[`when loading a slycat selector we see no state 1`] = `Object {}`;
+
+exports[`when loading a slycat selector we should have a full initialization 1`] = `
+<SlycatSelector
+  label="Filetype"
+  onSelectCallBack={[MockFunction]}
+  options={
+    Array [
+      Object {
+        "text": "Comma separated values (CSV)",
+        "value": "slycat-csv-parser",
+      },
+      Object {
+        "text": "Dakota tabular",
+        "value": "slycat-dakota-parser",
+      },
+    ]
+  }
+>
+  <div
+    className="form-group row"
+  >
+    <label
+      className="col-sm-1 col-form-label"
+    >
+      Filetype
+    </label>
+    <div
+      className="col-sm-10"
+    >
+      <select
+        className="form-control"
+        onChange={[Function]}
+      >
+        <option
+          key="0"
+          value="slycat-csv-parser"
+        >
+          Comma separated values (CSV)
+        </option>
+        <option
+          key="1"
+          value="slycat-dakota-parser"
+        >
+          Dakota tabular
+        </option>
+      </select>
+    </div>
+  </div>
+</SlycatSelector>
+`;

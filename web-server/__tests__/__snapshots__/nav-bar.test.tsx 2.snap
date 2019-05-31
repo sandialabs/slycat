@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when loading a nav bar we have expected props on initial load 1`] = `
+Object {
+  "navNames": Array [
+    "test1",
+    "test2",
+    "test3",
+  ],
+  "selectedNameIndex": 1,
+}
+`;
+
+exports[`when loading a nav bar we no state 1`] = `Object {}`;
+
+exports[`when loading a nav bar we should have a full initialization 1`] = `
+<NavBar
+  navNames={
+    Array [
+      "test1",
+      "test2",
+      "test3",
+    ]
+  }
+  selectedNameIndex={1}
+>
+  <ul
+    className="nav nav-pills"
+  >
+    <li
+      className="nav-item"
+      key="0"
+    >
+      <a
+        className="nav-link"
+      >
+        test1
+      </a>
+    </li>
+    <li
+      className="nav-item active"
+      key="1"
+    >
+      <a
+        className="nav-link"
+      >
+        test2
+      </a>
+    </li>
+    <li
+      className="nav-item"
+      key="2"
+    >
+      <a
+        className="nav-link"
+      >
+        test3
+      </a>
+    </li>
+  </ul>
+</NavBar>
+`;
