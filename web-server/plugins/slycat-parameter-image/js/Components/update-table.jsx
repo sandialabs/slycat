@@ -13,6 +13,7 @@ import ConnectButton from 'components/ConnectButton.tsx';
 import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
+import mapping from "knockout-mapping";
 
 let initialState={};
 const localNavBar = ['Locate Data', 'Upload Table'];
@@ -39,7 +40,9 @@ export default class ControlsButtonUpdateTable extends Component {
       selected_path: "",
       loadingData: false,
       selectedNameIndex: 0,
-      parserType: "slycat-csv-parser"
+      parserType: "slycat-csv-parser",
+      currentColumns: [],
+      newColumns: [],
     }
     initialState = {...this.state};
   }
@@ -111,6 +114,51 @@ export default class ControlsButtonUpdateTable extends Component {
     }
   }
 
+  checkColumns = (file) =>
+  {
+    let reader = new FileReader();
+
+    reader.onload = (e) => {
+
+      /**
+       * Reads in the file being selected for upload, splits on '\n' to get the first row, which contains the column names.
+       * Then splits on ',' to get the individual column names.
+       */
+      let column_row = e.target.result.split('\n');
+      let columns = column_row[0].split(',');
+      this.setState({newColumns: columns});
+      console.log(columns);
+    };
+    reader.readAsText(file);
+
+    return client.get_model_table_metadata_fetch({mid: this.props.mid, aid: "data-table"}).then((json)=>{
+      console.log(json["column-names"]);
+      let passed = true;
+      this.setState({currentColumns: json["column-names"]});
+
+      console.log(this.state.currentColumns.length);
+      console.log(this.state.newColumns.length);
+
+
+      if(this.state.currentColumns.length !== this.state.newColumns.length) {
+        passed = false;
+        return passed;
+      }
+      this.state.currentColumns.forEach((column,i) => {
+        if(column !== this.state.newColumns[i]) {
+          console.log("current columns");
+          console.log(column);
+          console.log("new columns");
+          console.log(this.state.newColumns[i]);
+          passed = false;
+        }
+      });
+      console.log("ur mom");
+      console.log(passed);
+      return passed;
+    })
+  };
+
   uploadLocalFile = () =>
   {
     let mid = this.props.mid;
@@ -121,30 +169,40 @@ export default class ControlsButtonUpdateTable extends Component {
       .then((json)=>{
         this.setState({progressBarProgress:33});
         let file = this.state.files[0];
-        let fileObject ={
-          pid: pid,
-          mid: mid,
-          file: file,
-          aids: [["data-table"], file.name],
-          parser: this.state.parserType,
-          success: () => {
-            this.setState({progressBarProgress:75});
-            client.post_sensitive_model_command_fetch(
-            {
-              mid:mid,
-              type:"parameter-image",
-              command: "update-table",
-              parameters: {
-                linked_models: json["linked_models"],
-              },
-            }).then(() => {
-              this.setState({progressBarProgress:100});
-              this.closeModal();
-              location.reload();
-            });
-            }
-        };
-        fileUploader.uploadFile(fileObject);
+
+        /**
+         * Checking the columns of the new CSV to make sure the order is the same, and they didn't add or remove any.
+         */
+        this.checkColumns(file).then((passed)=>{
+          console.log(passed);
+          if(passed) {
+            let fileObject = {
+              pid: pid,
+              mid: mid,
+              file: file,
+              aids: [["data-table"], file.name],
+              parser: this.state.parserType,
+              success: () => {
+                this.setState({progressBarProgress: 75});
+                client.post_sensitive_model_command_fetch(
+                  {
+                    mid: mid,
+                    type: "parameter-image",
+                    command: "update-table",
+                    parameters: {
+                      linked_models: json["linked_models"],
+                    },
+                  }).then(() => {
+                  this.setState({progressBarProgress: 100});
+                  this.closeModal();
+                  location.reload();
+                });
+              }
+            };
+            fileUploader.uploadFile(fileObject);
+          }
+        });
+
       });
   };
 
