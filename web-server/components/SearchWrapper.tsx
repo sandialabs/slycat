@@ -1,6 +1,6 @@
 import React from "react";
 import ProjectsList from "components/ProjectsList.tsx"
-import { ModelsList } from 'components/ModelsList';
+import { ModelsList } from 'components/ModelsList.tsx';
 
 /**
  * @param items list of item objects
