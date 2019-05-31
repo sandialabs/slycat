@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
 import ProgressBar from 'components/ProgressBar.tsx';
-import ControlsButton from './controls-button';
+import ControlsButton from 'components/ControlsButton';
 import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
 import client from "js/slycat-web-client";
