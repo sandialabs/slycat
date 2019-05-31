@@ -10,6 +10,10 @@
     "modules": "webpack --display-modules --config webpack.prod.js",
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
+  "pre-commit": [
+    "precommit-msg",
+    "test"
+  ],
   "main": "index.js",
   "repository": "git@github.com:sandialabs/slycat.git",
   "author": "Alex M. Sielicki <alex@techmilo.com>",
