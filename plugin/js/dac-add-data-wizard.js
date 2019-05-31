@@ -12,7 +12,7 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import dacWizardUI from "../html/dac-add-data-wizard.html";
-
+import URI from "urijs";
 
 function constructor(params)
 {
@@ -38,7 +38,7 @@ function constructor(params)
     //                         description: "", marking: markings.preselected()});
     component.model = mapping.fromJS({_id: null, name: "Unfinished Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
-
+                            
     // list of models in current project
     component.model_attributes = mapping.fromJS([]);
 
@@ -168,8 +168,8 @@ function constructor(params)
         client.get_project_models({
             pid: origin_project._id(),
             error: function () {
+                dialog.ajax_error("Server error: could not retrieve models.")("","","");
 
-                console.log(error);
             },
             success: function (result) {
 
@@ -215,7 +215,7 @@ function constructor(params)
 
         // get models selected (use empty-model for place holder
         // to prevent conversion from list when calling server)
-        models_selected = ['empty-model'];
+        models_selected = [origin_model._id()];
         for (var i = 0; i != model_ids.length; i++) {
 
             // was model selected?
@@ -275,8 +275,12 @@ function constructor(params)
     // ************************
 
     // very last function called to launch model
-    component.go_to_model = function() {
-      location = '/models/' + component.model._id();
+    component.go_to_model = function(new_bookmarks) {
+
+      // use same bookmarks for new model
+      var bid = URI(window.location).query(true).bid;
+      location = '/models/' + component.model._id() + '?bid=' + bid;
+
     };
 
     component.finish_model = function () {
@@ -301,37 +305,27 @@ function constructor(params)
                     mid: component.model._id(),
                     success: function() {
 
-                            // call web-service to combine models
-                            if (component.dac_model_type() == 'new') {
+                            // combine by recomputing
+                            client.get_model_command({
+                                mid: component.model._id(),
+                                type: "DAC",
+                                command: "combine_models",
+                                parameters: [models_selected, component.dac_model_type()],
+                                success: function (result)
+                                {
 
-                                // replace "empty" model by origin model
-                                models_selected[0] = origin_model._id();
+                                    // start new model
+                                    component.go_to_model();
 
-                                // combine by recomputing
-                                client.get_model_command({
-                                    mid: component.model._id(),
-                                    type: "DAC",
-                                    command: "combine_models_recompute",
-                                    parameters: [models_selected],
-                                    success: function (result)
-                                    {
-                                        // start model
-                                        component.go_to_model();
-                                    },
-                                    error: function ()
-                                    {
-                                        // turn off wait button
-                                        $('.dac-launch-thread').toggleClass("disabled", false);
+                                },
+                                error: function ()
+                                {
+                                    // turn off wait button
+                                    $('.dac-launch-thread').toggleClass("disabled", false);
 
-                                        dialog.ajax_error("Server error: could not combine models.")("","","");
-                                    }
-                                });
-
-                            } else {
-
-                                console.log('combine by projection');
-
-                            }
+                                    dialog.ajax_error("Server error: could not combine models.")("","","");
+                                }
+                            });
 
                         }
                     });

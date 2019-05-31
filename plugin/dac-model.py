@@ -656,11 +656,12 @@ def register_slycat_plugin(context):
 
 
     # combine models by recomputing
-    def combine_models_recompute(database, model, verb, type, command, **kwargs):
+    def combine_models(database, model, verb, type, command, **kwargs):
 
         # get models to compare from database
         # (first model is origin model)
         model_ids_selected = kwargs["0"]
+        new_model_type = kwargs["1"]
         models_selected = []
         model_names = []
         for i in range(len(model_ids_selected)):
@@ -671,13 +672,13 @@ def register_slycat_plugin(context):
         stop_event = threading.Event()
         thread = threading.Thread(target=combine_models_thread,
                                   args=(database, model, models_selected,
-                                        model_names, stop_event))
+                                        new_model_type, model_names, stop_event))
         thread.start()
 
         return json.dumps(["Success", 1])
 
     # thread that does actual work for combine by recomputing
-    def combine_models_thread(database, model, models_selected,
+    def combine_models_thread(database, model, models_selected, new_model_type,
                                         model_names, stop_event):
 
         # put entire thread into a try-except block in order
@@ -758,8 +759,6 @@ def register_slycat_plugin(context):
                 slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", merged_cols)
                 parse_error_log.append("Merged editable columns.")
 
-            # copy bookmarks from original model
-
             # get variable metadata table header
             var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
                             models_selected[0], "dac-variables-meta")[0]["attributes"]
@@ -820,6 +819,16 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 58.0])
 
+            # write out model parameter in case of projection
+            if new_model_type == "proj":
+
+                # projection mask is vector with 1 = in base model, 0 = projection
+                proj = [1 for data_point in range(num_rows_per_model[0])]
+                proj += [0 for data_point in range(len(meta_rows) - num_rows_per_model[0])]
+
+                # store projection mask as artifact for use in computations
+                slycat.web.server.put_model_parameter(database, model, "dac-proj-mask", proj)
+
             # summarize results for user
             parse_error_log.insert(0, "Summary:\n")
 
@@ -830,7 +839,7 @@ def register_slycat_plugin(context):
             models_combined += '"' + model_names[-1] + '".'
             parse_error_log.insert(1, "Combined models " + models_combined)
 
-            # list out final stastics
+            # list out final statistics
             parse_error_log.insert(2, "Total number of tests: " + str(len(meta_rows)) + ".")
             parse_error_log.insert(3, "Each test has " + str(num_vars)
                                    + " digitizer time series.\n")
@@ -974,7 +983,7 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
     context.register_model_command("GET", "DAC", "check_compatible_models", check_compatible_models)
-    context.register_model_command("GET", "DAC", "combine_models_recompute", combine_models_recompute)
+    context.register_model_command("GET", "DAC", "combine_models", combine_models)
 
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})

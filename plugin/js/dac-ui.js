@@ -130,8 +130,6 @@ $(document).ready(function() {
                     $.when(request.get_parameters("dac-parse-log", mid)).then(
                         function(error_log)
                         {
-                            console.log(error_log);
-
                             // update text box unless user has focused on it
                             if (user_scroll == false) {
                                 // display text then scroll to bottom
