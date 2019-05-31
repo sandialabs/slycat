@@ -913,6 +913,30 @@ def logout():
     except Exception as e:
         raise cherrypy.HTTPError("400 Bad Request")
 
+@cherrypy.tools.json_out(on=True)
+def clear_ssh_sessions():
+  """
+  clears out of the ssh session for the current user
+  """
+  pass
+  try:
+      if "slycatauth" in cherrypy.request.cookie:
+          sid = cherrypy.request.cookie["slycatauth"].value
+          couchdb = slycat.web.server.database.couchdb.connect()
+          session = couchdb.get("session", sid)
+          cherrypy.log.error("session %s" % session)
+          cherrypy.response.status = "200"
+          if session is not None:
+              for ssh_session in session["sessions"]:
+                  cherrypy.log.error("sessions %s" % ssh_session["sid"])
+                  slycat.web.server.remote.delete_session(ssh_session["sid"])
+              session['sessions'] = []
+              couchdb.save(session)
+      else:
+          cherrypy.response.status = "403 Forbidden"
+  except Exception:
+      raise cherrypy.HTTPError("400 Bad Request")
+  return {"status":"ok"}
 
 @cherrypy.tools.json_in(on=True)
 def put_model_inputs(mid):
@@ -1976,7 +2000,7 @@ def get_remotes(hostname):
                     database.save(session)
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
-    return {"status": status, "msg": msg}
+    return {"status": status, "msg": msg, "hostName": hostname}
 
 
 @cherrypy.tools.json_out(on=True)

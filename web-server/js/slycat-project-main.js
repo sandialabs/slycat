@@ -10,7 +10,7 @@ import "css/slycat.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { renderTemplates } from 'components/ModelsList';
-import SearchWrapper from 'components/SearchWrapper';
+import SearchWrapper from 'components/SearchWrapper.tsx';
 import client from 'js/slycat-web-client';
 import URI from 'urijs';
 

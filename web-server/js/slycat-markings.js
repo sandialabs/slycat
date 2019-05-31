@@ -11,6 +11,9 @@ var module = {};
 module.allowed = mapping.fromJS([]);
 module.preselected = ko.observable(null);
 
+// For testing purposes, to simulate a slow network, uncomment this setTimeout
+// setTimeout(function () {
+        
 client.get_configuration_markings(
 {
   success: function(markings)
@@ -26,5 +29,8 @@ client.get_configuration_markings(
     }
   },
 });
+
+// For testing purposes, to simulate a slow network, uncomment this setTimeout
+// }, 5000);
 
 export default module;

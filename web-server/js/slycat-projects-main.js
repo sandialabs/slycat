@@ -9,7 +9,7 @@ import "css/slycat.css";
 
 import React from "react";
 import ReactDOM from "react-dom";
-import SearchWrapper from 'components/SearchWrapper';
+import SearchWrapper from 'components/SearchWrapper.tsx';
 import client from 'js/slycat-web-client';
 
 // These next 2 lines are required render the navbar using knockout. Remove them once we convert it to react.

@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   // mode is now specified in webpack.dev.js and webpack.prod.js
@@ -89,11 +90,15 @@ module.exports = {
       filename: 'slycat_login.html',
       chunks: ['slycat_login'],
     }),
+    // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
+    new CopyPlugin([
+      { from: 'docs/manual/html', to: 'docs' },
+    ], { copyUnmodified: true }),
   ],
   module: {
     rules: [
       // This enables Babel
-      { test: /\.js$/, 
+      { test: /\.(js|jsx|ts|tsx)$/, 
         exclude: /node_modules/, 
         use: "babel-loader",
       },

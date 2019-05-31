@@ -3,53 +3,86 @@ import ReactDOM from "react-dom";
 import client from 'js/slycat-web-client';
 import server_root from 'js/slycat-server-root';
 import model_names from 'js/slycat-model-names';
-import markings from 'js/slycat-markings';
 import * as dialog from 'js/slycat-dialog';
+import Spinner from 'components/Spinner.tsx';
 
 class ModelsList extends React.Component {
-  render() {
-    const models = this.props.models.map((model) =>
-    {
-      return  (
-                <Model 
-                  name={model.name} 
-                  key={model._id}
-                  id={model._id} 
-                  description={model.description} 
-                  created={model.created}
-                  creator={model.creator} 
-                  model_type={model['model-type']}
-                  marking={model.marking}
-                  message={model.message}
-                  result={model.result}
-                />
-              );
-    });
 
-    if(models.length > 0)
-    {
+  state = {
+    markings: null,
+  };
+
+  componentDidMount() {
+    // For testing purposes, to simulate a slow network, uncomment this setTimeout
+    // setTimeout( () => {
+    this._asyncRequest = client.get_configuration_markings_fetch().then(
+      markings => {
+        this._asyncRequest = null;
+        this.setState({markings: markings});
+      }
+    );
+    // For testing purposes, to simulate a slow network, uncomment this setTimeout
+    // }, 10000);
+  }
+
+  componentWillUnmount() {
+    if (this._asyncRequest) {
+      this._asyncRequest.cancel();
+    }
+  }
+
+  render() {
+    if (this.state.markings === null) {
+      // Render loading state ...
       return (
-        <div className="container pt-0">
-          <div className="card">
-            <div className="list-group list-group-flush">
-              <React.Fragment>
-                {models}
-              </React.Fragment>
+        <Spinner />
+      );
+    } else {
+      // Render real UI ...
+      const models = this.props.models.map((model) =>
+      {
+        return  (
+                  <Model 
+                    name={model.name} 
+                    key={model._id}
+                    id={model._id} 
+                    description={model.description} 
+                    created={model.created}
+                    creator={model.creator} 
+                    model_type={model['model-type']}
+                    marking={model.marking}
+                    markings={this.state.markings}
+                    message={model.message}
+                    result={model.result}
+                  />
+                );
+      });
+
+      if(models.length > 0)
+      {
+        return (
+          <div className="container pt-0">
+            <div className="card">
+              <div className="list-group list-group-flush">
+                <React.Fragment>
+                  {models}
+                </React.Fragment>
+              </div>
             </div>
           </div>
-        </div>
-      );
-    }
-    else
-    {
-      return null;
+        );
+      }
+      else
+      {
+        return null;
+      }
     }
   }
 }
 
 class Model extends React.Component {
   render() {
-    let recognized_marking = markings.allowed().find(obj => obj.type() == this.props.marking);
+    let recognized_marking = this.props.markings.find(obj => obj.type == this.props.marking);
     return (
       <a className={`list-group-item list-group-item-action ${recognized_marking === undefined ? 'list-group-item-warning' : ''}`} 
         href={server_root + 'models/' + this.props.id}>
@@ -97,7 +130,7 @@ class MarkingsBadge extends React.Component {
       return (
         <div className="float-right marking-badge" 
           style={{display: 'inline-block'}} 
-          dangerouslySetInnerHTML={{__html: this.props.recognized_marking.badge()}}></div>
+          dangerouslySetInnerHTML={{__html: this.props.recognized_marking.badge}}></div>
       );
     }
   }

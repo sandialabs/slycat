@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when loading a slycat selector we have expected props on initial load 1`] = `
+Object {
+  "checked": true,
+  "onChange": [MockFunction],
+  "style": Object {
+    "marginRight": "92%",
+  },
+  "text": "Local",
+  "value": "local",
+}
+`;
+
+exports[`when loading a slycat selector we see no state 1`] = `Object {}`;
+
+exports[`when loading a slycat selector we should have a full initialization 1`] = `
+<SlycatFormRadioCheckbox
+  checked={true}
+  onChange={[MockFunction]}
+  style={
+    Object {
+      "marginRight": "92%",
+    }
+  }
+  text="Local"
+  value="local"
+>
+  <div
+    className="form-check"
+  >
+    <label
+      className="form-check-label"
+      htmlFor="radio1"
+      style={
+        Object {
+          "marginRight": "92%",
+        }
+      }
+    >
+      <input
+        checked={true}
+        className="form-check-input"
+        onChange={[Function]}
+        type="radio"
+        value="local"
+      />
+      Local
+    </label>
+  </div>
+</SlycatFormRadioCheckbox>
+`;
