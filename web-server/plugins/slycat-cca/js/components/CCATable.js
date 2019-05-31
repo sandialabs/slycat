@@ -100,7 +100,7 @@ class CCATable extends React.Component {
     for(var i in columns)
     {
       var column = columns[i];
-      if(this.props.colormap !== null && $.inArray(column.id, variables) != -1)
+      if(this.props.colormap !== null && column.id == variables)
       {
         // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
         column.colormap = self.props.colormap.copy();
@@ -206,9 +206,9 @@ class CCATable extends React.Component {
     });
     this.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if( !self._array_equal([args.column.field], self.props.variable_selection) && (self.props.metadata["column-types"][args.column.id] != "string") )
+      if( ( args.column.field != self.props.variable_selection ) && (self.props.metadata["column-types"][args.column.id] != "string") )
       {
-        self._color_variables([args.column.field]);
+        self._color_variables(args.column.field);
         // ToDo: update state here
         //   self.options["variable-selection"] = [args.column.field];
         //   self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);

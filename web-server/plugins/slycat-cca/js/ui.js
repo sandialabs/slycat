@@ -39,6 +39,10 @@ import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
 import COLOR_LABELS from 'components/color-labels.js';
 
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+import slycat from './reducers';
+
 // Wait for document ready
 $(document).ready(function() {
 
@@ -78,6 +82,8 @@ $(document).ready(function() {
   // var legend_ready = false;
   var controls_ready = false;
   var previous_state = "";
+
+  var store = null;
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
@@ -252,6 +258,16 @@ $(document).ready(function() {
         bookmarker.getState(function(state)
         {
           bookmark = state;
+
+          // Create Redux store and set its state based on what's in the bookmark
+          store = createStore(slycat, bookmark);
+
+          // Save Redux state to bookmark whenever it changes
+          const bookmarkState = () => {
+            bookmarker.updateState({"state" : store.getState()});
+          };
+          store.subscribe(bookmarkState);
+
           selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
           colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
 
@@ -459,18 +475,20 @@ $(document).ready(function() {
       // }
 
       const cca_barplot = 
-        <CCABarplot 
-          metadata={table_metadata}
-          inputs={input_columns}
-          outputs={output_columns}
-          r2={r2}
-          wilks={wilks}
-          x_loadings={x_loadings}
-          y_loadings={y_loadings}
-          component={cca_component}
-          sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
-          variable_selection={variable_selection}
-        />
+        <Provider store={store}>
+          <CCABarplot 
+            metadata={table_metadata}
+            inputs={input_columns}
+            outputs={output_columns}
+            r2={r2}
+            wilks={wilks}
+            x_loadings={x_loadings}
+            y_loadings={y_loadings}
+            component={cca_component}
+            sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
+            variable_selection={store.getState()['variable-selection']}
+          />
+        </Provider>
       ;
 
       self.cca_barplot = ReactDOM.render(
@@ -628,7 +646,7 @@ $(document).ready(function() {
           colormap={color_maps.get_color_scale(colormap)}
           sort_variable={sort_variable}
           sort_order={sort_order}
-          variable_selection={[variable_selection]}
+          variable_selection={variable_selection}
         />
       ;
 
