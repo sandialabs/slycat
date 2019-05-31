@@ -136,25 +136,15 @@ export default class ControlsButtonUpdateTable extends Component {
       let passed = true;
       this.setState({currentColumns: json["column-names"]});
 
-      console.log(this.state.currentColumns.length);
-      console.log(this.state.newColumns.length);
-
-
       if(this.state.currentColumns.length !== this.state.newColumns.length) {
         passed = false;
         return passed;
       }
       this.state.currentColumns.forEach((column,i) => {
         if(column !== this.state.newColumns[i]) {
-          console.log("current columns");
-          console.log(column);
-          console.log("new columns");
-          console.log(this.state.newColumns[i]);
           passed = false;
         }
       });
-      console.log("ur mom");
-      console.log(passed);
       return passed;
     })
   };
