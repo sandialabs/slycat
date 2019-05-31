@@ -2,18 +2,16 @@
  * action types
  */
 
-export const CHANGE_FONT_SIZE = 'CHANGE_FONT_SIZE'
-export const CHANGE_FONT_FAMILY = 'CHANGE_FONT_FAMILY'
-export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'
+export const CHANGE_VARIABLE_SELECTION = 'CHANGE_VARIABLE_SELECTION'
 
-export function changeFontSize(size) {
-  return { type: CHANGE_FONT_SIZE, fontSize: size }
+export function changeVariableSelection(variable) {
+  return { type: CHANGE_VARIABLE_SELECTION, variableSelection: variable }
 }
 
-export function changeFontFamily(family) {
-  return { type: CHANGE_FONT_FAMILY, fontFamily: family }
-}
+// export function changeFontFamily(family) {
+//   return { type: CHANGE_FONT_FAMILY, fontFamily: family }
+// }
 
-export function changeAxesVariableScale(variable, scale) {
-  return { type: CHANGE_AXES_VARIABLE_SCALE, axesVariable: variable, axesScale: scale }
-}
+// export function changeAxesVariableScale(variable, scale) {
+//   return { type: CHANGE_AXES_VARIABLE_SCALE, axesVariable: variable, axesScale: scale }
+// }

@@ -11,12 +11,6 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import URI from "urijs";
 import * as chunker from "js/chunker";
-// import "./cca-table";
-// import "./cca-legend";
-// import "./cca-controls";
-// import "./cca-barplot";
-// import "./cca-scatterplot";
-// import "./color-switcher";
 import color_maps from "js/slycat-color-maps";
 
 import "jquery-ui";
@@ -73,7 +67,6 @@ $(document).ready(function() {
   var cca_component = null;
   var sort_variable = null;
   var sort_order = null;
-  var variable_selection = null;
 
   var generate_indices = false;
   var barplot_ready = false;
@@ -259,12 +252,38 @@ $(document).ready(function() {
         {
           bookmark = state;
 
+          // Make sure we have good state defaults if they are not in the bookmark
+          if (bookmark["simulation-selection"] === undefined)
+          {
+            bookmark["simulation-selection"] = [];
+          }
+          if (bookmark["colormap"] === undefined)
+          {
+            bookmark["colormap"] = "night";
+          }
+          if (bookmark["cca-component"] === undefined)
+          {
+            bookmark["cca-component"] = 0;
+          }
+          if (bookmark["sort-variable"] === undefined)
+          {
+            bookmark["sort-variable"] = null;
+          }
+          if (bookmark["sort-order"] === undefined)
+          {
+            bookmark["sort-order"] = null;
+          }
+          if (bookmark["variable-selection"] === undefined)
+          {
+            bookmark["variable-selection"] = table_metadata["column-count"] - 1;
+          }
+
           // Create Redux store and set its state based on what's in the bookmark
           store = createStore(slycat, bookmark);
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkState = () => {
-            bookmarker.updateState({"state" : store.getState()});
+            bookmarker.updateState(store.getState());
           };
           store.subscribe(bookmarkState);
 
@@ -275,7 +294,6 @@ $(document).ready(function() {
 
           sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : null;
           sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
-          variable_selection = bookmark["variable-selection"] !== undefined ? bookmark["variable-selection"] : table_metadata["column-count"] - 1;
 
           // setup_colorswitcher();
           setup_v();
@@ -373,9 +391,9 @@ $(document).ready(function() {
 
   function setup_v()
   {
-    if(bookmark && table_metadata && (variable_selection !== null))
+    if(bookmark && table_metadata && (store !== null))
     {
-      if(variable_selection == table_metadata["column-count"] - 1)
+      if(store.getState()['variable-selection'] == table_metadata["column-count"] - 1)
       {
         var count = table_metadata["row-count"];
         v = new Float64Array(count);
@@ -390,7 +408,7 @@ $(document).ready(function() {
           mid : model._id,
           aid : "data-table",
           array : 0,
-          attribute : variable_selection,
+          attribute : store.getState()['variable-selection'],
           success : function(result)
           {
             v = result;
@@ -434,7 +452,7 @@ $(document).ready(function() {
 
     // Setup the barplot ...
     if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings 
-      && (cca_component !== null) && (variable_selection !== null))
+      && (cca_component !== null) && (store !== null))
     {
       barplot_ready = true;
 
@@ -500,7 +518,7 @@ $(document).ready(function() {
     // Setup the scatterplot ...
     if(!scatterplot_ready && bookmark && table_metadata && indices && x && y && v 
       && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null)
-      && (variable_selection !== null)
+      && (store !== null)
     )
     {
       scatterplot_ready = true;
@@ -536,25 +554,27 @@ $(document).ready(function() {
       // });
 
       const cca_scatterplot = 
-        <CCAScatterplot
-          indices={indices}
-          x={x[cca_component]}
-          y={y[cca_component]}
-          v={v}
-          width={$("#scatterplot-pane").width()}
-          height={$("#scatterplot-pane").height()}
-          color={color_maps.get_color_scale(colormap)}
-          selection={selected_simulations}
-          border={{top: 40, right: 150, bottom: 40, left: 40}}
-          label_offset={{x: 25, y: 25}}
-          drag_threshold={3}
-          pick_distance={3}
-          gradient={color_maps.get_gradient_data(colormap)}
-          v_string={table_metadata["column-types"][variable_selection]=="string"}
-          v_label={table_metadata["column-names"][variable_selection]}
-          font_size={'14px'}
-          font_family={'Arial'}
-        />
+        <Provider store={store}>
+          <CCAScatterplot
+            indices={indices}
+            x={x[cca_component]}
+            y={y[cca_component]}
+            v={v}
+            width={$("#scatterplot-pane").width()}
+            height={$("#scatterplot-pane").height()}
+            color={color_maps.get_color_scale(colormap)}
+            selection={selected_simulations}
+            border={{top: 40, right: 150, bottom: 40, left: 40}}
+            label_offset={{x: 25, y: 25}}
+            drag_threshold={3}
+            pick_distance={3}
+            gradient={color_maps.get_gradient_data(colormap)}
+            v_string={table_metadata["column-types"][store.getState()['variable-selection']]=="string"}
+            v_label={table_metadata["column-names"][store.getState()['variable-selection']]}
+            font_size={'14px'}
+            font_family={'Arial'}
+          />
+        </Provider>
       ;
 
       self.cca_scatterplot = ReactDOM.render(
@@ -565,7 +585,7 @@ $(document).ready(function() {
 
     // Setup the table ...
     if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) 
-      && (colormap !== null) && (cca_component !== null) && (variable_selection !== null)
+      && (colormap !== null) && (cca_component !== null) && (store !== null)
 
     )
     {
@@ -634,20 +654,22 @@ $(document).ready(function() {
       // });
 
       const cca_table = 
-        <CCATable 
-          mid={model._id}
-          aid="data-table"
-          metadata={table_metadata}
-          inputs={input_columns}
-          outputs={output_columns}
-          others={other_columns}
-          component={cca_component}
-          row_selection={selected_simulations}
-          colormap={color_maps.get_color_scale(colormap)}
-          sort_variable={sort_variable}
-          sort_order={sort_order}
-          variable_selection={variable_selection}
-        />
+        <Provider store={store}>
+          <CCATable 
+            mid={model._id}
+            aid="data-table"
+            metadata={table_metadata}
+            inputs={input_columns}
+            outputs={output_columns}
+            others={other_columns}
+            component={cca_component}
+            row_selection={selected_simulations}
+            colormap={color_maps.get_color_scale(colormap)}
+            sort_variable={sort_variable}
+            sort_order={sort_order}
+            variable_selection={store.getState()['variable-selection']}
+          />
+        </Provider>
       ;
 
       self.cca_table = ReactDOM.render(
