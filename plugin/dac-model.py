@@ -161,10 +161,7 @@ def register_slycat_plugin(context):
         alpha_cluster_mat = numpy.zeros((1, num_vars))
         alpha_cluster_mat[:, var_include_columns] = alpha_cluster_mat_included
 
-        # return new alpha values
-
-
-        # return data using content function
+        # return alpha values using content function
         def content():
             yield json.dumps({"alpha_values": alpha_cluster_mat[0].tolist()})
 
@@ -640,6 +637,12 @@ def register_slycat_plugin(context):
             new_metadata = slycat.web.server.get_model_arrayset_metadata(database, models_selected[i],
                             "dac-datapoints-meta")[0]["attributes"]
 
+            # same number of columns?
+            if len(origin_metadata) != len(new_metadata):
+                return json.dumps(["Error", 'model "' +
+                                   model_names[i] + '" table columns do not match existing model ("' +
+                                   model["name"] + '").'])
+
             # compare type and name for metadata tables
             for j in range(len(origin_metadata)):
                 if (origin_metadata[j]["type"] != new_metadata[j]["type"]) or \
@@ -666,19 +669,19 @@ def register_slycat_plugin(context):
 
         # start thread to do actual work
         stop_event = threading.Event()
-        thread = threading.Thread(target=combine_models_recompute_thread,
+        thread = threading.Thread(target=combine_models_thread,
                                   args=(database, model, models_selected,
-                                        model_ids_selected, model_names, stop_event))
+                                        model_names, stop_event))
         thread.start()
 
         return json.dumps(["Success", 1])
 
     # thread that does actual work for combine by recomputing
-    def combine_models_recompute_thread(database, model, models_selected,
-                                        model_ids_selected, model_names, stop_event):
+    def combine_models_thread(database, model, models_selected,
+                                        model_names, stop_event):
 
-        # put entire thread into a try-except block in order to print
-        # errors to cherrypy.log.error
+        # put entire thread into a try-except block in order
+        # to print errors to cherrypy.log.error
         try:
 
             # init parse error log for UI
@@ -706,6 +709,7 @@ def register_slycat_plugin(context):
             # merge tables into new table
             num_cols = len(meta_column_names) - 1
             num_models = len(models_selected)
+            num_rows_per_model = []
             meta_rows = []
             for i in range(num_models):
 
@@ -715,6 +719,7 @@ def register_slycat_plugin(context):
 
                 # convert to rows and append origin model
                 num_rows = len(meta_table[0])
+                num_rows_per_model.append(num_rows)
                 for j in range(num_rows):
                     meta_row_j = []
                     for k in range(num_cols):
@@ -723,11 +728,37 @@ def register_slycat_plugin(context):
                     meta_rows.append(meta_row_j)
 
             parse_error_log.append("Added new table column for model origin.")
+            parse_error_log.append("Duplicate time series in different models will be duplicated in table,")
+            parse_error_log.append("and will be plotted over each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 53.0])
 
-            # merge editable columns
+            # get editable column data, if it exists
+            editable_cols = [{} for i in range(num_models)]
+            found_editable_cols = False
+            for i in range(num_models):
+
+                # check for editable columns in this model
+                if 'artifact:dac-editable-columns' in models_selected[i]:
+
+                    # load editable column attribute data
+                    editable_cols[i] = slycat.web.server.get_model_parameter(
+                        database, models_selected[i], "dac-editable-columns")
+
+                    found_editable_cols = True
+
+            # report on absence of editable columns
+            if not found_editable_cols:
+                parse_error_log.append("No editable columns found.")
+
+            # otherwise merge columns
+            else:
+                merged_cols = merge_editable_cols(editable_cols, num_rows_per_model)
+                slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", merged_cols)
+                parse_error_log.append("Merged editable columns.")
+
+            # copy bookmarks from original model
 
             # get variable metadata table header
             var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
@@ -820,6 +851,110 @@ def register_slycat_plugin(context):
 
             # print error to cherrypy.log.error
             cherrypy.log.error(traceback.format_exc())
+
+    # helper function for combine_models_thread which merges editable columns
+    def merge_editable_cols (editable_cols, num_rows_per_model):
+
+        num_models = len(editable_cols)
+
+        # convert number of rows per model into cumulative index
+        models_row_index = list(numpy.cumsum(num_rows_per_model))
+        num_rows = models_row_index.pop()
+        models_row_index.insert(0,0)
+
+        # merge existing headers into unique list
+        editable_attributes = []
+        editable_categories = []
+
+        # keep track of models that contribute to unique headers
+        model_headers = [{'origin': [], 'merged': []} for i in range(num_models)]
+
+        # go through each model, matching up headers and keeping track of data contributions
+        for i in range(num_models):
+
+            if len(editable_cols[i]) > 0:
+
+                # check each column in new dataset
+                for j in range(len(editable_cols[i]["attributes"])):
+
+                    # against already collected columns
+                    col_j_exists = False
+                    for k in range(len(editable_attributes)):
+
+                        # check name
+                        if editable_attributes[k]["name"] == editable_cols[i]["attributes"][j]["name"]:
+
+                            # check type
+                            if editable_attributes[k]["type"] == editable_cols[i]["attributes"][j]["type"]:
+
+                                # if freetext then done
+                                if editable_attributes[k]["type"] == "freetext":
+                                    col_j_exists = True
+                                    model_headers[i]["origin"].append(j)
+                                    model_headers[i]["merged"].append(k)
+
+                                # otherwise we also have to check categories
+                                else:
+
+                                    # check for same number of categories
+                                    if len(editable_categories[k]) == len(editable_cols[i]["categories"][j]):
+
+                                        # check for same category names
+                                        col_j_exists = True
+                                        for cat in editable_categories[k]:
+                                            if not cat in editable_cols[i]["categories"][j]:
+                                                col_j_exists = False
+
+                                        # keep track of models that have this column
+                                        if col_j_exists:
+                                            model_headers[i]["origin"].append(j)
+                                            model_headers[i]["merged"].append(k)
+
+                    # add to list, if not already present
+                    if not col_j_exists:
+                        editable_attributes.append(editable_cols[i]["attributes"][j])
+                        editable_categories.append(editable_cols[i]["categories"][j])
+
+                        # keep track of models that have this column
+                        model_headers[i]["origin"].append(j)
+                        model_headers[i]["merged"].append(len(editable_attributes) - 1)
+
+        # merge data for new headers
+        num_attr = len(editable_attributes)
+        editable_data = [[] for attr in range(num_attr)]
+
+        # initialize data to empty
+        for i in range(num_attr):
+
+            empty_val = ''
+            if editable_attributes[i]["type"] == 'categorical':
+                empty_val = 'No Value'
+            editable_data[i] = [empty_val for row in range(num_rows)]
+
+        # go through each model and fill in editable columns
+        for i in range(num_models):
+
+            # does this model have anything to contribute?
+            for j in range(len(model_headers[i]["origin"])):
+
+                for k in range(num_rows_per_model[i]):
+
+                    # from column/to column
+                    origin_col = model_headers[i]["origin"][j]
+                    merged_col = model_headers[i]["merged"][j]
+
+                    # to row
+                    merged_row = models_row_index[i] + k
+
+                    editable_data[merged_col][merged_row] = \
+                        editable_cols[i]["data"][origin_col][k]
+
+        merged_cols = {'num_rows': num_rows,
+                       'attributes': editable_attributes,
+                       'data': editable_data,
+                       'categories': editable_categories}
+
+        return merged_cols
 
 
     # import dac_compute_coords module from source by hand

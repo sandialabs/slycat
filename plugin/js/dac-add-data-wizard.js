@@ -301,9 +301,6 @@ function constructor(params)
                     mid: component.model._id(),
                     success: function() {
 
-                            // turn on wait spinner
-                            $(".dac-launch-thread").toggleClass("disabled", true);
-
                             // call web-service to combine models
                             if (component.dac_model_type() == 'new') {
 
@@ -318,12 +315,8 @@ function constructor(params)
                                     parameters: [models_selected],
                                     success: function (result)
                                     {
-                                        // turn off wait button
-                                        $('.dac-launch-thread').toggleClass("disabled", false);
-
                                         // start model
                                         component.go_to_model();
-
                                     },
                                     error: function ()
                                     {
