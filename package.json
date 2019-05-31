@@ -11,6 +11,10 @@
     "modules": "webpack --display-modules --config webpack.prod.js",
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
+  "pre-commit": [
+    "precommit-msg",
+    "test"
+  ],
   "main": "index.js",
   "repository": "git@github.com:sandialabs/slycat.git",
   "author": "Alex M. Sielicki <alex@techmilo.com>",
@@ -84,6 +88,7 @@
     "node-fetch-polyfill": "^2.0.6",
     "node-sass": "^4.12.0",
     "postcss-loader": "^3.0.0",
+    "pre-commit": "^1.2.2",
     "precss": "^4.0.0",
     "react-test-renderer": "^16.8.6",
     "sass-loader": "^7.1.0",
