@@ -90,7 +90,8 @@ export default class ControlsButtonUpdateTable extends Component {
   {
     this.setState({files:selectorFiles,disabled:false});
   };
-  callBack = (newHostname, newUsername, newPassword, sessionExists) => {
+  
+  controlsCallBack = (newHostname, newUsername, newPassword, sessionExists) => {
     this.setState({
       hostname: newHostname,
       sessionExists: sessionExists,
@@ -98,6 +99,7 @@ export default class ControlsButtonUpdateTable extends Component {
       password: newPassword
     });
   };
+
   sourceSelect = (value) =>
   {
     this.setState({selectedOption:value});
@@ -105,12 +107,9 @@ export default class ControlsButtonUpdateTable extends Component {
 
   uploadFile = () =>
   {
-    if (this.state.selectedOption == "local") {
-      this.uploadLocalFile();
-    }
-    else {
+    this.state.selectedOption == "local"?
+      this.uploadLocalFile():
       this.uploadRemoteFile();
-    }
   }
 
   checkColumns = (file) =>
@@ -264,10 +263,10 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({parserType:type});
   }
 
-  connectButtonCallBack = (sessionExistsNew, loadingDataNew) => {
+  connectButtonCallBack = (sessionExists, loadingData) => {
     this.setState({
-      sessionExists: sessionExistsNew,
-      loadingData: loadingDataNew
+      sessionExists,
+      loadingData
     },()=>{
       if(this.state.sessionExists){
         this.continue();
@@ -275,6 +274,11 @@ export default class ControlsButtonUpdateTable extends Component {
     });
   }
 
+  /**
+   * modal footer
+   *
+   * @memberof ControlsButtonUpdateTable
+   */
   getFooterJSX = () => {
     let footerJSX = [];
     if(this.state.visible_tab != "0"){
@@ -312,6 +316,10 @@ export default class ControlsButtonUpdateTable extends Component {
     }
     return footerJSX;
   }
+  /**
+   * modal body
+   * @memberof ControlsButtonUpdateTable
+   */
   getBodyJsx = () => {
     const options = [{
       text:'Comma separated values (CSV)',
@@ -365,7 +373,7 @@ export default class ControlsButtonUpdateTable extends Component {
       {this.state.visible_tab === "2"?
       <SlycatRemoteControls
       loadingData={this.state.loadingData} 
-      callBack={this.callBack}
+      callBack={this.controlsCallBack}
       />
       :null}
 
