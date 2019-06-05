@@ -9,6 +9,8 @@ export interface ModalLargeProps {
   modalId: string
   closingCallBack:Function
   title: string
+  body: JSX.Element
+  footer: JSX.Element
 }
 
 /**
@@ -26,13 +28,13 @@ export default class ModalLarge  extends React.Component<ModalLargeProps,ModalLa
     this.state = {
     }
   }
-  
+
   /**
    *close the modal and call the cleanup function
    *
    * @memberof ModalLarge
    */
-  closeModal = (e:React.MouseEvent) =>
+  closeModal = (e: React.MouseEvent): void =>
   {
     this.props.closingCallBack();
     ($('#' + this.props.modalId) as any).modal('hide');
@@ -50,9 +52,9 @@ export default class ModalLarge  extends React.Component<ModalLargeProps,ModalLa
               </button>
             </div>
             <div className='modal-body' id="slycat-wizard">
-
+              {this.props.body}
               <div className='modal-footer'>
-
+                {this.props.footer}
               </div>
             </div>
           </div>

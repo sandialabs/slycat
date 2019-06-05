@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
 import ProgressBar from 'components/ProgressBar.tsx';
+import ModalLarge from 'components/ModalLarge.tsx';
 import ControlsButton from './controls-button';
 import '../../css/controls-button-var-options.css';
 import { FileSelector } from './file-selector';
@@ -54,13 +55,6 @@ export default class ControlsButtonUpdateTable extends Component {
   cleanup = () =>
   {
     this.setState(initialState);
-
-  };
-
-  closeModal = (e) =>
-  {
-    this.cleanup();
-    $('#' + this.state.modalId).modal('hide');
   };
 
   continue = () =>
@@ -318,7 +312,7 @@ export default class ControlsButtonUpdateTable extends Component {
     }
     return footerJSX;
   }
-  render() {
+  getBodyJsx = () => {
     const options = [{
       text:'Comma separated values (CSV)',
       value:'slycat-csv-parser'
@@ -327,91 +321,88 @@ export default class ControlsButtonUpdateTable extends Component {
       text:'Dakota tabular',
       value:'slycat-dakota-parser'
     }];
+    return (
+    <div>
+      <Warning warningMessage={warningMessage} backgroundColor={'#FFFF99'}/>
+      {this.state.selectedOption === 'local'?
+      <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
+      <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
+      {this.state.visible_tab === "0" ?
+        <form style={{marginLeft: '16px'}}>
+          <SlycatFormRadioCheckbox
+            checked={this.state.selectedOption === 'local'}
+            onChange={this.sourceSelect}
+            value={'local'}
+            text={'Local'}
+            style={{marginRight: '92%'}}
+          />
+          <SlycatFormRadioCheckbox
+            checked={this.state.selectedOption === 'remote'}
+            onChange={this.sourceSelect}
+            value={'remote'}
+            text={'Remote'}
+            style={{marginRight: '89.7%'}}
+          />
+        </form>
+        :null}
 
+      {this.state.visible_tab === "1"?
+      <div className='tab-content'>
+        <div className="form-horizontal">
+          <FileSelector handleChange = {this.handleFileSelection} />
+          <SlycatSelector
+            onSelectCallBack={this.props.onSelectParserCallBack}
+            label={'Filetype'}
+            options={options}
+          />
+        </div>
+      </div>:null}
+
+      {this.state.visible_tab === "1" && this.state.passedColumnCheck === false ?
+        <Warning warningMessage={this.state.failedColumnCheckMessage}/>
+      :null}
+
+      {this.state.visible_tab === "2"?
+      <SlycatRemoteControls
+      loadingData={this.state.loadingData} 
+      callBack={this.callBack}
+      />
+      :null}
+
+      <div className='slycat-progress-bar'>
+        <ProgressBar
+          hidden={this.state.progressBarHidden}
+          progress={this.state.progressBarProgress}
+        />
+      </div>
+
+      {this.state.visible_tab === "3" ?
+        <RemoteFileBrowser 
+        onSelectFileCallBack={this.onSelectFile}
+        onSelectParserCallBack={this.onSelectParser}
+        hostname={this.state.hostname} 
+        />:
+      null}
+    </div>
+    );
+  }
+  render() {
     return (
       <div>
-        <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
-          <div className='modal-dialog modal-lg'>
-            <div className='modal-content'>
-              <div className='modal-header'>
-                <h3 className='modal-title'>{this.state.title}</h3>
-                <button type='button' className='close' onClick={this.closeModal} aria-label='Close'>
-                  X
-                </button>
-              </div>
-              <div className='modal-body' id="slycat-wizard">
-
-                <Warning warningMessage={warningMessage} backgroundColor={'#FFFF99'}/>
-
-                {this.state.selectedOption === 'local'?
-                <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
-                <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
-                {this.state.visible_tab === "0" ?
-                  <form style={{marginLeft: '16px'}}>
-                    <SlycatFormRadioCheckbox
-                      checked={this.state.selectedOption === 'local'}
-                      onChange={this.sourceSelect}
-                      value={'local'}
-                      text={'Local'}
-                      style={{marginRight: '92%'}}
-                    />
-                    <SlycatFormRadioCheckbox
-                      checked={this.state.selectedOption === 'remote'}
-                      onChange={this.sourceSelect}
-                      value={'remote'}
-                      text={'Remote'}
-                      style={{marginRight: '89.7%'}}
-                    />
-                  </form>
-                  :null}
-
-                {this.state.visible_tab === "1"?
-                <div className='tab-content'>
-                  <div className="form-horizontal">
-                    <FileSelector handleChange = {this.handleFileSelection} />
-                    <SlycatSelector
-                      onSelectCallBack={this.props.onSelectParserCallBack}
-                      label={'Filetype'}
-                      options={options}
-                    />
-                  </div>
-                </div>:null}
-
-                {this.state.visible_tab === "1" && this.state.passedColumnCheck === false ?
-                  <Warning warningMessage={this.state.failedColumnCheckMessage}/>
-                :null}
-
-                {this.state.visible_tab === "2"?
-                 <SlycatRemoteControls
-                 loadingData={this.state.loadingData} 
-                 callBack={this.callBack}
-                 />
-                :null}
-
-                <div className='slycat-progress-bar'>
-                  <ProgressBar
-                    hidden={this.state.progressBarHidden}
-                    progress={this.state.progressBarProgress}
-                  />
-                </div>
-
-                {this.state.visible_tab === "3" ?
-                  <RemoteFileBrowser 
-                  onSelectFileCallBack={this.onSelectFile}
-                  onSelectParserCallBack={this.onSelectParser}
-                  hostname={this.state.hostname} 
-                  />:
-                null}
-
-                <div className='modal-footer'>
-                  {this.getFooterJSX()}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <ControlsButton label='Update Table' title={this.state.title} data_toggle='modal' data_target={'#' + this.state.modalId}
-                        button_style={this.props.button_style} id='controls-button-death'/>
+        <ModalLarge
+          modalId = {this.state.modalId}
+          closingCallBack = {this.cleanup}
+          title = {this.state.title}
+          body={this.getBodyJsx()}
+          footer={this.getFooterJSX()}
+        />
+        <ControlsButton 
+          label='Update Table' 
+          title={this.state.title} 
+          data_toggle='modal' 
+          data_target={'#' + this.state.modalId}
+          button_style={this.props.button_style} id='controls-button-death'
+        />
       </div>
     );
   }
