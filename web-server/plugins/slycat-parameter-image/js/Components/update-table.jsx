@@ -15,7 +15,6 @@ import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
 import _ from "lodash";
-import mapping from "knockout-mapping";
 
 let initialState={};
 const localNavBar = ['Locate Data', 'Upload Table'];
@@ -90,7 +89,7 @@ export default class ControlsButtonUpdateTable extends Component {
   {
     this.setState({files:selectorFiles,disabled:false});
   };
-  
+
   controlsCallBack = (newHostname, newUsername, newPassword, sessionExists) => {
     this.setState({
       hostname: newHostname,
