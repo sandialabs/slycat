@@ -1,17 +1,24 @@
 import * as React from "react";
 
 /**
- * @param warningMessage array of message to be displayed
+ * @member warningMessage array of message to be displayed
+ * @member backgroundColor css value of background of the message
  */
 export interface WarningProps {
   warningMessage:Array<string>,
-  backgroundColor:string
+  backgroundColor?:string
+}
+
+/**
+ * not used
+ */
+export interface WarningState {
 }
 
 /**
  * takes a list of messages to be displayed as a warning
  */
-export default class Warning  extends React.Component<WarningProps> {
+export default class Warning  extends React.Component<WarningProps,WarningState> {
   public constructor(props:WarningProps) {
     super(props);
   }
