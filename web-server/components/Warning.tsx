@@ -4,7 +4,8 @@ import * as React from "react";
  * @param warningMessage array of message to be displayed
  */
 export interface WarningProps {
-  warningMessage:Array<string>
+  warningMessage:Array<string>,
+  backgroundColor:string
 }
 
 /**
@@ -23,7 +24,7 @@ export default class Warning  extends React.Component<WarningProps> {
   getLabels = () => {
     const labels = this.props.warningMessage.map((message, i) => {
       return (
-          <label key={i} style={{color: 'red', fontSize:'15.5px', textAlign:'center', backgroundColor:'#FFFF99', fontWeight:'bold'}}>
+          <label key={i} style={{color: 'red', fontSize:'15.5px', textAlign:'center', backgroundColor:this.props.backgroundColor?this.props.backgroundColor:'', fontWeight:'bold'}}>
             {message}
           </label>
       );

@@ -25,7 +25,7 @@ exports[`when loading a warning message we should have a full initialization 1`]
       key="0"
       style={
         Object {
-          "backgroundColor": "#FFFF99",
+          "backgroundColor": "",
           "color": "red",
           "fontSize": "15.5px",
           "fontWeight": "bold",
@@ -39,7 +39,7 @@ exports[`when loading a warning message we should have a full initialization 1`]
       key="1"
       style={
         Object {
-          "backgroundColor": "#FFFF99",
+          "backgroundColor": "",
           "color": "red",
           "fontSize": "15.5px",
           "fontWeight": "bold",
@@ -53,7 +53,7 @@ exports[`when loading a warning message we should have a full initialization 1`]
       key="2"
       style={
         Object {
-          "backgroundColor": "#FFFF99",
+          "backgroundColor": "",
           "color": "red",
           "fontSize": "15.5px",
           "fontWeight": "bold",

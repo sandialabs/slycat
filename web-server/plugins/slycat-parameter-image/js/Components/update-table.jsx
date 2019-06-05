@@ -13,6 +13,7 @@ import ConnectButton from 'components/ConnectButton.tsx';
 import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
+import _ from "lodash";
 import mapping from "knockout-mapping";
 
 let initialState={};
@@ -21,6 +22,7 @@ const remoteNavBar = ['Locate Data', 'Choose Host', 'Select Table'];
 const warningMessage = ['Warning: By using this feature, you run the risk of corrupting your models.\n',
   'ADDING, REMOVING, OR CHANGING THE ORDER OF COLUMNS IS CURRENTLY NOT SUPPORTED.\n',
   'IF YOU DO ANY OF THESE THINGS, IT WILL CORRUPT ALL MODELS USING THIS DATA TABLE.\n'];
+
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
     super(props);
@@ -43,13 +45,16 @@ export default class ControlsButtonUpdateTable extends Component {
       parserType: "slycat-csv-parser",
       currentColumns: [],
       newColumns: [],
+      passedColumnCheck: true,
+      failedColumnCheckMessage: ['This upload attempt has been rejected.\n'],
     }
-    initialState = {...this.state};
+    initialState = _.cloneDeep(this.state);
   }
 
   cleanup = () =>
   {
     this.setState(initialState);
+
   };
 
   closeModal = (e) =>
@@ -127,24 +132,44 @@ export default class ControlsButtonUpdateTable extends Component {
       let column_row = e.target.result.split('\n');
       let columns = column_row[0].split(',');
       this.setState({newColumns: columns});
-      console.log(columns);
     };
     reader.readAsText(file);
 
     return client.get_model_table_metadata_fetch({mid: this.props.mid, aid: "data-table"}).then((json)=>{
-      console.log(json["column-names"]);
       let passed = true;
+      let reason = "";
       this.setState({currentColumns: json["column-names"]});
 
       if(this.state.currentColumns.length !== this.state.newColumns.length) {
         passed = false;
-        return passed;
+        reason = "csv-length";
+        //Going to comment this out - do we want to tell the user why their CSV was rejected?
+        //If so, we need to wait until the end to return this value, so we can append the message.
+        //return passed;
       }
-      this.state.currentColumns.forEach((column,i) => {
-        if(column !== this.state.newColumns[i]) {
-          passed = false;
-        }
-      });
+      else {
+        this.state.currentColumns.forEach((column, i) => {
+          if (column !== this.state.newColumns[i]) {
+            passed = false;
+            reason = "csv-order";
+          }
+        });
+      }
+
+      //Need to figure out how to clear this message if they try to upload again without refreshing page.
+      switch(reason) {
+        case "csv-length":
+          this.state.failedColumnCheckMessage.push('The CSV you have attempted to upload does not have the same number of columns ' +
+            'as the CSV currently being used by the model.\n');
+          break;
+        case "csv-order":
+          this.state.failedColumnCheckMessage.push('The CSV you have attempted to upload has a different order of columns ' +
+            'than the CSV currently being used by the model.\n');
+          break;
+        default:
+          throw new Error("bad case");
+      }
+      this.setState({passedColumnCheck: passed});
       return passed;
     })
   };
@@ -164,7 +189,6 @@ export default class ControlsButtonUpdateTable extends Component {
          * Checking the columns of the new CSV to make sure the order is the same, and they didn't add or remove any.
          */
         this.checkColumns(file).then((passed)=>{
-          console.log(passed);
           if(passed) {
             let fileObject = {
               pid: pid,
@@ -247,7 +271,6 @@ export default class ControlsButtonUpdateTable extends Component {
   }
 
   onSelectParser = (type) => {
-    console.log(type);
     this.setState({parserType:type});
   }
 
@@ -256,9 +279,7 @@ export default class ControlsButtonUpdateTable extends Component {
       sessionExists: sessionExistsNew,
       loadingData: loadingDataNew
     },()=>{
-      console.log(`updating with ${this.state.sessionExists}`)
       if(this.state.sessionExists){
-        console.log('calling continue')
         this.continue();
       }
     });
@@ -310,6 +331,7 @@ export default class ControlsButtonUpdateTable extends Component {
       text:'Dakota tabular',
       value:'slycat-dakota-parser'
     }];
+
     return (
       <div>
         <div className='modal fade' data-backdrop='false' id={this.state.modalId}>
@@ -323,9 +345,9 @@ export default class ControlsButtonUpdateTable extends Component {
               </div>
               <div className='modal-body' id="slycat-wizard">
 
-                <Warning warningMessage={warningMessage}/>
+                <Warning warningMessage={warningMessage} backgroundColor={'#FFFF99'}/>
 
-                {this.state.selectedOption==='local'?
+                {this.state.selectedOption === 'local'?
                 <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
                 <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
                 {this.state.visible_tab === "0" ?
@@ -345,7 +367,7 @@ export default class ControlsButtonUpdateTable extends Component {
                       style={{marginRight: '89.7%'}}
                     />
                   </form>
-                :null}
+                  :null}
 
                 {this.state.visible_tab === "1"?
                 <div className='tab-content'>
@@ -358,6 +380,10 @@ export default class ControlsButtonUpdateTable extends Component {
                     />
                   </div>
                 </div>:null}
+
+                {this.state.visible_tab === "1" && this.state.passedColumnCheck === false ?
+                  <Warning warningMessage={this.state.failedColumnCheckMessage}/>
+                :null}
 
                 {this.state.visible_tab === "2"?
                  <SlycatRemoteControls
