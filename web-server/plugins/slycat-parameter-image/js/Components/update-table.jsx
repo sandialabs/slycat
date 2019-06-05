@@ -143,9 +143,6 @@ export default class ControlsButtonUpdateTable extends Component {
       if(this.state.currentColumns.length !== this.state.newColumns.length) {
         passed = false;
         reason = "csv-length";
-        //Going to comment this out - do we want to tell the user why their CSV was rejected?
-        //If so, we need to wait until the end to return this value, so we can append the message.
-        //return passed;
       }
       else {
         this.state.currentColumns.forEach((column, i) => {
@@ -156,7 +153,6 @@ export default class ControlsButtonUpdateTable extends Component {
         });
       }
 
-      //Need to figure out how to clear this message if they try to upload again without refreshing page.
       switch(reason) {
         case "csv-length":
           this.state.failedColumnCheckMessage.push('The CSV you have attempted to upload does not have the same number of columns ' +
