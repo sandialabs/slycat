@@ -44,7 +44,7 @@ export default class SlycatSelector extends React.Component<SlycatSelectorProps,
    *
    * @memberof SlycatSelector
    */
-  getOptions = () => {
+  getOptions = (): JSX.Element[]=> {
     const jsxOptions = this.props.options.map((option, i) => <option key={i} value={option.value}>{option.text}</option>);
     return jsxOptions;
   }

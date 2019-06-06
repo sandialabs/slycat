@@ -3,7 +3,7 @@ const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 const Visualizer = require('webpack-visualizer-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // Commenting out ExportNodeModules plugin because it crashes with Babel7
 // const ExportNodeModules = require('webpack-node-modules-list');
 
@@ -16,12 +16,7 @@ module.exports = merge(common, {
     //   sourceMap: true
     // }),
     // Deletes the web-server/dist folder so that old files don't remain there, only fresh ones from the last run.
-    new CleanWebpackPlugin(
-      {
-        // Setting this to true breaks ability to reload page when one of its dependency js files changes
-        watch: false,
-      }
-    ),
+    new CleanWebpackPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
     }),

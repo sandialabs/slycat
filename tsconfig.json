@@ -17,7 +17,7 @@
       "strictNullChecks": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
-      "moduleResolution": "jsdom",
+      "moduleResolution": "node",
       "baseUrl": "web-server",
       "paths": {
         "components/*": ["components/*"],

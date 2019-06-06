@@ -630,6 +630,28 @@ module.get_model_parameter = function(params)
   });
 }
 
+module.get_model_table_metadata_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}models/${params.mid}/tables/${params.aid}/arrays/${params.array || "0"}/metadata`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json",
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 module.get_model_table_metadata = function(params)
 {
   console.log("slycat-web-client.get_model_table_metadata() is deprecated, use get_model_arrayset_metadata() instead.");

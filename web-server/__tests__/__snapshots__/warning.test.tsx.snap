@@ -1,0 +1,128 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`when loading a warning message we have expected null state  on initial load 1`] = `null`;
+
+exports[`when loading a warning message we have expected props on initial load 1`] = `
+Object {
+  "warningMessage": Array [
+    "test1",
+    "test2",
+    "test3",
+  ],
+}
+`;
+
+exports[`when loading a warning message we should be able to change the background color 1`] = `
+<Warning
+  backgroundColor="colorfulness"
+  warningMessage={
+    Array [
+      "test1",
+      "test2",
+      "test3",
+    ]
+  }
+>
+  <div>
+    <label
+      key="0"
+      style={
+        Object {
+          "backgroundColor": "colorfulness",
+          "color": "red",
+          "fontSize": "15.5px",
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      test1
+    </label>
+    <label
+      key="1"
+      style={
+        Object {
+          "backgroundColor": "colorfulness",
+          "color": "red",
+          "fontSize": "15.5px",
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      test2
+    </label>
+    <label
+      key="2"
+      style={
+        Object {
+          "backgroundColor": "colorfulness",
+          "color": "red",
+          "fontSize": "15.5px",
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      test3
+    </label>
+  </div>
+</Warning>
+`;
+
+exports[`when loading a warning message we should have a full initialization 1`] = `
+<Warning
+  warningMessage={
+    Array [
+      "test1",
+      "test2",
+      "test3",
+    ]
+  }
+>
+  <div>
+    <label
+      key="0"
+      style={
+        Object {
+          "backgroundColor": "",
+          "color": "red",
+          "fontSize": "15.5px",
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      test1
+    </label>
+    <label
+      key="1"
+      style={
+        Object {
+          "backgroundColor": "",
+          "color": "red",
+          "fontSize": "15.5px",
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      test2
+    </label>
+    <label
+      key="2"
+      style={
+        Object {
+          "backgroundColor": "",
+          "color": "red",
+          "fontSize": "15.5px",
+          "fontWeight": "bold",
+          "textAlign": "center",
+        }
+      }
+    >
+      test3
+    </label>
+  </div>
+</Warning>
+`;
