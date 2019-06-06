@@ -92,7 +92,7 @@ class CCATable extends React.Component {
     return value == null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
-  _color_variables = (variables) =>
+  _color_variable = (variable) =>
   {
     let self = this;
 
@@ -100,7 +100,7 @@ class CCATable extends React.Component {
     for(var i in columns)
     {
       var column = columns[i];
-      if(this.props.colormap !== null && column.id == variables)
+      if(this.props.colormap !== null && column.id == variable)
       {
         // Make a copy of our global colormap, then adjust its domain to match our column-specific data.
         column.colormap = self.props.colormap.copy();
@@ -208,14 +208,15 @@ class CCATable extends React.Component {
     {
       if( ( args.column.field != self.props.variable_selection ) && (self.props.metadata["column-types"][args.column.id] != "string") )
       {
-        self._color_variables(args.column.field);
+        self._color_variable(args.column.field);
+
         // ToDo: update state here
         //   self.options["variable-selection"] = [args.column.field];
         //   self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
       }
     });
 
-    this._color_variables(this.props.variable_selection);
+    this._color_variable(this.props.variable_selection);
 
     this.grid.init();
 
@@ -253,5 +254,7 @@ class CCATable extends React.Component {
     );
   }
 }
+
+import * as actionCreators from '../actions';
 
 export default CCATable

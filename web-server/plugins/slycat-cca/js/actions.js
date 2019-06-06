@@ -5,7 +5,10 @@
 export const CHANGE_VARIABLE_SELECTION = 'CHANGE_VARIABLE_SELECTION'
 
 export function changeVariableSelection(variable) {
-  return { type: CHANGE_VARIABLE_SELECTION, variableSelection: variable }
+  return { 
+  	type: CHANGE_VARIABLE_SELECTION, 
+  	variableSelection: variable 
+  }
 }
 
 // export function changeFontFamily(family) {
