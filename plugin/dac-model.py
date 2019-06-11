@@ -205,6 +205,14 @@ def register_slycat_plugin(context):
         # only use included variables
         include_columns = numpy.array(kwargs["include_columns"])
 
+        # check for projection mask
+        proj = numpy.ones(len(subset_mask))
+        if "artifact:dac-proj-mask" in model:
+
+            # load projecgtion mask
+            proj = numpy.array(slycat.web.server.get_model_parameter(
+                database, model, "dac-proj-mask"))
+
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
         for i in include_columns:
@@ -216,7 +224,8 @@ def register_slycat_plugin(context):
             database, model, "dac-full-mds-coords", "0/0/...")))
 
         # compute new MDS coords (truncate coords for old models)
-        mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns], old_coords[:, 0:2], subset_mask)
+        mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns],
+                                        old_coords[:, 0:2], subset_mask, proj)
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords,
@@ -819,12 +828,14 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 58.0])
 
-            # write out model parameter in case of projection
+            # write out model parameter in case of projection (assume no projection)
+            num_tests = len(meta_rows)
+            proj = [1 for data_point in range(num_tests)]
             if new_model_type == "proj":
 
                 # projection mask is vector with 1 = in base model, 0 = projection
                 proj = [1 for data_point in range(num_rows_per_model[0])]
-                proj += [0 for data_point in range(len(meta_rows) - num_rows_per_model[0])]
+                proj += [0 for data_point in range(num_tests - num_rows_per_model[0])]
 
                 # store projection mask as artifact for use in computations
                 slycat.web.server.put_model_parameter(database, model, "dac-proj-mask", proj)
@@ -840,7 +851,7 @@ def register_slycat_plugin(context):
             parse_error_log.insert(1, "Combined models " + models_combined)
 
             # list out final statistics
-            parse_error_log.insert(2, "Total number of tests: " + str(len(meta_rows)) + ".")
+            parse_error_log.insert(2, "Total number of tests: " + str(num_tests) + ".")
             parse_error_log.insert(3, "Each test has " + str(num_vars)
                                    + " digitizer time series.\n")
 
@@ -851,7 +862,7 @@ def register_slycat_plugin(context):
             push.init_upload_model (database, model, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist)
+                                    var_data, time_steps, var_dist, proj)
 
             # done -- destroy the thread
             stop_event.set()

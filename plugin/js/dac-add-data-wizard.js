@@ -38,7 +38,7 @@ function constructor(params)
     //                         description: "", marking: markings.preselected()});
     component.model = mapping.fromJS({_id: null, name: "Unfinished Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
-                            
+
     // list of models in current project
     component.model_attributes = mapping.fromJS([]);
 

@@ -35,12 +35,15 @@ def cmdscale(D):
         p dimensions corresponding to positive eigenvalues of B are returned.                
         Note that each dimension is only determined up to an overall sign,                   
         corresponding to a reflection.  Only returns 2d coordinates.
+    Yinv : multiply (dx - d_mean) times Yinv to get 2d projected coordinates,
+           where dx is a row vector of distances to points in Y and d_mean
+           is the average of the distance in Y.
     """
     
-    # Number of points                                                                       
+    # number of points
     n = len(D)
 
-    #  for multiple points, solve eigenvalue problem
+    # for multiple points, solve eigenvalue problem
     if n > 1:
 
         # Centering matrix
@@ -58,24 +61,36 @@ def cmdscale(D):
         evecs = evecs[:,idx]
 
         # Compute the coordinates using positive-eigenvalued components only
-        w, = np.where(evals >= 0)
+        w, = np.where(evals > 0)
         L  = np.diag(np.sqrt(evals[w]))
         V  = evecs[:,w]
         Y  = V.dot(L)
 
-        # if only one coordinate then add one column of zeros
+        # compute inverse for projection
+        Linv = np.diag(np.reciprocal(np.sqrt(evals[w])))
+        Yinv = - V.dot(Linv) / 2.0
+
+        # if no coordinates then use two columns of zeros for Y and Yinv
+        if len(w) == 0:
+            Y = np.zeros((n,2))
+            Yinv = np.zeros((n,2))
+
+        # if only one coordinate then add one column of zeros to Y and Yinv
         if len(w) == 1:
             Y = np.append(np.reshape(Y, (Y.shape[0],1)),
                           np.zeros((Y.shape[0],1)), axis=1)
+            Yinv = np.append(np.reshape(Yinv, (Yinv.shape[0], 1)),
+                          np.zeros((Yinv.shape[0], 1)), axis=1)
 
     # for one point set coordinates to center of screen
     else:
         Y = np.array([0, 0])
+        Yinv = np.array([0, 0])
 
-    return Y
+    return Y, Yinv
 
 
-def compute_coords (dist_mats, alpha_values, old_coords, subset):
+def compute_coords (dist_mats, alpha_values, old_coords, subset, proj=None):
     """
     Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
     classical multidimensional scaling.
@@ -85,26 +100,74 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset):
             a numpy array containing a vector of alpha values between
             0 and 1.
             subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            proj is an optional vector similar to subset, defaults to vector
+            of all 1.
     
     OUTPUTS: Y is a numpy array of coordinates (n,2) and
     """
 
-    # init distance matrix to size of subset
+    # set projection default (vector of all ones -- everything in projection)
+    num_tests = dist_mats[0].shape[0]
+    if proj is None:
+        proj = np.ones(num_tests)
+
+    # make sure projection is an array
+    else:
+        proj = np.asarray(proj)
+
+    # get sizes of projection, subset
+    num_proj = int(np.sum(proj))
     num_subset = int(np.sum(subset))
-    full_dist_mat = np.zeros((num_subset,num_subset))
+
+    # use subset if not full dataset, otherwise get projection
+    cmd_subset = subset
+    compute_proj = False
+    if num_subset == num_tests:
+        cmd_subset = proj
+        compute_proj = True
+
+    cherrypy.log.error(str(cmd_subset))
+    cherrypy.log.error(str(compute_proj))
+
+    # init distance matrix to size of working subset
+    num_cmd_subset = int(np.sum(cmd_subset))
+    full_dist_mat = np.zeros((num_cmd_subset,num_cmd_subset))
 
     # compute alpha-sum of distance matrices on subset
-    subset_inds = np.where(subset)[0]
+    subset_inds = np.where(cmd_subset)[0]
     for i in range(len(dist_mats)):
         full_dist_mat = full_dist_mat + alpha_values[i]**2 * \
                         dist_mats[i][subset_inds[:,None], subset_inds]**2
 
     # compute mds coordinates on subset
-    mds_subset_coords = cmdscale(np.sqrt(full_dist_mat))
+    mds_subset_coords, proj_inv = cmdscale(np.sqrt(full_dist_mat))
+
+    cherrypy.log.error(str(mds_subset_coords))
 
     # if not in subset, assign coordinates of [0,0]
     mds_coords = old_coords
     mds_coords[subset_inds,:] = mds_subset_coords
+
+    # compute projection, if no subset and projection not full dataset
+    if compute_proj and (num_proj < num_tests):
+
+        # get points to project
+        proj_inds = np.where(cmd_subset==0)[0]
+
+        # compute mean distance squared for points in projection
+        mean_dist = np.mean(full_dist_mat, axis=1)
+
+        # compute distance squared for each point to be projected
+        proj_dist_mat = np.zeros((num_proj, num_proj))
+        for i in range(len(dist_mats)):
+            proj_dist_mat = proj_dist_mat + alpha_values[i] ** 2 * \
+                                            dist_mats[i][proj_inds[:, None], subset_inds] ** 2
+
+        # compute projected coords
+        proj_coords = (proj_dist_mat - mean_dist).dot(proj_inv)
+
+        # put projected coords into mds coords
+        mds_coords[proj_inds,:] = proj_coords
 
     return mds_coords
 
@@ -171,7 +234,7 @@ def scale_coords (coords, full_coords, subset, center):
     return new_coords
 
 
-def init_coords (var_dist):
+def init_coords (var_dist, proj=None):
     """
     Computes initial MDS coordinates assuming alpha values are all 1.0
 
@@ -198,7 +261,7 @@ def init_coords (var_dist):
     # compute MDS coordinates assuming alpha = 1 for scaling, full subset, full view
     subset_mask = np.ones(var_dist[0].shape[0])
     old_coords = np.zeros((var_dist[0].shape[0], 2))
-    full_mds_coords = compute_coords(var_dist, alpha_values, old_coords, subset_mask)
+    full_mds_coords = compute_coords(var_dist, alpha_values, old_coords, subset_mask, proj)
 
     # scale using full coordinates
     subset_center = np.array([.5,.5])

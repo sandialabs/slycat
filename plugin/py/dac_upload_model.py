@@ -25,7 +25,7 @@ import cherrypy
 # time_steps is a list of time step vectors
 # var_dist is a list of pairwise distance matrices
 def init_upload_model (database, model, parse_error_log, meta_column_names, meta_rows,
-                       meta_var_col_names, meta_vars, variable, time_steps, var_dist):
+                       meta_var_col_names, meta_vars, variable, time_steps, var_dist, proj=None):
 
     # convert from meta data from row-oriented to column-oriented data,
     # and convert to numeric columns where possible.
@@ -47,7 +47,7 @@ def init_upload_model (database, model, parse_error_log, meta_column_names, meta
     num_vars = len(meta_vars)
 
     # next compute initial MDS coordinates
-    mds_coords, full_mds_coords = dac.init_coords(var_dist)
+    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj)
 
     # finally compute alpha cluster values
     alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)
