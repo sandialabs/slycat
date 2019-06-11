@@ -126,9 +126,6 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset, proj=None):
         cmd_subset = proj
         compute_proj = True
 
-    cherrypy.log.error(str(cmd_subset))
-    cherrypy.log.error(str(compute_proj))
-
     # init distance matrix to size of working subset
     num_cmd_subset = int(np.sum(cmd_subset))
     full_dist_mat = np.zeros((num_cmd_subset,num_cmd_subset))
@@ -141,8 +138,6 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset, proj=None):
 
     # compute mds coordinates on subset
     mds_subset_coords, proj_inv = cmdscale(np.sqrt(full_dist_mat))
-
-    cherrypy.log.error(str(mds_subset_coords))
 
     # if not in subset, assign coordinates of [0,0]
     mds_coords = old_coords
