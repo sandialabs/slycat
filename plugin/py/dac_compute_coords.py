@@ -148,12 +148,13 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset, proj=None):
 
         # get points to project
         proj_inds = np.where(cmd_subset==0)[0]
+        num_proj_inds = len(proj_inds)
 
         # compute mean distance squared for points in projection
         mean_dist = np.mean(full_dist_mat, axis=1)
 
         # compute distance squared for each point to be projected
-        proj_dist_mat = np.zeros((num_proj, num_proj))
+        proj_dist_mat = np.zeros((num_proj_inds, num_proj))
         for i in range(len(dist_mats)):
             proj_dist_mat = proj_dist_mat + alpha_values[i] ** 2 * \
                                             dist_mats[i][proj_inds[:, None], subset_inds] ** 2
