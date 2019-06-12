@@ -210,45 +210,6 @@ def start(root_path, config_file):
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
   # Setup our static content directories.
-  configuration["/dist"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("dist"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/css"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("css"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/js"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("js"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/fonts"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("fonts"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/templates"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("templates"),
-    "tools.staticdir.on": True,
-    }
   configuration["/login"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,
