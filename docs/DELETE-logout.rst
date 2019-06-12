@@ -1,5 +1,5 @@
 DELETE Logout
-============
+================
 
 .. http:delete:: /logout
 
