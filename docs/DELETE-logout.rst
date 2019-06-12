@@ -5,7 +5,7 @@ DELETE Logout
 
   Deletes a session and its browser cookie.
 
-  **Sample Request**
+  **Sample Request**:
 
   .. sourcecode:: http
 
@@ -18,7 +18,7 @@ DELETE Logout
       User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
       Cookie: slycatauth=dee8324c69d2424385246edc8d92e996; slycattimeout=timeout
 
-  **Sample Response**
+  **Sample Response**:
 
   .. sourcecode:: http
 
@@ -30,8 +30,8 @@ DELETE Logout
       Expires: 0
       Pragma: no-cache
       Server: CherryPy/4.0.0
-      Set-Cookie: slycatauth=dee8324c69d2424385246edc8d92e996; expires=Wed, 16 Mar 2016 16:31:53 GMT
-      slycattimeout=timeout; expires=Wed, 16 Mar 2016 16:31:53 GMT
+      Set-Cookie: slycatauth=dee8324c69d2424385246edc8d92e996; expires=Wed, 16 Mar 2016 16:31:53 GMT;
+        slycattimeout=timeout; expires=Wed, 16 Mar 2016 16:31:53 GMT
 
 See Also
 --------
