@@ -54,17 +54,10 @@ Documentation:
 
   manual/user-manual.rst
   design.rst
-  tutorial.rst
-  setup-clients.rst
-  setup-server.rst
-  docker-development.rst
-  testing.rst
   coding-guidelines.rst
-  plugins.rst
   colophon.rst
   models.rst
   rest-api.rst
-  javascript-api.rst
   python-api.rst
   support.rst
 

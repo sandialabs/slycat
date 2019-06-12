@@ -10,13 +10,9 @@ clients, typically used for custom data ingestion.
 .. toctree::
    :maxdepth: 2
 
-   slycat.cca.rst
    slycat.darray.rst
    slycat.hdf5.rst
    slycat.hyperchunks.rst
-   slycat.table.rst
-   slycat.timeseries.rst
-   slycat.timeseries.segmentation.rst
    slycat.uri.rst
    slycat.web.client.rst
    slycat.web.server.rst
