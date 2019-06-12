@@ -1,0 +1,146 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Taylor Anvil Impact Scenario (TAIS) Data Set &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Creating a Parameter Space Model" href="CreatingPSModel.html" />
+    <link rel="prev" title="Parameter Space Model" href="parameter.space.model.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="taylor-anvil-impact-scenario-tais-data-set">
+<h1>Taylor Anvil Impact Scenario (TAIS) Data Set<a class="headerlink" href="#taylor-anvil-impact-scenario-tais-data-set" title="Permalink to this headline">¶</a></h1>
+<p>TAIS was generated using Sierra/SolidMechanics <a class="footnote-reference" href="#id3" id="id1">[1]</a> (a Lagrangian, three-dimensional code for problems with large deformations
+and nonlinear material behaviors) in combination with ParaView/Catalyst <a class="footnote-reference" href="#id4" id="id2">[2]</a>.  The images were generated in situ (at the same
+time as the physics simulation) using Catalyst.  The simulation is of an Oxygen Free High Conductivity (OFHC) copper cylinder,
+2.54 cm long with a diameter of .762 cm and an initial velocity of 190 m/sec, impacting a rigid wall.  The ensemble is a
+sensitivity study that evaluates the effects of changing four parameters of the Johnson-Cook inelastic constitutive law: <em>ajo</em>,
+<em>bjo</em>, <em>njo</em>, and <em>beta</em>.  The height and radius of the cylinder after the impact are compared to experimental photographic
+results.  Two output metrics are calculated for each run, <em>ndrf_last</em> and <em>ndhf_last</em>.  These variables are the normalized
+differences between the radius/height of the final cylinder state from the last timestep of the simulation
+and the final radius/height of the cylinder in the experiment, respectively.  Since the differences would decrease in those cases
+where the simulation more closely matched the experimental results, the optimal case would be a simulation where the values of
+these two metrics were zero (i.e. there is no difference between the simulation and the experiment).</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Sierra Solid Mechanics Team. <em>Sierra/SolidMechanics 4.22 User’s Guide</em>. Technical Report SAND2011-7597, Sandia National Laboratories (2011).</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>Ayachit, U., Bauer, A., Geveci, B., O’Leary, P., Moreland, K., Fabian, N., and Mauldin, J., <em>ParaView Catalyst: Enabling In Situ Data Analysis and Visualization</em>, Proceedings of the First Workshop on In Situ Infrastructures for Enabling Extreme-Scale Analysis and Visualization (ISAV2015), pp. 25-29, ACM, New York, NY (2015).</td></tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CreatingPSModel.html">Creating a Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+  <li><a href="parameter.space.model.html">Parameter Space Model</a><ul>
+      <li>Previous: <a href="parameter.space.model.html" title="previous chapter">Parameter Space Model</a></li>
+      <li>Next: <a href="CreatingPSModel.html" title="next chapter">Creating a Parameter Space Model</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/TAISDataSet.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

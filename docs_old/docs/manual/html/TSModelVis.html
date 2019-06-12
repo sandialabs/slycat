@@ -1,0 +1,166 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Time Series Model Visualization &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dendrogram View" href="Dendrogram.html" />
+    <link rel="prev" title="High Performance Computing Parameters Dialog" href="HPCParams.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="time-series-model-visualization">
+<h1>Time Series Model Visualization<a class="headerlink" href="#time-series-model-visualization" title="Permalink to this headline">¶</a></h1>
+<p>Our examples in this section come from an ensemble of 250 electrical circuit simulations, where our time series outputs are
+current and voltage variables sampled over time.  A Time Series model of this ensemble is shown in Figure 54.  The model
+provides three linked views, each providing a different level of abstraction.  The <em>Dendrogram View</em> in the upper left provides
+a high-level view that groups waveforms by similarity.  In the upper right, the <em>Simulation View</em> displays a line plot for each
+ensemble member.  The plots are superimposed in a shared coordinate space to facilitate comparisons. The lowest level view is
+the <em>Variable Table</em>, which provides the raw data values from the original table file.  It is drawn across the bottom of the
+display and may be scrolled both vertically and horizontally if the number of rows or columns exceeds the available space.
+Although the <em>Variable Table</em> may contain columns with scalar output metrics, or columns of file URIs that would be categorized
+as being neither input nor output, the ingestion wizard assumes all table columns are inputs and colors them green.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="_images/Figure54.png"><img alt="_images/Figure54.png" src="_images/Figure54.png" style="width: 1184.0px; height: 692.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 54: Time Series model with Dendrogram View in upper left, Simulation View in upper right, and Variable Table below.</strong></span></p>
+</div>
+<p>The <em>Dendrogram View</em> controls visibility of ensemble members in both the <em>Simulation View</em> and the <em>Variable Table</em>.
+Selections can be made in any one of the views, after which they are propagated to the other two.  Color-encoding is shared
+by all views.</p>
+<p>The model specific controls for a Time Series model are shown in Figure 55.  Within each time series file, multiple output
+variables may be present.  Each variable is input as a column of values, and each row provides the values for all variables
+at a single instant in time.  Each time series variable generates a distinctly different dendrogram and has a set of unique
+plots.  The <em>Outputs</em> dropdown provides a list of the time series variables so you can select which one is currently being
+displayed in the <em>Dendrogram View</em> and the <em>Simulation View</em>.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="_images/Figure55.png"><img alt="_images/Figure55.png" src="_images/Figure55.png" style="width: 236.0px; height: 28.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 55: Time Series model specific controls.  The Outputs dropdown switches the views between different time series variables.  Line Color selects from the scalar input variables for color-coding the lines.  The Download Table icon enables download of the entire Variable Table or subsets thereof.  Colors selects the color theme.  The latter two functions are shared by all model types.</strong></span></p>
+</div>
+<p>To facilitate discovering relationships between input parameters and groups of output plots, it is often useful to color-code
+the lines by input variable values.  Select a color-coding variable either through the <em>Line Color</em> dropdown or by clicking on
+a table column header (see Color-Coding Lines below).</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Dendrogram.html">Dendrogram View</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DendrogramControl.html">Dendrogram Expansion/Contraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DendrogramFiltering.html">Dendrogram Visibility Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sparklines.html">Sparklines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TSSimView.html">Time Series Simulation View</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TSSimView.html#color-coding-lines">Color-Coding Lines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TSSimView.html#legend">Legend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TSVariableTable.html">Time Series Variable Table</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="TimeSeriesData.html">Time Series Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CreatingTSModel.html">Creating a Time Series Model</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Time Series Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+  <li><a href="timeseries.model.html">Timeseries Model</a><ul>
+      <li>Previous: <a href="HPCParams.html" title="previous chapter">High Performance Computing Parameters Dialog</a></li>
+      <li>Next: <a href="Dendrogram.html" title="next chapter">Dendrogram View</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/TSModelVis.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
