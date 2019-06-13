@@ -255,10 +255,16 @@ def put_project(pid):
 
 
 def delete_project(pid):
+    """
+    Deletes a project and all its models.
+    
+    Arguments:
+        pid {string} -- project id
+    """
+
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
     slycat.web.server.authentication.require_project_administrator(project)
-
     for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
         couchdb.delete(cache_object)
     for reference in couchdb.scan("slycat/project-references", startkey=pid, endkey=pid):
