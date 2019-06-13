@@ -1147,6 +1147,16 @@ def get_project_cache_object(pid, key):
 
 
 def delete_project_cache_object(pid, key):
+  """
+  Deletes an object from the project cache.
+  
+  Arguments:
+      pid {string} -- project id
+      key {string} -- key in the cache
+  
+  Raises:
+      cherrypy.HTTPError: 404 not found
+  """
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
