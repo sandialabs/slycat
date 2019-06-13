@@ -1,7 +1,7 @@
 DELETE Logout
 ================
 
-.. http:delete:: /logout
+.. http:delete:: /api/logout
 
   :synopsis: Deletes a session and its browser cookie.
 
@@ -9,7 +9,7 @@ DELETE Logout
 
   .. sourcecode:: http
 
-      DELETE /logout HTTP/1.1
+      DELETE /api/logout HTTP/1.1
       Accept: */*
       Accept-Encoding: gzip, deflate, br
       Accept-Language: en-US,en;q=0.9
@@ -33,7 +33,6 @@ DELETE Logout
       content-type: text/html;charset=utf-8
       date: Thu, 13 Jun 2019 19:50:28 GMT
       expires: 0
-      pragma: no-cache
       server: CherryPy/14.0.0
       set-cookie: slycatauth=4326db67af3f46f3bbb77f338c3ca4c3; expires=Thu, 13 Jun 2019 19:50:29 GMT
       set-cookie: slycattimeout=timeout; expires=Thu, 13 Jun 2019 19:50:29 GMT
@@ -46,5 +45,5 @@ DELETE Logout
 See Also
 --------
 
-- :http:post:`api/login`
+- :http:post:`/api/login`
 
