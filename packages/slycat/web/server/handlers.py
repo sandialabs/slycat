@@ -2037,6 +2037,12 @@ def get_remote_show_user_password():
 
 
 def delete_remote(sid):
+    """
+    Deletes a remote session created with POST /api/remotes
+    
+    Arguments:
+        sid {string} -- unique session id
+    """
     slycat.web.server.remote.delete_session(sid)
     cherrypy.response.status = "204 Remote deleted."
 
