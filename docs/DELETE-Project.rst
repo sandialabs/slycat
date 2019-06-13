@@ -1,7 +1,7 @@
 DELETE Project
 ==============
 
-.. http:delete:: /projects/(pid)
+.. http:delete:: /api/projects/(pid)
 
   Deletes a project and all its models.
 
@@ -14,26 +14,36 @@ DELETE Project
 
   .. sourcecode:: http
 
-    DELETE /projects/dbaf026f919620acbf2e961ad732433d HTTP/1.1
-    Host: localhost:8093
-    Content-Length: 0
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
-    Accept-Encoding: gzip, deflate, compress
+    DELETE /api/projects/9031c032d770b55db6e66fca0d000fc6 HTTP/1.1
+    Host: localhost:9000
+    Connection: keep-alive
     Accept: */*
-    User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
+    Origin: https://localhost:9000
+    X-Requested-With: XMLHttpRequest
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36
+    DNT: 1
+    Referer: https://localhost:9000/projects/9031c032d770b55db6e66fca0d000fc6
+    Accept-Encoding: gzip, deflate, br
+    Accept-Language: en-US,en;q=0.9
+    Cookie: slycattimeout=timeout; slycatauth=52230b361ec442ffa6d608da64ab4617
 
   **Sample Response**
 
   .. sourcecode:: http
 
     HTTP/1.1 204 Project deleted.
-    Date: Mon, 25 Nov 2013 20:35:59 GMT
-    Content-Type: text/html;charset=utf-8
-    Server: CherryPy/3.2.2
+    X-Powered-By: Express
+    expires: 0
+    server: CherryPy/14.0.0
+    pragma: no-cache
+    cache-control: no-cache, no-store, must-revalidate
+    date: Thu, 13 Jun 2019 22:26:10 GMT
+    content-type: text/html;charset=utf-8
+    connection: close
 
 See Also
 --------
 
-- :http:get:`/projects/(pid)`
-- :http:put:`/projects/(pid)`
+- :http:get:`/api/projects/(pid)`
+- :http:put:`/api/projects/(pid)`
 
