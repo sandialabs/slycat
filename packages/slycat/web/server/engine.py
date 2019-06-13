@@ -169,7 +169,7 @@ def start(root_path, config_file):
   dispatcher.connect("post-upload-finshed", "/uploads/:uid/finished", slycat.web.server.handlers.post_upload_finished, conditions={"method" : ["POST"]})
   dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
 
-  dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("delete-logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   
   dispatcher.connect("clear-ssh-sessions", "/clear/ssh-sessions", slycat.web.server.handlers.clear_ssh_sessions, conditions={"method" : ["GET"]})
   dispatcher.connect("delete-model-parameter", "/delete-artifact/:mid/:aid", slycat.web.server.handlers.delete_model_parameter, conditions={"method" : ["DELETE"]})

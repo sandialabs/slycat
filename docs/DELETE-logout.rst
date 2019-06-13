@@ -3,38 +3,48 @@ DELETE Logout
 
 .. http:delete:: /logout
 
-  Deletes a session and its browser cookie.
+  :synopsis: Deletes a session and its browser cookie.
 
   **Sample Request**:
 
   .. sourcecode:: http
 
       DELETE /logout HTTP/1.1
-      Host: localhost:8093
-      Content-Length: 0
-      Authorization: Basic c2x5Y2F0OnNseWNhdA==
-      Accept-Encoding: gzip, deflate, compress
       Accept: */*
-      User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
-      Cookie: slycatauth=dee8324c69d2424385246edc8d92e996; slycattimeout=timeout
+      Accept-Encoding: gzip, deflate, br
+      Accept-Language: en-US,en;q=0.9
+      Connection: keep-alive
+      Cookie: slycatauth=4326db67af3f46f3bbb77f338c3ca4c3; slycattimeout=timeout
+      DNT: 1
+      Host: localhost:9000
+      Origin: https://localhost:9000
+      Referer: https://localhost:9000/
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36
+      X-Requested-With: XMLHttpRequest
 
   **Sample Response**:
 
   .. sourcecode:: http
 
       HTTP/1.1 204 Model deleted.
-      Cache-Control: no-cache, no-store, must-revalidate
-      Content-Length: 0
-      Content-Type: text/html;charset=utf-8
-      Date: Wed, 16 Mar 2016 16:31:53 GMT
-      Expires: 0
-      Pragma: no-cache
-      Server: CherryPy/4.0.0
-      Set-Cookie: slycatauth=dee8324c69d2424385246edc8d92e996; expires=Wed, 16 Mar 2016 16:31:53 GMT;
-        slycattimeout=timeout; expires=Wed, 16 Mar 2016 16:31:53 GMT
+      cache-control: no-cache, no-store, must-revalidate
+      connection: close
+      content-length: 0
+      content-type: text/html;charset=utf-8
+      date: Thu, 13 Jun 2019 19:50:28 GMT
+      expires: 0
+      pragma: no-cache
+      server: CherryPy/14.0.0
+      set-cookie: slycatauth=4326db67af3f46f3bbb77f338c3ca4c3; expires=Thu, 13 Jun 2019 19:50:29 GMT
+      set-cookie: slycattimeout=timeout; expires=Thu, 13 Jun 2019 19:50:29 GMT
+      X-Powered-By: Express
+
+  :statuscode 200: session deleted
+  :statuscode 400: Bad Request no session to delete. or Bad Request on generic exception
+  :statuscode 403: Forbidden, there was no cookie passed with the request
 
 See Also
 --------
 
-- :http:post:`/login`
+- :http:post:`api/login`
 
