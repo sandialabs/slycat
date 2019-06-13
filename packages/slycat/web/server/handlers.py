@@ -1167,7 +1167,7 @@ def delete_project_cache_object(pid, key):
         cherrypy.response.status = "204 Cache object deleted."
         return
 
-    cherrypy.log.error("slycat.web.server.handlers.py delete_project_cache_object", "cherrypy.HTTPError 404")
+    cherrypy.log.error("slycat.web.server.handlers.py delete_project_cache_object failed", "cherrypy.HTTPError 404")
     raise cherrypy.HTTPError(404)
 
 
