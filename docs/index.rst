@@ -56,10 +56,8 @@ Documentation:
   design.rst
   coding-guidelines.rst
   colophon.rst
-  models.rst
   rest-api.rst
   python-api.rst
-  support.rst
 
 Indices and tables
 ==================
