@@ -138,7 +138,7 @@ export default class ControlsButtonUpdateTable extends Component {
       }
       else {
         this.state.currentColumns.forEach((column, i) => {
-          if (column !== this.state.newColumns[i]) {
+          if (column.trim() !== this.state.newColumns[i].trim()) {
             passed = false;
             reason = "csv-order";
           }
@@ -155,7 +155,7 @@ export default class ControlsButtonUpdateTable extends Component {
             'than the CSV currently being used by the model.\n');
           break;
         default:
-          throw new Error("bad case");
+          break;
       }
       this.setState({passedColumnCheck: passed});
       return passed;
@@ -196,7 +196,7 @@ export default class ControlsButtonUpdateTable extends Component {
                     },
                   }).then(() => {
                   this.setState({progressBarProgress: 100});
-                  this.closeModal();
+                  //this.closeModal();
                   location.reload();
                 });
               }
@@ -238,7 +238,7 @@ export default class ControlsButtonUpdateTable extends Component {
               },
             }).then(() => {
               this.setState({progressBarProgress:100});
-              this.closeModal();
+              //this.closeModal();
               location.reload();
             });
             }
