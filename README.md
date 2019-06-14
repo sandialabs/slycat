@@ -7,6 +7,10 @@
 
 This is Slycat - a web-based ensemble analysis and visualization platform, created at [Sandia National Laboratories](http://www.sandia.gov).
 
+# Documentation
+
+[Latest documentation can be found here](https://slycat.readthedocs.io/en/latest/)
+
 # Slycat Demo
 You can try out slycat at https://myslycat.com
 

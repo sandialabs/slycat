@@ -32,7 +32,7 @@ delivered to users’ desktops through ordinary web browsers. Slycat™
 currently provides two types of analysis: canonical correlation analysis
 (CCA) to model relationships between inputs and output metrics, and time
 series analysis featuring clustering and comparative visualization of
-waveforms. :ref:`install-slycat` to try it for yourself!
+waveforms.
 
 Design
 ======
@@ -56,10 +56,8 @@ Documentation:
   design.rst
   coding-guidelines.rst
   colophon.rst
-  models.rst
   rest-api.rst
   python-api.rst
-  support.rst
 
 Indices and tables
 ==================

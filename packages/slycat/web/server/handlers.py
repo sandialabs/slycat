@@ -255,10 +255,16 @@ def put_project(pid):
 
 
 def delete_project(pid):
+    """
+    Deletes a project and all its models.
+    
+    Arguments:
+        pid {string} -- project id
+    """
+
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
     slycat.web.server.authentication.require_project_administrator(project)
-
     for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
         couchdb.delete(cache_object)
     for reference in couchdb.scan("slycat/project-references", startkey=pid, endkey=pid):
@@ -1147,6 +1153,16 @@ def get_project_cache_object(pid, key):
 
 
 def delete_project_cache_object(pid, key):
+    """
+    Deletes an object from the project cache.
+    
+    Arguments:
+        pid {string} -- project id
+        key {string} -- key in the cache
+    
+    Raises:
+        cherrypy.HTTPError: 404 not found
+    """
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -2021,6 +2037,12 @@ def get_remote_show_user_password():
 
 
 def delete_remote(sid):
+    """
+    Deletes a remote session created with POST /api/remotes
+    
+    Arguments:
+        sid {string} -- unique session id
+    """
     slycat.web.server.remote.delete_session(sid)
     cherrypy.response.status = "204 Remote deleted."
 
