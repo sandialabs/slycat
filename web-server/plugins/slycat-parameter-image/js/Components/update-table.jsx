@@ -155,7 +155,7 @@ export default class ControlsButtonUpdateTable extends Component {
             'than the CSV currently being used by the model.\n');
           break;
         default:
-          throw new Error("bad case");
+          break;
       }
       this.setState({passedColumnCheck: passed});
       return passed;
