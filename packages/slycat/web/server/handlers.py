@@ -807,9 +807,19 @@ def post_upload_finished(uid):
 
 def delete_upload(uid):
     """
-    cleans up an upload session throws 409
-    if the session is busy
-    :param uid: 
+    Delete an upload session used to upload files for storage as model artifacts. 
+    This function must be called once the client no longer needs the session, 
+    whether the upload(s) have been completed successfully or the 
+    client is cancelling an incomplete session.
+
+    status 204
+      The upload session and any temporary storage have been deleted.
+
+    status 409
+      The upload session cannot be deleted, because parsing is in progress. 
+      Try again later.
+
+    :param uid: upload sessin id
     :return: not used
     """
     slycat.web.server.upload.delete_session(uid)
