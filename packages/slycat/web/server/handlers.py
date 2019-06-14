@@ -892,12 +892,13 @@ def login():
 
 def get_root():
     """
+    TODO: this function may be deprecated with the webpack move
     Redirect all requests to "/" to "/projects"
     Not sure why we used to do that, but after conversion to webpack this is no longer needed,
     so I changed the projects-redirect config parameter in web-server-config.ini to just "/"
     """
     current_url = urlparse.urlparse(cherrypy.url())
-    proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
+    proj_url = "https://" + current_url.netloc
     raise cherrypy.HTTPRedirect(proj_url, 303)
 
 
