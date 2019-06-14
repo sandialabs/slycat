@@ -1838,6 +1838,15 @@ def get_model_parameter(mid, aid):
 
 
 def get_bookmark(bid):
+    """
+    Retrieves a bookmark - an arbitrary collection of client state.
+    
+    Arguments:
+        bid {string} -- bookmark id
+    
+    Returns:
+        json -- representation of client state
+    """
     accept = cherrypy.lib.cptools.accept(media=["application/json"])
 
     database = slycat.web.server.database.couchdb.connect()
