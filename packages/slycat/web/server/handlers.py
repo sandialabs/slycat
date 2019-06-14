@@ -2038,6 +2038,8 @@ def get_remote_show_user_password():
 
 def delete_remote(sid):
     """
+    TODO: this function needs review for deprecation as we no longer send the sid over
+
     Deletes a remote session created with POST /api/remotes
     
     Arguments:
