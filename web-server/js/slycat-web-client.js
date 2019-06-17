@@ -630,6 +630,28 @@ module.get_model_parameter = function(params)
   });
 }
 
+module.get_remote_file_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}remotes/${params.hostname}/file${params.path}`,
+  {
+    credentials: "same-origin",
+    cache: "no-store",
+    dataType: "text",
+  })
+  .then(function(response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response;
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 module.get_model_table_metadata_fetch = function(params, successFunction, errorFunction)
 {
   return fetch(`${api_root}models/${params.mid}/tables/${params.aid}/arrays/${params.array || "0"}/metadata`,
