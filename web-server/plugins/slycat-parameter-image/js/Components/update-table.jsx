@@ -15,8 +15,6 @@ import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
 import _ from "lodash";
-import api_root from "js/slycat-api-root";
-import URI from "urijs";
 
 let initialState={};
 const localNavBar = ['Locate Data', 'Upload Table'];
