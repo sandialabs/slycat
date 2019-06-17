@@ -807,9 +807,19 @@ def post_upload_finished(uid):
 
 def delete_upload(uid):
     """
-    cleans up an upload session throws 409
-    if the session is busy
-    :param uid: 
+    Delete an upload session used to upload files for storage as model artifacts. 
+    This function must be called once the client no longer needs the session, 
+    whether the upload(s) have been completed successfully or the 
+    client is cancelling an incomplete session.
+
+    status 204
+      The upload session and any temporary storage have been deleted.
+
+    status 409
+      The upload session cannot be deleted, because parsing is in progress. 
+      Try again later.
+
+    :param uid: upload sessin id
     :return: not used
     """
     slycat.web.server.upload.delete_session(uid)
@@ -882,12 +892,13 @@ def login():
 
 def get_root():
     """
+    TODO: this function may be deprecated with the webpack move
     Redirect all requests to "/" to "/projects"
     Not sure why we used to do that, but after conversion to webpack this is no longer needed,
     so I changed the projects-redirect config parameter in web-server-config.ini to just "/"
     """
     current_url = urlparse.urlparse(cherrypy.url())
-    proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
+    proj_url = "https://" + current_url.netloc
     raise cherrypy.HTTPRedirect(proj_url, 303)
 
 
@@ -1828,6 +1839,15 @@ def get_model_parameter(mid, aid):
 
 
 def get_bookmark(bid):
+    """
+    Retrieves a bookmark - an arbitrary collection of client state.
+    
+    Arguments:
+        bid {string} -- bookmark id
+    
+    Returns:
+        json -- representation of client state
+    """
     accept = cherrypy.lib.cptools.accept(media=["application/json"])
 
     database = slycat.web.server.database.couchdb.connect()
@@ -2038,6 +2058,8 @@ def get_remote_show_user_password():
 
 def delete_remote(sid):
     """
+    TODO: this function needs review for deprecation as we no longer send the sid over
+
     Deletes a remote session created with POST /api/remotes
     
     Arguments:

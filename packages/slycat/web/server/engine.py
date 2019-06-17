@@ -71,8 +71,6 @@ def start(root_path, config_file):
 
   dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
-  dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
-
   dispatcher.connect("delete-model", "/models/:mid", slycat.web.server.handlers.delete_model, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-cache", "/projects/:pid/delete-cache", slycat.web.server.handlers.delete_project_cache, conditions={"method" : ["DELETE"]})
@@ -82,6 +80,7 @@ def start(root_path, config_file):
   dispatcher.connect("delete-logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
 
+  dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-parsers", "/configuration/parsers", slycat.web.server.handlers.get_configuration_parsers, conditions={"method" : ["GET"]})

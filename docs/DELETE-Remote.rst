@@ -1,9 +1,9 @@
 DELETE Remote
 =============
 
-.. http:delete:: /remotes/(sid)
+.. http:delete:: /api/remotes/(sid)
 
-  Deletes a remote session created with :http:post:`/remotes`.
+  Deletes a remote session created with :http:post:`/remotes`. Deprecated
 
   :param sid: Unique session identifier.
   :type mid: string
@@ -14,7 +14,7 @@ DELETE Remote
 
   .. sourcecode:: http
 
-    DELETE /remotes/dbaf026f919620acbf2e961ad732433d HTTP/1.1
+    DELETE /api/remotes/dbaf026f919620acbf2e961ad732433d HTTP/1.1
     Host: localhost:8093
     Content-Length: 0
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
@@ -29,10 +29,10 @@ DELETE Remote
     HTTP/1.1 204 Session deleted.
     Date: Mon, 25 Nov 2013 20:35:59 GMT
     Content-Type: text/html;charset=utf-8
-    Server: CherryPy/3.2.2
+    Server: CherryPy/14.0.0
 
 See Also
 --------
 
-- :http:post:`/remotes`
+- :http:post:`/api/remotes`
 

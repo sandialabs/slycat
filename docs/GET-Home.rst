@@ -1,7 +1,7 @@
 GET Home
 ========
 
-.. http:get:: /
+.. http:get:: /api/
 
   Returns a redirect to /projects.
 
@@ -10,5 +10,5 @@ GET Home
 See Also
 --------
 
-- :http:get:`/projects`
+- :http:get:`/api/projects`
 
