@@ -580,6 +580,26 @@ def get_model(mid, **kwargs):
 
 
 def model_command(mid, type, command, **kwargs):
+    """
+    Execute a custom model command.
+
+    Plugins may register custom commands to be executed
+    on the server, using an existing model as context.
+    Custom commands are used to perform computation on
+    the server instead of the client, and would typically
+    use model artifacts as inputs.
+
+    Arguments:
+        mid {string} -- model id
+        type {string} -- Unique command category.
+        command {string} -- Custom command name.
+    
+    Raises:
+        cherrypy.HTTPError: 400 Unknown command:
+    
+    Returns:
+        any -- whatever the registered command returns
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
@@ -587,8 +607,8 @@ def model_command(mid, type, command, **kwargs):
 
     key = (cherrypy.request.method, type, command)
     if key in slycat.web.server.plugin.manager.model_commands:
-        return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type,
-                                                                    command, **kwargs)
+        return slycat.web.server.plugin.manager.model_commands[key]
+            (database, model, cherrypy.request.method, type, command, **kwargs)
 
     cherrypy.log.error("slycat.web.server.handlers.py model_command",
                             "cherrypy.HTTPError 400 unknown command: %s" % command)
