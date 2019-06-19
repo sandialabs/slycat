@@ -92,9 +92,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.get_model_arrayset_data, conditions={"method" : ["GET"]})
-
-  dispatcher.connect("post-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.post_model_arrayset_data, conditions={"method" : ["POST"]})
-
   dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/arraysets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
@@ -123,6 +120,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-user", "/users/:uid/:time", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
   dispatcher.connect("model-command", "/models/:mid/commands/:type/:command", slycat.web.server.handlers.model_command, conditions={"method" : ["GET", "POST", "PUT"]})
+  dispatcher.connect("post-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.post_model_arrayset_data, conditions={"method" : ["POST"]})
   dispatcher.connect("model-sensitive-command", "/models/:mid/sensitive/:type/:command", slycat.web.server.handlers.model_sensitive_command, conditions={"method" : ["POST"]})
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-files", "/models/:mid/files", slycat.web.server.handlers.post_model_files, conditions={"method" : ["POST"]})

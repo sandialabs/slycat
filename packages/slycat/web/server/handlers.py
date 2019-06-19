@@ -1268,6 +1268,35 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
 
 @cherrypy.tools.json_out(on=True)
 def get_model_arrayset_metadata(mid, aid, **kwargs):
+    """
+    Used to retrieve metadata and statistics for an arrayset artifact
+    - a collection of dense, multidimensional darray objects. A darray
+    is a dense, multi-dimensional, multi-attribute array,
+    suitable for storage of arbitrarily-large data.
+
+    The metadata for a single darray includes the name, type,
+    half-open range of coordinate values, and shape for each
+    dimension in the array, plus the name and type of each attribute.
+
+    Statistics can be retrieved for individual darray attributes, and
+    include minimum and maximum values, plus a count of unique
+    values for an attribute. Although statistics are cached, retrieving
+    them may be an extremely expensive operation, since they involve
+    full scans through their respective attributes. Because of this,
+    callers are encouraged to retrieve statistics only when needed.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+    
+    Raises:
+        cherrypy.HTTPError: 404
+        cherrypy.HTTPError: 400 aid is not an array artifact.
+        cherrypy.HTTPError: 400 Not a valid hyperchunks specification.
+    
+    Returns:
+        json -- statistical results of arrayset
+    """
     cherrypy.log.error("GET arrayset metadata mid:%s aid:%s kwargs:%s" % (mid, aid, kwargs.keys()))
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -1307,9 +1336,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
-    # cherrypy.log.error("looking for unique in results")
     if "unique" in results:
-        # cherrypy.log.error("found unique in results: " )
         cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         cherrypy.log.error("type:")
         cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
