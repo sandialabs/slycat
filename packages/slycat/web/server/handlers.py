@@ -1326,6 +1326,31 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
 
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
+    """
+    Retrieve data stored in arrayset darray attributes. The caller 
+    may request data stored using any combination of 
+    arrays, attributes, and hyperslices.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+        hyperchunks {string} -- The request must contain a parameter 
+          hyperchunks that specifies the arrays, attributes, 
+          and hyperslices to be returned, in Hyperchunks format.
+    
+    Keyword Arguments:
+        byteorder {string} -- optional byteorder argument must 
+          be big or little. (default: {None})
+    
+    Raises:
+        cherrypy.HTTPError: 400 aid is not an array artifact.
+        cherrypy.HTTPError: 400 Not a valid hyperchunks specification
+        cherrypy.HTTPError: 400 optional byteorder argument must be big or little.
+        cherrypy.HTTPError: 404 aid not found
+    
+    Returns:
+        octet-stream -- application/octet-stream
+    """
     cherrypy.log.error(
         "GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
     try:
