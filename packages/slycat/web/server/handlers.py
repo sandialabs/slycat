@@ -598,7 +598,7 @@ def model_command(mid, type, command, **kwargs):
         cherrypy.HTTPError: 400 Unknown command:
     
     Returns:
-        any -- whatever the registered command returns
+        any -- whatever the registered command
     """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -607,8 +607,8 @@ def model_command(mid, type, command, **kwargs):
 
     key = (cherrypy.request.method, type, command)
     if key in slycat.web.server.plugin.manager.model_commands:
-        return slycat.web.server.plugin.manager.model_commands[key]
-            (database, model, cherrypy.request.method, type, command, **kwargs)
+        return slycat.web.server.plugin.manager.model_commands[key](database, model, cherrypy.request.method, type,
+                                                                    command, **kwargs)
 
     cherrypy.log.error("slycat.web.server.handlers.py model_command",
                             "cherrypy.HTTPError 400 unknown command: %s" % command)
