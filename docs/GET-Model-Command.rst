@@ -27,7 +27,7 @@ GET Model Command
 
   .. sourcecode:: http
 
-    GET /models/e32ef475e084432481655fe41348726b/commands/math-plugin/add HTTP/1.1
+    GET /api/models/e32ef475e084432481655fe41348726b/commands/math-plugin/add HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
