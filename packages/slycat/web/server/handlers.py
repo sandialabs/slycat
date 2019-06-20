@@ -566,17 +566,22 @@ def put_reference(rid):
 
     cherrypy.response.status = "201 Reference updated."
 
-
+@cherrypy.tools.json_out(on=True)
 def get_model(mid, **kwargs):
+    """
+    Returns a model.
+    
+    Arguments:
+        mid {string} -- model id
+    
+    Returns:
+        json -- represents a model
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
-
-    accept = cherrypy.lib.cptools.accept(media=["application/json"])
-    cherrypy.response.headers["content-type"] = accept
-
-    return json.dumps(model)
+    return model
 
 
 def model_command(mid, type, command, **kwargs):
