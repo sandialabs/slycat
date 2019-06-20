@@ -1874,6 +1874,22 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
 
 
 def get_model_file(mid, aid):
+    """  
+    Retrieves a file artifact from a model. File artifacts are effectively
+    binary blobs that may contain arbitrary data with an explicit content
+    type.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+    
+    Raises:
+        cherrypy.HTTPError: 404
+        cherrypy.HTTPError: 400 aid is not a file artifact.
+    
+    Returns:
+        any -- file
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
