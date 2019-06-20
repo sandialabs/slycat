@@ -1,9 +1,9 @@
 GET Model Table Unsorted Indices
 ================================
 
-.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices
+.. http:get:: /api/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices
 
-  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/data` instead.
+  .. warning:: This request is deprecated.  Use :http:get:`/api/models/(mid)/arraysets/(aid)/data` instead.
 
   Given a collection of sorted row indices and a specific sort order,
   return the corresponding unsorted row indices.

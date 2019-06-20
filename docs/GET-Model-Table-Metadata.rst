@@ -1,9 +1,9 @@
 GET Model Table Metadata
 ========================
 
-.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/metadata
+.. http:get:: /api/models/(mid)/tables/(aid)/arrays/(array)/metadata
 
-  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/metadata` instead.
+  .. warning:: This request is deprecated.  Use :http:get:`/api/models/(mid)/arraysets/(aid)/metadata` instead.
 
   Used to retrieve metadata from a 1D arrayset array artifact, optimized
   for use as a table. The metadata for the table describes the number of
@@ -30,7 +30,7 @@ GET Model Table Metadata
 
   .. sourcecode:: http
 
-    GET /models/6b3c85df433e499e9680a135cabe3ab2/tables/test-array-set/arrays/0/metadata HTTP/1.1
+    GET /api/models/6b3c85df433e499e9680a135cabe3ab2/tables/test-array-set/arrays/0/metadata HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
@@ -59,7 +59,7 @@ GET Model Table Metadata
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/chunk`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/chunk`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
 

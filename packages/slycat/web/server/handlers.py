@@ -1171,6 +1171,22 @@ def delete_reference(rid):
 
 
 def get_project_cache_object(pid, key):
+    """
+    Retrieves an object from a project’s cache. 
+    Cache objects are opaque binary blobs that 
+    may contain arbitrary data, plus an explicit 
+    content type.
+    
+    Arguments:
+        pid {string} -- project id
+        key {string} -- string key for obj
+    
+    Raises:
+        cherrypy.HTTPError: 404 not found
+    
+    Returns:
+        attachment from database
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)

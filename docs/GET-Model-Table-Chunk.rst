@@ -1,9 +1,9 @@
 GET Model Table Chunk
 =====================
 
-.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/chunk
+.. http:get:: /api/models/(mid)/tables/(aid)/arrays/(array)/chunk
 
-  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/data` instead.
+  .. warning:: This request is deprecated.  Use :http:get:`/api/models/(mid)/arraysets/(aid)/data` instead.
 
   Used to retrieve a chunk (subset of rows and columns) from a 1D arrayset
   array artifact. Data is returned as a JSON array-of-arrays containing
@@ -39,7 +39,7 @@ GET Model Table Chunk
 
   .. sourcecode:: http
 
-    GET /models/6b3c85df433e499e9680a135cabe3ab2/tables/test-array-set/arrays/0/chunk?rows=0,1,2,3,4,5,6,7,8,9&columns=0 HTTP/1.1
+    GET /api/models/6b3c85df433e499e9680a135cabe3ab2/tables/test-array-set/arrays/0/chunk?rows=0,1,2,3,4,5,6,7,8,9&columns=0 HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
@@ -71,12 +71,12 @@ GET Model Table Chunk
 
   .. sourcecode:: http
 
-    GET /models/(mid)/tables/(aid)/arrays/(array)chunk?rows=0-10,15,16,17&columns=2-5,8
+    GET /api/models/(mid)/tables/(aid)/arrays/(array)chunk?rows=0-10,15,16,17&columns=2-5,8
 
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/metadata`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/metadata`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
 

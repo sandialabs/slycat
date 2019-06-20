@@ -1,9 +1,9 @@
 GET Model Table Sorted Indices
 ==============================
 
-.. http:get:: /models/(mid)/tables/(aid)/arrays/(array)/sorted-indices
+.. http:get:: /api/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices
 
-  .. warning:: This request is deprecated.  Use :http:get:`/models/(mid)/arraysets/(aid)/data` instead.
+  .. warning:: This request is deprecated.  Use :http:get:`/api/models/(mid)/arraysets/(aid)/data` instead.
 
   Given a collection of row indices and a specific sort order, return the
   corresponding sorted row indices.
@@ -27,6 +27,6 @@ GET Model Table Sorted Indices
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/chunk`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/metadata`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/chunk`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/metadata`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/unsorted-indices`

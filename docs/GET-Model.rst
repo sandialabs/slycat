@@ -1,7 +1,7 @@
 GET Model
 =========
 
-.. http:get:: /models/(mid)
+.. http:get:: /api/models/(mid)
 
   Returns a model.
 
@@ -14,7 +14,7 @@ GET Model
 
   .. sourcecode:: http
 
-    GET /models/e32ef475e084432481655fe41348726b HTTP/1.1
+    GET /api/models/e32ef475e084432481655fe41348726b HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
@@ -56,7 +56,7 @@ GET Model
 See Also
 --------
 
-- :http:post:`/projects/(pid)/models`
-- :http:put:`/models/(mid)`
-- :http:delete:`/models/(mid)`
+- :http:post:`/api/projects/(pid)/models`
+- :http:put:`/api/models/(mid)`
+- :http:delete:`/api/models/(mid)`
 
