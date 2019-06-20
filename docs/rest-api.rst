@@ -24,7 +24,6 @@ any programming language or library that supports HTTP requests.
   GET-Model-Command.rst
   GET-Model-File.rst
   GET-Model-Parameter.rst
-  GET-Model-Resource.rst
   GET-Model-Table-Chunk.rst
   GET-Model-Table-Metadata.rst
   GET-Model-Table-Sorted-Indices.rst
