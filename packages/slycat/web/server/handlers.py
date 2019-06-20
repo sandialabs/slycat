@@ -284,6 +284,15 @@ def delete_project(pid):
 
 @cherrypy.tools.json_out(on=True)
 def get_project_models(pid, **kwargs):
+    """
+    Returns a list of project models.
+    
+    Arguments:
+        pid {string} -- project id
+    
+    Returns:
+        json -- list of models in project
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
