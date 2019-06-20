@@ -1,7 +1,7 @@
 GET Model File
 ==============
 
-.. http:get:: /models/(mid)/files/(aid)
+.. http:get:: /api/models/(mid)/files/(aid)
 
   Retrieves a file artifact from a model. File artifacts are effectively
   binary blobs that may contain arbitrary data with an explicit content

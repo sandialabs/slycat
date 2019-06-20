@@ -1913,6 +1913,20 @@ def get_model_file(mid, aid):
 
 @cherrypy.tools.json_out(on=True)
 def get_model_parameter(mid, aid):
+    """
+    Retrieves a model parameter (name / value pair) artifact. The result is a
+    JSON expression and may be arbitrarily complex.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+    
+    Raises:
+        cherrypy.HTTPError: 404 Unknown artifact
+    
+    Returns:
+        json
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
