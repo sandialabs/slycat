@@ -15,6 +15,7 @@ import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import NavBar from 'components/NavBar.tsx';
 import Warning from 'components/Warning.tsx';
 import _ from "lodash";
+import checkColumns from "utils/check-columns.ts";
 
 let initialState={};
 const localNavBar = ['Locate Data', 'Upload Table'];
@@ -111,70 +112,6 @@ export default class ControlsButtonUpdateTable extends Component {
       this.uploadRemoteFile();
   }
 
-  checkColumns = (file) =>
-  {
-    let column_row;
-    let columns;
-
-    /** 
-    * If a local file is selected, it's a blob that requires a reader.
-    * If a remote file is selected, get_remote_file_fetch returns it as a string. 
-    * No reader is required in that case.
-    */
-    if(this.state.selectedOption === "local") {
-      let reader = new FileReader();
-      reader.onload = (e) => {
-        /**
-         * Reads in the file being selected for upload, splits on '\n' to get the first row, which contains the column names.
-         * Then splits on ',' to get the individual column names.
-         */
-        column_row = e.target.result.split('\n');
-        columns = column_row[0].split(',');
-        this.setState({newColumns: columns});
-      };
-      reader.readAsText(file);
-    }
-    else {
-      column_row = file.split('\n');
-      columns = column_row[0].split(',');
-      this.setState({newColumns: columns});
-    }
-
-    return client.get_model_table_metadata_fetch({mid: this.props.mid, aid: "data-table"}).then((json)=>{
-      let passed = true;
-      let reason = "";
-      this.setState({currentColumns: json["column-names"]});
-
-      if(this.state.currentColumns.length !== this.state.newColumns.length) {
-        passed = false;
-        reason = "csv-length";
-      }
-      else {
-        this.state.currentColumns.forEach((column, i) => {
-          if (column.trim() !== this.state.newColumns[i].trim()) {
-            passed = false;
-            reason = "csv-order";
-          }
-        });
-      }
-
-      switch(reason) {
-        case "csv-length":
-          this.state.failedColumnCheckMessage.push('The CSV you have attempted to upload does not have the same number of columns ' +
-            'as the CSV currently being used by the model.\n');
-          break;
-        case "csv-order":
-          this.state.failedColumnCheckMessage.push('The CSV you have attempted to upload has a different order of columns ' +
-            'than the CSV currently being used by the model.\n');
-          break;
-        default:
-          break;
-      }
-      this.setState({passedColumnCheck: passed});
-      return passed;
-    })
-  };
-
   uploadLocalFile = () =>
   {
     let mid = this.props.mid;
@@ -182,43 +119,47 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
-      .then((json)=>{
-        this.setState({progressBarProgress:33});
-        let file = this.state.files[0];
+    .then((json)=>{
+      this.setState({progressBarProgress:33});
+      let file = this.state.files[0];
 
-        /**
-         * Checking the columns of the new CSV to make sure the order is the same, and they didn't add or remove any.
-         */
-        this.checkColumns(file).then((passed)=>{
-          if(passed) {
-            let fileObject = {
-              pid: pid,
-              mid: mid,
-              file: file,
-              aids: [["data-table"], file.name],
-              parser: this.state.parserType,
-              success: () => {
-                this.setState({progressBarProgress: 75});
-                client.post_sensitive_model_command_fetch(
-                  {
-                    mid: mid,
-                    type: "parameter-image",
-                    command: "update-table",
-                    parameters: {
-                      linked_models: json["linked_models"],
-                    },
-                  }).then(() => {
-                  this.setState({progressBarProgress: 100});
-                  //this.closeModal();
-                  location.reload();
-                });
-              }
-            };
-            fileUploader.uploadFile(fileObject);
-          }
-        });
-
+      /**
+       * Checking the columns of the new CSV to make sure the order is the same, and they didn't add or remove any.
+       */
+      checkColumns(file, this.state.selectedOption, mid).then((results)=>{
+        if(results.passed) {
+          this.setState({passedColumnCheck: results.passed});
+          let fileObject = {
+            pid: pid,
+            mid: mid,
+            file: file,
+            aids: [["data-table"], file.name],
+            parser: this.state.parserType,
+            success: () => {
+              this.setState({progressBarProgress: 75});
+              client.post_sensitive_model_command_fetch(
+                {
+                  mid: mid,
+                  type: "parameter-image",
+                  command: "update-table",
+                  parameters: {
+                    linked_models: json["linked_models"],
+                  },
+                }).then(() => {
+                this.setState({progressBarProgress: 100});
+                //this.closeModal();
+                location.reload();
+              });
+            }
+          };
+          fileUploader.uploadFile(fileObject);
+        }
+        else {
+          this.state.failedColumnCheckMessage.push(results.reason);
+          this.setState({passedColumnCheck: results.passed});
+        }
       });
+    });
   };
 
   uploadRemoteFile = () => {
@@ -229,8 +170,8 @@ export default class ControlsButtonUpdateTable extends Component {
     client.get_remote_file_fetch({hostname:this.state.hostname, path:this.state.selected_path})
       .then(response=>response.text())
       .then(file=>{
-        this.checkColumns(file).then((passed)=>{
-          if(passed) {
+        checkColumns(file, this.state.selectedOption, mid).then((results)=>{
+          if(results.passed) {
             client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
             .then((json)=>{
               this.setState({progressBarProgress:33});
@@ -263,6 +204,10 @@ export default class ControlsButtonUpdateTable extends Component {
               };
             fileUploader.uploadFile(fileObject);
           });
+        }
+        else {
+          this.state.failedColumnCheckMessage.push(results.reason);
+          this.setState({passedColumnCheck: results.passed});
         }
       });
     });
