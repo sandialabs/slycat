@@ -871,11 +871,11 @@ def open_id_authenticate(**params):
     if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
         raise cherrypy.HTTPError(404)
 
-    cherrypy.log.error("params = %s" % params)
+    cherrypy.log.error("++ open_id_authenticate incoming params = %s" % params)
     current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
     kerberos_principal = params['openid.ext2.value.Authuser']
     auth_user = kerberos_principal.split("@")[0]
-    cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
+    cherrypy.log.error("++ open_id_authenticate: setting auth_user = %s, calling create_single_sign_on_session" % auth_user)
     slycat.web.server.create_single_sign_on_session(slycat.web.server.check_https_get_remote_ip(), auth_user)
     raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects")
 
