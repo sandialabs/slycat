@@ -66,7 +66,7 @@ def register_slycat_plugin(context):
             if session is None:
                 cherrypy.log.error("++ auth error, found cookie with expired session, asking user to login ")
                 # raise cherrypy.HTTPError(401, 'Authentication is required')
-                raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/arl_openid_login.html", 307)
+                raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/openid_login.html", 307)
 
         else:
             # OpenID Note: incoming user doesn't have a session. Route through openid login process starting
@@ -74,6 +74,6 @@ def register_slycat_plugin(context):
             # to /openid-login/ (see open_id_authenticate() in handlers) which then creates the session.
             cherrypy.log.error("++ unauthenticated request, asking user to login")
             # raise cherrypy.HTTPError(401, 'Authentication is required')
-            raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/arl_openid_login.html", 307)
+            raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/openid_login.html", 307)
 
     context.register_tool("slycat-openid-authentication", "on_start_resource", authenticate)
