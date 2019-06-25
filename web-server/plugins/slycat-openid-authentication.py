@@ -21,9 +21,6 @@ def register_slycat_plugin(context):
                                     "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 
-        # wsgi: apache can probably handle ssl decrypt can reduce to http
-        # we need to parse the current url so we can do an https redirect
-        # cherrypy will redirect http by default :(
         current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
         # Require a secure connection.
         if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
@@ -36,8 +33,6 @@ def register_slycat_plugin(context):
         
         #cherrypy.log.error("++ openid-auth existing snlauth cookie: %s" % str("slycatauth" in cherrypy.request.cookie) )
 
-        #auth_user = cherrypy.request.headers.get("Authuser")
-
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
             sid = cherrypy.request.cookie["slycatauth"].value
@@ -48,19 +43,13 @@ def register_slycat_plugin(context):
                 started = session["created"]
                 user_name = session["creator"]
 
-                # check if users match blow away the session if they dont and throw
-                # an unauthorized error to the web browser
-                # check_user relies on header auth info which isn't available here
-                #check_user(user_name, auth_user, couchdb, sid, session)
                 groups = session["groups"]
 
-                # no chaching plz
+                # no caching plz
                 cherrypy.response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"  # HTTP 1.1.
                 cherrypy.response.headers["Pragma"] = "no-cache"  # HTTP 1.0.
                 cherrypy.response.headers["Expires"] = "0"  # Proxies.
 
-                # cherrypy.log.error("%s ::: %s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
-                # cherrypy.log.error("%s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
                 if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > \
                         cherrypy.request.app.config["slycat"]["session-timeout"]:
                     couchdb.delete(session)
@@ -76,13 +65,15 @@ def register_slycat_plugin(context):
             # there was no session time to authenticate
             if session is None:
                 cherrypy.log.error("++ auth error, found cookie with expired session, asking user to login ")
-                raise cherrypy.HTTPError(401, 'Authentication is required')
+                # raise cherrypy.HTTPError(401, 'Authentication is required')
+                raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/openid_login.html", 307)
 
         else:
             # OpenID Note: incoming user doesn't have a session. Route through openid login process starting
             # at /index.html to authenticate & create a session. OpenID server will return user back
             # to /openid-login/ (see open_id_authenticate() in handlers) which then creates the session.
             cherrypy.log.error("++ unauthenticated request, asking user to login")
-            raise cherrypy.HTTPError(401, 'Authentication is required')
+            # raise cherrypy.HTTPError(401, 'Authentication is required')
+            raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/openid_login.html", 307)
 
     context.register_tool("slycat-openid-authentication", "on_start_resource", authenticate)

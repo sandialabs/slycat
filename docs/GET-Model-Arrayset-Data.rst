@@ -1,7 +1,7 @@
 GET Model Arrayset Data
 =======================
 
-.. http:get:: /models/(mid)/arraysets/(aid)/data
+.. http:get:: /api/models/(mid)/arraysets/(aid)/data
 
   Retrieve data stored in arrayset darray attributes.  The caller may request
   data stored using any combination of arrays, attributes, and hyperslices.
@@ -47,22 +47,31 @@ GET Model Arrayset Data
 
   .. sourcecode:: http
 
-    GET /models/6706e78890884845b6c709572a140681/arraysets/foo/data?hyperchunks=0/1/...&byteorder=little HTTP/1.1
-    Host: localhost:8093
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
-    Accept-Encoding: gzip, deflate, compress
-    accept: application/octet-stream
-    User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
+    GET /api/models/05a06c0fa9cc40fc9d10087340425379/arraysets/input-structure-correlation/data?hyperchunks=0/0/0:6|0:7&byteorder=little HTTP/1.1
+    Host: localhost:9000
+    Connection: keep-alive
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36
+    DNT: 1
+    Accept: */*
+    Referer: https://localhost:9000/models/05a06c0fa9cc40fc9d10087340425379
+    Accept-Encoding: gzip, deflate, br
+    Accept-Language: en-US,en;q=0.9
+    Cookie: InteractiveAnalysis=s%3A45eccdf7-653b-450a-8e84-59a27a9f00ad.IR0dNtd29mzKa0RaqXVz91uH3QGcVKbIOeoX%2FJyQ1Wo; slycatauth=b10421f92cc24a819dbe4df9ae63571c; slycattimeout=timeout
 
   **Sample Response**
 
   .. sourcecode:: http
 
     HTTP/1.1 200 OK
-    Date: Tue, 26 Nov 2013 16:40:04 GMT
-    Content-Length: 80
-    Content-Type: application/octet-stream
-    Server: CherryPy/3.2.2
+    X-Powered-By: Express
+    expires: 0
+    server: CherryPy/14.0.0
+    pragma: no-cache
+    cache-control: no-cache, no-store, must-revalidate
+    date: Wed, 19 Jun 2019 17:35:35 GMT
+    content-type: application/octet-stream
+    transfer-encoding: chunked
+    connection: close
 
     ................................................................................
 
@@ -70,6 +79,6 @@ See Also
 --------
 
 - :ref:`hyperchunks`
-- :http:get:`/models/(mid)/arraysets/(aid)/metadata`
-- :http:put:`/models/(mid)/arraysets/(aid)/data`
+- :http:get:`/api/models/(mid)/arraysets/(aid)/metadata`
+- :http:put:`/api/models/(mid)/arraysets/(aid)/data`
 

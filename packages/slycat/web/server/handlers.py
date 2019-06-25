@@ -255,10 +255,16 @@ def put_project(pid):
 
 
 def delete_project(pid):
+    """
+    Deletes a project and all its models.
+    
+    Arguments:
+        pid {string} -- project id
+    """
+
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
     slycat.web.server.authentication.require_project_administrator(project)
-
     for cache_object in couchdb.scan("slycat/project-cache-objects", startkey=pid, endkey=pid):
         couchdb.delete(cache_object)
     for reference in couchdb.scan("slycat/project-references", startkey=pid, endkey=pid):
@@ -278,6 +284,15 @@ def delete_project(pid):
 
 @cherrypy.tools.json_out(on=True)
 def get_project_models(pid, **kwargs):
+    """
+    Returns a list of project models.
+    
+    Arguments:
+        pid {string} -- project id
+    
+    Returns:
+        json -- list of models in project
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
@@ -560,20 +575,45 @@ def put_reference(rid):
 
     cherrypy.response.status = "201 Reference updated."
 
-
+@cherrypy.tools.json_out(on=True)
 def get_model(mid, **kwargs):
+    """
+    Returns a model.
+    
+    Arguments:
+        mid {string} -- model id
+    
+    Returns:
+        json -- represents a model
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_reader(project)
-
-    accept = cherrypy.lib.cptools.accept(media=["application/json"])
-    cherrypy.response.headers["content-type"] = accept
-
-    return json.dumps(model)
+    return model
 
 
 def model_command(mid, type, command, **kwargs):
+    """
+    Execute a custom model command.
+
+    Plugins may register custom commands to be executed
+    on the server, using an existing model as context.
+    Custom commands are used to perform computation on
+    the server instead of the client, and would typically
+    use model artifacts as inputs.
+
+    Arguments:
+        mid {string} -- model id
+        type {string} -- Unique command category.
+        command {string} -- Custom command name.
+    
+    Raises:
+        cherrypy.HTTPError: 400 Unknown command:
+    
+    Returns:
+        any -- whatever the registered command
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
@@ -801,9 +841,19 @@ def post_upload_finished(uid):
 
 def delete_upload(uid):
     """
-    cleans up an upload session throws 409
-    if the session is busy
-    :param uid: 
+    Delete an upload session used to upload files for storage as model artifacts. 
+    This function must be called once the client no longer needs the session, 
+    whether the upload(s) have been completed successfully or the 
+    client is cancelling an incomplete session.
+
+    status 204
+      The upload session and any temporary storage have been deleted.
+
+    status 409
+      The upload session cannot be deleted, because parsing is in progress. 
+      Try again later.
+
+    :param uid: upload sessin id
     :return: not used
     """
     slycat.web.server.upload.delete_session(uid)
@@ -821,11 +871,11 @@ def open_id_authenticate(**params):
     if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
         raise cherrypy.HTTPError(404)
 
-    cherrypy.log.error("params = %s" % params)
+    cherrypy.log.error("++ open_id_authenticate incoming params = %s" % params)
     current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
     kerberos_principal = params['openid.ext2.value.Authuser']
     auth_user = kerberos_principal.split("@")[0]
-    cherrypy.log.error("++ openid-auth setting auth_user = %s" % auth_user)
+    cherrypy.log.error("++ open_id_authenticate: setting auth_user = %s, calling create_single_sign_on_session" % auth_user)
     slycat.web.server.create_single_sign_on_session(slycat.web.server.check_https_get_remote_ip(), auth_user)
     raise cherrypy.HTTPRedirect("https://" + current_url.netloc + "/projects")
 
@@ -876,12 +926,13 @@ def login():
 
 def get_root():
     """
+    TODO: this function may be deprecated with the webpack move
     Redirect all requests to "/" to "/projects"
     Not sure why we used to do that, but after conversion to webpack this is no longer needed,
     so I changed the projects-redirect config parameter in web-server-config.ini to just "/"
     """
     current_url = urlparse.urlparse(cherrypy.url())
-    proj_url = "https://" + current_url.netloc + cherrypy.request.app.config["slycat-web-server"]["projects-redirect"]
+    proj_url = "https://" + current_url.netloc
     raise cherrypy.HTTPRedirect(proj_url, 303)
 
 
@@ -1134,6 +1185,22 @@ def delete_reference(rid):
 
 
 def get_project_cache_object(pid, key):
+    """
+    Retrieves an object from a project’s cache. 
+    Cache objects are opaque binary blobs that 
+    may contain arbitrary data, plus an explicit 
+    content type.
+    
+    Arguments:
+        pid {string} -- project id
+        key {string} -- string key for obj
+    
+    Raises:
+        cherrypy.HTTPError: 404 not found
+    
+    Returns:
+        attachment from database
+    """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
@@ -1147,6 +1214,16 @@ def get_project_cache_object(pid, key):
 
 
 def delete_project_cache_object(pid, key):
+    """
+    Deletes an object from the project cache.
+    
+    Arguments:
+        pid {string} -- project id
+        key {string} -- key in the cache
+    
+    Raises:
+        cherrypy.HTTPError: 404 not found
+    """
     couchdb = slycat.web.server.database.couchdb.connect()
     project = couchdb.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
@@ -1241,6 +1318,35 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
 
 @cherrypy.tools.json_out(on=True)
 def get_model_arrayset_metadata(mid, aid, **kwargs):
+    """
+    Used to retrieve metadata and statistics for an arrayset artifact
+    - a collection of dense, multidimensional darray objects. A darray
+    is a dense, multi-dimensional, multi-attribute array,
+    suitable for storage of arbitrarily-large data.
+
+    The metadata for a single darray includes the name, type,
+    half-open range of coordinate values, and shape for each
+    dimension in the array, plus the name and type of each attribute.
+
+    Statistics can be retrieved for individual darray attributes, and
+    include minimum and maximum values, plus a count of unique
+    values for an attribute. Although statistics are cached, retrieving
+    them may be an extremely expensive operation, since they involve
+    full scans through their respective attributes. Because of this,
+    callers are encouraged to retrieve statistics only when needed.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+    
+    Raises:
+        cherrypy.HTTPError: 404
+        cherrypy.HTTPError: 400 aid is not an array artifact.
+        cherrypy.HTTPError: 400 Not a valid hyperchunks specification.
+    
+    Returns:
+        json -- statistical results of arrayset
+    """
     cherrypy.log.error("GET arrayset metadata mid:%s aid:%s kwargs:%s" % (mid, aid, kwargs.keys()))
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
@@ -1280,9 +1386,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
-    # cherrypy.log.error("looking for unique in results")
     if "unique" in results:
-        # cherrypy.log.error("found unique in results: " )
         cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         cherrypy.log.error("type:")
         cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
@@ -1299,6 +1403,31 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
 
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
+    """
+    Retrieve data stored in arrayset darray attributes. The caller 
+    may request data stored using any combination of 
+    arrays, attributes, and hyperslices.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+        hyperchunks {string} -- The request must contain a parameter 
+          hyperchunks that specifies the arrays, attributes, 
+          and hyperslices to be returned, in Hyperchunks format.
+    
+    Keyword Arguments:
+        byteorder {string} -- optional byteorder argument must 
+          be big or little. (default: {None})
+    
+    Raises:
+        cherrypy.HTTPError: 400 aid is not an array artifact.
+        cherrypy.HTTPError: 400 Not a valid hyperchunks specification
+        cherrypy.HTTPError: 400 optional byteorder argument must be big or little.
+        cherrypy.HTTPError: 404 aid not found
+    
+    Returns:
+        octet-stream -- application/octet-stream
+    """
     cherrypy.log.error(
         "GET Model Arrayset Data: arrayset %s hyperchunks %s byteorder %s" % (aid, hyperchunks, byteorder))
     try:
@@ -1775,6 +1904,22 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
 
 
 def get_model_file(mid, aid):
+    """  
+    Retrieves a file artifact from a model. File artifacts are effectively
+    binary blobs that may contain arbitrary data with an explicit content
+    type.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+    
+    Raises:
+        cherrypy.HTTPError: 404
+        cherrypy.HTTPError: 400 aid is not a file artifact.
+    
+    Returns:
+        any -- file
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
@@ -1798,6 +1943,20 @@ def get_model_file(mid, aid):
 
 @cherrypy.tools.json_out(on=True)
 def get_model_parameter(mid, aid):
+    """
+    Retrieves a model parameter (name / value pair) artifact. The result is a
+    JSON expression and may be arbitrarily complex.
+    
+    Arguments:
+        mid {string} -- model id
+        aid {string} -- artifact id
+    
+    Raises:
+        cherrypy.HTTPError: 404 Unknown artifact
+    
+    Returns:
+        json
+    """
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
@@ -1812,6 +1971,15 @@ def get_model_parameter(mid, aid):
 
 
 def get_bookmark(bid):
+    """
+    Retrieves a bookmark - an arbitrary collection of client state.
+    
+    Arguments:
+        bid {string} -- bookmark id
+    
+    Returns:
+        json -- representation of client state
+    """
     accept = cherrypy.lib.cptools.accept(media=["application/json"])
 
     database = slycat.web.server.database.couchdb.connect()
@@ -2021,6 +2189,14 @@ def get_remote_show_user_password():
 
 
 def delete_remote(sid):
+    """
+    TODO: this function needs review for deprecation as we no longer send the sid over
+
+    Deletes a remote session created with POST /api/remotes
+    
+    Arguments:
+        sid {string} -- unique session id
+    """
     slycat.web.server.remote.delete_session(sid)
     cherrypy.response.status = "204 Remote deleted."
 

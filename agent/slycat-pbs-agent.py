@@ -17,6 +17,7 @@ except ImportError:
 
 import json
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -310,6 +311,7 @@ class Agent(agent.Agent):
         for c in fn:
             f.write("%s \n" % c)
         f.close()
+        os.chmod(os.path.dirname(tmp_file.name) + os.sep + scriptName, stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR|stat.S_IRGRP|stat.S_IWGRP)
         
     def generateEnginesScript(self, tmp_file, scriptName):
         f = open(os.path.dirname(tmp_file.name) + os.sep + scriptName, mode='w')
@@ -335,6 +337,7 @@ class Agent(agent.Agent):
         f.write("done \n")
         f.write("echo \"++ done launching engines at `date`\" \n")
         f.close()
+        os.chmod(os.path.dirname(tmp_file.name) + os.sep + scriptName, stat.S_IRUSR|stat.S_IWUSR|stat.S_IXUSR|stat.S_IRGRP|stat.S_IWGRP)
 
     def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                        time_seconds, fn, tmp_file):
@@ -388,8 +391,8 @@ class Agent(agent.Agent):
         # uid = command["command"]["uid"]
         working_dir = command["command"]["working_dir"]
         # temporary: verify nnodes >= 2, move this check to wizard
-        if nnodes == "1":
-            nnodes = "2"
+        if nnodes == 1:
+            nnodes = 2
         
         try:
             self.run_shell_command("mkdir -p %s" % working_dir)

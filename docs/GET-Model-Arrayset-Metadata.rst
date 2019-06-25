@@ -1,7 +1,7 @@
 GET Model Arrayset Metadata
 ===========================
 
-.. http:get:: /models/(mid)/arraysets/(aid)/metadata
+.. http:get:: /api/models/(mid)/arraysets/(aid)/metadata
 
   Used to retrieve metadata and statistics for an arrayset artifact - a
   collection of dense, multidimensional darray objects.  A darray is a dense,
@@ -45,22 +45,33 @@ GET Model Arrayset Metadata
 
   .. sourcecode:: http
 
-    GET /models/e97077e27af141d6a06f17c9eed6c17a/arraysets/canonical-variables/metadata HTTP/1.1
-    Host: localhost:8092
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
-    Accept-Encoding: gzip, deflate, compress
-    Accept: application/json
-    User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.6.2.el6.x86_64
+    GET /api/models/bbf6715c95a7481d8517a74a6154fbd1/arraysets/canonical-variables/metadata HTTP/1.1
+    Host: localhost:9000
+    Connection: keep-alive
+    Accept: */*
+    DNT: 1
+    X-Requested-With: XMLHttpRequest
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36
+    Content-Type: application/json
+    Referer: https://localhost:9000/models/bbf6715c95a7481d8517a74a6154fbd1
+    Accept-Encoding: gzip, deflate, br
+    Accept-Language: en-US,en;q=0.9
+    Cookie: InteractiveAnalysis=s%3A45eccdf7-653b-450a-8e84-59a27a9f00ad.IR0dNtd29mzKa0RaqXVz91uH3QGcVKbIOeoX%2FJyQ1Wo; slycatauth=b10421f92cc24a819dbe4df9ae63571c; slycattimeout=timeout
 
   **Simple Response**
 
   .. sourcecode:: http
 
     HTTP/1.1 200 OK
-    Date: Tue, 11 Jun 2013 19:00:50 GMT
-    Content-Length: 195
-    Content-Type: application/json
-    Server: CherryPy/3.2.2
+    X-Powered-By: Express
+    content-length: 277
+    expires: 0
+    server: CherryPy/14.0.0
+    pragma: no-cache
+    cache-control: no-cache, no-store, must-revalidate
+    date: Wed, 19 Jun 2019 18:12:48 GMT
+    content-type: application/json
+    connection: close
 
     [
       {
@@ -85,22 +96,33 @@ GET Model Arrayset Metadata
 
   .. sourcecode:: http
 
-    GET /models/e97077e27af141d6a06f17c9eed6c17a/arraysets/foo/metadata?arrays=0%3b1&statistics=0/0%3b0/1 HTTP/1.1
-    Host: localhost:8092
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
-    Accept-Encoding: gzip, deflate, compress
-    Accept: application/json
-    User-Agent: python-requests/1.2.0 CPython/2.7.3 Linux/2.6.32-358.6.2.el6.x86_64
+    GET /api/models/e97077e27af141d6a06f17c9eed6c17a/arraysets/foo/metadata?arrays=0%3b1&statistics=0/0%3b0/1 HTTP/1.1
+    Host: localhost:9000
+    Connection: keep-alive
+    Accept: */*
+    DNT: 1
+    X-Requested-With: XMLHttpRequest
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36
+    Content-Type: application/json
+    Referer: https://localhost:9000/models/bbf6715c95a7481d8517a74a6154fbd1
+    Accept-Encoding: gzip, deflate, br
+    Accept-Language: en-US,en;q=0.9
+    Cookie: InteractiveAnalysis=s%3A45eccdf7-653b-450a-8e84-59a27a9f00ad.IR0dNtd29mzKa0RaqXVz91uH3QGcVKbIOeoX%2FJyQ1Wo; slycatauth=b10421f92cc24a819dbe4df9ae63571c; slycattimeout=timeout
 
   **Complex Response**
 
   .. sourcecode:: http
 
     HTTP/1.1 200 OK
-    Date: Tue, 11 Jun 2013 19:00:50 GMT
-    Content-Length: 195
-    Content-Type: application/json
-    Server: CherryPy/3.2.2
+    X-Powered-By: Express
+    content-length: 277
+    expires: 0
+    server: CherryPy/14.0.0
+    pragma: no-cache
+    cache-control: no-cache, no-store, must-revalidate
+    date: Wed, 19 Jun 2019 18:12:48 GMT
+    content-type: application/json
+    connection: close
 
     {
       "arrays":
@@ -161,6 +183,6 @@ See Also
 --------
 
 - :ref:`hyperchunks`
-- :http:get:`/models/(mid)/arraysets/(aid)/data`
-- :http:put:`/models/(mid)/arraysets/(aid)/data`
+- :http:get:`/api/models/(mid)/arraysets/(aid)/data`
+- :http:put:`/api/models/(mid)/arraysets/(aid)/data`
 

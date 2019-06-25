@@ -1,7 +1,7 @@
 POST Login
 ===================
 
-.. http:post:: /login
+.. http:post:: /api/login
 
   Creates a session and then returns the session cookie
 
@@ -20,7 +20,7 @@ POST Login
 
   .. sourcecode:: http
 
-    POST /login HTTP/1.1
+    POST /api/login HTTP/1.1
     Host: localhost:8092
     Content-Length: 45
     Accept-Encoding: gzip, deflate, compress
@@ -61,4 +61,4 @@ POST Login
 See Also
 --------
 
-- :http:delete:`/logout`
+- :http:delete:`/api/logout`

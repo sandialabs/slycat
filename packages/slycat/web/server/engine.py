@@ -71,17 +71,16 @@ def start(root_path, config_file):
 
   dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
-  dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
-
   dispatcher.connect("delete-model", "/models/:mid", slycat.web.server.handlers.delete_model, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project", "/projects/:pid", slycat.web.server.handlers.delete_project, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-cache", "/projects/:pid/delete-cache", slycat.web.server.handlers.delete_project_cache, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-project-cache-object", "/projects/:pid/cache/:key", slycat.web.server.handlers.delete_project_cache_object, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-reference", "/references/:rid", slycat.web.server.handlers.delete_reference, conditions={"method" : ["DELETE"]})
-
-  #TODO: scrub sid
+  dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("delete-logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
 
+  dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-markings", "/configuration/markings", slycat.web.server.handlers.get_configuration_markings, conditions={"method" : ["GET"]})
   dispatcher.connect("get-configuration-parsers", "/configuration/parsers", slycat.web.server.handlers.get_configuration_parsers, conditions={"method" : ["GET"]})
@@ -93,9 +92,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-configuration-wizards", "/configuration/wizards", slycat.web.server.handlers.get_configuration_wizards, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-array-attribute-chunk", "/models/:mid/arraysets/:aid/arrays/:array/attributes/:attribute/chunk", slycat.web.server.handlers.get_model_array_attribute_chunk, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.get_model_arrayset_data, conditions={"method" : ["GET"]})
-
-  dispatcher.connect("post-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.post_model_arrayset_data, conditions={"method" : ["POST"]})
-
   dispatcher.connect("get-model-arrayset-metadata", "/models/:mid/arraysets/:aid/metadata", slycat.web.server.handlers.get_model_arrayset_metadata, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-file", "/models/:mid/files/:aid", slycat.web.server.handlers.get_model_file, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model", "/models/:mid", slycat.web.server.handlers.get_model, conditions={"method" : ["GET"]})
@@ -123,7 +119,9 @@ def start(root_path, config_file):
 
   dispatcher.connect("get-user", "/users/:uid/:time", slycat.web.server.handlers.get_user, conditions={"method" : ["GET"]})
   dispatcher.connect("get-model-statistics", "/get-model-statistics/:mid", slycat.web.server.handlers.get_model_statistics, conditions={"method" : ["GET"]})
+  
   dispatcher.connect("model-command", "/models/:mid/commands/:type/:command", slycat.web.server.handlers.model_command, conditions={"method" : ["GET", "POST", "PUT"]})
+  dispatcher.connect("post-model-arrayset-data", "/models/:mid/arraysets/:aid/data", slycat.web.server.handlers.post_model_arrayset_data, conditions={"method" : ["POST"]})
   dispatcher.connect("model-sensitive-command", "/models/:mid/sensitive/:type/:command", slycat.web.server.handlers.model_sensitive_command, conditions={"method" : ["POST"]})
   dispatcher.connect("post-events", "/events/{event:.*}", slycat.web.server.handlers.post_events, conditions={"method" : ["POST"]})
   dispatcher.connect("post-model-files", "/models/:mid/files", slycat.web.server.handlers.post_model_files, conditions={"method" : ["POST"]})
@@ -167,9 +165,6 @@ def start(root_path, config_file):
   dispatcher.connect("post-uploads", "/uploads", slycat.web.server.handlers.post_uploads, conditions={"method" : ["POST"]})
   dispatcher.connect("put-upload-file-part", "/uploads/:uid/files/:fid/parts/:pid", slycat.web.server.handlers.put_upload_file_part, conditions={"method" : ["PUT"]})
   dispatcher.connect("post-upload-finshed", "/uploads/:uid/finished", slycat.web.server.handlers.post_upload_finished, conditions={"method" : ["POST"]})
-  dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
-
-  dispatcher.connect("logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   
   dispatcher.connect("clear-ssh-sessions", "/clear/ssh-sessions", slycat.web.server.handlers.clear_ssh_sessions, conditions={"method" : ["GET"]})
   dispatcher.connect("delete-model-parameter", "/delete-artifact/:mid/:aid", slycat.web.server.handlers.delete_model_parameter, conditions={"method" : ["DELETE"]})
@@ -210,45 +205,6 @@ def start(root_path, config_file):
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
   # Setup our static content directories.
-  configuration["/dist"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("dist"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/css"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("css"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/js"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("js"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/fonts"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("fonts"),
-    "tools.staticdir.on": True,
-    }
-
-  configuration["/templates"] = {
-    "tools.expires.force": True,
-    "tools.expires.on": True,
-    "tools.expires.secs": 3600,
-    "tools.staticdir.dir": abspath("templates"),
-    "tools.staticdir.on": True,
-    }
   configuration["/login"] = {
     "tools.expires.force": True,
     "tools.expires.on": True,

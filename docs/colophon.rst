@@ -15,7 +15,7 @@ Writing the Documentation
 
 The primary sources for this documentation are the docstrings
 embedded in the Slycat source code itself.  When writing docstrings,
-strictly follow the guidelines at https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt
+strictly follow the guidelines at https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
 
 The remainder of the documentation is contained in `*.rst` files in
 the `slycat/docs` directory.

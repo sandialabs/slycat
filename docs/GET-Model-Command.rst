@@ -1,7 +1,7 @@
 GET Model Command
 =================
 
-.. http:get:: /models/(mid)/commands/(type)/(command)
+.. http:get:: /api/models/(mid)/commands/(type)/(command)
 
   Execute a custom model command.
 
@@ -27,7 +27,7 @@ GET Model Command
 
   .. sourcecode:: http
 
-    GET /models/e32ef475e084432481655fe41348726b/commands/math-plugin/add HTTP/1.1
+    GET /api/models/e32ef475e084432481655fe41348726b/commands/math-plugin/add HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress
@@ -52,5 +52,5 @@ See Also
 --------
 
 - :http:post:`/models/(mid)/commands/(type)/(command)`
-- :http:put:`/models/(mid)/commands/(type)/(command)`
+- :http:put:`/api/models/(mid)/commands/(type)/(command)`
 
