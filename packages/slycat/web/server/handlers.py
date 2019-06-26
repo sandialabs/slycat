@@ -166,7 +166,7 @@ def post_projects():
     cherrypy.response.status = "201 Project created."
     return {"id": pid}
 
-
+@cherrypy.tools.json_out(on=True)
 def get_project(pid):
     """
     returns a project based on "content-type" header
@@ -174,20 +174,10 @@ def get_project(pid):
     :return: Either html landing page of given project or the json
     representation of the project
     """
-
-    # Return the client's preferred media-type (from the given Content-Types)
-    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
-    cherrypy.response.headers["content-type"] = accept
-
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
-
-    if accept == "application/json":
-        return json.dumps(project)
-    # for model in models:
-    #     model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
-
+    return project
 
 def get_remote_host_dict():
     remote_host_dict = cherrypy.request.app.config["slycat-web-server"]["remote-hosts"]
