@@ -12,25 +12,13 @@ import {
 } from './actions';
 
 const initialState = {
-  colormap: 'night',
-  simulations_selected: [],
-  cca_component_selected: 0,
-  cca_component_sorted: null,
-  cca_component_sort_direction: 'ascending',
-  variable_selected: 0,
-  variable_sort_direction: null,
-  variable_sort_direction: 'ascending',
-}
-
-// Alex mapping out state tree as an example
-const exampleState = {
   colormap: 'night', // String reprsenting current color map
   simulations_selected: [], // Array containing which simulations are selected. Empty for none.
   cca_component_selected: 0, // Number indicating the index of the selected CCA component.
-  cca_component_sorted: 0, // Number indicating the index of the sorted CCA component. Set to 'null' for no sort?
+  cca_component_sorted: null, // Number indicating the index of the sorted CCA component. Set to 'null' for no sort?
   cca_component_sort_direction: 'ascending', // String indicating sort direction of sorted CCA component. Set to 'null' for no sort?
   variable_selected: 0, // Number indicating the index of the selected variable. One always must be selected.
-  variable_sorted: 0, // Num ber indicating the index of the sorted variable. Set to 'null' for no sort?
+  variable_sorted: null, // Number indicating the index of the sorted variable. Set to 'null' for no sort?
   variable_sort_direction: 'ascending', // String indicating the sort direction of the sorted variable. Set to 'null' for no sort?
 }
 
