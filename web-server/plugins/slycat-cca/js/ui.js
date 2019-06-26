@@ -35,7 +35,7 @@ import COLOR_LABELS from 'components/color-labels.js';
 
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import slycat from './reducers';
+import cca_reducer from './reducers';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -279,7 +279,7 @@ $(document).ready(function() {
           }
 
           // Create Redux store and set its state based on what's in the bookmark
-          store = createStore(slycat, bookmark);
+          store = createStore(cca_reducer, bookmark);
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkState = () => {
