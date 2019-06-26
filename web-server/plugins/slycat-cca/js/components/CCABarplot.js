@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React from "react";
 import { Provider } from 'react-redux';
 
@@ -45,7 +46,7 @@ class CCABarplot extends React.Component {
       this.sort_direction = this.props.sort.direction != undefined ? this.props.sort.direction : 'descending';
       // Translate sort direction to lodash terms
       let lodashDirection = this.sort_direction == 'ascending' ? 'asc' : 'desc';
-      this.inputs_rows =  _.orderBy(this.inputs_rows,  ['x_loading_' + this.props.sort.component + '_abs'], [lodashDirection]);
+      this.inputs_rows = _.orderBy(this.inputs_rows, ['x_loading_' + this.props.sort.component + '_abs'], [lodashDirection]);
       this.outputs_rows = _.orderBy(this.outputs_rows, ['y_loading_' + this.props.sort.component + '_abs'], [lodashDirection]);
     }
   }
@@ -123,8 +124,9 @@ class CCABarplot extends React.Component {
           if(expanded){
             var amountToCollapse = barplotGroupOutputsOriginalHeight - barplotGroupOutputsHeight;
             // In some edge cases, the amountToCollapse can come out to a negative number, in which case we don't want to expand
-            if(amountToCollapse < 0)
+            if(amountToCollapse < 0) {
               amountToCollapse = 0;
+            }
             barplotGroupInputs.height(barplotGroupInputsHeight - amountToCollapse);
             barplotGroupOutputs.height(barplotGroupOutputsHeight + amountToCollapse);
           } else {
@@ -150,7 +152,7 @@ class CCABarplot extends React.Component {
 
   resize_canvas = () =>
   {
-    let tableWidth = 20;  // Adding space for scrollbars
+    let tableWidth = 20; // Adding space for scrollbars
     $(".barplotHeaderColumn", this.cca_barplot_table.current).each(
       function(index){
         let maxWidth = Math.max.apply( null, $(".col" + index + " .wrapper").map( function () {
@@ -228,10 +230,13 @@ class CCABarplot extends React.Component {
     let horizontalScrollbarHeight = barplotCanvasOutputElement.offsetHeight - barplotCanvasOutputElement.clientHeight;
     // Making sure widget exists before calling methods on it.
     if($(".barplotGroup.inputs").data("ui-resizable"))
+    {
       $(".barplotGroup.inputs").resizable("option", {
-        minHeight: Math.max(4, viewportHeight-(this.outputsHeight+horizontalScrollbarHeight-increaseHeight)), // Need to take into account horizontal scroll bar height
+        // Need to take into account horizontal scroll bar height
+        minHeight: Math.max(4, viewportHeight-(this.outputsHeight+horizontalScrollbarHeight-increaseHeight)),
         maxHeight: inputsHeight,
       });
+    }
     // Shifting default resize handle to left to stop overlap over scrollbar.
     let barplotCanvasInputElement = $(".barplotCanvas.input")[0];
     let verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
@@ -260,10 +265,10 @@ class CCABarplot extends React.Component {
           `}
         key={index}
       >
-        <div className="wrapper">
-          <div className="negativeSpacer spacer" />
-          <div className="barplotHeaderColumnLabelWrapper">
-            <span className="selectCCAComponent" onClick={(e) => this.clickComponent(index, e)}>
+        <div className='wrapper'>
+          <div className='negativeSpacer spacer' />
+          <div className='barplotHeaderColumnLabelWrapper'>
+            <span className='selectCCAComponent' onClick={(e) => this.clickComponent(index, e)}>
               CCA{index + 1}
             </span>
             <span className={`sortCCAComponent \
@@ -271,19 +276,19 @@ class CCABarplot extends React.Component {
                 (this.props.sort.direction == 'ascending' ? 'icon-sort-ascending' : 'icon-sort-descending') : 
                 'icon-sort-off'}`} />
           </div>
-          <div className="positiveSpacer spacer" />
+          <div className='positiveSpacer spacer' />
         </div>
       </div>
     ));
 
     const rSquaredStatistics = this.props.x_loadings.map((item, index) => (
       <div className={`barplotCell col${index+1} ${this.state.component == index ? 'selected-component' : ''}`} key={index}>
-        <div className="wrapper">
-          <div className="negativeSpacer spacer" />
-          <div className="barplotCellValue">
+        <div className='wrapper'>
+          <div className='negativeSpacer spacer' />
+          <div className='barplotCellValue'>
             {Number(this.props.r2[index]).toFixed(3)}
           </div>
-          <div className="positiveSpacer spacer" />
+          <div className='positiveSpacer spacer' />
         </div>
       </div>
     ));
@@ -291,12 +296,12 @@ class CCABarplot extends React.Component {
 
     const pStatistics = this.props.x_loadings.map((item, index) => (
       <div className={`barplotCell col${index+1} ${this.state.component == index ? 'selected-component' : ''}`} key={index}>
-        <div className="wrapper">
-          <div className="negativeSpacer spacer" />
-          <div className="barplotCellValue">
+        <div className='wrapper'>
+          <div className='negativeSpacer spacer' />
+          <div className='barplotCellValue'>
             {Number(this.props.wilks[index]).toFixed(3)}
           </div>
-          <div className="positiveSpacer spacer" />
+          <div className='positiveSpacer spacer' />
         </div>
       </div>
     ));
@@ -312,9 +317,9 @@ class CCABarplot extends React.Component {
     }
 
     const input_labels =
-      <div className="barplotColumn input">
+      (<div className='barplotColumn input'>
         {this.inputs_rows.map((inputs_item, inputs_index) => 
-          <div 
+          (<div 
             className={`barplotCell col0 rowInput inputLabel \
               row${inputs_index} \
               variable${inputs_item.index} \
@@ -324,18 +329,18 @@ class CCABarplot extends React.Component {
             data-variable={inputs_item.index}
             key={inputs_index}
           >
-            <div className="wrapper">
+            <div className='wrapper'>
               {inputs_item.name}
             </div>
-          </div>
+          </div>)
         )}
-      </div>
+      </div>)
     ;
 
     const input_values = 
-      <div className="barplotCanvas input">
+      (<div className='barplotCanvas input'>
         {this.inputs_rows.map((inputs_item, inputs_index) => 
-          <div 
+          (<div 
             className={`barplotRow rowInput \
               row${inputs_index} \
               variable${inputs_item.index} \
@@ -346,7 +351,7 @@ class CCABarplot extends React.Component {
             key={inputs_index}
           >
             {this.props.x_loadings.map((x_loadings_item, x_loadings_index) =>
-              <div 
+              (<div 
                 className={`barplotCell rowInput \
                   row${inputs_index} \
                   col${x_loadings_index+1} \
@@ -356,32 +361,32 @@ class CCABarplot extends React.Component {
                   `}
                 key={x_loadings_index}
               >
-                <div className="wrapper">
-                  <div className="negativeSpacer spacer">
+                <div className='wrapper'>
+                  <div className='negativeSpacer spacer'>
                     <div className={`negative cca${x_loadings_index + 1}`} 
                       style={{width: negative_bar_width(inputs_item['x_loading_' + x_loadings_index])}}
                     />
                   </div>
-                  <div className="barplotCellValue">
+                  <div className='barplotCellValue'>
                     {Number(inputs_item['x_loading_' + x_loadings_index]).toFixed(3)}
                   </div>
-                  <div className="positiveSpacer spacer">
+                  <div className='positiveSpacer spacer'>
                     <div className={`positive cca${x_loadings_index + 1}`} 
                       style={{width: positive_bar_width(inputs_item['x_loading_' + x_loadings_index])}}
                     />
                   </div>
                 </div>
-              </div>
+              </div>)
             )}
-          </div>
+          </div>)
         )}
-      </div>
+      </div>)
     ;
 
     const output_labels =
-      <div className="barplotColumn output">
+      (<div className='barplotColumn output'>
         {this.outputs_rows.map((outputs_item, outputs_index) =>
-          <div 
+          (<div 
             className={`barplotCell col0 rowOutput outputLabel \
               row${outputs_index + this.props.inputs.length} \
               variable${outputs_item.index} \
@@ -391,18 +396,18 @@ class CCABarplot extends React.Component {
             data-variable={outputs_item.index}
             key={outputs_index}
           >
-            <div className="wrapper">
+            <div className='wrapper'>
               {outputs_item.name}
             </div>
-          </div>
+          </div>)
         )}
-      </div>
+      </div>)
     ;
 
     const output_values =
-      <div className="barplotCanvas output">
+      (<div className='barplotCanvas output'>
         {this.outputs_rows.map((outputs_item, outputs_index) =>
-          <div 
+          (<div 
             className={`barplotRow rowOutput \
               row${outputs_index + this.props.inputs.length} \
               variable${outputs_item.index} \
@@ -413,7 +418,7 @@ class CCABarplot extends React.Component {
             key={outputs_index}
           >
             {this.props.y_loadings.map((y_loadings_item, y_loadings_index) =>
-              <div 
+              (<div 
                 className={`barplotCell rowOutput \
                   row${outputs_index + this.props.inputs.length} \
                   col${y_loadings_index+1} \
@@ -423,64 +428,64 @@ class CCABarplot extends React.Component {
                   `}
                 key={y_loadings_index}
               >
-                <div className="wrapper">
-                  <div className="negativeSpacer spacer">
+                <div className='wrapper'>
+                  <div className='negativeSpacer spacer'>
                     <div className={`negative cca${y_loadings_index + 1}`} 
                       style={{width: negative_bar_width(outputs_item['y_loading_' + y_loadings_index])}}
                     />
                   </div>
-                  <div className="barplotCellValue">
+                  <div className='barplotCellValue'>
                     {Number(outputs_item['y_loading_' + y_loadings_index]).toFixed(3)}
                   </div>
-                  <div className="positiveSpacer spacer">
+                  <div className='positiveSpacer spacer'>
                     <div className={`positive cca${y_loadings_index + 1}`} 
                       style={{width: positive_bar_width(outputs_item['y_loading_' + y_loadings_index])}}
                     />
                   </div>
                 </div>
-              </div>
+              </div>)
             )}
-          </div>
+          </div>)
         )}
-      </div>
+      </div>)
     ;
 
     return (
       <React.Fragment>
         <React.StrictMode>
-          <div className="cca-barplot-table" ref={this.cca_barplot_table}>
+          <div className='cca-barplot-table' ref={this.cca_barplot_table}>
             <div className='barplotHeader'>
-              <div className="barplotRow">
-                <div className="barplotHeaderColumn mask col0">
-                  <div className="wrapper">&nbsp;</div>
+              <div className='barplotRow'>
+                <div className='barplotHeaderColumn mask col0'>
+                  <div className='wrapper'>&nbsp;</div>
                 </div>
-                <div className="barplotHeaderColumns">
+                <div className='barplotHeaderColumns'>
                   {barplotHeaderColumns}
                 </div>
               </div>
-              <div className="barplotRow">
-                <div className="barplotCell mask col0" id="rsquared-label">
-                  <div className="wrapper">R<sup>2</sup></div>
+              <div className='barplotRow'>
+                <div className='barplotCell mask col0' id='rsquared-label'>
+                  <div className='wrapper'>R<sup>2</sup></div>
                 </div>
-                <div className="barplotHeaderColumns">
+                <div className='barplotHeaderColumns'>
                   {rSquaredStatistics}
                 </div>
               </div>
-              <div className="barplotRow">
-                <div className="barplotCell mask col0">
-                  <div className="wrapper">P</div>
+              <div className='barplotRow'>
+                <div className='barplotCell mask col0'>
+                  <div className='wrapper'>P</div>
                 </div>
-                <div className="barplotHeaderColumns">
+                <div className='barplotHeaderColumns'>
                   {pStatistics}
                 </div>
               </div>
             </div>
-            <div className="barplotViewport">
-              <div className="barplotGroup inputs">
+            <div className='barplotViewport'>
+              <div className='barplotGroup inputs'>
                 {input_labels}
                 {input_values}
               </div>
-              <div className="barplotGroup outputs">
+              <div className='barplotGroup outputs'>
                 {output_labels}
                 {output_values}
               </div>
