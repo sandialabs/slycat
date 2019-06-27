@@ -2448,6 +2448,7 @@ def get_time_series_names(hostname, path, **kwargs):
 @cherrypy.tools.json_out(on=True)
 def get_remote_video_status(hostname, vsid):
     """
+    TODO: deprecate this function
     Given a hostname and vsid returns the video status given
     by the vsid
     :param hostname: connection host name

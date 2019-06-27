@@ -752,6 +752,9 @@ module.get_remotes_fetch = function(hostname)
   });
 };
 
+/**
+ * TODO: deprecate this function
+ */
 module.get_remote_video_status = function(params)
 {
   $.ajax(
