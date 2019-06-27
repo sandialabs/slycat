@@ -280,7 +280,8 @@ $(document).ready(function() {
 
           // Map old style bookmark data to new Redux state tree
           const redux_state_tree = {
-            variable_selected: bookmark['variable-selection']
+            variable_selected: bookmark['variable-selection'],
+            cca_component_selected: bookmark["cca-component"],
           }
 
           // Create Redux store and set its state based on what's in the bookmark
@@ -507,7 +508,6 @@ $(document).ready(function() {
             wilks={wilks}
             x_loadings={x_loadings}
             y_loadings={y_loadings}
-            component={cca_component}
             sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
             // variable_selection={store.getState().variable_selected}
           />

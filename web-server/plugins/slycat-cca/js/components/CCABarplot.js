@@ -1,16 +1,13 @@
 /* eslint-disable no-undef */
 import React from "react";
 import { connect } from 'react-redux';
-import { setVariableSelected } from '../actions';
+import { setVariableSelected, setCCAComponentSelected } from '../actions';
 
 import _ from "lodash";
 
 class CCABarplot extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      component: this.props.component,
-    };
 
     // Create a ref to the .cca-barplot-table
     this.cca_barplot_table = React.createRef();
@@ -145,9 +142,10 @@ class CCABarplot extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.state.component !== prevState.component)
+    if (this.props.cca_component_selected !== prevProps.cca_component_selected)
     {
       this.handle_component_change_transition();
+      this.resize_canvas();
     }
   }
 
@@ -235,7 +233,7 @@ class CCABarplot extends React.Component {
       $(".barplotGroup.inputs").resizable("option", {
         // Need to take into account horizontal scroll bar height
         minHeight: Math.max(4, viewportHeight-(this.outputsHeight+horizontalScrollbarHeight-increaseHeight)),
-        maxHeight: inputsHeight,
+        maxHeight: this.inputsHeight,
       });
     }
     // Shifting default resize handle to left to stop overlap over scrollbar.
@@ -250,11 +248,6 @@ class CCABarplot extends React.Component {
     $(".rowOutput.selected-component", this.cca_barplot_table.current).first().scrollintoview({direction: "horizontal",});
   }
 
-  clickComponent = (index, e) =>
-  {
-    this.setState({component: index});
-  }
-
   render() {
     const barplotHeaderColumns = this.props.x_loadings.map((item, index) => (
       <div 
@@ -262,14 +255,15 @@ class CCABarplot extends React.Component {
           barplotHeaderColumn 
           col${index+1} 
           cca${index + 1}
-          ${this.state.component == index ? 'selected-component' : ''}
+          ${this.props.cca_component_selected == index ? 'selected-component' : ''}
           `}
         key={index}
       >
         <div className='wrapper'>
           <div className='negativeSpacer spacer' />
           <div className='barplotHeaderColumnLabelWrapper'>
-            <span className='selectCCAComponent' onClick={(e) => this.clickComponent(index, e)}>
+            <span className='selectCCAComponent' 
+              onClick={() => this.props.setCCAComponentSelected(index)}>
               CCA{index + 1}
             </span>
             <span className={`sortCCAComponent \
@@ -283,7 +277,11 @@ class CCABarplot extends React.Component {
     ));
 
     const rSquaredStatistics = this.props.x_loadings.map((item, index) => (
-      <div className={`barplotCell col${index+1} ${this.state.component == index ? 'selected-component' : ''}`} key={index}>
+      <div 
+        className={`barplotCell col${index+1} \
+          ${this.props.cca_component_selected == index ? 'selected-component' : ''}`} 
+        key={index}
+      >
         <div className='wrapper'>
           <div className='negativeSpacer spacer' />
           <div className='barplotCellValue'>
@@ -296,7 +294,11 @@ class CCABarplot extends React.Component {
 
 
     const pStatistics = this.props.x_loadings.map((item, index) => (
-      <div className={`barplotCell col${index+1} ${this.state.component == index ? 'selected-component' : ''}`} key={index}>
+      <div 
+        className={`barplotCell col${index+1} \
+          ${this.props.cca_component_selected == index ? 'selected-component' : ''}`} 
+        key={index}
+      >
         <div className='wrapper'>
           <div className='negativeSpacer spacer' />
           <div className='barplotCellValue'>
@@ -359,7 +361,7 @@ class CCABarplot extends React.Component {
                   row${inputs_index} \
                   col${x_loadings_index+1} \
                   variable${inputs_item.index} \
-                  ${this.state.component == x_loadings_index ? 'selected-component' : ''} \
+                  ${this.props.cca_component_selected == x_loadings_index ? 'selected-component' : ''} \
                   ${this.props.variable_selection == inputs_item.index ? 'selected-variable' : ''} \
                   `}
                 key={x_loadings_index}
@@ -428,7 +430,7 @@ class CCABarplot extends React.Component {
                   row${outputs_index + this.props.inputs.length} \
                   col${y_loadings_index+1} \
                   variable${outputs_item.index} \
-                  ${this.state.component == y_loadings_index ? 'selected-component' : ''} \
+                  ${this.props.cca_component_selected == y_loadings_index ? 'selected-component' : ''} \
                   ${this.props.variable_selection == outputs_item.index ? 'selected-variable' : ''} \
                   `}
                 key={y_loadings_index}
@@ -505,10 +507,11 @@ class CCABarplot extends React.Component {
 const mapStateToProps = state => {
   return {
     variable_selection: state.variable_selected,
+    cca_component_selected: state.cca_component_selected,
   }
 };
 
 export default connect(
   mapStateToProps,
-  { setVariableSelected, }
+  { setVariableSelected, setCCAComponentSelected, }
 )(CCABarplot)
