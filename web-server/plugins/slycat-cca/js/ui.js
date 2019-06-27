@@ -61,10 +61,9 @@ $(document).ready(function() {
   var r2 = null;
   var wilks = null;
   var table_metadata = null;
-  var selected_simulations = null;
-  var colormap = null;
+  // var selected_simulations = null;
 
-  var cca_component = null;
+  // var cca_component = null;
   var sort_variable = null;
   var sort_order = null;
 
@@ -252,54 +251,48 @@ $(document).ready(function() {
         {
           bookmark = state;
 
-          // Make sure we have good state defaults if they are not in the bookmark
-          if (bookmark["simulation-selection"] === undefined)
-          {
-            bookmark["simulation-selection"] = [];
-          }
-          if (bookmark["colormap"] === undefined)
-          {
-            bookmark["colormap"] = "night";
-          }
-          if (bookmark["cca-component"] === undefined)
-          {
-            bookmark["cca-component"] = 0;
-          }
-          if (bookmark["sort-variable"] === undefined)
-          {
-            bookmark["sort-variable"] = null;
-          }
-          if (bookmark["sort-order"] === undefined)
-          {
-            bookmark["sort-order"] = null;
-          }
-          if (bookmark["variable-selection"] === undefined)
-          {
-            bookmark["variable-selection"] = table_metadata["column-count"] - 1;
+          // A default state
+          let redux_state_tree = {
+            colormap: 'night', // String reprsenting current color map
+            simulations_selected: [], // Array containing which simulations are selected. Empty for none.
+            cca_component_selected: 0, // Number indicating the index of the selected CCA component.
+            cca_component_sorted: null, // Number indicating the index of the sorted CCA component. Set to 'null' for no sort?
+            cca_component_sort_direction: 'ascending', // String indicating sort direction of sorted CCA component. Set to 'null' for no sort?
+            variable_selected: table_metadata["column-count"] - 1, // Number indicating the index of the selected variable. One always must be selected.
+            variable_sorted: null, // Number indicating the index of the sorted variable. Set to 'null' for no sort?
+            variable_sort_direction: 'ascending', // String indicating the sort direction of the sorted variable. Set to 'null' for no sort?
           }
 
-          // Map old style bookmark data to new Redux state tree
-          const redux_state_tree = {
-            variable_selected: bookmark['variable-selection'],
-            cca_component_selected: bookmark["cca-component"],
+          // If we have a serialized redux state, load it
+          if (bookmark.redux_state_tree !== undefined)
+          {
+            redux_state_tree = Object.assign({}, redux_state_tree, bookmark.redux_state_tree);
+          }
+          // Otherwise initialize it with whatever we can find in the bookmark
+          else 
+          {
+            let bookmark_state_tree = {};
+            
+            bookmark["colormap"] !== undefined ? bookmark_state_tree.colormap = bookmark["colormap"] : null;
+            bookmark["simulation-selection"] !== undefined ? bookmark_state_tree.simulations_selected = bookmark["simulation-selection"] : null;
+            bookmark["cca-component"] !== undefined ? bookmark_state_tree.cca_component_selected = bookmark["cca-component"] : null;
+            bookmark["sort-cca-component"] !== undefined ? bookmark_state_tree.cca_component_sorted = bookmark["sort-cca-component"] : null;
+            bookmark["sort-direction-cca-component"] !== undefined ? bookmark_state_tree.cca_component_sort_direction = bookmark["sort-direction-cca-component"] : null;
+            bookmark["variable-selection"] !== undefined ? bookmark_state_tree.variable_selected = bookmark["variable-selection"] : null;
+            bookmark["sort-variable"] !== undefined ? bookmark_state_tree.variable_sorted = bookmark["sort-variable"] : null;
+            bookmark["sort-order"] !== undefined ? bookmark_state_tree.variable_sort_direction = bookmark["sort-order"] : null;
+
+            redux_state_tree = Object.assign({}, redux_state_tree, bookmark_state_tree);
           }
 
-          // Create Redux store and set its state based on what's in the bookmark
+          // Create Redux store and set its initial state
           store = createStore(cca_reducer, redux_state_tree);
 
           // Save Redux state to bookmark whenever it changes
-          const bookmarkState = () => {
-            bookmarker.updateState(store.getState());
+          const bookmarkReduxStateTree = () => {
+            bookmarker.updateState({redux_state_tree: store.getState()});
           };
-          store.subscribe(bookmarkState);
-
-          selected_simulations = bookmark["simulation-selection"] !== undefined ? bookmark["simulation-selection"] : [];
-          colormap = bookmark["colormap"] !== undefined ? bookmark["colormap"] : "night";
-
-          cca_component = bookmark["cca-component"] !== undefined ? bookmark["cca-component"] : 0;
-
-          sort_variable = bookmark["sort-variable"] !== undefined ? bookmark["sort-variable"] : null;
-          sort_order = bookmark["sort-order"] !== undefined ? bookmark["sort-order"] : null;
+          store.subscribe(bookmarkReduxStateTree);
 
           // setup_colorswitcher();
           setup_v();
@@ -458,7 +451,7 @@ $(document).ready(function() {
 
     // Setup the barplot ...
     if(!barplot_ready && bookmark && table_metadata && r2 && wilks && x_loadings && y_loadings 
-      && (cca_component !== null) && (store !== null))
+      && (store !== null))
     {
       barplot_ready = true;
 
@@ -508,8 +501,6 @@ $(document).ready(function() {
             wilks={wilks}
             x_loadings={x_loadings}
             y_loadings={y_loadings}
-            sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
-            // variable_selection={store.getState().variable_selected}
           />
         </Provider>)
       ;
@@ -522,14 +513,13 @@ $(document).ready(function() {
 
     // Setup the scatterplot ...
     if(!scatterplot_ready && bookmark && table_metadata && indices && x && y && v 
-      && (selected_simulations !== null) && (colormap !== null) && (cca_component !== null)
       && (store !== null)
     )
     {
       scatterplot_ready = true;
 
       // $("#scatterplot-pane .load-status").css("display", "none");
-      $("#scatterplot-pane").css("background", color_maps.get_background(colormap).toString());
+      $("#scatterplot-pane").css("background", color_maps.get_background(store.getState().colormap).toString());
 
       // $("#scatterplot").scatterplot({
       //   indices: indices,
@@ -562,18 +552,18 @@ $(document).ready(function() {
         (<Provider store={store}>
           <CCAScatterplot
             indices={indices}
-            x={x[cca_component]}
-            y={y[cca_component]}
+            x={x[store.getState().cca_component_selected]}
+            y={y[store.getState().cca_component_selected]}
             v={v}
             width={$("#scatterplot-pane").width()}
             height={$("#scatterplot-pane").height()}
-            color={color_maps.get_color_scale(colormap)}
-            selection={selected_simulations}
+            color={color_maps.get_color_scale(store.getState().colormap)}
+            selection={store.getState().simulations_selected}
             border={{top: 40, right: 150, bottom: 40, left: 40}}
             label_offset={{x: 25, y: 25}}
             drag_threshold={3}
             pick_distance={3}
-            gradient={color_maps.get_gradient_data(colormap)}
+            gradient={color_maps.get_gradient_data(store.getState().colormap)}
             v_string={table_metadata["column-types"][store.getState().variable_selected]=="string"}
             v_label={table_metadata["column-names"][store.getState().variable_selected]}
             font_size={'14px'}
@@ -589,8 +579,7 @@ $(document).ready(function() {
     }
 
     // Setup the table ...
-    if(!table_ready && bookmark && table_metadata && (selected_simulations !== null) 
-      && (colormap !== null) && (cca_component !== null) && (store !== null)
+    if(!table_ready && bookmark && table_metadata && (store !== null)
 
     )
     {
@@ -667,9 +656,9 @@ $(document).ready(function() {
             inputs={input_columns}
             outputs={output_columns}
             others={other_columns}
-            component={cca_component}
-            row_selection={selected_simulations}
-            colormap={color_maps.get_color_scale(colormap)}
+            component={store.getState().cca_component_selected}
+            row_selection={store.getState().simulations_selected}
+            colormap={color_maps.get_color_scale(store.getState().colormap)}
             sort_variable={sort_variable}
             sort_order={sort_order}
             variable_selection={store.getState().variable_selected}
@@ -684,7 +673,7 @@ $(document).ready(function() {
     }
 
     // Setup controls ...
-    if( !controls_ready && bookmark && table_metadata && (selected_simulations != null) )
+    if( !controls_ready && bookmark && table_metadata && (store !== null) )
     {
       controls_ready = true;
 
@@ -708,11 +697,11 @@ $(document).ready(function() {
           color_variables.push(i);
       }
 
-      var color_variable = table_metadata["column-count"] - 1;
-      if("variable-selection" in bookmark)
-      {
-        color_variable = [bookmark["variable-selection"]];
-      }
+      // var color_variable = table_metadata["column-count"] - 1;
+      // if("variable-selection" in bookmark)
+      // {
+      //   color_variable = [bookmark["variable-selection"]];
+      // }
 
       // $("#controls-pane #controls").controls({
       //   mid : model._id,
@@ -740,23 +729,23 @@ $(document).ready(function() {
         state_label: 'color',
         trigger: 'colormap-changed',
         items: COLOR_LABELS,
-        selected: colormap,
+        selected: store.getState().colormap,
         single: true,
       }];
 
       const cca_controls_bar = 
         <CCAControlsBar 
           element={self.element}
-          selection={selected_simulations}
+          selection={store.getState().simulations_selected}
           mid={model._id}
           aid={"data-table"}
           model_name={window.model_name}
           metadata={table_metadata}
           color_variables={color_variable_dropdown_items}
-          color_variable={color_variable}
+          color_variable={store.getState().variable_selected}
           indices={indices}
           dropdown_color={dropdown}
-          selection_color={colormap}
+          selection_color={store.getState().colormap}
         />
       ;
 
