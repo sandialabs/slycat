@@ -35,11 +35,12 @@ export default function cca_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         variable_sorted: action.id,
         // If the new sorted variable is the same as the previous sorted variable, it means
-        // we need to reverse the sort order
+        // we need to reverse the sort order.
+        // Otherwise we default to ascending because it makes most sense for the table
         variable_sort_direction: 
           state.variable_sorted == action.id ? 
             (state.variable_sort_direction == 'ascending' ? 'descending' : 'ascending')
-            : state.variable_sort_direction,
+            : 'ascending',
       })
     case SET_CCA_COMPONENT_SELECTED:
       return Object.assign({}, state, {
@@ -47,7 +48,14 @@ export default function cca_reducer(state = initialState, action) {
       })
     case SET_CCA_COMPONENT_SORTED:
       return Object.assign({}, state, {
-        cca_component_sorted: action.id
+        cca_component_sorted: action.id,
+        // If the new sorted component is the same as the previous sorted component, it means
+        // we need to reverse the sort order.
+        // Otherwise we default to descending because it makes most sense for CCA barplot
+        cca_component_sort_direction: 
+          state.cca_component_sorted == action.id ? 
+            (state.cca_component_sort_direction == 'ascending' ? 'descending' : 'ascending')
+            : 'descending',
       })
     case SET_SIMULATIONS_SELECTED:
       return Object.assign({}, state, {
