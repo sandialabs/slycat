@@ -278,8 +278,13 @@ $(document).ready(function() {
             bookmark["variable-selection"] = table_metadata["column-count"] - 1;
           }
 
+          // Map old style bookmark data to new Redux state tree
+          const redux_state_tree = {
+            variable_selected: bookmark['variable-selection']
+          }
+
           // Create Redux store and set its state based on what's in the bookmark
-          store = createStore(cca_reducer, bookmark);
+          store = createStore(cca_reducer, redux_state_tree);
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkState = () => {
@@ -393,7 +398,7 @@ $(document).ready(function() {
   {
     if(bookmark && table_metadata && (store !== null))
     {
-      if(store.getState()['variable-selection'] == table_metadata["column-count"] - 1)
+      if(store.getState().variable_selected == table_metadata["column-count"] - 1)
       {
         var count = table_metadata["row-count"];
         v = new Float64Array(count);
@@ -408,7 +413,7 @@ $(document).ready(function() {
           mid : model._id,
           aid : "data-table",
           array : 0,
-          attribute : store.getState()['variable-selection'],
+          attribute : store.getState().variable_selected,
           success : function(result)
           {
             v = result;
@@ -493,7 +498,7 @@ $(document).ready(function() {
       // }
 
       const cca_barplot = 
-        <Provider store={store}>
+        (<Provider store={store}>
           <CCABarplot 
             metadata={table_metadata}
             inputs={input_columns}
@@ -504,9 +509,9 @@ $(document).ready(function() {
             y_loadings={y_loadings}
             component={cca_component}
             sort={{component: bookmark["sort-cca-component"], direction: bookmark["sort-direction-cca-component"]}}
-            variable_selection={store.getState()['variable-selection']}
+            // variable_selection={store.getState().variable_selected}
           />
-        </Provider>
+        </Provider>)
       ;
 
       self.cca_barplot = ReactDOM.render(
@@ -554,7 +559,7 @@ $(document).ready(function() {
       // });
 
       const cca_scatterplot = 
-        <Provider store={store}>
+        (<Provider store={store}>
           <CCAScatterplot
             indices={indices}
             x={x[cca_component]}
@@ -569,12 +574,12 @@ $(document).ready(function() {
             drag_threshold={3}
             pick_distance={3}
             gradient={color_maps.get_gradient_data(colormap)}
-            v_string={table_metadata["column-types"][store.getState()['variable-selection']]=="string"}
-            v_label={table_metadata["column-names"][store.getState()['variable-selection']]}
+            v_string={table_metadata["column-types"][store.getState().variable_selected]=="string"}
+            v_label={table_metadata["column-names"][store.getState().variable_selected]}
             font_size={'14px'}
             font_family={'Arial'}
           />
-        </Provider>
+        </Provider>)
       ;
 
       self.cca_scatterplot = ReactDOM.render(
@@ -667,7 +672,7 @@ $(document).ready(function() {
             colormap={color_maps.get_color_scale(colormap)}
             sort_variable={sort_variable}
             sort_order={sort_order}
-            variable_selection={store.getState()['variable-selection']}
+            variable_selection={store.getState().variable_selected}
           />
         </Provider>
       ;

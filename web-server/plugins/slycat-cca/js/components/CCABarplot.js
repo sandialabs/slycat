@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import React from "react";
-import { Provider } from 'react-redux';
+import { connect } from 'react-redux';
+import { SET_VARIABLE_SELECTED } from '../actions';
 
 import _ from "lodash";
 
@@ -269,6 +270,7 @@ class CCABarplot extends React.Component {
           <div className='negativeSpacer spacer' />
           <div className='barplotHeaderColumnLabelWrapper'>
             <span className='selectCCAComponent' onClick={(e) => this.clickComponent(index, e)}>
+            {/* <span className='selectCCAComponent' onClick={(e) => dispatch({ type: SET_VARIABLE_SELECTED, id: index})}> */}
               CCA{index + 1}
             </span>
             <span className={`sortCCAComponent \
@@ -328,6 +330,10 @@ class CCABarplot extends React.Component {
             data-loadings_index={inputs_index}
             data-variable={inputs_item.index}
             key={inputs_index}
+            onClick={(e) => this.props.dispatch({ 
+              type: SET_VARIABLE_SELECTED, 
+              id: inputs_item.index 
+            })}
           >
             <div className='wrapper'>
               {inputs_item.name}
@@ -497,4 +503,13 @@ class CCABarplot extends React.Component {
   }
 }
 
-export default CCABarplot
+const mapStateToProps = state => {
+  return {
+    variable_selection: state.variable_selected,
+  }
+};
+
+export default connect(
+  mapStateToProps,
+  null
+)(CCABarplot)
