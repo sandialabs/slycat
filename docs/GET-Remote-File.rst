@@ -1,16 +1,16 @@
 GET Remote File
 ===============
 
-.. http:get:: /remotes/(sid)/file(path)
+.. http:get:: /api/remotes/(hostname)/file(path)
 
   Uses an existing remote session to retrieve a remote file.  The remote
-  session must have been created using :http:post:`/remotes`.  Use
-  :http:post:`/remotes/(sid)/browse(path)` to lookup remote file paths.
+  session must have been created using :http:post:`/api/remotes`.  Use
+  :http:post:`/api/remotes/(hostname)/browse(path)` to lookup remote file paths.
   The returned file may be optionally cached on the server and retrieved
-  using :http:get:`/projects/(pid)/cache/(key)`.
+  using :http:get:`/api/projects/(pid)/cache/(key)`.
 
-  :param sid: Unique session identifier returned from :http:post:`/remotes`.
-  :type sid: string
+  :param hostname: Unique hostname returned from :http:post:`/remotes`.
+  :type hostname: string
 
   :param path: Remote filesystem path (must be absolute).
   :type path: string
@@ -33,11 +33,35 @@ GET Remote File
 
   .. sourcecode:: http
 
-    GET /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/file/home/fred/checklist.txt
+    GET /api/remotes/localhost/file/home/slycat/src/slycat-data/TAIS/workdir.244/stress_zz_000001.png?cache=project&project=fe372daf01f75276c7e5228e6e000024&key=localhost%252Fhome%252Fslycat%252Fsrc%252Fslycat-data%252FTAIS%252Fworkdir.244%252Fstress_zz_000001.png HTTP/1.1
+    Host: localhost:9000
+    Connection: keep-alive
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36
+    DNT: 1
+    Accept: */*
+    Referer: https://localhost:9000/models/514ac8d82e834e6cae2c25307ac1e69f?bid=18de324920c051bf768c9d2b7f0a23db
+    Accept-Encoding: gzip, deflate, br
+    Accept-Language: en-US,en;q=0.9
+    Cookie: slycatauth=f204afc7e8ce44e79cdd41fc78ecd41b; slycattimeout=timeout
+
+  **Sample Response**
+
+  .. sourcecode:: http
+
+    HTTP/1.1 200 OK
+    X-Powered-By: Express
+    content-length: 59210
+    expires: 0
+    server: CherryPy/14.0.0
+    pragma: no-cache
+    cache-control: no-cache, no-store, must-revalidate
+    date: Thu, 27 Jun 2019 21:49:32 GMT
+    content-type: image/png
+    connection: close
 
 See Also
 --------
 
-* :http:get:`/remotes/(sid)/image(path)`
-* :http:get:`/remotes/(sid)/videos/(vsid)`
+* :http:get:`/api/remotes/(hostname)/image(path)`
+* :http:get:`/api/remotes/(hostname)/videos/(vsid)`
 
