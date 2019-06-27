@@ -1,53 +1,53 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
-import "jquery-ui";
-import "js/jquery.scrollintoview.min";
+// import "jquery-ui";
+// import "js/jquery.scrollintoview.min";
 
-$.widget("cca.barplot",
-{
-  options:
-  {
-    metadata: null,
-    inputs:[],
-    outputs:[],
-    r2:[],
-    wilks:[],
-    x_loadings:[],
-    y_loadings:[],
-    component : 0,
-    variable : null,
-    sort : [null, null],
-    tableHeight : null,
-    inputsHeight: null,
-    outputsHeight: null,
-  },
+// $.widget("cca.barplot",
+// {
+  // options:
+  // {
+  //   metadata: null,
+  //   inputs:[],
+  //   outputs:[],
+  //   r2:[],
+  //   wilks:[],
+  //   x_loadings:[],
+  //   y_loadings:[],
+  //   component : 0,
+  //   variable : null,
+  //   sort : [null, null],
+  //   tableHeight : null,
+  //   inputsHeight: null,
+  //   outputsHeight: null,
+  // },
 
-  _create: function ()
-  {
-    var self = this;
+  // _create: function ()
+  // {
+    // var self = this;
 
-    function component_class(component)
-    {
-      return "cca" + (component + 1);
-    }
+    // function component_class(component)
+    // {
+    //   return "cca" + (component + 1);
+    // }
 
-    function negative_bar_width(value)
-    {
-      return value < 0 ? -100 * value + "px" : "0px";
-    }
+    // function negative_bar_width(value)
+    // {
+    //   return value < 0 ? -100 * value + "px" : "0px";
+    // }
 
-    function positive_bar_width(value)
-    {
-      return value > 0 ? 100 * value + "px" : "0px";
-    }
+    // function positive_bar_width(value)
+    // {
+    //   return value > 0 ? 100 * value + "px" : "0px";
+    // }
 
-    this.select_component = function(component)
-    {
-      // this.element.find(".selected-component").removeClass("selected-component");
-      // this.element.find(".col" + (component+1)).addClass("selected-component");
-      this.resize_canvas();
-      // this.element.find(".rowOutput.selected-component").first().scrollintoview({direction: "horizontal",});
-    }
+    // this.select_component = function(component)
+    // {
+    //   // this.element.find(".selected-component").removeClass("selected-component");
+    //   // this.element.find(".col" + (component+1)).addClass("selected-component");
+    //   // this.resize_canvas();
+    //   // this.element.find(".rowOutput.selected-component").first().scrollintoview({direction: "horizontal",});
+    // }
 
     // this.do_component_sort = function(component, sort_order)
     // {
@@ -98,26 +98,26 @@ $.widget("cca.barplot",
     //   // }
     // }
 
-    function click_component(context, component)
-    {
-      return function()
-      {
-        // context.select_component(component);
-        context.element.trigger("component-changed", component);
-      }
-    }
+    // function click_component(context, component)
+    // {
+    //   return function()
+    //   {
+    //     // context.select_component(component);
+    //     context.element.trigger("component-changed", component);
+    //   }
+    // }
 
-    function sort_component(context, component)
-    {
-      return function()
-      {
-        var sort_order = 'descending';
-        if( $(this).hasClass('icon-sort-descending') )
-          sort_order = 'ascending';
+    // function sort_component(context, component)
+    // {
+    //   return function()
+    //   {
+    //     var sort_order = 'descending';
+    //     if( $(this).hasClass('icon-sort-descending') )
+    //       sort_order = 'ascending';
 
-        context.do_component_sort(component, sort_order);
-      }
-    }
+    //     context.do_component_sort(component, sort_order);
+    //   }
+    // }
 
     // function click_row(context, row, variable)
     // {
@@ -130,29 +130,29 @@ $.widget("cca.barplot",
     //   }
     // }
 
-    var metadata = this.options.metadata;
-    var inputs = this.options.inputs;
-    var outputs = this.options.outputs;
-    var r2 = this.options.r2;
-    var wilks = this.options.wilks;
-    var x_loadings = this.options.x_loadings;
-    var y_loadings = this.options.y_loadings;
-    var component_count = x_loadings.length;
+    // var metadata = this.options.metadata;
+    // var inputs = this.options.inputs;
+    // var outputs = this.options.outputs;
+    // var r2 = this.options.r2;
+    // var wilks = this.options.wilks;
+    // var x_loadings = this.options.x_loadings;
+    // var y_loadings = this.options.y_loadings;
+    // var component_count = x_loadings.length;
 
     // var barplotHeader = $("<div class='barplotHeader'>").appendTo(this.element);
     // var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
     // var blank = $('<div class="barplotHeaderColumn mask col0"><div class="wrapper">&nbsp;</div></div>').appendTo(barplotRow);
     // var barplotHeaderColumns = $('<div class="barplotHeaderColumns">').appendTo(barplotRow);
 
-    for(var component = 0; component != component_count; ++component)
-    {
+    // for(var component = 0; component != component_count; ++component)
+    // {
       // var barplotHeaderColumn = $('<div class="barplotHeaderColumn"><div class="wrapper"><div class="negativeSpacer spacer" /><div class="barplotHeaderColumnLabelWrapper"><span class="selectCCAComponent">CCA' + (component+1) + '</span><span class="sortCCAComponent icon-sort-off" /></div><div class="positiveSpacer spacer" /></div></div>')
       //   .addClass('col' + (component+1))
       //   .addClass(component_class(component))
       //   .appendTo(barplotHeaderColumns);
       // $("span.selectCCAComponent", barplotHeaderColumn).click(click_component(this, component));
-      $("span.sortCCAComponent", barplotHeaderColumn).click(sort_component(this, component));
-    }
+      // $("span.sortCCAComponent", barplotHeaderColumn).click(sort_component(this, component));
+    // }
 
     // Add r-squared statistic ...
     // var barplotRow = $('<div class="barplotRow">').appendTo(barplotHeader);
@@ -187,8 +187,8 @@ $.widget("cca.barplot",
     // var barplotColumn = $('<div class="barplotColumn input">').appendTo(barplotGroupInputs);
     // var barplotCanvas = $('<div class="barplotCanvas input">').appendTo(barplotGroupInputs);
 
-    for(var i = 0; i != inputs.length; ++i)
-    {
+    // for(var i = 0; i != inputs.length; ++i)
+    // {
       // var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i + ' variable' + inputs[i]).appendTo(barplotColumn);
       // variableName.data({loadings_index: i, variable: inputs[i],});
       // var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
@@ -215,15 +215,15 @@ $.widget("cca.barplot",
       //       // .addClass(component_class(component))
       //       // .appendTo(barplotCellPositiveSpacer);
       // }
-    }
+    // }
 
     // Add output variables ...
     // var barplotGroupOutputs = $('<div class="barplotGroup outputs">').appendTo(barplotViewport);
     // var barplotColumn = $('<div class="barplotColumn output">').appendTo(barplotGroupOutputs);
     // var barplotCanvas = $('<div class="barplotCanvas output">').appendTo(barplotGroupOutputs);
 
-    for(var i = 0; i != outputs.length; ++i)
-    {
+    // for(var i = 0; i != outputs.length; ++i)
+    // {
       // var variableName = 
       //   $('<div class="barplotCell col0 rowOutput outputLabel">')
       //     .addClass('row' + (i + inputs.length) + ' variable' + outputs[i]).appendTo(barplotColumn);
@@ -257,7 +257,7 @@ $.widget("cca.barplot",
       //   //     .css("width", positive_bar_width(y_loadings[component][i]))
       //   //     .addClass(component_class(component)).appendTo(barplotCellPositiveSpacer);
       // }
-    }
+    // }
 
     
 
@@ -340,10 +340,10 @@ $.widget("cca.barplot",
 
     // // Can't figure out how to do this in CSS so setting explicit height here :(
     // $(".barplotHeaderColumn.mask.col0").height( $(".barplotHeader .barplotRow:first-child").height() );
-  },
+  // },
 
-  resize_canvas: function()
-  {
+  // resize_canvas: function()
+  // {
     // var tableWidth = 20;  // Adding space for scrollbars
     // $(".barplotHeaderColumn").each(
     //   function(index){
@@ -430,10 +430,10 @@ $.widget("cca.barplot",
     // var barplotCanvasInputElement = $(".barplotCanvas.input")[0];
     // var verticalScrollbarWidth = barplotCanvasInputElement.offsetWidth - barplotCanvasInputElement.clientWidth;
     // $(".barplotGroup.inputs .ui-resizable-s").css("left", "-" + verticalScrollbarWidth + "px");
-  },
+  // },
 
-  _setOption: function(key, value)
-  {
+  // _setOption: function(key, value)
+  // {
     //console.log("cca.barplot._setOption()", key, value);
     // this.options[key] = value;
 
@@ -441,8 +441,8 @@ $.widget("cca.barplot",
     // {
     //   // this.select_component(value);
     // }
-    else if(key == "variable")
-    {
+    // else if(key == "variable")
+    // {
       // this.element.find(".selected-variable").removeClass("selected-variable");
       // this.element.find(".variable" + value).addClass("selected-variable");
       // Using scrollintoview jQuery plugin instead of browser built-in functionality (DOM's scrollIntoView() function).
@@ -453,11 +453,11 @@ $.widget("cca.barplot",
       //   4. always scrolls to top or bottom of scroll area instead of the least amount needed to make it visible
       // The jQuery plugin solves all these issues.
       //this.element.find(".barplotRow.selected-variable").get(0).scrollIntoView();
-      this.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
-    }
-    else if(key == "sort")
-    {
-      this.do_component_sort(this.options.sort[0], this.options.sort[1]);
-    }
-  }
-});
+      // this.element.find(".barplotRow.selected-variable").scrollintoview({direction: "vertical",});
+    // }
+    // else if(key == "sort")
+    // {
+    //   this.do_component_sort(this.options.sort[0], this.options.sort[1]);
+    // }
+  // }
+// });
