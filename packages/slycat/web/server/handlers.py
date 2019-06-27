@@ -2352,12 +2352,31 @@ def post_remote_browse(hostname, path):
 
 def get_remote_file(hostname, path, **kwargs):
     """
-    Given a hostname and file path returns the file given
-    by the path
+    Uses an existing remote session to retrieve a remote file.  The remote
+    session must have been created using :http:post:`/api/remotes`.  Use
+    :http:post:`/api/remotes/(hostname)/browse(path)` to lookup remote file paths.
+    The returned file may be optionally cached on the server and retrieved
+    using :http:get:`/api/projects/(pid)/cache/(key)`.
+
     :param hostname: connection host name
     :param path: path to file
     :param kwargs:
+
+    Query Parameters
+    :param cache: – Optional cache identifier. 
+      Set to project to store the retrieved file in a project cache.
+    :param project: – Project identifier. Required when cache is set to project.
+    :param key: – Cached object key. Must be specified when cache is set to project.
     :return: file
+
+    Status Codes
+    200 OK – The requested file is returned in the body of the response.
+    404 Not Found – The session doesn’t exist or has timed-out.
+    400 Bad Request – “Can’t read directory” The remote path 
+      is a directory instead of a file.
+    400 Bad Request – “File not found” The remote path doesn’t exist.
+    400 Bad Request – “Access denied” The session user doesn’t have 
+      permissions to access the file.
     """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
