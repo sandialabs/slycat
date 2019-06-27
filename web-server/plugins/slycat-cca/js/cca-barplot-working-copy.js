@@ -119,16 +119,16 @@ $.widget("cca.barplot",
       }
     }
 
-    function click_row(context, row, variable)
-    {
-      return function()
-      {
-        context.element.find(".selected-variable").removeClass("selected-variable");
-        context.element.find(".variable" + variable).addClass("selected-variable");
+    // function click_row(context, row, variable)
+    // {
+    //   return function()
+    //   {
+    //     context.element.find(".selected-variable").removeClass("selected-variable");
+    //     context.element.find(".variable" + variable).addClass("selected-variable");
 
-        context.element.trigger("variable-changed", [variable]);
-      }
-    }
+    //     context.element.trigger("variable-changed", [variable]);
+    //   }
+    // }
 
     var metadata = this.options.metadata;
     var inputs = this.options.inputs;
@@ -192,11 +192,11 @@ $.widget("cca.barplot",
       // var variableName = $('<div class="barplotCell col0 rowInput inputLabel" />').addClass('row' + i + ' variable' + inputs[i]).appendTo(barplotColumn);
       // variableName.data({loadings_index: i, variable: inputs[i],});
       // var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][inputs[i]]).appendTo(variableName);
-      variableName.click( click_row(this, variableName, inputs[i]) );
+      // variableName.click( click_row(this, variableName, inputs[i]) );
 
       // var barplotRow = $('<div class="barplotRow rowInput">').addClass('row' + i + ' variable' + inputs[i]).appendTo(barplotCanvas);
       // barplotRow.data({loadings_index: i, variable: inputs[i],});
-      barplotRow.click( click_row(this, barplotRow, inputs[i]) );
+      // barplotRow.click( click_row(this, barplotRow, inputs[i]) );
 
       // for(var component = 0; component != component_count; ++component)
       // {
@@ -229,13 +229,13 @@ $.widget("cca.barplot",
       //     .addClass('row' + (i + inputs.length) + ' variable' + outputs[i]).appendTo(barplotColumn);
       // variableName.data({loadings_index: i, variable: outputs[i],});
       // var variableNameWrapper = $('<div class="wrapper" />').html(metadata["column-names"][outputs[i]]).appendTo(variableName);
-      variableName.click( click_row(this, variableName, outputs[i]) );
+      // variableName.click( click_row(this, variableName, outputs[i]) );
 
       // var barplotRow = 
         // $('<div class="barplotRow rowOutput">')
         //   .addClass('row' + (i + inputs.length) + ' variable' + outputs[i]).appendTo(barplotCanvas);
       // barplotRow.data({loadings_index: i, variable: outputs[i],});
-      barplotRow.click( click_row(this, barplotRow, outputs[i]) );
+      // barplotRow.click( click_row(this, barplotRow, outputs[i]) );
 
       // for(var component = 0; component != component_count; ++component)
       // {

@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import React from "react";
 import { connect } from 'react-redux';
-import { SET_VARIABLE_SELECTED } from '../actions';
+import { setVariableSelected } from '../actions';
 
 import _ from "lodash";
 
@@ -329,10 +329,7 @@ class CCABarplot extends React.Component {
             data-loadings_index={inputs_index}
             data-variable={inputs_item.index}
             key={inputs_index}
-            onClick={(e) => this.props.dispatch({ 
-              type: SET_VARIABLE_SELECTED, 
-              id: inputs_item.index 
-            })}
+            onClick={() => this.props.setVariableSelected(inputs_item.index)}
           >
             <div className='wrapper'>
               {inputs_item.name}
@@ -354,6 +351,7 @@ class CCABarplot extends React.Component {
             data-loadings_index={inputs_index}
             data-variable={inputs_item.index}
             key={inputs_index}
+            onClick={() => this.props.setVariableSelected(inputs_item.index)}
           >
             {this.props.x_loadings.map((x_loadings_item, x_loadings_index) =>
               (<div 
@@ -400,6 +398,7 @@ class CCABarplot extends React.Component {
             data-loadings_index={outputs_index}
             data-variable={outputs_item.index}
             key={outputs_index}
+            onClick={() => this.props.setVariableSelected(outputs_item.index)}
           >
             <div className='wrapper'>
               {outputs_item.name}
@@ -421,6 +420,7 @@ class CCABarplot extends React.Component {
             data-loadings_index={outputs_index}
             data-variable={outputs_item.index}
             key={outputs_index}
+            onClick={() => this.props.setVariableSelected(outputs_item.index)}
           >
             {this.props.y_loadings.map((y_loadings_item, y_loadings_index) =>
               (<div 
@@ -510,5 +510,5 @@ const mapStateToProps = state => {
 
 export default connect(
   mapStateToProps,
-  null
+  { setVariableSelected, }
 )(CCABarplot)
