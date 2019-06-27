@@ -1,33 +1,44 @@
 GET Projects
 ============
 
-.. http:get:: /projects
+.. http:get:: /api/projects
 
   Returns the list of available projects. The HTML representation provides
   the main Slycat user interface.
+  
+  :param _: optional param for time to stop the browser from caching
 
-  :reqheader Accept: text/html or application/json
+  :reqheader Accept: application/json
 
   **Sample Request**
 
   .. sourcecode:: http
 
-    GET /projects HTTP/1.1
-    Host: localhost:8093
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
-    Accept-Encoding: gzip, deflate, compress
-    accept: application/json
-    User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
+    GET /api/projects_list?_=1561665367168 HTTP/1.1
+    Host: localhost:9000
+    Connection: keep-alive
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36
+    DNT: 1
+    Accept: */*
+    Referer: https://localhost:9000/projects/fe372daf01f75276c7e5228e6e000024
+    Accept-Encoding: gzip, deflate, br
+    Accept-Language: en-US,en;q=0.9
+    Cookie: slycatauth=f204afc7e8ce44e79cdd41fc78ecd41b; slycattimeout=timeout
 
   **Sample Response**
 
   .. sourcecode:: http
 
     HTTP/1.1 200 OK
-    Date: Mon, 25 Nov 2013 20:35:59 GMT
-    Content-Length: 570
-    Content-Type: application/json
-    Server: CherryPy/3.2.2
+    X-Powered-By: Express
+    content-length: 663
+    expires: 0
+    server: CherryPy/14.0.0
+    pragma: no-cache
+    cache-control: no-cache, no-store, must-revalidate
+    date: Thu, 27 Jun 2019 19:56:07 GMT
+    content-type: application/json
+    connection: close
 
     [
       {

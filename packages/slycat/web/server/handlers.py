@@ -127,8 +127,8 @@ def require_integer_parameter(value, name):
 def get_projects_list(_=None):
     """
     returns an array of projects
-    :param _: 
-    :return: 
+    :param _: time arg to stop caching
+    :return: json projects list
     """
     database = slycat.web.server.database.couchdb.connect()
     projects = [project for project in database.scan("slycat/projects") if
