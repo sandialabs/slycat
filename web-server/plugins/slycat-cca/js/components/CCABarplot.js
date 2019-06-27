@@ -270,7 +270,6 @@ class CCABarplot extends React.Component {
           <div className='negativeSpacer spacer' />
           <div className='barplotHeaderColumnLabelWrapper'>
             <span className='selectCCAComponent' onClick={(e) => this.clickComponent(index, e)}>
-            {/* <span className='selectCCAComponent' onClick={(e) => dispatch({ type: SET_VARIABLE_SELECTED, id: index})}> */}
               CCA{index + 1}
             </span>
             <span className={`sortCCAComponent \
