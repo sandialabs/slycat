@@ -8,7 +8,7 @@ GET Project
   :param pid: Unique project identifier.
   :type pid: string
 
-  :responseheader Content-Type: text/html, application/json
+  :responseheader Content-Type: application/json
 
   **Sample Request**
 
