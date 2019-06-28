@@ -13,7 +13,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ControlsDropdownColor from './Components/ControlsDropdownColor';
 import COLOR_MAP from './Components/color-map.js';
-import COLOR_LABELS from 'components/color-labels.js';
 
 $.widget("slycat.colorswitcher",
 {
@@ -33,43 +32,17 @@ $.widget("slycat.colorswitcher",
                     title: 'Change color scheme',
                     state_label: 'color',
                     trigger: 'colormap-changed',
-                    items: COLOR_LABELS,
                     selected: self.options.colormap,
                     single: true,
                 }];
 
-    const color_bar = <ControlsDropdownColor
+    const color_bar = (<ControlsDropdownColor
         element={self.element}
         dropdown={dropdown}
         selection={self.options.selection}
-        />;
+        />);
 
     self.color_bar = ReactDOM.render(color_bar, document.getElementById('color-switcher'));
-    let all_color_stops = [];
-    let all_background_color = [];
-    $.each(this.color_maps, function(key, value) {
-        let gradient_data = self.get_gradient_data(key);
-        let color_stops = [];
-        for (var i = 0; i < gradient_data.length; i++) {
-            color_stops.push(gradient_data[i].color + " "
-                + gradient_data[i].offset + "%");
-        }
-        let background_color = self.get_background(key);
-        all_color_stops.push(color_stops);
-        all_background_color.push(background_color);
-    });
-    for (let i = 0; i < all_color_stops.length; i++) {
-      $("#color-switcher a").eq(i)
-            .css({
-                "background-image": "linear-gradient(to bottom, "
-                    + all_color_stops[i].join(", ") + "), linear-gradient(to bottom, "
-                    + all_background_color[i] + ", " + all_background_color[i] + ")",
-                "background-size": "5px 75%, 50px 100%",
-                "background-position": "right 10px center, right 5px center",
-                "background-repeat": "no-repeat, no-repeat",
-                "padding-right": "70px",
-            });
-    }
   },
 
   _setOption: function(key, value)

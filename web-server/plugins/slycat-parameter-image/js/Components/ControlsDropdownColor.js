@@ -4,12 +4,13 @@
 
 import React from "react";
 import ControlsDropdown from 'components/ControlsDropdown';
+import slycat_color_maps from "js/slycat-color-maps";
 
 class ControlsDropdownColor extends React.Component {
   constructor(props) {
-      super(props);
+    super(props);
 
-      this.state = {
+    this.state = {
       selection: this.props.dropdown[0].selected,
     };
 
@@ -49,6 +50,35 @@ class ControlsDropdownColor extends React.Component {
     // Define default button style
     const button_style = 'btn-outline-dark';
 
+    const colormaps = slycat_color_maps.color_maps;
+    const items = Object.keys(colormaps).map((key, index) => {
+      let colormap = colormaps[key];
+
+      // Create CSS styles for rendering a preview of each colomap in the dropdown
+      let gradient_data = slycat_color_maps.get_gradient_data(key);
+      let color_stops = [];
+      for (var i = 0; i < gradient_data.length; i++) {
+          color_stops.push(gradient_data[i].color + " "
+              + gradient_data[i].offset + "%");
+      }
+      let background_color = colormap.background;
+      let style = {
+        "backgroundImage": "linear-gradient(to bottom, "
+            + color_stops.join(", ") + "), linear-gradient(to bottom, "
+            + background_color + ", " + background_color + ")",
+        "backgroundSize": "5px 75%, 50px 100%",
+        "backgroundPosition": "right 10px center, right 5px center",
+        "backgroundRepeat": "no-repeat, no-repeat",
+        "paddingRight": "70px",
+      }
+
+      return {
+        key: key,
+        name: colormap.label,
+        style: style,
+      }
+    });
+
     return (
       <ControlsDropdown 
         key={this.props.dropdown[0].id} 
@@ -57,7 +87,7 @@ class ControlsDropdownColor extends React.Component {
         title={this.props.dropdown[0].title}
         state_label={this.props.dropdown[0].state_label} 
         trigger={this.props.dropdown[0].trigger}
-        items={this.props.dropdown[0].items}
+        items={items}
         selected={this.state.selection} 
         single={this.props.dropdown[0].single} 
         set_selected={this.set_selected}
