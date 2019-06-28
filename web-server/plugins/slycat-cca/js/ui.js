@@ -11,7 +11,7 @@ import bookmark_manager from "js/slycat-bookmark-manager";
 import * as dialog from "js/slycat-dialog";
 import URI from "urijs";
 import * as chunker from "js/chunker";
-import color_maps from "js/slycat-color-maps";
+import slycat_color_maps from "js/slycat-color-maps";
 
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
@@ -519,7 +519,7 @@ $(document).ready(function() {
       scatterplot_ready = true;
 
       // $("#scatterplot-pane .load-status").css("display", "none");
-      $("#scatterplot-pane").css("background", color_maps.get_background(store.getState().colormap).toString());
+      $("#scatterplot-pane").css("background", slycat_color_maps.get_background(store.getState().colormap).toString());
 
       // $("#scatterplot").scatterplot({
       //   indices: indices,
@@ -557,13 +557,13 @@ $(document).ready(function() {
             v={v}
             width={$("#scatterplot-pane").width()}
             height={$("#scatterplot-pane").height()}
-            color={color_maps.get_color_scale(store.getState().colormap)}
+            color={slycat_color_maps.get_color_scale(store.getState().colormap)}
             selection={store.getState().simulations_selected}
             border={{top: 40, right: 150, bottom: 40, left: 40}}
             label_offset={{x: 25, y: 25}}
             drag_threshold={3}
             pick_distance={3}
-            gradient={color_maps.get_gradient_data(store.getState().colormap)}
+            gradient={slycat_color_maps.get_gradient_data(store.getState().colormap)}
             v_string={table_metadata["column-types"][store.getState().variable_selected]=="string"}
             v_label={table_metadata["column-names"][store.getState().variable_selected]}
             font_size={'14px'}
@@ -658,7 +658,7 @@ $(document).ready(function() {
             others={other_columns}
             component={store.getState().cca_component_selected}
             row_selection={store.getState().simulations_selected}
-            colormap={color_maps.get_color_scale(store.getState().colormap)}
+            colormap={slycat_color_maps.get_color_scale(store.getState().colormap)}
             sort_variable={sort_variable}
             sort_order={sort_order}
             variable_selection={store.getState().variable_selected}
@@ -734,19 +734,20 @@ $(document).ready(function() {
       }];
 
       const cca_controls_bar = 
-        <CCAControlsBar 
-          element={self.element}
-          selection={store.getState().simulations_selected}
-          mid={model._id}
-          aid={"data-table"}
-          model_name={window.model_name}
-          metadata={table_metadata}
-          color_variables={color_variable_dropdown_items}
-          color_variable={store.getState().variable_selected}
-          indices={indices}
-          dropdown_color={dropdown}
-          selection_color={store.getState().colormap}
-        />
+        (<Provider store={store}>
+          <CCAControlsBar 
+            selection={store.getState().simulations_selected}
+            mid={model._id}
+            aid={"data-table"}
+            model_name={window.model_name}
+            metadata={table_metadata}
+            color_variables={color_variable_dropdown_items}
+            color_variable={store.getState().variable_selected}
+            indices={indices}
+            dropdown_color={dropdown}
+            // selection_color={store.getState().colormap}
+          />
+        </Provider>)
       ;
 
       self.CCAControlsBarComponent = ReactDOM.render(
