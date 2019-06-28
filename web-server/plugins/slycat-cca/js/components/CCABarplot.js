@@ -555,7 +555,8 @@ const mapStateToProps = state => {
 
 export default connect(
   mapStateToProps,
-  { setVariableSelected, 
+  { 
+    setVariableSelected, 
     setCCAComponentSelected,
     setCCAComponentSorted,
   }
