@@ -169,18 +169,3 @@ Feature: Slycat Agent
     And a sample jpeg image
     When retrieving an image with an unsupported content type
     Then the agent should return an unsupported content type error
-
-  # Video creation
-
-#  Scenario Outline: create video from sequence
-#    Given a running Slycat agent
-#    And a sequence of <source type> images
-#    When creating a <target type> video
-#    Then the agent should return a video session id
-#    And the agent should return a <target type> video
-#
-#    Examples:
-#      | source type | target type |
-#      | jpeg        | mp4         |
-#      | jpeg        | webm        |
-

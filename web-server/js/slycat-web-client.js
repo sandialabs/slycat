@@ -752,29 +752,6 @@ module.get_remotes_fetch = function(hostname)
   });
 };
 
-/**
- * TODO: deprecate this function
- */
-module.get_remote_video_status = function(params)
-{
-  $.ajax(
-  {
-    dataType: "json",
-    type: "GET",
-    url: api_root + "remotes/" + params.sid + "/videos/" + params.vsid + "/status",
-    success: function(metadata)
-    {
-      if(params.success)
-        params.success(metadata);
-    },
-    error: function(request, status, reason_phrase)
-    {
-      if(params.error)
-        params.error(request, status, reason_phrase);
-    }
-  });
-}
-
 module.get_user = function(params)
 {
   $.ajax(

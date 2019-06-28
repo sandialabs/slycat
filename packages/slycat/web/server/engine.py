@@ -113,7 +113,6 @@ def start(root_path, config_file):
 
   dispatcher.connect("get-remote-image", "/remotes/:hostname/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video", "/remotes/:hostname/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
-  # Deprecate this function dispatcher.connect("get-remote-video-status", "/remotes/:hostname/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-show-user-password", "/remotes/show/user-password", slycat.web.server.handlers.get_remote_show_user_password, conditions={"method": ["GET"]})
 

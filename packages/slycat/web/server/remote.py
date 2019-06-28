@@ -1101,29 +1101,6 @@ class Session(object):
         cherrypy.response.headers["content-type"] = content_type
         return content
 
-    def get_video_status(self, vsid):
-        if not self._agent:
-            cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)
-            cherrypy.response.headers["x-slycat-hint"] = "Ask your system administrator to setup slycat-agent on %s" % (
-                self.hostname)
-            cherrypy.log.error("slycat.web.server.remote.py get_video_status",
-                                    "cherrypy.HTTPError 400 no agent for %s." % (self.hostname))
-            raise cherrypy.HTTPError("400 Agent required.")
-
-        # Get the video status from the agent.
-        stdin, stdout, stderr = self._agent
-
-        stdin.write("%s\n" % json.dumps({"action": "video-status", "sid": vsid}))
-        stdin.flush()
-        metadata = json.loads(stdout.readline())
-
-        cherrypy.response.headers["x-slycat-message"] = metadata["message"]
-
-        if "returncode" in metadata and metadata["returncode"] != 0:
-            cherrypy.log.error("\nreturncode: %s\nstderr: %s\n" % (metadata["returncode"], metadata["stderr"]))
-
-        return metadata
-
     def get_video(self, vsid):
         if not self._agent:
             cherrypy.response.headers["x-slycat-message"] = "No agent for %s." % (self.hostname)

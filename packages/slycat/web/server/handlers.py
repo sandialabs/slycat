@@ -2445,21 +2445,6 @@ def get_time_series_names(hostname, path, **kwargs):
         raise cherrypy.HTTPError("400 could not detect timeseries names. There could be hidden characters in your csv")
 
 
-@cherrypy.tools.json_out(on=True)
-def get_remote_video_status(hostname, vsid):
-    """
-    TODO: deprecate this function
-    Given a hostname and vsid returns the video status given
-    by the vsid
-    :param hostname: connection host name
-    :param vsid: video uuid
-    :return: json
-    """
-    sid = get_sid(hostname)
-    with slycat.web.server.remote.get_session(sid) as session:
-        return session.get_video_status(vsid)
-
-
 def get_remote_video(hostname, vsid):
     """
     Given a hostname and vsid returns the video given

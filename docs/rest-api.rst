@@ -35,7 +35,6 @@ any programming language or library that supports HTTP requests.
   GET-Projects.rst
   GET-Remote-File.rst
   GET-Remote-Image.rst
-  GET-Remote-Video-Status.rst
   GET-Remote-Video.rst
   GET-User.rst
   POST-Model-Arrayset-Data.rst
