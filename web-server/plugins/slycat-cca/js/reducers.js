@@ -8,8 +8,10 @@ import {
   ADD_SIMULATIONS_SELECTED,
   REMOVE_SIMULATIONS_SELECTED,
   TOGGLE_SIMULATIONS_SELECTED,
-  SET_COLORMAP,
 } from './actions';
+import {
+  SET_COLORMAP,
+} from 'components/actionsColor';
 
 const initialState = {
   colormap: 'night', // String reprsenting current color map

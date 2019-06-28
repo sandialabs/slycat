@@ -11,7 +11,6 @@ export const SET_SIMULATIONS_SELECTED = 'SET_SIMULATIONS_SELECTED';
 export const ADD_SIMULATIONS_SELECTED = 'ADD_SIMULATIONS_SELECTED';
 export const REMOVE_SIMULATIONS_SELECTED = 'REMOVE_SIMULATIONS_SELECTED';
 export const TOGGLE_SIMULATIONS_SELECTED = 'TOGGLE_SIMULATIONS_SELECTED';
-export const SET_COLORMAP = 'SET_COLORMAP';
 
 export function setVariableSelected(variable) {
   return { 
@@ -74,19 +73,4 @@ export function toggleSimulationsSelected(simulations) {
 //   	type: TOGGLE_VARIABLE_SORT_DIRECTION, 
 //   	id: variable,
 //   }
-// }
-
-export function setColormap(colormap) {
-  return {
-    type: SET_COLORMAP,
-    name: colormap,
-  }
-}
-
-// export function changeFontFamily(family) {
-//   return { type: CHANGE_FONT_FAMILY, fontFamily: family }
-// }
-
-// export function changeAxesVariableScale(variable, scale) {
-//   return { type: CHANGE_AXES_VARIABLE_SCALE, axesVariable: variable, axesScale: scale }
 // }
