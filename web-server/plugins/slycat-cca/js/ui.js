@@ -745,7 +745,6 @@ $(document).ready(function() {
             color_variable={store.getState().variable_selected}
             indices={indices}
             dropdown_color={dropdown}
-            // selection_color={store.getState().colormap}
           />
         </Provider>)
       ;
