@@ -11,7 +11,7 @@ import d3 from "d3";
 import "jquery-ui";
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ControlsDropdownColor from 'components/ControlsDropdownColor';
+import ControlsDropdownColor from './Components/ControlsDropdownColor';
 import COLOR_MAP from './Components/color-map.js';
 import COLOR_LABELS from 'components/color-labels.js';
 
