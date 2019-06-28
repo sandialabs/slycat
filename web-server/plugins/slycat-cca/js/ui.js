@@ -31,7 +31,6 @@ import CCAControlsBar from "./components/CCAControlsBar";
 import CCABarplot from "./components/CCABarplot";
 import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
-import COLOR_LABELS from 'components/color-labels.js';
 
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
@@ -722,17 +721,6 @@ $(document).ready(function() {
         });
       }
 
-      const dropdown = [{
-        id: 'color-switcher',
-        label: 'Color',
-        title: 'Change color scheme',
-        state_label: 'color',
-        trigger: 'colormap-changed',
-        items: COLOR_LABELS,
-        selected: store.getState().colormap,
-        single: true,
-      }];
-
       const cca_controls_bar = 
         (<Provider store={store}>
           <CCAControlsBar 
@@ -744,7 +732,6 @@ $(document).ready(function() {
             color_variables={color_variable_dropdown_items}
             color_variable={store.getState().variable_selected}
             indices={indices}
-            dropdown_color={dropdown}
           />
         </Provider>)
       ;
