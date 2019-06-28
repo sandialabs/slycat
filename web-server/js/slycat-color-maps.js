@@ -1,22 +1,19 @@
-/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC. 
+Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  
+retains certain rights in this software. */
 
 import d3 from "d3";
 
 export default {
-  options:
-  {
-    colormap : "day",
-  },
-
   color_maps:
   {
-    "night":
+    night:
     {
-      "label": "Night",
-      "background": d3.rgb(128, 128, 128),
-      "null_color": "rgb(75,75,75)",
-      "opacity": "0.5",
-      "colors":
+      label: "Night",
+      background: d3.rgb(128, 128, 128),
+      null_color: "rgb(75,75,75)",
+      opacity: "0.5",
+      colors:
       [
         d3.rgb( 59,  76, 192),
         d3.rgb( 68,  90, 204),
@@ -53,13 +50,13 @@ export default {
         d3.rgb(180,   4,  38),
       ]
     },
-    "day":
+    day:
     {
-      "label": "Day",
-      "background": d3.rgb(255, 255, 255),
-      "null_color": "gray",
-      "opacity": "0.7",
-      "colors":
+      label: "Day",
+      background: d3.rgb(255, 255, 255),
+      null_color: "gray",
+      opacity: "0.7",
+      colors:
       [
         d3.rgb(100, 108, 234),
         d3.rgb(115, 118, 240),
@@ -96,13 +93,13 @@ export default {
         d3.rgb(225,  57,  66),
       ]
     },
-    "rainbow":
+    rainbow:
     {
-      "label": "Rainbow Night",
-      "background": d3.rgb(128, 128, 128),
-      "null_color": "rgb(75,75,75)",
-      "opacity": "0.6",
-      "colors":
+      label: "Rainbow Night",
+      background: d3.rgb(128, 128, 128),
+      null_color: "rgb(75,75,75)",
+      opacity: "0.6",
+      colors:
       [
         d3.rgb(0, 0, 255),
         d3.rgb(0, 255, 255),
@@ -110,13 +107,13 @@ export default {
         d3.rgb(255, 0, 0),
       ]
     },
-    "rainbow_day":
+    rainbow_day:
     {
-      "label": "Rainbow Day",
-      "background": d3.rgb(255, 255, 255),
-      "null_color": "gray",
-      "opacity": "0.7",
-      "colors":
+      label: "Rainbow Day",
+      background: d3.rgb(255, 255, 255),
+      null_color: "gray",
+      opacity: "0.7",
+      colors:
       [
         d3.rgb(0, 0, 255),
         d3.rgb(0, 255, 255),
