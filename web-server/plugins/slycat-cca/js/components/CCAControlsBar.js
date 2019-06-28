@@ -1,5 +1,5 @@
 import React from "react";
-import { Provider } from 'react-redux';
+import { connect } from 'react-redux';
 import ControlsDropdown from 'components/ControlsDropdown';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
@@ -9,7 +9,6 @@ class CCAControlsBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-
     };
   }
 
@@ -42,11 +41,7 @@ class CCAControlsBar extends React.Component {
               button_style={button_style} />
           </ControlsGroup>
           <ControlsGroup id="color-switcher" class="btn-group ml-3">
-            <ControlsDropdownColor
-              element={self.element}
-              dropdown={this.props.dropdown_color}
-              selection={this.props.selection_color}
-            />
+            <ControlsDropdownColor />
           </ControlsGroup>
         </React.StrictMode>
       </React.Fragment>
@@ -55,3 +50,20 @@ class CCAControlsBar extends React.Component {
 }
 
 export default CCAControlsBar
+
+// const mapStateToProps = state => {
+//   return {
+//     // colormap: state.colormap,
+//     // variable_selected: state.variable_selected,
+//     // cca_component_selected: state.cca_component_selected,
+//     // cca_component_sorted: state.cca_component_sorted,
+//     // cca_component_sort_direction: state.cca_component_sort_direction,
+//   }
+// };
+
+// export default connect(
+//   mapStateToProps,
+//   { 
+//     // setColormap,
+//   }
+// )(CCAControlsBar)
