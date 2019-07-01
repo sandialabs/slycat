@@ -9,9 +9,6 @@ class CCAScatterplot extends React.Component {
   constructor(props) 
   {
     super(props);
-    this.state = {
-      
-    };
 
     // Create a ref to the .cca-barplot-table
     this.cca_scatterplot = React.createRef();
@@ -336,11 +333,7 @@ class CCAScatterplot extends React.Component {
             onMouseUp={this.handle_mouse_up}
           >
             <CCALegend
-              gradient={this.props.gradient}
-              v_string={this.props.v_string}
               scale_v={this.props.v}
-              font_size={this.props.font_size}
-              font_family={this.props.font_family}
               height={this.props.height - this.props.border.top - this.props.border.bottom}
               canvas_width={this.props.width} 
               canvas_height={this.props.height} 
@@ -348,8 +341,8 @@ class CCAScatterplot extends React.Component {
                 x: this.props.width - this.props.border.left - this.props.border.right,
                 y: this.props.border.top
               }}
-              v_label={this.props.v_label}
-            ></CCALegend>
+              table_metadata={this.props.table_metadata}
+            />
             <canvas id="scatterplot" 
               ref={this.cca_scatterplot} 
               width={this.props.width} 
@@ -358,8 +351,7 @@ class CCAScatterplot extends React.Component {
                 width: this.props.width + 'px', 
                 height: this.props.height + 'px'
               }}
-              
-            ></canvas>
+            />
           </div>
         </React.StrictMode>
       </React.Fragment>
