@@ -252,6 +252,7 @@ $(document).ready(function() {
 
           // A default state
           let redux_state_tree = {
+            derived: {}, // Object that will hold state computed from model data
             colormap: 'night', // String reprsenting current color map
             simulations_selected: [], // Array containing which simulations are selected. Empty for none.
             cca_component_selected: 0, // Number indicating the index of the selected CCA component.
@@ -260,6 +261,8 @@ $(document).ready(function() {
             variable_selected: table_metadata["column-count"] - 1, // Number indicating the index of the selected variable. One always must be selected.
             variable_sorted: null, // Number indicating the index of the sorted variable. Set to 'null' for no sort?
             variable_sort_direction: 'ascending', // String indicating the sort direction of the sorted variable. Set to 'null' for no sort?
+            scatterplot_font_family: 'Arial', // String formatted as a valid font-family CSS property.
+            scatterplot_font_size: '14px', // String formatted as a valid font-size CSS property.
           }
 
           // If we have a serialized redux state, load it
@@ -289,7 +292,16 @@ $(document).ready(function() {
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkReduxStateTree = () => {
-            bookmarker.updateState({redux_state_tree: store.getState()});
+            bookmarker.updateState({
+              redux_state_tree: 
+              // Remove derived property from state tree because it should be computed
+              // from model data each time the model is loaded. Otherwise it has the 
+              // potential of becoming huge. Plus we shouldn't be storing model data
+              // in the bookmark, just UI state.
+              // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+              // sets it to null, so I think it's better to remove it entirely.
+              { ...store.getState(), derived: undefined }
+            });
           };
           store.subscribe(bookmarkReduxStateTree);
 
@@ -563,10 +575,9 @@ $(document).ready(function() {
             drag_threshold={3}
             pick_distance={3}
             gradient={slycat_color_maps.get_gradient_data(store.getState().colormap)}
-            v_string={table_metadata["column-types"][store.getState().variable_selected]=="string"}
-            v_label={table_metadata["column-names"][store.getState().variable_selected]}
             font_size={'14px'}
             font_family={'Arial'}
+            table_metadata={table_metadata}
           />
         </Provider>)
       ;
@@ -647,7 +658,7 @@ $(document).ready(function() {
       // });
 
       const cca_table = 
-        <Provider store={store}>
+        (<Provider store={store}>
           <CCATable 
             mid={model._id}
             aid="data-table"
@@ -662,7 +673,7 @@ $(document).ready(function() {
             sort_order={sort_order}
             variable_selection={store.getState().variable_selected}
           />
-        </Provider>
+        </Provider>)
       ;
 
       self.cca_table = ReactDOM.render(

@@ -1,18 +1,15 @@
 import React from "react";
-import { Provider } from 'react-redux';
+import { connect } from 'react-redux';
 
 import d3 from "d3";
 
+import slycat_color_maps from "js/slycat-color-maps";
 class CCALegend extends React.Component 
 {
   constructor(props) {
     super(props);
-    this.state = {
-      
-    };
 
-    // Create a refs
-    this.cca_legend_ref = React.createRef();
+    // Create refs
     this.legend_layer_ref = React.createRef();
     this.legend_axis_layer_ref = React.createRef();
   }
@@ -22,10 +19,9 @@ class CCALegend extends React.Component
     this.legend_layer = d3.select(this.legend_layer_ref.current);
     this.legend_axis_layer = d3.select(this.legend_axis_layer_ref.current);
 
-    this.update_legend_colors();
     this.update_legend_axis();
-    this.update_legend_position();
 
+    // Handles moving the legend with mouse drag
     let self = this;
     this.legend_layer.call(
       d3.behavior.drag()
@@ -55,26 +51,12 @@ class CCALegend extends React.Component
 
   componentDidUpdate(prevProps, prevState, snapshot) 
   {
-    this.update_legend_colors();
     this.update_legend_axis();
-    this.update_legend_position();
-  }
-
-  update_legend_colors = () =>
-  {
-    let gradient = this.legend_layer.select("#color-gradient");
-    var stop = gradient.selectAll("stop").data(this.props.gradient);
-    stop.exit().remove();
-    stop.enter().append("stop");
-    stop
-      .attr("offset", function(d) { return d.offset + "%"; })
-      .attr("stop-color", function(d) { return d.color; })
-      ;
   }
 
   update_legend_axis = () =>
   {
-    var range = [0, parseInt(this.legend_layer.select("rect.color").attr("height"))];
+    var range = [0, parseInt(this.props.height)];
 
     // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
     // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
@@ -88,44 +70,8 @@ class CCALegend extends React.Component
     this.legend_axis_layer
       .attr("transform", "translate(" + parseInt(this.legend_layer.select("rect.color").attr("width")) + ",0)")
       .call(this.legend_axis)
-      .style("font-size", this.props.font_size)
-      .style("font-family", this.props.font_family)
-      ;
-  }
-
-  update_legend_position = () =>
-  {
-    if( this.legend_layer.attr("data-status") != "moved" )
-    {
-      this.legend_layer
-          .attr("transform", "translate(" + 
-            (this.props.position.x + 110) + "," + 
-            this.props.position.y + ")")
-          .attr("data-transx", this.props.position.x + 110)
-          .attr("data-transy", this.props.position.y)
-          ;
-    }
-  }
-
-  update_v_label = () =>
-  {
-    // console.log("updating v label.");
-    this.legend_layer.selectAll(".label").remove();
-
-    let rectHeight = parseInt(this.legend_layer.select("rect.color").attr("height"));
-    let x = -15;
-    let y = rectHeight/2;
-
-    self.legend_layer.append("text")
-      .attr("class", "label")
-      .attr("x", x)
-      .attr("y", y)
-      .attr("transform", "rotate(-90," + x +"," + y + ")")
-      .style("text-anchor", "middle")
-      .style("font-weight", "bold")
-      .style("font-size", this.props.font_size)
-      .style("font-family", this.props.font_family)
-      .text(self.options.v_label)
+      .style("font-size", this.props.scatterplot_font_size)
+      .style("font-family", this.props.scatterplot_font_family)
       ;
   }
 
@@ -220,12 +166,18 @@ class CCALegend extends React.Component
     console.log('legend g mouse up');
   }
 
-  render_data = () =>
-  {
-    
-  }
-
   render() {
+    // Prevent rendering if certain props are undefined
+    const requiredProps = [
+      this.props.variable_selected_label,
+      this.props.v_string,
+    ];
+    for(let requiredProp of requiredProps) {
+      if(requiredProp === undefined) {
+        return null;
+      }
+    }
+
     let label_x = -15;
     let label_y = this.props.height / 2;
 
@@ -240,29 +192,47 @@ class CCALegend extends React.Component
           >
             <g className="legend" 
               ref={this.legend_layer_ref} 
+              transform={`translate(${this.props.position.x + 110},${this.props.position.y})`}
+              data-transx={this.props.position.x + 110}
+              data-transy={this.props.position.y}
               // These handlers are unused currently, but might be helpful in the future
               // onMouseDown={this.handle_mouse_down}
               // onMouseMove={this.handle_mouse_move}
               // onMouseUp={this.handle_mouse_up}
             >
-              <g className="legend-axis" ref={this.legend_axis_layer_ref}></g>
+              <g className="legend-axis" 
+                ref={this.legend_axis_layer_ref}
+              />
               <defs>
-                <linearGradient id="color-gradient" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
+                <linearGradient id="color-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    {
+                      this.props.gradient.map((gradient_item, gradient_index) => 
+                        (
+                          <stop 
+                            offset={`${gradient_item.offset}%`}
+                            stopColor={gradient_item.color}
+                            key={gradient_index}
+                          />
+                        )
+                      )
+                    }
+                </linearGradient>
               </defs>
-              <rect className="color" width="10" height={this.props.height} x="0" y="0"
+              <rect className="color" width="10" 
+                height={this.props.height} x="0" y="0"
                 style={{fill: "url(#color-gradient)"}}
-              ></rect>
+              />
               <text className="label" 
                 style={{
                   textAnchor: "middle",
                   fontWeight: "bold",
-                  fontSize: this.props.font_size,
-                  fontFamily: this.props.font_family,
+                  fontSize: this.props.scatterplot_font_size,
+                  fontFamily: this.props.scatterplot_font_family,
                 }}
                 x={label_x} 
                 y={label_y}
                 transform={"rotate(-90," + label_x +"," + label_y + ")"}
-              >{this.props.v_label}</text>
+              >{this.props.variable_selected_label}</text>
             </g>
           </svg>
         </React.StrictMode>
@@ -271,4 +241,24 @@ class CCALegend extends React.Component
   }
 }
 
-export default CCALegend
+const mapStateToProps = (state, ownProps) => {
+  return {
+    // colormap: state.colormap,
+    variable_selected: state.variable_selected,
+    variable_selected_label: ownProps.table_metadata["column-names"][state.variable_selected],
+    // variable_selected_label: state.derived.variable_selected_label,
+    v_string: ownProps.table_metadata["column-types"][state.variable_selected]=="string",
+    // v_string: state.derived.v_string,
+    scatterplot_font_family: state.scatterplot_font_family,
+    scatterplot_font_size: state.scatterplot_font_size,
+    gradient: slycat_color_maps.get_gradient_data(state.colormap),
+    // cca_component_selected: state.cca_component_selected,
+    // cca_component_sorted: state.cca_component_sorted,
+    // cca_component_sort_direction: state.cca_component_sort_direction,
+  }
+};
+
+export default connect(
+  mapStateToProps,
+  null
+)(CCALegend)
