@@ -730,7 +730,6 @@ $(document).ready(function() {
             model_name={window.model_name}
             metadata={table_metadata}
             color_variables={color_variable_dropdown_items}
-            color_variable={store.getState().variable_selected}
             indices={indices}
           />
         </Provider>)

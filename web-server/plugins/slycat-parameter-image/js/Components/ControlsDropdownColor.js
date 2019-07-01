@@ -3,7 +3,7 @@
 // to use Redux across the entire model.
 
 import React from "react";
-import ControlsDropdown from 'components/ControlsDropdown';
+import ControlsDropdown from './ControlsDropdown';
 import slycat_color_maps from "js/slycat-color-maps";
 
 class ControlsDropdownColor extends React.Component {

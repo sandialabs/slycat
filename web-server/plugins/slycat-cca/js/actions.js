@@ -12,7 +12,7 @@ export const ADD_SIMULATIONS_SELECTED = 'ADD_SIMULATIONS_SELECTED';
 export const REMOVE_SIMULATIONS_SELECTED = 'REMOVE_SIMULATIONS_SELECTED';
 export const TOGGLE_SIMULATIONS_SELECTED = 'TOGGLE_SIMULATIONS_SELECTED';
 
-export function setVariableSelected(variable) {
+export function setVariableSelected(variable, state_label, trigger, e) {
   return { 
   	type: SET_VARIABLE_SELECTED, 
   	id: variable,

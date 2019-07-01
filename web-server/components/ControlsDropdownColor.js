@@ -10,9 +10,6 @@ class ControlsDropdownColor extends React.Component {
   }
 
   render() {
-    // Define default button style
-    const button_style = 'btn-outline-dark';
-
     const colormaps = slycat_color_maps.color_maps;
     const items = Object.keys(colormaps).map((key, index) => {
       let colormap = colormaps[key];
@@ -26,13 +23,13 @@ class ControlsDropdownColor extends React.Component {
       }
       let background_color = colormap.background;
       let style = {
-        "backgroundImage": "linear-gradient(to bottom, "
+        backgroundImage: "linear-gradient(to bottom, "
             + color_stops.join(", ") + "), linear-gradient(to bottom, "
             + background_color + ", " + background_color + ")",
-        "backgroundSize": "5px 75%, 50px 100%",
-        "backgroundPosition": "right 10px center, right 5px center",
-        "backgroundRepeat": "no-repeat, no-repeat",
-        "paddingRight": "70px",
+        backgroundSize: "5px 75%, 50px 100%",
+        backgroundPosition: "right 10px center, right 5px center",
+        backgroundRepeat: "no-repeat, no-repeat",
+        paddingRight: "70px",
       }
 
       return {
@@ -54,7 +51,7 @@ class ControlsDropdownColor extends React.Component {
         selected={this.props.colormap} 
         single={true} 
         set_selected={this.props.setColormap}
-        button_style={button_style}
+        button_style={this.props.button_style}
       />
     );
   }

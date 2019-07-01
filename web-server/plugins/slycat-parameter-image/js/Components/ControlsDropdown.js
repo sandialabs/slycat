@@ -1,3 +1,7 @@
+// This is a copy of components/ControlsDropdown that uses internal state. It needs to be 
+// switched out for components/ControlsDropdown when the Parameter Space model is converted
+// to use Redux across the entire model.
+
 import React from "react";
 
 class ControlsDropdown extends React.Component {
@@ -12,7 +16,7 @@ class ControlsDropdown extends React.Component {
           href="#" 
           key={item.key} 
           className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
-          onClick={(e) => this.props.set_selected(item.key, this.props.state_label, this.props.trigger, e)}
+          onClick={(e) => this.props.set_selected(this.props.state_label, item.key, this.props.trigger, e)}
           style={item.style}
         >
           {item.name}
