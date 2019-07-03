@@ -1,5 +1,4 @@
 import client from "js/slycat-web-client";
-import { WatchIgnorePlugin } from "webpack";
 
 /**
  * @param file Will be a File object in the case of local upload. Will be string array in the case of remote upload. 
