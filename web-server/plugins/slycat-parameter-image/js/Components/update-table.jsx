@@ -17,7 +17,7 @@ import Warning from 'components/Warning.tsx';
 import _ from "lodash";
 import checkColumns from "utils/check-columns.ts";
 
-let initialState={};
+let initialState = {};
 const localNavBar = ['Locate Data', 'Upload Table'];
 const remoteNavBar = ['Locate Data', 'Choose Host', 'Select Table'];
 const warningMessage = ['Warning: By using this feature, you run the risk of corrupting your models.\n',
@@ -107,6 +107,7 @@ export default class ControlsButtonUpdateTable extends Component {
 
   uploadFile = () =>
   {
+    this.setState({failedColumnCheckMessage:['This upload attempt has been rejected.\n'], passedColumnCheck:true});
     this.state.selectedOption == "local"?
       this.uploadLocalFile():
       this.uploadRemoteFile();
