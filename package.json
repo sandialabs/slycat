@@ -37,8 +37,9 @@
     "react-ga": "2.5.7",
     "react-redux": "7.0.3",
     "redux": "4.0.1",
-    "slickgrid": "^2.4.8",
-    "three": "^0.105.2",
+    "redux-thunk": "2.3.0",
+    "slickgrid": "2.4.8",
+    "three": "0.105.2",
     "three-stl-loader": "1.0.6",
     "three-trackballcontrols": "0.0.8",
     "urijs": "1.19.1"
