@@ -333,7 +333,6 @@ class CCAScatterplot extends React.Component {
             onMouseUp={this.handle_mouse_up}
           >
             <CCALegend
-              scale_v={this.props.v}
               height={this.props.height - this.props.border.top - this.props.border.bottom}
               canvas_width={this.props.width} 
               canvas_height={this.props.height} 
@@ -341,7 +340,6 @@ class CCAScatterplot extends React.Component {
                 x: this.props.width - this.props.border.left - this.props.border.right,
                 y: this.props.border.top
               }}
-              table_metadata={this.props.table_metadata}
             />
             <canvas id="scatterplot" 
               ref={this.cca_scatterplot} 
