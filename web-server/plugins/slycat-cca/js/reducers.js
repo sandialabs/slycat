@@ -8,6 +8,8 @@ import {
   ADD_SIMULATIONS_SELECTED,
   REMOVE_SIMULATIONS_SELECTED,
   TOGGLE_SIMULATIONS_SELECTED,
+  REQUEST_VARIABLE,
+  RECEIVE_VARIABLE,
 } from './actions';
 import {
   SET_COLORMAP,
@@ -33,6 +35,31 @@ export default function cca_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         variable_selected: action.id
       })
+    case REQUEST_VARIABLE:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          column_data: {
+            ...state.derived.column_data,
+            [action.variable]: { // We use ES6 computed property syntax so we can update column_data[action.variable] with Object.assign() in a concise way
+              isFetching: true,
+            }
+          }
+        }
+      });
+    case RECEIVE_VARIABLE:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          column_data: {
+            ...state.derived.column_data,
+            [action.variable]: { // We use ES6 computed property syntax so we can update column_data[action.variable] with Object.assign() in a concise way
+              isFetching: true,
+              values: action.values,
+            }
+          }
+        }
+      });
     case SET_VARIABLE_SORTED:
       return Object.assign({}, state, {
         variable_sorted: action.id,
