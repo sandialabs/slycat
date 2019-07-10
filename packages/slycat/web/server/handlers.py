@@ -1983,6 +1983,19 @@ def get_bookmark(bid):
 
 @cherrypy.tools.json_out(on=True)
 def get_user(uid, time):
+    """
+    Retrieve directory information for a given user.
+    
+    Arguments:
+        uid {string} -- users id
+        time {int} -- time int to prevent caching
+    
+    Raises:
+        cherrypy.HTTPError: 404 user not found
+    
+    Returns:
+        json -- user info
+    """
     if uid == "-":
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
