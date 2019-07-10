@@ -36,21 +36,6 @@ function constructor(params)
         selection: [],
         progress: ko.observable(null),
     });
-    component.browser_var_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-    component.browser_time_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
-    component.browser_dist_files = mapping.fromJS({
-        path:null,
-        selection: [],
-        progress: ko.observable(null),
-    });
 
     // PTS META/CSV zip file selection
     component.browser_zip_file = mapping.fromJS({
@@ -61,9 +46,6 @@ function constructor(params)
 
     // DAC generic parsers
     component.parser_dac_file = ko.observable(null);
-    component.parser_var_files = ko.observable(null);
-    component.parser_time_files = ko.observable(null);
-    component.parser_dist_files = ko.observable(null);
 
     // DAC META/CSV parser (now in zip file)
     component.parser_zip_file = ko.observable(null);
@@ -161,325 +143,35 @@ function constructor(params)
 
         } else {
 
-            // isolate file extension, if file was selected
-            var file = component.browser_dac_file.selection();
-            var file_name = "no file selected";
-            if (file.length == 1) {
-                file_name = file[0].name;
-            }
-            var file_name_split = file_name.split(".");
-            var file_ext = file_name_split[file_name_split.length - 1];
+            // check for file selected
+            if (component.browser_dac_file.selection().length > 0) {
 
-            // check for .dac extension
-            if (file_ext == 'dac') {
-                // proceed to upload variables.meta file, if present
-                upload_var_meta_file();
+                // get file extension
+                var file = component.browser_dac_file.selection()[0];
+                var file_ext = file.name.split(".");
+                file_ext = file_ext[file_ext.length - 1];
+
+                if (file_ext == 'zip') {
+
+                    // do not re-upload files
+                    dac_upload = true;
+
+                    // set model name back to blank
+                    component.model.name("");
+
+                    // go to model naming
+                    component.tab(3);
+
+                } else {
+                    dialog.ajax_error("Please select a file with the .zip extension.")("","","");
+                }
+
             } else {
-                // no .dac file selected
-                dialog.ajax_error("Must select a .dac file.")("","","");
+                dialog.ajax_error("Please select DAC generic .zip file.")("","","");
             }
+
         }
     };
-
-    // uploads the variables.meta file to slycat
-    var upload_var_meta_file = function () {
-
-        // first we have to upload variables.meta in order to
-        // find out how many variable files we should have
-        // the number of variables is stored in the global num_vars
-
-        // get all file names
-        var files = component.browser_var_files.selection();
-        var file_names = [];
-        for (var i = 0; i < files.length; i++) {
-            file_names[i] = files[i].name;
-        }
-
-        // look for variables.meta
-        var var_meta_ind = file_names.indexOf("variables.meta");
-
-        if (var_meta_ind != -1) {
-
-            // disable continue button since we are now uploading
-            $('.dac-gen-browser-continue').toggleClass("disabled", true);
-
-            // found variables.meta -- load file then call check variable file names
-            var file = component.browser_var_files.selection()[var_meta_ind];
-            var fileObject ={
-                pid: component.project._id(),
-                mid: component.model._id(),
-                file: file,
-                aids: [["dac-variables-meta"],["DAC"]],
-                parser: component.parser_var_files(),
-                success: function(){
-                    // check that variable names are present
-                    check_var_files(file_names);
-                },
-                error: function(){
-                    dialog.ajax_error(
-                        "There was a problem parsing the variables.meta file.")
-                        ("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                }
-            };
-            fileUploader.uploadFile(fileObject);
-
-        } else {
-
-            dialog.ajax_error ("File variables.meta must be selected.")("","","");
-            $('.dac-gen-browser-continue').toggleClass("disabled", false);
-
-        }
-
-    }
-
-    // checks all the variable file names then calls to check time files
-    var check_var_files = function (file_names) {
-
-        // download variable meta data to check on number of files
-        client.get_model_arrayset_metadata({
-            mid: component.model._id(),
-            aid: "dac-variables-meta",
-            arrays: "0",
-            statistics: "0/...",
-            success: function(metadata) {
-
-                // number of rows in variables.meta file (global variable)
-                num_vars = metadata.arrays[0].shape[0];
-
-                // get header names
-                var headers = metadata.arrays[0].attributes;
-                var num_headers = headers.length;
-
-                // check header row in variables.meta
-                var headers_OK = true;
-                if (num_headers == 4) {
-
-                    if (headers[0].name != 'Name') { headers_OK = false };
-                    if (headers[1].name != 'Time Units') { headers_OK = false };
-                    if (headers[2].name != 'Units') { headers_OK = false };
-                    if (headers[3].name != 'Plot Type') {headers_OK = false };
-
-                } else {
-                    headers_OK = false;
-                }
-
-                // check variable file names
-                var all_var_files_found = true;
-                for (var i = 1; i <= num_vars; i++) {
-                    var_file_inds[i-1] = file_names.indexOf("variable_" + i.toString() + ".var");
-                    if (var_file_inds[i-1] == -1) {
-                        all_var_files_found = false;
-                    }
-                }
-
-                // next upload .time files
-                if (headers_OK && (num_vars == (file_names.length-1)) && all_var_files_found) {
-                    check_time_files();
-                } else if ( headers_OK ) {
-                    // missing .var files
-                    dialog.ajax_error ("All *.var files must be selected.")("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                } else {
-                    // bad headers
-                    dialog.ajax_error ("Header row in variables.meta is incorrect.")("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                }
-            }
-        });
-    }
-
-    // checks time file names
-    var check_time_files = function () {
-
-        // redundant code for time files (very similar to code for var files)
-
-        // get all file names
-        var files = component.browser_time_files.selection();
-        var file_names = [];
-        for (var i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
-
-        // check variable file names
-        var all_time_files_found = true;
-        for (var i = 1; i <= num_vars; i++) {
-            time_file_inds[i-1] = file_names.indexOf("variable_" + i.toString() + ".time");
-            if (time_file_inds[i-1] == -1) {
-                all_time_files_found = false;
-            }
-        }
-
-        // finally check .dist files
-        if (all_time_files_found) {
-            check_dist_files();
-        } else {
-            // missing .time files
-            dialog.ajax_error ("All *.time files must be selected.")("","","");
-            $('.dac-gen-browser-continue').toggleClass("disabled", false);
-        }
-    }
-
-    // check dist file names
-    var check_dist_files = function () {
-
-        // redundant code for dist files (very similar to code for time, var files)
-
-        // get all file names
-        var files = component.browser_dist_files.selection();
-        var file_names = [];
-        for (var i = 0; i < files.length; i++) { file_names[i] = files[i].name; }
-
-        // check variable file names
-        var all_dist_files_found = true;
-        for (var i = 1; i <= num_vars; i++) {
-            dist_file_inds[i-1] = file_names.indexOf("variable_" + i.toString() + ".dist");
-            if (dist_file_inds[i-1] == -1) {
-                all_dist_files_found = false;
-            }
-        }
-
-        //  upload the files
-        if (all_dist_files_found) {
-
-            upload_dac_file();
-
-        } else {
-            // missing .dist files
-            dialog.ajax_error ("All *.dist files must be selected.")("","","");
-            $('.dac-gen-browser-continue').toggleClass("disabled", false);
-        }
-    }
-
-    // start upload of all files to slycat
-    var upload_dac_file = function () {
-
-        // load DAC index .dac file then call to load variables.meta
-        var file = component.browser_dac_file.selection()[0];
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: [["dac-datapoints-meta"], ["DAC"]],
-            parser: component.parser_dac_file(),
-            progress: component.browser_dac_file.progress,
-            success: function(){
-                upload_var_files(0);
-            },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the .dac file.")
-                    ("","","");
-                $('.dac-gen-browser-continue').toggleClass("disabled", false);
-            }
-        };
-        fileUploader.uploadFile(fileObject);
-
-    }
-
-    // upload *.var files
-    var upload_var_files = function (file_num) {
-
-        // upload requested .var file then call again with next file
-        var file = component.browser_var_files.selection()[var_file_inds[file_num]];
-        console.log ("Uploading file: " + file.name);
-
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: [["dac-var-data", file_num.toString(), "matrix"], ["DAC"]],
-            parser: component.parser_var_files(),
-            progress: component.browser_var_files.progress,
-            progress_increment: 100/var_file_inds.length,
-            success: function(){
-                    if (file_num < (var_file_inds.length - 1)) {
-                        upload_var_files(file_num + 1);
-                    } else {
-                        upload_time_files(0);
-                    }
-                },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the variables_" + (file_num+1).toString() + ".var file.")
-                    ("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                }
-            };
-        fileUploader.uploadFile(fileObject);
-
-    }
-
-    // uploads all the time series files to slycat
-    var upload_time_files = function (file_num) {
-
-        // code duplicated from uploading variable files
-
-        // upload requested .time file then call again with next file
-        var file = component.browser_time_files.selection()[time_file_inds[file_num]];
-        console.log("Uploading file: " + file.name);
-
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: [["dac-time-points", file_num.toString(), "matrix"], ["DAC"]],
-            parser: component.parser_time_files(),
-            progress: component.browser_time_files.progress,
-            progress_increment: 100/time_file_inds.length,
-            success: function(){
-                    if (file_num < (time_file_inds.length - 1)) {
-                        upload_time_files(file_num + 1);
-                    } else {
-                        upload_dist_files(0);
-                    }
-                },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the variables_" + (file_num+1).toString() + ".time file.")
-                    ("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                }
-            };
-        fileUploader.uploadFile(fileObject);
-
-    }
-
-    // uploads all the pairwsie distance matrix files to slycat
-    var upload_dist_files =  function (file_num) {
-
-        // code duplicated from uploading variable files
-
-        // upload requested .time file then call again with next file
-        var file = component.browser_dist_files.selection()[dist_file_inds[file_num]];
-        console.log("Uploading file: " + file.name);
-
-        var fileObject ={
-            pid: component.project._id(),
-            mid: component.model._id(),
-            file: file,
-            aids: [["dac-var-dist", file_num.toString(), "matrix"], ["DAC"]],
-            parser: component.parser_dist_files(),
-            progress: component.browser_dist_files.progress,
-            progress_increment: 100/dist_file_inds.length,
-            success: function(){
-                    if (file_num < (dist_file_inds.length - 1)) {
-                        upload_dist_files(file_num + 1);
-                    } else {
-
-                        // done uploading, start MDS initialization
-                        init_MDS_coords();
-
-                    }
-                },
-            error: function(){
-                dialog.ajax_error(
-                    "There was a problem parsing the variables_" + (file_num+1).toString() + ".dist file.")
-                    ("","","");
-                    $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                }
-            };
-        fileUploader.uploadFile(fileObject);
-
-    }
 
     // assigns default ui preferences for DAC to slycat
     var assign_pref_defaults = function () {
@@ -543,39 +235,6 @@ function constructor(params)
                 $('.dac-gen-browser-continue').toggleClass("disabled", false);
                 $('.pts-process-continue').toggleClass('disabled', false);
             },
-        });
-    }
-
-    // calls the server to initialize the MDS coords
-    var init_MDS_coords = function () {
-
-        // reset dac-polling-progress variable for MDS coord calculation
-        client.put_model_parameter({
-            mid: component.model._id(),
-            aid: "dac-polling-progress",
-            value: ["Progress", 0],
-            success: function () {
-
-                // call server to compute new coords
-                client.get_model_command({
-                    mid: component.model._id(),
-                    type: "DAC",
-                    command: "init_mds_coords",
-
-                    // note: success and errors are handled by polling in model
-
-                })
-
-                // go name model
-                dac_upload = true;
-                $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                component.tab(3);
-
-            },
-            error: function () {
-                dialog.ajax_error("Error starting MDS coordinate initialization.")("","","");
-                $('.dac-gen-browser-continue').toggleClass("disabled", false);
-            }
         });
     }
 
@@ -658,59 +317,80 @@ function constructor(params)
                     mid: component.model._id(),
                     success: function() {
 
-                            // for pts format we launch a thread to do the work
-                            if (component.dac_format() == "pts") {
+                            // set up pts format parameters
 
-                                // turn on continue button
-                                $(".dac-launch-thread").toggleClass("disabled", true);
+                            // file selected
+                            var file = component.browser_zip_file.selection()[0];
 
-                                // upload zip file
-                                var file = component.browser_zip_file.selection()[0];
-                                console.log("Uploading file: " + file.name);
+                            // get csv and number digitizer parameters
+                            var csv_parm = Math.round(Number(component.csv_min_size));
+                            var dig_parm = Math.round(Number(component.min_num_dig));
 
-                                // get csv and number digitizer parameters
-                                var csv_parm = Math.round(Number(component.csv_min_size));
-                                var dig_parm = Math.round(Number(component.min_num_dig));
+                            // parameters for call to parser
+                            var aids = [[csv_parm, dig_parm], ["DAC"]];
+                            var parser = "dac-zip-file-parser";
+                            var progress = component.browser_zip_file.progress;
 
-                                // pass # csv files and digitizers via aids
-                                var fileObject ={
-                                    pid: component.project._id(),
-                                    mid: component.model._id(),
-                                    file: file,
-                                    aids: [[csv_parm, dig_parm], ["DAC"]],
-                                    parser: "dac-zip-file-parser",
-                                    progress: component.browser_zip_file.progress,
-                                    progress_increment: 100,
-                                    success: function(){
+                            // tab to show file upload
+                            var tab = 2
 
-                                            // turn off continue button
-                                            $(".dac-launch-thread").toggleClass("disabled", false);
+                            // if not pts format, then change parameters
+                            if (component.dac_format() == "dac-gen") {
 
-                                            // go to model
-                                            component.go_to_model();
+                                // file selected
+                                file = component.browser_dac_file.selection()[0];
 
-                                        },
-                                    error: function(){
-                                        dialog.ajax_error(
-                                            "There was a problem uploading the file: " + file)
-                                            ("","","");
-                                            $('.pts-browser-continue').toggleClass("disabled", false);
-                                        }
-                                    };
-                                fileUploader.uploadFile(fileObject);
+                                // dac gen zip paraser parameters
+                                aids = [["Null"], ["DAC"]];
+                                parser = "dac-gen-zip-parser";
+                                progress = component.browser_dac_file.progress;
 
-                                // show message
-                                $("#dac-do-not-close-browser").show();
+                                // tab that shows file upload for DAC generic format
+                                tab = 1;
 
-                                // show upload
-                                component.tab(2);
-
-                            } else {
-
-                                // for dac-gen format we go directly to the model
-                                component.go_to_model();
                             }
-                        }
+
+                            // call to server
+
+                            // turn on continue button
+                            $(".dac-launch-thread").toggleClass("disabled", true);
+
+                            console.log("Uploading file: " + file.name);
+
+                            // upload file
+                            var fileObject ={
+                                pid: component.project._id(),
+                                mid: component.model._id(),
+                                file: file,
+                                aids: aids,
+                                parser: parser,
+                                progress: progress,
+                                progress_increment: 100,
+                                success: function(){
+
+                                        // turn off continue button
+                                        $(".dac-launch-thread").toggleClass("disabled", false);
+
+                                        // go to model
+                                        component.go_to_model();
+
+                                    },
+                                error: function(){
+                                    dialog.ajax_error(
+                                        "There was a problem uploading the file: " + file)
+                                        ("","","");
+                                        $('.browser-continue').toggleClass("disabled", false);
+                                    }
+                                };
+                            fileUploader.uploadFile(fileObject);
+
+                            // show message
+                            $(".dac-do-not-close-browser").show();
+
+                            // show upload
+                            component.tab(tab);
+
+                         }
                     });
                 },
                 error: function() {

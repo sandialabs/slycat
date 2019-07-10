@@ -11,6 +11,16 @@ import slycat.email
 import time
 import cherrypy
 
+# zip file manipulation
+import io
+import zipfile
+import os
+
+# background thread does all the work on the server
+import threading
+import sys
+import traceback
+
 # note this version assumes the first row is a header row, and saves the header values
 # as attributes
 def parse_file(file):
@@ -203,13 +213,175 @@ def parse(database, model, input, files, aids, **kwargs):
     database.save(model)
 
 
+# DAC generic .zip file parser
+def parse_gen_zip(database, model, input, files, aids, **kwargs):
+
+    cherrypy.log.error("DAC Gen Zip parser started.")
+
+    # push progress for wizard polling to database
+    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
+
+    # keep a parsing error log to help user correct input data
+    # (each array entry is a string)
+    parse_error_log = []
+    parse_error_log.append("Notes:")
+
+    # start parse log
+    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                          ["Progress", "\n".join(parse_error_log)])
+
+    # treat uploaded file as bitstream
+    try:
+
+        file_like_object = io.BytesIO(files[0])
+        zip_ref = zipfile.ZipFile(file_like_object)
+        zip_files = zip_ref.namelist()
+
+    except Exception as e:
+
+        # couldn't open zip file, report to user
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Error", "couldn't read zip file (too large or corrupted)."])
+
+        # record no data message in front of parser log
+        parse_error_log.append("Error: couldn't read .zip file (too large or corrupted).")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["No Data", "\n".join(parse_error_log)])
+
+        # print error to cherrypy.log.error
+        cherrypy.log.error(traceback.format_exc())
+
+    # look for one occurrence (only) of .dac file and var, dist, and time directories
+    dac_file = ""
+    var_meta_file = ""
+    var_files = []
+    dist_files = []
+    time_files = []
+    for zip_file in zip_files:
+
+        # parse into directory and/or file
+        head, tail = os.path.split(zip_file)
+
+        # found a file
+        if head == "":
+
+            # is it .dac file?
+
+            cherrypy.log.error(head)
+            cherrypy.log.error(tail)
+            cherrypy.log.error("file")
+
+        # found a directory -- is it "var/"?
+        elif head == "var":
+
+            # check for variables.meta file
+            if tail == "variables.meta":
+
+                var_meta_file = zip_file
+
+            # check for .var extension
+            elif tail != "":
+
+                ext = tail.split(".")[-1]
+                if ext == "var":
+                    var_files.append(zip_file)
+
+                else:
+
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                          ["Error", "variable files must have .var extension"])
+
+                    # record no data message in front of parser log
+                    parse_error_log.append("Error -- variable files must have .var extension.")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["No Data", "\n".join(parse_error_log)])
+
+                    raise Exception("Variable files must have .var extension.")
+
+        # is it "time/" directory?
+        elif head == "time":
+
+            # ignore directory
+            if tail != "":
+
+                ext = tail.split(".")[-1]
+                if ext == "time":
+                    time_files.append(zip_file)
+
+                else:
+
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                          ["Error", "time series files must have .time extension"])
+
+                    # record no data message in front of parser log
+                    parse_error_log.append("Error -- time series files must have .time extension.")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["No Data", "\n".join(parse_error_log)])
+
+                    raise Exception("time series files must have .time extension.")
+
+        # is it "dist/" directory?
+        elif head == "dist":
+
+            # ignore directory
+            if tail != "":
+
+                ext = tail.split(".")[-1]
+                if ext == "dist":
+                    dist_files.append(zip_file)
+
+                else:
+
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                          ["Error", "distance matrix files must have .dist extension"])
+
+                    # record no data message in front of parser log
+                    parse_error_log.append("Error -- distance matrix files must have .dist extension.")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["No Data", "\n".join(parse_error_log)])
+
+                    raise Exception("distance matrix files must have .dist extension.")
+
+        # check for unknown file
+        else:
+
+            cherrypy.log.error(tail)
+
+
+
+            cherrypy.log.error(head)
+            cherrypy.log.error(tail)
+            cherrypy.log.error("dir")
+
+        #if zip_file == 'var/' and found_var == 0:
+        #    found_var = 1
+
+        #else:
+        #    found_var = 2
+
+    # load variables.meta file
+
+    # #check that var/time/dist files match
+
+    cherrypy.log.error(str(var_files))
+    cherrypy.log.error(str(var_meta_file))
+    cherrypy.log.error(str(time_files))
+    cherrypy.log.error(str(dist_files))
+
+
+    cherrypy.log.error(str(zip_files))
+
+    #for zip_file in zip_files:
+
+        #cherrypy.log.error(zip_file)
+
+        # parse files in list
+        #head, tail = os.path.split(zip_file)
+
+
 # register all generic file parsers (really just the same csv parser), so that they
 # appear with different labels in the file picker.
 def register_slycat_plugin(context):
-    context.register_parser("dac-index-file-parser", "DAC .dac meta-data file", ["dac-index-file"], parse)
-    context.register_parser("dac-var-files-parser", "DAC .var files (and variables.meta file)", ["dac-var-files"], parse)
-    context.register_parser("dac-time-files-parser", "DAC .time files", ["dac-time-files"], parse)
-    context.register_parser("dac-dist-files-parser", "DAC .dist files", ["dac-dist-files"], parse)
-    context.register_parser("dac-category-file-parser", "DAC category list (text file, one category per line)", ["dac-cat-file"], parse)
+    context.register_parser("dac-gen-zip-parser", "DAC generic .zip file", ["dac-gen-zip-file"], parse_gen_zip)
 
 

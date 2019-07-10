@@ -148,7 +148,17 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                  is number of digitizers to require (see wizard)
     :param kwargs:
     """
+
     cherrypy.log.error("DAC PTS Zip parser started.")
+
+    # keep a parsing error log to help user correct input data
+    # (each array entry is a string)
+    parse_error_log = []
+    parse_error_log.append("Notes:")
+
+    # start parse log
+    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                          ["Progress", "\n".join(parse_error_log)])
 
     # get parameters to eliminate likely unusable PTS files
     CSV_MIN_SIZE = int(aids[0])
@@ -168,7 +178,12 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
         # couldn't open zip file, report to user
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Error", "couldn't read zip file (too large or corrupted)."])
+                                              ["Error", "couldn't read .zip file (too large or corrupted)"])
+
+        # record no data message in front of parser log
+        parse_error_log.append("Error -- couldn't read .zip file (too large or corrupted).")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["No Data", "\n".join(parse_error_log)])
 
         # print error to cherrypy.log.error
         cherrypy.log.error(traceback.format_exc())
@@ -199,6 +214,11 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                 else:
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                          ["Error", "CSV files must have .csv extension"])
+
+                    parse_error_log.append("Error -- CSV files must have .csv extension.")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["No Data", "\n".join(parse_error_log)])
+
                     raise Exception("CSV files must have .csv extension.")
 
         elif head == "META":
@@ -213,6 +233,11 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                 else:
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                          ["Error", "META files must have .ini extension"])
+
+                    parse_error_log.append("Error -- META files must have .ini extension.")
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["No Data", "\n".join(parse_error_log)])
+
                     raise Exception("META files must have .ini extension.")
 
         else:
@@ -220,6 +245,11 @@ def parse_zip(database, model, input, files, aids, **kwargs):
             # not CSV or META file
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Error", "unexpected file (not CSV/META) found in .zip file"])
+
+            parse_error_log.append("Error -- unexpected file (not CSV/META) found in .zip file.")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["No Data", "\n".join(parse_error_log)])
+
             raise Exception("Unexpected file (not CSV/META) found in .zip file.")
 
     # check that CSV and META files have a one-to-one correspondence
@@ -235,7 +265,12 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
             else:
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Error", "CSV and META files do not match"])
+                                                      ["Error", "CSV and META files do not match."])
+
+                parse_error_log.append("Error -- CSV and META files do not match.")
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["No Data", "\n".join(parse_error_log)])
+
                 raise Exception("CSV and META files do not match.")
 
     else:
@@ -243,6 +278,11 @@ def parse_zip(database, model, input, files, aids, **kwargs):
         # different number of CSV and META files
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Error", "PTS .zip file must have same number of CSV and META files"])
+
+        parse_error_log.append("Error -- PTS .zip file must have same number of CSV and META files.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["No Data", "\n".join(parse_error_log)])
+
         raise Exception("PTS .zip file must have same number of CSV and META files.")
 
     # re-order meta files to match csv files
@@ -250,11 +290,11 @@ def parse_zip(database, model, input, files, aids, **kwargs):
 
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_pts_thread, args=(database, model, zip_ref,
-                                                             csv_files, meta_files, csv_no_ext,
+                                                             csv_files, meta_files, csv_no_ext, parse_error_log,
                                                              CSV_MIN_SIZE, MIN_NUM_DIG, stop_event))
     thread.start()
 
-def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_ext,
+def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_ext, parse_error_log,
                       CSV_MIN_SIZE, MIN_NUM_DIG, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
@@ -277,13 +317,6 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         cherrypy.log.error("DAC PTS Zip thread started.")
 
         num_files = len(csv_files)
-
-        # keep a parsing error log to help user correct input data
-        # (each array entry is a string)
-        parse_error_log = []
-        parse_error_log.append("Issues:")
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["Progress", "\n".join(parse_error_log)])
 
         # get meta/csv data, store as arrays of dictionaries
         # (skip bad/empty files)
