@@ -37,13 +37,12 @@ any programming language or library that supports HTTP requests.
   GET-Remote-Image.rst
   GET-Remote-Video.rst
   GET-User.rst
-  POST-Model-Arrayset-Data.rst
-  POST-Agent-Function.rst
   POST-Cancel-Job.rst
   POST-Check-Job.rst
   POST-Events.rst
   POST-Get-Job-Output.rst
   POST-login.rst
+  POST-Model-Arrayset-Data.rst
   POST-Model-Command.rst
   POST-Model-Finish.rst
   POST-Project-Bookmark.rst
