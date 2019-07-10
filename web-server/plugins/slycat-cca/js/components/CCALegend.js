@@ -58,6 +58,10 @@ class CCALegend extends React.Component
   {
     var range = [0, parseInt(this.props.height)];
 
+    // Don't render legend axis if we don't have a scale_v
+    if(this.props.scale_v === undefined)
+      return;
+
     // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
     // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
     let legend_scale = this._createScale(this.props.v_string, this.props.scale_v, range, true);
@@ -242,12 +246,16 @@ class CCALegend extends React.Component
 }
 
 const mapStateToProps = (state, ownProps) => {
+  let scale_v = state.derived.column_data[state.variable_selected] !== undefined ?
+    state.derived.column_data[state.variable_selected].values :
+    undefined;
+
   return {
     // colormap: state.colormap,
     variable_selected: state.variable_selected,
-    variable_selected_label: ownProps.table_metadata["column-names"][state.variable_selected],
+    variable_selected_label: state.derived.table_metadata["column-names"][state.variable_selected],
     // variable_selected_label: state.derived.variable_selected_label,
-    v_string: ownProps.table_metadata["column-types"][state.variable_selected]=="string",
+    v_string: state.derived.table_metadata["column-types"][state.variable_selected]=="string",
     // v_string: state.derived.v_string,
     scatterplot_font_family: state.scatterplot_font_family,
     scatterplot_font_size: state.scatterplot_font_size,
@@ -255,6 +263,7 @@ const mapStateToProps = (state, ownProps) => {
     // cca_component_selected: state.cca_component_selected,
     // cca_component_sorted: state.cca_component_sorted,
     // cca_component_sort_direction: state.cca_component_sort_direction,
+    scale_v: scale_v,
   }
 };
 
