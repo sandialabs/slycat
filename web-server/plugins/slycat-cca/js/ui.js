@@ -33,8 +33,12 @@ import CCATable from "./components/CCATable";
 import CCAScatterplot from "./components/CCAScatterplot";
 
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import thunkMiddleware from 'redux-thunk';
+import { createLogger } from 'redux-logger';
+import { createStore, applyMiddleware } from 'redux';
 import cca_reducer from './reducers';
+import { fetchVariableValuesIfNeeded, } from './actions'
+
 
 // Wait for document ready
 $(document).ready(function() {
@@ -252,7 +256,16 @@ $(document).ready(function() {
 
           // A default state
           let redux_state_tree = {
-            derived: {}, // Object that will hold state computed from model data
+            derived: {
+              table_metadata: table_metadata,
+              model_id: model._id,
+              column_data: { // Object that will hold the values for columns
+                // 0: { // Column index
+                //   isFetching: false, // Ajax request for data state
+                //   values: [], // All values for the column in an array
+                // }
+              }, 
+            }, // Object that will hold state computed from model data
             colormap: 'night', // String reprsenting current color map
             simulations_selected: [], // Array containing which simulations are selected. Empty for none.
             cca_component_selected: 0, // Number indicating the index of the selected CCA component.
@@ -287,8 +300,29 @@ $(document).ready(function() {
             redux_state_tree = Object.assign({}, redux_state_tree, bookmark_state_tree);
           }
 
+          // Compute derived state
+
+          // Create logger for redux
+          const loggerMiddleware = createLogger();
+
           // Create Redux store and set its initial state
-          store = createStore(cca_reducer, redux_state_tree);
+          store = createStore(
+            cca_reducer, 
+            redux_state_tree,
+            applyMiddleware(
+              thunkMiddleware, // Lets us dispatch() functions
+              loggerMiddleware, // Neat middleware that logs actions. 
+                                // Logger must be the last middleware in chain, 
+                                // otherwise it will log thunk and promise, 
+                                // not actual actions.
+            )
+          );
+
+          store.dispatch(
+            fetchVariableValuesIfNeeded(
+              store.getState().variable_selected,
+            )
+          );
 
           // Save Redux state to bookmark whenever it changes
           const bookmarkReduxStateTree = () => {
