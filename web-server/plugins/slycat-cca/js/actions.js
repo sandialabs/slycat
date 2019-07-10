@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 import * as chunker from "js/chunker";
 import api_root from "js/slycat-api-root";
 
@@ -80,20 +81,33 @@ function fetchVariableValues(variable) {
 
     //     dispatch(receivePosts(subreddit, json))
     //   )
-    
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : getState().derived.model_id,
-      aid : "data-table",
-      array : 0,
-      attribute : variable,
-      success : function(result)
-      {
-        dispatch(receiveVariable(variable, result))
-      },
-      // error : artifact_missing
-    });
-      
+
+    // If the selected variable is the index, we need to generate the values since
+    // they are not saved in the model.
+    if(variable == getState().derived.table_metadata["column-count"] - 1)
+    {
+      let count = getState().derived.table_metadata["row-count"];
+      let v = new Float64Array(count);
+      for(var i = 0; i != count; ++i)
+        v[i] = i;
+        dispatch(receiveVariable(variable, v))
+    }
+    // Otherwise get them through the API
+    else
+    {
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : getState().derived.model_id,
+        aid : "data-table",
+        array : 0,
+        attribute : variable,
+        success : function(result)
+        {
+          dispatch(receiveVariable(variable, result))
+        },
+        // error : artifact_missing
+      });
+    }
   }
 }
 
