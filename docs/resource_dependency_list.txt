@@ -100,6 +100,8 @@ react-ga                2.5.7   https://github.com/react-ga/react-ga
 react-is               16.8.6   https://reactjs.org/
 react-redux             7.0.3   https://github.com/reduxjs/react-redux
 redux                   4.0.1   https://redux.js.org
+redux-logger            3.0.6   https://github.com/LogRocket/redux-logger
+redux-thunk             2.3.0   https://github.com/reduxjs/redux-thunk
 regenerator-runtime    0.13.2   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
 scheduler              0.13.6   https://reactjs.org
 slickgrid               2.4.8   https://github.com/6pac/SlickGrid
