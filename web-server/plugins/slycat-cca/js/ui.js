@@ -599,7 +599,6 @@ $(document).ready(function() {
             indices={indices}
             x={x[store.getState().cca_component_selected]}
             y={y[store.getState().cca_component_selected]}
-            v={v}
             width={$("#scatterplot-pane").width()}
             height={$("#scatterplot-pane").height()}
             color={slycat_color_maps.get_color_scale(store.getState().colormap)}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Provider } from 'react-redux';
+import { connect } from 'react-redux';
 
 import d3 from "d3";
 
@@ -16,6 +16,20 @@ class CCAScatterplot extends React.Component {
 
   componentDidMount() 
   {
+    this.prep();
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) 
+  {
+    this.prep();
+  }
+
+  prep = () => {
+    // We need v, so don't continue without it
+    if(this.props.v === undefined){
+      return;
+    }
+
     // Cloning the selection array because we will be modifying it as a placeholder for updating state
     // ToDo, fix this, don't update the array, just update state.
     this.selection = this.props.selection.slice();
@@ -44,11 +58,6 @@ class CCAScatterplot extends React.Component {
     this.update_y();
     this.update_color_domain();
     this.render_data();
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) 
-  {
-    
   }
 
   handle_mouse_down = (e) =>
@@ -357,4 +366,29 @@ class CCAScatterplot extends React.Component {
   }
 }
 
-export default CCAScatterplot
+const mapStateToProps = (state, ownProps) => {
+  let v = state.derived.column_data[state.variable_selected] !== undefined ?
+    state.derived.column_data[state.variable_selected].values :
+    undefined;
+
+  return {
+    // colormap: state.colormap,
+    // variable_selected: state.variable_selected,
+    // variable_selected_label: state.derived.table_metadata["column-names"][state.variable_selected],
+    // variable_selected_label: state.derived.variable_selected_label,
+    // v_string: state.derived.table_metadata["column-types"][state.variable_selected]=="string",
+    // v_string: state.derived.v_string,
+    // scatterplot_font_family: state.scatterplot_font_family,
+    // scatterplot_font_size: state.scatterplot_font_size,
+    // gradient: slycat_color_maps.get_gradient_data(state.colormap),
+    // cca_component_selected: state.cca_component_selected,
+    // cca_component_sorted: state.cca_component_sorted,
+    // cca_component_sort_direction: state.cca_component_sort_direction,
+    v: v,
+  }
+};
+
+export default connect(
+  mapStateToProps,
+  null
+)(CCAScatterplot)
