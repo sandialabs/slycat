@@ -48,7 +48,7 @@ function receiveVariable(variable, result) {
 
 // Thunk action creator. Use like so:
 // store.dispatch(fetchVariableValues(0))
-export function fetchVariableValues(variable) {
+function fetchVariableValues(variable) {
   // Thunk middleware knows how to handle functions.
   // It passes the dispatch method as an argument to the function,
   // thus making it able to dispatch actions itself.
