@@ -21,8 +21,46 @@ import threading
 import sys
 import traceback
 
+# for dac_compute_coords.py and dac_upload_model.py
+import imp
+
+
+# note this version assumes the first row is a header row, and keeps only the header
+# and data (called by the generic zip parser)
+def parse_table_file(file):
+
+    """
+    parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
+    and sets attributes (attributes)
+    :param file: csv file to be parsed
+    :returns: attributes, data
+    """
+
+    rows = [row for row in csv.reader(file.splitlines(), delimiter=",",
+                                      doublequote=True, escapechar=None, quotechar='"',
+                                      quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+
+    if len(rows) < 2:
+        slycat.email.send_error("slycat-csv-parser.py parse_table_file", "File must contain at least two rows.")
+        raise Exception("File must contain at least two rows.")
+
+    # get header
+    attributes = rows[0]
+
+    # go through the csv by row
+    data = []
+    for row in rows[1:]:
+        data.append(row)
+
+    if len(attributes) < 1:
+        slycat.email.send_error("slycat-csv-parser.py parse_table_file", "File must contain at least one column.")
+        raise Exception("File must contain at least one column.")
+
+    return attributes, data
+
+
 # note this version assumes the first row is a header row, and saves the header values
-# as attributes
+# as attributes (obfuscated, but leaving here to preserve backwards compatibility)
 def parse_file(file):
 
     """
@@ -78,6 +116,7 @@ def parse_file(file):
 
     return attributes, dimensions, data
 
+
 # note this version assumes there is no header row and the file is a matrix
 # note that we are assuming floats in our matrices
 def parse_mat_file(file):
@@ -88,8 +127,6 @@ def parse_mat_file(file):
     :param file: csv file to be parsed
     :returns: attributes, dimensions, data
     """
-
-    cherrypy.log.error("Started DAC generic matrix parser.")
 
     # parse file using comma delimiter
     rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
@@ -120,6 +157,7 @@ def parse_mat_file(file):
 
     return attributes, dimensions, data
 
+
 def parse_list_file(file):
     """
     parses a text file with a list, one string per row
@@ -134,6 +172,7 @@ def parse_list_file(file):
     # return only unique rows
     rows = list(set(rows))
     return rows
+
 
 def parse(database, model, input, files, aids, **kwargs):
 
@@ -266,10 +305,9 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
         if head == "":
 
             # is it .dac file?
-
-            cherrypy.log.error(head)
-            cherrypy.log.error(tail)
-            cherrypy.log.error("file")
+            ext = tail.split(".")[-1]
+            if ext == "dac":
+                dac_file = zip_file
 
         # found a directory -- is it "var/"?
         elif head == "var":
@@ -342,46 +380,204 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                     raise Exception("distance matrix files must have .dist extension.")
 
-        # check for unknown file
-        else:
+    parse_error_log.append("Successfully identified DAC generic format files.")
+    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                          ["Progress", "\n".join(parse_error_log)])
 
-            cherrypy.log.error(tail)
-
-
-
-            cherrypy.log.error(head)
-            cherrypy.log.error(tail)
-            cherrypy.log.error("dir")
-
-        #if zip_file == 'var/' and found_var == 0:
-        #    found_var = 1
-
-        #else:
-        #    found_var = 2
+    # prepare to upload data
+    meta_var_col_names = []
+    meta_vars = []
 
     # load variables.meta file
+    if var_meta_file != "":
 
-    # #check that var/time/dist files match
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 20.0])
 
-    cherrypy.log.error(str(var_files))
-    cherrypy.log.error(str(var_meta_file))
-    cherrypy.log.error(str(time_files))
-    cherrypy.log.error(str(dist_files))
+        # parse variables.meta file
+        meta_var_col_names, meta_vars = parse_table_file(zip_ref.read(var_meta_file))
+
+        # check variable meta data header
+        headers_OK = True
+        if len(meta_var_col_names) == 4:
+
+            if meta_var_col_names[0] != "Name": headers_OK = False
+            if meta_var_col_names[1] != "Time Units": headers_OK = False
+            if meta_var_col_names[2] != "Units": headers_OK = False
+            if meta_var_col_names[3] != "Plot Type": headers_OK = False
+
+        else:
+            headers_OK = False
+
+        # quit if headers are un-recognized
+        if not headers_OK:
+
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Error", "variables.meta file has incorrect headers"])
+
+            # record no data message in front of parser log
+            parse_error_log.append("Error -- variables.meta file has incorrect headers.")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["No Data", "\n".join(parse_error_log)])
+
+            raise Exception("variables.meta file has incorrect headers.")
+
+        # check var file names
+        num_vars = len(meta_vars)
+        check_file_names(database, model, parse_error_log,
+                        "var/variable_", ".var", num_vars, var_files,
+                        "missing variable_*.var file(s)")
+
+        parse_error_log.append("Checked DAC variable file names.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # check time file names
+        check_file_names(database, model, parse_error_log,
+                         "time/variable_", ".time", num_vars, time_files,
+                         "missing variable_*.time file(s)")
+
+        parse_error_log.append("Checked DAC time file names.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # check dist file names
+        check_file_names(database, model, parse_error_log,
+                         "dist/variable_", ".dist", num_vars, dist_files,
+                         "missing variable_*.dist file(s)")
+
+        parse_error_log.append("Checked DAC distance file names.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
 
 
-    cherrypy.log.error(str(zip_files))
+    else:
 
-    #for zip_file in zip_files:
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Error", "variables.meta file not found"])
 
-        #cherrypy.log.error(zip_file)
+        # record no data message in front of parser log
+        parse_error_log.append("Error -- variables.meta file not found.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["No Data", "\n".join(parse_error_log)])
 
-        # parse files in list
-        #head, tail = os.path.split(zip_file)
+        raise Exception("variables.meta file not found.")
+
+    # now start thread to prevent timing out on large files
+    stop_event = threading.Event()
+    thread = threading.Thread(target=parse_gen_zip_thread, args=(database, model, zip_ref, parse_error_log,
+                                                             meta_var_col_names, meta_vars, dac_file, stop_event))
+    thread.start()
+
+
+# helper function which checks file names
+# note error message shouldn't end with a "."
+def check_file_names (database, model, parse_error_log,
+                      root, ext, num_files, files, error_msg):
+
+    files_found = True
+    for i in range(0, num_files):
+        file_i = root + str(i + 1) + ext
+        if not file_i in files:
+            files_found = False
+
+    # quit if files do not match
+    if not files_found:
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Error", error_msg])
+
+        # record no data message in front of parser log
+        parse_error_log.append("Error -- " + error_msg + ".")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["No Data", "\n".join(parse_error_log)])
+
+        raise Exception(error_msg + ".")
+
+
+# gen zip parsing thread to prevent time outs by browser
+def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
+                         meta_var_col_names, meta_vars, dac_file, stop_event):
+
+    # put entire thread into a try-except block in order to print
+    # errors to cherrypy.log.error
+    try:
+
+        # import dac_upload_model from source
+        push = imp.load_source('dac_upload_model',
+                               os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+
+        num_vars = len(meta_vars)
+
+        # parse meta file
+        meta_column_names, meta_rows = parse_table_file(zip_ref.read(dac_file))
+
+        parse_error_log.append("Read " + str(len(meta_rows)) + " datapoints.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 30.0])
+
+        # parse var files
+        variable = []
+        for i in range(0, num_vars):
+
+            attr, dim, data = parse_mat_file(zip_ref.read("var/variable_" + str(i+1) + ".var"))
+            variable.append(numpy.array(data))
+
+        parse_error_log.append("Read " + str(num_vars) + " DAC variable files.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 45.0])
+
+        # parse time files
+        time_steps = []
+        for i in range(0, num_vars):
+
+            attr, dim, data = parse_mat_file(zip_ref.read("time/variable_" + str(i + 1) + ".time"))
+            time_steps.append(list(data))
+
+        parse_error_log.append("Read " + str(num_vars) + " DAC time files.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 60.0])
+
+        # parse distance files
+        var_dist = []
+        for i in range(0, num_vars):
+
+            attr, dim, data = parse_mat_file(zip_ref.read("dist/variable_" + str(i + 1) + ".dist"))
+            var_dist.append(numpy.array(data))
+
+        parse_error_log.append("Read " + str(num_vars) + " DAC distance files.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # upload model to slycat database
+        push.init_upload_model(database, model, parse_error_log,
+                               meta_column_names, meta_rows,
+                               meta_var_col_names, meta_vars,
+                               variable, time_steps, var_dist)
+
+        # done -- destroy the thread
+        stop_event.set()
+
+    except Exception as e:
+
+        # print error to cherrypy.log.error
+        cherrypy.log.error(traceback.format_exc())
 
 
 # register all generic file parsers (really just the same csv parser), so that they
 # appear with different labels in the file picker.
 def register_slycat_plugin(context):
     context.register_parser("dac-gen-zip-parser", "DAC generic .zip file", ["dac-gen-zip-file"], parse_gen_zip)
+    context.register_parser("dac-category-file-parser", "DAC category list (text file, one category per line)",
+                            ["dac-cat-file"], parse)
+
 
 

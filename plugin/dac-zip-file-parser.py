@@ -21,7 +21,9 @@ import os
 import threading
 import sys
 import traceback
-import imp  # for dac_compute_coords.py
+
+# for dac_compute_coords.py and dac_upload_model.py
+import imp
 
 # CSV file parser
 def parse_csv(file):
@@ -311,6 +313,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         dac = imp.load_source('dac_compute_coords',
                               os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
 
+        # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
@@ -334,7 +337,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                                                   ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
 
             # extract csv file from archive and parse
-            cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
+            # cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
             data = parse_csv(zip_ref.read(csv_files[i]))
             csv_data_i = data[2:4]
 
