@@ -696,7 +696,7 @@ def register_slycat_plugin(context):
 
             # init parse error log for UI
             parse_error_log = []
-            parse_error_log.append("Issues:\n")
+            parse_error_log.append("Notes:")
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                   ["Progress", "\n".join(parse_error_log)])
 
@@ -841,7 +841,7 @@ def register_slycat_plugin(context):
                 slycat.web.server.put_model_parameter(database, model, "dac-proj-mask", proj)
 
             # summarize results for user
-            parse_error_log.insert(0, "Summary:\n")
+            parse_error_log.insert(0, "Summary:")
 
             # list models combined
             models_combined = ""

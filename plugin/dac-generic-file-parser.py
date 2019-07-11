@@ -525,7 +525,7 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
             attr, dim, data = parse_mat_file(zip_ref.read("var/variable_" + str(i+1) + ".var"))
             variable.append(numpy.array(data))
 
-        parse_error_log.append("Read " + str(num_vars) + " DAC variable files.")
+        parse_error_log.append("Parsed " + str(num_vars) + " DAC variable files.")
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
@@ -539,7 +539,7 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
             attr, dim, data = parse_mat_file(zip_ref.read("time/variable_" + str(i + 1) + ".time"))
             time_steps.append(list(data))
 
-        parse_error_log.append("Read " + str(num_vars) + " DAC time files.")
+        parse_error_log.append("Parsed " + str(num_vars) + " DAC time files.")
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
@@ -553,7 +553,19 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
             attr, dim, data = parse_mat_file(zip_ref.read("dist/variable_" + str(i + 1) + ".dist"))
             var_dist.append(numpy.array(data))
 
-        parse_error_log.append("Read " + str(num_vars) + " DAC distance files.")
+        parse_error_log.append("Parsed " + str(num_vars) + " DAC distance files.")
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # summarize results for user
+        parse_error_log.insert(0, "Summary:")
+
+        # list out final statistics
+        num_tests = len(meta_rows)
+        parse_error_log.insert(1, "Total number of tests: " + str(num_tests) + ".")
+        parse_error_log.insert(2, "Each test has " + str(num_vars)
+                               + " digitizer time series.\n")
+
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
