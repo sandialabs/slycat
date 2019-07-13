@@ -13,20 +13,17 @@ import "slickgrid/plugins/slick.headerbuttons";
 import "slickgrid/plugins/slick.autotooltips";
 
 import React from "react";
-import { Provider } from 'react-redux';
+import { connect } from 'react-redux';
 
 import api_root from "js/slycat-api-root";
 import SlickGridDataProvider from "./SlickGridDataProvider";
 
 import * as table_helpers from "js/slycat-table-helpers-react";
-
+import slycat_color_maps from "js/slycat-color-maps";
 
 class CCATable extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      component: this.props.component,
-    };
 
     // Create a ref to the .cca-barplot-table
     this.cca_table = React.createRef();
@@ -238,11 +235,6 @@ class CCATable extends React.Component {
     
   }
 
-  clickComponent = (index, e) =>
-  {
-    this.setState({component: index});
-  }
-
   render() {
 
     return (
@@ -255,6 +247,24 @@ class CCATable extends React.Component {
   }
 }
 
-import * as actionCreators from '../actions';
+const mapStateToProps = state => {
+  return {
+    mid: state.derived.model_id,
+    inputs: state.derived.input_columns,
+    outputs: state.derived.output_columns,
+    others: state.derived.other_columns,
+    metadata: state.derived.table_metadata,
+    row_selection: state.simulations_selected,
+    colormap: slycat_color_maps.get_color_scale(state.colormap),
+    sort_variable: state.variable_sorted,
+    sort_order: state.variable_sort_direction,
+    variable_selection: state.variable_selected,
+  }
+};
 
-export default CCATable
+export default connect(
+  mapStateToProps,
+  { 
+    
+  }
+)(CCATable)
