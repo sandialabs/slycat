@@ -54,11 +54,12 @@ class CCAControlsBar extends React.Component {
 
 const mapStateToProps = state => {
   return {
-    // colormap: state.colormap,
     variable_selected: state.variable_selected,
-    // cca_component_selected: state.cca_component_selected,
-    // cca_component_sorted: state.cca_component_sorted,
-    // cca_component_sort_direction: state.cca_component_sort_direction,
+    selection: state.simulations_selected,
+    mid: state.derived.model_id,
+    metadata: state.derived.table_metadata,
+    indices: state.derived.indices,
+    model_name: state.derived.model.name,
   }
 };
 
