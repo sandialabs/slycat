@@ -550,6 +550,13 @@ const mapStateToProps = state => {
     cca_component_selected: state.cca_component_selected,
     cca_component_sorted: state.cca_component_sorted,
     cca_component_sort_direction: state.cca_component_sort_direction,
+    metadata: state.derived.table_metadata,
+    inputs: state.derived.input_columns,
+    outputs: state.derived.output_columns,
+    r2: state.derived.r2,
+    wilks: state.derived.wilks,
+    x_loadings: state.derived.x_loadings,
+    y_loadings: state.derived.y_loadings,
   }
 };
 
