@@ -221,8 +221,12 @@ class CCATable extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    // Change column colored when selected variable changes
+    // Color variable when selected variable changes
     if(prevProps.variable_selection !== this.props.variable_selection) {
+      this._color_variable(this.props.variable_selection);
+    }
+    // Color variable when colormap changes
+    if(prevProps.colormap !== this.props.colormap) {
       this._color_variable(this.props.variable_selection);
     }
   }
