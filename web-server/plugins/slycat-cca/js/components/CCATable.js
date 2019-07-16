@@ -191,7 +191,9 @@ class CCATable extends React.Component {
     {
       self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
       {
-        self.props.setSimulationsSelected(unsorted_rows);
+        // Need to convert to a normal Array because sometimes unsorted_rows comes back as
+        // an Int32Array, which does not bookmark correctly.
+        self.props.setSimulationsSelected(Array.from(unsorted_rows));
       });
     });
     this.grid.onHeaderClick.subscribe(function (e, args)
