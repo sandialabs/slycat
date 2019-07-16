@@ -507,9 +507,6 @@ $(document).ready(function() {
       document.getElementById('barplot-table')
     );
 
-    // ToDo: This needs to respond to color theme changes.
-    $("#scatterplot-pane").css("background", slycat_color_maps.get_background(store.getState().colormap).toString());
-
     const cca_scatterplot = 
       (<Provider store={store}>
         <CCAScatterplot

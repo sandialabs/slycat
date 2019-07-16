@@ -337,20 +337,15 @@ class CCAScatterplot extends React.Component {
           <div 
             // This container div is necessary because event handlers must be attached to a parent of both 
             // the legend and the canvas, since the legend's svg element covers up the canvas element
-            style={{width: '100%', height: '100%'}}
+            style={{
+              width: '100%', 
+              height: '100%',
+              background: this.props.background,
+            }}
             onMouseDown={this.handle_mouse_down}
             onMouseMove={this.handle_mouse_move}
             onMouseUp={this.handle_mouse_up}
           >
-            <CCALegend
-              height={this.props.height - this.props.border.top - this.props.border.bottom}
-              canvas_width={this.props.width} 
-              canvas_height={this.props.height} 
-              position={{
-                x: this.props.width - this.props.border.left - this.props.border.right,
-                y: this.props.border.top
-              }}
-            />
             <canvas id="scatterplot" 
               ref={this.cca_scatterplot} 
               width={this.props.width} 
@@ -360,6 +355,16 @@ class CCAScatterplot extends React.Component {
                 height: this.props.height + 'px'
               }}
             />
+            <CCALegend
+              height={this.props.height - this.props.border.top - this.props.border.bottom}
+              canvas_width={this.props.width} 
+              canvas_height={this.props.height} 
+              position={{
+                x: this.props.width - this.props.border.left - this.props.border.right,
+                y: this.props.border.top
+              }}
+            />
+            
           </div>
         </React.StrictMode>
       </React.Fragment>
@@ -380,6 +385,7 @@ const mapStateToProps = (state, ownProps) => {
     color: slycat_color_maps.get_color_scale(state.colormap),
     selection: state.simulations_selected,
     gradient: slycat_color_maps.get_gradient_data(state.colormap),
+    background: slycat_color_maps.get_background(state.colormap).toString(),
   }
 };
 
