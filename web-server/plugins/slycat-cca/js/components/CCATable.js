@@ -14,7 +14,7 @@ import "slickgrid/plugins/slick.autotooltips";
 
 import React from "react";
 import { connect } from 'react-redux';
-import { setVariableSelected, setVariableSorted } from '../actions';
+import { setVariableSelected, setVariableSorted, setSimulationsSelected } from '../actions';
 
 import api_root from "js/slycat-api-root";
 import SlickGridDataProvider from "./SlickGridDataProvider";
@@ -48,8 +48,6 @@ class CCATable extends React.Component {
       inputs : this.props.inputs,
       outputs : this.props.outputs,
     });
-
-    this.trigger_row_selection = true;
   }
 
   make_column = (column_index, header_class, cell_class) =>
@@ -191,17 +189,10 @@ class CCATable extends React.Component {
     this.grid.setSelectionModel(new Slick.RowSelectionModel());
     this.grid.onSelectedRowsChanged.subscribe(function(e, selection)
     {
-      // Don't trigger a selection event unless the selection was changed by user interaction (i.e. not outside callers or changing the sort order).
-      if(self.trigger_row_selection)
+      self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
       {
-        self.data.get_indices("unsorted", selection.rows, function(unsorted_rows)
-        {
-          // ToDo: update state here
-          // self.options["row-selection"] = unsorted_rows;
-          // self.element.trigger("row-selection-changed", [unsorted_rows]);
-        });
-      }
-      self.trigger_row_selection = true;
+        self.props.setSimulationsSelected(unsorted_rows);
+      });
     });
     this.grid.onHeaderClick.subscribe(function (e, args)
     {
@@ -275,5 +266,6 @@ export default connect(
   { 
     setVariableSelected,
     setVariableSorted,
+    setSimulationsSelected,
   }
 )(CCATable)
