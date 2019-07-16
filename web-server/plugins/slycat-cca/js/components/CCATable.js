@@ -14,6 +14,7 @@ import "slickgrid/plugins/slick.autotooltips";
 
 import React from "react";
 import { connect } from 'react-redux';
+import { setVariableSelected } from '../actions';
 
 import api_root from "js/slycat-api-root";
 import SlickGridDataProvider from "./SlickGridDataProvider";
@@ -203,13 +204,12 @@ class CCATable extends React.Component {
     });
     this.grid.onHeaderClick.subscribe(function (e, args)
     {
-      if( ( args.column.field != self.props.variable_selection ) && (self.props.metadata["column-types"][args.column.id] != "string") )
+      // Dispatch setVariableSelected action whenever header is clicked.
+      // When it's the same variable as current, react doesn't update any components
+      // so no need to check for it here.
+      if (self.props.metadata["column-types"][args.column.id] != "string")
       {
-        self._color_variable(args.column.field);
-
-        // ToDo: update state here
-        //   self.options["variable-selection"] = [args.column.field];
-        //   self.element.trigger("variable-selection-changed", [self.options["variable-selection"]]);
+        self.props.setVariableSelected(args.column.field);
       }
     });
 
@@ -221,7 +221,10 @@ class CCATable extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    
+    // Change column colored when selected variable changes
+    if(prevProps.variable_selection !== this.props.variable_selection) {
+      this._color_variable(this.props.variable_selection);
+    }
   }
 
   resize_canvas = () =>
@@ -265,6 +268,6 @@ const mapStateToProps = state => {
 export default connect(
   mapStateToProps,
   { 
-    
+    setVariableSelected,
   }
 )(CCATable)
