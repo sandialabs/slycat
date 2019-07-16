@@ -14,7 +14,7 @@ import "slickgrid/plugins/slick.autotooltips";
 
 import React from "react";
 import { connect } from 'react-redux';
-import { setVariableSelected } from '../actions';
+import { setVariableSelected, setVariableSorted } from '../actions';
 
 import api_root from "js/slycat-api-root";
 import SlickGridDataProvider from "./SlickGridDataProvider";
@@ -125,13 +125,14 @@ class CCATable extends React.Component {
   {
     let self = this;
 
+    // Dispatch setVariableSorted action whenever header is clicked.
+    self.props.setVariableSorted(column);
+
     self.data.set_sort(column, order);
     self.data.get_indices("sorted", self.props.row_selection, function(sorted_rows)
     {
       self.grid.invalidate();
       table_helpers._set_selected_rows_no_trigger(self);
-      // ToDo: set state of sort
-      // self.element.trigger("variable-sort-changed", [column, order]);
     });
   }
 
@@ -273,5 +274,6 @@ export default connect(
   mapStateToProps,
   { 
     setVariableSelected,
+    setVariableSorted,
   }
 )(CCATable)
