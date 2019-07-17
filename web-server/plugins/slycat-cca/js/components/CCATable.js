@@ -223,6 +223,10 @@ class CCATable extends React.Component {
     if(prevProps.colormap !== this.props.colormap) {
       this._color_variable(this.props.variable_selection);
     }
+    // Set selected rows when selection changes
+    if(_.xor(prevProps.row_selection, this.props.row_selection).length > 0) {
+      table_helpers._set_selected_rows_no_trigger(this);
+    }
   }
 
   resize_canvas = () =>
