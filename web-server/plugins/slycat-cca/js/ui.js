@@ -66,7 +66,10 @@ $(document).ready(function() {
       // y_loadings: y_loadings,
       // r2: r2,
       // wilks: wilks,
-      // indices: null,
+      // indices: null, // Array
+      // x: null, // Array
+      // y: null, // Array
+      // v: null, // Array
       column_data: { // Object that will hold the values for columns
         // 0: { // Column index
         //   isFetching: false, // Ajax request for data state
