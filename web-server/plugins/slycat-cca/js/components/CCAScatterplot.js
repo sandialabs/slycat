@@ -202,14 +202,15 @@ class CCAScatterplot extends React.Component {
       {
         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
         {
-          if(e.ctrlKey || e.metaKey) {
-            this.props.toggleSimulationsSelected([this.props.indices[i]]);
-          }
-          else {
-            this.props.setSimulationsSelected([this.props.indices[i]]);
-          }
+          newSelection.push(this.props.indices[i]);
           break;
         }
+      }
+      if(e.ctrlKey || e.metaKey) {
+        this.props.toggleSimulationsSelected(newSelection);
+      }
+      else {
+        this.props.setSimulationsSelected(newSelection);
       }
     }
 
