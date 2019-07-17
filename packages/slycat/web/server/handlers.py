@@ -1387,7 +1387,6 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
             # Other times it's a 'numpy.ndarray'
             else:
               unique["values"] = [array.tolist() for array in unique["values"]]
-    cherrypy.log.error("returning results")
 
     return results
 
