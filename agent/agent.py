@@ -536,8 +536,6 @@ class Agent(object):
                     sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "this command is depricated and has "
                                                                                   "been removed"}))
                     sys.stdout.flush()
-                # elif action == "video-status":
-                #     self.video_status(command)
                 elif action == "launch":
                     self.launch(command)
                 elif action == "check-agent-job":

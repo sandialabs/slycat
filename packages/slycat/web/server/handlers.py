@@ -127,8 +127,8 @@ def require_integer_parameter(value, name):
 def get_projects_list(_=None):
     """
     returns an array of projects
-    :param _: 
-    :return: 
+    :param _: time arg to stop caching
+    :return: json projects list
     """
     database = slycat.web.server.database.couchdb.connect()
     projects = [project for project in database.scan("slycat/projects") if
@@ -166,7 +166,7 @@ def post_projects():
     cherrypy.response.status = "201 Project created."
     return {"id": pid}
 
-
+@cherrypy.tools.json_out(on=True)
 def get_project(pid):
     """
     returns a project based on "content-type" header
@@ -174,20 +174,10 @@ def get_project(pid):
     :return: Either html landing page of given project or the json
     representation of the project
     """
-
-    # Return the client's preferred media-type (from the given Content-Types)
-    accept = cherrypy.lib.cptools.accept(media=["application/json", "text/html"])
-    cherrypy.response.headers["content-type"] = accept
-
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
-
-    if accept == "application/json":
-        return json.dumps(project)
-    # for model in models:
-    #     model["marking-html"] = slycat.web.server.plugin.manager.markings[model["marking"]]["badge"]
-
+    return project
 
 def get_remote_host_dict():
     remote_host_dict = cherrypy.request.app.config["slycat-web-server"]["remote-hosts"]
@@ -1993,6 +1983,19 @@ def get_bookmark(bid):
 
 @cherrypy.tools.json_out(on=True)
 def get_user(uid, time):
+    """
+    Retrieve directory information for a given user.
+    
+    Arguments:
+        uid {string} -- users id
+        time {int} -- time int to prevent caching
+    
+    Raises:
+        cherrypy.HTTPError: 404 user not found
+    
+    Returns:
+        json -- user info
+    """
     if uid == "-":
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
@@ -2288,27 +2291,6 @@ def set_user_config(hostname):
 
 @cherrypy.tools.json_in(on=True)
 @cherrypy.tools.json_out(on=True)
-def run_agent_function(hostname):
-    sid = get_sid(hostname)
-    wckey = cherrypy.request.json["wckey"]
-    nnodes = cherrypy.request.json["nnodes"]
-    partition = cherrypy.request.json["partition"]
-    ntasks_per_node = cherrypy.request.json["ntasks_per_node"]
-    # ntasks = cherrypy.request.json["ntasks"]
-    # ncpu_per_task = cherrypy.request.json["ncpu_per_task"]
-    time_hours = cherrypy.request.json["time_hours"]
-    time_minutes = cherrypy.request.json["time_minutes"]
-    time_seconds = cherrypy.request.json["time_seconds"]
-    fn = cherrypy.request.json["fn"]
-    fn_params = cherrypy.request.json["fn_params"]
-    uid = cherrypy.request.json["uid"]
-    with slycat.web.server.remote.get_session(sid) as session:
-        return session.run_agent_function(wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
-                                          time_seconds, fn, fn_params, uid)
-
-
-@cherrypy.tools.json_in(on=True)
-@cherrypy.tools.json_out(on=True)
 def post_remote_command(hostname):
     """
     run a remote command from the list of pre-registered commands
@@ -2362,12 +2344,31 @@ def post_remote_browse(hostname, path):
 
 def get_remote_file(hostname, path, **kwargs):
     """
-    Given a hostname and file path returns the file given
-    by the path
+    Uses an existing remote session to retrieve a remote file.  The remote
+    session must have been created using :http:post:`/api/remotes`.  Use
+    :http:post:`/api/remotes/(hostname)/browse(path)` to lookup remote file paths.
+    The returned file may be optionally cached on the server and retrieved
+    using :http:get:`/api/projects/(pid)/cache/(key)`.
+
     :param hostname: connection host name
     :param path: path to file
     :param kwargs:
+
+    Query Parameters
+    :param cache: – Optional cache identifier. 
+      Set to project to store the retrieved file in a project cache.
+    :param project: – Project identifier. Required when cache is set to project.
+    :param key: – Cached object key. Must be specified when cache is set to project.
     :return: file
+
+    Status Codes
+    200 OK – The requested file is returned in the body of the response.
+    404 Not Found – The session doesn’t exist or has timed-out.
+    400 Bad Request – “Can’t read directory” The remote path 
+      is a directory instead of a file.
+    400 Bad Request – “File not found” The remote path doesn’t exist.
+    400 Bad Request – “Access denied” The session user doesn’t have 
+      permissions to access the file.
     """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
@@ -2434,20 +2435,6 @@ def get_time_series_names(hostname, path, **kwargs):
         return response_time_series_names
     else:
         raise cherrypy.HTTPError("400 could not detect timeseries names. There could be hidden characters in your csv")
-
-
-@cherrypy.tools.json_out(on=True)
-def get_remote_video_status(hostname, vsid):
-    """
-    Given a hostname and vsid returns the video status given
-    by the vsid
-    :param hostname: connection host name
-    :param vsid: video uuid
-    :return: json
-    """
-    sid = get_sid(hostname)
-    with slycat.web.server.remote.get_session(sid) as session:
-        return session.get_video_status(vsid)
 
 
 def get_remote_video(hostname, vsid):

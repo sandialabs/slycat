@@ -113,7 +113,6 @@ def start(root_path, config_file):
 
   dispatcher.connect("get-remote-image", "/remotes/:hostname/image{path:.*}", slycat.web.server.handlers.get_remote_image, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-video", "/remotes/:hostname/videos/:vsid", slycat.web.server.handlers.get_remote_video, conditions={"method" : ["GET"]})
-  dispatcher.connect("get-remote-video-status", "/remotes/:hostname/videos/:vsid/status", slycat.web.server.handlers.get_remote_video_status, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remotes", "/remotes/:hostname", slycat.web.server.handlers.get_remotes, conditions={"method" : ["GET"]})
   dispatcher.connect("get-remote-show-user-password", "/remotes/show/user-password", slycat.web.server.handlers.get_remote_show_user_password, conditions={"method": ["GET"]})
 
@@ -153,7 +152,6 @@ def start(root_path, config_file):
   dispatcher.connect("get-checkjob", "/remotes/checkjob/:hostname/:jid", slycat.web.server.handlers.get_checkjob, conditions={ "method": ["GET"] })
   dispatcher.connect("delete-job", "/remotes/delete-job/:hostname/:jid", slycat.web.server.handlers.delete_job, conditions={ "method": ["DELETE"] })
   dispatcher.connect("get-job-output", "/remotes/get-job-output/:hostname/:jid/path{path:.*}", slycat.web.server.handlers.get_job_output, conditions={ "method": ["POST"] })
-  dispatcher.connect("post-agent-function", "/remotes/:hostname/run-agent-function", slycat.web.server.handlers.run_agent_function, conditions={ "method": ["POST"] })
   dispatcher.connect("post-remote-command", "/remotes/:hostname/post-remote-command", slycat.web.server.handlers.post_remote_command, conditions={ "method": ["POST"] })
   dispatcher.connect("get-job-session-status", "/remotes/:hostname/:jid/get-remote-job-status", slycat.web.server.handlers.get_remote_job_status, conditions={"method": ["GET"]})
 

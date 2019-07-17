@@ -5,9 +5,10 @@ import client from "js/slycat-web-client";
  * @param selectedOption Selected upload type, i.e. local or remote
  * @param mid Current model ID
  */
+
 const checkColumns = (file:any, selectedOption:String, mid:String) => {
     let column_row;
-    let newColumns; //new columns
+    let newColumns = ["test"]; //new columns
 
     /** 
     * If a local file is selected, it's a blob that requires a reader.

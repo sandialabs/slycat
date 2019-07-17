@@ -37,8 +37,8 @@ export function renderNavBar() {
   fetch(api_root + 'projects_list' + '?_=' + new Date().getTime(), {redirect: 'error', credentials: "same-origin", cache: "no-store"})
     .catch(error => {
       console.log("we are being redirected or have another type of error, so let's go to the login page");
-      ispasswordrequired.slycat_passwordrequired?
-        window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href :
+      ispasswordrequired.slycat_passwordrequired()?
+        window.location.href = "/login/slycat-login.html?from=" + window.location.href :
         window.location.href = "/projects";
     })
     ;
@@ -52,8 +52,8 @@ export function renderNavBar() {
       function checkCookie(){
         var myCookie = getCookie("slycattimeout");
         if(myCookie == null){
-            ispasswordrequired.slycat_passwordrequired?
-            window.location.href = server_root + "login/slycat-login.html?from=" + window.location.href :
+            ispasswordrequired.slycat_passwordrequired()?
+            window.location.href = "/login/slycat-login.html?from=" + window.location.href :
             window.location.href = "/projects";
         }
       }

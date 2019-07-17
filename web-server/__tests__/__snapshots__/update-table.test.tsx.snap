@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`When loading the update table modal We expect props on initial load 1`] = `
+Object {
+  "button_style": "btn-outline-dark",
+  "mid": "123",
+  "pid": "456",
+}
+`;
+
+exports[`When loading the update table modal We have proper state 1`] = `
+Object {
+  "currentColumns": Array [],
+  "disabled": true,
+  "failedColumnCheckMessage": Array [
+    "This upload attempt has been rejected.
+",
+  ],
+  "files": Array [
+    File {},
+  ],
+  "hostname": "",
+  "loadingData": false,
+  "modalId": "varUpdateTableModal",
+  "newColumns": Array [],
+  "parserType": "slycat-csv-parser",
+  "passedColumnCheck": true,
+  "password": "",
+  "progressBarHidden": true,
+  "progressBarProgress": 0,
+  "selectedNameIndex": 0,
+  "selectedOption": "local",
+  "selected_path": "",
+  "sessionExists": null,
+  "title": "Update Table",
+  "username": "",
+  "visible_tab": "0",
+}
+`;
