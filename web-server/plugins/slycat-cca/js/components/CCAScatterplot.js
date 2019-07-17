@@ -1,7 +1,13 @@
 import React from "react";
 import { connect } from 'react-redux';
+import { 
+  setSimulationsSelected,
+  addSimulationsSelected, 
+  toggleSimulationsSelected 
+} from '../actions';
 
 import d3 from "d3";
+import _ from "lodash";
 
 import CCALegend from "./CCALegend";
 import slycat_color_maps from "js/slycat-color-maps";
@@ -18,23 +24,75 @@ class CCAScatterplot extends React.Component {
   componentDidMount() 
   {
     this.prep();
+    this.update_indices();
+    this.update_x();
+    this.update_y();
+
+    // We need v, so don't continue past here without it
+    if(this.props.v === undefined){
+      return;
+    }
+    
+    this.update_color_domain();
+    this.render_data();
+    this.render_selection();
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) 
   {
-    this.prep();
-  }
-
-  prep = () => {
     // We need v, so don't continue without it
     if(this.props.v === undefined){
       return;
     }
 
-    // Cloning the selection array because we will be modifying it as a placeholder for updating state
-    // ToDo, fix this, don't update the array, just update state.
-    this.selection = this.props.selection.slice();
+    // When indices change
+    if(_.xor(prevProps.indices, this.props.indices).length > 0)
+    {
+      // console.log("CCAScatterplot, componentDidUpdate, indices changed");
+      this.update_indices();
+      this.render_selection();
+    }
+    // When x changes
+    if(_.xor(prevProps.x, this.props.x).length > 0)
+    {
+      // console.log("CCAScatterplot, componentDidUpdate, x changed");
+      this.update_x();
+      this.render_data();
+      this.render_selection();
+    }
+    // When y changes
+    if(_.xor(prevProps.y, this.props.y).length > 0)
+    {
+      // console.log("CCAScatterplot, componentDidUpdate, y changed");
+      this.update_y();
+      this.render_data();
+      this.render_selection();
+    }
+    // When v changes
+    if(_.xor(prevProps.v, this.props.v).length > 0)
+    {
+      // console.log("CCAScatterplot, componentDidUpdate, v changed");
+      this.update_color_domain();
+      this.render_data();
+      this.render_selection();
+    }
+    // When selection changes
+    if(_.xor(prevProps.selection, this.props.selection).length > 0) 
+    {
+      // console.log("CCAScatterplot, componentDidUpdate, selection changed");
+      this.render_selection();
+    }
+    // When colormap changes
+    if(prevProps.colormap != this.props.colormap) 
+    {
+      // console.log("CCAScatterplot, componentDidUpdate, color colormap");
+      this.update_color_domain();
+      this.render_data();
+      this.render_selection();
+    }
+  }
 
+  prep = () => {
     this.start_drag = null;
     this.end_drag = null;
 
@@ -53,12 +111,6 @@ class CCAScatterplot extends React.Component {
     this.selection_canvas.width = this.props.width;
     this.selection_canvas.height = this.props.height;
     this.selection_context = this.selection_canvas.getContext("2d");
-
-    this.update_indices();
-    this.update_x();
-    this.update_y();
-    this.update_color_domain();
-    this.render_data();
   }
 
   handle_mouse_down = (e) =>
@@ -109,10 +161,10 @@ class CCAScatterplot extends React.Component {
       return;
     }
 
-    console.log("e.target: " + e.target);
-    console.log("e.currentTarget: " + e.currentTarget);
-    if(!e.ctrlKey && !e.metaKey)
-      this.selection = [];
+    let newSelection = [];
+
+    // console.log("e.target: " + e.target);
+    // console.log("e.currentTarget: " + e.currentTarget);
 
     var x = this.props.x;
     var y = this.props.y;
@@ -129,10 +181,14 @@ class CCAScatterplot extends React.Component {
       {
         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
         {
-          var index = this.selection.indexOf(this.props.indices[i]);
-          if(index == -1)
-            this.selection.push(this.props.indices[i]);
+          newSelection.push(this.props.indices[i]);
         }
+      }
+      if(e.ctrlKey || e.metaKey) {
+        this.props.addSimulationsSelected(newSelection);
+      }
+      else {
+        this.props.setSimulationsSelected(newSelection);
       }
     }
     else // Pick selection ...
@@ -146,12 +202,12 @@ class CCAScatterplot extends React.Component {
       {
         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
         {
-          var index = this.selection.indexOf(this.props.indices[i]);
-          if(index == -1)
-            this.selection.push(this.props.indices[i]);
-          else
-            this.selection.splice(index, 1);
-
+          if(e.ctrlKey || e.metaKey) {
+            this.props.toggleSimulationsSelected([this.props.indices[i]]);
+          }
+          else {
+            this.props.setSimulationsSelected([this.props.indices[i]]);
+          }
           break;
         }
       }
@@ -159,10 +215,6 @@ class CCAScatterplot extends React.Component {
 
     this.start_drag = null;
     this.end_drag = null;
-
-    this.render_selection();
-    // self.element.trigger("selection-changed", [self.options.selection]);
-    // ToDo: update global state here with new selection
   }
 
   render_data = () =>
@@ -202,7 +254,7 @@ class CCAScatterplot extends React.Component {
     var y = this.props.y;
     var v = this.props.v;
     var indices = this.props.indices;
-    var color = this.props.color;
+    var color = this.color;
 
     // Draw points using rectangles ...
     if(count < 50000)
@@ -245,14 +297,13 @@ class CCAScatterplot extends React.Component {
     var x = this.props.x;
     var y = this.props.y;
     var v = this.props.v;
-    var color = this.props.color;
+    var color = this.color;
     var indices = this.props.indices;
 
     this.selection_context.setTransform(1, 0, 0, 1, 0, 0);
     this.selection_context.clearRect(0, 0, this.props.width, this.props.height);
 
-    var selection = this.selection;
-    var selection_count = selection.length;
+    var selection_count = this.props.selection.length;
     var cx, cy,
        square_size = 16,
        border_width = 2,
@@ -267,7 +318,7 @@ class CCAScatterplot extends React.Component {
 
     for(var i = 0; i != selection_count; ++i)
     {
-      var global_index = selection[i];
+      var global_index = this.props.selection[i];
       var local_index = this.inverse_indices[global_index];
       this.selection_context.fillStyle = color(v[global_index]);
       cx = Math.round( this.x_scale(x[local_index]) - (square_size/2) - border_width );
@@ -298,13 +349,15 @@ class CCAScatterplot extends React.Component {
 
   update_color_domain = () =>
   {
+    // console.log("CCAScatterplot update_color_domain()");
+    this.color = slycat_color_maps.get_color_scale(this.props.colormap);
     var v_min = d3.min(this.props.v);
     var v_max = d3.max(this.props.v);
     var domain = []
-    var domain_scale = d3.scale.linear().domain([0, this.props.color.domain().length]).range([v_min, v_max]);
-    for(var i in this.props.color.domain())
+    var domain_scale = d3.scale.linear().domain([0, this.color.domain().length]).range([v_min, v_max]);
+    for(var i in this.color.domain())
       domain.push(domain_scale(i));
-    this.props.color.domain(domain);
+    this.color.domain(domain);
   }
 
   update_indices = () =>
@@ -382,7 +435,7 @@ const mapStateToProps = (state, ownProps) => {
     x: state.derived.x[state.cca_component_selected],
     y: state.derived.y[state.cca_component_selected],
     v: v,
-    color: slycat_color_maps.get_color_scale(state.colormap),
+    colormap: state.colormap,
     selection: state.simulations_selected,
     gradient: slycat_color_maps.get_gradient_data(state.colormap),
     background: slycat_color_maps.get_background(state.colormap).toString(),
@@ -391,5 +444,9 @@ const mapStateToProps = (state, ownProps) => {
 
 export default connect(
   mapStateToProps,
-  null
+  {
+    setSimulationsSelected,
+    addSimulationsSelected,
+    toggleSimulationsSelected,
+  }
 )(CCAScatterplot)
