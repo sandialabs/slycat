@@ -96,18 +96,18 @@ export default function cca_reducer(state = initialState, action) {
       })
     case REMOVE_SIMULATIONS_SELECTED:
       return Object.assign({}, state, {
-        simulations_selected: _.without(state.simulations_selected, action.simulations)
+        simulations_selected: _.without(state.simulations_selected, ...action.simulations)
       })
     case TOGGLE_SIMULATIONS_SELECTED:
       let add = _.difference(action.simulations, state.simulations_selected);
       let remove = _.intersection(state.simulations_selected, action.simulations);
       return Object.assign({}, state, {
-        simulations_selected: _.without(_.union(state.simulations_selected, add), remove)
+        simulations_selected: _.without(_.union(state.simulations_selected, add), ...remove)
       })
-      case SET_COLORMAP:
-          return Object.assign({}, state, {
-            colormap: action.name
-          })
+    case SET_COLORMAP:
+      return Object.assign({}, state, {
+        colormap: action.name
+      })
     // case CHANGE_AXES_VARIABLE_SCALE:
     //   return Object.assign({}, state, {
     //     axesVariables: Object.assign({}, state.axesVariables, {[action.axesVariable]: action.axesScale})
