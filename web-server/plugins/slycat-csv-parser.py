@@ -111,14 +111,14 @@ def parse_file(file, model, database):
                 "Your CSV file contained at least one empty column. This column has been removed for you. \n")
 
     if error_message is not "":
-        cherrypy.log.error("Adding error_messages to the database.")
+        #cherrypy.log.error("Adding error_messages to the database.")
         # model = database.get("models", mid)
         slycat.web.server.put_model_parameter(database, model, "error-messages", error_message)
         # database.save(model)
     else:
         slycat.web.server.put_model_parameter(database, model, "error-messages", "")
 
-    cherrypy.log.error("The error has been logged.")
+    #cherrypy.log.error("The error has been logged.")
 
 
     return attributes, dimensions, data
