@@ -193,7 +193,8 @@ class CCATable extends React.Component {
       {
         // Need to convert to a normal Array because sometimes unsorted_rows comes back as
         // an Int32Array, which does not bookmark correctly.
-        self.props.setSimulationsSelected(Array.from(unsorted_rows));
+        let unsorted_rows_array = Array.from(unsorted_rows);
+        self.props.setSimulationsSelected(unsorted_rows_array);
       });
     });
     this.grid.onHeaderClick.subscribe(function (e, args)
@@ -224,8 +225,16 @@ class CCATable extends React.Component {
       this._color_variable(this.props.variable_selection);
     }
     // Set selected rows when selection changes
+    // First check if props.row_selection changed during this update
     if(_.xor(prevProps.row_selection, this.props.row_selection).length > 0) {
-      table_helpers._set_selected_rows_no_trigger(this);
+      // Then check if the selected rows aren't already selected in the grid
+      let self = this;
+      this.data.get_indices("unsorted", this.grid.getSelectedRows(), function(unsorted_rows)
+      {
+        if(_.xor(unsorted_rows, self.props.row_selection).length > 0) {
+          table_helpers._set_selected_rows_no_trigger(self);
+        }
+      });
     }
   }
 
