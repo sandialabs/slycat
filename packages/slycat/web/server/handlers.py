@@ -1377,9 +1377,9 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
     if "unique" in results:
-        cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
-        cherrypy.log.error("type:")
-        cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
+        #cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
+        #cherrypy.log.error("type:")
+        #cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
         for unique in results["unique"]:
             # Maybe due to caching, sometimes the result comes back as a 'list'
             if isinstance(results["unique"][0]['values'][0], list):
@@ -1490,13 +1490,13 @@ def post_model_arrayset_data(mid, aid):
     hyperchunks = None
     byteorder = None
     require_json_parameter("hyperchunks")
-    cherrypy.log.error("parsing post arrayset data")
+    #cherrypy.log.error("parsing post arrayset data")
     hyperchunks = cherrypy.request.json["hyperchunks"]
     try:
         byteorder = cherrypy.request.json["byteorder"]
     except Exception as e:
         byteorder = None
-        cherrypy.log.error("no byteorder provided moving on")
+        #cherrypy.log.error("no byteorder provided moving on")
 
     # parse the hyperchunks
     cherrypy.log.error(
