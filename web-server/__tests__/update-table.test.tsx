@@ -42,4 +42,24 @@ describe('When loading the update table modal',() =>{
         const state = render.state() as ControlsButtonUpdateTableState;
         expect(state).toMatchSnapshot();
     });
+
+    test('We can clean up state', async () => {
+        const properties: ControlsButtonUpdateTableProps = {
+            button_style: 'btn-outline-dark',
+            mid: '123',
+            pid: '456'
+        };
+        const render = await mount(
+            <ControlsButtonUpdateTable
+                {...properties}
+            />
+        );
+        const instance:any = render.instance() as any;
+        jest.spyOn(instance, 'cleanup');
+        const initialState = instance.state;
+        await instance.cleanup();
+        expect(instance.cleanup).toHaveBeenCalled();
+        const cleanedState = instance.state;
+        expect(initialState).toEqual(cleanedState);
+    });
 });
