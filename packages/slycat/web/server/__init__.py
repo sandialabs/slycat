@@ -726,10 +726,10 @@ def clean_up_old_session(user_name=None):
             sessions = [session for session in couchdb.scan("slycat/sessions") if
                         session["creator"] == user_name]
             if sessions:
-                cherrypy.log.error("sessions found %s" % user_name)
+                #cherrypy.log.error("sessions found %s" % user_name)
                 for session in sessions:
                     couchdb.delete(session)
-                    cherrypy.log.error("sessions deleted %s" % user_name)
+                    #cherrypy.log.error("sessions deleted %s" % user_name)
         except:
             # if an exception was throw there is nothing to be done
             pass

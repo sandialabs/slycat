@@ -39,7 +39,7 @@ def _login_session_cleanup_worker():
   while True:
     try:
       database = slycat.web.server.database.couchdb.connect()
-      cherrypy.log.error("Login session cleanup worker running.")
+      #cherrypy.log.error("Login session cleanup worker running.")
       cutoff = (datetime.datetime.utcnow() - cherrypy.request.app.config["slycat"]["session-timeout"]).isoformat()
       for session in database.view("slycat/sessions", include_docs=True):
         if session.doc["created"] < cutoff:
