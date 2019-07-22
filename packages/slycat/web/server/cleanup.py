@@ -20,7 +20,7 @@ def _array_cleanup_worker():
     while True:
       try:
         database = slycat.web.server.database.couchdb.connect()
-        cherrypy.log.error("Array cleanup worker running.")
+        #cherrypy.log.error("Array cleanup worker running.")
         for file in database.view("slycat/hdf5-file-counts", group=True):
           if file.value == 0:
             slycat.web.server.hdf5.delete(file.key)
@@ -58,7 +58,7 @@ def _cache_cleanup_worker():
       cherrypy.log.error("Started server cache cleanup worker.")
       while True:
         time.sleep(datetime.timedelta(minutes=15).total_seconds())
-        cherrypy.log.error("[CACHE] running server cache-cleanup thread")
+        # cherrypy.log.error("[CACHE] running server cache-cleanup thread")
         cache_it.clean()
 
 _cache_cleanup_worker.thread = threading.Thread(name="cache-cleanup", target=_cache_cleanup_worker)
