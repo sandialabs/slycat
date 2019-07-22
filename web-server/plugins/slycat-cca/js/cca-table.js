@@ -20,8 +20,8 @@
 // import * as chunker from "js/chunker";
 // import * as table_helpers from "js/slycat-table-helpers";
 
-$.widget("cca.table",
-{
+// $.widget("cca.table",
+// {
   // options:
   // {
   //   api_root : "",
@@ -202,29 +202,29 @@ $.widget("cca.table",
   //   table_helpers._set_selected_rows_no_trigger(self);
   // },
 
-  _setOption: function(key, value)
-  {
-    var self = this;
+  // _setOption: function(key, value)
+  // {
+  //   var self = this;
 
-    if(key == "row-selection")
-    {
-      self.options[key] = value;
-      table_helpers._set_selected_rows_no_trigger(self);
-    }
-    else if(key == "variable-selection")
-    {
-      if(self._array_equal(self.options[key], value))
-        return;
+  //   if(key == "row-selection")
+  //   {
+  //     self.options[key] = value;
+  //     table_helpers._set_selected_rows_no_trigger(self);
+  //   }
+  //   else if(key == "variable-selection")
+  //   {
+  //     if(self._array_equal(self.options[key], value))
+  //       return;
 
-      self.options[key] = value;
-      self._color_variables(value);
-    }
-    else if(key == "colormap")
-    {
-      self.options[key] = value;
-      self._color_variables(self.options["variable-selection"])
-    }
-  },
+  //     self.options[key] = value;
+  //     self._color_variables(value);
+  //   }
+  //   else if(key == "colormap")
+  //   {
+  //     self.options[key] = value;
+  //     self._color_variables(self.options["variable-selection"])
+  //   }
+  // },
 
   // _color_variables: function(variables)
   // {
@@ -464,4 +464,4 @@ $.widget("cca.table",
   // {
   //   return $(a).not(b).length == 0 && $(b).not(a).length == 0;
   // },
-});
+// });
