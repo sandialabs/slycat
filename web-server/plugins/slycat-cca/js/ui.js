@@ -41,6 +41,8 @@ import {
   fetchVariableValuesIfNeeded, 
   setScatterplotWidth, 
   setScatterplotHeight,
+  setTableHeight,
+  setTableWidth,
 } from './actions'
 
 // Wait for document ready
@@ -75,6 +77,8 @@ $(document).ready(function() {
       // v: null, // Array
       // scatterplot_width: null, // Width of scatterplot
       // scatterplot_height: null, // Height of scatterplot
+      // table_width: null, // Width of table
+      // table_height: null, // Height of table
       column_data: { // Object that will hold the values for columns
         // 0: { // Column index
         //   isFetching: false, // Ajax request for data state
@@ -141,14 +145,27 @@ $(document).ready(function() {
       resizeWhileDragging: false,
       onresize_end: function()
       {
-        // if(self.cca_table)
-        //   self.cca_table.resize_canvas();
+        if(store)
+        {
+          store.dispatch(
+            setTableWidth(
+              $("#table-pane").width()
+            )
+          );
+          store.dispatch(
+            setTableHeight(
+              $("#table-pane").height()
+            )
+          );
+        }
       },
     },
   });
   
   redux_state_tree.derived.scatterplot_width = $("#scatterplot-pane").width();
   redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
+  redux_state_tree.derived.table_width = $("#table-pane").width();
+  redux_state_tree.derived.table_height = $("#table-pane").height();
   
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model and other model data
