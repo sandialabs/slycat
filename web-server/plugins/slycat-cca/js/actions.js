@@ -17,6 +17,8 @@ export const REMOVE_SIMULATIONS_SELECTED = 'REMOVE_SIMULATIONS_SELECTED';
 export const TOGGLE_SIMULATIONS_SELECTED = 'TOGGLE_SIMULATIONS_SELECTED';
 export const REQUEST_VARIABLE = 'REQUEST_VARIABLE';
 export const RECEIVE_VARIABLE = 'RECEIVE_VARIABLE';
+export const SET_SCATTERPLOT_WIDTH = 'SET_SCATTERPLOT_WIDTH';
+export const SET_SCATTERPLOT_HEIGHT = 'SET_SCATTERPLOT_HEIGHT';
 
 export function setVariableSelected(variable, state_label, trigger, e) {
   return function(dispatch, getState) {
@@ -190,6 +192,20 @@ export function toggleSimulationsSelected(simulations) {
   return { 
   	type: TOGGLE_SIMULATIONS_SELECTED, 
   	simulations: simulations,
+  }
+}
+
+export function setScatterplotWidth(width) {
+  return { 
+  	type: SET_SCATTERPLOT_WIDTH, 
+  	width,
+  }
+}
+
+export function setScatterplotHeight(height) {
+  return { 
+  	type: SET_SCATTERPLOT_HEIGHT, 
+  	height,
   }
 }
 
