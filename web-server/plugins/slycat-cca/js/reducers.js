@@ -10,6 +10,8 @@ import {
   TOGGLE_SIMULATIONS_SELECTED,
   REQUEST_VARIABLE,
   RECEIVE_VARIABLE,
+  SET_SCATTERPLOT_WIDTH,
+  SET_SCATTERPLOT_HEIGHT,
 } from './actions';
 import {
   SET_COLORMAP,
@@ -108,11 +110,21 @@ export default function cca_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         colormap: action.name
       })
-    // case CHANGE_AXES_VARIABLE_SCALE:
-    //   return Object.assign({}, state, {
-    //     axesVariables: Object.assign({}, state.axesVariables, {[action.axesVariable]: action.axesScale})
-    //   })
-    // Return current state if we get passed an action we don't handle
+    case SET_SCATTERPLOT_WIDTH:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          scatterplot_width: action.width,
+        }
+      })
+    case SET_SCATTERPLOT_HEIGHT:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          scatterplot_height: action.height,
+        }
+      })
+    
     default:
       return state
   }
