@@ -236,12 +236,11 @@ class CCATable extends React.Component {
         }
       });
     }
-  }
-
-  resize_canvas = () =>
-  {
-    let self = this;
-    self.grid.resizeCanvas();
+    // Resize
+    if(prevProps.width != this.props.width || prevProps.height != this.props.height)
+    {
+      this.grid.resizeCanvas();
+    }
   }
 
   handle_component_change_transition = () =>
@@ -273,6 +272,8 @@ const mapStateToProps = state => {
     sort_variable: state.variable_sorted,
     sort_order: state.variable_sort_direction,
     variable_selection: state.variable_selected,
+    width: state.derived.table_width,
+    height: state.derived.table_height,
   }
 };
 
