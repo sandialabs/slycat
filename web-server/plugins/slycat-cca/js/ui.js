@@ -37,8 +37,11 @@ import thunkMiddleware from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 import { createStore, applyMiddleware } from 'redux';
 import cca_reducer from './reducers';
-import { fetchVariableValuesIfNeeded, } from './actions'
-
+import { 
+  fetchVariableValuesIfNeeded, 
+  setScatterplotWidth, 
+  setScatterplotHeight,
+} from './actions'
 
 // Wait for document ready
 $(document).ready(function() {
@@ -70,6 +73,8 @@ $(document).ready(function() {
       // x: null, // Array
       // y: null, // Array
       // v: null, // Array
+      // scatterplot_width: null, // Width of scatterplot
+      // scatterplot_height: null, // Height of scatterplot
       column_data: { // Object that will hold the values for columns
         // 0: { // Column index
         //   isFetching: false, // Ajax request for data state
@@ -89,7 +94,62 @@ $(document).ready(function() {
     scatterplot_font_size: '14px', // String formatted as a valid font-size CSS property.
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // Setup page layout.
+  //////////////////////////////////////////////////////////////////////////////////////////
 
+  // Layout resizable panels ...
+  $("#cca-model").layout({
+    applyDefaultStyles: false,
+    north:
+    {
+      size: 39,
+      resizable: false,
+    },
+    west:
+    {
+      size: $("#cca-model").width() / 2,
+      resizeWhileDragging: false,
+      onresize_end: function() { 
+        // if($("#barplot-table").data("cca-barplot")) {
+        //   $("#barplot-table").barplot("resize_canvas"); 
+        // }
+      },
+    },
+    center:
+    {
+      resizeWhileDragging: false,
+      onresize_end: function() { 
+        if(store)
+        {
+          store.dispatch(
+            setScatterplotWidth(
+              $("#scatterplot-pane").width()
+            )
+          );
+          store.dispatch(
+            setScatterplotHeight(
+              $("#scatterplot-pane").height()
+            )
+          );
+        }
+      },
+    },
+    south:
+    {
+      size: $("body").height() / 2,
+      resizeWhileDragging: false,
+      onresize_end: function()
+      {
+        // if(self.cca_table)
+        //   self.cca_table.resize_canvas();
+      },
+    },
+  });
+  
+  redux_state_tree.derived.scatterplot_width = $("#scatterplot-pane").width();
+  redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
+  
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model and other model data
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -451,50 +511,6 @@ $(document).ready(function() {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////
-  // Setup page layout.
-  //////////////////////////////////////////////////////////////////////////////////////////
-
-  // Layout resizable panels ...
-  $("#cca-model").layout(
-  {
-    applyDefaultStyles: false,
-    north:
-    {
-      size: 39,
-      resizable: false,
-    },
-    west:
-    {
-      size: $("#cca-model").width() / 2,
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if($("#barplot-table").data("cca-barplot")) {
-          $("#barplot-table").barplot("resize_canvas"); 
-        }
-      },
-    },
-    center:
-    {
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if($("#scatterplot").data("cca-scatterplot")) {
-          $("#scatterplot").scatterplot("option", {width: $("#scatterplot-pane").width(), height: $("#scatterplot-pane").height()}); 
-        }
-      },
-    },
-    south:
-    {
-      size: $("body").height() / 2,
-      resizeWhileDragging: false,
-      onresize_end: function()
-      {
-        if(self.cca_table)
-          self.cca_table.resize_canvas();
-      },
-    },
-  });
-
-  //////////////////////////////////////////////////////////////////////////////////////////
   // Render React components
   //////////////////////////////////////////////////////////////////////////////////////////
   function render_components()
@@ -513,8 +529,6 @@ $(document).ready(function() {
     const cca_scatterplot = 
       (<Provider store={store}>
         <CCAScatterplot
-          width={$("#scatterplot-pane").width()}
-          height={$("#scatterplot-pane").height()}
           border={{top: 40, right: 150, bottom: 40, left: 40}}
           label_offset={{x: 25, y: 25}}
           drag_threshold={3}
