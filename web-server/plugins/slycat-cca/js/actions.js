@@ -19,6 +19,8 @@ export const REQUEST_VARIABLE = 'REQUEST_VARIABLE';
 export const RECEIVE_VARIABLE = 'RECEIVE_VARIABLE';
 export const SET_SCATTERPLOT_WIDTH = 'SET_SCATTERPLOT_WIDTH';
 export const SET_SCATTERPLOT_HEIGHT = 'SET_SCATTERPLOT_HEIGHT';
+export const SET_TABLE_WIDTH = 'SET_TABLE_WIDTH';
+export const SET_TABLE_HEIGHT = 'SET_TABLE_HEIGHT';
 
 export function setVariableSelected(variable, state_label, trigger, e) {
   return function(dispatch, getState) {
@@ -205,6 +207,20 @@ export function setScatterplotWidth(width) {
 export function setScatterplotHeight(height) {
   return { 
   	type: SET_SCATTERPLOT_HEIGHT, 
+  	height,
+  }
+}
+
+export function setTableWidth(width) {
+  return { 
+  	type: SET_TABLE_WIDTH, 
+  	width,
+  }
+}
+
+export function setTableHeight(height) {
+  return { 
+  	type: SET_TABLE_HEIGHT, 
   	height,
   }
 }
