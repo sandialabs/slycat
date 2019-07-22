@@ -170,7 +170,7 @@ class Session(object):
       parsing_locks[self._mid] = threading.Lock()
 
     with parsing_locks[self._mid]:
-      cherrypy.log.error("got lock: %s" % self._mid)
+      #cherrypy.log.error("got lock: %s" % self._mid)
       database = slycat.web.server.database.couchdb.connect()
       model = database.get("model", self._mid)
 
@@ -183,10 +183,10 @@ class Session(object):
       files = []
       storage = path(self._uid)
       for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
-        cherrypy.log.error("Assembling %s" % file_dir)
+        # cherrypy.log.error("Assembling %s" % file_dir)
         file = ""
         for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
-          cherrypy.log.error(" Loading %s" % file_part)
+          # cherrypy.log.error(" Loading %s" % file_part)
           with open(file_part, "r") as f:
             file += f.read()
         files.append(file)
@@ -318,7 +318,7 @@ def _expire_session(uid):
 
 def _session_monitor():
   while True:
-    cherrypy.log.error("Upload session cleanup worker running.")
+    #cherrypy.log.error("Upload session cleanup worker running.")
     # Remove orphaned file storage (could happen if the server is restarted while an upload session is active).
     for storage in glob.glob(os.path.join(root(), "*")):
       if os.path.basename(storage) not in session_cache:

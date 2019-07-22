@@ -254,7 +254,7 @@ class Cache(object):
       # cherrypy.log.error("\nargs: %s    \nkwargs %s  \n%s \n%s" % (str(args),kwargs,fid,self.digest_hash(key)))
       #check if we have cached the result
       if key in self:
-        cherrypy.log.error("[CACHE] Found in cache")
+        #cherrypy.log.error("[CACHE] Found in cache")
         result = self[key]
         # adding a null guard
         if result is None:

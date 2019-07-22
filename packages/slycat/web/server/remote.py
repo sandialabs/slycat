@@ -1197,7 +1197,7 @@ def _expire_session(sid):
 
 def _session_monitor():
     while True:
-        cherrypy.log.error("Remote session cleanup worker running.")
+        #cherrypy.log.error("Remote session cleanup worker running.")
         with session_cache_lock:
             for sid in list(
                     session_cache.keys()):  # We make an explicit copy of the keys because we may be modifying the dict contents

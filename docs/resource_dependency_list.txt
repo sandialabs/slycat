@@ -133,7 +133,7 @@ couch-js-devel   1.8.5   http://www.mozilla.org/js/
 
 
 -Operating System & OS Support-
-Red Hat Enterprise Linux  7.5
+Red Hat Enterprise Linux  7.6
 httpd                2.4.6
 crypto-utils         2.4.1
 httpd-manual         2.4.6

@@ -12,13 +12,6 @@ export function dialog(params)
   {
     component.result = button;
     component.container.children().modal("hide");
-
-    // remove last instance of modal-backdrop
-    $("body").find(".modal-backdrop:last").remove();
-
-    // remove modal
-    component.container.remove();
-
   };
   component.title = ko.observable(params.title || "Alert");
   component.message = ko.observable(params.message || "");
@@ -30,6 +23,7 @@ export function dialog(params)
   component.container = $($.parseHTML(template)).appendTo($("body"));
   component.container.children().on("hidden.bs.modal", function()
   {
+    component.container.remove();
     if(params.callback)
       params.callback(component.result, component.value);
   });

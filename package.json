@@ -39,7 +39,7 @@
     "redux": "4.0.4",
     "redux-logger": "3.0.6",
     "redux-thunk": "2.3.0",
-    "slickgrid": "2.4.10",
+    "slickgrid": "2.4.9",
     "three": "0.106.2",
     "three-stl-loader": "1.0.6",
     "three-trackballcontrols": "0.0.8",
