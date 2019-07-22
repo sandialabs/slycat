@@ -90,6 +90,22 @@ class CCAScatterplot extends React.Component {
       this.render_data();
       this.render_selection();
     }
+    // When width changes
+    if(prevProps.width != this.props.width)
+    {
+      this.prep();
+      this.update_x();
+      this.render_data();
+      this.render_selection();
+    }
+    // When height changes
+    if(prevProps.height != this.props.height)
+    {
+      this.prep();
+      this.update_y();
+      this.render_data();
+      this.render_selection();
+    }
   }
 
   prep = () => {
@@ -440,6 +456,8 @@ const mapStateToProps = (state, ownProps) => {
     selection: state.simulations_selected,
     gradient: slycat_color_maps.get_gradient_data(state.colormap),
     background: slycat_color_maps.get_background(state.colormap).toString(),
+    width: state.derived.scatterplot_width,
+    height: state.derived.scatterplot_height,
   }
 };
 
