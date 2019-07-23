@@ -43,6 +43,8 @@ import {
   setScatterplotHeight,
   setTableHeight,
   setTableWidth,
+  setBarplotHeight,
+  setBarplotWidth,
 } from './actions'
 
 // Wait for document ready
@@ -79,6 +81,8 @@ $(document).ready(function() {
       // scatterplot_height: null, // Height of scatterplot
       // table_width: null, // Width of table
       // table_height: null, // Height of table
+      // barplot_width: null, // Width of barplot
+      // barplot_height: null, // Height of barplot
       column_data: { // Object that will hold the values for columns
         // 0: { // Column index
         //   isFetching: false, // Ajax request for data state
@@ -115,9 +119,19 @@ $(document).ready(function() {
       size: $("#cca-model").width() / 2,
       resizeWhileDragging: false,
       onresize_end: function() { 
-        // if($("#barplot-table").data("cca-barplot")) {
-        //   $("#barplot-table").barplot("resize_canvas"); 
-        // }
+        if(store)
+        {
+          store.dispatch(
+            setBarplotWidth(
+              $("#barplot-pane").width()
+            )
+          );
+          store.dispatch(
+            setBarplotHeight(
+              $("#barplot-pane").height()
+            )
+          );
+        }
       },
     },
     center:
@@ -166,6 +180,8 @@ $(document).ready(function() {
   redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
   redux_state_tree.derived.table_width = $("#table-pane").width();
   redux_state_tree.derived.table_height = $("#table-pane").height();
+  redux_state_tree.derived.barplot_width = $("#barplot-pane").width();
+  redux_state_tree.derived.barplot_height = $("#barplot-pane").height();
   
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model and other model data
