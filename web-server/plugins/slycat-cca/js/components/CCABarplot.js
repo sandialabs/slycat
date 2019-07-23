@@ -161,6 +161,11 @@ class CCABarplot extends React.Component {
     {
       this.scroll_selected_variable_into_view();
     }
+    // Resize
+    if(prevProps.width != this.props.width || prevProps.height != this.props.height)
+    {
+      this.resize_canvas();
+    }
   }
 
   sort_rows = () =>
@@ -557,6 +562,8 @@ const mapStateToProps = state => {
     wilks: state.derived.wilks,
     x_loadings: state.derived.x_loadings,
     y_loadings: state.derived.y_loadings,
+    width: state.derived.barplot_width,
+    height: state.derived.barplot_height,
   }
 };
 
