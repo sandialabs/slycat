@@ -14,6 +14,8 @@ import {
   SET_SCATTERPLOT_HEIGHT,
   SET_TABLE_WIDTH,
   SET_TABLE_HEIGHT,
+  SET_BARPLOT_WIDTH,
+  SET_BARPLOT_HEIGHT,
 } from './actions';
 import {
   SET_COLORMAP,
@@ -138,6 +140,20 @@ export default function cca_reducer(state = initialState, action) {
         derived: {
           ...state.derived,
           table_height: action.height,
+        }
+      })
+    case SET_BARPLOT_WIDTH:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          barplot_width: action.width,
+        }
+      })
+    case SET_BARPLOT_HEIGHT:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          barplot_height: action.height,
         }
       })
     

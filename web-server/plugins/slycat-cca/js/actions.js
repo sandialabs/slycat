@@ -21,6 +21,8 @@ export const SET_SCATTERPLOT_WIDTH = 'SET_SCATTERPLOT_WIDTH';
 export const SET_SCATTERPLOT_HEIGHT = 'SET_SCATTERPLOT_HEIGHT';
 export const SET_TABLE_WIDTH = 'SET_TABLE_WIDTH';
 export const SET_TABLE_HEIGHT = 'SET_TABLE_HEIGHT';
+export const SET_BARPLOT_WIDTH = 'SET_BARPLOT_WIDTH';
+export const SET_BARPLOT_HEIGHT = 'SET_BARPLOT_HEIGHT';
 
 export function setVariableSelected(variable, state_label, trigger, e) {
   return function(dispatch, getState) {
@@ -221,6 +223,20 @@ export function setTableWidth(width) {
 export function setTableHeight(height) {
   return { 
   	type: SET_TABLE_HEIGHT, 
+  	height,
+  }
+}
+
+export function setBarplotWidth(width) {
+  return { 
+  	type: SET_BARPLOT_WIDTH, 
+  	width,
+  }
+}
+
+export function setBarplotHeight(height) {
+  return { 
+  	type: SET_BARPLOT_HEIGHT, 
   	height,
   }
 }
