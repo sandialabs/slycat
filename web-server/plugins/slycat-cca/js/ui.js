@@ -1,6 +1,9 @@
-"use strict";
-/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
+/* eslint-disable no-undefined */
+/* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . 
+   Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, 
+   the U.S. Government  retains certain rights in this software. */
 
+import $ from 'jquery';
 import jquery_ui_css from "jquery-ui/themes/base/all.css";
 import slycat_additions_css from "css/slycat-additions.css";
 import ui_css from "../css/ui.css";
@@ -200,10 +203,12 @@ $(document).ready(function() {
           }
 
           // Reject closed with no results and failes models
-          if(model["state"] === "closed" && model["result"] === null)
+          if(model["state"] === "closed" && model["result"] === null) {
             reject("Closed with no result.");
-          if(model["result"] === "failed")
+          }
+          if(model["result"] === "failed") {
             reject("Failed.");
+          }
           
           // Otherwise resolve the promise
           resolve(model);
@@ -225,6 +230,7 @@ $(document).ready(function() {
     throw error;
   });
 
+  // Create a bookmarker and get state from it
   let bookmarker_promise = new Promise(function(resolve, reject){
     get_model_promise.then(function(){
       // Create the bookmarker now that we have the project
@@ -247,14 +253,30 @@ $(document).ready(function() {
         {
           let bookmark_state_tree = {};
           
-          bookmark["colormap"] !== undefined ? bookmark_state_tree.colormap = bookmark["colormap"] : null;
-          bookmark["simulation-selection"] !== undefined ? bookmark_state_tree.simulations_selected = bookmark["simulation-selection"] : null;
-          bookmark["cca-component"] !== undefined ? bookmark_state_tree.cca_component_selected = bookmark["cca-component"] : null;
-          bookmark["sort-cca-component"] !== undefined ? bookmark_state_tree.cca_component_sorted = bookmark["sort-cca-component"] : null;
-          bookmark["sort-direction-cca-component"] !== undefined ? bookmark_state_tree.cca_component_sort_direction = bookmark["sort-direction-cca-component"] : null;
-          bookmark["variable-selection"] !== undefined ? bookmark_state_tree.variable_selected = bookmark["variable-selection"] : null;
-          bookmark["sort-variable"] !== undefined ? bookmark_state_tree.variable_sorted = bookmark["sort-variable"] : null;
-          bookmark["sort-order"] !== undefined ? bookmark_state_tree.variable_sort_direction = bookmark["sort-order"] : null;
+          if (bookmark["colormap"] !== undefined) {
+            bookmark_state_tree.colormap = bookmark["colormap"];
+          }
+          if (bookmark["simulation-selection"] !== undefined) {
+            bookmark_state_tree.simulations_selected = bookmark["simulation-selection"];
+          }
+          if (bookmark["cca-component"] !== undefined) {
+            bookmark_state_tree.cca_component_selected = bookmark["cca-component"];
+          }
+          if (bookmark["sort-cca-component"] !== undefined) {
+            bookmark_state_tree.cca_component_sorted = bookmark["sort-cca-component"];
+          }
+          if (bookmark["sort-direction-cca-component"] !== undefined) {
+            bookmark_state_tree.cca_component_sort_direction = bookmark["sort-direction-cca-component"];
+          }
+          if (bookmark["variable-selection"] !== undefined) {
+            bookmark_state_tree.variable_selected = bookmark["variable-selection"];
+          }
+          if (bookmark["sort-variable"] !== undefined) {
+            bookmark_state_tree.variable_sorted = bookmark["sort-variable"];
+          }
+          if (bookmark["sort-order"] !== undefined) {
+            bookmark_state_tree.variable_sort_direction = bookmark["sort-order"];
+          }
 
           redux_state_tree = Object.assign({}, redux_state_tree, bookmark_state_tree);
         }
@@ -288,11 +310,12 @@ $(document).ready(function() {
     get_model_promise])
   .then(function(){
     let other_columns = [];
-    for(var i = 0; i != redux_state_tree.derived.table_metadata["column-count"] - 1; ++i)
+    for(let i = 0; i != redux_state_tree.derived.table_metadata["column-count"] - 1; ++i)
     {
       if($.inArray(i, redux_state_tree.derived.input_columns) == -1 
-         && $.inArray(i, redux_state_tree.derived.output_columns) == -1)
+         && $.inArray(i, redux_state_tree.derived.output_columns) == -1) {
         other_columns.push(i);
+      }
     }
     redux_state_tree.derived.other_columns = other_columns;
 
@@ -300,20 +323,24 @@ $(document).ready(function() {
     // Last column is the index, so it goes first
     color_variables.push(redux_state_tree.derived.table_metadata["column-count"] - 1);
     // Then we add inputs
-    for(var i = 0; i < redux_state_tree.derived.input_columns.length; i++)
+    for(let i = 0; i < redux_state_tree.derived.input_columns.length; i++)
     {
       color_variables.push(redux_state_tree.derived.input_columns[i]);
     }
     // Followed by outputs
-    for(var i = 0; i < redux_state_tree.derived.output_columns.length; i++)
+    for(let i = 0; i < redux_state_tree.derived.output_columns.length; i++)
     {
       color_variables.push(redux_state_tree.derived.output_columns[i]);
     }
     // Finally the others
-    for(var i = 0; i != redux_state_tree.derived.table_metadata["column-count"] - 1; ++i)
+    for(let i = 0; i != redux_state_tree.derived.table_metadata["column-count"] - 1; ++i)
     {
-      if($.inArray(i, redux_state_tree.derived.input_columns) == -1 && $.inArray(i, redux_state_tree.derived.output_columns) == -1 && redux_state_tree.derived.table_metadata["column-types"][i] != "string")
+      if($.inArray(i, redux_state_tree.derived.input_columns) == -1 
+        && $.inArray(i, redux_state_tree.derived.output_columns) == -1 
+        && redux_state_tree.derived.table_metadata["column-types"][i] != "string")
+      {
         color_variables.push(i);
+      }
     }
     redux_state_tree.derived.color_variables = color_variables;
   });
@@ -409,8 +436,9 @@ $(document).ready(function() {
           .then(function(){
             var count = redux_state_tree.derived.table_metadata["row-count"];
             let indices = new Int32Array(count);
-            for(var i = 0; i != count; ++i)
+            for(let i = 0; i != count; ++i) {
               indices[i] = i;
+            }
             redux_state_tree.derived.indices = indices;
             resolve();
           })
@@ -484,12 +512,15 @@ $(document).ready(function() {
   function setup_redux()
   {
     // If the model isn't ready or failed, we're done.
-    if(redux_state_tree.derived.model["state"] == "waiting" || redux_state_tree.derived.model["state"] == "running")
+    if(redux_state_tree.derived.model["state"] == "waiting" || redux_state_tree.derived.model["state"] == "running") {
       return;
-    if(redux_state_tree.derived.model["state"] == "closed" && redux_state_tree.derived.model["result"] === null)
+    }
+    if(redux_state_tree.derived.model["state"] == "closed" && redux_state_tree.derived.model["result"] === null) {
       return;
-    if(redux_state_tree.derived.model["result"] == "failed")
+    }
+    if(redux_state_tree.derived.model["result"] == "failed") {
       return;
+    }
     
     // Create logger for redux
     const loggerMiddleware = createLogger();
@@ -523,6 +554,7 @@ $(document).ready(function() {
         // in the bookmark, just UI state.
         // Passing 'undefined' removes it from bookmark. Passing 'null' actually
         // sets it to null, so I think it's better to remove it entirely.
+        // eslint-disable-next-line no-undefined
         { ...store.getState(), derived: undefined }
       });
     };
@@ -580,7 +612,7 @@ $(document).ready(function() {
     const cca_table = 
       (<Provider store={store}>
         <CCATable 
-          aid="data-table"
+          aid='data-table'
         />
       </Provider>)
     ;
