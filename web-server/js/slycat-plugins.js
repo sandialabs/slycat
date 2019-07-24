@@ -13,7 +13,6 @@ import 'plugins/slycat-project-wizards/slycat-project-wizards';
 import 'plugins/slycat-parameter-image/slycat-parameter-image';
 import 'plugins/slycat-timeseries-model/slycat-timeseries-model';
 import 'plugins/slycat-cca/slycat-cca';
-import 'plugins/slycat-cca-old/slycat-cca-old';
 import 'plugins/slycat-parameter-image-plus-model/slycat-parameter-image-plus-model';
 import 'plugins/slycat-video-swarm/vs-model';
 import '../../../dial-a-cluster/plugin/dial-a-cluster-model';
@@ -39,9 +38,6 @@ export async function loadTemplate(name, format) {
       break;
     case "cca":
       html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca/ui.html');
-      break;
-    case "cca-old":
-      html = await import(/* webpackChunkName: "ui_cca_template" */ 'plugins/slycat-cca-old/ui.html');
       break;
     case "parameter-image-plus":
       html = await import(/* webpackChunkName: "ui_parameter_image_plus_template" */ 'plugins/slycat-parameter-image-plus-model/ui.html');
@@ -88,9 +84,6 @@ export async function loadModule(name) {
       break;
     case "cca":
       module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca/js/ui.js');
-      break;
-    case "cca-old":
-      module = await import(/* webpackChunkName: "ui_cca_module" */ 'plugins/slycat-cca-old/js/ui.js');
       break;
     case "parameter-image-plus":
       module = await import(/* webpackChunkName: "ui_parameter_image_plus_module" */ 'plugins/slycat-parameter-image-plus-model/js/ui.js');
