@@ -112,11 +112,11 @@ def register_slycat_plugin(context):
         :return:
         """
         sid = None
-        cherrypy.log.error(str(hostname))
+        #cherrypy.log.error(str(hostname))
         try:
-            cherrypy.log.error("getting db")
+            #cherrypy.log.error("getting db")
             database = slycat.web.server.database.couchdb.connect()
-            cherrypy.log.error("getting session for %s" % model["creator"])
+            #cherrypy.log.error("getting session for %s" % model["creator"])
             sessions = [session for session in database.scan("slycat/sessions") if
                         session["creator"] == model["creator"]]
             if len(sessions) > 1:
@@ -124,7 +124,7 @@ def register_slycat_plugin(context):
                 raise Exception("to many user sessions")
             for host_session in sessions[0]["sessions"]:  # our session should be in index 0 or else something
                 # went wrong
-                cherrypy.log.error("hostname %s" % str(host_session))
+                #cherrypy.log.error("hostname %s" % str(host_session))
                 if host_session["hostname"] == hostname:
                     sid = host_session["sid"]
                     break
@@ -146,7 +146,7 @@ def register_slycat_plugin(context):
             raise Exception(
                 "data was computed, but can't be pulled over because the server needs an active ssh session to the "
                 "host in order to get your data")
-        cherrypy.log.error("got sid")
+        #cherrypy.log.error("got sid")
         return sid
 
     def compute(model_id, password):
@@ -163,7 +163,7 @@ def register_slycat_plugin(context):
         :param username:
         :param password:
         """
-        cherrypy.log.error("in thread")
+        #cherrypy.log.error("in thread")
         # workdir += "/slycat/pickle"  # route to the slycat directory
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model_id)
@@ -195,11 +195,11 @@ def register_slycat_plugin(context):
                 # get an active session
                 sid = get_sid(hostname, model)
 
-                cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s" % (
-                    sid, uid, workdir, hostname, username))
+                #cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s" % (
+                #    sid, uid, workdir, hostname, username))
                 inputs = get_remote_file_server(model["creator"], sid,
                                                 "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
-                cherrypy.log.error("got inputs")
+                #cherrypy.log.error("got inputs")
                 inputs = pickle.loads(inputs)
 
                 slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
@@ -478,7 +478,7 @@ def register_slycat_plugin(context):
             :return:
             """
             # giving compute a none password as we should already have a session at this point
-            cherrypy.log.error("calling compute")
+            #cherrypy.log.error("calling compute")
             compute(mid, password=None)
             finish(mid)
 
