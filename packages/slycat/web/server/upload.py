@@ -334,7 +334,7 @@ def _session_monitor():
 
 def _start_session_cleanup_worker():
   if _start_session_cleanup_worker.thread is None:
-    cherrypy.log.error("Starting upload session cleanup worker.")
+    #cherrypy.log.error("Starting upload session cleanup worker.")
     _start_session_cleanup_worker.thread = threading.Thread(name="Upload Monitor", target=_session_monitor)
     _start_session_cleanup_worker.thread.daemon = True
     _start_session_cleanup_worker.thread.start()
