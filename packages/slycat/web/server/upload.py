@@ -183,10 +183,10 @@ class Session(object):
       files = []
       storage = path(self._uid)
       for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
-        cherrypy.log.error("Assembling %s" % file_dir)
+        # cherrypy.log.error("Assembling %s" % file_dir)
         file = ""
         for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
-          cherrypy.log.error(" Loading %s" % file_part)
+          # cherrypy.log.error(" Loading %s" % file_part)
           with open(file_part, "r") as f:
             file += f.read()
         files.append(file)
