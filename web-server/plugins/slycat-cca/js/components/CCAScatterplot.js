@@ -152,14 +152,25 @@ class CCAScatterplot extends React.Component {
           this.main_context.drawImage(this.data_canvas, 0, 0);
           this.main_context.drawImage(this.selection_canvas, 0, 0);
           this.main_context.fillStyle = "rgba(255, 255, 0, 0.3)";
-          this.main_context.fillRect(this.start_drag[0], this.start_drag[1], this.end_drag[0] - this.start_drag[0], this.end_drag[1] - this.start_drag[1]);
+          this.main_context.fillRect(
+            this.start_drag[0], 
+            this.start_drag[1], 
+            this.end_drag[0] - this.start_drag[0], 
+            this.end_drag[1] - this.start_drag[1]
+          );
           this.main_context.strokeStyle = "rgb(255, 255, 0)";
           this.main_context.lineWidth = 2.0;
-          this.main_context.strokeRect(this.start_drag[0], this.start_drag[1], this.end_drag[0] - this.start_drag[0], this.end_drag[1] - this.start_drag[1]);
+          this.main_context.strokeRect(
+            this.start_drag[0], 
+            this.start_drag[1], 
+            this.end_drag[0] - this.start_drag[0], 
+            this.end_drag[1] - this.start_drag[1]
+          );
         }
         else
         {
-          if(Math.abs(this._offsetX(e) - this.start_drag[0]) > this.props.drag_threshold || Math.abs(this._offsetY(e) - this.start_drag[1]) > this.props.drag_threshold) // Start dragging ...
+          if(Math.abs(this._offsetX(e) - this.start_drag[0]) > this.props.drag_threshold 
+            || Math.abs(this._offsetY(e) - this.start_drag[1]) > this.props.drag_threshold) // Start dragging ...
           {
             this.end_drag = [this._offsetX(e), this._offsetY(e)];
           }
@@ -182,18 +193,18 @@ class CCAScatterplot extends React.Component {
     // console.log("e.target: " + e.target);
     // console.log("e.currentTarget: " + e.currentTarget);
 
-    var x = this.props.x;
-    var y = this.props.y;
-    var count = x.length;
+    let x = this.props.x;
+    let y = this.props.y;
+    let count = x.length;
 
     if(this.start_drag && this.end_drag) // Rubber-band selection ...
     {
-      var x1 = this.x_scale.invert(Math.min(this.start_drag[0], this.end_drag[0]));
-      var y1 = this.y_scale.invert(Math.max(this.start_drag[1], this.end_drag[1]));
-      var x2 = this.x_scale.invert(Math.max(this.start_drag[0], this.end_drag[0]));
-      var y2 = this.y_scale.invert(Math.min(this.start_drag[1], this.end_drag[1]));
+      let x1 = this.x_scale.invert(Math.min(this.start_drag[0], this.end_drag[0]));
+      let y1 = this.y_scale.invert(Math.max(this.start_drag[1], this.end_drag[1]));
+      let x2 = this.x_scale.invert(Math.max(this.start_drag[0], this.end_drag[0]));
+      let y2 = this.y_scale.invert(Math.min(this.start_drag[1], this.end_drag[1]));
 
-      for(var i = 0; i != count; ++i)
+      for(let i = 0; i != count; ++i)
       {
         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
         {
@@ -209,12 +220,12 @@ class CCAScatterplot extends React.Component {
     }
     else // Pick selection ...
     {
-      var x1 = this.x_scale.invert(this._offsetX(e) - this.props.pick_distance);
-      var y1 = this.y_scale.invert(this._offsetY(e) + this.props.pick_distance);
-      var x2 = this.x_scale.invert(this._offsetX(e) + this.props.pick_distance);
-      var y2 = this.y_scale.invert(this._offsetY(e) - this.props.pick_distance);
+      let x1 = this.x_scale.invert(this._offsetX(e) - this.props.pick_distance);
+      let y1 = this.y_scale.invert(this._offsetY(e) + this.props.pick_distance);
+      let x2 = this.x_scale.invert(this._offsetX(e) + this.props.pick_distance);
+      let y2 = this.y_scale.invert(this._offsetY(e) - this.props.pick_distance);
 
-      for(var i = count-1; i > -1; i--)
+      for(let i = count-1; i > -1; i--)
       {
         if(x1 <= x[i] && x[i] <= x2 && y1 <= y[i] && y[i] <= y2)
         {
@@ -236,8 +247,8 @@ class CCAScatterplot extends React.Component {
 
   render_data = () =>
   {
-    var width = this.main_canvas.width;
-    var height = this.main_canvas.height;
+    let width = this.main_canvas.width;
+    let height = this.main_canvas.height;
 
     this.data_context.setTransform(1, 0, 0, 1, 0, 0);
     this.data_context.clearRect(0, 0, width, height);
@@ -266,17 +277,17 @@ class CCAScatterplot extends React.Component {
     this.data_context.fillText("Output Metavariable", 0, 0);
     this.data_context.restore();
 
-    var count = this.props.x.length;
-    var x = this.props.x;
-    var y = this.props.y;
-    var v = this.props.v;
-    var indices = this.props.indices;
-    var color = this.color;
+    let count = this.props.x.length;
+    let x = this.props.x;
+    let y = this.props.y;
+    let v = this.props.v;
+    let indices = this.props.indices;
+    let color = this.color;
 
     // Draw points using rectangles ...
     if(count < 50000)
     {
-      var cx, cy,
+      let cx, cy,
        square_size = 8,
        border_width = 1,
        half_border_width = border_width / 2,
@@ -285,7 +296,7 @@ class CCAScatterplot extends React.Component {
        strokeWidth = square_size - border_width,
        strokeHeight = strokeWidth;
 
-      for(var i = 0; i != count; ++i)
+      for(let i = 0; i != count; ++i)
       {
         cx = Math.round( this.x_scale(x[i]) - (square_size/2) - border_width );
         cy = Math.round( this.y_scale(y[i]) - (square_size/2) - border_width );
@@ -297,9 +308,9 @@ class CCAScatterplot extends React.Component {
     // Draw points using tiny rectangles ...
     else
     {
-      var size = 2;
-      var offset = size / 2;
-      for(var i = 0; i != count; ++i)
+      let size = 2;
+      let offset = size / 2;
+      for(let i = 0; i != count; ++i)
       {
         this.data_context.fillStyle = color(v[indices[i]]);
         this.data_context.fillRect(Math.round(this.x_scale(x[i]) - offset), Math.round(this.y_scale(y[i]) - offset), size, size);
@@ -356,12 +367,18 @@ class CCAScatterplot extends React.Component {
 
   update_x = () =>
   {
-    this.x_scale = d3.scale.linear().domain([d3.min(this.props.x), d3.max(this.props.x)]).range([0 + this.props.border.left, this.main_canvas.width - this.props.border.right]);
+    this.x_scale = d3.scale.linear()
+      .domain([d3.min(this.props.x), d3.max(this.props.x)])
+      .range([0 + this.props.border.left, this.main_canvas.width - this.props.border.right])
+      ;
   }
 
   update_y = () =>
   {
-    this.y_scale = d3.scale.linear().domain([d3.min(this.props.y), d3.max(this.props.y)]).range([this.main_canvas.height - this.props.border.bottom, 0 + this.props.border.top]);
+    this.y_scale = d3.scale.linear()
+      .domain([d3.min(this.props.y), d3.max(this.props.y)])
+      .range([this.main_canvas.height - this.props.border.bottom, 0 + this.props.border.top])
+      ;
   }
 
   update_color_domain = () =>
@@ -372,8 +389,9 @@ class CCAScatterplot extends React.Component {
     var v_max = d3.max(this.props.v);
     var domain = []
     var domain_scale = d3.scale.linear().domain([0, this.color.domain().length]).range([v_min, v_max]);
-    for(var i in this.color.domain())
+    for(var i in this.color.domain()) {
       domain.push(domain_scale(i));
+    }
     this.color.domain(domain);
   }
 
@@ -381,8 +399,9 @@ class CCAScatterplot extends React.Component {
   {
     this.inverse_indices = {};
     var count = this.props.indices.length;
-    for(var i = 0; i != count; ++i)
+    for(var i = 0; i != count; ++i) {
       this.inverse_indices[this.props.indices[i]] = i;
+    }
   }
 
   _offsetX = (e) =>
@@ -416,7 +435,7 @@ class CCAScatterplot extends React.Component {
             onMouseMove={this.handle_mouse_move}
             onMouseUp={this.handle_mouse_up}
           >
-            <canvas id="scatterplot" 
+            <canvas id='scatterplot' 
               ref={this.cca_scatterplot} 
               width={this.props.width} 
               height={this.props.height} 
