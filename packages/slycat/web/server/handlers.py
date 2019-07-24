@@ -351,13 +351,13 @@ def get_project_file_names(pid):
     if not project_datas:
         cherrypy.log.error("The project_datas list is empty.")
     else:
-        cherrypy.log.error("Files found.")
+        #cherrypy.log.error("Files found.")
         for item in project_datas:
             if item["project"] == pid:
                 # data_id = item["_id"]
                 temp_json_data = {"file_name": item["file_name"]}
-                cherrypy.log.error("The file name is: ")
-                cherrypy.log.error(str(temp_json_data))
+                #cherrypy.log.error("The file name is: ")
+                #cherrypy.log.error(str(temp_json_data))
                 data.append(temp_json_data)
 
     json_data = json.dumps(data)
