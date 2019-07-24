@@ -23,7 +23,7 @@ def parse_file(file):
         except ValueError:
             return False
 
-    cherrypy.log.error("parsing:::::::")
+    #cherrypy.log.error("parsing:::::::")
     rows = [row.split() for row in StringIO.StringIO(file)]
     if len(rows) < 2:
         cherrypy.log.error("slycat-dakota-parser.py parse_file", "File must contain at least two rows.")
