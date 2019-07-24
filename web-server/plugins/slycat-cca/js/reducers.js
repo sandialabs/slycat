@@ -47,7 +47,8 @@ export default function cca_reducer(state = initialState, action) {
           ...state.derived,
           column_data: {
             ...state.derived.column_data,
-            [action.variable]: { // We use ES6 computed property syntax so we can update column_data[action.variable] with Object.assign() in a concise way
+            // We use ES6 computed property syntax so we can update column_data[action.variable] with Object.assign() in a concise way
+            [action.variable]: {
               isFetching: true,
             }
           }
@@ -59,7 +60,8 @@ export default function cca_reducer(state = initialState, action) {
           ...state.derived,
           column_data: {
             ...state.derived.column_data,
-            [action.variable]: { // We use ES6 computed property syntax so we can update column_data[action.variable] with Object.assign() in a concise way
+            // We use ES6 computed property syntax so we can update column_data[action.variable] with Object.assign() in a concise way
+            [action.variable]: {
               isFetching: true,
               values: action.values,
             }
