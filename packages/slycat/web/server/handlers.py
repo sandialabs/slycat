@@ -351,13 +351,13 @@ def get_project_file_names(pid):
     if not project_datas:
         cherrypy.log.error("The project_datas list is empty.")
     else:
-        cherrypy.log.error("Files found.")
+        #cherrypy.log.error("Files found.")
         for item in project_datas:
             if item["project"] == pid:
                 # data_id = item["_id"]
                 temp_json_data = {"file_name": item["file_name"]}
-                cherrypy.log.error("The file name is: ")
-                cherrypy.log.error(str(temp_json_data))
+                #cherrypy.log.error("The file name is: ")
+                #cherrypy.log.error(str(temp_json_data))
                 data.append(temp_json_data)
 
     json_data = json.dumps(data)
@@ -1100,8 +1100,8 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                     if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
                         raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
                     for hyperslice in attribute.hyperslices():
-                        cherrypy.log.error(
-                            "Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
+                        #cherrypy.log.error(
+                        #    "Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
 
                         # We have to convert our hyperslice into a shape with explicit extents so we can compute
                         # how many bytes to extract from the input data.

@@ -74,6 +74,9 @@ export default class ControlsButtonUpdateTable extends Component {
   };
 
   back = () => {
+    this.setState({failedColumnCheckMessage:['This upload attempt has been rejected.\n'], passedColumnCheck:true, 
+                    progressBarHidden:true, progressBarProgress:0});
+
     if (this.state.visible_tab === "1") {
       this.setState({visible_tab: "0", selectedNameIndex: 0});
     }
