@@ -24,13 +24,6 @@ export const SET_TABLE_HEIGHT = 'SET_TABLE_HEIGHT';
 export const SET_BARPLOT_WIDTH = 'SET_BARPLOT_WIDTH';
 export const SET_BARPLOT_HEIGHT = 'SET_BARPLOT_HEIGHT';
 
-export function setVariableSelected(variable, state_label, trigger, e) {
-  return function(dispatch, getState) {
-    dispatch(selectVariable(variable));
-    dispatch(fetchVariableValuesIfNeeded(variable));
-  }
-}
-
 function selectVariable(variable) {
   return { 
     type: SET_VARIABLE_SELECTED, 
@@ -94,9 +87,10 @@ function fetchVariableValues(variable) {
     {
       let count = getState().derived.table_metadata["row-count"];
       let v = new Float64Array(count);
-      for(var i = 0; i != count; ++i)
+      for(let i = 0; i != count; ++i) {
         v[i] = i;
-        dispatch(receiveVariable(variable, v))
+      }
+      dispatch(receiveVariable(variable, v))
     }
     // Otherwise get them through the API
     else
@@ -148,6 +142,13 @@ export function fetchVariableValuesIfNeeded(variable) {
       // Let the calling code know there's nothing to wait for.
       return Promise.resolve()
     }
+  }
+}
+
+export function setVariableSelected(variable, state_label, trigger, e) {
+  return function(dispatch, getState) {
+    dispatch(selectVariable(variable));
+    dispatch(fetchVariableValuesIfNeeded(variable));
   }
 }
 
