@@ -1100,8 +1100,8 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                     if not isinstance(attribute.expression, slycat.hyperchunks.grammar.AttributeIndex):
                         raise cherrypy.HTTPError("400 Cannot assign data to computed attributes.")
                     for hyperslice in attribute.hyperslices():
-                        cherrypy.log.error(
-                            "Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
+                        #cherrypy.log.error(
+                        #    "Writing %s/%s/%s/%s" % (aid, array.index, attribute.expression.index, hyperslice))
 
                         # We have to convert our hyperslice into a shape with explicit extents so we can compute
                         # how many bytes to extract from the input data.
