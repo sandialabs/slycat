@@ -213,7 +213,7 @@ class Session(object):
                 raise cherrypy.HTTPError(400)
 
             # parses the useful information from job status
-            cherrypy.log.error("response state:%s" % response["output"])
+            #cherrypy.log.error("response state:%s" % response["output"])
             status = {
                 "state": response["output"]
             }
