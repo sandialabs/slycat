@@ -285,10 +285,6 @@ $(document).ready(function() {
     })
   });
 
-  bookmarker_promise.then(function(bookmark){
-    console.log('bookmarker_promise then: ' + bookmark);
-  });
-
   // Load data table metadata.
   let table_metadata_promise = new Promise(function(resolve, reject) {
     client.get_model_table_metadata({
