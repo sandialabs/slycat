@@ -1,0 +1,210 @@
+#dac-model
+{
+  	font-family: sans-serif;
+  	font-size: 100%;
+}
+
+.dac-model-content {
+	display: none;
+}
+
+/* no border for sliding bars */
+.ui-layout-pane
+{
+	border: 0px !important;
+	padding: 0px !important;
+}
+
+/***************************/
+/* mds scatter plot styles */
+/***************************/
+
+/* no scroll bars for scatter plot */
+#dac-mds-pane
+{
+	overflow: hidden !important;
+}
+
+/* mds buttons */
+#dac-scatter-select-buttons
+{
+	/*margin: 3px 3px 3px 3px;
+	display: inline-block;*/
+}
+
+/* difference buttons */
+{
+    margin: 3px 3px 3px 3px;
+    display: inline-block;
+}
+
+/* difference sync indicator */
+#dac-selection-synced
+{
+    color: green;
+    display: none;
+    vertical-align: center;
+}
+
+#dac-selection-not-synced
+{
+    color: orange;
+    display: none;
+}
+
+#dac-scatter-select
+{
+	margin: 6px 3px 3px 3px;
+	float: right;
+	vertical-align: center;
+	font-size: 12px;
+}
+
+.brush .extent
+{
+	fill-opacity: 0.1;
+	stroke: #fff;
+	shape-rendering: cripsEdges;
+}
+
+/* width of point outlines in scatter plot */
+#dac-mds-scatterplot
+{
+	stroke-width: 1px;
+}
+
+/*****************************/
+/* time series plots styling */
+/*****************************/
+
+/* no scroll bars for time series plots */
+#dac-plots
+{
+	overflow: hidden !important;
+	text-align: right;
+}
+
+/* wrapper around controls above each plot*/
+.dac-plot-controls
+{
+	white-space: nowrap;
+}
+
+/* low resolution indicator */
+.dac-low-resolution-plot
+{
+    color: orange;
+    display: none;
+}
+
+/* full resolution indicator */
+.dac-full-resolution-plot
+{
+    color: green;
+    display: none;
+}
+
+/* link check boxes for zooming */
+.dac-link-plots
+{
+    float:left;
+    margin: 6px 3px 0px 3px;
+}
+
+/* warning for too many plots in selection */
+.dac-plots-not-displayed
+{
+    display: none;
+}
+
+.dac-plots-displayed
+{
+    color: green;
+    display: none;
+}
+
+/* margins around pull down menus */
+.dac-select
+{
+	margin: 3px 3px 3px 0px;
+	border: 1px solid #c1c1c1;
+    padding: 4px 20px;
+    border-radius: 3px;
+}
+
+/* axis styles */
+.axis path,
+.axis line {
+    fill: none;
+    stroke: gray;
+    shape-rendering: crispEdges;
+}
+
+/* tick mark font size */
+.axis text {
+    font-size: 9px;
+}
+
+/* axis labels font size */
+.dac-plot
+{
+	font-size: 10px;
+}
+
+/************************/
+/* alpha slider styling */
+/************************/
+
+#dac-alpha-sliders
+{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+.dac-alpha-slider
+{
+    border: 1px solid #d1d1d1;
+    padding: 3px 15px;
+    border-radius: 5px;
+    margin: 3px 3px 3px 3px;
+    overflow: hidden;
+}
+
+.dac-alpha-slider label
+{
+	vertical-align: middle;
+	padding: 0px;
+	margin: 0px;
+	font-size: 12px;
+}
+
+.dac-alpha-slider input
+{
+	vertical-align: middle;
+	padding: 0px;
+	margin: 0px;
+	float: right;
+	width: 100%;
+}
+
+/************************/
+/* alpha button styling */
+/************************/
+
+#dac-alpha-buttons
+{
+	text-align: right;
+	margin: 3px 3px 3px 3px;
+}
+
+#dac-alpha-buttons button
+{
+	/*padding:3px 15px;*/
+	/*overflow:hidden;*/
+	/*border: 1px solid #d1d1d1;*/
+	/*margin: 1px;*/
+	font-size: 12px;
+	width: 40px;
+}

@@ -1,0 +1,133 @@
+<!-- DAC wizard template, modeled on the CCA wizard
+
+S. Martin
+4/6/2017
+
+-->
+
+<div class="modal-header">
+    <h3 class="modal-title">Dial-A-Cluster Model Table</h3>
+    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!-- Organizes the tabs in the input wizard. -->
+<div class="modal-body">
+    <ul class="nav nav-pills">
+        <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Edit Table</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: dac_add_remove() == 'add-freetext'"><a class="nav-link">Free Text Column</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: dac_add_remove() == 'add-categorical'"><a class="nav-link">Categorical Column</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: dac_add_remove() == 'remove-column'"><a class="nav-link">Remove Column</a></li>
+    </ul>
+
+    <!-- This tab lets the user select add or remove column. -->
+    <div class="tab-content">
+    <div data-bind="visible:tab() == 0">
+
+        <label>Would you like to add or remove a column? <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Once you add columns with this wizard (or a template), you will no longer be able to add columns using templates from other models."></i>
+        </label></label>
+        <div class="form-check" style="margin-left: 15px;">
+        <label>
+            <input type="radio" name="local-or-remote-radios" value="add-freetext" data-bind="checked: dac_add_remove">
+            Add free text column
+        </label>
+        </div>
+        <div class="form-check" style="margin-left: 15px;">
+        <label>
+            <input type="radio" name="local-or-remote-radios" value="add-categorical" data-bind="checked: dac_add_remove">
+            Add categorical column
+        </label>
+        </div>
+        <div class="form-check" id="dac-table-wizard-remove-cols-label" style="margin-left: 15px; color:grey">
+        <label>
+            <input type="radio" id="dac-table-wizard-remove-cols-radio" name="local-or-remote-radios" value="remove-column"
+                   disabled data-bind="checked: dac_add_remove">
+            Remove column <i id="dac-table-wizard-remove-help" class="fa fa-question-circle inline-help" aria-hidden="true" title="Original meta data is not removable, so this option is only available if columns have already been added using this wizard."></i>
+        </label>
+        </div>
+
+    </div>
+
+    <!-- This tab names a free text column. -->
+    <div data-bind="visible:tab() == 1">
+
+        <label>Name the new free text column.
+        </label>
+
+        <div style="margin-top: 15px;">
+              <input class="form-control" type="text" placeholder="New Free Text Column"
+                     data-bind="value: dac_freetext_name"></input>
+        </div>
+
+    </div>
+
+    <!-- Names and provides values for a categorical column. -->
+    <div data-bind="visible:tab() == 2" class="form-horizontal">
+
+        <label>Name the new categorical column.
+        </label>
+
+        <div style="margin-bottom: 20px">
+              <input class="form-control" type="text" placeholder="New Categorical Column"
+                     data-bind="value: dac_categorical_name"></input>
+        </div>
+
+        <label>Select categories for the new column.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: dac_categories,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+
+        <div style="margin-top: 20px">
+            <label>Add a new cateogry.
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                    title='To add a new category, type a name here and use the "Add Category" button below.'></i>
+            </label>
+        </div>
+        <div>
+              <input class="form-control" type="text" placeholder="New Category"
+                     data-bind="value: dac_new_category_name"></input>
+         </div>
+
+        <div style="margin-top: 20px">
+        <label>Upload a list of categories. <i class="fa fa-question-circle inline-help" aria-hidden="true" title='To add multiple categories, select a text file and use the "Upload Categories" button below. The text file should have the format of one category per line.'></i>
+        </label>
+        <slycat-local-browser params="
+            selection:browser_category_list.selection,
+            progress:browser_category_list.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:parser_cat_list_file,category:'dac-cat-file'"></slycat-parser-controls>
+        </div>
+
+    </div>
+
+    <!-- Remove column, if added by this wizard. -->
+    <div data-bind="visible:tab() == 3">
+
+        <label>Select columns to remove.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the remove switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: dac_remove_cols,
+            properties: [{name: 'Remove', type: 'bool'}]
+        "></slycat-table-ingestion>
+
+        <label style="color:red; margin-top:15px">NOTE: Once a column has been removed, it cannot be recovered!</label>
+    </div>
+
+    </div>
+</div>
+
+<!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
+     to call when the buttons are pressed. -->
+<div class="modal-footer">
+    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 1,click:freetext_finish"><i class="fa fa-spinner fa-pulse"></i> Finish & Reload Model</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 2,click:add_category">Add Category</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 2,click:upload_categories">Upload Categories</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 2,click:categorical_finish">Finish & Reload Model</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 3,click:remove_finish"><i class="fa fa-spinner fa-pulse"></i> Finish & Reload Model</button>
+</div>

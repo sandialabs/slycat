@@ -1,0 +1,73 @@
+<!-- DAC wizard template, modeled on the CCA wizard
+
+S. Martin
+4/6/2017
+
+-->
+
+<div class="modal-header">
+    <h3 class="modal-title">Dial-A-Cluster Combined Model</h3>
+    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!-- Organizes the tabs in the input wizard. -->
+<div class="modal-body">
+    <ul class="nav nav-pills">
+        <li class="nav-item" data-bind="css:{active:tab() == 0}" class="btn-secondary"><a class="nav-link">Model Type</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Choose Models</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 2}"><a class="nav-link">Name Model</a></li>
+    </ul>
+
+    <!-- This tab lets the user select whether or not the file to upload is on the local
+       computer or a remote computer. -->
+    <div class="tab-content">
+    <div data-bind="visible:tab() == 0">
+        <div class="form-check" style="margin-left: 15px;">
+        <label>
+            <input type="radio" name="local-or-remote-radios" id="local-radio" value="new" data-bind="checked: dac_model_type">
+            Re-compute new model.
+        </label>
+        </div>
+        <div class="form-check" style="margin-left: 15px;">
+        <label>
+            <input type="radio" name="local-or-remote-radios" id="remote-radio" value="proj" data-bind="checked: dac_model_type">
+            <text id="dac-add-data-project-model">Project onto this model.</text>
+        </label>
+        </div>
+    </div>
+
+
+    <div data-bind="visible:tab() == 1">
+        <label><text id="dac-add-data-select-model">Select models to combine with this model.</text>
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: model_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+    </div>
+
+
+    <!-- Inputs the name of the model (final tab). -->
+    <div data-bind="visible:tab() == 2">
+        <form class="form-horizontal" role="form" onsubmit="return false">
+            <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+        </form>
+    </div>
+
+    </div>
+</div>
+
+<!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
+     to call when the buttons are pressed. -->
+<div class="modal-footer">
+    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click:back">Back</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
+    <button class="btn btn-primary dac-check-compatibility-continue"
+            data-bind="visible:tab() == 1,click:check_models"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary dac-launch-thread"
+            data-bind="visible:tab() == 2,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
+
+</div>

@@ -1,0 +1,208 @@
+<!-- 
+Dial-A-Cluster
+
+S. Martin
+4/16/2015
+-->
+
+<div id="dac-model" style="-webkit-flex:1; flex:1;">
+
+	<div id="dac-progress-feedback" class="bootstrap-styles" style="margin: 20px">
+
+		<label>Data is being processed for the model (it is safe to close the browser):</label>
+		<div class="progress" style="margin-bottom: 15px">
+			<div id="dac_processing_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+				 aria-valuemin="0"
+				 aria-valuemax="100">
+			</div>
+		</div>
+
+		<label>Process Results (to pause updates click on text box, to resume click off text box):</label>
+		<textarea id="dac_processing_textarea" class="form-control" readonly rows="20" style="resize:vertical"></textarea>
+
+	</div>
+
+	<div class="ui-layout-center dac-model-content">
+
+		<div class="ui-layout-center" id="dac-control-bar-scatter-plot">
+
+			<div class="ui-layout-north">
+		
+				<!-- MDS Scatter Plot Buttons (above scatter plot)-->
+				<div class="bootstrap-styles">
+			
+					<div class="btn-group btn-group-toggle ml-1 mt-1" data-toggle="buttons" id="dac-scatter-select-buttons">
+						<label class="btn btn-outline-secondary btn-sm"
+							id="dac-scatter-button-sel-1" 
+							title="Select group 1. Use shift to add to group.">
+
+							<input type="radio" name="options" autocomplete="off"
+								value="selection_1"><b style="padding:2px 5px 1px;border:dashed 2px">1</b></input>
+						</label>
+						<label class="btn btn-outline-secondary btn-sm"
+							id="dac-scatter-button-sel-2" 
+							title="Select group 2. Use shift to add to group.">
+							<input type="radio" name="options" autocomplete="off"
+								value="selection_2"><b style="padding:2px 5px 1px;border:dashed 2px">2</b></input>
+						</label>
+						<label class="btn btn-outline-secondary btn-sm"
+							id="dac-scatter-button-subset" 
+							title="Select subset for all analysis. Use shift to exclude subset.">
+							<input type="radio" name="options" autocomplete="off"
+								value="subset"><b>&sube;</b></input>
+						</label>
+						<label class="btn btn-outline-secondary btn-sm"
+							id="dac-scatter-button-zoom" title="Zoom for scatter plot.">
+							<input type="radio" name="options" autocomplete="off"
+								value="zoom"><i class="fa fa-search"></i></input>
+						</label>
+        			</div>
+
+					<div class="btn-group mt-1" id="dac-difference-buttons">
+						<button id="dac-previous-three-button" class="btn btn-outline-secondary btn-sm disabled"
+							   title="Previous three most different plots.">
+							<i class="fa fa-chevron-left" aria-hidden="true"></i>
+						</button>
+						<button id="dac-scatter-diff-button" class="btn btn-outline-secondary btn-sm"
+							title="Order variable plots to maximize difference between selection 1 and selection 2."><i class="fa fa-minus"></i>
+						</button>
+						<button id="dac-next-three-button" class="btn btn-outline-secondary btn-sm disabled"
+							   title="Next three most different plots.">
+							<i class="fa fa-chevron-right" aria-hidden="true"></i>
+						</button>
+					</div>
+					<label><i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
+							  title="The difference calculation is out of sync with the current selection."> </i></label>
+					<label><i class="fa fa-refresh" id="dac-selection-synced"
+							  title="The difference calculation is in sync with the current selection."> </i></label>
+        			
+        			<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
+        					
+				</div>
+			
+			</div>
+				
+			<div class="ui-layout-center" id="dac-mds-pane">
+
+				<!-- MDS Scatter Plot -->
+				<svg id="dac-mds-scatterplot"></svg>
+
+			</div>
+			
+		</div>
+
+		<div class="ui-layout-south" id="dac-datapoints-pane">
+		
+			<!-- MetaData Table --->
+			<div id="dac-datapoints-table"></div>
+			
+		</div>
+		
+		<div class="ui-layout-west">
+		
+			<!-- Alpha Sliders -->
+			<div class="ui-layout-center">
+				<ul id="dac-alpha-sliders"></ul>
+			</div>
+			
+			<div class="ui-layout-south">
+		
+				<!-- Alpha Buttons -->			
+				<div class="bootstrap-styles" id="dac-alpha-buttons">
+					<button type="button" class="btn btn-sm btn-outline-secondary"
+							id="dac-download-table-button" title="Download data table.">
+							<i class="fa fa-download"></i>
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary"
+						    id="dac-alpha-zero-button" title="Set all sliders to 0.">
+						0
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary"
+						    id="dac-alpha-one-button" title="Set all sliders to 1.">
+						1
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-secondary"
+							id="dac-alpha-cluster-button"
+							title='Adjust sliders to optimize scatter plot for selected (from "Do Not Color" pulldown) table column.'>
+						<i class="fa fa-sliders"></i>
+					</button>
+				</div>
+			</div>
+			
+		</div>
+		
+	</div>
+	
+	<div class="ui-layout-east dac-model-content" id="dac-plots">
+
+		<small>
+
+		<!-- Times Series Plot #1 -->
+		<div class="dac-plot-controls">
+			<!-- Zoom link checkbox -->
+			<label class="dac-link-plots" id="dac-link-label-plot-1" title="Link plots for zooming.">
+				<input id="dac-link-plot-1" type="checkbox"> Link
+			</label>
+
+			<!-- Plot limiter indicator -->
+			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
+					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i></label>
+			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
+				id="dac-plots-displayed-1"></i></label>
+
+			<!-- Low resolution indicator -->
+			<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
+			   title="Plots are low resolution." id="dac-low-resolution-plot-1"></i></label>
+			<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
+					  title="Plots are full resolution." id="dac-full-resolution-plot-1"></i></label>
+
+			<!-- Variable selector -->
+			<select class="dac-select" id="dac-select-plot-1" title="Variable plotted below."></select>
+		</div>
+		<svg class="dac-plot" id="dac-plot-1"></svg>
+
+		<!-- Times Series Plot #2 -->
+		<div class="dac-plot-controls">
+			<label class="dac-link-plots" id="dac-link-label-plot-2" title="Link plots for zooming.">
+				<input id="dac-link-plot-2" type="checkbox"> Link
+			</label>
+
+			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
+					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i></label>
+			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
+				id="dac-plots-displayed-2"></i></label>
+
+			<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
+			   title="Plots are low resolution." id="dac-low-resolution-plot-2"></i></label>
+			<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
+			   title="Plots are full resolution." id="dac-full-resolution-plot-2"></i></label>
+
+			<select class="dac-select" id="dac-select-plot-2" title="Variable plotted below."></select>
+		</div>
+		<svg class="dac-plot" id="dac-plot-2"></svg>
+
+		<!-- Times Series Plot #3 -->
+		<div class="dac-plot-controls">
+			<label class="dac-link-plots" id="dac-link-label-plot-3" title="Link plots for zooming.">
+				<input id="dac-link-plot-3" type="checkbox"> Link
+			</label>
+
+			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
+					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i></label>
+			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
+				id="dac-plots-displayed-3"></i></label>
+
+			<label><i class="fa fa-minus-square dac-low-resolution-plot" aria-hidden="true"
+					  title="Plots are low resolution." id="dac-low-resolution-plot-3"></i></label>
+			<label><i class="fa fa-plus-square dac-full-resolution-plot" aria-hidden="true"
+					  title="Plots are full resolution." id="dac-full-resolution-plot-3"></i></label>
+
+			<select class="dac-select" id="dac-select-plot-3" title="Variable plotted below."></select>
+		</div>
+		<svg class="dac-plot" id="dac-plot-3"></svg>
+
+		</small>
+
+	</div>
+
+</div>

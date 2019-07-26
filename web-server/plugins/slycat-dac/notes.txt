@@ -1,0 +1,45 @@
+﻿Dial-A-Cluster
+--------------
+
+This directory contains code for the dial-a-cluster plug-in within the
+Slycat framework.  Put this code in a directory “dial-a-cluster” under
+the “src” directory, which should also contain the “slycat” directory.
+
+Installation
+------------
+
+To set-up the plug-in, you must first connect the dial-a-cluster code to
+Slycat server.  To do this, you have to point the server to the
+"plugin" directory via the /etc/slycat/slycat-web-server-config.ini file.
+Once you do that, the model is "registered" with the Slycat server and it knows
+where to find the other code (all stored within this directory).
+
+Push Script
+-----------
+
+There are two ways to create a new dial-a-cluster model.  There is a push
+script you can use called dac-create-model.py (in the plugin/py directory).
+The push script can be run from the Slycat server or from a remote client.
+To run from a server you use:
+
+$ python dac-create-model.py --model-name “Weather” ../../data/weather —-no-verify
+
+This loads the weather data onto the web server.  To use the push script
+from a remote client, you would use something like:
+
+$ python dac-create-model.py --host https://slycat.sandia.gov --no-verify
+    --user smartin --marking uur --model-name “weather” --project-name “Weather-DAC”
+    ../../data/weather
+
+For this to work you may need to make available some of the slycat source
+code (like the web client module).  It also won't work without password authentication
+set up on the server.
+
+Wizard
+------
+To use the wizard UI, you select "Create" within a project and then
+"New Dial-A-Cluster Model" from the drop-down.  The wizard can import both
+the generic format (as used by the push script, except without ui preferences)
+or the PTS format.
+
+

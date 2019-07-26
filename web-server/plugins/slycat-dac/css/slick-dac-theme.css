@@ -1,0 +1,122 @@
+/* Customizations from slick-default-theme.css */
+
+.slick-cell.selected {
+  background-color: unset;
+}
+
+/* Customizations from slick-slycat-theme.css */
+
+#timeseries-table-slickgrid {
+	position: unset;
+}
+
+.headerSimId,
+.headerOther {
+	background-color: unset;
+}
+.rowSimId,
+.rowOther {
+	background-color: unset;
+}
+.rowSimId.selected,
+.rowOther.selected {
+	background-color: unset;
+}
+.headerInput {
+    background-color: unset;
+}
+.rowInput {
+	background-color: unset;
+}
+.rowInput.selected {
+	background-color: unset;
+	color: unset;
+}
+.headerOutput {
+    background-color: unset;
+}
+.rowOutput {
+	background-color: unset;
+}
+.rowOutput.selected {
+	background-color: unset;
+	color: unset;
+}
+
+.slick-row[row$="1"], .slick-row[row$="3"], .slick-row[row$="5"], .slick-row[row$="7"], .slick-row[row$="9"] {
+    background-color: unset;
+}
+.slick-row.odd {
+	background-color: unset;
+}
+
+.highlightWrapper.null {
+	background: unset;
+	position: unset;
+	width: unset;
+	height: unset;
+}
+.selected .highlightWrapper.null {
+	background-image: unset;
+}
+.highlight .highlightWrapper.null {
+	position: unset;
+}
+
+.slick-row.nullRow .slick-cell,
+.slick-row.nullRow .slick-cell .highlightWrapper
+{
+	background-color: unset;
+	color: unset;
+}
+.slick-row.nullRow .slick-cell.selected,
+.slick-row.nullRow .slick-cell.selected .highlightWrapper
+{
+	background-color: unset;
+	color: unset;
+}
+.slick-row.hiddenRow .slick-cell,
+.slick-row.hiddenRow .slick-cell .highlightWrapper
+{
+	background-color: unset;
+	color: unset;
+}
+.slick-row.hiddenRow .slick-cell.selected,
+.slick-row.hiddenRow .slick-cell.selected .highlightWrapper
+{
+	background-color: unset;
+	color: unset;
+}
+
+/* selection colors for dial-a-cluster */
+.slick-row.selection-1 {
+	background-color: lightcoral;
+}
+
+.slick-row.selection-2 {
+	background-color: cornflowerblue;
+}
+
+.slick-row.focus-selection {
+    background-color: grey;
+}
+
+.slick-row.not-in-subset {
+    background-color: lightgrey;
+}
+
+/* selected text is white (dial-a-cluster) */
+.slick-row.selection-1 .slick-cell,
+.slick-row.selection-2 .slick-cell,
+.slick-row.focus-selection .slick-cell {
+	color: ghostwhite;
+}
+
+/* clicked row -- to show where user last clicked */
+.slick-row.clicked {
+    box-shadow: inset 0px 0px 0px 2px;
+}
+
+/* No customizations from slick.grid.css */
+
+/* No customizations from slick.headerbuttons.css */

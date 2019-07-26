@@ -1,0 +1,202 @@
+<!-- DAC wizard template, modeled on the CCA wizard
+
+S. Martin
+4/6/2017
+
+Matthew Letter
+11/15/2018
+-->
+
+<!-- css styles for palette selection -->
+<style>
+
+.dac-palette {
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: bottom;
+  margin: 4px 0 4px 6px;
+  padding: 4px;
+  background: #fff;
+  border: solid 1px #aaa;
+}
+
+.dac-swatch {
+  display: block;
+  vertical-align: middle;
+  width: 26px;
+  height: 18px;
+}
+
+</style>
+
+<div class="modal-header">
+    <h3 class="modal-title">Dial-A-Cluster Model Preferences</h3>
+    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!-- Organizes the tabs in the input wizard. -->
+<div class="modal-body">
+    <ul class="nav nav-pills">
+        <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Variables</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Metadata</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 2}"><a class="nav-link">Colors</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 3}"><a class="nav-link">Options</a></li>
+    </ul>
+
+    <!-- This tab lets the user select whether or not the file to upload is on the local
+       computer or a remote computer. -->
+    <div class="tab-content">
+
+    <!-- The slycat-table-ingestion tag indicates what to name columns (name: ) and whether
+     the columns are checkboxes (bool) or radio buttons (select).  Here we have one
+     column include or not include in the meta-data table. -->
+    <div data-bind="visible:tab() == 0">
+        <label>Select variables to include in analysis.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: var_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+    </div>
+
+    <!-- The slycat-table-ingestion tag indicates what to name columns (name: ) and whether
+         the columns are checkboxes (bool) or radio buttons (select).  Here we have one
+         column include or not include in the meta-data table. -->
+    <div data-bind="visible:tab() == 1">
+        <label>Select metadata to include in table.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="(Editable columns are always included in the table.) To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: meta_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+    </div>
+
+    <!-- Options for changing the color scheme in DAC. -->
+    <div data-bind="visible:tab() == 2">
+        <div>
+            <label>Select ColorBrewer scale for continuous metadata.
+                <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Continuous data is numerical data.  For information on ColorBrewer scales, see colorbrewer2.org."></i>
+            </label>
+        </div>
+
+        <div style="margin-bottom: 6px">
+            Choose:
+            <input type="radio" name="dac-sequential-or-diverging-radios" value="sequential" id="dac-sequential-radio" data-bind="checked: dac_scale_type">
+            sequential scales, or
+            <input type="radio" name="dac-sequential-or-diverging-radios" value="diverging" id="dac-diverging-radio" data-bind="checked: dac_scale_type">
+            diverging scales.
+        </div>
+
+        <!-- sequential and divergin color palettes -->
+        <div id="dac-sequential-swatches" data-bind="visible: dac_scale_type() == 'sequential'"></div>
+        <div id="dac-diverging-swatches" data-bind="visible: dac_scale_type() == 'diverging'"></div>
+
+        <div style="margin-top: 20px">
+            <label>Select ColorBrewer scale for discrete metadata.
+                <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Discrete data is string data.  If you have ordinal data, it will be considered numerical unless you use alphabetic labels."></i>
+            </label>
+        </div>
+
+        <div id="dac-discrete-swatches"></div>
+
+    </div>
+
+    <!-- Options for changing the length of labels, etc. in DAC. -->
+    <div data-bind="visible:tab() == 3">
+        <label>Options to adjust/optimize the Dial-A-Cluster user inferface:</label>
+
+        <div class="container" style="margin-top:30px; width:100%">
+            <div class="row">
+            <label class="col-sm-3 col-form-label">Max. label length
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                    title="Length beyond which labels for variables and metadata are truncated in the Dial-A-Cluster user interface (defaults to 20, minimum is 5)."></i>
+            </label>
+            <div class="col-sm-2">
+              <input class="form-control" type="number" min="5" placeholder="20" data-bind="value: dac_max_label_length"></input>
+            </div>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top:30px; width:100%">
+            <div class="row">
+            <label class="col-sm-3 col-form-label">Max. number plots
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                   title="Maximum number of plots to display at a time. Beyond this number only a random subset of the selected plots are shown (defaults to 50 per selection, minimum is 10)."></i>
+            </label>
+            <div class="col-sm-2">
+                <input class="form-control" type="number" min="10" placeholder="50" data-bind="value: dac_max_num_plots"></input>
+            </div>
+            <div class="col-sm-1"></div>
+            <label class="col-sm-3 col-form-label">Max. plot resolution
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                    title="Maximum number of points to include in a variable plot (for example, number of time points in a time series plot).  Beyond this number plots are produced by subsampling from original data (defaults to 500, minimum is 10)."></i>
+            </label>
+            <div class="col-sm-2">
+              <input class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_time_points"></input>
+            </div>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top:30px; width:100%">
+            <div class="row">
+            <label class="col-sm-3 col-form-label">Max. animation
+                <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                    title="Number of points in scatter plot beyond which animations between coordinate changes are no longer used, for example adjusting sliders or zooming (defaults to 2500, minimum is 10)."></i>
+            </label>
+            <div class="col-sm-2">
+              <input class="form-control" type="number" min="10" placeholder="20" data-bind="value: dac_max_points_animate"></input>
+            </div>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top:30px; width:100%">
+            <div class="row">
+            <label class="col-sm-3 col-form-label">Max. categories
+               <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                  title="Maximum number of categories allowed for editable columns."></i>
+           </label>
+           <div class="col-sm-2">
+               <input class="form-control" type="number" min="5" placeholder="50" data-bind="value: dac_max_cats"></input>
+           </div>
+            <div class="col-sm-1"></div>
+            <label class="col-sm-3 col-form-label">Max. freetext length
+               <i class="fa fa-question-circle inline-help" aria-hidden="true"
+                   title="Maximum length of freetext entries for editable columns."></i>
+           </label>
+           <div class="col-sm-2">
+             <input class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_freetext_len"></input>
+           </div>
+           </div>
+        </div>
+        
+        <div class="container" style="margin-top: 35px; width:100%">
+            <label>
+            Use
+            <input type="radio" name="dac-scatter-plot-radios" value="circle" data-bind="checked: dac_scatter_plot_type">
+            circles, or
+            <input type="radio" name="dac-scatter-plot-radios" value=".square" data-bind="checked: dac_scatter_plot_type">
+            squares for scatter plot.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+               title="Render the scatter plot with circles or squares."></i>
+            </label>
+        </div>
+
+    </div>
+
+    </div>
+</div>
+
+<!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
+     to call when the buttons are pressed. -->
+<div class="modal-footer">
+    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 0,click:check_variables">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 1,click:check_metadata">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 2,click:speedup_preferences">Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 3,click:reset_defaults">Reset Defaults</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 3,click:check_options"><i class="fa fa-spinner fa-pulse"></i> Save Preferences & Re-Launch Model</button>
+</div>
