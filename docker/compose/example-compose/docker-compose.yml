@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - IMAGE_VERSION=${PYTHON_VERSION}
+    image: ${DOCKER_USER}/flask-redis:1.0
+    env_file: env.txt
+    ports:
+      - 80:5000
+    networks:
+      - mynet
+  redis:
+    image: redis:${REDIS_VERSION}
+    networks:
+      - mynet
+    volumes:
+      - mydata:/data
+
+networks:
+  mynet:
+volumes:
+  mydata:

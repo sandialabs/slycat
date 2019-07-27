@@ -1,0 +1,70 @@
+version: '3.6'
+
+services:
+  # cherrypy:
+  #   build:
+  #     context: .
+  #     dockerfile: ./cherrypy-hdf5/Dockerfile
+  #     args:
+  #       - IMAGE_VERSION=${PYTHON_VERSION}
+  #   image: ${DOCKER_USER}/flask-redis:1.0
+  #   env_file: env.txt
+  #   ports:
+  #     - 80:5000
+  #   networks:
+  #     - mynet
+  couchdb:
+    image: couchdb
+    restart: always
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+    networks:
+      - slycat-net
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb-data-volume:/usr/local/var/lib/couchdb
+
+  python_couchdb_setup:
+    build:
+      context: .
+      dockerfile: ./python-couchdb-setup/Dockerfile
+      args:
+        - IMAGE_VERSION=${PYTHON_VERSION}
+    image: python_couchdb_setup
+    env_file: env.txt
+    depends_on:
+      - "couchdb"
+    networks:
+      - slycat-net
+    command: 
+      - python
+      - /usr/src/couch/slycat-couchdb-setup.py
+      - --host
+      - couchdb
+      - --admin
+      - admin
+      - --password
+      - password
+    volumes:
+      - ./scripts/couchdb_setup.sh:/usr/local/bin/couchdb_setup.sh:ro
+
+  # couchdb_setup:
+  #   depends_on: 
+  #     - 'couchdb'
+  #   container_name: couchdb_setup
+  #   image: couchdb
+  #   command: ['/bin/bash', '-x', '-c', 'cat /usr/local/bin/couchdb_setup.sh | tr -d "\r" | bash']
+  #   volumes:
+  #     - ./scripts/couchdb_setup.sh:/usr/local/bin/couchdb_setup.sh:ro
+  #   environment:
+  #     COUCHDB_USER: admin
+  #     COUCHDB_PASSWORD: password
+  #   networks:
+  #     - slycat-net
+
+networks:
+  slycat-net:
+volumes:
+  couchdb-data-volume:
