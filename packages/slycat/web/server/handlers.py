@@ -433,6 +433,47 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
+def create_project_data_from_pid(pid, aid, file):
+    """
+    creates a project level data object from a project id 
+    that can be used to create new
+    models in the current project
+    :param mid: model ID
+    :param aid: artifact ID
+    :param file: file attachment
+    :return: not used
+    """
+    content_type = "text/csv"
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    timestampt = time.time()
+    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    did = uuid.uuid4().hex
+    if isinstance(file, list):
+        file = file[0]
+    if len(aid) > 1:
+        if isinstance(aid[1], list):
+            aid[1] = aid[1][0]
+    else:
+        aid.append("unnamed_file")
+    data = {
+        "_id": did,
+        "type": "project_data",
+        "file_name": formatted_timestamp + "_" + aid[1],
+        "data_table": aid[0],
+        "project": pid,
+        "mid": [""],
+        "created": datetime.datetime.utcnow().isoformat(),
+        "creator": cherrypy.request.login,
+    }
+    if "project_data" not in model:
+        model["project_data"] = []
+    model["project_data"].append(did)
+    database.save(model)
+    database.save(data)
+    database.put_attachment(data, filename="content", content_type=content_type, content=file)
+    cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
+
 def create_project_data(mid, aid, file):
     """
     creates a project level data object that can be used to create new
