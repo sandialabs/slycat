@@ -466,10 +466,6 @@ def create_project_data_from_pid(pid, aid, file):
         "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
     }
-    if "project_data" not in model:
-        model["project_data"] = []
-    model["project_data"].append(did)
-    database.save(model)
     database.save(data)
     database.put_attachment(data, filename="content", content_type=content_type, content=file)
     cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
