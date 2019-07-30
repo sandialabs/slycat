@@ -104,90 +104,9 @@ $(document).ready(function() {
     scatterplot_font_family: 'Arial', // String formatted as a valid font-family CSS property.
     scatterplot_font_size: '14px', // String formatted as a valid font-size CSS property.
   }
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Setup page layout.
-  //////////////////////////////////////////////////////////////////////////////////////////
-
-  // Layout resizable panels ...
-  $("#cca-model").layout({
-    applyDefaultStyles: false,
-    north:
-    {
-      size: 39,
-      resizable: false,
-    },
-    west:
-    {
-      size: $("#cca-model").width() / 2,
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if(store)
-        {
-          store.dispatch(
-            setBarplotWidth(
-              $("#barplot-pane").width()
-            )
-          );
-          store.dispatch(
-            setBarplotHeight(
-              $("#barplot-pane").height()
-            )
-          );
-        }
-      },
-    },
-    center:
-    {
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if(store)
-        {
-          store.dispatch(
-            setScatterplotWidth(
-              $("#scatterplot-pane").width()
-            )
-          );
-          store.dispatch(
-            setScatterplotHeight(
-              $("#scatterplot-pane").height()
-            )
-          );
-        }
-      },
-    },
-    south:
-    {
-      size: $("body").height() / 2,
-      resizeWhileDragging: false,
-      onresize_end: function()
-      {
-        if(store)
-        {
-          store.dispatch(
-            setTableWidth(
-              $("#table-pane").width()
-            )
-          );
-          store.dispatch(
-            setTableHeight(
-              $("#table-pane").height()
-            )
-          );
-        }
-      },
-    },
-  });
-  
-  redux_state_tree.derived.scatterplot_width = $("#scatterplot-pane").width();
-  redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
-  redux_state_tree.derived.table_width = $("#table-pane").width();
-  redux_state_tree.derived.table_height = $("#table-pane").height();
-  redux_state_tree.derived.barplot_width = $("#barplot-pane").width();
-  redux_state_tree.derived.barplot_height = $("#barplot-pane").height();
   
   //////////////////////////////////////////////////////////////////////////////////////////
-  // Get the model and other model data
+  // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
   function doPoll(){
     // Return a new promise.
@@ -221,7 +140,7 @@ $(document).ready(function() {
   }
   let get_model_promise = doPoll();
 
-  // We have a completed model
+  // We have a completed model, so remove the navbar alert and start setting some derived state
   get_model_promise.then(function(model){
     $('.slycat-navbar-alert').remove();
     redux_state_tree.derived.model = model;
@@ -231,6 +150,93 @@ $(document).ready(function() {
     console.log("promise rejected");
     throw error;
   });
+
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // Setup page layout.
+  //////////////////////////////////////////////////////////////////////////////////////////
+
+  // Layout resizable panels ...
+  get_model_promise.then(function(){
+    $("#cca-model").layout({
+      applyDefaultStyles: false,
+      north:
+      {
+        size: 39,
+        resizable: false,
+      },
+      west:
+      {
+        size: $("#cca-model").width() / 2,
+        resizeWhileDragging: false,
+        onresize_end: function() { 
+          if(store)
+          {
+            store.dispatch(
+              setBarplotWidth(
+                $("#barplot-pane").width()
+              )
+            );
+            store.dispatch(
+              setBarplotHeight(
+                $("#barplot-pane").height()
+              )
+            );
+          }
+        },
+      },
+      center:
+      {
+        resizeWhileDragging: false,
+        onresize_end: function() { 
+          if(store)
+          {
+            store.dispatch(
+              setScatterplotWidth(
+                $("#scatterplot-pane").width()
+              )
+            );
+            store.dispatch(
+              setScatterplotHeight(
+                $("#scatterplot-pane").height()
+              )
+            );
+          }
+        },
+      },
+      south:
+      {
+        size: $("body").height() / 2,
+        resizeWhileDragging: false,
+        onresize_end: function()
+        {
+          if(store)
+          {
+            store.dispatch(
+              setTableWidth(
+                $("#table-pane").width()
+              )
+            );
+            store.dispatch(
+              setTableHeight(
+                $("#table-pane").height()
+              )
+            );
+          }
+        },
+      },
+    });
+    
+    redux_state_tree.derived.scatterplot_width = $("#scatterplot-pane").width();
+    redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
+    redux_state_tree.derived.table_width = $("#table-pane").width();
+    redux_state_tree.derived.table_height = $("#table-pane").height();
+    redux_state_tree.derived.barplot_width = $("#barplot-pane").width();
+    redux_state_tree.derived.barplot_height = $("#barplot-pane").height();
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // Get other model data
+  //////////////////////////////////////////////////////////////////////////////////////////
 
   // Create a bookmarker and get state from it
   let bookmarker_promise = new Promise(function(resolve, reject){
