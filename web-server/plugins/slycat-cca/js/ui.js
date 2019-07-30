@@ -223,7 +223,6 @@ $(document).ready(function() {
 
   // We have a completed model
   get_model_promise.then(function(model){
-    console.log("get_model_promise completed");
     $('.slycat-navbar-alert').remove();
     redux_state_tree.derived.model = model;
     redux_state_tree.derived.input_columns = model["artifact:input-columns"];
