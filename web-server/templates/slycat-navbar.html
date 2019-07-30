@@ -245,9 +245,20 @@
     </div>
   </nav>
   <!-- ko foreach: model_alerts -->
-    <div class="alert slycat-navbar-alert" data-bind="css:{'alert-danger':$data.type === 'danger','alert-info':$data.type === 'info','alert-success':$data.type === 'success'}">
-      <p data-bind="text:message"></p>
-      <pre data-bind="visible:detail,text:detail,css:{'bg-danger':$data.type === 'danger','bg-info':$data.type === 'info','bg-success':$data.type === 'success'}"></pre>
+    <div class="alert slycat-navbar-alert m-3" 
+      data-bind="
+        css:{
+          'alert-danger':$data.type === 'danger',
+          'alert-info':$data.type === 'info',
+          'alert-success':$data.type === 'success'
+        }
+        "
+      >
+      <div data-bind="text:message"></div>
+      <pre class="mb-0 mt-3" data-bind="
+        visible:detail,
+        text:detail,
+        css:{'bg-danger':$data.type === 'danger','bg-info':$data.type === 'info','bg-success':$data.type === 'success'}"></pre>
     </div>
   <!-- /ko -->
   <div class="modal fade" tabindex="-1" role="dialog" id="slycat-wizard" data-backdrop="static">
