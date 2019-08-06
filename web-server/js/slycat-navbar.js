@@ -221,8 +221,15 @@ export function renderNavBar() {
           state: "closed",
           success : function()
           {
-            window.location.reload(true);
-            console.log("set new location in slycat-navbar line 210. This is what causes the reload on first model load.");
+            // Reload browser page for timeseries models only
+            if(model['model-type']() == 'timeseries')
+            {
+              // console.log('Reloading page since this is a timeseries model');
+              window.location.reload(true);
+            }
+            // else {
+            //   console.log('Not reloading page for non-timeseries models');
+            // }
           }
         });
       }
