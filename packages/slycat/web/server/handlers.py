@@ -445,8 +445,6 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     :return: not used
     """
     content_type = "text/csv"
-    if file is not None and file_name is None:
-        data = file.file.read()
     database = slycat.web.server.database.couchdb.connect()
     timestamp = time.time()
     formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
