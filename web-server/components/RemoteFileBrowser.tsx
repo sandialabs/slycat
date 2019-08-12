@@ -209,7 +209,19 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
      * @memberof RemoteFileBrowser
      */
     private selectRow = (file:FileMetaData, i:number) => {
-      const newPath:string = this.pathJoin(this.state.path, file.name);
+      let newPath:string = this.state.path;
+      const path_split:string[] = this.state.path.split("/");
+
+      /**
+       * If the user types out the full path, including file name,
+       * we don't want to join the file name with the path 
+       * (resulting in duplicate file names).
+       */
+
+      if(path_split[path_split.length - 1] !== file.name) {
+        newPath = this.pathJoin(this.state.path, file.name);
+      }
+
       this.setState({selected:i},() => {
         // tell our create what we selected
         this.props.onSelectFileCallBack(newPath, file.type, file);
