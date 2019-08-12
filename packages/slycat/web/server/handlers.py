@@ -433,7 +433,7 @@ def post_project_models(pid):
     cherrypy.response.status = "201 Model created."
     return {"id": mid}
 
-@cherrypy.tools.json_in(on=True)
+# @cherrypy.tools.json_in(on=True)
 # @cherrypy.tools.json_out(on=True)
 def create_project_data_from_pid(pid, file=None, file_name=None):
     """
@@ -444,6 +444,9 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     :param file: file attachment
     :return: not used
     """
+
+    csv_data = str(file.file.read())
+
     content_type = "text/csv"
     database = slycat.web.server.database.couchdb.connect()
     timestamp = time.time()
@@ -460,8 +463,9 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
         "created": datetime.datetime.utcnow().isoformat(),
         "creator": cherrypy.request.login,
     }
+
     database.save(data)
-    database.put_attachment(data, filename="content", content_type=content_type, content=file)
+    database.put_attachment(data, filename="content", content_type=content_type, content=csv_data)
     cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
 
 def create_project_data(mid, aid, file):
