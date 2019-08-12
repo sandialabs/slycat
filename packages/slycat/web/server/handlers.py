@@ -892,11 +892,11 @@ def open_id_authenticate(**params):
     :param params: openid params as a dictionary
     :return: not used
     """
+    cherrypy.log.error("++ open_id_authenticate starting, incoming params = %s" % params)
     # check for openid in the config for security
     if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
         raise cherrypy.HTTPError(404)
 
-    cherrypy.log.error("++ open_id_authenticate incoming params = %s" % params)
     current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
     kerberos_principal = params['openid.ext2.value.Authuser']
     auth_user = kerberos_principal.split("@")[0]

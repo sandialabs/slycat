@@ -104,90 +104,9 @@ $(document).ready(function() {
     scatterplot_font_family: 'Arial', // String formatted as a valid font-family CSS property.
     scatterplot_font_size: '14px', // String formatted as a valid font-size CSS property.
   }
-
-  //////////////////////////////////////////////////////////////////////////////////////////
-  // Setup page layout.
-  //////////////////////////////////////////////////////////////////////////////////////////
-
-  // Layout resizable panels ...
-  $("#cca-model").layout({
-    applyDefaultStyles: false,
-    north:
-    {
-      size: 39,
-      resizable: false,
-    },
-    west:
-    {
-      size: $("#cca-model").width() / 2,
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if(store)
-        {
-          store.dispatch(
-            setBarplotWidth(
-              $("#barplot-pane").width()
-            )
-          );
-          store.dispatch(
-            setBarplotHeight(
-              $("#barplot-pane").height()
-            )
-          );
-        }
-      },
-    },
-    center:
-    {
-      resizeWhileDragging: false,
-      onresize_end: function() { 
-        if(store)
-        {
-          store.dispatch(
-            setScatterplotWidth(
-              $("#scatterplot-pane").width()
-            )
-          );
-          store.dispatch(
-            setScatterplotHeight(
-              $("#scatterplot-pane").height()
-            )
-          );
-        }
-      },
-    },
-    south:
-    {
-      size: $("body").height() / 2,
-      resizeWhileDragging: false,
-      onresize_end: function()
-      {
-        if(store)
-        {
-          store.dispatch(
-            setTableWidth(
-              $("#table-pane").width()
-            )
-          );
-          store.dispatch(
-            setTableHeight(
-              $("#table-pane").height()
-            )
-          );
-        }
-      },
-    },
-  });
-  
-  redux_state_tree.derived.scatterplot_width = $("#scatterplot-pane").width();
-  redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
-  redux_state_tree.derived.table_width = $("#table-pane").width();
-  redux_state_tree.derived.table_height = $("#table-pane").height();
-  redux_state_tree.derived.barplot_width = $("#barplot-pane").width();
-  redux_state_tree.derived.barplot_height = $("#barplot-pane").height();
   
   //////////////////////////////////////////////////////////////////////////////////////////
-  // Get the model and other model data
+  // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
   function doPoll(){
     // Return a new promise.
@@ -203,15 +122,17 @@ $(document).ready(function() {
           }
 
           // Reject closed with no results and failes models
-          if(model["state"] === "closed" && model["result"] === null) {
+          else if(model["state"] === "closed" && model["result"] === null) {
             reject("Closed with no result.");
           }
-          if(model["result"] === "failed") {
+          else if(model["result"] === "failed") {
             reject("Failed.");
           }
           
           // Otherwise resolve the promise
-          resolve(model);
+          else {
+            resolve(model);
+          }
         },
         error: dialog.ajax_error("Error retrieving model."),
       });
@@ -219,7 +140,7 @@ $(document).ready(function() {
   }
   let get_model_promise = doPoll();
 
-  // We have a completed model
+  // We have a completed model, so remove the navbar alert and start setting some derived state
   get_model_promise.then(function(model){
     $('.slycat-navbar-alert').remove();
     redux_state_tree.derived.model = model;
@@ -229,6 +150,93 @@ $(document).ready(function() {
     console.log("promise rejected");
     throw error;
   });
+
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // Setup page layout.
+  //////////////////////////////////////////////////////////////////////////////////////////
+
+  // Layout resizable panels ...
+  get_model_promise.then(function(){
+    $("#cca-model").layout({
+      applyDefaultStyles: false,
+      north:
+      {
+        size: 39,
+        resizable: false,
+      },
+      west:
+      {
+        size: $("#cca-model").width() / 2,
+        resizeWhileDragging: false,
+        onresize_end: function() { 
+          if(store)
+          {
+            store.dispatch(
+              setBarplotWidth(
+                $("#barplot-pane").width()
+              )
+            );
+            store.dispatch(
+              setBarplotHeight(
+                $("#barplot-pane").height()
+              )
+            );
+          }
+        },
+      },
+      center:
+      {
+        resizeWhileDragging: false,
+        onresize_end: function() { 
+          if(store)
+          {
+            store.dispatch(
+              setScatterplotWidth(
+                $("#scatterplot-pane").width()
+              )
+            );
+            store.dispatch(
+              setScatterplotHeight(
+                $("#scatterplot-pane").height()
+              )
+            );
+          }
+        },
+      },
+      south:
+      {
+        size: $("body").height() / 2,
+        resizeWhileDragging: false,
+        onresize_end: function()
+        {
+          if(store)
+          {
+            store.dispatch(
+              setTableWidth(
+                $("#table-pane").width()
+              )
+            );
+            store.dispatch(
+              setTableHeight(
+                $("#table-pane").height()
+              )
+            );
+          }
+        },
+      },
+    });
+    
+    redux_state_tree.derived.scatterplot_width = $("#scatterplot-pane").width();
+    redux_state_tree.derived.scatterplot_height = $("#scatterplot-pane").height();
+    redux_state_tree.derived.table_width = $("#table-pane").width();
+    redux_state_tree.derived.table_height = $("#table-pane").height();
+    redux_state_tree.derived.barplot_width = $("#barplot-pane").width();
+    redux_state_tree.derived.barplot_height = $("#barplot-pane").height();
+  });
+
+  //////////////////////////////////////////////////////////////////////////////////////////
+  // Get other model data
+  //////////////////////////////////////////////////////////////////////////////////////////
 
   // Create a bookmarker and get state from it
   let bookmarker_promise = new Promise(function(resolve, reject){
@@ -287,18 +295,20 @@ $(document).ready(function() {
 
   // Load data table metadata.
   let table_metadata_promise = new Promise(function(resolve, reject) {
-    client.get_model_table_metadata({
-      mid: redux_state_tree.derived.model_id,
-      aid: "data-table",
-      index: "Index",
-      success: function(table_metadata)
-      {
-        redux_state_tree.derived.table_metadata = table_metadata;
-        redux_state_tree.variable_selected = table_metadata["column-count"] - 1;
-        resolve();
-      },
-      error: reject
-    });
+    get_model_promise.then(function(){
+      client.get_model_table_metadata({
+        mid: redux_state_tree.derived.model_id,
+        aid: "data-table",
+        index: "Index",
+        success: function(table_metadata)
+        {
+          redux_state_tree.derived.table_metadata = table_metadata;
+          redux_state_tree.variable_selected = table_metadata["column-count"] - 1;
+          resolve();
+        },
+        error: reject
+      });
+    })
   });
 
   Promise.all([
@@ -343,141 +353,155 @@ $(document).ready(function() {
 
   // Load the x_loadings artifact.
   let x_loadings_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "input-structure-correlation",
-      array : 0,
-      attribute : 0,
-      success : function(result)
-      {
-        redux_state_tree.derived.x_loadings = result;
-        resolve();
-      },
-      error : reject,
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "input-structure-correlation",
+        array : 0,
+        attribute : 0,
+        success : function(result)
+        {
+          redux_state_tree.derived.x_loadings = result;
+          resolve();
+        },
+        error : reject,
+      });
+    })
   });
 
   // Load the y_loadings artifact.
   let y_loadings_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "output-structure-correlation",
-      array : 0,
-      attribute : 0,
-      success : function(result)
-      {
-        redux_state_tree.derived.y_loadings = result;
-        resolve();
-      },
-      error : reject
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "output-structure-correlation",
+        array : 0,
+        attribute : 0,
+        success : function(result)
+        {
+          redux_state_tree.derived.y_loadings = result;
+          resolve();
+        },
+        error : reject
+      });
+    })
   });
 
   // Load the r^2 statistics artifact.
   let r2_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "cca-statistics",
-      array : 0,
-      attribute : 0,
-      success : function(result)
-      {
-        redux_state_tree.derived.r2 = result;
-        resolve();
-      },
-      error : reject
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "cca-statistics",
+        array : 0,
+        attribute : 0,
+        success : function(result)
+        {
+          redux_state_tree.derived.r2 = result;
+          resolve();
+        },
+        error : reject
+      });
+    })
   });
 
   // Load the Wilks statistics artifact.
   let wilks_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "cca-statistics",
-      array : 0,
-      attribute : 1,
-      success : function(result)
-      {
-        redux_state_tree.derived.wilks = result;
-        resolve();
-      },
-      error : reject
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "cca-statistics",
+        array : 0,
+        attribute : 1,
+        success : function(result)
+        {
+          redux_state_tree.derived.wilks = result;
+          resolve();
+        },
+        error : reject
+      });
+    })
   });
 
   // Load the canonical-indices artifact.
   let indices_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "canonical-indices",
-      array : 0,
-      attribute : 0,
-      success : function(result)
-      {
-        redux_state_tree.derived.indices = result;
-        // console.log('indices_promise success');
-        resolve();
-      },
-      error : function()
-      {
-        // If there's an error retrieving the indices, we generate them
-        // once we have table_metadata
-        // console.log('indices_promise error');
-        table_metadata_promise
-          .then(function(){
-            var count = redux_state_tree.derived.table_metadata["row-count"];
-            let indices = new Int32Array(count);
-            for(let i = 0; i != count; ++i) {
-              indices[i] = i;
-            }
-            redux_state_tree.derived.indices = indices;
-            resolve();
-          })
-          .catch(function(error){
-            reject();
-            throw error;
-          })
-        ;
-      }
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "canonical-indices",
+        array : 0,
+        attribute : 0,
+        success : function(result)
+        {
+          redux_state_tree.derived.indices = result;
+          // console.log('indices_promise success');
+          resolve();
+        },
+        error : function()
+        {
+          // If there's an error retrieving the indices, we generate them
+          // once we have table_metadata
+          // console.log('indices_promise error');
+          table_metadata_promise
+            .then(function(){
+              var count = redux_state_tree.derived.table_metadata["row-count"];
+              let indices = new Int32Array(count);
+              for(let i = 0; i != count; ++i) {
+                indices[i] = i;
+              }
+              redux_state_tree.derived.indices = indices;
+              resolve();
+            })
+            .catch(function(error){
+              reject();
+              throw error;
+            })
+          ;
+        }
+      });
+    })
   });
 
   // Load the canonical-variables artifacts.
   let x_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "canonical-variables",
-      array : 0,
-      attribute : 0,
-      success : function(result)
-      {
-        redux_state_tree.derived.x = result;
-        resolve();
-      },
-      error : reject
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "canonical-variables",
+        array : 0,
+        attribute : 0,
+        success : function(result)
+        {
+          redux_state_tree.derived.x = result;
+          resolve();
+        },
+        error : reject
+      });
+    })
   });
 
   let y_promise = new Promise(function(resolve, reject) {
-    chunker.get_model_array_attribute({
-      api_root : api_root,
-      mid : redux_state_tree.derived.model_id,
-      aid : "canonical-variables",
-      array : 0,
-      attribute : 1,
-      success : function(result)
-      {
-        redux_state_tree.derived.y = result;
-        resolve();
-      },
-      error : reject
-    });
+    get_model_promise.then(function(){
+      chunker.get_model_array_attribute({
+        api_root : api_root,
+        mid : redux_state_tree.derived.model_id,
+        aid : "canonical-variables",
+        array : 0,
+        attribute : 1,
+        success : function(result)
+        {
+          redux_state_tree.derived.y = result;
+          resolve();
+        },
+        error : reject
+      });
+    })
   });
 
   //////////////////////////////////////////////////////////////////////////////////////////
