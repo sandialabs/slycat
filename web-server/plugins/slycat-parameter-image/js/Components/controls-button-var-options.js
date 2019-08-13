@@ -7,7 +7,7 @@ import "../../css/controls-button-var-options.css";
 
 export default function ControlsButtonVarOptions(props) {
   const modalId = 'varOptionsModal';
-  const title = 'Edit Axes Scales';
+  const title = 'Edit Axes';
 
   function closeModal(e) {
     $('#' + modalId).modal('hide');
@@ -68,7 +68,7 @@ export default function ControlsButtonVarOptions(props) {
 
   const fontItems = fonts.map((font, index) =>
     <a key={index} 
-      href="#" onClick={props.onFontFamilyChange}
+      href='#' onClick={props.onFontFamilyChange}
       style={{fontFamily: font.fontFamily}} 
       className={`dropdown-item {font.fontFamily == props.font_family ? 'active' : 'notactive'}`}
     >
@@ -78,56 +78,80 @@ export default function ControlsButtonVarOptions(props) {
 
   return (
     <React.Fragment>
-      <div className="modal fade" data-backdrop="false" id={modalId}>
-        <div className="modal-dialog modal-lg">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3 className="modal-title">{title}</h3>
-              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
+      <div className='modal fade' data-backdrop='false' id={modalId}>
+        <div className='modal-dialog modal-lg'>
+          <div className='modal-content'>
+            <div className='modal-header'>
+              <h3 className='modal-title'>{title}</h3>
+              <button type='button' className='close' data-dismiss='modal' aria-label='Close'>
+                <span aria-hidden='true'>&times;</span>
               </button>
             </div>
-            <div className="modal-body">
-              <div className="slycat-axes-font">
-                <div className="form-inline">
-                  <div className="form-group">
-                    <label htmlFor="font-family">Font</label>
-                    <div className="dropdown font-family-dropdown">
-                      <button className="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="font-family" 
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{fontFamily: props.font_family}}>
-                        {props.font_family}
-                      </button>
-                      <div className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                        {fontItems}
+            <div className='modal-body'>
+
+              <ul className='nav nav-tabs' role='tablist'>
+                <li className='nav-item'>
+                  <a className='nav-link active' id='axes-scales-tab' data-toggle='tab' 
+                    href='#axes-scales-tab-content' role='tab' aria-controls='axes-scales-tab-content' aria-selected='true'>
+                    <h5 className="mb-0">Axes Scales</h5>
+                  </a>
+                </li>
+                <li className='nav-item'>
+                  <a className='nav-link' id='variable-alias-tab' data-toggle='tab' 
+                    href='#variable-alias-tab-content' role='tab' aria-controls='variable-alias-tab-content' aria-selected='false'>
+                    <h5 className="mb-0">Variable Alias Labels</h5>
+                  </a>
+                </li>
+              </ul>
+
+              <div className='tab-content mt-4 mb-2 mx-3'>
+                <div className='tab-pane active' id='axes-scales-tab-content' role='tabpanel' aria-labelledby='axes-scales-tab'>
+                  <div className='slycat-axes-font'>
+                    <div className='form-inline'>
+                      <div className='form-group'>
+                        <label htmlFor='font-family'>Font</label>
+                        <div className='dropdown font-family-dropdown'>
+                          <button className='btn btn-sm btn-outline-dark dropdown-toggle' type='button' id='font-family' 
+                            data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style={{fontFamily: props.font_family}}>
+                            {props.font_family}
+                          </button>
+                          <div className='dropdown-menu' aria-labelledby='dropdownMenu1'>
+                            {fontItems}
+                          </div>
+                        </div>
+                      </div>
+                      <div className='form-group'>
+                        <label htmlFor='font-size'>Size</label>
+                        <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
+                          value={props.font_size} 
+                          onChange={props.onFontSizeChange}
+                        />
                       </div>
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="font-size">Size</label>
-                    <input type="number" className="form-control form-control-sm" id="font-size" max="40" min="8" step="1" style={{width: "70px"}}
-                      value={props.font_size} 
-                      onChange={props.onFontSizeChange}
-                    />
-                  </div>
+                  <hr />
+                  <SlycatTableIngestion 
+                    uniqueID='varOptions'
+                    variables={axes_variables}
+                    properties={axes_properties}
+                    onChange={props.onAxesVariableScaleChange}
+                  />
+                </div>
+                <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
+                  Variable Alias Labels Contents
                 </div>
               </div>
-              <hr />
-              <SlycatTableIngestion 
-                uniqueID="varOptions"
-                variables={axes_variables}
-                properties={axes_properties}
-                onChange={props.onAxesVariableScaleChange}
-              />
+
             </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-primary" onClick={closeModal}>
+            <div className='modal-footer'>
+              <button type='button' className='btn btn-primary' onClick={closeModal}>
                 Close
               </button>
             </div>
           </div>
         </div>
       </div>
-      <ControlsButton icon="fa-cog" title={title} data_toggle="modal" data_target={'#' + modalId} button_style={props.button_style} id="controls-button-var-options" />
+      <ControlsButton icon='fa-cog' title={title} data_toggle='modal' data_target={'#' + modalId} button_style={props.button_style} id='controls-button-var-options' />
     </React.Fragment>
   );
 }
