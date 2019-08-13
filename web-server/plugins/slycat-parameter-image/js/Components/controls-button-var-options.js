@@ -4,6 +4,7 @@ import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
+import $ from "jquery";
 
 export default function ControlsButtonVarOptions(props) {
   const modalId = 'varOptionsModal';
@@ -22,15 +23,15 @@ export default function ControlsButtonVarOptions(props) {
       scale_type = props.axes_variables_scale[index];
     }
     axes_variables.push({
-      'Axis Type': scale_type,
+      "Axis Type": scale_type,
       // 'Alex Testing Bool True': true,
       // 'Alex Testing Bool False': false,
-      disabled: false,
-      hidden: false,
-      lastSelected: false,
-      name: axes_variable.name,
-      selected: false,
-      tooltip: '',
+      "disabled": false,
+      "hidden": false,
+      "lastSelected": false,
+      "name": axes_variable.name,
+      "selected": false,
+      "tooltip": '',
     });
   }
   // Testing various properties
@@ -66,7 +67,7 @@ export default function ControlsButtonVarOptions(props) {
     {name: "Verdana", fontFamily: "Verdana", },
   ];
 
-  const fontItems = fonts.map((font, index) =>
+  const fontItems = fonts.map((font, index) => (
     <a key={index} 
       href='#' onClick={props.onFontFamilyChange}
       style={{fontFamily: font.fontFamily}} 
@@ -74,7 +75,7 @@ export default function ControlsButtonVarOptions(props) {
     >
       {font.name}
     </a>
-  );
+  ));
 
   return (
     <React.Fragment>
@@ -93,13 +94,13 @@ export default function ControlsButtonVarOptions(props) {
                 <li className='nav-item'>
                   <a className='nav-link active' id='axes-scales-tab' data-toggle='tab' 
                     href='#axes-scales-tab-content' role='tab' aria-controls='axes-scales-tab-content' aria-selected='true'>
-                    <h5 className="mb-0">Axes Scales</h5>
+                    <h5 className='mb-0'>Axes Scales</h5>
                   </a>
                 </li>
                 <li className='nav-item'>
                   <a className='nav-link' id='variable-alias-tab' data-toggle='tab' 
                     href='#variable-alias-tab-content' role='tab' aria-controls='variable-alias-tab-content' aria-selected='false'>
-                    <h5 className="mb-0">Variable Alias Labels</h5>
+                    <h5 className='mb-0'>Variable Alias Labels</h5>
                   </a>
                 </li>
               </ul>
@@ -151,7 +152,10 @@ export default function ControlsButtonVarOptions(props) {
           </div>
         </div>
       </div>
-      <ControlsButton icon='fa-cog' title={title} data_toggle='modal' data_target={'#' + modalId} button_style={props.button_style} id='controls-button-var-options' />
+      <ControlsButton 
+        icon='fa-cog' title={title} data_toggle='modal' data_target={'#' + modalId} 
+        button_style={props.button_style} id='controls-button-var-options' 
+      />
     </React.Fragment>
   );
 }
