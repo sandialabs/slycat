@@ -142,6 +142,7 @@ export default function ControlsButtonVarOptions(props) {
                 <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                   <SlycatVariableAliasLabels 
                     // variables={variables}
+                    metadata={props.metadata}
                     onChange={props.onVariableAliasLabelsChange}
                   />
                 </div>
