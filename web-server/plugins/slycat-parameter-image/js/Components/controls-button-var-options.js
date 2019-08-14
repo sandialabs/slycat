@@ -9,7 +9,7 @@ import $ from "jquery";
 
 export default function ControlsButtonVarOptions(props) {
   const modalId = 'varOptionsModal';
-  const title = 'Edit Axes';
+  const title = 'Display Settings';
 
   function closeModal(e) {
     $('#' + modalId).modal('hide');
