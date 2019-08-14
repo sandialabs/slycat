@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
+import SlycatVariableAliasLabels from "js/slycat-variable-alias-labels";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
@@ -139,7 +140,10 @@ export default function ControlsButtonVarOptions(props) {
                   />
                 </div>
                 <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
-                  Variable Alias Labels Contents
+                  <SlycatVariableAliasLabels 
+                    // variables={variables}
+                    onChange={props.onVariableAliasLabelsChange}
+                  />
                 </div>
               </div>
 
