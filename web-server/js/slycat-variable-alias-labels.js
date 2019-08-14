@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import css from "css/slycat-variable-alias-labels.scss";
 
 export default function SlycatVariableAliasLabels(props) {
 
@@ -6,11 +7,11 @@ export default function SlycatVariableAliasLabels(props) {
 
   return (
     <div className={`slycat-variable-alias-labels ${props.uniqueID}`}>
-      <table className="table table-striped table-hover table-sm table-borderless">
+      <table className='table table-striped table-hover table-sm table-borderless'>
         <thead>
           <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Label</th>
+            <th scope='col' className='align-top'>Name</th>
+            <th scope='col' className='align-top'>Label</th>
           </tr>
         </thead>
         <tbody>
@@ -18,9 +19,9 @@ export default function SlycatVariableAliasLabels(props) {
           variables.map((variable, index) => {
             return (
               <tr key={index}>
-                <th scope="row">{variable}</th>
+                <th scope='row' className='col-form-label-sm align-middle variable-name'>{variable}</th>
                 <td>
-                  <input className="form-control form-control-sm" type="text" defaultValue={variable} />
+                    <input className='form-control form-control-sm variable-alias' type='text' defaultValue={variable} />
                 </td>
               </tr>
             )
