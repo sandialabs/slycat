@@ -525,12 +525,12 @@ class Session(object):
                 raise socket.error('Socket is closed')
             response = json.loads(stdout.readline())
             if not response["ok"]:
-                cherrypy.log.error("response")
-                cherrypy.log.error(str(response))
+                #cherrypy.log.error("response")
+                #cherrypy.log.error(str(response))
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
                 raise cherrypy.HTTPError(400)
-            cherrypy.log.error("response")
-            cherrypy.log.error(str(response))
+            #cherrypy.log.error("response")
+            #cherrypy.log.error(str(response))
             return {"path": response["path"], "names": response["names"], "sizes": response["sizes"],
                     "types": response["types"], "mtimes": response["mtimes"], "mime-types": response["mime-types"]}
 
