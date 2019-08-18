@@ -663,7 +663,7 @@ function constructor(params)
             },
             error: function () {
 
-                dialog.ajax_error("Server error: could not re-initialize MDS coords.")("","","");
+                $("#dac-init-MDS-error").show();
                 $(".browser-continue").toggleClass("disabled", false);
             }
         });
