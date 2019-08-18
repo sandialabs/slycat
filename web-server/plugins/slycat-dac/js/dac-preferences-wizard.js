@@ -206,10 +206,11 @@ function constructor(params)
         if (var_include_columns.length > 0) {
 
             // advance to metadata tab
+            $("#dac-inc-var-error").hide();
             component.tab(1);
 
         } else {
-            dialog.ajax_error("Please select at least one variable to include in the analysis.")("","","");
+            $("#dac-inc-var-error").show();
         }
     }
 
@@ -292,10 +293,11 @@ function constructor(params)
         if (meta_include_columns.length > 0) {
 
             // advance to color tab
+            $("#dac-inc-meta-error").hide();
             component.tab(2);
 
         } else {
-            dialog.ajax_error("Please select at least one meta-variable to include in the analysis.")("","","");
+            $("#dac-inc-meta-error").show();
         }
 
 
@@ -532,37 +534,53 @@ function constructor(params)
         dac_max_freetext_len = Math.round(Number(component.dac_max_freetext_len()));
         
         // check options
+        var no_errors = true;
 
         if (dac_max_label_length < 5) {
 
             // label length must be at least 5
-            dialog.ajax_error("Please make sure the maximum label length is at least 5.")("","","");
+            $("#dac-label-length").addClass("is-invalid");
+            no_errors = false;
+        }
 
-        } else if (component.dac_max_time_points() < 10) {
-
-            // time points must be at least 10
-            dialog.ajax_error("Please make sure the maximum number of time points is at least 10.")("","","");
-
-        } else if (component.dac_max_num_plots() < 10) {
+        if (component.dac_max_time_points() < 10) {
 
             // time points must be at least 10
-            dialog.ajax_error("Please make sure the maximum number of plots is at least 10.")("","","");
+            $("#dac-max-time-points").addClass("is-invalid");
+            no_errors = false;
+        }
 
-        } else if (component.dac_max_points_animate() < 10) {
+        if (component.dac_max_num_plots() < 10) {
+
+            // time points must be at least 10\
+            $("#dac-max-plots").addClass("is-invalid");
+            no_errors = false;
+        }
+
+        if (component.dac_max_points_animate() < 10) {
 
             // time points must be at least 10
-            dialog.ajax_error("Please make sure the maximum number of points to animate is at least 10.")("","","");
+            $("#dac-max-anim").addClass("is-invalid");
+            no_errors = false;
 
         }
-        else if (component.dac_max_cats() < 5) {
+
+        if (component.dac_max_cats() < 5) {
+
             // maximum categories must be at least 5
-            dialog.ajax_error("Please make sure the maximum number of categories is at least 5.")("","","");
-        } 
-        else if (component.dac_max_freetext_len < 10) {
+            $("#dac-max-cats").addClass("is-invalid");
+            no_errors = false;
+        }
+
+        if (component.dac_max_freetext_len() < 10) {
+
             // maximum freetext length must be at least 10
-            dialog.ajax_error("Please make sure the maximum length of freetext is at least 10.")("","","");
-        } 
-        else {
+            $("#dac-max-freetext").addClass("is-invalid");
+            no_errors = false;
+        }
+
+        if (no_errors == true) {
+
             // everything is checked, finish model
             component.finish();
         }
@@ -578,6 +596,14 @@ function constructor(params)
         component.dac_scatter_plot_type(DEF_SCATTER_PLOT_TYPE);
         component.dac_max_cats(DEF_MAX_CATS);
         component.dac_max_freetext_len(DEF_MAX_FREETEXT_LEN);
+
+        // turn off any errors
+        $("#dac-label-length").removeClass("is-invalid");
+        $("#dac-max-time-points").removeClass("is-invalid");
+        $("#dac-max-plots").removeClass("is-invalid");
+        $("#dac-max-anim").removeClass("is-invalid");
+        $("#dac-max-cats").removeClass("is-invalid");
+        $("#dac-max-freetext").removeClass("is-invalid");
 
     };
 
