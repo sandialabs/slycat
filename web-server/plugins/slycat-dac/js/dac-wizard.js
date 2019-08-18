@@ -75,19 +75,12 @@ function constructor(params)
     var meta_file_names = [];
 
     // upload state information
-    var dac_upload = false;
-    var csv_meta_upload = false;
 
     // creates a model of type "DAC"
     component.create_model = function() {
 
         // use large dialog format
         // $(".modal-dialog").addClass("modal-lg");
-
-        // make sure upload state says nothing uploaded
-        dac_upload = false;
-        csv_meta_upload = false;
-        var pref_defaults_upload = false;
 
         // set PTS parameter defaults
         component.csv_min_size = 10;
@@ -104,7 +97,8 @@ function constructor(params)
                 assign_pref_defaults();
             },
             error: function() {
-                dialog.ajax_error("Error creating model.")("","","");
+                $("#dac-load-model-error").text("Error creating model.");
+                $("#dac-load-model-error").show();
             }
         });
     };
@@ -136,41 +130,36 @@ function constructor(params)
     // this function uploads the meta data table in DAC generic format
     component.upload_dac_format = function() {
 
-        // if already uploaded files then skip forward, do not re-upload
-        if (dac_upload == true) {
+        $("#dac-gen-file-error").hide();
 
-            component.tab(3);
+        // check for file selected
+        if (component.browser_dac_file.selection().length > 0) {
+
+            // get file extension
+            var file = component.browser_dac_file.selection()[0];
+            var file_ext = file.name.split(".");
+            file_ext = file_ext[file_ext.length - 1];
+
+            if (file_ext == 'zip') {
+
+                // set model name back to blank
+                component.model.name("");
+
+                // go to model naming
+                component.tab(3);
+
+            } else {
+                $("#dac-gen-file-error").text("Please select a file with the .zip extension.")
+                $("#dac-gen-file-error").show();
+            }
 
         } else {
 
-            // check for file selected
-            if (component.browser_dac_file.selection().length > 0) {
-
-                // get file extension
-                var file = component.browser_dac_file.selection()[0];
-                var file_ext = file.name.split(".");
-                file_ext = file_ext[file_ext.length - 1];
-
-                if (file_ext == 'zip') {
-
-                    // do not re-upload files
-                    dac_upload = true;
-
-                    // set model name back to blank
-                    component.model.name("");
-
-                    // go to model naming
-                    component.tab(3);
-
-                } else {
-                    dialog.ajax_error("Please select a file with the .zip extension.")("","","");
-                }
-
-            } else {
-                dialog.ajax_error("Please select DAC generic .zip file.")("","","");
-            }
+            $("#dac-gen-file-error").text("Please select DAC generic .zip file.")
+            $("#dac-gen-file-error").show();
 
         }
+
     };
 
     // assigns default ui preferences for DAC to slycat
@@ -231,7 +220,10 @@ function constructor(params)
             aid: "dac-ui-parms",
             value: dac_ui_parms,
             error: function () {
-                dialog.ajax_error("Error uploading UI preferences.")("","","");
+
+                $("#dac-load-model-error").text("Error uploading UI preferences.");
+                $("#dac-load-model-error").show();
+
                 $('.dac-gen-browser-continue').toggleClass("disabled", false);
                 $('.pts-process-continue').toggleClass('disabled', false);
             },
@@ -247,43 +239,65 @@ function constructor(params)
         // check PTS parse parameters
         var csv_parm = Math.round(Number(component.csv_min_size));
         var dig_parm = Math.round(Number(component.min_num_dig));
-        if (csv_parm < 2 || dig_parm < 1) {
 
-            dialog.ajax_error("The CSV parameter must be >= 2 and the digitizer parameter must be >= 1.")("","","");
+        // check for input parameter errors
+        var no_errors = true;
 
-        } else if (csv_meta_upload == true) {
+        if (csv_parm < 2) {
+
+            $("#dac-min-CSV").addClass("is-invalid");
+            no_errors = false;
+
+        } else {
+
+            // clear error
+            $("#dac-min-CSV").removeClass("is-invalid");
+        }
+
+        if (dig_parm < 1) {
+
+            $("#dac-min-dig").addClass("is-invalid");
+            no_errors = false;
+        } else {
+
+            // clear error
+            $("#dac-min-dig").removeClass("is-invalid");
+        }
+
+        // check for file errors
+        $("#dac-pts-file-error").hide();
+
+        // check for file selected
+        if (component.browser_zip_file.selection().length > 0) {
+
+            // get file extension
+            var file = component.browser_zip_file.selection()[0];
+            var file_ext = file.name.split(".");
+            file_ext = file_ext[file_ext.length - 1];
+
+            if (file_ext != 'zip') {
+
+                $("#dac-pts-file-error").text("Please select a file with the .zip extension.")
+                $("#dac-pts-file-error").show();
+                no_errors = false;
+            }
+
+        } else {
+
+            $("#dac-pts-file-error").text("Please select PTS CSV/META .zip file.")
+            $("#dac-pts-file-error").show();
+            no_errors = false;
+        }
+
+        // if everything is OK go to next tab
+        if (no_errors == true) {
+
+            // set model name back to blank
+            component.model.name("");
 
             // if already uploaded data, do not re-upload
             component.tab(3);
 
-        } else {
-
-            // check for file selected
-            if (component.browser_zip_file.selection().length > 0) {
-
-                // get file extension
-                var file = component.browser_zip_file.selection()[0];
-                var file_ext = file.name.split(".");
-                file_ext = file_ext[file_ext.length - 1];
-
-                if (file_ext == 'zip') {
-
-                    // do not re-upload files
-                    csv_meta_upload = true;
-
-                    // set model name back to blank
-                    component.model.name("");
-
-                    // go to model naming
-                    component.tab(3);
-
-                } else {
-                    dialog.ajax_error("Please select a file with the .zip extension.")("","","");
-                }
-
-            } else {
-                dialog.ajax_error("Please select PTS CSV/META .zip file.")("","","");
-            }
         }
     };
 
@@ -300,9 +314,12 @@ function constructor(params)
         // check if name is valid
         if (component.model.name() == "") {
 
-            dialog.ajax_error("Please provide a non-empty model name.")("","","");
+            $("#slycat-model-name").addClass("is-invalid");
 
         } else {
+
+            // turn off model name error
+            $("#slycat-model-name").removeClass("is-invalid");
 
             // declare import a success
             client.put_model(
@@ -376,10 +393,12 @@ function constructor(params)
 
                                     },
                                 error: function(){
-                                    dialog.ajax_error(
-                                        "There was a problem uploading the file: " + file)
-                                        ("","","");
-                                        $('.browser-continue').toggleClass("disabled", false);
+
+                                    $("#dac-finish-model-error").text("There was a problem uploading the file: " + file);
+                                    $("#dac-finish-model-error").show();
+
+                                    $('.browser-continue').toggleClass("disabled", false);
+
                                     }
                                 };
                             fileUploader.uploadFile(fileObject);
@@ -394,7 +413,8 @@ function constructor(params)
                     });
                 },
                 error: function() {
-                    dialog.ajax_error("Error finishing model.")("","","");
+                    $("#dac-finish-model-error").text("Error finishing model.");
+                    $("#dac-finish-model-error").show();
                 }
             });
         }
