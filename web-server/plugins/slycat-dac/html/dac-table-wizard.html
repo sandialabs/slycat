@@ -56,8 +56,14 @@ S. Martin
         </label>
 
         <div style="margin-top: 15px;">
-              <input class="form-control" type="text" placeholder="New Free Text Column"
-                     data-bind="value: dac_freetext_name"></input>
+              <input id="dac-free-text-name" class="form-control" type="text" placeholder="New Free Text Column"
+                     data-bind="value: dac_freetext_name" required></input>
+              <div class="invalid-feedback">
+                 Please enter a name for the new column.
+              </div>
+              <label id="dac-free-text-error" style="display: none" class="invalid-text small text-danger">
+                Free text column error.
+              </label>
         </div>
 
     </div>
@@ -69,8 +75,11 @@ S. Martin
         </label>
 
         <div style="margin-bottom: 20px">
-              <input class="form-control" type="text" placeholder="New Categorical Column"
+              <input id="dac-cat-col-name" class="form-control" type="text" placeholder="New Categorical Column"
                      data-bind="value: dac_categorical_name"></input>
+              <div class="invalid-feedback">
+                 Please enter a name for the new column.
+              </div>
         </div>
 
         <label>Select categories for the new column.
@@ -80,6 +89,9 @@ S. Martin
             variables: dac_categories,
             properties: [{name: 'Include', type: 'bool'}]
         "></slycat-table-ingestion>
+        <label id="dac-sel-cats-error" style="display: none" class="invalid-text small text-danger">
+            Please select at least one category for the new column.
+        </label>
 
         <div style="margin-top: 20px">
             <label>Add a new cateogry.
@@ -88,8 +100,11 @@ S. Martin
             </label>
         </div>
         <div>
-              <input class="form-control" type="text" placeholder="New Category"
+              <input id="dac-add-cat" class="form-control" type="text" placeholder="New Category"
                      data-bind="value: dac_new_category_name"></input>
+              <div id="dac-add-cat-error" class="invalid-feedback">
+                 Add category error.
+              </div>
          </div>
 
         <div style="margin-top: 20px">
@@ -99,6 +114,9 @@ S. Martin
             selection:browser_category_list.selection,
             progress:browser_category_list.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_cat_list_file,category:'dac-cat-file'"></slycat-parser-controls>
+        <label id="dac-upload-cats-error" style="display: none" class="invalid-text small text-danger">
+            Upload categories error.
+        </label>
         </div>
 
     </div>
@@ -108,13 +126,17 @@ S. Martin
 
         <label>Select columns to remove.
             <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the remove switch."></i>
+            <i class="fa fa-exclamation-triangle inline-help" style="color:orange" aria-hidden="true" title="NOTE: Once a column has been removed, it cannot be recovered!"></i>
         </label>
         <slycat-table-ingestion params="
             variables: dac_remove_cols,
             properties: [{name: 'Remove', type: 'bool'}]
         "></slycat-table-ingestion>
 
-        <label style="color:red; margin-top:15px">NOTE: Once a column has been removed, it cannot be recovered!</label>
+         <label id="dac-rm-col-error" style="display: none" class="invalid-text small text-danger">
+            Remove column error.
+         </label>
+
     </div>
 
     </div>
