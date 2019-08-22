@@ -26,6 +26,7 @@ parser.add_argument("--project-id", default=[], action="append",
                     help="Project ID to dump.  You may specify --project-id multiple times.")
 arguments = parser.parse_args()
 
+
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))

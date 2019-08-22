@@ -13,6 +13,7 @@ import d3 from "d3";
 import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import dacWizardUI from "../html/dac-table-wizard.html";
+import bookmark_manager from "js/slycat-bookmark-manager";
 
 function constructor(params)
 {
@@ -22,6 +23,9 @@ function constructor(params)
     // get project and model IDs
     component.project = params.projects()[0];
     component.model = params.models()[0];
+
+    // set up bookmark object
+    var bookmarker = bookmark_manager.create(component.project._id(), component.model._id());
 
     // tabs in wizard ui
     component.tab = ko.observable(0);
@@ -76,23 +80,12 @@ function constructor(params)
             {
 
                 // check for max categories setting in options
-                if ("artifact:dac-options" in result) {
+                bookmarker.getState(function(bookmark)
+                {
+                    if ("dac-MAX-CATS" in bookmark) {
+                        MAX_CATS = bookmark["dac-MAX-CATS"]; };
+                });
 
-                    // get freetext length
-                    client.get_model_parameter({
-                        mid: component.model._id(),
-                        aid: "dac-options",
-                        success: function (options)
-                        {
-                            // check for max categories options
-                            if (options.length > 6)
-                            {
-                                MAX_CATS = Number(options[6]);
-                            }
-                        }
-                    });
-
-                }
 
                 // if "dac-editable-columns" exists then initialize editable columns
                 if ("artifact:dac-editable-columns" in result)
@@ -182,13 +175,17 @@ function constructor(params)
         // if no name given, error to user
         if (component.dac_freetext_name() == "") {
 
-            dialog.ajax_error('Please enter a name for the new column in the "New Free Text Column" box.')
-                ("","","")
+            // show error below input box
+            $("#dac-free-text-name").addClass("is-invalid");
 
         } else {
 
             // show spinner and wait
             $(".browser-continue").toggleClass("disabled", true);
+
+            // show valid input
+            $("#dac-free-text-name").removeClass("is-invalid");
+            $("#dac-free-text-error").hide();
 
             // call server add new free text column
             client.get_model_command({
@@ -201,17 +198,20 @@ function constructor(params)
 
                     // if user was a reader, then error, otherwise go to model
                     if (result["error"] === "reader") {
-                        dialog.ajax_error("Access denied.  You must be a project writer or administrator to change the table data.")
-                            ("","","");
+
+                       $("#dac-free-text-error").text("Access denied. " +
+                            "You must be a project writer or administrator to change the table data.");
+                        $("#dac-free-text-error").show();
                         $(".browser-continue").toggleClass("disabled", false);
+
                     } else {
                         component.go_to_model();
                     }
                 },
                 error: function ()
                 {
-                    dialog.ajax_error('Server error creating new free text column.')
-                            ("","","");
+                    $("#dac-free-text-error").text('Server error creating new free text column.');
+                    $("#dac-free-text-error").show();
                     $(".browser-continue").toggleClass("disabled", false);
                 }
             });
@@ -222,19 +222,35 @@ function constructor(params)
     // add a category
     component.add_category = function () {
 
-        // if no name given, error to user
+        // remove add/upload errors
+        $("#dac-add-cat").removeClass("is-invalid");
+        $("#dac-upload-cats-error").hide();
+
+        // keep track of add category errors
+        var add_cat_errors = false;
+
+        // check for new name entered
         if (component.dac_new_category_name() == "") {
 
-            dialog.ajax_error('Please enter a name for the new category in the "New Category" box.')
-                ("","","")
+            // show error below input box
+            $("#dac-add-cat-error").text("Please enter a name for the new category.");
+            $("#dac-add-cat").addClass("is-invalid");
 
-        } else if (component.dac_categories().length >= MAX_CATS) {
+            add_cat_errors = true;
+        }
 
-            dialog.ajax_error('Number of categories exceeded.  Maximum number of categories is ' +
-                MAX_CATS + '.  (This can be changed using Edit -> Model Preferences.)')
-                ("","","")
+        // check number of categories before adding new category
+        if (component.dac_categories().length >= MAX_CATS) {
 
-        } else {
+            // show error message for too many categories
+            $("#dac-add-cat-error").text("Can't add category. Maximum number of categories is " +
+                MAX_CATS + '. (Change using Edit -> Model Preferences.)');
+            $("#dac-add-cat").addClass("is-invalid");
+
+            add_cat_errors = true;
+        }
+
+        if (add_cat_errors == false) {
 
             // check that category name is distinct
             var cat_name_new = true;
@@ -251,6 +267,10 @@ function constructor(params)
 
             // if name is distinct, then add to list
             if (cat_name_new) {
+
+                // unmark any entry errors
+                $("#dac-add-cat").removeClass("is-invalid");
+                $("#dac-sel-cats-error").hide();
 
                 // add category to attribute list for gui
                 cat_attributes.push({
@@ -271,119 +291,130 @@ function constructor(params)
             } else {
 
                 // otherwise name is already on list, report error
-                dialog.ajax_error("That category already exists in the category list.  Please use a new category name.")
-                    ("","","");
+                $("#dac-add-cat-error").text("Please enter a name not already present in the category list.");
+                $("#dac-add-cat").addClass("is-invalid");
 
             }
         }
     }
 
-    // upload a list of cateogries
+    // upload a list of categories
     component.upload_categories = function () {
 
-            // disable continue button since we are now uploading
-            $('.browser-continue').toggleClass("disabled", true);
+        // remove add/upload errors
+        $("#dac-add-cat").removeClass("is-invalid");
+        $("#dac-upload-cats-error").hide();
 
-            // load category file
-            var file = component.browser_category_list.selection()[0];
-            component.browser_category_list.progress(0);
-            var fileObject ={
-                pid: component.project._id(),
-                mid: component.model._id(),
-                file: file,
-                aids: ["dac-cat-list", "0", "list"],
-                parser: component.parser_cat_list_file(),
-                progress: component.browser_category_list.progress,
-                success: function(){
+        // disable continue button since we are now uploading
+        $('.browser-continue').toggleClass("disabled", true);
 
-                    // get category list from database
-                    client.get_model_parameter({
-                        mid: component.model._id(),
-                        aid: "dac-cat-list",
-                        success: function (cat_list) {
+        // load category file
+        var file = component.browser_category_list.selection()[0];
+        component.browser_category_list.progress(0);
+        var fileObject ={
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: file,
+            aids: ["dac-cat-list", "0", "list"],
+            parser: component.parser_cat_list_file(),
+            progress: component.browser_category_list.progress,
+            success: function(){
 
-                            // check list against current list for duplicates
-                            var cat_name_new = true;
-                            for (var i = 0; i != cat_attributes.length; ++i) {
+                // get category list from database
+                client.get_model_parameter({
+                    mid: component.model._id(),
+                    aid: "dac-cat-list",
+                    success: function (cat_list) {
 
-                                // check if user select/unselected a category
-                                cat_attributes[i]["Include"] = component.dac_categories()[i].Include();
+                        // check list against current list for duplicates
+                        var cat_name_new = true;
+                        for (var i = 0; i != cat_attributes.length; ++i) {
 
-                                // check if category already exists
-                                if (cat_list.indexOf(cat_attributes[i].name) != -1) {
-                                    cat_name_new = false;
-                                }
+                            // check if user select/unselected a category
+                            cat_attributes[i]["Include"] = component.dac_categories()[i].Include();
+
+                            // check if category already exists
+                            if (cat_list.indexOf(cat_attributes[i].name) != -1) {
+                                cat_name_new = false;
                             }
+                        }
 
-                            // check length of list + length of current selection
-                            if ((component.dac_categories().length +
-                                cat_list.length) >= MAX_CATS) {
+                        // check length of list + length of current selection
+                        if ((component.dac_categories().length +
+                            cat_list.length) >= MAX_CATS) {
 
-                                dialog.ajax_error('Too many categories in file. ' +
-                                    'Maximum number of categories is ' + MAX_CATS +
-                                    '.  (This can be changed using Edit -> Model Preferences.)')
-                                    ("","","")
-                                $('.browser-continue').toggleClass("disabled", false);
-
-                            // update categories, if possible
-                            } else if (cat_name_new) {
-
-                                for (i = 0; i != cat_list.length; i++) {
-
-                                    // add category to attribute list for gui
-                                    cat_attributes.push({
-                                                name: cat_list[i],
-                                                type: "string",
-                                                constant: true,
-                                                disabled: false,
-                                                Include: true,
-                                                hidden: false,
-                                                selected: false,
-                                                lastSelected: false,
-                                                tooltip: null
-                                            });
-
-                                    // make categories accessible by UI
-                                    mapping.fromJS(cat_attributes, component.dac_categories);
-
-                                    $('.browser-continue').toggleClass("disabled", false);
-
-                                }
-
-                            } else {
-
-                                // don't update categories (duplicate entries)
-                                dialog.ajax_error("Category file contains redundant category.  Please use new category names in file.")
-                                    ("","","");
-                                $('.browser-continue').toggleClass("disabled", false);
-
-                            }
-                        },
-                        error: function () {
-
-                            dialog.ajax_error("Server Error: Could not load the category list.")("","","");
+                            $("#dac-upload-cats-error").text("Can't upload categories. " +
+                                "Maximum number of categories is " + MAX_CATS + ". " +
+                                "(Change using Edit -> Model Preferences.)");
+                            $("#dac-upload-cats-error").show();
                             $('.browser-continue').toggleClass("disabled", false);
 
-                        },
-                    });
+                        // update categories, if possible
+                        } else if (cat_name_new) {
 
-                },
-                error: function(){
+                            for (i = 0; i != cat_list.length; i++) {
 
-                    dialog.ajax_error(
-                        "There was a problem parsing the category list file.  Is a file selected?")
-                        ("","","");
-                    $('.browser-continue').toggleClass("disabled", false);
+                                // add category to attribute list for gui
+                                cat_attributes.push({
+                                            name: cat_list[i],
+                                            type: "string",
+                                            constant: true,
+                                            disabled: false,
+                                            Include: true,
+                                            hidden: false,
+                                            selected: false,
+                                            lastSelected: false,
+                                            tooltip: null
+                                        });
 
-                }
-            };
-            fileUploader.uploadFile(fileObject);
+                                // make categories accessible by UI
+                                mapping.fromJS(cat_attributes, component.dac_categories);
+
+                            }
+
+                            $("#dac-upload-cats-error").hide();
+                            $("#dac-sel-cats-error").hide();
+                            $('.browser-continue').toggleClass("disabled", false);
+
+                        } else {
+
+                            // don't update categories (duplicate entries)
+                            $("#dac-upload-cats-error").text("Category file contains redundant category. " +
+                                "Make sure category names in file are unique.");
+                            $("#dac-upload-cats-error").show();
+                            $('.browser-continue').toggleClass("disabled", false);
+
+                        }
+                    },
+                    error: function () {
+
+                        $("#dac-upload-cats-error").text("Server Error: Could not load the category list."); +
+                        $("#dac-upload-cats-error").show();
+                        $('.browser-continue').toggleClass("disabled", false);
+
+                    },
+                });
+
+            },
+            error: function(){
+
+                $("#dac-upload-cats-error").text("There was a problem parsing the category list file.  Is a file selected?");
+                $("#dac-upload-cats-error").show();
+                $('.browser-continue').toggleClass("disabled", false);
+
+            }
+        };
+        fileUploader.uploadFile(fileObject);
 
     }
 
     // makes a categorical column and returns to model
     component.categorical_finish = function () {
 
+        // remove add/upload errors
+        $("#dac-add-cat").removeClass("is-invalid");
+        $("#dac-upload-cats-error").hide();
+        
         // record categories that user wants to use
         var cats_to_add = [];
         for(var i = 0; i != component.dac_categories().length; ++i) {
@@ -391,19 +422,37 @@ function constructor(params)
                 cats_to_add.push(cat_attributes[i].name);
         };
 
+        // keep track of any user errors
+        var entry_errors = false;
+
         // if no name given, error to user
         if (component.dac_categorical_name() == "") {
 
-            dialog.ajax_error('Please enter a name for the new column in the "New Cagegorical Column" box.')
-                ("","","")
-
-        // check to see if at least one category has been entered
-        } else if (cats_to_add.length == 1) {
-
-            dialog.ajax_error('Please enter/select at least one non "No Value" category.')
-                ("","","")
+            // show error below input box
+            $("#dac-cat-col-name").addClass("is-invalid");
+            entry_errors = true;
 
         } else {
+
+            // no naming error
+            $("#dac-cat-col-name").removeClass("is-invalid");
+
+        }
+
+        // check to see if at least one category has been entered
+        if (cats_to_add.length == 1) {
+
+            $("#dac-sel-cats-error").show();
+            entry_errors = true;
+
+        } else {
+
+            // no category selection error
+            $("#dac-sel-cats-error").hide();
+
+        }
+
+        if (entry_errors == false) {
 
             // show spinner and reload model
             $(".browser-continue").toggleClass("disabled", true);
@@ -420,9 +469,12 @@ function constructor(params)
 
                     // if user was a reader, then error, otherwise go to model
                     if (result["error"] === "reader") {
-                        dialog.ajax_error("Access denied. You must be a project writer or administrator to change the table data.")
-                            ("","","");
+
+                        $("#dac-upload-cats-error").text("Access denied. " +
+                            "You must be a project writer or administrator to change the table data.");
+                        $("#dac-upload-cats-error").show();
                         $(".browser-continue").toggleClass("disabled", false);
+
                     } else {
                         component.go_to_model();
                     };
@@ -430,8 +482,9 @@ function constructor(params)
                 },
                 error: function ()
                 {
-                    dialog.ajax_error('Server error creating new free categorical column.')
-                            ("","","");
+
+                    $("#dac-upload-cats-error").text('Server error creating new categorical column.');
+                    $("#dac-upload-cats-error").show();
                     $(".browser-continue").toggleClass("disabled", false);
                 }
             });
@@ -453,13 +506,16 @@ function constructor(params)
         // if no name given, error to user
         if (rm_columns.length == 0) {
 
-            dialog.ajax_error('Please select at least one column to remove.')
-                ("","","")
+            $("#dac-rm-col-error").text("Please select at least one column to remove.");
+            $("#dac-rm-col-error").show();
 
         } else {
 
             // show spinner and reload model
             $(".browser-continue").toggleClass("disabled", true);
+
+            // disable errors
+            $("#dac-rm-col-error").hide();
 
             // call server add new free text column
             client.get_model_command({
@@ -472,8 +528,8 @@ function constructor(params)
 
                     // if user was a reader, then error, otherwise go to model
                     if (result["error"] === "reader") {
-                        dialog.ajax_error("Access denied.  You must be a project writer or administrator to change the table data.")
-                            ("","","");
+                        $("#dac-rm-col-error").text("Access denied.  You must be a project writer or administrator to change the table data.");
+                        $("#dac-rm-col-error").show();
                         $(".browser-continue").toggleClass("disabled", false);
                     } else {
                         component.go_to_model();
@@ -482,8 +538,8 @@ function constructor(params)
                 },
                 error: function ()
                 {
-                    dialog.ajax_error('Server error removing columns.')
-                            ("","","");
+                    $("#dac-rm-col-error").text('Server error removing columns.');
+                    $("#dac-rm-col-error").show();
                     $(".browser-continue").toggleClass("disabled", false);
                 }
             });

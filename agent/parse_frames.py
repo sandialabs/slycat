@@ -240,8 +240,16 @@ for i in range(0, num_movies):
     frame_file_path, frame_file_name = \
         os.path.split(urlparse.urlparse(frame_files[i]).path)
 
+    # check for at lesat two dots in frame file name
+    frame_split = frame_file_name.split('.')
+    if len(frame_split) < 3:
+        log("[VS-LOG] Error: incorrect frame file name format.")
+        sys.exit()
+
     # get root file name, frame #, and extension
-    frame_root, frame_num, frame_ext = frame_file_name.split('.')
+    frame_ext = frame_split[-1]
+    frame_num = frame_split[-2]
+    frame_root = ".".join(frame_split[0:-2])
 
     # get all files in frame path
     files_in_path = os.listdir(frame_file_path)

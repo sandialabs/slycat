@@ -60,6 +60,9 @@ Matthew Letter
             variables: var_attributes,
             properties: [{name: 'Include', type: 'bool'}]
         "></slycat-table-ingestion>
+         <label id="dac-inc-var-error" style="display: none" class="invalid-text small text-danger">
+            Please select at least one variable to include in the analysis.
+         </label>
     </div>
 
     <!-- The slycat-table-ingestion tag indicates what to name columns (name: ) and whether
@@ -73,6 +76,9 @@ Matthew Letter
             variables: meta_attributes,
             properties: [{name: 'Include', type: 'bool'}]
         "></slycat-table-ingestion>
+        <label id="dac-inc-meta-error" style="display: none" class="invalid-text small text-danger">
+            Please select at least one meta-variable to include in the analysis.
+         </label>
     </div>
 
     <!-- Options for changing the color scheme in DAC. -->
@@ -116,7 +122,10 @@ Matthew Letter
                     title="Length beyond which labels for variables and metadata are truncated in the Dial-A-Cluster user interface (defaults to 20, minimum is 5)."></i>
             </label>
             <div class="col-sm-2">
-              <input class="form-control" type="number" min="5" placeholder="20" data-bind="value: dac_max_label_length"></input>
+              <input id="dac-label-length" class="form-control" type="number" min="5" placeholder="20" data-bind="value: dac_max_label_length"></input>
+              <div class="invalid-feedback">
+                 Must be &ge; 5.
+              </div>
             </div>
             </div>
         </div>
@@ -128,7 +137,10 @@ Matthew Letter
                    title="Maximum number of plots to display at a time. Beyond this number only a random subset of the selected plots are shown (defaults to 50 per selection, minimum is 10)."></i>
             </label>
             <div class="col-sm-2">
-                <input class="form-control" type="number" min="10" placeholder="50" data-bind="value: dac_max_num_plots"></input>
+                <input id="dac-max-plots" class="form-control" type="number" min="10" placeholder="50" data-bind="value: dac_max_num_plots"></input>
+                <div class="invalid-feedback">
+                  Must be &ge; 10.
+                </div>
             </div>
             <div class="col-sm-1"></div>
             <label class="col-sm-3 col-form-label">Max. plot resolution
@@ -136,7 +148,10 @@ Matthew Letter
                     title="Maximum number of points to include in a variable plot (for example, number of time points in a time series plot).  Beyond this number plots are produced by subsampling from original data (defaults to 500, minimum is 10)."></i>
             </label>
             <div class="col-sm-2">
-              <input class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_time_points"></input>
+              <input id="dac-max-time-points" class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_time_points"></input>
+              <div class="invalid-feedback">
+                Must be &ge; 10.
+              </div>
             </div>
             </div>
         </div>
@@ -148,7 +163,10 @@ Matthew Letter
                     title="Number of points in scatter plot beyond which animations between coordinate changes are no longer used, for example adjusting sliders or zooming (defaults to 2500, minimum is 10)."></i>
             </label>
             <div class="col-sm-2">
-              <input class="form-control" type="number" min="10" placeholder="20" data-bind="value: dac_max_points_animate"></input>
+              <input id="dac-max-anim" class="form-control" type="number" min="10" placeholder="20" data-bind="value: dac_max_points_animate"></input>
+              <div class="invalid-feedback">
+                Must be &ge; 10.
+              </div>
             </div>
             </div>
         </div>
@@ -157,18 +175,24 @@ Matthew Letter
             <div class="row">
             <label class="col-sm-3 col-form-label">Max. categories
                <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                  title="Maximum number of categories allowed for editable columns."></i>
+                  title="Maximum number of categories allowed for editable columns (defaults to 50, minimum is 5)."></i>
            </label>
            <div class="col-sm-2">
-               <input class="form-control" type="number" min="5" placeholder="50" data-bind="value: dac_max_cats"></input>
+               <input id="dac-max-cats" class="form-control" type="number" min="5" placeholder="50" data-bind="value: dac_max_cats"></input>
+               <div class="invalid-feedback">
+                 Must be &ge; 5.
+               </div>
            </div>
             <div class="col-sm-1"></div>
             <label class="col-sm-3 col-form-label">Max. freetext length
                <i class="fa fa-question-circle inline-help" aria-hidden="true"
-                   title="Maximum length of freetext entries for editable columns."></i>
+                   title="Maximum length of freetext entries for editable columns (defaults to 500, minimum is 10)."></i>
            </label>
            <div class="col-sm-2">
-             <input class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_freetext_len"></input>
+             <input id="dac-max-freetext" class="form-control" type="number" min="10" placeholder="500" data-bind="value: dac_max_freetext_len"></input>
+             <div class="invalid-feedback">
+                 Must be &ge; 10.
+             </div>
            </div>
            </div>
         </div>
@@ -184,6 +208,9 @@ Matthew Letter
                title="Render the scatter plot with circles or squares."></i>
             </label>
         </div>
+        <label id="dac-init-MDS-error" style="display: none; margin-top:15px" class="invalid-text small text-danger">
+            Server error: could not re-initialize MDS coords.
+        </label>
 
     </div>
 

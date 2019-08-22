@@ -36,6 +36,9 @@ S. Martin
             <text id="dac-add-data-project-model">Project onto this model.</text>
         </label>
         </div>
+        <label id="dac-load-model-error" style="display: none" class="invalid-text small text-danger">
+            Load model error.
+        </label>
     </div>
 
 
@@ -47,6 +50,9 @@ S. Martin
             variables: model_attributes,
             properties: [{name: 'Include', type: 'bool'}]
         "></slycat-table-ingestion>
+        <label id="dac-inc-model-error" style="display: none" class="invalid-text small text-danger">
+            Include model error.
+        </label>
     </div>
 
 
@@ -55,6 +61,9 @@ S. Martin
         <form class="form-horizontal" role="form" onsubmit="return false">
             <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         </form>
+        <label id="dac-combine-model-error" style="display: none" class="invalid-text small text-danger">
+            Combined model error.
+        </label>
     </div>
 
     </div>

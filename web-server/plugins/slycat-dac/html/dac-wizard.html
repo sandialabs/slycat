@@ -37,6 +37,9 @@ S. Martin
             PTS CSV/META Zip Format
         </label>
         </div>
+        <label id="dac-load-model-error" style="display: none" class="invalid-text small text-danger">
+            Load model error.
+        </label>
     </div>
 
     <!-- This tab loads data from the local host, in DAC Generic Format, using the slycat-parser-controls to
@@ -52,6 +55,9 @@ S. Martin
         <slycat-parser-controls params="parser:parser_dac_file,category:'dac-gen-zip-file'"></slycat-parser-controls>
             <label class="dac-do-not-close-browser"
                    style="display:none; color:red">Please wait for file to upload (do not close browser).</label>
+             <label id="dac-gen-file-error" style="display: none" class="invalid-text small text-danger">
+                DAC file error.
+            </label>
         </div>
 
     </div>
@@ -69,16 +75,26 @@ S. Martin
         <slycat-parser-controls params="parser:parser_zip_file,category:'dac-zip-file'"></slycat-parser-controls>
             <label class="dac-do-not-close-browser"
                    style="display:none; color:red">Please wait for file to upload (do not close browser).</label>
+            <label id="dac-pts-file-error" style="display: none" class="invalid-text small text-danger">
+                DAC file error.
+            </label>
         </div>
+
 
         <div style="margin-top: 30px">
           <label>Minimum number of time points in a CSV file:</label>
-          <input class="form-control" type="number" min="2" data-bind="value: csv_min_size">
+          <input id="dac-min-CSV" class="form-control" type="number" min="2" data-bind="value: csv_min_size">
+           <div class="invalid-feedback">
+               Each CSV file must have at least two values.
+           </div>
         </div>
 
         <div style="margin-top: 20px; margin-bottom: 20px">
           <label>Minimum number of digitizers in a test:</label>
-          <input class="form-control" type="number" min="1" data-bind="value: min_num_dig">
+          <input id="dac-min-dig" class="form-control" type="number" min="1" data-bind="value: min_num_dig">
+          <div class="invalid-feedback">
+               Each test must have at least one digitizer.
+          </div>
         </div>
 
     </div>
@@ -88,6 +104,9 @@ S. Martin
         <form class="form-horizontal" role="form" onsubmit="return false">
             <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         </form>
+        <label id="dac-finish-model-error" style="display: none" class="invalid-text small text-danger">
+            Finish model error.
+        </label>
     </div>
 
     </div>

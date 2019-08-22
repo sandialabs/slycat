@@ -72,7 +72,8 @@ function constructor(params)
             list_models();
         },
         error: function() {
-            dialog.ajax_error("Error creating model.")("","","");
+            $("#dac-load-model-error").text("Error creating model.");
+            $("#dac-load-model-error").show();
         }
         });
 
@@ -154,9 +155,13 @@ function constructor(params)
             aid: "dac-ui-parms",
             value: dac_ui_parms,
             error: function () {
-                dialog.ajax_error("Error uploading UI preferences.")("","","");
+
+                $("#dac-load-model-error").text("Error uploading UI preferences.");
+                $("#dac-load-model-error").show();
+
                 $('.dac-gen-browser-continue').toggleClass("disabled", false);
                 $('.pts-process-continue').toggleClass('disabled', false);
+
             },
         });
 
@@ -168,8 +173,8 @@ function constructor(params)
         client.get_project_models({
             pid: origin_project._id(),
             error: function () {
-                dialog.ajax_error("Server error: could not retrieve models.")("","","");
-
+                $("#dac-load-model-error").text("Server error: could not retrieve models.");
+                $("#dac-load-model-error").show();
             },
             success: function (result) {
 
@@ -227,12 +232,16 @@ function constructor(params)
         // must select at least one model
         if (models_selected.length == 1) {
 
-            dialog.ajax_error("Please select at least one model to include in the analysis.")("","","");
+            $("#dac-inc-model-error").text("Please select at least one model to include in the analysis.")
+            $("#dac-inc-model-error").show();
 
         } else {
 
             // turn on wait button
             $('.dac-check-compatibility-continue').toggleClass("disabled", true);
+
+            // turn off any errors
+            $("#dac-inc-model-error").hide();
 
             // call server to check model compatibility
             client.get_model_command({
@@ -247,7 +256,9 @@ function constructor(params)
 
 		            // check for failure
 		            if (result[0] == "Error") {
-		                dialog.ajax_error("Error: " + result[1])("","","");
+
+		                $("#dac-inc-model-error").text("Error: " + result[1] + "  Please make new selection.");
+		                $("#dac-inc-model-error").show();
 
 		            // continue with combination
 		            } else {
@@ -265,7 +276,9 @@ function constructor(params)
 		        	// turn off wait button
 		            $('.dac-check-compatibility-continue').toggleClass("disabled", false);
 
-		            dialog.ajax_error("Server error: could not check model compatibility.")("","","");
+                    $("#dac-inc-model-error").text("Server error: could not check model compatibility.");
+                    $("#dac-inc-model-error").show();
+
 		        }
             });
         }
@@ -288,9 +301,12 @@ function constructor(params)
         // check if name is valid
         if (component.model.name() == "") {
 
-            dialog.ajax_error("Please provide a non-empty model name.")("","","");
+            $("#slycat-model-name").addClass("is-invalid");
 
         } else {
+
+            // turn off model name error
+            $("#slycat-model-name").removeClass("is-invalid");
 
             // declare import a success
             client.put_model(
@@ -323,7 +339,8 @@ function constructor(params)
                                     // turn off wait button
                                     $('.dac-launch-thread').toggleClass("disabled", false);
 
-                                    dialog.ajax_error("Server error: could not combine models.")("","","");
+                                    $("#dac-combine-model-error").text("Server error: could not combine models.")
+                                    $("#dac-combine-model-error").show();
                                 }
                             });
 
@@ -331,7 +348,10 @@ function constructor(params)
                     });
                 },
                 error: function() {
-                    dialog.ajax_error("Error finishing model.")("","","");
+
+                    $("#dac-combine-model-error").text("Error finishing model.")
+                    $("#dac-combine-model-error").show();
+
                 }
             });
 
