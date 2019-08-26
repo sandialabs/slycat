@@ -126,7 +126,7 @@ export default function ControlsButtonVarOptions(props) {
                         <label htmlFor='font-size'>Size</label>
                         <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
                           value={props.font_size} 
-                          onChange={props.onFontSizeChange}
+                          onChange={() => props.changeFontSize(event.target.value)}
                         />
                       </div>
                     </div>
@@ -141,7 +141,7 @@ export default function ControlsButtonVarOptions(props) {
                 </div>
                 <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                   <SlycatVariableAliasLabels 
-                    // variables={variables}
+                    variableAliases={props.variable_aliases}
                     metadata={props.metadata}
                     onChange={props.onVariableAliasLabelsChange}
                   />

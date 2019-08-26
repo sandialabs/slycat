@@ -96,6 +96,7 @@ $(document).ready(function() {
   var axes_font_size = 12;
   var axes_font_family = "Arial";
   var axes_variables_scale = {};
+  var variable_aliases = {};
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -276,6 +277,7 @@ $(document).ready(function() {
       axes_font_size = store.getState().fontSize;
       axes_font_family = store.getState().fontFamily;
       axes_variables_scale = store.getState().axesVariables;
+      variable_aliases = store.getState().variableAliases;
 
       // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
       filter_manager.set_bookmark(bookmark);
