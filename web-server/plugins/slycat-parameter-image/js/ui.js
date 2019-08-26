@@ -273,6 +273,8 @@ $(document).ready(function() {
       };
       window.store.subscribe(bookmarkState);
 
+      window.store.subscribe(update_scatterplot_labels);
+
       // Set local variables based on Redux store
       axes_font_size = store.getState().fontSize;
       axes_font_family = store.getState().fontFamily;
@@ -664,9 +666,9 @@ $(document).ready(function() {
       $("#scatterplot").scatterplot({
         model: model,
         indices: indices,
-        x_label: table_metadata["column-names"][x_index],
-        y_label: table_metadata["column-names"][y_index],
-        v_label: table_metadata["column-names"][v_index],
+        x_label: get_variable_label(x_index),
+        y_label: get_variable_label(y_index),
+        v_label: get_variable_label(v_index),
         x: x,
         y: y,
         v: v,
@@ -1165,7 +1167,7 @@ $(document).ready(function() {
       v_string : table_metadata["column-types"][v_index]=="string", 
       colorscale : colorscale
     });
-    $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
+    $("#scatterplot").scatterplot("option", "v_label", get_variable_label(v_index));
   }
 
   function update_widgets_when_hidden_simulations_change()
@@ -1371,11 +1373,30 @@ $(document).ready(function() {
           x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
           x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          x_label:table_metadata["column-names"][variable],
+          x_label:get_variable_label(variable),
         });
       },
       error : artifact_missing
     });
+  }
+
+  function update_scatterplot_labels()
+  {
+    $("#scatterplot").scatterplot("option", {
+      x_label: get_variable_label(x_index),
+      y_label: get_variable_label(y_index),
+      v_label: get_variable_label(v_index),
+    });
+  }
+
+  function get_variable_label(variable)
+  {
+    if(window.store.getState().variableAliases[variable] !== undefined)
+    {
+      return window.store.getState().variableAliases[variable];
+    }
+    
+    return table_metadata["column-names"][variable]
   }
 
   function update_scatterplot_y(variable)
@@ -1392,7 +1413,7 @@ $(document).ready(function() {
           y_index: variable,
           y_string: table_metadata["column-types"][variable]=="string", 
           y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          y_label:table_metadata["column-names"][variable],
+          y_label:get_variable_label(variable),
         });
       },
       error : artifact_missing

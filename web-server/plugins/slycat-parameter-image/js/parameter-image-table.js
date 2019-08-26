@@ -81,13 +81,23 @@ $.widget("parameter_image.table",
       self.element.trigger("variable-sort-changed", [column, order]);
     }
 
+    function get_variable_label(variable)
+    {
+      if(window.store.getState().variableAliases[variable] !== undefined)
+      {
+        return window.store.getState().variableAliases[variable];
+      }
+      
+      return self.options.metadata["column-names"][variable]
+    }
+
     function make_column(column_index, header_class, cell_class, formatter)
     {
       var column = {
         id : column_index,
         field : column_index,
-        name : self.options.metadata["column-names"][column_index],
-        toolTip : self.options.metadata["column-names"][column_index],
+        name : get_variable_label(column_index),
+        toolTip : get_variable_label(column_index),
         sortable : false,
         headerCssClass : header_class,
         cssClass : cell_class,
@@ -295,6 +305,24 @@ $.widget("parameter_image.table",
     self.grid.init();
 
     table_helpers._set_selected_rows_no_trigger(self);
+
+    const update_variable_aliases = () => {
+      let label;
+
+      for(var i in self.columns)
+      {
+        label = get_variable_label(self.columns[i].id);
+        // Update column name and tooltip if it has changed
+        if(label != self.columns[i].name)
+        {
+          self.columns[i].name = label;
+          self.columns[i].tooltip = label;
+          self.grid.updateColumnHeader(self.columns[i].id, label, label);
+        }
+      }
+    };
+
+    window.store.subscribe(update_variable_aliases);
   },
 
   resize_canvas: function()
