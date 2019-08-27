@@ -260,12 +260,20 @@ for i in range(0, num_movies):
     for j in range(0, len(files_in_path)):
 
         # get root file name
-        file_root = files_in_path[j].split(".")
+        file_split = files_in_path[j].split(".")
+
+        # only consider files with at least two dots
+        if len(file_split) < 3:
+            continue
+
+        # get file root & frame num
+        file_root = ".".join(file_split[0:-2])
+        file_num = file_split[-2]
 
         # compare to file root of frames of interest
-        if frame_root == file_root[0]:
+        if frame_root == file_root:
             frames_in_path.append(files_in_path[j])
-            frame_nums_in_path.append(int(file_root[1]))
+            frame_nums_in_path.append(int(file_num))
 
     # order frames in path by frame number
     all_frame_files.append([os.path.join(frame_file_path, frames_in_path[j])
