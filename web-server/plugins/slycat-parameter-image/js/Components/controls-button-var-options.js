@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
-import SlycatVariableAliasLabels from "js/slycat-variable-alias-labels";
+import VariableAliasLabels from "components/variable-alias-labels";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";

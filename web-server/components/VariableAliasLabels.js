@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import css from "css/slycat-variable-alias-labels.scss";
 
-export default function SlycatVariableAliasLabels(props) {
+export default function VariableAliasLabels(props) {
 
   let variables = props.metadata['column-names'];
   let minLength = 1;
