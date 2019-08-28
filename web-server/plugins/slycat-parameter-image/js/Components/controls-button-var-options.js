@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
-import VariableAliasLabels from "components/variable-alias-labels";
+import VariableAliasLabels from "components/VariableAliasLabels";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
@@ -10,6 +10,21 @@ import $ from "jquery";
 export default function ControlsButtonVarOptions(props) {
   const modalId = 'varOptionsModal';
   const title = 'Display Settings';
+
+  function aliasesValid() {
+    let aliasForm = document.getElementById('variable-alias-tab-content');
+    if(aliasForm)
+    {
+      let inputs = aliasForm.querySelectorAll('input');
+      for (const input of inputs) {
+        if(input.checkValidity() === false)
+        {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   function closeModal(e) {
     $('#' + modalId).modal('hide');
@@ -85,7 +100,7 @@ export default function ControlsButtonVarOptions(props) {
           <div className='modal-content'>
             <div className='modal-header'>
               <h3 className='modal-title'>{title}</h3>
-              <button type='button' className='close' data-dismiss='modal' aria-label='Close'>
+              <button type='button' className='close' data-dismiss='modal' aria-label='Close' disabled={!aliasesValid()}>
                 <span aria-hidden='true'>&times;</span>
               </button>
             </div>
@@ -140,7 +155,7 @@ export default function ControlsButtonVarOptions(props) {
                   />
                 </div>
                 <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
-                  <SlycatVariableAliasLabels 
+                  <VariableAliasLabels 
                     variableAliases={props.variable_aliases}
                     metadata={props.metadata}
                     onChange={props.onVariableAliasLabelsChange}
@@ -150,7 +165,9 @@ export default function ControlsButtonVarOptions(props) {
 
             </div>
             <div className='modal-footer'>
-              <button type='button' className='btn btn-primary' onClick={closeModal}>
+              <button type='button' className='btn btn-primary' onClick={closeModal}
+                disabled={!aliasesValid()}
+              >
                 Close
               </button>
             </div>
