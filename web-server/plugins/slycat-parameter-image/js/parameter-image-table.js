@@ -14,6 +14,7 @@ import "slickgrid/slick.grid";
 import "slickgrid/plugins/slick.rowselectionmodel";
 import "slickgrid/plugins/slick.headerbuttons";
 import "slickgrid/plugins/slick.autotooltips";
+import he from 'he';
 
 $.widget("parameter_image.table",
 {
@@ -83,12 +84,18 @@ $.widget("parameter_image.table",
 
     function get_variable_label(variable)
     {
+      let label;
       if(window.store.getState().variableAliases[variable] !== undefined)
       {
-        return window.store.getState().variableAliases[variable];
+        label= window.store.getState().variableAliases[variable];
       }
-      
-      return self.options.metadata["column-names"][variable]
+      else
+      {
+        label = self.options.metadata["column-names"][variable];
+      }
+      // Using he package to encode label text otherwise slickgrid will 
+      // execute <scrpt> tags in it and choke on other code
+      return he.encode(label);
     }
 
     function make_column(column_index, header_class, cell_class, formatter)
