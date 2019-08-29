@@ -12,19 +12,27 @@ S. Martin
 	<div id="vs-progress-feedback" class="bootstrap-styles" style="margin: 20px;">
 
 		<label>Data is being processed for the model (it is safe to close the browser):</label>
-			<div class="progress">
-				<div id="vs_processing_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-					 aria-valuemin="0"
-					 aria-valuemax="100">
-				</div>
+		<div style="float: right;">
+			<button id="vs-reconnect-button"class="btn btn-outline-secondary btn-sm"
+					title="If progress has stalled, your connection to the cluster may have dropped.  You can use this button to reset the connection.">
+				Re-connect</button>
+		</div>
+
+		<div class="progress" style="margin-top: 5px;">
+			<div id="vs_processing_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+				 aria-valuemin="0"
+				 aria-valuemax="100">
 			</div>
 
+		</div>
+		<div style="margin-top:15px">
+			<label>Process Results (to pause error scrolling click on text box, click outside text box to resume):</label>
+		</div>
 
-		<label>Process Results:</label>
-			<div style="margin-top: 0px;">
-	          <textarea id="vs_processing_textarea" rows="20" class="form-control" readonly>Launching Job ...
-    	      </textarea>
-			</div>
+		<div style="margin-top: 0px;">
+		  <textarea id="vs_processing_textarea" rows="20" class="form-control" readonly>Launching Job ...
+		  </textarea>
+		</div>
 
 	</div>
 
