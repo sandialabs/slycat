@@ -107,6 +107,7 @@ def start(root_path, config_file):
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
+  dispatcher.connect("put-project-data-parameter", "/data/:did/aids/:aid", slycat.web.server.handlers.put_project_data_parameter, conditions={"method": ["PUT"]})
   dispatcher.connect("post-project-data", "/projects/data/:pid", slycat.web.server.handlers.create_project_data_from_pid, conditions={"method": ["POST"]})
   dispatcher.connect("get-project-file-names", "/projects/:pid/name", slycat.web.server.handlers.get_project_file_names, conditions={"method": ["GET"]})
   #TODO: scrub sid
