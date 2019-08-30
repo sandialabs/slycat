@@ -24,6 +24,7 @@ import six
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
 model_locks = {}
+project_data_locks = {}
 
 def tonative(n, encoding='ISO-8859-1'):
     """Return the given string as a native string in the given encoding."""
@@ -438,6 +439,11 @@ def put_model_inputs(database, model, source, deep_copy=False):
             "_rev"]  # This is a workaround for the fact that put_attachment() doesn't update the revision number for us.
         database.save(model)
 
+def get_project_data_lock(did):
+    if did in project_data_locks:
+        return project_data_locks[did]
+    project_data_locks[did] = threading.Lock()
+    return project_data_locks[did]
 
 def get_model_lock(model_id):
     if model_id in model_locks:
@@ -445,6 +451,13 @@ def get_model_lock(model_id):
     model_locks[model_id] = threading.Lock()
     return model_locks[model_id]
 
+def put_project_data_parameter(database, project_data, aid, value, input=False):
+    with get_project_data_lock(project_data["_id"]):
+        project_data["artifact:%s" % aid] = value
+        project_data["artifact-types"][aid] = "json"
+        if input:
+            project_data["input-artifacts"] = list(set(project_data["input-artifacts"] + [aid]))
+        database.save(project_data)
 
 def put_model_parameter(database, model, aid, value, input=False):
     with get_model_lock(model["_id"]):
