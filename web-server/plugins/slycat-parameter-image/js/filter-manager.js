@@ -62,6 +62,36 @@ FilterManager.prototype.notify_controls_ready = function() {
 
 FilterManager.prototype.build_sliders = function(controls_ready) {
   var self = this;
+
+  // Looks up the variable's label in the Redux store and returns it 
+  // if it exists. Otherwise just returns the variable's column name from metadata.
+  var get_variable_label = function(variable)
+  {
+    let label;
+    if(window.store.getState().variableAliases[variable] !== undefined)
+    {
+      label= window.store.getState().variableAliases[variable];
+    }
+    else
+    {
+      label = self.table_metadata["column-names"][variable];
+    }
+    // Using he package to encode label text otherwise slickgrid will 
+    // execute <scrpt> tags in it and choke on other code
+    // return he.encode(label);
+    return label;
+  }
+
+  // Updates allFilters with variable labels if they exist
+  const update_variable_aliases = () => {
+    self.allFilters().forEach(function(filter){
+      filter.name(get_variable_label(filter.index()));
+    });
+
+  };
+  
+  window.store.subscribe(update_variable_aliases);
+
   if(!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics 
     && (self.table_statistics.length == self.table_metadata["column-count"]) && self.other_columns) 
   {
@@ -102,7 +132,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     var buildCategoryFilter = function(index){
       var categories = ko.observableArray();
       self.allFilters.push({
-        name: ko.observable( self.table_metadata["column-names"][index] ),
+        name: ko.observable( get_variable_label(index) ),
         type: ko.observable('category'),
         index: ko.observable( index ),
         active: ko.observable(false),
@@ -122,7 +152,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
       var high = ko.observable( self.table_statistics[index]["max"] );
       var low = ko.observable( self.table_statistics[index]["min"] );
       self.allFilters.push({
-        name: ko.observable( self.table_metadata["column-names"][index] ),
+        name: ko.observable( get_variable_label(index) ),
         type: ko.observable('numeric'),
         index: ko.observable( index ),
         max_stats: ko.observable( self.table_statistics[index]["max"] ),
@@ -143,6 +173,11 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     var rateLimit = 500;
     if ("allFilters" in self.bookmark) {
       self.allFilters = mapping.fromJS(self.bookmark["allFilters"]);
+
+      // Can't trust that bookmark contains accurate variable labels, so 
+      // updating them here based on what's in the redux store.
+      update_variable_aliases();
+
       // Can't trust that bookmark contains accurare categorical/numeric type information, so must verify here
       for(var i=self.allFilters().length-1; i >= 0; i--) 
       {
