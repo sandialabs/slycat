@@ -85,9 +85,9 @@ $.widget("parameter_image.table",
     function get_variable_label(variable)
     {
       let label;
-      if(window.store.getState().variableAliases[variable] !== undefined)
+      if(window.store.getState().derived.variableAliases[variable] !== undefined)
       {
-        label= window.store.getState().variableAliases[variable];
+        label= window.store.getState().derived.variableAliases[variable];
       }
       else
       {

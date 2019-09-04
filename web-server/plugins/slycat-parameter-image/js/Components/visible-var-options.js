@@ -12,7 +12,7 @@ const mapStateToProps = (state, ownProps) => {
     font_size: state.fontSize,
     font_family: state.fontFamily,
     axes_variables_scale: state.axesVariables,
-    variable_aliases: state.variableAliases,
+    variable_aliases: state.derived.variableAliases,
   }
 }
 

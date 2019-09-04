@@ -9,7 +9,6 @@ const initialState = {
   fontSize: 15,
   fontFamily: "Arial",
   axesVariables: {},
-  variableAliases: {},
 }
 
 export default function slycat(state = initialState, action) {
@@ -28,7 +27,13 @@ export default function slycat(state = initialState, action) {
       })
     case CHANGE_VARIABLE_ALIAS_LABEL:
       return Object.assign({}, state, {
-        variableAliases: Object.assign({}, state.variableAliases, {[action.aliasVariable]: action.aliasLabel})
+        derived: {
+          ...state.derived,
+          variableAliases: {
+            ...state.derived.variableAliases,
+            [action.aliasVariable]: action.aliasLabel
+          }
+        }
       })
     default:
       return state

@@ -144,7 +144,7 @@ $.widget("parameter_image.controls",
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}
-        variable_aliases={window.store.getState().variableAliases}
+        variable_aliases={window.store.getState().derived.variableAliases}
       />)
     ;
 
@@ -168,7 +168,7 @@ $.widget("parameter_image.controls",
     // each time the Redux state changes. This is a work around to be used only
     // until we conver PS to React because it currently uses local state in the controls bar.
     const update_variable_aliases = () => {
-      self.ControlsBarComponent.setState({variable_aliases: window.store.getState().variableAliases});
+      self.ControlsBarComponent.setState({variable_aliases: window.store.getState().derived.variableAliases});
     };
     window.store.subscribe(update_variable_aliases);
   },
