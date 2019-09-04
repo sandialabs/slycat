@@ -166,6 +166,30 @@ module.put_project_csv_data = function(params)
       });
 };
 
+module.put_project_data_parameter = function(params)
+{
+  $.ajax({
+    contentType: "application/json",
+    type: "PUT",
+    url: api_root + "data/" + params.did + "/aids/" + params.aid,
+    data: JSON.stringify(
+    {
+      value: params.value,
+      input: params.input === undefined ? false : params.input ? true : false
+    }),
+    success: function (result) {
+      if (params.success) {
+        params.success(result);
+      }
+    },
+    error: function (request, status, reason_phrase) {
+      if (params.error) {
+        params.error(request, status, reason_phrase);
+      }  
+    }
+  });
+};
+
 module.get_project_file_names = function(params) {
  $.ajax(
     {
