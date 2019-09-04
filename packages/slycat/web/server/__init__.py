@@ -454,7 +454,9 @@ def get_model_lock(model_id):
 def put_project_data_parameter(database, project_data, aid, value, input=False):
     with get_project_data_lock(project_data["_id"]):
         project_data["artifact:%s" % aid] = value
-        project_data["artifact-types"][aid] = "json"
+        # Alex commenting this out since it results in a KeyError: 'artifact-types'
+        # because there is no 'artifact-types' key on a project_data 
+        # project_data["artifact-types"][aid] = "json"
         if input:
             project_data["input-artifacts"] = list(set(project_data["input-artifacts"] + [aid]))
         database.save(project_data)

@@ -1034,7 +1034,9 @@ def put_model_inputs(mid):
 @cherrypy.tools.json_in(on=True)
 def put_project_data_parameter(did, aid):
     database = slycat.web.server.database.couchdb.connect()
-    project_data = database.get("project-data", did)
+    # project_data = database.get("project-data", did)
+    # Alex changing dash to underscore, otherwise this breaks
+    project_data = database.get("project_data", did)
     project = database.get("project", project_data["project"])
     slycat.web.server.authentication.require_project_writer(project)
 
