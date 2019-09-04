@@ -166,6 +166,26 @@ module.put_project_csv_data = function(params)
       });
 };
 
+module.get_project_data = function(params)
+{
+  $.ajax(
+  {
+    dataType: "json",
+    type: "GET",
+    url: api_root + "data/" + params.did,
+    success: function(result)
+    {
+      if(params.success)
+        params.success(result);
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(params.error)
+        params.error(request, status, reason_phrase);
+    }
+  });
+};
+
 module.put_project_data_parameter = function(params)
 {
   $.ajax({
