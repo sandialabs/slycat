@@ -269,7 +269,7 @@ $(document).ready(function() {
         did: model.project_data[0],
         success: function(project_data)
         {
-          if(project_data['artifact:variable_aliases'] !== undefined) {ß
+          if(project_data['artifact:variable_aliases'] !== undefined) {
             variable_aliases = project_data['artifact:variable_aliases'];
           }
 
