@@ -6,6 +6,8 @@ import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
 import $ from "jquery";
+import client from "js/slycat-web-client";
+import * as dialog from "js/slycat-dialog";
 
 export default function ControlsButtonVarOptions(props) {
   const modalId = 'varOptionsModal';
@@ -27,7 +29,17 @@ export default function ControlsButtonVarOptions(props) {
   }
 
   function closeModal(e) {
-    $('#' + modalId).modal('hide');
+    // Write variable aliases to database
+    client.put_project_data_parameter({
+      did: props.model.project_data[0],
+      aid: 'variable_aliases',
+      input: false,
+      value: props.variable_aliases,
+      success: function(response) {
+        $('#' + modalId).modal('hide');
+      },
+      error: dialog.ajax_error("There was an error saving the variable alias labels."),
+    });
   }
 
   let axes_variables = [];
