@@ -269,7 +269,9 @@ $(document).ready(function() {
         did: model.project_data[0],
         success: function(project_data)
         {
-          variable_aliases = project_data['artifact:variable_aliases'];
+          if(project_data['artifact:variable_aliases'] !== undefined) {ß
+            variable_aliases = project_data['artifact:variable_aliases'];
+          }
 
           // Create Redux store and set its state based on what's in the bookmark
           const state_tree = {
