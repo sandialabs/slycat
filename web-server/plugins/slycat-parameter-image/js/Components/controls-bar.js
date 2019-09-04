@@ -266,6 +266,7 @@ class ControlsBar extends React.Component {
               selection={this.state.selection} 
               hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} 
+              model={this.props.model}
               model_name={this.props.model_name} 
               metadata={this.props.metadata}
               indices={this.props.indices} 

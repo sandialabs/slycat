@@ -15,6 +15,7 @@ $.widget("parameter_image.controls",
   {
     "mid" : null,
     "model_name" : null,
+    "model" : null,
     "aid" : null,
     "metadata" : null,
     "x-variable" : null,
@@ -135,6 +136,7 @@ $.widget("parameter_image.controls",
         pid={self.options.pid}
         mid={self.options.mid}
         aid={self.options.aid}
+        model={self.options.model}
         model_name={self.options.model_name}
         metadata={self.options.metadata}
         indices={self.options.indices}

@@ -7,7 +7,7 @@ import {
 } from '../actions';
 import ControlsButtonVarOptions from './controls-button-var-options';
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
   return {
     font_size: state.fontSize,
     font_family: state.fontFamily,

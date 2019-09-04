@@ -791,6 +791,7 @@ $(document).ready(function() {
 
       $("#controls").controls({
         mid : model_id,
+        model: model,
         model_name: window.model_name,
         aid : "data-table",
         metadata: table_metadata,
