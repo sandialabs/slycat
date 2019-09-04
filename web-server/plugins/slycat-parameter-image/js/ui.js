@@ -264,28 +264,54 @@ $(document).ready(function() {
     {
       bookmark = state;
 
-      // Create Redux store and set its state based on what's in the bookmark
-      window.store = createStore(slycat, bookmark.state);
+      // Load the project data
+      client.get_project_data({
+        did: model.project_data[0],
+        success: function(project_data)
+        {
+          variable_aliases = project_data['artifact:variable_aliases'];
 
-      // Save Redux state to bookmark whenever it changes
-      const bookmarkState = () => {
-        bookmarker.updateState({"state" : store.getState()});
-      };
-      window.store.subscribe(bookmarkState);
+          // Create Redux store and set its state based on what's in the bookmark
+          const state_tree = {
+            fontSize: 15,
+            fontFamily: "Arial",
+            axesVariables: {},
+          }
+          window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
 
-      window.store.subscribe(update_scatterplot_labels);
+          // Save Redux state to bookmark whenever it changes
+          const bookmarkReduxStateTree = () => {
+            bookmarker.updateState({
+              state: 
+              // Remove derived property from state tree because it should be computed
+              // from model data each time the model is loaded. Otherwise it has the 
+              // potential of becoming huge. Plus we shouldn't be storing model data
+              // in the bookmark, just UI state.
+              // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+              // sets it to null, so I think it's better to remove it entirely.
+              // eslint-disable-next-line no-undefined
+              { ...window.store.getState(), derived: undefined }
+            });
+          };
+          window.store.subscribe(bookmarkReduxStateTree);
 
-      // Set local variables based on Redux store
-      axes_font_size = store.getState().fontSize;
-      axes_font_family = store.getState().fontFamily;
-      axes_variables_scale = store.getState().axesVariables;
-      variable_aliases = store.getState().variableAliases;
+          window.store.subscribe(update_scatterplot_labels);
 
-      // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
-      filter_manager.set_bookmark(bookmark);
-      setup_controls();
-      setup_colorswitcher();
-      metadata_loaded();
+          // Set local variables based on Redux store
+          axes_font_size = store.getState().fontSize;
+          axes_font_family = store.getState().fontFamily;
+          axes_variables_scale = store.getState().axesVariables;
+
+          // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
+          filter_manager.set_bookmark(bookmark);
+          filter_manager.notify_store_ready();
+          setup_controls();
+          setup_colorswitcher();
+          metadata_loaded();
+        },
+        error: artifact_missing
+      });
+      
       // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
       note_manager = new NoteManager(model_id, bookmarker, bookmark);
     });
@@ -514,7 +540,9 @@ $(document).ready(function() {
     if( !table_ready && table_metadata && colorscale
       && bookmark && (x_index != null) && (y_index != null) && (images_index !== null)
       && (selected_simulations != null) && (hidden_simulations != null)
-      && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null)
+      && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null
+      && window.store !== undefined
+      )
     {
       table_ready = true;
 
@@ -653,6 +681,7 @@ $(document).ready(function() {
     if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
       && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
       && (open_images !== null) && (video_sync !== null) && (video_sync_time !== null)
+      && window.store !== undefined
       )
     {
       scatterplot_ready = true;
@@ -759,6 +788,7 @@ $(document).ready(function() {
       && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
       && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
       && indices && (open_images !== null) & (video_sync !== null) && (video_sync_time !== null)
+      && window.store !== undefined
       )
     {
       controls_ready = true;
@@ -1392,9 +1422,9 @@ $(document).ready(function() {
 
   function get_variable_label(variable)
   {
-    if(window.store.getState().variableAliases[variable] !== undefined)
+    if(window.store.getState().derived.variableAliases[variable] !== undefined)
     {
-      return window.store.getState().variableAliases[variable];
+      return window.store.getState().derived.variableAliases[variable];
     }
     
     return table_metadata["column-names"][variable]
