@@ -186,6 +186,29 @@ module.get_project_data = function(params)
   });
 };
 
+// Fetch version of get_configuration_markings
+module.get_project_data_fetch = function(params)
+{
+  return fetch(`${api_root}data/${params.did}`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
 module.put_project_data_parameter = function(params)
 {
   $.ajax({
