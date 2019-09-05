@@ -210,6 +210,46 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Once the model has been loaded, retrieve metadata / bookmarked state
   //////////////////////////////////////////////////////////////////////////////////////////
+  
+  // Retrieve variable alias labels
+  function get_variable_aliases(resolve, reject)
+  {
+    // If the model has project_data, try to get aliases from it
+    if(model.project_data !== undefined && model.project_data[0] !== undefined)
+    {
+      client.get_project_data_fetch({did: model.project_data[0]}).then((project_data) => {
+        if(project_data['artifact:variable_aliases'] !== undefined) {
+          variable_aliases = project_data['artifact:variable_aliases'];
+        }
+        // console.log('Set aliases from project_data');
+        resolve();
+      });
+      // Load the project data
+      client.get_project_data({
+        did: model.project_data[0],
+        success: function(project_data)
+        {
+          if(project_data['artifact:variable_aliases'] !== undefined) {
+            variable_aliases = project_data['artifact:variable_aliases'];
+          }
+        },
+        error: artifact_missing
+      });
+    }
+    // Otherwise try to get the aliases from the model's attributes
+    else if(model['artifact:variable_aliases'] !== undefined)
+    {
+      variable_aliases = model['artifact:variable_aliases'];
+      // console.log('Set aliases from model');
+      resolve();
+    }
+    // Otherwise leave variable_aliases as empty
+    else
+    {
+      // console.log('We do not have aliases on project_data or model, so leaving blank.');
+      resolve();
+    }
+  }
 
   function model_loaded()
   {
@@ -263,55 +303,46 @@ $(document).ready(function() {
     bookmarker.getState(function(state)
     {
       bookmark = state;
+      
+      let variable_aliases_promise = new Promise(get_variable_aliases);
+      variable_aliases_promise.then(() => {
+        // Create Redux store and set its state based on what's in the bookmark
+        const state_tree = {
+          fontSize: 15,
+          fontFamily: "Arial",
+          axesVariables: {},
+        }
+        window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
 
-      // Load the project data
-      client.get_project_data({
-        did: model.project_data[0],
-        success: function(project_data)
-        {
-          if(project_data['artifact:variable_aliases'] !== undefined) {
-            variable_aliases = project_data['artifact:variable_aliases'];
-          }
+        // Save Redux state to bookmark whenever it changes
+        const bookmarkReduxStateTree = () => {
+          bookmarker.updateState({
+            state: 
+            // Remove derived property from state tree because it should be computed
+            // from model data each time the model is loaded. Otherwise it has the 
+            // potential of becoming huge. Plus we shouldn't be storing model data
+            // in the bookmark, just UI state.
+            // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+            // sets it to null, so I think it's better to remove it entirely.
+            // eslint-disable-next-line no-undefined
+            { ...window.store.getState(), derived: undefined }
+          });
+        };
+        window.store.subscribe(bookmarkReduxStateTree);
 
-          // Create Redux store and set its state based on what's in the bookmark
-          const state_tree = {
-            fontSize: 15,
-            fontFamily: "Arial",
-            axesVariables: {},
-          }
-          window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
+        window.store.subscribe(update_scatterplot_labels);
 
-          // Save Redux state to bookmark whenever it changes
-          const bookmarkReduxStateTree = () => {
-            bookmarker.updateState({
-              state: 
-              // Remove derived property from state tree because it should be computed
-              // from model data each time the model is loaded. Otherwise it has the 
-              // potential of becoming huge. Plus we shouldn't be storing model data
-              // in the bookmark, just UI state.
-              // Passing 'undefined' removes it from bookmark. Passing 'null' actually
-              // sets it to null, so I think it's better to remove it entirely.
-              // eslint-disable-next-line no-undefined
-              { ...window.store.getState(), derived: undefined }
-            });
-          };
-          window.store.subscribe(bookmarkReduxStateTree);
+        // Set local variables based on Redux store
+        axes_font_size = store.getState().fontSize;
+        axes_font_family = store.getState().fontFamily;
+        axes_variables_scale = store.getState().axesVariables;
 
-          window.store.subscribe(update_scatterplot_labels);
-
-          // Set local variables based on Redux store
-          axes_font_size = store.getState().fontSize;
-          axes_font_family = store.getState().fontFamily;
-          axes_variables_scale = store.getState().axesVariables;
-
-          // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
-          filter_manager.set_bookmark(bookmark);
-          filter_manager.notify_store_ready();
-          setup_controls();
-          setup_colorswitcher();
-          metadata_loaded();
-        },
-        error: artifact_missing
+        // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
+        filter_manager.set_bookmark(bookmark);
+        filter_manager.notify_store_ready();
+        setup_controls();
+        setup_colorswitcher();
+        metadata_loaded();
       });
       
       // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
