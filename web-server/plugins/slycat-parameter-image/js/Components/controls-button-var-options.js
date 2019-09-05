@@ -30,16 +30,35 @@ export default function ControlsButtonVarOptions(props) {
 
   function closeModal(e) {
     // Write variable aliases to database
-    client.put_project_data_parameter({
-      did: props.model.project_data[0],
-      aid: 'variable_aliases',
-      input: false,
-      value: props.variable_aliases,
-      success: function(response) {
-        $('#' + modalId).modal('hide');
-      },
-      error: dialog.ajax_error("There was an error saving the variable alias labels."),
-    });
+
+    // If the model has project_data, write to it
+    if(props.model.project_data !== undefined && props.model.project_data[0] !== undefined)
+    {
+      client.put_project_data_parameter({
+        did: props.model.project_data[0],
+        aid: 'variable_aliases',
+        input: false,
+        value: props.variable_aliases,
+        success: function(response) {
+          $('#' + modalId).modal('hide');
+        },
+        error: dialog.ajax_error("There was an error saving the variable alias labels."),
+      });
+    }
+    // Otherwise write to the model's artifact:variable_aliases attribute
+    else
+    {
+      client.put_model_parameter({
+        mid: props.model._id,
+        aid: "variable_aliases",
+        value: props.variable_aliases,
+        input: false,
+        success: function() {
+          $('#' + modalId).modal('hide');
+        },
+        error: dialog.ajax_error("There was an error saving the variable alias labels."),
+      });
+    }
   }
 
   let axes_variables = [];
@@ -112,7 +131,7 @@ export default function ControlsButtonVarOptions(props) {
           <div className='modal-content'>
             <div className='modal-header'>
               <h3 className='modal-title'>{title}</h3>
-              <button type='button' className='close' data-dismiss='modal' aria-label='Close' disabled={!aliasesValid()}>
+              <button type='button' className='close' aria-label='Close' onClick={closeModal} disabled={!aliasesValid()}>
                 <span aria-hidden='true'>&times;</span>
               </button>
             </div>
