@@ -685,6 +685,7 @@ def put_model(mid):
         slycat.web.server.authentication.require_project_writer(project)
 
         save_model = False
+        model = database.get('model', model["_id"])
         for key, value in cherrypy.request.json.items():
             if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
                         "marking", "bookmark"]:
@@ -713,11 +714,10 @@ def put_model(mid):
                 #    model[key] = value
                 #    save_model = True
 
-                model[key] = value
-                save_model = True
+                # model[key] = value
+                # save_model = True
 
         if save_model:
-            model = database.get('model', model["_id"])
             database.save(model)
 
 
