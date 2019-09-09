@@ -95,6 +95,11 @@ var logHostName = "";
 var logFileName = "";
 var workDir = "";
 
+// if user is looking at textarea then don't scroll to bottom
+var user_scroll = false;
+$("#vs_processing_textarea").focus (function () { user_scroll = true; });
+$("#vs_processing_textarea").focusout(function () { user_scroll = false; });
+
 // poll database for artifact "vs-loading-progress"
 (function poll() {
 
@@ -116,6 +121,9 @@ var workDir = "";
                 logHostName = result[2];
                 workDir = result[3];
 
+                // set-up reconnect button
+                $("#vs-reconnect-button").on("click", reconnect);
+
                 // call web server to read log file
                 client.get_model_command({
                     mid: model._id,
@@ -136,9 +144,11 @@ var workDir = "";
                             $("#vs_processing_progress_bar").width(compute_progress + "%");
                             $("#vs_processing_progress_bar").text("Computing ...");
 
-                            // update user log, scroll to bottom
-                            $("#vs_processing_textarea").text(result["user_log"]);
-                            $("#vs_processing_textarea").scrollTop($("#vs_processing_textarea")[0].scrollHeight);
+                            // update text box unless user has focused on it
+                            if (user_scroll == false) {
+                                $("#vs_processing_textarea").text(result["user_log"]);
+                                $("#vs_processing_textarea").scrollTop($("#vs_processing_textarea")[0].scrollHeight);
+                            }
 
                             // reset time out and continue
                             endTime = Number(new Date()) + ONE_MINUTE;
@@ -229,6 +239,28 @@ var workDir = "";
         }
     });
 })();
+
+// reconnect button
+var reconnect = function ()
+{
+
+    // sever connections associated with this user
+    $.ajax(
+    {
+        dataType: "json",
+        type: "GET",
+        url: api_root + "clear/ssh-sessions",
+        success: function(id)
+        {
+            // polling will automatically ask for new connection
+        },
+        error: function(request, status, reason_phrase)
+        {
+            dialog.ajax_error("Server error: could not reset connection.")("","","");
+        },
+    });
+
+}
 
 // read in csv file
 function read_csv_file()
