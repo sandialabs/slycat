@@ -445,10 +445,13 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     :return: not used
     """
 
+    database = slycat.web.server.database.couchdb.connect()
+    project = database.get("project", pid)
+    slycat.web.server.authentication.require_project_writer(project)
+
     csv_data = str(file.file.read())
 
     content_type = "text/csv"
-    database = slycat.web.server.database.couchdb.connect()
     timestamp = time.time()
     formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     did = uuid.uuid4().hex
