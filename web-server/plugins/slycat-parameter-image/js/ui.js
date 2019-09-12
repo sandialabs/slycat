@@ -96,6 +96,7 @@ $(document).ready(function() {
   var axes_font_size = 12;
   var axes_font_family = "Arial";
   var axes_variables_scale = {};
+  var variable_aliases = {};
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -209,6 +210,46 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Once the model has been loaded, retrieve metadata / bookmarked state
   //////////////////////////////////////////////////////////////////////////////////////////
+  
+  // Retrieve variable alias labels
+  function get_variable_aliases(resolve, reject)
+  {
+    // If the model has project_data, try to get aliases from it
+    if(model.project_data !== undefined && model.project_data[0] !== undefined)
+    {
+      client.get_project_data_fetch({did: model.project_data[0]}).then((project_data) => {
+        if(project_data['artifact:variable_aliases'] !== undefined) {
+          variable_aliases = project_data['artifact:variable_aliases'];
+        }
+        // console.log('Set aliases from project_data');
+        resolve();
+      });
+      // Load the project data
+      client.get_project_data({
+        did: model.project_data[0],
+        success: function(project_data)
+        {
+          if(project_data['artifact:variable_aliases'] !== undefined) {
+            variable_aliases = project_data['artifact:variable_aliases'];
+          }
+        },
+        error: artifact_missing
+      });
+    }
+    // Otherwise try to get the aliases from the model's attributes
+    else if(model['artifact:variable_aliases'] !== undefined)
+    {
+      variable_aliases = model['artifact:variable_aliases'];
+      // console.log('Set aliases from model');
+      resolve();
+    }
+    // Otherwise leave variable_aliases as empty
+    else
+    {
+      // console.log('We do not have aliases on project_data or model, so leaving blank.');
+      resolve();
+    }
+  }
 
   function model_loaded()
   {
@@ -262,26 +303,48 @@ $(document).ready(function() {
     bookmarker.getState(function(state)
     {
       bookmark = state;
+      
+      let variable_aliases_promise = new Promise(get_variable_aliases);
+      variable_aliases_promise.then(() => {
+        // Create Redux store and set its state based on what's in the bookmark
+        const state_tree = {
+          fontSize: 15,
+          fontFamily: "Arial",
+          axesVariables: {},
+        }
+        window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
 
-      // Create Redux store and set its state based on what's in the bookmark
-      window.store = createStore(slycat, bookmark.state);
+        // Save Redux state to bookmark whenever it changes
+        const bookmarkReduxStateTree = () => {
+          bookmarker.updateState({
+            state: 
+            // Remove derived property from state tree because it should be computed
+            // from model data each time the model is loaded. Otherwise it has the 
+            // potential of becoming huge. Plus we shouldn't be storing model data
+            // in the bookmark, just UI state.
+            // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+            // sets it to null, so I think it's better to remove it entirely.
+            // eslint-disable-next-line no-undefined
+            { ...window.store.getState(), derived: undefined }
+          });
+        };
+        window.store.subscribe(bookmarkReduxStateTree);
 
-      // Save Redux state to bookmark whenever it changes
-      const bookmarkState = () => {
-        bookmarker.updateState({"state" : store.getState()});
-      };
-      window.store.subscribe(bookmarkState);
+        window.store.subscribe(update_scatterplot_labels);
 
-      // Set local variables based on Redux store
-      axes_font_size = store.getState().fontSize;
-      axes_font_family = store.getState().fontFamily;
-      axes_variables_scale = store.getState().axesVariables;
+        // Set local variables based on Redux store
+        axes_font_size = store.getState().fontSize;
+        axes_font_family = store.getState().fontFamily;
+        axes_variables_scale = store.getState().axesVariables;
 
-      // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
-      filter_manager.set_bookmark(bookmark);
-      setup_controls();
-      setup_colorswitcher();
-      metadata_loaded();
+        // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
+        filter_manager.set_bookmark(bookmark);
+        filter_manager.notify_store_ready();
+        setup_controls();
+        setup_colorswitcher();
+        metadata_loaded();
+      });
+      
       // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
       note_manager = new NoteManager(model_id, bookmarker, bookmark);
     });
@@ -510,7 +573,9 @@ $(document).ready(function() {
     if( !table_ready && table_metadata && colorscale
       && bookmark && (x_index != null) && (y_index != null) && (images_index !== null)
       && (selected_simulations != null) && (hidden_simulations != null)
-      && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null)
+      && input_columns != null && output_columns != null && other_columns != null && image_columns != null && rating_columns != null && category_columns != null
+      && window.store !== undefined
+      )
     {
       table_ready = true;
 
@@ -649,6 +714,7 @@ $(document).ready(function() {
     if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
       && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
       && (open_images !== null) && (video_sync !== null) && (video_sync_time !== null)
+      && window.store !== undefined
       )
     {
       scatterplot_ready = true;
@@ -662,9 +728,9 @@ $(document).ready(function() {
       $("#scatterplot").scatterplot({
         model: model,
         indices: indices,
-        x_label: table_metadata["column-names"][x_index],
-        y_label: table_metadata["column-names"][y_index],
-        v_label: table_metadata["column-names"][v_index],
+        x_label: get_variable_label(x_index),
+        y_label: get_variable_label(y_index),
+        v_label: get_variable_label(v_index),
         x: x,
         y: y,
         v: v,
@@ -755,6 +821,7 @@ $(document).ready(function() {
       && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
       && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
       && indices && (open_images !== null) & (video_sync !== null) && (video_sync_time !== null)
+      && window.store !== undefined
       )
     {
       controls_ready = true;
@@ -787,6 +854,7 @@ $(document).ready(function() {
 
       $("#controls").controls({
         mid : model_id,
+        model: model,
         model_name: window.model_name,
         aid : "data-table",
         metadata: table_metadata,
@@ -1163,7 +1231,7 @@ $(document).ready(function() {
       v_string : table_metadata["column-types"][v_index]=="string", 
       colorscale : colorscale
     });
-    $("#scatterplot").scatterplot("option", "v_label", table_metadata["column-names"][v_index]);
+    $("#scatterplot").scatterplot("option", "v_label", get_variable_label(v_index));
   }
 
   function update_widgets_when_hidden_simulations_change()
@@ -1369,11 +1437,30 @@ $(document).ready(function() {
           x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
           x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          x_label:table_metadata["column-names"][variable],
+          x_label:get_variable_label(variable),
         });
       },
       error : artifact_missing
     });
+  }
+
+  function update_scatterplot_labels()
+  {
+    $("#scatterplot").scatterplot("option", {
+      x_label: get_variable_label(x_index),
+      y_label: get_variable_label(y_index),
+      v_label: get_variable_label(v_index),
+    });
+  }
+
+  function get_variable_label(variable)
+  {
+    if(window.store.getState().derived.variableAliases[variable] !== undefined)
+    {
+      return window.store.getState().derived.variableAliases[variable];
+    }
+    
+    return table_metadata["column-names"][variable]
   }
 
   function update_scatterplot_y(variable)
@@ -1390,7 +1477,7 @@ $(document).ready(function() {
           y_index: variable,
           y_string: table_metadata["column-types"][variable]=="string", 
           y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          y_label:table_metadata["column-names"][variable],
+          y_label:get_variable_label(variable),
         });
       },
       error : artifact_missing

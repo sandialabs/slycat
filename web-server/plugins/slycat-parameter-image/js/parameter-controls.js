@@ -7,32 +7,34 @@ import ReactDOM from "react-dom";
 import "jquery-ui";
 import ControlsBar from './Components/controls-bar';
 import "bootstrap";
+import $ from 'jquery';
 
 $.widget("parameter_image.controls",
 {
   options:
   {
-    mid : null,
-    model_name : null,
-    aid : null,
-    metadata : null,
+    "mid" : null,
+    "model_name" : null,
+    "model" : null,
+    "aid" : null,
+    "metadata" : null,
     "x-variable" : null,
     "y-variable" : null,
     "image-variable" : null,
     "color-variable" : null,
     "auto-scale" : true,
-    x_variables : [],
-    y_variables : [],
-    axes_variables : [],
-    image_variables : [],
-    color_variables : [],
-    rating_variables : [],
-    category_variables : [],
-    selection : [],
-    hidden_simulations : [],
-    indices : [],
-    disable_hide_show : false,
-    open_images : [],
+    "x_variables" : [],
+    "y_variables" : [],
+    "axes_variables" : [],
+    "image_variables" : [],
+    "color_variables" : [],
+    "rating_variables" : [],
+    "category_variables" : [],
+    "selection" : [],
+    "hidden_simulations" : [],
+    "indices" : [],
+    "disable_hide_show" : false,
+    "open_images" : [],
     "video-sync" : false,
     "video-sync-time" : 0,
   },
@@ -122,7 +124,7 @@ $.widget("parameter_image.controls",
     ];
 
     const controls_bar = 
-      <ControlsBar 
+      (<ControlsBar 
         element={self.element} 
         dropdowns={dropdowns}
         axes_variables={axes_items}
@@ -134,6 +136,7 @@ $.widget("parameter_image.controls",
         pid={self.options.pid}
         mid={self.options.mid}
         aid={self.options.aid}
+        model={self.options.model}
         model_name={self.options.model_name}
         metadata={self.options.metadata}
         indices={self.options.indices}
@@ -141,7 +144,8 @@ $.widget("parameter_image.controls",
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}
-      />
+        variable_aliases={window.store.getState().derived.variableAliases}
+      />)
     ;
 
     self.ControlsBarComponent = ReactDOM.render(
@@ -160,6 +164,13 @@ $.widget("parameter_image.controls",
       menus.css('max-height', (container.height() - 70) + 'px');
     });
 
+    // Set the state of ControlsBarComponent's variable_aliases to what's in the Redux state
+    // each time the Redux state changes. This is a work around to be used only
+    // until we conver PS to React because it currently uses local state in the controls bar.
+    const update_variable_aliases = () => {
+      self.ControlsBarComponent.setState({variable_aliases: window.store.getState().derived.variableAliases});
+    };
+    window.store.subscribe(update_variable_aliases);
   },
 
   _setOption: function(key, value)

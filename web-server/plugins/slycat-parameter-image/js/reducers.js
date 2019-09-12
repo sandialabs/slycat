@@ -2,6 +2,7 @@ import {
   CHANGE_FONT_SIZE,
   CHANGE_FONT_FAMILY,
   CHANGE_AXES_VARIABLE_SCALE,
+  CHANGE_VARIABLE_ALIAS_LABEL,
 } from './actions';
 
 const initialState = {
@@ -23,6 +24,16 @@ export default function slycat(state = initialState, action) {
     case CHANGE_AXES_VARIABLE_SCALE:
       return Object.assign({}, state, {
         axesVariables: Object.assign({}, state.axesVariables, {[action.axesVariable]: action.axesScale})
+      })
+    case CHANGE_VARIABLE_ALIAS_LABEL:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          variableAliases: {
+            ...state.derived.variableAliases,
+            [action.aliasVariable]: action.aliasLabel
+          }
+        }
       })
     default:
       return state

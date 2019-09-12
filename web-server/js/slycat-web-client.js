@@ -166,6 +166,73 @@ module.put_project_csv_data = function(params)
       });
 };
 
+module.get_project_data = function(params)
+{
+  $.ajax(
+  {
+    dataType: "json",
+    type: "GET",
+    url: api_root + "data/" + params.did,
+    success: function(result)
+    {
+      if(params.success)
+        params.success(result);
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if(params.error)
+        params.error(request, status, reason_phrase);
+    }
+  });
+};
+
+// Fetch version of get_configuration_markings
+module.get_project_data_fetch = function(params)
+{
+  return fetch(`${api_root}data/${params.did}`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
+    }
+  });
+};
+
+module.put_project_data_parameter = function(params)
+{
+  $.ajax({
+    contentType: "application/json",
+    type: "PUT",
+    url: api_root + "data/" + params.did + "/aids/" + params.aid,
+    data: JSON.stringify(
+    {
+      value: params.value,
+      input: params.input === undefined ? false : params.input ? true : false
+    }),
+    success: function (result) {
+      if (params.success) {
+        params.success(result);
+      }
+    },
+    error: function (request, status, reason_phrase) {
+      if (params.error) {
+        params.error(request, status, reason_phrase);
+      }  
+    }
+  });
+};
+
 module.get_project_file_names = function(params) {
  $.ajax(
     {

@@ -28,7 +28,33 @@ function FilterManager(model_id, bookmarker, layout, input_columns, output_colum
   self.active_filters = null;
   self.active_filters_ready = ko.observable(false);
   self.foundMismatches = false;
-}
+
+  // Looks up the variable's label in the Redux store and returns it 
+  // if it exists. Otherwise just returns the variable's column name from metadata.
+  self.get_variable_label = function(variable)
+  {
+    let label;
+    if(window.store.getState().derived.variableAliases[variable] !== undefined)
+    {
+      label= window.store.getState().derived.variableAliases[variable];
+    }
+    else
+    {
+      label = self.table_metadata["column-names"][variable];
+    }
+    // Using he package to encode label text otherwise slickgrid will 
+    // execute <scrpt> tags in it and choke on other code
+    // return he.encode(label);
+    return label;
+  }
+
+  // Updates allFilters with variable labels if they exist
+  self.update_variable_aliases = () => {
+    self.allFilters().forEach(function(filter){
+      filter.name(self.get_variable_label(filter.index()));
+    });
+  };
+};
 
 /* Until AJAX handling is refactored, have to manually pass data at different times. Extremely ugly,
    but it makes these dependencies explicit and thus will be easier to decouple later. */
@@ -60,8 +86,13 @@ FilterManager.prototype.notify_controls_ready = function() {
   this.controls_ready = true;
 };
 
+FilterManager.prototype.notify_store_ready = function() {
+  window.store.subscribe(this.update_variable_aliases);
+};
+
 FilterManager.prototype.build_sliders = function(controls_ready) {
   var self = this;
+
   if(!self.sliders_ready && self.controls_ready && self.table_metadata && self.table_statistics 
     && (self.table_statistics.length == self.table_metadata["column-count"]) && self.other_columns) 
   {
@@ -102,7 +133,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     var buildCategoryFilter = function(index){
       var categories = ko.observableArray();
       self.allFilters.push({
-        name: ko.observable( self.table_metadata["column-names"][index] ),
+        name: ko.observable( self.get_variable_label(index) ),
         type: ko.observable('category'),
         index: ko.observable( index ),
         active: ko.observable(false),
@@ -122,7 +153,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
       var high = ko.observable( self.table_statistics[index]["max"] );
       var low = ko.observable( self.table_statistics[index]["min"] );
       self.allFilters.push({
-        name: ko.observable( self.table_metadata["column-names"][index] ),
+        name: ko.observable( self.get_variable_label(index) ),
         type: ko.observable('numeric'),
         index: ko.observable( index ),
         max_stats: ko.observable( self.table_statistics[index]["max"] ),
@@ -143,6 +174,11 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
     var rateLimit = 500;
     if ("allFilters" in self.bookmark) {
       self.allFilters = mapping.fromJS(self.bookmark["allFilters"]);
+
+      // Can't trust that bookmark contains accurate variable labels, so 
+      // updating them here based on what's in the redux store.
+      self.update_variable_aliases();
+
       // Can't trust that bookmark contains accurare categorical/numeric type information, so must verify here
       for(var i=self.allFilters().length-1; i >= 0; i--) 
       {
