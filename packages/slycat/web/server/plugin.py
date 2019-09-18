@@ -253,7 +253,7 @@ class Manager(object):
     if ptype is None:
       ptype = type
 
-    if not isinstance(ptype, basestring):
+    if not isinstance(ptype, str):
       cherrypy.log.error("slycat.web.server.plugin.py register_model", "Page type '%s' must be a string." % ptype)
       raise Exception("Page type '%s' must be a string." % ptype)
 

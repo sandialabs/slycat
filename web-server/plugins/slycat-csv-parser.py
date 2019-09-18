@@ -65,7 +65,7 @@ def parse_file(file, model, database):
             if isfloat(value):
                 column_has_floats = True
                 try:  # note NaN's are floats
-                    output_list = map(lambda x: 'NaN' if x == '' else x, column[1:])
+                    output_list = ['NaN' if x == '' else x for x in column[1:]]
                     data.append(numpy.array(output_list).astype("float64"))
                     attributes.append({"name": column[0], "type": "float64"})
                     column_headers.append(column[0])
@@ -76,7 +76,7 @@ def parse_file(file, model, database):
                     cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
                 break
         if not column_has_floats:
-            [unicode(item, 'utf-8') for item in column[1:]]
+            [str(item) for item in column[1:]]
 
             data.append(numpy.array(column[1:]))
             attributes.append({"name": column[0], "type": "string"})

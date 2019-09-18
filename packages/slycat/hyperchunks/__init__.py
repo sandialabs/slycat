@@ -145,7 +145,7 @@ def tostring(value):
   if isinstance(value, float):
     return repr(value)
 
-  if isinstance(value, basestring):
+  if isinstance(value, str):
     return '"%s"' % value
 
   if isinstance(value, type(Ellipsis)):

@@ -5,7 +5,7 @@
 import RemoteComputationInterface
 import subprocess
 import os
-import ConfigParser
+import configparser
 import threading
 import time
 
@@ -152,7 +152,7 @@ class RemoteSlurmComputation(RemoteComputationInterface):
   def set_slycatrc(config):
     rc = os.path.expanduser('~') + ("/.slycatrc")
     rc_file = open(rc, "w+")
-    parser = ConfigParser.RawConfigParser()
+    parser = configparser.RawConfigParser()
 
     for section_key in config:
       if not parser.has_section(section_key):
@@ -173,7 +173,7 @@ class RemoteSlurmComputation(RemoteComputationInterface):
     rc = os.path.expanduser('~') + ("/.slycatrc")
     if os.path.isfile(rc):
       try:
-        parser = ConfigParser.RawConfigParser()
+        parser = configparser.RawConfigParser()
         parser.read(rc)
         config = { section: { key: eval(value) for key, value in parser.items(section) } for section in parser.sections() }
         results["ok"] = True

@@ -1,0 +1,22 @@
+FROM node
+
+WORKDIR /usr/src/slycat
+RUN git config --global http.sslVerify false
+RUN git clone -b python3-conversion --single-branch https://github.com/sandialabs/slycat.git
+WORKDIR /usr/src/slycat/slycat
+
+RUN npm config set registry http://registry.npmjs.org/ && npm install
+
+WORKDIR /usr/src/app
+RUN git config --global http.sslVerify false
+RUN git clone -b python3-conversion --single-branch https://github.com/sandialabs/slycat.git
+RUN ls
+WORKDIR /usr/src/app/slycat
+RUN npm install
+RUN npm rebuild node-sass
+# COPY . /usr/src/app/
+# RUN cp -a /tmp/node_modules /usr/src/app/
+# RUN webpack
+# ENV NODE_ENV=production
+# ENV PORT=4000
+CMD ls

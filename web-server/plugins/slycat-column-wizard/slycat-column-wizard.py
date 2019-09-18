@@ -10,7 +10,7 @@ def register_slycat_plugin(context):
   import re
   import slycat.web.server
   
-  from urlparse import urlparse
+  from urllib.parse import urlparse
 
   def media_columns(database, model, verb, type, command, **kwargs):
     """Identify columns in the input data that contain media URIs (image or video).

@@ -8,7 +8,3 @@ RUN pip install --trusted-host files.pythonhosted.org --trusted-host pypi.org --
 RUN pip install --trusted-host files.pythonhosted.org --trusted-host pypi.org --trusted-host pypi.python.org couchdb
 
 COPY slycat-couchdb-setup.py .
-
-# ENV FLASK_APP=app.py
-
-# CMD flask run --host=0.0.0.0

@@ -13,10 +13,10 @@ parser.add_argument("--database", default="slycat", help="Specify the database n
 parser.add_argument("--error-log", default="-", help="Error log filename, or '-' for stderr.  Default: %(default)s")
 parser.add_argument("--error-log-count", type=int, default=100, help="Maximum number of error log files.  Default: %(default)s")
 parser.add_argument("--error-log-size", type=int, default=10000000, help="Maximum size of error log files.  Default: %(default)s")
-parser.add_argument("--host", default="localhost", help="CouchDB server.  Default: %(default)s")
+parser.add_argument("--host", default="couchdb", help="CouchDB server.  Default: %(default)s")
 parser.add_argument("--port", default="5984", help="CouchDB port.  Default: %(default)s")
-parser.add_argument("--admin", default="", help="CouchDB admin user.  Default: %(default)s")
-parser.add_argument("--password", default="", help="CouchDB admin password.  Default: %(default)s")
+parser.add_argument("--admin", default="admin", help="CouchDB admin user.  Default: %(default)s")
+parser.add_argument("--password", default="password", help="CouchDB admin password.  Default: %(default)s")
 arguments = parser.parse_args()
 
 error_log = logging.getLogger("error")

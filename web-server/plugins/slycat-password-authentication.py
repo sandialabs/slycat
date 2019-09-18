@@ -9,7 +9,7 @@ def register_slycat_plugin(context):
     import slycat.web.server.database.couchdb
     import slycat.web.server.plugin
     
-    from urlparse import urlparse
+    from urllib.parse import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
@@ -44,7 +44,7 @@ def register_slycat_plugin(context):
 
                 # cherrypy.log.error("%s ::: %s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
                 # cherrypy.log.error("%s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
-                if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > \
+                if datetime.datetime.utcnow() - datetime.datetime.strptime(str(started), '%Y-%m-%dT%H:%M:%S.%f') > \
                         cherrypy.request.app.config["slycat"]["session-timeout"]:
                     couchdb.delete(session)
                     # expire the old cookie
