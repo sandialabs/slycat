@@ -32,7 +32,13 @@ services:
         context: .
         dockerfile: ./slycat-client/DockerFile
       working_dir: /usr/src/app/slycat
-      command: npm run dev
+      command:
+        - bash
+        - -c
+        - | 
+          npm install \
+          && npm rebuild node-sass \
+          && npm run dev
       ports:
         - 9000:9000
       networks:
