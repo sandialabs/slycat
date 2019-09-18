@@ -76,23 +76,6 @@ services:
     volumes:
       - couchdb-data-volume:/usr/local/var/lib/couchdb
 
-  # this build and configures the couchdb instance
-  # python_couchdb_setup:
-  #   build:
-  #     context: .
-  #     dockerfile: ./python-couchdb-setup/Dockerfile
-  #     args:
-  #       - IMAGE_VERSION=${PYTHON_VERSION}
-  #   image: python_couchdb_setup
-  #   env_file: env.txt
-  #   depends_on:
-  #     - "couchdb"
-  #   networks:
-  #     - sly-net
-  #   command: python /usr/src/couch/slycat-couchdb-setup.py --host couchdb --admin admin --password password
-  #   volumes:
-  #     - ./scripts/couchdb_setup.sh:/usr/local/bin/couchdb_setup.sh:ro
-
 networks:
   sly-net:
 volumes:
