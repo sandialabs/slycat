@@ -6,12 +6,6 @@ RUN git clone -b python3 --single-branch https://github.com/sandialabs/slycat.gi
 WORKDIR /usr/src/slycat/slycat
 
 RUN npm config set registry http://registry.npmjs.org/
-# RUN npm install -g webpack-dev-server
 RUN npm install
 RUN npm rebuild node-sass
-# COPY . /usr/src/app/
-# RUN cp -a /tmp/node_modules /usr/src/app/
-# RUN webpack
-# ENV NODE_ENV=production
-# ENV PORT=4000
 CMD ls
