@@ -20,6 +20,7 @@ import functools
 import threading
 import base64
 import six
+import time
 
 config = {}
 cache_it = Cache(seconds=1000000)  # 277.777778 hours
@@ -297,17 +298,19 @@ def put_model_arrayset(database, model, aid, input=False):
   :return:
   """
     with get_model_lock(model["_id"]):
+        model = database.get('model',model["_id"])
         slycat.web.server.update_model(database, model, message="Starting array set %s." % (aid))
-    storage = uuid.uuid4().hex
-    with slycat.web.server.hdf5.lock:
-        with slycat.web.server.hdf5.create(storage) as file:
-            arrayset = slycat.hdf5.start_arrayset(file)
-            database.save({"_id": storage, "type": "hdf5"})
-            model["artifact:%s" % aid] = storage
-            model["artifact-types"][aid] = "hdf5"
-            if input:
-                model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
-            database.save(model)
+        storage = uuid.uuid4().hex
+        with slycat.web.server.hdf5.lock:
+            with slycat.web.server.hdf5.create(storage) as file:
+                arrayset = slycat.hdf5.start_arrayset(file)
+                database.save({"_id": storage, "type": "hdf5"})
+                model = database.get('model',model["_id"])
+                model["artifact:%s" % aid] = storage
+                model["artifact-types"][aid] = "hdf5"
+                if input:
+                    model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+                database.save(model)
 
 
 def put_model_array(database, model, aid, array_index, attributes, dimensions):
@@ -323,11 +326,12 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
   :return:
   """
     with get_model_lock(model["_id"]):
+        model = database.get('model', model['_id'])
         slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
-    storage = model["artifact:%s" % aid]
-    with slycat.web.server.hdf5.lock:
-        with slycat.web.server.hdf5.open(storage, "r+") as file:
-            slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
+        storage = model["artifact:%s" % aid]
+        with slycat.web.server.hdf5.lock:
+            with slycat.web.server.hdf5.open(storage, "r+") as file:
+                slycat.hdf5.ArraySet(file).start_array(array_index, dimensions, attributes)
 
 
 def put_model_arrayset_data(database, model, aid, hyperchunks, data):
@@ -356,6 +360,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
     data = iter(data)
 
     with get_model_lock(model["_id"]):
+        model = database.get('model', model['_id'])
         slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
 
     with slycat.web.server.hdf5.lock:
@@ -463,11 +468,21 @@ def put_project_data_parameter(database, project_data, aid, value, input=False):
 
 def put_model_parameter(database, model, aid, value, input=False):
     with get_model_lock(model["_id"]):
-        model["artifact:%s" % aid] = value
-        model["artifact-types"][aid] = "json"
-        if input:
-            model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
-        database.save(model)
+        try:
+            model = database.get('model',model['_id'])
+            model["artifact:%s" % aid] = value
+            model["artifact-types"][aid] = "json"
+            if input:
+                model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+            database.save(model)
+        except Exception as e:
+            time.sleep(1)
+            model = database.get('model',model['_id'])
+            model["artifact:%s" % aid] = value
+            model["artifact-types"][aid] = "json"
+            if input:
+                model["input-artifacts"] = list(set(model["input-artifacts"] + [aid]))
+            database.save(model)
 
 
 def delete_model_parameter(database, model, aid):

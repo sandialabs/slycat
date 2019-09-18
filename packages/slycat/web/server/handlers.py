@@ -483,38 +483,42 @@ def create_project_data(mid, aid, file):
     content_type = "text/csv"
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
-    project = database.get("project", model["project"])
-    pid = project["_id"]
-    timestamp = time.time()
-    formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    did = uuid.uuid4().hex
-    #TODO review how we pass files to this
-    # our file got passed as a list by someone...
-    if isinstance(file, list):
-        file = file[0]
-    #TODO review how we pass aids to this
-    # if true we are using the new file naming structure
-    if len(aid) > 1:
-        # looks like we got passed a list(list()) lets extract the name
-        if isinstance(aid[1], list):
-            aid[1] = aid[1][0]
-    # for backwards compatibility for not passing the file name
-    else:
-        aid.append("unnamed_file")
-    data = {
-        "_id": did,
-        "type": "project_data",
-        "file_name": formatted_timestamp + "_" + aid[1],
-        "data_table": aid[0],
-        "project": pid,
-        "mid": [mid],
-        "created": datetime.datetime.utcnow().isoformat(),
-        "creator": cherrypy.request.login,
-    }
-    if "project_data" not in model:
-        model["project_data"] = []
-    model["project_data"].append(did)
-    database.save(model)
+
+    with slycat.web.server.get_model_lock(model["_id"]):
+        project = database.get("project", model["project"])
+        pid = project["_id"]
+        timestamp = time.time()
+        formatted_timestamp = datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        did = uuid.uuid4().hex
+
+        #TODO review how we pass files to this
+        # our file got passed as a list by someone...
+        if isinstance(file, list):
+            file = file[0]
+        #TODO review how we pass aids to this
+        # if true we are using the new file naming structure
+        if len(aid) > 1:
+            # looks like we got passed a list(list()) lets extract the name
+            if isinstance(aid[1], list):
+                aid[1] = aid[1][0]
+        # for backwards compatibility for not passing the file name
+        else:
+            aid.append("unnamed_file")
+        data = {
+            "_id": did,
+            "type": "project_data",
+            "file_name": formatted_timestamp + "_" + aid[1],
+            "data_table": aid[0],
+            "project": pid,
+            "mid": [mid],
+            "created": datetime.datetime.utcnow().isoformat(),
+            "creator": cherrypy.request.login,
+        }
+        if "project_data" not in model:
+            model["project_data"] = []
+        model["project_data"].append(did)
+        model = database.get('model', model["_id"])
+        database.save(model)
     database.save(data)
     database.put_attachment(data, filename="content", content_type=content_type, content=file)
     cherrypy.log.error("[MICROSERVICE] Added project data %s." % data["file_name"])
@@ -696,43 +700,45 @@ def model_sensitive_command(mid, type, command):
 def put_model(mid):
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
-    project = database.get("project", model["project"])
-    slycat.web.server.authentication.require_project_writer(project)
+    with slycat.web.server.get_model_lock(model["_id"]):
+        project = database.get("project", model["project"])
+        slycat.web.server.authentication.require_project_writer(project)
 
-    save_model = False
-    for key, value in cherrypy.request.json.items():
-        if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
-                       "marking", "bookmark"]:
-            cherrypy.log.error("slycat.web.server.handlers.py put_model",
-                                    "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
-            raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
-
-        if key in ["started", "finished"]:
-            try:
-                datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-            except:
+        save_model = False
+        model = database.get('model', model["_id"])
+        for key, value in cherrypy.request.json.items():
+            if key not in ["name", "description", "state", "result", "progress", "message", "started", "finished",
+                        "marking", "bookmark"]:
                 cherrypy.log.error("slycat.web.server.handlers.py put_model",
-                                        "cherrypy.HTTPError 400 timestamp fields must use ISO-8601.")
-                raise cherrypy.HTTPError("400 Timestamp fields must use ISO-8601.")
+                                        "cherrypy.HTTPError 400 unknown model parameter: %s" % key)
+                raise cherrypy.HTTPError("400 Unknown model parameter: %s" % key)
 
-        if value != model.get(key):
-            model[key] = value
-            save_model = True
+            if key in ["started", "finished"]:
+                try:
+                    datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                except:
+                    cherrypy.log.error("slycat.web.server.handlers.py put_model",
+                                            "cherrypy.HTTPError 400 timestamp fields must use ISO-8601.")
+                    raise cherrypy.HTTPError("400 Timestamp fields must use ISO-8601.")
 
-            # Revisit this, how booksmark IDs get added to model
+            if value != model.get(key):
+                model[key] = value
+                save_model = True
 
-            #if key == "bookmark":
-            #    model[key].append(value)
-            #    save_model = True
-            #else:
-            #    model[key] = value
-            #    save_model = True
+                # Revisit this, how booksmark IDs get added to model
 
-            model[key] = value
-            save_model = True
+                #if key == "bookmark":
+                #    model[key].append(value)
+                #    save_model = True
+                #else:
+                #    model[key] = value
+                #    save_model = True
 
-    if save_model:
-        database.save(model)
+                # model[key] = value
+                # save_model = True
+
+        if save_model:
+            database.save(model)
 
 
 def post_model_finish(mid):
@@ -1075,7 +1081,6 @@ def put_project_data_parameter(did, aid):
             value = require_json_parameter("value")
             input = require_boolean_json_parameter("input")
             slycat.web.server.put_project_data_parameter(database, project_data, aid, value, input)
-
 
 
 @cherrypy.tools.json_in(on=True)
