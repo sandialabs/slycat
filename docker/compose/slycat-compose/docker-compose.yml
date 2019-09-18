@@ -22,8 +22,8 @@ services:
       - -c
       - | 
           python --version \
-          && python /usr/src/slycat/slycat/docker/compose/slycat-compose/slycat-couchdb-setup.py --host couchdb --admin admin --password password \
-          && python /usr/src/slycat/slycat/docker/compose/slycat-compose/slycat-docker-compose-couchdb-load-data.py \
+          && python /usr/src/slycat/slycat/docker/compose/slycat-compose/scripts/slycat-couchdb-setup.py --host couchdb --admin admin --password password \
+          && python /usr/src/slycat/slycat/docker/compose/slycat-compose/scripts/slycat-docker-compose-couchdb-load-data.py \
           && python /usr/src/slycat/slycat/web-server/slycat-web-server.py --config /usr/src/slycat/slycat/docker/compose/slycat-compose/slycat-docker-compose-authenticated-config.ini
     restart: always
 
