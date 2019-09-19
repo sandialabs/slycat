@@ -10,7 +10,7 @@ RUN pip install --trusted-host files.pythonhosted.org --trusted-host pypi.org --
 RUN pip install --trusted-host files.pythonhosted.org --trusted-host pypi.org --trusted-host pypi.python.org --no-cache-dir -r requirements.txt
 
 RUN git config --global http.sslVerify false
-RUN git clone -b python3 --single-branch https://github.com/sandialabs/slycat.git
+RUN git clone https://github.com/sandialabs/slycat.git
 WORKDIR /usr/src/slycat/slycat
 ENV PYTHONPATH "${PYTHONPATH}:/usr/src/slycat/slycat/packages"
 
