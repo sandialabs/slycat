@@ -228,14 +228,18 @@ def parse(database, model, input, files, aids, **kwargs):
         # table parser (original csv parser)
         parsed = [parse_file(file) for file in files]
         for (attributes, dimensions, data), aid in zip(parsed, aids):
+            model = database.get('model', model["_id"])
             slycat.web.server.put_model_arrayset(database, model, aid, input)
+            model = database.get('model', model["_id"])
             slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
+            model = database.get('model', model["_id"])
             slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_col, data)
     elif list_file:
          # list file (one string per row)
          # get strings in list
         list_data = parse_list_file(files[0])
          # put list in slycat database as a model parameter
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, aids[0], list_data, input)
     else:
 
@@ -243,8 +247,11 @@ def parse(database, model, input, files, aids, **kwargs):
         attributes, dimensions, data = parse_mat_file(files[0])
         aid = aids[0]
         if (array_col == 0):
+            model = database.get('model', model["_id"])
             slycat.web.server.put_model_arrayset(database, model, aid, input)
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/0/..." % array_col, [data])
 
     end = time.time()
@@ -258,6 +265,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
     cherrypy.log.error("DAC Gen Zip parser started.")
 
     # push progress for wizard polling to database
+    model = database.get('model', model["_id"])
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
 
     # keep a parsing error log to help user correct input data
@@ -266,6 +274,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
     parse_error_log.append("Notes:")
 
     # start parse log
+    model = database.get('model', model["_id"])
     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                           ["Progress", "\n".join(parse_error_log)])
 
@@ -279,11 +288,13 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
     except Exception as e:
 
         # couldn't open zip file, report to user
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Error", "couldn't read zip file (too large or corrupted)."])
 
         # record no data message in front of parser log
         parse_error_log.append("Error: couldn't read .zip file (too large or corrupted).")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["No Data", "\n".join(parse_error_log)])
 
@@ -326,11 +337,13 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                 else:
 
+                    model = database.get('model', model["_id"])
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                           ["Error", "variable files must have .var extension"])
 
                     # record no data message in front of parser log
                     parse_error_log.append("Error -- variable files must have .var extension.")
+                    model = database.get('model', model["_id"])
                     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                           ["No Data", "\n".join(parse_error_log)])
 
@@ -348,11 +361,13 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                 else:
 
+                    model = database.get('model', model["_id"])
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                           ["Error", "time series files must have .time extension"])
 
                     # record no data message in front of parser log
                     parse_error_log.append("Error -- time series files must have .time extension.")
+                    model = database.get('model', model["_id"])
                     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                           ["No Data", "\n".join(parse_error_log)])
 
@@ -370,17 +385,20 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                 else:
 
+                    model = database.get('model', model["_id"])
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                           ["Error", "distance matrix files must have .dist extension"])
 
                     # record no data message in front of parser log
                     parse_error_log.append("Error -- distance matrix files must have .dist extension.")
+                    model = database.get('model', model["_id"])
                     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                           ["No Data", "\n".join(parse_error_log)])
 
                     raise Exception("distance matrix files must have .dist extension.")
 
     parse_error_log.append("Successfully identified DAC generic format files.")
+    model = database.get('model', model["_id"])
     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                           ["Progress", "\n".join(parse_error_log)])
 
@@ -392,6 +410,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
     if var_meta_file != "":
 
         # push progress for wizard polling to database
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 20.0])
 
         # parse variables.meta file
@@ -412,11 +431,13 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
         # quit if headers are un-recognized
         if not headers_OK:
 
+            model = database.get('model', model["_id"])
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Error", "variables.meta file has incorrect headers"])
 
             # record no data message in front of parser log
             parse_error_log.append("Error -- variables.meta file has incorrect headers.")
+            model = database.get('model', model["_id"])
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                   ["No Data", "\n".join(parse_error_log)])
 
@@ -429,6 +450,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                         "missing variable_*.var file(s)")
 
         parse_error_log.append("Checked DAC variable file names.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
@@ -438,6 +460,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                          "missing variable_*.time file(s)")
 
         parse_error_log.append("Checked DAC time file names.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
@@ -447,17 +470,20 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                          "missing variable_*.dist file(s)")
 
         parse_error_log.append("Checked DAC distance file names.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
 
     else:
 
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Error", "variables.meta file not found"])
 
         # record no data message in front of parser log
         parse_error_log.append("Error -- variables.meta file not found.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["No Data", "\n".join(parse_error_log)])
 
@@ -483,11 +509,13 @@ def check_file_names (database, model, parse_error_log,
 
     # quit if files do not match
     if not files_found:
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Error", error_msg])
 
         # record no data message in front of parser log
         parse_error_log.append("Error -- " + error_msg + ".")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["No Data", "\n".join(parse_error_log)])
 
@@ -512,10 +540,12 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
         meta_column_names, meta_rows = parse_table_file(zip_ref.read(dac_file))
 
         parse_error_log.append("Read " + str(len(meta_rows)) + " datapoints.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
         # push progress for wizard polling to database
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 30.0])
 
         # parse var files
@@ -526,10 +556,12 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
             variable.append(numpy.array(data))
 
         parse_error_log.append("Parsed " + str(num_vars) + " DAC variable files.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
         # push progress for wizard polling to database
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 45.0])
 
         # parse time files
@@ -540,10 +572,12 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
             time_steps.append(list(data))
 
         parse_error_log.append("Parsed " + str(num_vars) + " DAC time files.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
         # push progress for wizard polling to database
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 60.0])
 
         # parse distance files
@@ -554,6 +588,7 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
             var_dist.append(numpy.array(data))
 
         parse_error_log.append("Parsed " + str(num_vars) + " DAC distance files.")
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
@@ -566,6 +601,7 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
         parse_error_log.insert(2, "Each test has " + str(num_vars)
                                + " digitizer time series.\n")
 
+        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                               ["Progress", "\n".join(parse_error_log)])
 
