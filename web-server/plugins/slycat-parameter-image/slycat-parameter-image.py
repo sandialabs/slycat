@@ -16,19 +16,16 @@ def register_slycat_plugin(context):
     import os
     import re
     import slycat.web.server
-    from urlparse import urlparse
 
     def media_columns(database, model, verb, type, command, **kwargs):
         """
     Identify columns in the input data that contain media URIs (image or video).
-    
     Arguments:
       database {Object} -- connection to the database
       current_selected_model {object} -- json meta data for a model
       verb {object} -- not used
       type {object} -- not used
       command {string} -- command name
-    
     Returns:
       [type] -- [description]
     """
@@ -47,7 +44,7 @@ def register_slycat_plugin(context):
             columns.append(index)
 
         cherrypy.response.headers["content-type"] = "application/json"
-        return json.dumps(columns)
+        return json.dumps(columns).encode()
 
     def delete_table(database, current_selected_model, verb, type, command, **kwargs):
         """

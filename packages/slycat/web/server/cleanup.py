@@ -4,14 +4,13 @@
 
 import cherrypy
 import datetime
-import Queue
+from queue import Queue
 import slycat.web.server.database.couchdb
 import slycat.web.server.hdf5
 import slycat.web.server
 import threading
 import time
 import sys
-import cPickle
 
 def _array_cleanup_worker():
   cherrypy.log.error("Started array cleanup worker.")
@@ -73,6 +72,6 @@ def start():
 def arrays():
   """Request a cleanup pass for unused arrays."""
   arrays.queue.put("cleanup")
-arrays.queue = Queue.Queue()
+arrays.queue = Queue()
 arrays.queue.put("cleanup")
 

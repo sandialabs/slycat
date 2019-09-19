@@ -3,7 +3,6 @@
 # DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
 # retains certain rights in this software.
 
-from __future__ import absolute_import
 import traceback
 import cherrypy
 import hashlib
@@ -14,8 +13,7 @@ import numbers
 import numpy
 import os
 import time
-import Queue
-import cPickle
+import _pickle
 import re
 import slycat.hdf5
 import slycat.hyperchunks
@@ -28,7 +26,6 @@ import slycat.web.server.hdf5
 import slycat.web.server.plugin
 import slycat.web.server.remote
 import slycat.web.server.streaming
-import slycat.web.server.template
 import slycat.web.server.upload
 import stat
 import subprocess
@@ -38,8 +35,19 @@ import time
 import uuid
 import functools
 import datetime
-import urlparse
-
+from urllib.parse import urlparse, urlencode, parse_qs
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        elif isinstance(obj, numpy.floating):
+            return float(obj)
+        elif isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        elif type(obj) is bytes:
+            return str(obj.decode())
+        else:
+            return super(MyEncoder, self).default(obj)
 
 def get_sid(hostname):
     """
@@ -57,7 +65,7 @@ def get_sid(hostname):
             if host_session["hostname"] == hostname:
                 sid = host_session["sid"]
                 if(not slycat.web.server.remote.check_session(sid)):
-                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, slycat.web.server.remote.session_cache.keys()))
+                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, list(slycat.web.server.remote.session_cache.keys())))
                     slycat.web.server.remote.delete_session(sid)
                     del session["sessions"][index]
                     database.save(session)
@@ -389,7 +397,7 @@ def post_project_models(pid):
 
     # create the model
     model_type = require_json_parameter("model-type")
-    allowed_model_types = slycat.web.server.plugin.manager.models.keys()
+    allowed_model_types = list(slycat.web.server.plugin.manager.models.keys())
     if model_type not in allowed_model_types:
         cherrypy.log.error("slycat.web.server.handlers.py post_project_models",
                                 "cherrypy.HTTPError allowed model types: %s" % ", ".join(allowed_model_types))
@@ -545,18 +553,18 @@ def post_project_bookmarks(pid):
         project)  # This is intentionally out-of-the-ordinary - we explicitly allow project *readers* to store bookmarks.
 
     content = json.dumps(cherrypy.request.json, separators=(",", ":"), indent=None, sort_keys=True)
-    bid = hashlib.md5(pid + content).hexdigest()
-
-    try:
-        doc = database[bid]
-    except:
-        doc = {
-            "_id": bid,
-            "project": pid,
-            "type": "bookmark"
-        }
-        database.save(doc)
-        database.put_attachment(doc, filename="bookmark", content_type="application/json", content=content)
+    bid = hashlib.md5(pid.encode() + content.encode()).hexdigest()
+    with slycat.web.server.database.couchdb.db_lock:
+        try:
+            doc = database[bid]
+        except:
+            doc = {
+                "_id": bid,
+                "project": pid,
+                "type": "bookmark"
+            }
+            database.save(doc)
+            database.put_attachment(doc, filename="bookmark", content_type="application/json", content=content)
 
     cherrypy.response.headers["location"] = "%s/bookmarks/%s" % (cherrypy.request.base, bid)
     cherrypy.response.status = "201 Bookmark stored."
@@ -700,6 +708,7 @@ def model_sensitive_command(mid, type, command):
 def put_model(mid):
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
+
     with slycat.web.server.get_model_lock(model["_id"]):
         project = database.get("project", model["project"])
         slycat.web.server.authentication.require_project_writer(project)
@@ -753,7 +762,7 @@ def post_model_finish(mid):
                                 "cherrypy.HTTPError 400 only waiting models can be finished.")
         raise cherrypy.HTTPError("400 Only waiting models can be finished.")
     # check if the model type exists
-    if model["model-type"] not in slycat.web.server.plugin.manager.models.keys():
+    if model["model-type"] not in list(slycat.web.server.plugin.manager.models.keys()):
         cherrypy.log.error("slycat.web.server.handlers.py post_model_finish",
                                 "cherrypy.HTTPError 500 cannot finish unknown model type.")
         raise cherrypy.HTTPError("500 Cannot finish unknown model type.")
@@ -843,7 +852,7 @@ def post_uploads():
                                 "cherrypy.HTTPError 400 unknown parser plugin: %s." % parser)
         raise cherrypy.HTTPError("400 Unknown parser plugin: %s." % parser)
 
-    kwargs = {key: value for key, value in cherrypy.request.json.items() if
+    kwargs = {key: value for key, value in list(cherrypy.request.json.items()) if
               key not in ["mid", "input", "parser", "aids"]}
 
     uid = slycat.web.server.upload.create_session(mid, input, parser, aids, kwargs)
@@ -923,7 +932,9 @@ def open_id_authenticate(**params):
     if slycat.web.server.config["slycat-web-server"]["authentication"]["plugin"] != "slycat-openid-authentication":
         raise cherrypy.HTTPError(404)
 
-    current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+    cherrypy.log.error("++ open_id_authenticate incoming params = %s" % params)
+    current_url = urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+    
     kerberos_principal = params['openid.ext2.value.Authuser']
     auth_user = kerberos_principal.split("@")[0]
     cherrypy.log.error("++ open_id_authenticate: setting auth_user = %s, calling create_single_sign_on_session" % auth_user)
@@ -982,7 +993,7 @@ def get_root():
     Not sure why we used to do that, but after conversion to webpack this is no longer needed,
     so I changed the projects-redirect config parameter in web-server-config.ini to just "/"
     """
-    current_url = urlparse.urlparse(cherrypy.url())
+    current_url = urlparse(cherrypy.url())
     proj_url = "https://" + current_url.netloc
     raise cherrypy.HTTPRedirect(proj_url, 303)
 
@@ -1215,7 +1226,7 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                         data_size = numpy.prod(data_shape)
 
                         if byteorder is None:
-                            hyperslice_data = numpy.array(data_iterator.next(), dtype=data_type).reshape(data_shape)
+                            hyperslice_data = numpy.array(next(data_iterator), dtype=data_type).reshape(data_shape)
                         elif byteorder == sys.byteorder:
                             hyperslice_data = numpy.fromfile(data.file, dtype=data_type, count=data_size).reshape(
                                 data_shape)
@@ -1340,7 +1351,7 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
     try:
         ranges = [int(spec) for spec in arguments["ranges"].split(",")]
         i = iter(ranges)
-        ranges = list(itertools.izip(i, i))
+        ranges = list(zip(i, i))
     except:
         raise cherrypy.HTTPError(
             "400 Malformed ranges argument must be a comma separated collection of half-open index ranges.")
@@ -1384,7 +1395,7 @@ def get_model_array_attribute_chunk(mid, aid, array, attribute, **arguments):
             data = hdf5_array.get_data(attribute)[index]
 
             if byteorder is None:
-                return json.dumps(data.tolist())
+                return json.dumps(data.tolist(), cls=MyEncoder).encode()
             else:
                 if sys.byteorder != byteorder:
                     return data.byteswap().tostring(order="C")
@@ -1423,7 +1434,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
     Returns:
         json -- statistical results of arrayset
     """
-    cherrypy.log.error("GET arrayset metadata mid:%s aid:%s kwargs:%s" % (mid, aid, kwargs.keys()))
+    cherrypy.log.error("GET arrayset metadata mid:%s aid:%s kwargs:%s" % (mid, aid, list(kwargs.keys())))
     database = slycat.web.server.database.couchdb.connect()
     model = database.get("model", mid)
     project = database.get("project", model["project"])
@@ -1462,6 +1473,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
+    cherrypy.log.error("GOT RESULTS")
     if "unique" in results:
         #cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         #cherrypy.log.error("type:")
@@ -1473,8 +1485,8 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
             # Other times it's a 'numpy.ndarray'
             else:
               unique["values"] = [array.tolist() for array in unique["values"]]
-
-    return results
+    # have to load and dump to clean out all the non json serializable numpy arrays
+    return json.loads(json.dumps(results, cls=MyEncoder))
 
 
 def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
@@ -1543,11 +1555,10 @@ def get_model_arrayset_data(mid, aid, hyperchunks, byteorder=None):
             return numpy.ma.masked_where(numpy.isnan(array), array)
         except:
             return array
-
     def content():
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
-                              slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
+                              slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)]).encode()
         else:
             for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
                 if sys.byteorder != byteorder:
@@ -1633,7 +1644,7 @@ def post_model_arrayset_data(mid, aid):
             include_nans = cherrypy.request.json["include_nans"]
         if byteorder is None:
             yield json.dumps([mask_nans(hyperslice).tolist() for hyperslice in
-                              slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)])
+                              slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks)]).encode()
         else:
             for hyperslice in slycat.web.server.get_model_arrayset_data(database, model, aid, hyperchunks):
                 if sys.byteorder != byteorder:
@@ -1814,7 +1825,8 @@ def get_model_table_metadata(mid, aid, array, index=None):
         with slycat.web.server.hdf5.open(artifact,
                                          "r+") as file:  # We have to open the file with writing enabled because the statistics cache may need to be updated.
             metadata = get_table_metadata(file, array, index)
-        return metadata
+        # have to load and dump to clean out all the non json serializable numpy arrays
+        return json.loads(json.dumps(metadata, cls=MyEncoder))
 
 
 @cherrypy.tools.json_out(on=True)
@@ -2152,7 +2164,7 @@ def get_model_statistics(mid):
 
     # get models hdf5 footprint
     hdf5_file_size = 0
-    for key, value in model["artifact-types"].iteritems():
+    for key, value in model["artifact-types"].items():
         if value == "hdf5":
             array = model["artifact:%s" % key]
             hdf5_file_path = os.path.join(hdf5_root_directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")
@@ -2169,7 +2181,7 @@ def get_model_statistics(mid):
             total_hdf5_server_size += os.path.getsize(fp)
 
     try:
-        server_cache_size = float(sys.getsizeof(cPickle.dumps(slycat.web.server.server_cache.cache))) / 1024.0 / 1024.0
+        server_cache_size = float(sys.getsizeof(_pickle.dumps(slycat.web.server.server_cache.cache))) / 1024.0 / 1024.0
     except:
         server_cache_size = 0
 
@@ -2542,21 +2554,21 @@ def post_events(event):
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_markings():
-    return [dict(marking.items() + [("type", key)]) for key, marking in
-            slycat.web.server.plugin.manager.markings.items() if
+    return [dict(list(marking.items()) + [("type", key)]) for key, marking in
+            list(slycat.web.server.plugin.manager.markings.items()) if
             key in cherrypy.request.app.config["slycat-web-server"]["allowed-markings"]]
 
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_parsers():
     return [{"type": key, "label": parser["label"], "categories": parser["categories"]} for key, parser in
-            slycat.web.server.plugin.manager.parsers.items()]
+            list(slycat.web.server.plugin.manager.parsers.items())]
 
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_remote_hosts():
     remote_hosts = []
-    for hostname, remote in cherrypy.request.app.config["slycat-web-server"]["remote-hosts"].items():
+    for hostname, remote in list(cherrypy.request.app.config["slycat-web-server"]["remote-hosts"].items()):
         agent = True if remote.get("agent", False) else False
         remote_hosts.append({"hostname": hostname, "agent": agent})
     return remote_hosts
@@ -2598,8 +2610,8 @@ get_configuration_version.commit = None
 
 @cherrypy.tools.json_out(on=True)
 def get_configuration_wizards():
-    return [dict([("type", type)] + wizard.items()) for type, wizard in
-            slycat.web.server.plugin.manager.wizards.items()]
+    return [dict([("type", type)] + list(wizard.items())) for type, wizard in
+            list(slycat.web.server.plugin.manager.wizards.items())]
 
 
 def tests_request(*arguments, **keywords):

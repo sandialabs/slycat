@@ -5,7 +5,7 @@
 import numpy
 import slycat.web.server
 
-import StringIO
+from io import StringIO
 
 
 def parse_file(file):
@@ -41,7 +41,7 @@ def parse_file(file):
             if isfloat(value):
                 column_has_floats = True
                 try:  # note NaN's are floats
-                    output_list = map(lambda x: 'NaN' if x == '' else x, column[1:])
+                    output_list = ['NaN' if x == '' else x for x in column[1:]]
                     data.append(numpy.array(output_list).astype("float64"))
                     attributes.append({"name": column[0], "type": "float64"})
 

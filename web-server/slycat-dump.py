@@ -71,7 +71,7 @@ for project_id in arguments.project_id:
         json.dump(model, open(os.path.join(arguments.output_dir, "model-%s.json" % model["_id"]), "w"))
 
         artifact_types = model["artifact-types"]
-        for key, value in model.items():
+        for key, value in list(model.items()):
             if not key.startswith("artifact:"):
                 continue
             artifact_name = key[9:]

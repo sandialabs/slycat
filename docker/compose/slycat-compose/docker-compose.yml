@@ -1,18 +1,67 @@
 version: '3.6'
-
 services:
-  # cherrypy:
-  #   build:
-  #     context: .
-  #     dockerfile: ./cherrypy-hdf5/Dockerfile
-  #     args:
-  #       - IMAGE_VERSION=${PYTHON_VERSION}
-  #   image: ${DOCKER_USER}/flask-redis:1.0
-  #   env_file: env.txt
-  #   ports:
-  #     - 80:5000
-  #   networks:
-  #     - mynet
+  slycat-web-server:
+    build:
+      context: .
+      dockerfile: ./slycat-web-server/DockerFile
+      args:
+        - IMAGE_VERSION=${PYTHON_VERSION}
+    image: slycat-web-server
+    env_file: env.txt
+    depends_on:
+      - "couchdb"
+    # uncomment if you want to expose cherrypy
+    # ports:
+    #   - 8092:8092
+    networks:
+      - sly-net
+    volumes:
+      - ../../../:/usr/src/slycat/slycat
+    entrypoint:
+      - bash
+      - -c
+      - | 
+          python --version \
+          && python /usr/src/slycat/slycat/docker/compose/slycat-compose/scripts/slycat-couchdb-setup.py --host couchdb --admin admin --password password \
+          && python /usr/src/slycat/slycat/docker/compose/slycat-compose/scripts/slycat-docker-compose-couchdb-load-data.py \
+          && python /usr/src/slycat/slycat/web-server/slycat-web-server.py --config /usr/src/slycat/slycat/docker/compose/slycat-compose/slycat-docker-compose-authenticated-config.ini
+    restart: always
+
+  slycat-client:
+      build:
+        context: .
+        dockerfile: ./slycat-client/DockerFile
+      working_dir: /usr/src/app/slycat
+      command:
+        - bash
+        - -c
+        - | 
+          npm install \
+          && npm rebuild node-sass \
+          && npm run dev
+      ports:
+        - 9000:9000
+      networks:
+        - sly-net
+      volumes:
+        - ../../../:/usr/src/app/slycat
+
+  # http://host_os_ip/haproxy?stats  usr:admin, password:admin
+  haproxy:
+      build:
+        context: .
+        dockerfile: ./haproxy/DockerFile
+      depends_on:
+        - "slycat-web-server"
+      ports:
+        - 80:80
+        - 443:443
+      expose:
+        - 80
+        - 443
+      networks:
+        - sly-net
+
   couchdb:
     image: couchdb
     restart: always
@@ -20,51 +69,14 @@ services:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: password
     networks:
-      - slycat-net
-    ports:
-      - "5984:5984"
+      - sly-net
+    # uncomment to expose cherrypy @http://localhost:5984/_utils
+    # ports:
+    #   - "5984:5984"
     volumes:
       - couchdb-data-volume:/usr/local/var/lib/couchdb
 
-  python_couchdb_setup:
-    build:
-      context: .
-      dockerfile: ./python-couchdb-setup/Dockerfile
-      args:
-        - IMAGE_VERSION=${PYTHON_VERSION}
-    image: python_couchdb_setup
-    env_file: env.txt
-    depends_on:
-      - "couchdb"
-    networks:
-      - slycat-net
-    command: 
-      - python
-      - /usr/src/couch/slycat-couchdb-setup.py
-      - --host
-      - couchdb
-      - --admin
-      - admin
-      - --password
-      - password
-    volumes:
-      - ./scripts/couchdb_setup.sh:/usr/local/bin/couchdb_setup.sh:ro
-
-  # couchdb_setup:
-  #   depends_on: 
-  #     - 'couchdb'
-  #   container_name: couchdb_setup
-  #   image: couchdb
-  #   command: ['/bin/bash', '-x', '-c', 'cat /usr/local/bin/couchdb_setup.sh | tr -d "\r" | bash']
-  #   volumes:
-  #     - ./scripts/couchdb_setup.sh:/usr/local/bin/couchdb_setup.sh:ro
-  #   environment:
-  #     COUCHDB_USER: admin
-  #     COUCHDB_PASSWORD: password
-  #   networks:
-  #     - slycat-net
-
 networks:
-  slycat-net:
+  sly-net:
 volumes:
   couchdb-data-volume:

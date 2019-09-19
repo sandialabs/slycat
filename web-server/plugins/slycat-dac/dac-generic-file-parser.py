@@ -36,7 +36,7 @@ def parse_table_file(file):
     :returns: attributes, data
     """
 
-    rows = [row for row in csv.reader(file.splitlines(), delimiter=",",
+    rows = [row for row in csv.reader(file.decode().splitlines(), delimiter=",",
                                       doublequote=True, escapechar=None, quotechar='"',
                                       quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
@@ -96,7 +96,7 @@ def parse_file(file):
             if isfloat(value):
                 column_has_floats = True
             try:# note NaN's are floats
-                output_list = map(lambda x: 'NaN' if x=='' else x, column[1:])
+                output_list = ['NaN' if x=='' else x for x in column[1:]]
                 data.append(numpy.array(output_list).astype("float64"))
                 attributes.append({"name":column[0], "type":"float64"})
 
@@ -129,7 +129,7 @@ def parse_mat_file(file):
     """
 
     # parse file using comma delimiter
-    rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
+    rows = [row for row in csv.reader(file.decode().splitlines(), delimiter=",", doublequote=True,
             escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
     # fill a numpy matrix with matrix from file (assumes floats, fails otherwise)
@@ -168,7 +168,7 @@ def parse_list_file(file):
     # get rows of file
     rows = [row.strip() for row in file.splitlines()]
     # remove any empty rows
-    rows = filter(None, rows)
+    rows = [_f for _f in rows if _f]
     # return only unique rows
     rows = list(set(rows))
     return rows

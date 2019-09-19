@@ -19,7 +19,7 @@ import shutil
 import slycat.hdf5
 import threading
 import csv
-from urlparse import urlparse
+from urllib.parse import urlparse
 import traceback
 import paramiko
 import functools

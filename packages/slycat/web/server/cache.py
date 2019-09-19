@@ -3,11 +3,11 @@
 # retains certain rights in this software.
 import os
 import hashlib
-import cPickle
+import pickle
 import time
 import base64
 import inspect
-import Queue
+import queue
 import threading
 import cherrypy
 
@@ -117,7 +117,7 @@ class Cache(object):
       if self._init_expire_time <= 0:
         msg = "[CACHE] Lifetime (%s seconds) is 0 or less." % self._init_expire_time
         cherrypy.log.error(msg)
-        raise LifetimeError, msg
+        raise LifetimeError(msg)
     else:
       # no expiration time
       self._init_expire_time = None
@@ -204,7 +204,7 @@ class Cache(object):
       del self._loaded[digest_hash]
     else:
       msg = "[CACHE] Cannot delete object at %s not loaded in memory" % str(digest_hash)
-      raise CacheError, msg
+      raise CacheError(msg)
 
   def __contains__(self, item):
     """
@@ -244,7 +244,7 @@ class Cache(object):
 
     function_meta_data = inspect.getmembers(f)
     try:
-      fid = (function_meta_data.func_name, inspect.getargspec(f))
+      fid = (function_meta_data.__name__, inspect.getargspec(f))
     except (AttributeError, TypeError):
       fid = (f.__name__, repr(type(f)))
 
@@ -279,7 +279,7 @@ class Cache(object):
       try:
         del self[digest_hash]
       except CacheError as e:
-        print cherrypy.log.error("[CACHE] error deleteing item %s"%e.message)
+        print((cherrypy.log.error("[CACHE] error deleteing item %s"%e.message)))
 
   def _remove(self, digest):
     """
@@ -332,7 +332,7 @@ class Cache(object):
       contents = self.read(path)
     else:
       msg = "[CACHE] Object for key `%s` does not exist." % (k,)
-      raise CacheError, msg
+      raise CacheError(msg)
     self._loaded[digest] = contents
     return contents
 
@@ -358,7 +358,7 @@ class Cache(object):
     Returns a list of virtual memory keys.
     :return: keys for virtual cache
     """
-    return self._loaded.keys()
+    return list(self._loaded.keys())
 
   @property
   def fs_keys(self):
@@ -429,8 +429,8 @@ class Cache(object):
     # except Exception as e:
     #   cherrypy.log.error("PICKLE error: %s  %s" % (e.message,key))
     #   raise Exception
-    digest_hash = hashlib.sha256(str(key)).digest()
-    b64_digest_hash = base64.urlsafe_b64encode(digest_hash)[:-2]
+    digest_hash = hashlib.sha256(str(key).encode()).digest()
+    b64_digest_hash = str(base64.urlsafe_b64encode(digest_hash)[:-2])
     return b64_digest_hash.replace('-', '=')
 
   def read(self, filename):
@@ -440,7 +440,7 @@ class Cache(object):
     """
     with self.lock:
       with open(filename, 'rb') as loaded_file:
-        loaded_obj = cPickle.load(loaded_file)
+        loaded_obj = pickle.load(loaded_file)
     return loaded_obj
 
   def write(self, obj, filename):
@@ -449,7 +449,7 @@ class Cache(object):
     """
     with self.lock:
       with open(filename, 'wb') as cache_file:
-        cPickle.dump(obj, cache_file, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, cache_file, protocol=pickle.HIGHEST_PROTOCOL)
 
   @staticmethod
   def years_to_seconds(years):
@@ -534,7 +534,7 @@ class Cache(object):
                              "minutes": Cache.minutes_to_seconds,
                              "seconds": Cache.seconds_to_seconds}
     seconds = []
-    for key, value in kwargs.items():
+    for key, value in list(kwargs.items()):
       if key in time_converter_map:
         seconds.append(time_converter_map[key](value))
       else:
@@ -559,20 +559,20 @@ if __name__ == "__main__":
     :return: seed+hello+rand and a string
     """
     import random
-    print "\nnot cached"
+    print("\nnot cached")
     return str(seed)+"hello"+ str(random.random())
 
-  print hello()
-  print hello(seed=2)
-  print hello(seed=1)
-  print
-  print hello()
-  print hello(seed=2)
+  print((hello()))
+  print((hello(seed=2)))
+  print((hello(seed=1)))
+  print()
+  print((hello()))
+  print((hello(seed=2)))
   cache["meow"] = "xyz"
-  print cache["meow"]
+  print((cache["meow"]))
 
   cache["meow"] = "rgb"
-  print cache["meow"]
+  print((cache["meow"]))
   # print cache[hello()]
 
 

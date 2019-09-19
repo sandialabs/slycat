@@ -9,13 +9,13 @@ import datetime
 import cherrypy
 import numpy
 import paramiko
-
+import json
 import slycat.hdf5
 import slycat.hyperchunks
 import slycat.web.server.hdf5
 import slycat.web.server.remote
 from slycat.web.server.cache import Cache
-import urlparse
+from urllib.parse import urlparse, parse_qs
 import functools
 import threading
 import base64
@@ -53,7 +53,7 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0):
         return expression
     elif isinstance(expression, float):
         return expression
-    elif isinstance(expression, basestring):
+    elif isinstance(expression, str):
         return expression
     elif isinstance(expression, slycat.hyperchunks.grammar.AttributeIndex):
         return hdf5_array.get_data(expression.index)[...]
@@ -114,7 +114,7 @@ def update_model(database, model, **kwargs):
   Update the model, and signal any waiting threads that it's changed.
   will only update model base on "state", "result", "started", "finished", "progress", "message"
   """
-    for name, value in kwargs.items():
+    for name, value in list(kwargs.items()):
         if name in ["state", "result", "started", "finished", "progress", "message"]:
             model[name] = value
     database.save(model)
@@ -161,11 +161,11 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
   --------
   :http:get:`/models/(mid)/arraysets/(aid)/metadata`
   """
-    if isinstance(arrays, basestring):
+    if isinstance(arrays, str):
         arrays = slycat.hyperchunks.parse(arrays)
-    if isinstance(statistics, basestring):
+    if isinstance(statistics, str):
         statistics = slycat.hyperchunks.parse(statistics)
-    if isinstance(unique, basestring):
+    if isinstance(unique, str):
         unique = slycat.hyperchunks.parse(unique)
 
     # Handle legacy behavior.
@@ -244,23 +244,23 @@ def get_model_arrayset_metadata(database, model, aid, arrays=None, statistics=No
 @cache_it
 def get_model_arrayset_data(database, model, aid, hyperchunks):
     """
-  Read data from an arrayset artifact.
-  Parameters
-  ----------
-  database: database object, required
-  model: model object, required
-  aid: string, required
-    Unique (to the model) arrayset artifact id.
-  hyperchunks: string or hyperchunks parse tree, required
-    Specifies the data to be retrieved, in :ref:`Hyperchunks` format.
-  Returns
-  -------
-  data: sequence of numpy.ndarray data chunks.
-  See Also
-  --------
-  :http:get:`/models/(mid)/arraysets/(aid)/data`
-  """
-    if isinstance(hyperchunks, basestring):
+    Read data from an arrayset artifact.
+    Parameters
+    ----------
+    database: database object, required
+    model: model object, required
+    aid: string, required
+      Unique (to the model) arrayset artifact id.
+    hyperchunks: string or hyperchunks parse tree, required
+      Specifies the data to be retrieved, in :ref:`Hyperchunks` format.
+    Returns
+    -------
+    data: sequence of numpy.ndarray data chunks.
+    See Also
+    --------
+    :http:get:`/models/(mid)/arraysets/(aid)/data`
+    """
+    if isinstance(hyperchunks, str):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
     return_list = []
     with slycat.web.server.hdf5.lock:
@@ -354,7 +354,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
   :http:put:`/models/(mid)/arraysets/(aid)/data`
   """
     cherrypy.log.error("put_model_arrayset_data called with: {}".format(aid))
-    if isinstance(hyperchunks, basestring):
+    if isinstance(hyperchunks, str):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
     data = iter(data)
@@ -668,7 +668,7 @@ def get_password_function():
         plugin = cherrypy.request.app.config["slycat-web-server"]["password-check"]["plugin"]
         args = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("args", [])
         kwargs = cherrypy.request.app.config["slycat-web-server"]["password-check"].get("kwargs", {})
-        if plugin not in slycat.web.server.plugin.manager.password_checks.keys():
+        if plugin not in list(slycat.web.server.plugin.manager.password_checks.keys()):
             cherrypy.log.error("slycat-standard-authentication.py authenticate",
                                     "cherrypy.HTTPError 500 no password check plugin found.")
             raise cherrypy.HTTPError("500 No password check plugin found.")
@@ -687,11 +687,11 @@ def response_url():
     that we are not being spoofed
     :return: url to route to once signed in
     """
-    current_url = urlparse.urlparse(cherrypy.url())  # gets current location on the server
+    current_url = urlparse(cherrypy.url())  # gets current location on the server
     try:
         location = cherrypy.request.json["location"]
-        if urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from']:  # get from query href
-            cleaned_url = urlparse.parse_qs(urlparse.urlparse(location['href']).query)['from'][0]
+        if parse_qs(urlparse(location['href']).query)['from']:  # get from query href
+            cleaned_url = parse_qs(urlparse(location['href']).query)['from'][0]
             if not cleaned_url.__contains__(
                     current_url.netloc):  # check net location to avoid cross site script attacks
                 # No longer need to add projects to root url, so removing 
@@ -716,8 +716,8 @@ def decode_username_and_password():
     """
     try:
         # cherrypy.log.error("decoding username and password")
-        user_name = base64_decode(cherrypy.request.json["user_name"])
-        password = base64_decode(cherrypy.request.json["password"])
+        user_name = str(base64_decode(cherrypy.request.json["user_name"]).decode())
+        password = str(base64_decode(cherrypy.request.json["password"]).decode())
 
         # try and get the redirect path for after successful login
         try:
@@ -796,7 +796,7 @@ def check_user(session_user, apache_user, sid):
         raise cherrypy.HTTPError(403)
 
 
-def create_single_sign_on_session(remote_ip, auth_user):
+def create_single_sign_on_session(remote_ip, auth_user, secure=True):
     """
     WSGI/RevProxy no-login session creations.
     Successful authentication and access verification,
@@ -813,14 +813,15 @@ def create_single_sign_on_session(remote_ip, auth_user):
     with slycat.web.server.database.couchdb.db_lock:
         clean_up_old_session(auth_user)
         database = slycat.web.server.database.couchdb.connect()
-        database.save(
-            {"_id": sid, "type": "session", "created": session["created"].isoformat(), "creator": session["creator"],
+        
+        database.save({"_id": sid, "type": "session", "created": str(session["created"].isoformat()), "creator": str(session["creator"]),
              'groups': groups, 'ip': remote_ip, "sessions": []})
 
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
-    cherrypy.response.cookie["slycatauth"]["secure"] = 1
-    cherrypy.response.cookie["slycatauth"]["httponly"] = 1
+    if secure:
+        cherrypy.response.cookie["slycatauth"]["secure"] = 1
+        cherrypy.response.cookie["slycatauth"]["httponly"] = 1
     timeout = int(cherrypy.request.app.config["slycat"]["session-timeout"].total_seconds())
     cherrypy.response.cookie["slycatauth"]["Max-Age"] = timeout
     cherrypy.response.cookie["slycattimeout"] = "timeout"

@@ -47,7 +47,7 @@ def register_slycat_plugin(context):
           columns.append(index)
 
         cherrypy.response.headers["content-type"] = "application/json"
-        return json.dumps(columns)
+        return json.dumps(columns).encode()
 
 
     # read log file and return relevant for display -- launches

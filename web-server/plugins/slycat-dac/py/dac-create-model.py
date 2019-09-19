@@ -36,7 +36,7 @@ arguments = parser.parse_args()
 
 with open(arguments.dir + '/datapoints.dac', 'r') as stream:
     meta_rows = [row.split(',') for row in stream]
-print "Reading datapoints.dac file ..."
+print("Reading datapoints.dac file ...")
 
 # extract column names from the first line of the file, and assume that all columns contain string data.
 meta_column_names = [name.strip() for name in meta_rows[0]]
@@ -47,7 +47,7 @@ meta_rows = meta_rows[1:]
 num_time_series = len(meta_rows)
 
 # convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
-meta_columns = zip(*meta_rows)
+meta_columns = list(zip(*meta_rows))
 for index in range(len(meta_columns)):
   try:
     meta_columns[index] = numpy.array(meta_columns[index], dtype="float64")
@@ -61,7 +61,7 @@ for index in range(len(meta_columns)):
 # (this is just like reading the datapoints.meta file)
 with open(arguments.dir + '/var/variables.meta', 'r') as stream:
     meta_vars = [row.split(',') for row in stream]
-print"Reading variables.meta file ..."
+print("Reading variables.meta file ...")
 
 meta_var_col_names = [name.strip() for name in meta_vars[0]]
 meta_var_col_types = ["string" for name in meta_var_col_names]
@@ -70,7 +70,7 @@ meta_vars = meta_vars[1:]
 num_vars = len(meta_vars)
 
 # convert from row-oriented to column-oriented data
-meta_var_cols = zip(*meta_vars)
+meta_var_cols = list(zip(*meta_vars))
 for index in range(len(meta_var_cols)):
     meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="string")
 
@@ -95,7 +95,7 @@ if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
     # load file
     with open(arguments.dir + '/pref/alpha_parms.pref', 'r') as stream:
         alpha_file = [row.split(',') for row in stream]
-    print "Reading alpha_parms.pref file ..."
+    print("Reading alpha_parms.pref file ...")
     
     # check column names
     alpha_file_col_names = [name.strip() for name in alpha_file[0]]
@@ -112,7 +112,7 @@ if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
         raise Exception ("alpha_parms.pref file has incorrect number of rows.")
     
     # re-arrange alpha_parms into columns
-    alpha_file_cols = zip(*alpha_file)
+    alpha_file_cols = list(zip(*alpha_file))
     for index in range(len(alpha_file_cols)):
         alpha_file_cols[index] = numpy.array(alpha_file_cols[index], dtype="float64")
     
@@ -121,7 +121,7 @@ if os.path.isfile(arguments.dir + '/pref/alpha_parms.pref'):
     alpha_order = alpha_file_cols[1].astype(numpy.int64) - 1
     
 else:
-    print "No alpha_parms.pref file, constructing defaults ..."
+    print("No alpha_parms.pref file, constructing defaults ...")
     alpha_parms = numpy.ones(num_vars)
     alpha_order = numpy.arange(0,num_vars)
 	
@@ -138,7 +138,7 @@ if os.path.isfile(arguments.dir + '/pref/variable_defaults.pref'):
     # load file
     with open(arguments.dir + '/pref/variable_defaults.pref') as stream:
         defaults_file = [row.split(',') for row in stream]
-    print "Reading variable_defaults.pref file ..."
+    print("Reading variable_defaults.pref file ...")
     
     # check for 3 integers
     default_row = [name.strip() for name in defaults_file[0]]
@@ -148,7 +148,7 @@ if os.path.isfile(arguments.dir + '/pref/variable_defaults.pref'):
     var_plot_order = numpy.array(default_row, dtype="int64") - 1
     
 else:
-    print "No variable_defaults.pref file found, constructing defaults ..."
+    print("No variable_defaults.pref file found, constructing defaults ...")
     var_plot_order = numpy.arange(0,3)
 
 # make sure parameters are lists (to push as model parameters)
@@ -192,7 +192,7 @@ if os.path.isfile(arguments.dir + '/pref/dac_ui.pref'):
     # load file
     with open(arguments.dir + '/pref/dac_ui.pref') as stream:
         dac_ui_file = [row.split(',') for row in stream]
-    print "Reading dac_ui.pref file ..."
+    print("Reading dac_ui.pref file ...")
 
     # check header row
     dac_file_col_names = [name.strip() for name in dac_ui_file[0]]
@@ -220,7 +220,7 @@ if os.path.isfile(arguments.dir + '/pref/dac_ui.pref'):
 # read in variable_*.time files
 ###############################
 
-print "Reading variable_*.time files ..."
+print("Reading variable_*.time files ...")
 time_steps = []	# store as a list of numpy arrays
 for i in range(num_vars):
        
@@ -238,7 +238,7 @@ for i in range(num_vars):
 # read in variable_*.var files
 ##############################
 
-print "Reading variable_*.var files ..."
+print("Reading variable_*.var files ...")
 variable = []	# store as a list of numpy matrices
 for i in range(num_vars):
        
@@ -262,7 +262,7 @@ for i in range(num_vars):
 # read in variable_*.dist files
 ###############################
 
-print "Reading variable_*.dist files ..."
+print("Reading variable_*.dist files ...")
 var_dist = []	# store as a list of numpy matrices
 for i in range(num_vars):
 
@@ -289,10 +289,10 @@ for i in range(num_vars):
 # initial mds and alpha cluster computations
 ############################################
 
-print "Computing initial MDS coordinates ..."
+print("Computing initial MDS coordinates ...")
 mds_coords, full_mds_coords = dac.init_coords(var_dist)
 
-print "Computing alpha clustser values ..."
+print("Computing alpha clustser values ...")
 alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)
 
 # upload all variables to slycat web server

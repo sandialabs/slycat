@@ -14,7 +14,7 @@ def register_slycat_plugin(context):
     import slycat.web.server.plugin
     import slycat.web.server.handlers
     
-    from urlparse import urlparse
+    from urllib.parse import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
@@ -41,7 +41,7 @@ def register_slycat_plugin(context):
             raise cherrypy.HTTPError("407 Proxy Authentication Required: Slycat could not parse an authorized username.")
 
         # validate that header auth parsing returns a plausible username
-        if len(auth_user) > 0 and isinstance(auth_user, basestring):  # tests for str and unicode
+        if len(auth_user) > 0 and isinstance(auth_user, str):  # tests for str and unicode
         #if len(auth_user) > 0 and isinstance(auth_user, str):        # python 3 version
             pass
         else:
@@ -69,7 +69,7 @@ def register_slycat_plugin(context):
 
                 # cherrypy.log.error("%s ::: %s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started),'%Y-%m-%dT%H:%M:%S.%f'),cherrypy.request.app.config["slycat"]["session-timeout"]))
                 # cherrypy.log.error("%s" % (datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > cherrypy.request.app.config["slycat"]["session-timeout"]))
-                if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > \
+                if datetime.datetime.utcnow() - datetime.datetime.strptime(str(started), '%Y-%m-%dT%H:%M:%S.%f') > \
                         cherrypy.request.app.config["slycat"]["session-timeout"]:
                     couchdb.delete(session)
                     # expire the old cookie

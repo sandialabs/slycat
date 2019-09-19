@@ -1,0 +1,11 @@
+FROM node
+
+WORKDIR /usr/src/slycat
+RUN git config --global http.sslVerify false
+RUN git clone -b python3 --single-branch https://github.com/sandialabs/slycat.git
+WORKDIR /usr/src/slycat/slycat
+
+RUN npm config set registry http://registry.npmjs.org/
+RUN npm install
+RUN npm rebuild node-sass
+CMD ls

@@ -19,7 +19,7 @@ def register_slycat_plugin(context):
   
   import threading
   import traceback
-  import urlparse
+  from urllib.parse import urlparse
 
   def csv_distance(left_index, left_path, right_index, right_path):
     return csv_distance.matrix[left_index][right_index]
@@ -53,12 +53,12 @@ def register_slycat_plugin(context):
       j = right[index]
       row_i, column_i = storage[i]
       uri_i = columns[column_i][1][row_i]
-      path_i = urlparse.urlparse(uri_i).path
+      path_i = urlparse(uri_i).path
       row_j, column_j = storage[j]
       uri_j = columns[column_j][1][row_j]
-      path_j = urlparse.urlparse(uri_j).path
+      path_j = urlparse(uri_j).path
       distance[index] = measure(i, path_i, j, path_j)
-      print "Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index])
+      print("Computed %s distance for %s, %s -> %s: %s." % (measure_name, cluster_name, i, j, distance[index]))
     return distance
 
 
@@ -132,7 +132,7 @@ def register_slycat_plugin(context):
           distance = compute_distance(left, right, storage, name, cluster_measure, measures[cluster_measure], columns)
 
           # Use the distance matrix to cluster observations ...
-          print "Clustering %s" % name
+          print("Clustering %s" % name)
           #distance = scipy.spatial.distance.squareform(distance_matrix)
           linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_linkage))
           cluster_linkages[name] = linkage
@@ -148,7 +148,7 @@ def register_slycat_plugin(context):
             exemplars[i] = i
             cluster_membership.append(set([i]))
 
-          print "Identifying examplars for %s" % (name)
+          print("Identifying examplars for %s" % (name))
           for i in range(len(linkage)):
             cluster_id = i + observation_count
             (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -192,7 +192,7 @@ def register_slycat_plugin(context):
         model = database.get("model", mid)
 
         # Store each cluster.
-        for key in clusters.keys():
+        for key in list(clusters.keys()):
           slycat.web.server.put_model_file(
             database,
             model,
@@ -203,7 +203,7 @@ def register_slycat_plugin(context):
 
       model = database.get("model", mid)
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
-      print "Finished computing new model."
+      print("Finished computing new model.")
 
     except:
       cherrypy.log.error("%s" % traceback.format_exc())
@@ -259,7 +259,7 @@ def register_slycat_plugin(context):
           distance = compute_distance(left, right, storage, name, cluster_measure, measures[cluster_measure], columns)
 
           # Use the distance matrix to cluster observations ...
-          print "Clustering %s" % name
+          print("Clustering %s" % name)
           #distance = scipy.spatial.distance.squareform(distance_matrix)
           linkage = scipy.cluster.hierarchy.linkage(distance, method=str(cluster_linkage))
           cluster_linkages[name] = linkage
@@ -275,7 +275,7 @@ def register_slycat_plugin(context):
             exemplars[i] = i
             cluster_membership.append(set([i]))
 
-          print "Identifying examplars for %s" % (name)
+          print("Identifying examplars for %s" % (name))
           for i in range(len(linkage)):
             cluster_id = i + observation_count
             (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -319,7 +319,7 @@ def register_slycat_plugin(context):
         model = database.get("model", mid)
 
         # Store each cluster.
-        for key in clusters.keys():
+        for key in list(clusters.keys()):
           database = slycat.web.server.database.couchdb.connect()
           model = database.get("model", mid)
 
@@ -333,7 +333,7 @@ def register_slycat_plugin(context):
 
       model = database.get("model", mid)
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
-      print "Finished computing new model."
+      print("Finished computing new model.")
 
     except:
       cherrypy.log.error("%s" % traceback.format_exc())

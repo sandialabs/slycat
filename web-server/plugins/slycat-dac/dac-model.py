@@ -181,7 +181,7 @@ def register_slycat_plugin(context):
         else:
 
             # if no columns specified, use all variables
-            var_include_columns = range(0, num_vars)
+            var_include_columns = list(range(0, num_vars))
 
         # get distance matrices as a list of numpy arrays from slycat server
         var_dist = []
@@ -374,7 +374,7 @@ def register_slycat_plugin(context):
         if len(range_inds) == 0:
             range_inds_min = numpy.amax(numpy.where(time_points < x_min)[0])
             range_inds_max = numpy.amin(numpy.where(time_points > x_max)[0])
-            range_inds = range(range_inds_min, range_inds_max+1)
+            range_inds = list(range(range_inds_min, range_inds_max+1))
 
         # add indices just before and just after user selected range
         if range_inds[0] > 0:
@@ -487,7 +487,7 @@ def register_slycat_plugin(context):
         col_cats = kwargs["3"]
 
         # column to remove (for remove), or update (for update)
-        if isinstance(kwargs["4"], (list,)):
+        if isinstance(kwargs["4"], list):
             col_id = [int(id) for id in kwargs["4"]]
         else:
             col_id = [int(kwargs["4"])]
@@ -522,8 +522,8 @@ def register_slycat_plugin(context):
 
                 # add free text column to current editable columns
                 editable_cols["attributes"].append(dict(name=col_name, type="freetext"))
-                editable_cols["categories"].append([unicode('')])
-                editable_cols["data"].append([unicode('') for i in range(num_rows)])
+                editable_cols["categories"].append([str('')])
+                editable_cols["data"].append([str('') for i in range(num_rows)])
 
                 # update editable column categories
                 slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", editable_cols)
