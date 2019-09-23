@@ -58,6 +58,7 @@
     </div>
 
     <div data-bind="visible:tab() == 1" class="form-horizontal">
+      <div data-bind="visible:error_messages.length > 0">TEST</div>
       <slycat-local-browser params="
         selection:browser.selection,
         progress:browser.progress,

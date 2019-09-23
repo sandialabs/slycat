@@ -25,6 +25,7 @@ function constructor(params)
   component.selected_file = ko.observable("");
   component.current_aids = ko.observable("");
   component.csv_data = ko.observableArray();
+  component.error_messages = ko.observable("");
   // Alex removing default model name per team meeting discussion
   // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
   component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
@@ -116,20 +117,30 @@ function constructor(params)
   };
 
   component.get_error_messages = function() {
-    client.get_model_parameter({
-        mid: component.model._id(),
-        aid: "error-messages",
-        success: function(errors) {
-          var error_messages = "";
-          if (errors.length >= 1) {
-            for (var i = 0; i < errors.length; i++) {
-              error_messages += (errors[i] + "\n");
-            }
-            alert(error_messages);
+    client.get_model_parameter_fetch({
+      mid: component.model._id(),
+      aid: "error-messages"}).then((errors) => {
+        console.log("Success");
+        var error_messages = "";
+        console.log(errors);
+        if (errors.length >= 1) {
+          for (var i = 0; i < errors.length; i++) {
+            error_messages += (errors[i] + "\n");
           }
-        },
-        error: dialog.ajax_error("There was error retrieving the error messages."),
-    });
+          component.error_messages(error_messages);
+          console.log(component.error_messages().length);
+          alert(error_messages);
+        }
+        else {
+          component.error_messages(error_messages);
+        }
+
+        console.log(component.error_messages().length);
+        if(component.error_messages().length == 0) {
+          component.tab(4);
+          $('.browser-continue').toggleClass("disabled", false);
+        }
+      });
   };
 
   // Create a model as soon as the dialog loads. We rename, change description and marking later.
@@ -188,8 +199,6 @@ function constructor(params)
               });
             mapping.fromJS(attributes, component.attributes);
             component.get_error_messages();
-            component.tab(4);
-            $('.browser-continue').toggleClass("disabled", false);
           }
         });
       }

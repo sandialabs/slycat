@@ -677,6 +677,21 @@ module.put_model_command = function(params)
   });
 };
 
+module.get_model_parameter_fetch = function(params, successFunction, errorFunction) {
+  return fetch(`${api_root}models/${params.mid}/parameters/${params.aid}`,
+  {
+    credentials: "same-origin",
+    cache: "no-store",
+    dataType: "json",
+  })
+.then(function(response) {
+  if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+  }
+  return response.json();
+});
+}
+
 module.get_model_parameter = function(params)
 {
   $.ajax(
