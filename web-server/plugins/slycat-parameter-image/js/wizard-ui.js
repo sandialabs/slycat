@@ -120,22 +120,16 @@ function constructor(params)
     client.get_model_parameter_fetch({
       mid: component.model._id(),
       aid: "error-messages"}).then((errors) => {
-        console.log("Success");
         var error_messages = "";
-        console.log(errors);
         if (errors.length >= 1) {
           for (var i = 0; i < errors.length; i++) {
             error_messages += (errors[i] + "\n");
           }
           component.error_messages(error_messages);
-          console.log(component.error_messages().length);
-          alert(error_messages);
         }
         else {
           component.error_messages(error_messages);
         }
-
-        console.log(component.error_messages().length);
         if(component.error_messages().length == 0) {
           component.tab(4);
           $('.browser-continue').toggleClass("disabled", false);
