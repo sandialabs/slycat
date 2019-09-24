@@ -86,14 +86,16 @@ def parse_file(file, model, database):
         cherrypy.log.error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
+# Adding deafult headers and making duplicates unique
+
     for attribute in attributes:
         if attribute["name"] is "":
-            default_name_index += 1
-            attribute["name"] = "Default" + "_" + str(default_name_index)
+            # default_name_index += 1
+            # attribute["name"] = "Default" + "_" + str(default_name_index)
             blank_headers = True
         if column_headers.count(attribute["name"]) > 1:
-            duplicate_name_index += 1
-            attribute["name"] += str(duplicate_name_index)
+            # duplicate_name_index += 1
+            # attribute["name"] += str(duplicate_name_index)
             duplicate_headers = True
 
     if invalid_csv is True:
