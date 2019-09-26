@@ -632,6 +632,8 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 def ssh_connect(hostname=None, username=None, password=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    if hostname == 'localhost' and 'localhost' in slycat.web.server.config["slycat-web-server"]["remote-authentication"]:
+        hostname = slycat.web.server.config["slycat-web-server"]["remote-authentication"]["localhost"]
 
     if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] == "certificate":
         import traceback
