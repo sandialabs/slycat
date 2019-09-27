@@ -33,44 +33,57 @@ S. Martin
 
     <!-- Choose windows file share or remote cluster -->
     <div data-bind="visible:tab() == 0">
-      <div class="form-check">
-        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: vs_type">
+      <div class="form-check" style="margin-left: 15px;">
         <label id="local-radio-label" class="form-check-label" for="local-radio">
+        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="local-radio" value="local" data-bind="checked: vs_type">
           Local (pre-computed VideoSwarm format)
         </label>
       </div>
-      <div class="form-check disabled">
+      <div class="form-check disabled" style="margin-left: 15px;">
+        <label id="share-radio-label" style="color:grey" class="form-check-label" for="share-radio">
         <input class="form-check-input" disabled="true" type="radio" name="local-or-remote-radios" id="share-radio" value="share" data-bind="checked: vs_type">
-        <label id="share-radio-label" class="form-check-label" for="share-radio">
           File Share (compute on Slycat server)
         </label>
       </div>
-      <div class="form-check">
-        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: vs_type">
+      <div class="form-check" style="margin-left: 15px;">
         <label id="remote-radio-label" class="form-check-label" for="remote-radio">
+        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: vs_type">
           Remote (compute on cluster)
         </label>
       </div>
+      <label id="dac-load-model-error" style="margin-top:20px; display:none" class="invalid-text small text-danger">
+        Load model error.
+      </label>
     </div>
 
     <!-- local, pre-computed VideoSwarm format -->
     <div data-bind="visible:tab() == 1" class="form-horizontal">
 
-      <label>Upload meta-data table (CSV format).</label>
-      <slycat-local-browser params="
-        selection:table_browser.selection,
-        progress:table_browser.progress,
-        progress_status:table_browser.progress_status"></slycat-local-browser>
-      <slycat-parser-controls params="parser:table_parser,category:'table'"></slycat-parser-controls>
+      <div style="margin-top:40px">
+        <label>Upload meta-data table (CSV format).</label>
+        <slycat-local-browser params="
+          selection:table_browser.selection,
+          progress:table_browser.progress,
+          progress_status:table_browser.progress_status"></slycat-local-browser>
+        <slycat-parser-controls params="parser:table_parser,category:'table'"></slycat-parser-controls>
+        <label id="VS-csv-file-error" style="display: none" class="invalid-text small text-danger">
+          VS csv file error.
+        </label>
+      </div>
 
-      <label style="margin-top:30px">
-      Upload .xcoords, .ycoords, and .trajectories files.
-      </label>
-      <slycat-local-browser params="
-          selection:vs_browser.selection,
-          multiple:true,
-          progress:vs_browser.progress"></slycat-local-browser>
-      <slycat-parser-controls params="parser:vs_parser,category:'mp-files'"></slycat-parser-controls>
+      <div style="margin-top:30px">
+        <label>
+        Upload .xcoords, .ycoords, and .trajectories files.
+        </label>
+        <slycat-local-browser params="
+            selection:vs_browser.selection,
+            multiple:true,
+            progress:vs_browser.progress"></slycat-local-browser>
+        <slycat-parser-controls params="parser:vs_parser,category:'mp-files'"></slycat-parser-controls>
+        <label id="VS-other-file-error" style="display: none" class="invalid-text small text-danger">
+          VS other file error.
+        </label>
+      </div>
 
     </div>
 
@@ -79,6 +92,9 @@ S. Martin
       <label>Please choose column of CSV file with links to video files.</label>
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-local-links-selector">
       </select>
+      <label id="VS-video-links-error" style="margin-top:20px; display:none" class="invalid-text small text-danger">
+          VS video links error.
+      </label>
     </div>
 
     <!-- connect to compute cluster -->
@@ -201,6 +217,9 @@ Default for .mp4 is 25 fps."
       <form class="form-horizontal" role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
+      <label id="VS-finish-model-error" style="display:none" class="invalid-text small text-danger">
+        Finish model error.
+      </label>
     </div>
 
   </div>
