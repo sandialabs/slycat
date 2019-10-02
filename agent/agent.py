@@ -11,9 +11,9 @@ import PIL.Image
 import argparse
 
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except ImportError:
-    import StringIO
+    import io
 
 import datetime
 import errno
@@ -30,18 +30,17 @@ import traceback
 import uuid
 import abc
 import logging
-import ConfigParser
+import configparser
 import glob
 import base64
 
 session_cache = {}
 
 
-class Agent(object):
+class Agent(object, metaclass=abc.ABCMeta):
     """
     This class is an interface for agent functionality on a cluster server
     """
-    __metaclass__ = abc.ABCMeta
     _log_lock = threading.Lock()
     _loggers = {}
 
@@ -219,7 +218,7 @@ class Agent(object):
         rc = os.path.expanduser('~') + "/.slycatrc"
         if os.path.isfile(rc):
             try:
-                parser = ConfigParser.RawConfigParser()
+                parser = configparser.RawConfigParser()
                 parser.read(rc)
                 configuration = {section: {key: eval(value) for key, value in parser.items(section)} for section in
                                  parser.sections()}
@@ -255,7 +254,7 @@ class Agent(object):
         with open(rc, "w+") as rc_file:
             rc_file.seek(0)
             rc_file.truncate()
-            parser = ConfigParser.RawConfigParser()
+            parser = configparser.RawConfigParser()
             for section_key in config:
                 if not parser.has_section(section_key):
                     parser.add_section(section_key)
@@ -450,7 +449,7 @@ class Agent(object):
             image.thumbnail(size=size, resample=PIL.Image.ANTIALIAS)
 
         # Save the image to the requested format.
-        content = StringIO.StringIO()
+        content = io.StringIO()
         if requested_content_type == "image/jpeg":
             image.save(content, "JPEG")
         elif requested_content_type == "image/png":

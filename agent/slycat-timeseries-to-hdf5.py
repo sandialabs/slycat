@@ -94,8 +94,8 @@ column_types = ["string" for name in column_names]
 rows = rows[1:]  # removes first row (header)
 row_count = len(rows)
 
-columns = zip(
-    *rows)  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
+columns = list(zip(
+    *rows))  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
 
 if arguments.id_column is not None:
     if column_names[0] != arguments.id_column:
@@ -105,7 +105,7 @@ if arguments.id_column is not None:
 else:
     # if the ID column isn't specified, creates one and prepend it to the columns
     column_names = ["%eval_id"] + column_names
-    columns = [numpy.array(range(0, row_count), dtype="int64")] + columns
+    columns = [numpy.array(list(range(0, row_count)), dtype="int64")] + columns
 
 column_types[0] = "int64"
 
@@ -207,7 +207,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
             t_delimiter = dialect.delimiter
 
             t_column_names = [name.strip() for name in line.split(t_delimiter)]
-            t_first_five_rows = [val.strip() for val in stream.readline().split(t_delimiter) for _ in xrange(5)]
+            t_first_five_rows = [val.strip() for val in stream.readline().split(t_delimiter) for _ in range(5)]
 
             # check if an index column is present or flag it otherwise
             # if isinstance(t_first_row[0], float):
@@ -224,7 +224,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
         # pull data from file and add an index column if flagged earlier...
         data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
         if t_add_index_column is True:
-            data = numpy.insert(data, 0, range(len(data)), axis=1)
+            data = numpy.insert(data, 0, list(range(len(data))), axis=1)
 
         timeseries_dir = os.path.join(arguments.output_directory, timeseries_name)
         if not os.path.exists(timeseries_dir):
@@ -241,7 +241,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
             array = arrayset.start_array(0, dimensions, attributes)
             for attribute, column in enumerate(data.T[1:]):
                 array.set_data(attribute, slice(0, column.shape[0]), column)
-    except IOError, err:
+    except IOError as err:
         log.error("Failed reading %s: %s", path, err)
     except Exception as e:
         log.error("Unexpected error reading %s \n msg%s" % (path, e.message))
@@ -264,4 +264,4 @@ def convert_timeseries(timeseries_index, eval_id, row):
 
 
 with concurrent.futures.ProcessPoolExecutor(arguments.parallel_jobs) as pool:
-    results = list(pool.map(convert_timeseries, range(row_count), columns[0], rows))
+    results = list(pool.map(convert_timeseries, list(range(row_count)), columns[0], rows))

@@ -21,7 +21,7 @@ parser.add_argument("--number", type=int, default=1, help="number to be printed"
 parser.add_argument("--profile", default=None, help="Name of the IPython profile to use")
 arguments = parser.parse_args()
 
-print "++ trrc starting with arg: %s and profile: %s" % (arguments.number, arguments.profile)
+print("++ trrc starting with arg: %s and profile: %s" % (arguments.number, arguments.profile))
 
 try:
     if arguments.profile is None:
@@ -31,7 +31,7 @@ try:
 except:
     raise Exception("A running IPython parallel cluster is required to run this script.")
 
-print "++ trrc sees %s client-engine pairs ready for work" % str(len(client))
+print("++ trrc sees %s client-engine pairs ready for work" % str(len(client)))
 # creat a Direct View on the engines
 view = client[:]
 #view.block = True  #when the call is blocking only a list is rtn'd, otherwise an AsyncResult is rtn'd
@@ -45,14 +45,14 @@ def myIDfunction( x ):
     fh.close()
     return output
 
-print "++ trrc is calling apply() on engines"
+print("++ trrc is calling apply() on engines")
 asyncResult = view.apply(myIDfunction, arguments.number)
 
 asyncResult.wait(9)
 if asyncResult.ready():
-    print "++ used parallel python walltime is: %s" % asyncResult.wall_time
-    print "++ result metadata is: %s" % asyncResult.metadata
+    print("++ used parallel python walltime is: %s" % asyncResult.wall_time)
+    print("++ result metadata is: %s" % asyncResult.metadata)
 
 client.shutdown(hub=True)
 
-print "++ trrc is done"
+print("++ trrc is done")

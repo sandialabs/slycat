@@ -29,7 +29,7 @@ def print_verbose(*args):
     create a print function that only prints in verbose mode
     """
     if arguments.verbose:
-        print(*args)
+        print((*args))
 # make sure we got a directory that exists
 if os.path.exists(arguments.input):
   img_array = []
