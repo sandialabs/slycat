@@ -73,7 +73,7 @@ zc.lockfile                            1.4     https://pypi.python.org/pypi
 
 -Javascript-
 
-From npm in slycat/node_modules:
+1. From npm in slycat/node_modules:
 @babel/runtime          7.5.5   https://babeljs.io/docs/en/babel-runtime
 bootstrap               4.3.1   http://getbootstrap.com
 css-loader              3.0.0   https://github.com/webpack-contrib/css-loader
@@ -115,14 +115,77 @@ three-trackballcontrols 0.0.8   https://yarnpkg.com/en/package/three-trackballco
 urijs                  1.19.1   https://medialize.github.io/URI.js/
 vtk                    8.3.15   https://www.npmjs.com/package/vtk.js
 
-Directly included in Slycat in slycat/web_server/js:
+2. Directly included in Slycat in slycat/web_server/js:
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
 knockout.projections    1.1.0   https://github.com/SteveSanderson/knockout-projections
 stats                      16   https://github.com/mrdoob/stats.js/blob/master/src/Stats.js
 
-Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
+3. Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
 stickies.core           0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
 
+4. Development dependencies from npm in slycat/node_modules. 
+These are used to build Slycat but only one or two make it into the client code, 
+and those are included in #1 above.
+@babel/cli                                    7.5.5
+@babel/core                                   7.5.5
+@babel/plugin-proposal-class-properties       7.5.5
+@babel/plugin-proposal-object-rest-spread     7.5.5
+@babel/plugin-syntax-dynamic-import           7.2.0
+@babel/plugin-transform-runtime               7.5.5
+@babel/preset-env                             7.5.5
+@babel/preset-react                           7.0.0
+@babel/preset-typescript                      7.3.3
+@types/core-js                                2.5.2
+@types/enzyme                                3.10.3
+@types/jest                                 24.0.16
+@types/jquery                                3.3.30
+@types/jsdom                                 12.2.4
+@types/node                                  12.6.7
+@types/react                                16.8.24
+@types/react-dom                             16.8.5
+@types/react-test-renderer                   16.8.3
+@types/sinon                                 7.0.13
+autoprefixer                                  9.6.1
+babel-eslint                                 10.0.2
+babel-jest                                   24.8.0
+babel-loader                                  8.0.5
+babel-plugin-module-resolver                  3.2.0
+babelify                                     10.0.0
+clean-webpack-plugin                          3.0.0
+copy-webpack-plugin                           5.0.4
+css-loader                                    3.1.0
+enzyme                                       3.10.0
+enzyme-adapter-react-16                      1.14.0
+enzyme-to-json                                3.3.5
+eslint                                        6.1.0
+eslint-plugin-react                          7.14.3
+file-loader                                   4.1.0
+html-loader                                   0.5.5
+html-webpack-plugin                    4.0.0-beta.7
+imports-loader                                0.8.0
+jest                                         24.8.0
+jest-fetch-mock                               2.1.2
+less                                          3.9.0
+less-loader                                   5.0.0
+node-fetch-polyfill                           2.0.6
+node-sass                                    4.12.0
+postcss-loader                                3.0.0
+pre-commit                                    1.2.2
+precss                                        4.0.0
+react-test-renderer                          16.8.6
+sass-loader                                   7.1.0
+sinon                                         7.3.2
+style-loader                                 0.23.1
+typescript                                    3.5.3
+url-loader                                    2.1.0
+webpack                                      4.38.0
+webpack-bundle-analyzer                       3.4.1
+webpack-cli                                   3.3.6
+webpack-dev-server                            3.7.2
+webpack-merge                                 4.2.1
+webpack-node-modules-list                     0.4.1
+webpack-visualizer-plugin                    0.1.11
+whatwg-fetch                                  3.0.0
 
 
 -System Services-
