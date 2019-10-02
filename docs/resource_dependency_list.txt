@@ -73,7 +73,7 @@ zc.lockfile                            1.4     https://pypi.python.org/pypi
 
 -Javascript-
 
-1. From npm in slycat/node_modules:
+1. From https://www.npmjs.com in slycat/node_modules:
 @babel/runtime          7.5.5   https://babeljs.io/docs/en/babel-runtime
 bootstrap               4.3.1   http://getbootstrap.com
 css-loader              3.0.0   https://github.com/webpack-contrib/css-loader
@@ -123,7 +123,7 @@ stats                      16   https://github.com/mrdoob/stats.js/blob/master/s
 3. Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
 stickies.core           0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
 
-4. Development dependencies from npm in slycat/node_modules. 
+4. Development dependencies from https://www.npmjs.com in slycat/node_modules. 
 These are used to build Slycat but only one or two make it into the client code, 
 and those are included in #1 above.
 @babel/cli                                    7.5.5
