@@ -103,20 +103,6 @@ component.attributes = mapping.fromJS([]);
 // select local (windows share) or remote (cluster), defaults to local
 component.vs_type = ko.observable("local");
 
-/*
-// make dialog bigger for remote/share selections
-component.vs_type.subscribe(function(newValue) {
-  if(newValue === 'local')
-  {
-    $(".modal-dialog").removeClass("modal-lg");
-  }
-  else
-  {
-    $(".modal-dialog").addClass("modal-lg");
-  }
-});
-*/
-
 // creates an empty model of type "MP"
 component.create_model = function() {
     client.post_project_models({
@@ -376,7 +362,7 @@ var upload_media_columns = function (go_to_tab) {
 
                   } else {
 
-                    // disable other loading options after everything has beens successfully loaded
+                    // disable other loading options after everything has been successfully loaded
                     if (component.tab() === 4) {
 
                         // disable local
@@ -412,8 +398,11 @@ component.connect = function() {
   component.remote.status_type("info");
   component.remote.status("Connecting ...");
 
+  $('.remote-browser-continue').toggleClass("disabled", true);
+
   if(component.remote.session_exists())
   {
+    $('.remote-browser-continue').toggleClass("disabled", false);
     component.tab(4);
     component.remote.enable(true);
     component.remote.status_type(null);
@@ -426,6 +415,7 @@ component.connect = function() {
       username: component.remote.username(),
       password: component.remote.password(),
       success: function(sid) {
+        $('.remote-browser-continue').toggleClass("disabled", false);
         component.remote.session_exists(true);
         component.remote.sid(sid);
         component.tab(4);
@@ -434,6 +424,7 @@ component.connect = function() {
         component.remote.status(null);
       },
       error: function(request, status, reason_phrase) {
+        $('.remote-browser-continue').toggleClass("disabled", false);
         component.remote.enable(true);
         component.remote.status_type("danger");
         component.remote.status(reason_phrase);
@@ -452,6 +443,9 @@ component.upload_remote_table = function() {
       // disable continue button
       $('.remote-browser-continue').toggleClass("disabled", true);
 
+      // clear errors
+      $("#VS-remote-table-error").hide();
+
       // load csv file
       var fileObject ={
        pid: component.project._id(),
@@ -464,6 +458,8 @@ component.upload_remote_table = function() {
        progress_final: 100,
        success: function(){
 
+         $('.remote-browser-continue').toggleClass("disabled", false);
+
          // note that table has been uploaded
          remote_table_uploaded = true;
 
@@ -472,7 +468,8 @@ component.upload_remote_table = function() {
 
        },
        error: function(){
-          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $("#VS-remote-table-error").text("There was a problem parsing the file.  Did you choose the correct file and filetype?");
+          $("#VS-remote-table-error").show();
           $('.remote-browser-continue').toggleClass("disabled", false);
           component.remote.progress(null);
         }
@@ -571,8 +568,6 @@ component.upload_vs_links = function () {
             // server error extracting video links
             $("#VS-video-links-error").text("Server error during video link extraction.")
             $("#VS-video-links-error").show();
-
-            $(".local-browser-continue").toggleClass("disabled", false);
         }
     });
 };
@@ -580,20 +575,46 @@ component.upload_vs_links = function () {
 // upload movie links (from remote file)
 component.upload_vs_frames_links = function () {
 
+    // check for errors before uploading frames file
+    var found_errors = false;
+
     // check to see if user provided working directory
     if (component.workdir().trim() === '') {
 
-        dialog.ajax_error("Please enter a working directory.")("","","");
+        $("#VS-working-directory").addClass("is-invalid");
+        found_errors = true;
+
+    } else {
+
+        // no error in working directory
+        $("#VS-working-directory").removeClass("is-invalid");
+    }
+
+    // empty frame rate defaults to 25
+    if (component.frame_rate() == '') {
+        component.frame_rate(25);
+    }
 
     // check to see if fps is greater than 0
-    } else if (component.frame_rate() <= 0) {
+    if (component.frame_rate() <= 0) {
 
-        dialog.ajax_error("Please enter a frame rate greater than 0.")("","","");
+        // show error below input box
+        $("#VS-frame-rate").addClass("is-invalid");
+        found_errors = true;
+    } else {
+
+        // no error in frame rate input
+        $("#VS-frame-rate").removeClass("is-invalid");
+    }
 
     // otherwise everything is OK
-    } else {
+    if (found_errors == false)
+    {
+
         localStorage["VS_WORKDIR"] = component.workdir();
-        console.log ("Uploading video links ...");
+
+        // turn off errors
+        $("#VS-video-frame-links-error").hide();
 
         // get column for frames
         var frame_selected = $("#vs-remote-frames-selector").val();
@@ -620,10 +641,8 @@ component.upload_vs_frames_links = function () {
             error: function() {
 
                 // server error extracting video links
-                $("#VS-video-links-error").text("Server error during video link extraction.")
-                $("#VS-video-links-error").show();
-
-                $(".remote-browser-continue").toggleClass("disabled", false);
+                $("#VS-video-frame-links-error").text("Server error during video link extraction.")
+                $("#VS-video-frame-links-error").show();
             }
         });
 
@@ -679,15 +698,79 @@ component.check_hpc_job = function () {
     // does the user want a HPC
     if (component.HPC_Job() === true) {
 
+        // keep track of HPC errors
+        var HPC_errors = false;
+
+        // check for wc key
         if (component.wckey() === '') {
 
-            dialog.ajax_error("Please enter an account ID.")("","","");
-
-        } else if (component.partition() === '') {
-
-            dialog.ajax_error("Please enter a partition/queue.")("","","");
+            $("#VS-wckey").addClass("is-invalid");
+            HPC_errors = true;
 
         } else {
+
+            $("#VS-wckey").removeClass("is-invalid");
+        }
+
+        // check for partition/queue
+        if (component.partition() === '') {
+
+            $("#VS-queue").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-queue").removeClass("is-invalid");
+        }
+
+        // check limits on number nodes
+        if (component.nnodes() <= 0) {
+
+            $("#VS-nnodes").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-nnodes").removeClass("is-invalid");
+        }
+
+        // check limits on number of cores
+        if (component.ntasks_per_node() <= 0) {
+
+            $("#VS-ncores").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-ncores").removeClass("is-invalid");
+        }
+
+        // check limits on job time (hours)
+        if (component.time_hours() < 0) {
+
+            $("#VS-nhours").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-nhours").removeClass("is-invalid");
+        }
+
+        // check limits on job time (minutes)
+        if ((component.time_minutes() < 0 ||
+            component.time_minutes() > 59) ||
+            (component.time_hours() <= 0 &&
+            component.time_minutes() <= 0)) {
+
+            $("#VS-nminutes").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-nminutes").removeClass("is-invalid");
+        }
+
+        if (HPC_errors == false) {
 
             // got everything needed, next name model
             component.tab(7);
