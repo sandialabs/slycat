@@ -111,9 +111,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0):
 
 def update_model(database, model, **kwargs):
     """
-  Update the model, and signal any waiting threads that it's changed.
-  will only update model base on "state", "result", "started", "finished", "progress", "message"
-  """
+    Update the model, and signal any waiting threads that it's changed.
+    will only update model base on "state", "result", "started", "finished", "progress", "message"
+    """
+    model = database.get('model',model["_id"])
     for name, value in list(kwargs.items()):
         if name in ["state", "result", "started", "finished", "progress", "message"]:
             model[name] = value
