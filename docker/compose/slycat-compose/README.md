@@ -12,7 +12,7 @@
 ### Starting slycat services
 
 - From `~slycat/docker/compose/slycat-compose` in terminal the following commands control our services
-- Start the docker services `$ docker-compose up`
+- Start the docker services `$ docker-compose up` this step should take some time on the first load to download the images.
 - After the `slycat-client_1      | ℹ ｢wdm｣: Compiled successfully.` displays then everything has finished building and is running waiting for a connection
 
 ## List of helpfull docker commands
