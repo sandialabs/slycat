@@ -6,6 +6,8 @@
 - haproxy
 - slycat-web-server
 - couchdb
+- sshd
+- slycat-client
 
 ### Starting slycat services
 
