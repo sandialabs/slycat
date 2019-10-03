@@ -9,7 +9,7 @@ This is Slycat - a web-based ensemble analysis and visualization platform, creat
 
 # Quick Start
 
-[Build Your own local slycat environment with docker](https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose)
+[Build Your own local slycat environment with docker-compose](https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose)
 
 # Documentation
 
