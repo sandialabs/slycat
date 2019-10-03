@@ -1,6 +1,7 @@
 # Slycat Docker-compose
 ## Requirements
-  - download `docker` see https://docs.docker.com/compose/install/
+  - Download `docker` see https://docs.docker.com/compose/install/
+  - Currently only tested in a mac environment
 ## Docker service names
 
 - haproxy
