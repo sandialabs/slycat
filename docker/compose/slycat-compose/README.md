@@ -12,8 +12,8 @@
 ### Starting slycat services
 
 - From `~slycat/docker/compose/slycat-compose` in terminal the following commands control our services
-- start the docker services `$ docker-compose up`
-- after the `slycat-client_1      | ℹ ｢wdm｣: Compiled successfully.` displays the everything has finished building and is running waiting for a connection
+- Start the docker services `$ docker-compose up`
+- After the `slycat-client_1      | ℹ ｢wdm｣: Compiled successfully.` displays then everything has finished building and is running waiting for a connection
 
 ## List of helpfull docker commands
 
