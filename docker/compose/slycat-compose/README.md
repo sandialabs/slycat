@@ -13,7 +13,7 @@
 
 ### Starting slycat services
 
-- clone the repo `$git clone https://github.com/sandialabs/slycat.git`
+- clone the repo `$git clone --depth 1 -b master https://github.com/sandialabs/slycat.git`
 - go into the repo to `cd slycat/docker/compose/slycat-compose` in terminal the following commands control our services and use the docker-compose yaml found in the direcotry in the repo.
 - Start the docker services `$ docker-compose up` this step should take some time on the first load to download the images.
 - After the `slycat-client_1      | ℹ ｢wdm｣: Compiled successfully.` displays then everything has finished building and is running waiting for a connection
