@@ -1,4 +1,4 @@
-# Slycat Docker-compose
+# Slycat Docker-compose (Alpha release, non production build)
 ## Requirements
   - Download `docker` see https://docs.docker.com/compose/install/
   - git
