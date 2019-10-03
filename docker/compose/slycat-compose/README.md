@@ -11,7 +11,7 @@
 
 ### Starting slycat services
 
-- From inside `~slycat/docker/compose/slycat-compose` in terminal the following commands control our services
+- From `~slycat/docker/compose/slycat-compose` in terminal the following commands control our services
 
 #### Start the serivces
 
@@ -24,6 +24,17 @@ $ docker-compose up
 $ docker-compose down
 ```
 
+#### Start and build the serivces
+
+```bash
+$ docker-compose up --build
+```
+
+#### Stoping and remooving slycat services
+```bash
+$ docker-compose down --remove-orphans 
+```
+
 
 ### Starting slycat services in the background
 ```bash
@@ -31,12 +42,12 @@ $ docker-compose up -d
 ```
 
 
-### Attaching to slycat services logs
+### Attaching to slycat services logs per service
 ```bash
 $ docker-compose logs -f <name_of_service>
 ```
 
-### Building the images with or without cache
+### Building the images seperate without using the cache
 ```bash
 $ docker-compose build --no-cache
 ```
