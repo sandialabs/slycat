@@ -17,7 +17,7 @@
 - go into the repo to `cd slycat/docker/compose/slycat-compose` in terminal the following commands control our services and use the docker-compose yaml found in the direcotry in the repo.
 - Start the docker services `$ docker-compose up` this step should take some time on the first load to download the images.
 - After the `slycat-client_1      | ℹ ｢wdm｣: Compiled successfully.` displays then everything has finished building and is running waiting for a connection.
-- The client is served at https://localhost:9000
+- The client is served at https://localhost:9000, NOTE: the browser with show a security warning when navigating to localhost because Slycat generates a self signed certificate.
 
 ## List of helpfull docker commands
 
