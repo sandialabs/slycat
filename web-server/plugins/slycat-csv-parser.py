@@ -45,6 +45,7 @@ def parse_file(file, model, database):
     default_name_index = 0
     duplicate_name_index = 0
     duplicate_names = []
+    duplicate_indeces = []
     blank_header_columns = []
     column_headers = []
     error_message = []
@@ -92,16 +93,14 @@ def parse_file(file, model, database):
 
     for index, attribute in enumerate(attributes):
         if attribute["name"] is "":
-            message = "In column " + str(index + 1)
+            message = "Column " + str(index + 1)
             blank_header_columns.append(message)
             # default_name_index += 1
             # attribute["name"] = "Default" + "_" + str(default_name_index)
             blank_headers = True
         if column_headers.count(attribute["name"]) > 1:
-            cherrypy.log.error("*************")
-            cherrypy.log.error(str(index))
-            message = attribute["name"] + " in column " + str(index + 1)
-            duplicate_names.append(message)
+            duplicate_names.append(attribute["name"])
+            duplicate_indeces.append(str(index + 1))
             # duplicate_name_index += 1
             # attribute["name"] += str(duplicate_name_index)
             duplicate_headers = True
@@ -111,16 +110,18 @@ def parse_file(file, model, database):
             "Your CSV is invalid because it's missing at least one column header. Please CLOSE this wizard, fix the issue, then start a new wizard. \n")
     else:
         if blank_headers is True:
+            error_message.append("Your CSV file contained blank headers in: \n")
             for message in blank_header_columns:
                 error_message.append(
-                    "Your CSV file contained blank column headers: %s \n" % message)
+                    "%s \n" % message)
         if duplicate_headers is True:
-            for message in duplicate_names:
+            error_message.append("Your CSV file contained these identical headers: \n ")
+            for name, index in zip(duplicate_names, duplicate_indeces):
                 error_message.append(
-                    "\n Your CSV file contained these identical headers: %s \n" % message)
+                    "%s \n" % str("'" + name + "' " + "in column " + index))
         if empty_column is True:
             error_message.append(
-                "\n Your CSV file contained at least one empty column. \n")
+                "Your CSV file contained at least one empty column. \n")
 
     if error_message is not "":
         #cherrypy.log.error("Adding error_messages to the database.")

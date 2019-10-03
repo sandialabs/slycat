@@ -2,11 +2,6 @@
 
 /* Page header */
 
-#error-message
-{
-  white-space:pre-wrap;
-}
-
 #edit-model-button
 {
   float: right;
