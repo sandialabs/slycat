@@ -7,6 +7,10 @@
 
 This is Slycat - a web-based ensemble analysis and visualization platform, created at [Sandia National Laboratories](http://www.sandia.gov).
 
+# Quick Start
+
+https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose
+
 # Documentation
 
 [Latest documentation can be found here](https://slycat.readthedocs.io/en/latest/)
@@ -21,10 +25,6 @@ The data in this demo instance of Slycat is erased on a regular basis, so please
 
 # [Slycat-data](https://github.com/sandialabs/slycat-data)
 A github repo of sample data that can be used by slycat.
-
-# Quick Start
-
-https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose
 
 ****
 
