@@ -58,7 +58,7 @@
     </div>
 
     <div data-bind="visible:tab() == 1" class="form-horizontal">
-      <label data-bind="visible:error_messages().length > 0, text: error_messages()" style="
+      <label id="error-message" data-bind="visible:error_messages().length > 0, text: error_messages()" style="
         color:red; 
         text-align:center; 
         background-color:yellow; 

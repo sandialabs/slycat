@@ -111,14 +111,16 @@ def parse_file(file, model, database):
             "Your CSV is invalid because it's missing at least one column header. Please CLOSE this wizard, fix the issue, then start a new wizard. \n")
     else:
         if blank_headers is True:
-            error_message.append(
-                "Your CSV file contained blank column headers: %s \n" % blank_header_columns)
+            for message in blank_header_columns:
+                error_message.append(
+                    "Your CSV file contained blank column headers: %s \n" % message)
         if duplicate_headers is True:
-            error_message.append(
-                "Your CSV file contained these identical headers: %s \n" % duplicate_names)
+            for message in duplicate_names:
+                error_message.append(
+                    "\n Your CSV file contained these identical headers: %s \n" % message)
         if empty_column is True:
             error_message.append(
-                "Your CSV file contained at least one empty column. \n")
+                "\n Your CSV file contained at least one empty column. \n")
 
     if error_message is not "":
         #cherrypy.log.error("Adding error_messages to the database.")
