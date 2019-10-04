@@ -7,7 +7,6 @@ services:
       args:
         - IMAGE_VERSION=${PYTHON_VERSION}
     image: slycat-web-server
-    env_file: env.txt
     depends_on:
       - "couchdb"
     # uncomment if you want to expose cherrypy
