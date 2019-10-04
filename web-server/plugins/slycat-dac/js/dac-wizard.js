@@ -21,6 +21,13 @@ function constructor(params)
     // tabs in wizard ui
     component.tab = ko.observable(0);
 
+    // tab labels for ui navigation
+    var tabs = {'sel-format': 0,
+                'dac-gen': 1,
+                'pts': 2,
+                'tdms': 3,
+                'name-model': 4};
+
     // project/model information
     component.project = params.projects()[0];
     // Alex removing default model name per team meeting discussion
@@ -31,14 +38,21 @@ function constructor(params)
 
     // DAC generic format file selections
     component.browser_dac_file = mapping.fromJS({
-        path:null,
+        path: null,
         selection: [],
         progress: ko.observable(null),
     });
 
     // PTS META/CSV zip file selection
     component.browser_zip_file = mapping.fromJS({
-        path:null,
+        path: null,
+        selection: [],
+        progress: ko.observable(null),
+    });
+
+    // tdms multiple file selection
+    component.browser_tdms_files = mapping.fromJS({
+        path: null,
         selection: [],
         progress: ko.observable(null),
     });
@@ -48,6 +62,9 @@ function constructor(params)
 
     // DAC META/CSV parser (now in zip file)
     component.parser_zip_file = ko.observable(null);
+
+    // tdms parser
+    component.parser_tdms_files = ko.observable(null);
 
     // dac-generic format is selected by default
     component.dac_format = ko.observable("dac-gen");
@@ -117,9 +134,11 @@ function constructor(params)
         var type = component.dac_format();
 
         if (type === "dac-gen") {
-            component.tab(1);
+            component.tab(tabs['dac-gen']);
         } else if (type === "pts") {
-            component.tab(2);
+            component.tab(tabs['pts']);
+        } else if (type == "tdms") {
+            component.tab(tabs['tdms']);
         }
     };
 
@@ -145,7 +164,7 @@ function constructor(params)
                 component.model.name("");
 
                 // go to model naming
-                component.tab(3);
+                component.tab(tabs['name-model']);
 
             } else {
                 $("#dac-gen-file-error").text("Please select a file with the .zip extension.")
@@ -295,9 +314,46 @@ function constructor(params)
             component.model.name("");
 
             // if already uploaded data, do not re-upload
-            component.tab(3);
+            component.tab(tabs['name-model']);
 
         }
+    };
+
+    // this function uploads the switchtube TDMS format
+    component.upload_tdms_format = function() {
+
+        $("#dac-tdms-file-error").hide();
+
+        console.log("TDMS format");
+        /*
+        // check for file selected
+        if (component.browser_dac_file.selection().length > 0) {
+
+            // get file extension
+            var file = component.browser_dac_file.selection()[0];
+            var file_ext = file.name.split(".");
+            file_ext = file_ext[file_ext.length - 1];
+
+            if (file_ext == 'zip') {
+
+                // set model name back to blank
+                component.model.name("");
+
+                // go to model naming
+                component.tab(3);
+
+            } else {
+                $("#dac-gen-file-error").text("Please select a file with the .zip extension.")
+                $("#dac-gen-file-error").show();
+            }
+
+        } else {
+
+            $("#dac-gen-file-error").text("Please select DAC generic .zip file.")
+            $("#dac-gen-file-error").show();
+
+        }
+        */
     };
 
     // wizard finish model code
@@ -348,7 +404,7 @@ function constructor(params)
                             var progress = component.browser_zip_file.progress;
 
                             // tab to show file upload
-                            var tab = 2
+                            var tab = tabs['pts'];
 
                             // if not pts format, then change parameters
                             if (component.dac_format() == "dac-gen") {
@@ -362,7 +418,7 @@ function constructor(params)
                                 progress = component.browser_dac_file.progress;
 
                                 // tab that shows file upload for DAC generic format
-                                tab = 1;
+                                tab = tabs['dac-gen'];
 
                             }
 
@@ -422,23 +478,23 @@ function constructor(params)
     // function for operating the back button in the wizard
     component.back = function() {
 
-        var target = component.tab();
+        // if we are at name model, go back to file selection
+        if (component.tab() == tabs['name-model']) {
 
-        // skip PTS ui tabs if we are DAC Generic format
-        if(component.dac_format() == 'dac-gen' && component.tab() == 3)
-        {
-            target--;
+            if (component.dac_format() == 'dac-gen') {
+                component.tab(tabs['dac-gen'])}
+
+            if (component.dac_format() == 'pts') {
+                component.tab(tabs['pts'])}
+
+            if (component.dac_format() == 'tdms') {
+                comonent.tab(tabs['tdms'])}
+
+        // otherwise we are in file selection, go back to format selection
+        } else {
+            component.tab(tabs['sel-format']);
         }
 
-        // skip DAC Generic if we are PTS format
-        if (component.dac_format() == 'pts' && component.tab() == 2)
-        {
-            target--;
-        }
-
-        target--;
-
-        component.tab(target);
     };
 
 return component;
