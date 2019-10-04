@@ -38,7 +38,7 @@ $ docker-compose down
 $ docker-compose up --build
 ```
 
-#### Stoping and remooving slycat services
+#### Stoping and removing slycat services
 ```bash
 $ docker-compose down --remove-orphans 
 ```
