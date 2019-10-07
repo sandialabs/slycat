@@ -51,17 +51,10 @@ def parse_file(file, model, database):
     error_message = []
     duplicate_headers = False
     blank_headers = False  # Header with a blank string, i.e. ",,"
-    empty_column = False  # There was at least one empty column in the CSV
 
     # go through the csv by column
     for column in zip(*rows):
         column_has_floats = False
-
-        column_is_empty = column.count("") == len(column)
-
-        if column_is_empty:
-            empty_column = True
-            continue
 
         # start from 1 to avoid the column name
         for value in column[1:]:
@@ -95,14 +88,11 @@ def parse_file(file, model, database):
         if attribute["name"] is "":
             message = "Column " + str(index + 1)
             blank_header_columns.append(message)
-            # default_name_index += 1
-            # attribute["name"] = "Default" + "_" + str(default_name_index)
             blank_headers = True
-        if column_headers.count(attribute["name"]) > 1:
+        # Don't want to include blank headers as duplicates.
+        if column_headers.count(attribute["name"]) > 1 and attribute["name"] is not '':
             duplicate_names.append(attribute["name"])
             duplicate_indeces.append(str(index + 1))
-            # duplicate_name_index += 1
-            # attribute["name"] += str(duplicate_name_index)
             duplicate_headers = True
 
     if invalid_csv is True:
@@ -119,20 +109,11 @@ def parse_file(file, model, database):
             for name, index in zip(duplicate_names, duplicate_indeces):
                 error_message.append(
                     "%s \n" % str("'" + name + "' " + "in column " + index))
-        if empty_column is True:
-            error_message.append(
-                "Your CSV file contained at least one empty column. \n")
 
     if error_message is not "":
-        #cherrypy.log.error("Adding error_messages to the database.")
-        # model = database.get("models", mid)
         slycat.web.server.put_model_parameter(database, model, "error-messages", error_message)
-        # database.save(model)
     else:
         slycat.web.server.put_model_parameter(database, model, "error-messages", "")
-
-    #cherrypy.log.error("The error has been logged.")
-
 
     return attributes, dimensions, data
 
