@@ -142,6 +142,8 @@ def parse(database, model, input, files, aids, **kwargs):
         slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/.../..." % array_index, data)
     end = time.time()
+
+    model = database.get("model", model['_id'])
     model["db_creation_time"] = (end - start)
     database.save(model)
 

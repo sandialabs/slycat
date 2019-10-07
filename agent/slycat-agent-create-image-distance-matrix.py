@@ -188,7 +188,7 @@ if __name__ == "__main__":
   image_columns = []
   expression = re.compile("file://")
   search = numpy.vectorize(lambda x:bool(expression.search(x)))
-  for name, column in columns.items():
+  for name, column in list(columns.items()):
     if numpy.any(search(column)):
       image_columns.append(name)
 
@@ -211,8 +211,8 @@ if __name__ == "__main__":
 
   try:
     workers = IPython.parallel.Client(profile=arguments.profile)[:]
-  except Exception, e:
-    print str(e)
+  except Exception as e:
+    print(str(e))
     raise Exception("A running IPython parallel cluster is required.")
 
   workers.use_dill()
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     import skimage
     import skimage.color
     import skimage.filter
-    import urlparse
+    import urllib.parse
   workers.push({
     "column": columns[arguments.distance_column],
     "image_cache": ImageCache(),

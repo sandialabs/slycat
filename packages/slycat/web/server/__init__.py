@@ -111,9 +111,10 @@ def evaluate(hdf5_array, expression, expression_type, expression_level=0):
 
 def update_model(database, model, **kwargs):
     """
-  Update the model, and signal any waiting threads that it's changed.
-  will only update model base on "state", "result", "started", "finished", "progress", "message"
-  """
+    Update the model, and signal any waiting threads that it's changed.
+    will only update model base on "state", "result", "started", "finished", "progress", "message"
+    """
+    model = database.get('model',model["_id"])
     for name, value in list(kwargs.items()):
         if name in ["state", "result", "started", "finished", "progress", "message"]:
             model[name] = value
@@ -632,6 +633,8 @@ def post_model_file(mid, input=None, sid=None, path=None, aid=None, parser=None,
 def ssh_connect(hostname=None, username=None, password=None):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    if hostname == 'localhost' and 'localhost' in slycat.web.server.config["slycat-web-server"]["remote-authentication"]:
+        hostname = slycat.web.server.config["slycat-web-server"]["remote-authentication"]["localhost"]
 
     if slycat.web.server.config["slycat-web-server"]["remote-authentication"]["method"] == "certificate":
         import traceback

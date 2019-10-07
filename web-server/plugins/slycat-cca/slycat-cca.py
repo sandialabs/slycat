@@ -94,6 +94,7 @@ def register_slycat_plugin(context):
 
       slycat.web.server.update_model(database, model, state="finished", result="succeeded", finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
       end  = time.time()
+      model = database.get("model", model['_id'])
       model["analysis_computation_time"] = (end - start)
       database.save(model)
     except:

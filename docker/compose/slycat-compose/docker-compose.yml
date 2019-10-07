@@ -7,7 +7,6 @@ services:
       args:
         - IMAGE_VERSION=${PYTHON_VERSION}
     image: slycat-web-server
-    env_file: env.txt
     depends_on:
       - "couchdb"
     # uncomment if you want to expose cherrypy
@@ -76,6 +75,18 @@ services:
     volumes:
       - couchdb-data-volume:/usr/local/var/lib/couchdb
 
+  sshd:
+      build:
+        context: .
+        dockerfile: ./sshd/DockerFile
+      ports:
+        - "2222:22"
+      expose:
+        - 22
+      #          user:password:uid:gid
+      command: slycat:slycat:1001:1001
+      networks:
+        - sly-net
 networks:
   sly-net:
 volumes:

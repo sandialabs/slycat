@@ -103,18 +103,6 @@ component.attributes = mapping.fromJS([]);
 // select local (windows share) or remote (cluster), defaults to local
 component.vs_type = ko.observable("local");
 
-// make dialog bigger for remote/share selections
-component.vs_type.subscribe(function(newValue) {
-  if(newValue === 'local')
-  {
-    $(".modal-dialog").removeClass("modal-lg");
-  }
-  else
-  {
-    $(".modal-dialog").addClass("modal-lg");
-  }
-});
-
 // creates an empty model of type "MP"
 component.create_model = function() {
     client.post_project_models({
@@ -127,7 +115,10 @@ component.create_model = function() {
         component.model._id(mid);
         //component.tab(1);
     },
-        error: dialog.ajax_error("Error creating model.")
+        error: function() {
+            $("#VS-load-model-error").text("Error creating model.");
+            $("#VS-load-model-error").show();
+        }
     });
 };
 
@@ -157,8 +148,21 @@ component.upload_local_table = function() {
 
   if (!vs_files_uploaded) {
 
-      // check that csv file has been selected
-      if (component.table_browser.selection().length > 0) {
+      // flag any incorrect files/filetypes
+      var files_OK = true;
+
+      // check for csv file selection
+      if (component.table_browser.selection().length == 0) {
+
+          // no csv file selected
+          $("#VS-csv-file-error").text("Please select a .csv file.");
+          $("#VS-csv-file-error").show();
+          files_OK = false;
+
+      } else {
+
+          // clear any file errors
+          $("#VS-csv-file-error").hide();
 
           // get table file name extension
           var csv_file = component.table_browser.selection()[0];
@@ -166,61 +170,64 @@ component.upload_local_table = function() {
           var csv_file_ext = csv_file_name.split(".").pop();
 
           // check that table file is .csv
-          if (csv_file_ext.toLowerCase() == "csv") {
+          if (csv_file_ext.toLowerCase() != "csv") {
 
-              // next check VS file names
+              // wrong extension for csv
+              $("#VS-csv-file-error").text("The CSV file selected does not have the .csv extension.")
+              $("#VS-csv-file-error").show();
+              files_OK = false;
 
-              //  expected VS artifacts and order
-              var aids = ["movies.xcoords", "movies.ycoords", "movies.trajectories"];
-              var aids_ext = ["xcoords", "ycoords", "trajectories"];
+          }
+      }
 
-              // check for correct files and re-arrange to match artifact order
-              var num_files = component.vs_browser.selection().length;
-              var num_files_found = 0;
-              var vs_files = [];
-              if (num_files === 3) {
-                  for (var i=0; i < 3; i++) {
-                      for (var j=0; j < 3; j++) {
+      // next check VS file names
 
-                          // look for correct extension
-                          var file = component.vs_browser.selection()[j];
-                          var file_ext = file["name"].split(".").pop();
+      //  expected VS artifacts and order
+      var aids = ["movies.xcoords", "movies.ycoords", "movies.trajectories"];
+      var aids_ext = ["xcoords", "ycoords", "trajectories"];
 
-                          // put in expected order
-                          if (aids_ext[i] === file_ext) {
-                              vs_files.push (file);
-                              num_files_found = num_files_found + 1;
-                          }
-                      }
+      // check for correct files and re-arrange to match artifact order
+      var num_files = component.vs_browser.selection().length;
+      var num_files_found = 0;
+      var vs_files = [];
+      if (num_files === 3) {
+          for (var i=0; i < 3; i++) {
+              for (var j=0; j < 3; j++) {
+
+                  // look for correct extension
+                  var file = component.vs_browser.selection()[j];
+                  var file_ext = file["name"].split(".").pop();
+
+                  // put in expected order
+                  if (aids_ext[i] === file_ext) {
+                      vs_files.push (file);
+                      num_files_found = num_files_found + 1;
                   }
               }
-
-              // did the user select the VS format files?
-              if (num_files === 3 && num_files_found === 3) {
-
-                // make button show swirling wait indicator
-                $('.local-browser-continue').toggleClass("disabled", true);
-
-                // upload csv file
-                upload_csv_file(csv_file, aids, vs_files);
-
-              } else {
-
-                 // alert user that they had an incorrect file selection
-                 dialog.ajax_error(
-                    "Please select three files with extensions .xcoords, .ycoords, and .trajectories.")
-                    ("","","");
-              }
-
-          } else {
-
-            // user did not select .csv extension file for table
-            dialog.ajax_error("The CSV file selected does not have the .csv extension.")("","","");
           }
+      }
+
+      // did the user select the VS format files?
+      if (num_files != 3 || num_files_found != 3) {
+
+          // incorrect file selection for .xcoords, .ycoords, or .trajectories
+          $("#VS-other-file-error").text("Please select three files with extensions .xcoords, .ycoords, and .trajectories.");
+          $("#VS-other-file-error").show();
+          files_OK = false;
+
       } else {
 
-          // no file selected
-          dialog.ajax_error("Please select a CSV file.")("","","");
+          // clear file errors
+          $("#VS-other-file-error").hide();
+      }
+
+      if (files_OK) {
+
+          // make button show swirling wait indicator
+          $('.local-browser-continue').toggleClass("disabled", true);
+
+          upload_csv_file(csv_file, aids, vs_files);
+
       }
 
   } else {
@@ -234,6 +241,9 @@ var upload_csv_file = function (csv_file, aids, vs_files) {
 
     // upload csv file
     console.log("Uploading CSV file ...");
+
+    // clear previous upload errors
+    $("VS-csv-file-error").hide();
 
     // first upload csv table
     var fileObject ={
@@ -252,10 +262,15 @@ var upload_csv_file = function (csv_file, aids, vs_files) {
 
         },
         error: function(){
-          dialog.ajax_error("There was a problem parsing the .csv file.")("","","");
-          $('.local-browser-continue').toggleClass("disabled", false);
-          component.table_browser.progress(null);
-          component.table_browser.progress_status('');
+
+            // error parsing csv file
+            $("#VS-csv-file-error").text("There was a problem parsing the .csv file.  Please correct or select a different file.")
+            $("#VS-csv-file-error").show();
+
+            $('.local-browser-continue').toggleClass("disabled", false);
+
+            component.table_browser.progress(null);
+            component.table_browser.progress_status('');
         }
     };
     fileUploader.uploadFile(fileObject);
@@ -325,7 +340,8 @@ var upload_media_columns = function (go_to_tab) {
                   // check to see if we found any media columns before continuing
                   if (media_columns_inds.length === 0) {
 
-                    dialog.ajax_error("Could not detect any media links in the CSV file.  Please choose a different CSV file.")("","","");
+                    $("#VS-csv-file-error").text("Could not detect any media links in the CSV file.  Please correct or select a different file.");
+                    $("#VS-csv-file-error").show();
 
                     // reset loading options for remote upload
                     if (component.tab() === 4) {
@@ -346,7 +362,7 @@ var upload_media_columns = function (go_to_tab) {
 
                   } else {
 
-                    // disable other loading options after everything has beens successfully loaded
+                    // disable other loading options after everything has been successfully loaded
                     if (component.tab() === 4) {
 
                         // disable local
@@ -362,6 +378,9 @@ var upload_media_columns = function (go_to_tab) {
                         $("#remote-radio").parent().toggleClass("disabled", true);
 
                     }
+
+                    // finished uploading -- go to next tab in UI
+                    vs_files_uploaded = true;
 
                     component.tab(go_to_tab);
                   }
@@ -379,8 +398,11 @@ component.connect = function() {
   component.remote.status_type("info");
   component.remote.status("Connecting ...");
 
+  $('.remote-browser-continue').toggleClass("disabled", true);
+
   if(component.remote.session_exists())
   {
+    $('.remote-browser-continue').toggleClass("disabled", false);
     component.tab(4);
     component.remote.enable(true);
     component.remote.status_type(null);
@@ -393,6 +415,7 @@ component.connect = function() {
       username: component.remote.username(),
       password: component.remote.password(),
       success: function(sid) {
+        $('.remote-browser-continue').toggleClass("disabled", false);
         component.remote.session_exists(true);
         component.remote.sid(sid);
         component.tab(4);
@@ -401,6 +424,7 @@ component.connect = function() {
         component.remote.status(null);
       },
       error: function(request, status, reason_phrase) {
+        $('.remote-browser-continue').toggleClass("disabled", false);
         component.remote.enable(true);
         component.remote.status_type("danger");
         component.remote.status(reason_phrase);
@@ -419,6 +443,9 @@ component.upload_remote_table = function() {
       // disable continue button
       $('.remote-browser-continue').toggleClass("disabled", true);
 
+      // clear errors
+      $("#VS-remote-table-error").hide();
+
       // load csv file
       var fileObject ={
        pid: component.project._id(),
@@ -431,6 +458,8 @@ component.upload_remote_table = function() {
        progress_final: 100,
        success: function(){
 
+         $('.remote-browser-continue').toggleClass("disabled", false);
+
          // note that table has been uploaded
          remote_table_uploaded = true;
 
@@ -439,7 +468,8 @@ component.upload_remote_table = function() {
 
        },
        error: function(){
-          dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+          $("#VS-remote-table-error").text("There was a problem parsing the file.  Did you choose the correct file and filetype?");
+          $("#VS-remote-table-error").show();
           $('.remote-browser-continue').toggleClass("disabled", false);
           component.remote.progress(null);
         }
@@ -536,8 +566,8 @@ component.upload_vs_links = function () {
         error: function() {
 
             // server error extracting video links
-            dialog.ajax_error("Server error during video link extraction.")("","","");
-            $(".local-browser-continue").toggleClass("disabled", false);
+            $("#VS-video-links-error").text("Server error during video link extraction.")
+            $("#VS-video-links-error").show();
         }
     });
 };
@@ -545,20 +575,46 @@ component.upload_vs_links = function () {
 // upload movie links (from remote file)
 component.upload_vs_frames_links = function () {
 
+    // check for errors before uploading frames file
+    var found_errors = false;
+
     // check to see if user provided working directory
     if (component.workdir().trim() === '') {
 
-        dialog.ajax_error("Please enter a working directory.")("","","");
+        $("#VS-working-directory").addClass("is-invalid");
+        found_errors = true;
+
+    } else {
+
+        // no error in working directory
+        $("#VS-working-directory").removeClass("is-invalid");
+    }
+
+    // empty frame rate defaults to 25
+    if (component.frame_rate() == '') {
+        component.frame_rate(25);
+    }
 
     // check to see if fps is greater than 0
-    } else if (component.frame_rate() <= 0) {
+    if (component.frame_rate() <= 0) {
 
-        dialog.ajax_error("Please enter a frame rate greater than 0.")("","","");
+        // show error below input box
+        $("#VS-frame-rate").addClass("is-invalid");
+        found_errors = true;
+    } else {
+
+        // no error in frame rate input
+        $("#VS-frame-rate").removeClass("is-invalid");
+    }
 
     // otherwise everything is OK
-    } else {
+    if (found_errors == false)
+    {
+
         localStorage["VS_WORKDIR"] = component.workdir();
-        console.log ("Uploading video links ...");
+
+        // turn off errors
+        $("#VS-video-frame-links-error").hide();
 
         // get column for frames
         var frame_selected = $("#vs-remote-frames-selector").val();
@@ -585,8 +641,8 @@ component.upload_vs_frames_links = function () {
             error: function() {
 
                 // server error extracting video links
-                dialog.ajax_error("Server error during video link extraction.")("","","");
-                $(".remote-browser-continue").toggleClass("disabled", false);
+                $("#VS-video-frame-links-error").text("Server error during video link extraction.")
+                $("#VS-video-frame-links-error").show();
             }
         });
 
@@ -601,6 +657,9 @@ var upload_mp_matrices = function (aids, files, file_num) {
     var file = files[file_num];
     console.log("Uploading file: " + file.name);
 
+    // clear previous upload errors
+    $("VS-other-file-error").hide();
+
     var fileObject ={
         pid: component.project._id(),
         mid: component.model._id(),
@@ -614,17 +673,15 @@ var upload_mp_matrices = function (aids, files, file_num) {
                     upload_mp_matrices(aids, files, file_num + 1);
                 } else {
 
-                    // finished uploading -- go to next tab in UI
-                    vs_files_uploaded = true;
-
                     // find the media columns, then go to tab 2
                     upload_media_columns(2);
                 }
             },
         error: function(){
-            dialog.ajax_error(
-                "There was a problem parsing the " + aids[file_num] + " file.")
-                ("","","");
+
+                $("#VS-other-file-error").text("There was a problem parsing the " + aids[file_num] + " file.  Please correct or select a different file.");
+                $("#VS-other-file-error").show();
+
                 $('.local-browser-continue').toggleClass("disabled", false);
             }
         };
@@ -641,15 +698,79 @@ component.check_hpc_job = function () {
     // does the user want a HPC
     if (component.HPC_Job() === true) {
 
+        // keep track of HPC errors
+        var HPC_errors = false;
+
+        // check for wc key
         if (component.wckey() === '') {
 
-            dialog.ajax_error("Please enter an account ID.")("","","");
-
-        } else if (component.partition() === '') {
-
-            dialog.ajax_error("Please enter a partition/queue.")("","","");
+            $("#VS-wckey").addClass("is-invalid");
+            HPC_errors = true;
 
         } else {
+
+            $("#VS-wckey").removeClass("is-invalid");
+        }
+
+        // check for partition/queue
+        if (component.partition() === '') {
+
+            $("#VS-queue").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-queue").removeClass("is-invalid");
+        }
+
+        // check limits on number nodes
+        if (component.nnodes() <= 0) {
+
+            $("#VS-nnodes").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-nnodes").removeClass("is-invalid");
+        }
+
+        // check limits on number of cores
+        if (component.ntasks_per_node() <= 0) {
+
+            $("#VS-ncores").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-ncores").removeClass("is-invalid");
+        }
+
+        // check limits on job time (hours)
+        if (component.time_hours() < 0) {
+
+            $("#VS-nhours").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-nhours").removeClass("is-invalid");
+        }
+
+        // check limits on job time (minutes)
+        if ((component.time_minutes() < 0 ||
+            component.time_minutes() > 59) ||
+            (component.time_hours() <= 0 &&
+            component.time_minutes() <= 0)) {
+
+            $("#VS-nminutes").addClass("is-invalid");
+            HPC_errors = true;
+
+        } else {
+
+            $("#VS-nminutes").removeClass("is-invalid");
+        }
+
+        if (HPC_errors == false) {
 
             // got everything needed, next name model
             component.tab(7);
@@ -667,50 +788,70 @@ component.check_hpc_job = function () {
 // called after the last tab is finished to name the model
 component.name_model = function() {
 
-    // turn off finish button
-    $('.vs-finish-button').toggleClass("disabled", true);
+    // check if name is valid
+    if (component.model.name() == "") {
 
-    client.put_model(
-    {
-    mid: component.model._id(),
-    name: component.model.name(),
-    description: component.model.description(),
-    marking: component.model.marking(),
-    success: function()
-    {
-        client.post_model_finish({
+        $("#slycat-model-name").addClass("is-invalid");
+
+    } else {
+
+        // turn off model name error
+        $("#slycat-model-name").removeClass("is-invalid");
+
+        // turn off finish button
+        $('.vs-finish-button').toggleClass("disabled", true);
+
+        client.put_model(
+        {
         mid: component.model._id(),
-        success: function() {
+        name: component.model.name(),
+        description: component.model.description(),
+        marking: component.model.marking(),
+        success: function()
+        {
+            client.post_model_finish({
+            mid: component.model._id(),
+            success: function() {
 
-                // do we need to launch a remote job?
-                if (launch_remote_job) {
+                    // do we need to launch a remote job?
+                    if (launch_remote_job) {
 
-                    start_remote_job();
+                        start_remote_job();
 
-                } else {
+                    } else {
 
-                    // mark as already uploaded and go to model
-                    client.put_model_parameter({
-                        mid: component.model._id(),
-                        aid: "vs-loading-parms",
-                        value: ["Uploaded"],
-                        success: function () {
+                        // mark as already uploaded and go to model
+                        client.put_model_parameter({
+                            mid: component.model._id(),
+                            aid: "vs-loading-parms",
+                            value: ["Uploaded"],
+                            success: function () {
 
-                            // go to model
-                            component.go_to_model();
+                                // go to model
+                                component.go_to_model();
 
-                        },
-                        error: function () {
-                            dialog.ajax_error("Error uploading model status.")("","","");
-                            $('.vs-finish-button').toggleClass("disabled", false);
-                        }
-                    });
+                            },
+                            error: function () {
+
+                                $("#VS-finish-model-error").text("Error uploading model status.");
+                                $("#VS-finish-model-error").show();
+
+                                $('.vs-finish-button').toggleClass("disabled", false);
+
+                            }
+                        });
+                    }
                 }
-            }
+            });
+        },
+        error: function () {
+
+            $("#VS-finish-model-error").text("Error updating model.");
+            $("#VS-finish-model-error").show();
+
+        }
         });
-    },
-    error: dialog.ajax_error("Error updating model."),
-    });
+    };
 };
 
 // operate the back button

@@ -11,9 +11,9 @@ import PIL.Image
 import argparse
 
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except ImportError:
-    import StringIO
+    import io
 
 import json
 import os

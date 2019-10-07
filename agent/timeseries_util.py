@@ -108,7 +108,7 @@ def process_timeseries(timeseries_path, timeseries_name, output_directory, times
         # pull data from file and add an index column if flagged earlier...
         data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
         if t_add_index_column is True:
-            data = numpy.insert(data, 0, range(len(data)), axis=1)
+            data = numpy.insert(data, 0, list(range(len(data))), axis=1)
         # TODO: make sure we still need to create this dir with the next path settup
         timeseries_dir = os.path.join(output_directory, timeseries_name)
         if not os.path.exists(timeseries_dir):
@@ -126,7 +126,7 @@ def process_timeseries(timeseries_path, timeseries_name, output_directory, times
             array = arrayset.start_array(0, dimensions, attributes)
             for attribute, column in enumerate(data.T[1:]):
                 array.set_data(attribute, slice(0, column.shape[0]), column)
-    except IOError, err:
+    except IOError as err:
         log.error("Failed reading %s: %s", path, err)
     except:
         log.error("Unexpected error reading %s", path)
@@ -146,7 +146,7 @@ def convert_timeseries(results, timeseries_index, eval_id, row):  # range(row_co
             val = val.strip()
             file_ext = val[len(val) - 3:]
             if file_ext == "csv" or file_ext == "dat" or file_ext == "txt":
-                print "processing"
+                print("processing")
                 process_timeseries(val, results['column_names'][i], results['output_directory'], timeseries_index,
                                    eval_id)
 
@@ -193,9 +193,9 @@ def convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_col
     results['column_types'] = ["string" for name in results['column_names']]
     results['rows'] = results['rows'][1:]  # removes first row (header)
     results['row_count'] = len(results['rows'])
-    results['columns'] = zip(
+    results['columns'] = list(zip(
         *results[
-            'rows'])  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
+            'rows']))  # this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
 
     if id_column is not None:
         if results['column_names'][0] != id_column:
@@ -205,7 +205,7 @@ def convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_col
     else:
         # if the ID column isn't specified, creates one and prepend it to the columns
         results['column_names'] = ["%eval_id"] + results['column_names']
-        results['columns'] = [numpy.array(range(0, results['row_count']), dtype="int64")] + results['columns']
+        results['columns'] = [numpy.array(list(range(0, results['row_count'])), dtype="int64")] + results['columns']
     results['column_types'][0] = "int64"
 
     for index in range(1, len(results['columns'])):  # repack data cols as numpy arrays
@@ -264,7 +264,7 @@ def write_out_hdf5_files(results, cpu_count=1):
             array.set_data(attribute, slice(0, column.shape[0]), column)
     with concurrent.futures.ProcessPoolExecutor(cpu_count) as pool:
         output = list(
-            pool.map(functools.partial(convert_timeseries, results), range(results['row_count']), results['columns'][0],
+            pool.map(functools.partial(convert_timeseries, results), list(range(results['row_count'])), results['columns'][0],
                      results['rows']))
     return output
 
@@ -292,7 +292,7 @@ def timeseries_csv_to_hdf5(output_directory, inputs_file, id_column, inputs_file
     # create an object list of the inputs file
     results = convert_inputs_file_to_dictionary(inputs_file, inputs_file_delimiter, id_column)
     results['output_directory'] = output_directory
-    print write_out_hdf5_files(results, cpu_count=multiprocessing.cpu_count())
+    print(write_out_hdf5_files(results, cpu_count=multiprocessing.cpu_count()))
 
 
 if __name__ == "__main__":
