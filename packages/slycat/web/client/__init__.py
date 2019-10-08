@@ -19,9 +19,9 @@ import sys
 import time
 import base64
 try:
-  import cStringIO as StringIO
+  import io as StringIO
 except:
-  import StringIO
+  import io
 
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -73,12 +73,12 @@ class ArgumentParser(argparse.ArgumentParser):
       markings = connection.get_configuration_markings()
       type_width = numpy.max([len(marking["type"]) for marking in markings])
       label_width = numpy.max([len(marking["label"]) for marking in markings])
-      print
-      print "{:>{}} {:<{}}".format("Marking", type_width, "Description", label_width)
-      print "{:>{}} {:<{}}".format("-" * type_width, type_width, "-" * label_width, label_width)
+      print()
+      print("{:>{}} {:<{}}".format("Marking", type_width, "Description", label_width))
+      print("{:>{}} {:<{}}".format("-" * type_width, type_width, "-" * label_width, label_width))
       for marking in markings:
-        print "{:>{}} {:<{}}".format(marking["type"], type_width, marking["label"], label_width)
-      print
+        print("{:>{}} {:<{}}".format(marking["type"], type_width, marking["label"], label_width))
+      print()
       self.exit()
 
     if arguments.log_level == "debug":
@@ -113,7 +113,7 @@ class Connection(object):
     self.keywords = keywords
     self.session = requests.Session()
     self.session.post(url, json=data, proxies=proxies, verify=verify)
-    if len(self.session.cookies.keys()) is 0 or None:
+    if len(list(self.session.cookies.keys())) is 0 or None:
       raise NameError('bad username or password:%s, for username:%s' % (keywords.get("auth", ("", ""))[1], keywords.get("auth", ("", ""))[0]))
 
   def request(self, method, path, **keywords):
@@ -672,13 +672,13 @@ class Connection(object):
     :http:put:`/models/(mid)/arraysets/(aid)/data`
     """
     # Sanity check arguments
-    if not isinstance(mid, basestring):
+    if not isinstance(mid, str):
       cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Model id must be a string")
       raise ValueError("Model id must be a string.")
-    if not isinstance(aid, basestring):
+    if not isinstance(aid, str):
       cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Artifact id must be a string")
       raise ValueError("Artifact id must be a string.")
-    if not isinstance(hyperchunks, basestring):
+    if not isinstance(hyperchunks, str):
       cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Hyperchunks specification must be a string.")
       raise ValueError("Hyperchunks specification must be a string.")
     for chunk in data:
@@ -695,7 +695,7 @@ class Connection(object):
     if use_binary:
       request_data["byteorder"] = sys.byteorder
 
-    request_buffer = StringIO.StringIO()
+    request_buffer = io.StringIO()
     if use_binary:
       for chunk in data:
         request_buffer.write(chunk.tostring(order="C"))
@@ -827,7 +827,7 @@ class Connection(object):
     --------
     :func:`put_model`
     """
-    model = {key: value for key, value in kwargs.items() if value is not None}
+    model = {key: value for key, value in list(kwargs.items()) if value is not None}
     self.put_model(mid, model)
 
   def join_model(self, mid):

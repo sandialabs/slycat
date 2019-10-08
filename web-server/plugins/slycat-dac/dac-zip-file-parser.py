@@ -43,7 +43,7 @@ def parse_csv(file):
         except ValueError:
             return False
 
-    rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True,
+    rows = [row for row in csv.reader(file.decode().splitlines(), delimiter=",", doublequote=True,
             escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
     if len(rows) < 2:
@@ -75,7 +75,7 @@ def parse_csv(file):
                 if isfloat(value):
                     column_has_floats = True
                 try: # note NaN's are floats
-                    output_list = map(lambda x: 'NaN' if x=='' else x, column[1:])
+                    output_list = ['NaN' if x=='' else x for x in column[1:]]
                     data.append(numpy.array(output_list).astype("float64"))
                     # attributes.append({"name":column[0], "type":"float64"})
 
@@ -107,7 +107,7 @@ def parse_meta(file):
     """
 
     # parse file one row at a time
-    rows = file.splitlines()
+    rows = file.decode().splitlines()
     data = []
     for i in range(0,len(rows)):
 
@@ -118,8 +118,8 @@ def parse_meta(file):
         # check line for one equal sign
         row_data = rows[i].split("=")
         if (len(row_data) == 2):
-            row_data[0] = row_data[0].translate(None, '"')
-            row_data[1] = row_data[1].translate(None, '"')
+            row_data[0] = row_data[0].translate(str.maketrans('','','"'))
+            row_data[1] = row_data[1].translate(str.maketrans('','','"'))
             data.append((prefix + row_data[0], row_data[1]))
 
         # discard waveform_conversion information

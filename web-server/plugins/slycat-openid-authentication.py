@@ -12,7 +12,7 @@ def register_slycat_plugin(context):
     import datetime
     import slycat.web.server
     
-    import urlparse
+    from urllib.parse import urlparse
 
     def authenticate(realm, rules=None):
         # Sanity-check our inputs.
@@ -21,7 +21,7 @@ def register_slycat_plugin(context):
                                     "Realm cannot contain the \" (quote) character.")
             raise ValueError("Realm cannot contain the \" (quote) character.")
 
-        current_url = urlparse.urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
+        current_url = urlparse(cherrypy.url() + "?" + cherrypy.request.query_string)
         # Require a secure connection.
         if not (cherrypy.request.scheme == "https" or cherrypy.request.headers.get("x-forwarded-proto") == "https"):
             cherrypy.log.error("slycat-standard-authentication.py authenticate",
@@ -50,7 +50,7 @@ def register_slycat_plugin(context):
                 cherrypy.response.headers["Pragma"] = "no-cache"  # HTTP 1.0.
                 cherrypy.response.headers["Expires"] = "0"  # Proxies.
 
-                if datetime.datetime.utcnow() - datetime.datetime.strptime(unicode(started), '%Y-%m-%dT%H:%M:%S.%f') > \
+                if datetime.datetime.utcnow() - datetime.datetime.strptime(str(started), '%Y-%m-%dT%H:%M:%S.%f') > \
                         cherrypy.request.app.config["slycat"]["session-timeout"]:
                     couchdb.delete(session)
                     # expire the old cookie

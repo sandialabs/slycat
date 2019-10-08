@@ -8,7 +8,6 @@ large model artifacts such as :mod:`darrays<slycat.darray>`, the CouchDB
 database stores links to HDF5 files stored on disk.
 """
 
-from __future__ import absolute_import
 
 import cherrypy
 import abc

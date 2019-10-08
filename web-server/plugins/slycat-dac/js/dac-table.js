@@ -599,21 +599,13 @@ function TextEditor(args) {
             }
 
             if (e.keyCode === $.ui.keyCode.ENTER) {
-
-                // get cell position
-                var cell_pos = grid_view.getActiveCell();
-                var row_id = cell_pos["row"];
-                var col_id = cell_pos["cell"] - num_cols;
-
-                // get new value
-                var cell_val = $input.val();
-
-                // update value by in table and database
-                update_editable_col (row_id, col_id, cell_val);
-
-                // reset active cell so no problems with focus
-                grid_view.resetActiveCell();
+                update_freetext_cell($input);
             }
+        });
+
+        // save results if user clicks off text box
+        $input.focusout(function () {
+            update_freetext_cell($input);
         });
 
 		$input.focus();
@@ -672,6 +664,25 @@ function TextEditor(args) {
 	};
 
 	this.init();
+}
+
+// updates free text cell
+function update_freetext_cell ($input) {
+
+    // get cell position
+    var cell_pos = grid_view.getActiveCell();
+    var row_id = cell_pos["row"];
+    var col_id = cell_pos["cell"] - num_cols;
+
+    // get new value
+    var cell_val = $input.val();
+
+    // update value by in table and database
+    update_editable_col (row_id, col_id, cell_val);
+
+    // reset active cell so no problems with focus
+    grid_view.resetActiveCell();
+
 }
 
 // slick grid custom cell editor for categorical values

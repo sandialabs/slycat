@@ -6,7 +6,6 @@
 
 import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
-import * as dialog from "js/slycat-dialog";
 import markings from "js/slycat-markings";
 import ko from "knockout";
 import mapping from "knockout-mapping";

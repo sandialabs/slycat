@@ -30,18 +30,18 @@ def init_upload_model (database, model, parse_error_log, meta_column_names, meta
     # convert from meta data from row-oriented to column-oriented data,
     # and convert to numeric columns where possible.
     meta_column_types = ["string" for name in meta_column_names]
-    meta_columns = zip(*meta_rows)
+    meta_columns = list(zip(*meta_rows))
     for index in range(len(meta_columns)):
         try:
             meta_columns[index] = numpy.array(meta_columns[index], dtype="float64")
             meta_column_types[index] = "float64"
         except:
-            meta_columns[index] = numpy.array(meta_columns[index], dtype="string")
+            meta_columns[index] = numpy.array(meta_columns[index], dtype="str")
 
     # convert variable meta data from row-oriented to column-oriented data
-    meta_var_cols = zip(*meta_vars)
+    meta_var_cols = list(zip(*meta_vars))
     for index in range(len(meta_var_cols)):
-        meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="string")
+        meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="str")
 
     # get total number of variables
     num_vars = len(meta_vars)

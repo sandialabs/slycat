@@ -98,7 +98,7 @@ try:
     # reduce the num of samples if fewer timeseries that curr cluster-sample-count
     if timeseries_samples.min() < _numSamples:
         _numSamples = int(timeseries_samples.min())
-        print("Reducing cluster sample count to minimum found in data: %s", _numSamples)
+        print(("Reducing cluster sample count to minimum found in data: %s", _numSamples))
 
     print("Storing clustering parameters.")
 
@@ -135,7 +135,7 @@ try:
         """
         attributes_array = numpy.empty(shape=(len(attributes),), dtype=object)
         for attribute in range(len(attributes)):
-            print("Storing input table attribute %s", attribute)
+            print(("Storing input table attribute %s", attribute))
             attributes_array[attribute] = array.get_data(attribute)[...]
         with open(os.path.join(dirname, "inputs_attributes_data.pickle"), "wb") as attributes_file:
             pickle.dump(attributes_array, attributes_file)
@@ -183,21 +183,21 @@ try:
 
     print("Collecting timeseries statistics.")
     time_ranges = pool.map_sync(get_time_range, list(itertools.repeat(directory_full_path, timeseries_count)),
-                                range(timeseries_count))
+                                list(range(timeseries_count)))
 
     # For each cluster ...
     for index, (name, storage) in enumerate(sorted(clusters.items())):
-        print("cluster index: %s" % index)
+        print(("cluster index: %s" % index))
         progress_begin = float(index) / float(len(clusters))
         progress_end = float(index + 1) / float(len(clusters))
 
         # Rebin each timeseries within the cluster so they share common stop/start times and samples.
-        print("Resampling data for %s" % name)
+        print(("Resampling data for %s" % name))
 
         # Get the minimum and maximum times across every series in the cluster.
         ranges = [time_ranges[timeseries[0]] for timeseries in storage]
-        time_min = min(zip(*ranges)[0])
-        time_max = max(zip(*ranges)[1])
+        time_min = min(list(zip(*ranges))[0])
+        time_max = max(list(zip(*ranges))[1])
 
         if arguments.cluster_sample_type == "uniform-pla":
 
@@ -293,14 +293,14 @@ try:
         observation_count = len(waveforms)
         distance_matrix = numpy.zeros(shape=(observation_count, observation_count))
         for i in range(0, observation_count):
-            print("Computing distance matrix for %s, %s of %s" % (name, i + 1, observation_count))
+            print(("Computing distance matrix for %s, %s of %s" % (name, i + 1, observation_count)))
             for j in range(i + 1, observation_count):
                 distance = numpy.sqrt(numpy.sum(numpy.power(waveforms[j]["values"] - waveforms[i]["values"], 2.0)))
                 distance_matrix[i, j] = distance
                 distance_matrix[j, i] = distance
 
         # Use the distance matrix to cluster observations ...
-        print("Clustering %s" % name)
+        print(("Clustering %s" % name))
         distance = scipy.spatial.distance.squareform(distance_matrix)
         linkage = scipy.cluster.hierarchy.linkage(distance, method=str(arguments.cluster_type),
                                                   metric=str(arguments.cluster_metric))
@@ -314,7 +314,7 @@ try:
             exemplars[i] = i
             cluster_membership.append(set([i]))
 
-        print("Identifying examplars for %s" % (name))
+        print(("Identifying examplars for %s" % (name)))
         for i in range(len(linkage)):
             cluster_id = i + observation_count
             (f_cluster1, f_cluster2, height, total_observations) = linkage[i]
@@ -352,7 +352,7 @@ try:
             exemplars[cluster_id] = exemplar_id
 
         # Store the cluster.
-        print("Storing %s" % name)
+        print(("Storing %s" % name))
         file_cluster_n = dict(aid="cluster-%s" % name, parser="slycat-blob-parser")
         with open(os.path.join(dirname, "file_cluster_%s.json" % name), "w") as file_cluster_n_json:
             json.dump(file_cluster_n, file_cluster_n_json)
@@ -375,7 +375,7 @@ try:
             waveform_times_array[index] = waveform["times"]
             waveform_values_array[index] = waveform["values"]
 
-        print("Creating array %s %s" % (attributes, dimensions))
+        print(("Creating array %s %s" % (attributes, dimensions)))
         with open(os.path.join(dirname, "waveform_%s_dimensions.pickle" % name), "wb") as dimensions_file:
             pickle.dump(dimensions_array, dimensions_file)
         with open(os.path.join(dirname, "waveform_%s_attributes.pickle" % name), "wb") as attributes_file:
@@ -388,6 +388,6 @@ try:
 except:
     import traceback
 
-    print(traceback.format_exc())
+    print((traceback.format_exc()))
 
 print("done.")

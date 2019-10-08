@@ -18,12 +18,13 @@ module.exports = merge(common, {
     // Public URL of served files. Commended out because we want them available at the root URL.
     publicPath: '/',
     // compress: true,
+    host: '0.0.0.0',
     port: 9000,
     https: true,
     index: 'slycat_projects.html',
     proxy: {
       '/api': {
-        target: 'https://localhost:443',
+        target: 'https://haproxy:443',
         pathRewrite: {'^/api' : ''},
         secure: false,
       },

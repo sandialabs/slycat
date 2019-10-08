@@ -2,8 +2,7 @@
 # DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
 # retains certain rights in this software.
 
-import urlparse as _urlparse
-import urllib as _urllib
+from urllib.parse import urlparse, urlencode, parse_qs
 
 class URI(object):
   """Encapsulates URI creation and editing with a URI.js compatible interface."""
@@ -32,12 +31,12 @@ class URI(object):
       if self._path:
         result += self._path
       if self._query:
-        result += "?" + _urllib.urlencode(self._query, doseq=True)
+        result += "?" + urlencode(self._query, doseq=True)
       if self._fragment:
         result += "#" + self._fragment
       return result
 
-    parsed = _urlparse.urlparse(value)
+    parsed = urlparse(value)
     self._scheme = parsed.scheme
     self._username = parsed.username
     self._password = parsed.password
@@ -45,7 +44,7 @@ class URI(object):
     self._port = parsed.port
     self._path = parsed.path
     self._params = parsed.params
-    self._query = _urlparse.parse_qs(parsed.query, keep_blank_values=True, strict_parsing=True)
+    self._query = parse_qs(parsed.query, keep_blank_values=True, strict_parsing=True)
     self._fragment = parsed.fragment
     return self
 

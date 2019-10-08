@@ -45,7 +45,7 @@ def user(uid):
 
       if result == []:
         cherrypy.log.error("slycat-ldap-directory.py user", "User ID, %s, was not found." % uid)
-        raise AssertionError, "User ID, %s, was not found ." % uid
+        raise AssertionError("User ID, %s, was not found ." % uid)
 
       # Cache the information we need for speedy lookup.
       result = result[0][1]

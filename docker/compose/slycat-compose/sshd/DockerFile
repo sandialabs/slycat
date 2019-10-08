@@ -1,0 +1,29 @@
+FROM debian:latest
+
+LABEL maintainer="Matthew Letter <mletter@sandia.gov>"
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    apt-get --yes install openssh-server rsync git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -vp /var/run/sshd && \
+    mkdir -vp /usr/local/etc/sshd && \
+    mkdir -vp /home/slycat/src
+
+WORKDIR /home/slycat/src
+RUN git clone https://github.com/sandialabs/slycat-data.git && \
+    chmod 777 -R /home/slycat
+
+COPY ./sshd/sshd-config/* /usr/local/etc/sshd/
+COPY ./sshd/entrypoint.sh /
+
+RUN chmod -v 644 /usr/local/etc/sshd/* && \
+    chmod -v 755 /entrypoint.sh
+
+VOLUME /usr/local/etc/sshd
+
+EXPOSE 22
+
+ENTRYPOINT ["/entrypoint.sh"]

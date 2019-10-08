@@ -20,7 +20,7 @@ import argparse
 # reading files, parsing file names
 import os
 import csv
-import urlparse
+import urllib.parse
 
 # error handling
 import sys
@@ -238,7 +238,7 @@ for i in range(0, num_movies):
 
     # isolate first frame file
     frame_file_path, frame_file_name = \
-        os.path.split(urlparse.urlparse(frame_files[i]).path)
+        os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
     # check for at lesat two dots in frame file name
     frame_split = frame_file_name.split('.')

@@ -1,0 +1,6 @@
+UseDNS no
+PermitRootLogin no
+Subsystem sftp internal-sftp
+X11Forwarding no
+AllowTcpForwarding no
+LogLevel VERBOSE

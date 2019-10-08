@@ -222,11 +222,11 @@ class ArraySet(object):
     return DArray(self._storage["array/%s" % key])
 
   def keys(self):
-    return [int(key) for key in self._storage["array"].keys()]
+    return [int(key) for key in list(self._storage["array"].keys())]
 
   def array_count(self):
     """Note: this assumes that array indices are contiguous, which we don't explicitly enforce."""
-    return len(self._storage["array"].keys())
+    return len(list(self._storage["array"].keys()))
 
   def start_array(self, array_index, dimensions, attributes):
     """Add an uninitialized darray to the arrayset.
@@ -265,10 +265,10 @@ class ArraySet(object):
     # cherrypy.log.error("storing metadata for start_array for put_model_array")
     # Store array metadata ...
     array_metadata = self._storage[array_key].create_group("metadata")
-    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=unicode))
-    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=unicode))
+    array_metadata["attribute-names"] = numpy.array([attribute["name"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=str))
+    array_metadata["attribute-types"] = numpy.array([attribute["type"] for attribute in stub.attributes], dtype=h5py.special_dtype(vlen=str))
+    array_metadata["dimension-names"] = numpy.array([dimension["name"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=str))
+    array_metadata["dimension-types"] = numpy.array([dimension["type"] for dimension in stub.dimensions], dtype=h5py.special_dtype(vlen=str))
     array_metadata["dimension-begin"] = numpy.array([dimension["begin"] for dimension in stub.dimensions], dtype="int64")
     array_metadata["dimension-end"] = numpy.array([dimension["end"] for dimension in stub.dimensions], dtype="int64")
 
@@ -332,11 +332,11 @@ def start_arrayset(file):
 
 def dtype(type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""
-  if type not in dtype.type_map.keys():
+  if type not in list(dtype.type_map.keys()):
     cherrypy.log.error("hdf5.py dtype", "Unsupported type: {}".format(type))
     raise Exception("Unsupported type: {}".format(type))
   return dtype.type_map[type]
-dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=unicode), "float":"float32", "double":"float64"}
+dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=str), "float":"float32", "double":"float64"}
 
 def path(array, directory):
   return os.path.join(directory, array[0:2], array[2:4], array[4:6], array + ".hdf5")

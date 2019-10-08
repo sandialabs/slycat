@@ -1,0 +1,15 @@
+FROM haproxy:alpine
+
+WORKDIR /etc/slycat
+RUN apk upgrade --update-cache --available && \
+    apk add openssl && \
+    rm -rf /var/cache/apk/* && \
+    # Generate a private certificate authority
+    openssl genrsa -out /root-ca.key 2048 && \
+    openssl req -x509 -new -nodes -key /root-ca.key -days 365 -out /root-ca.cert -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=Slycat" && \
+    # Generate a self-signed certificate
+    openssl genrsa -out /web-server.key 2048 && \
+    openssl req -new -key /web-server.key -out /web-server.csr -subj "/C=US/ST=New Mexico/L=Albuquerque/O=The Slycat Project/OU=QA/CN=localhost" && \
+    openssl x509 -req -sha256 -in /web-server.csr -CA /root-ca.cert -CAkey /root-ca.key -CAcreateserial -out /web-server.cert -days 1825 && \
+    cat /web-server.key /web-server.cert > /etc/slycat/combined.cer;
+COPY proxy-server-config.conf /usr/local/etc/haproxy/haproxy.cfg

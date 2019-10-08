@@ -26,7 +26,7 @@ def lookupUser(uname, pFile):
       if uname == line.split(":")[0]:
         # verify this is a login account
         if line.split(":")[6].find("nologin")>=0:
-          raise AssertionError, "Username %s is not a login account." % uname
+          raise AssertionError("Username %s is not a login account." % uname)
         nameField = line.split(":")[4]
         return uname if nameField=="" else nameField
   return ""
@@ -38,7 +38,7 @@ def user(username):
       # Lookup the given username in the password file
       result = lookupUser(username, configuration["passwdFile"])
 
-      if result == "": raise AssertionError, "Username %s was not found ." % username
+      if result == "": raise AssertionError("Username %s was not found ." % username)
       #cherrypy.log.error("++ passwd dir approving lookup for %s" % username)
       # Cache the information we need for speedy lookup.
       configuration["cache"][username] = {

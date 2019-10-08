@@ -81,7 +81,7 @@ row_count = len(rows)
 if column_names[0] != arguments.id_column:
   raise Exception("The first column in %s must be %s, got %s instead." % (arguments.inputs_file, arguments.id_column, column_names[0]))
 
-columns = zip(*rows)   #this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
+columns = list(zip(*rows))   #this is the data only - no headers, now a list of tuples:  [(index1, index2, ...), (voltage1, voltage2, ...) ...]
 
 columns[0] = numpy.array(columns[0], dtype="int64")  #repack the index col as numpy array
 column_types[0] = "int64"
@@ -159,4 +159,4 @@ def convert_timeseries(timeseries_index, eval_id):
       array.set_data(attribute, slice(0, column.shape[0]), column)
 
 with concurrent.futures.ProcessPoolExecutor(arguments.parallel_jobs) as pool:
-  results = list(pool.map(convert_timeseries, range(row_count), columns[0]))
+  results = list(pool.map(convert_timeseries, list(range(row_count)), columns[0]))

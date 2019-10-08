@@ -3,7 +3,7 @@
 # retains certain rights in this software.
 
 import cherrypy
-import ConfigParser
+import configparser
 import datetime
 import grp
 import json
@@ -44,7 +44,7 @@ def start(root_path, config_file):
 
   # below, simply tell engine to watch config file for potential reload, reloading may be ON or OFF
   cherrypy.engine.autoreload.files.add(config_file)
-  parser = ConfigParser.SafeConfigParser()
+  parser = configparser.SafeConfigParser()
   parser.read(config_file)
   configuration = {section : {key : eval(value) for key, value in parser.items(section)} for section in parser.sections()}
   configuration["slycat-web-server"]["root-path"] = root_path
@@ -202,7 +202,7 @@ def start(root_path, config_file):
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
   configuration["/"]["tools.%s.on" % authentication] = True
   # configuration["/logout"]["tools.%s.on" % authentication] = False
-  for key, value in configuration["slycat-web-server"]["authentication"]["kwargs"].items():
+  for key, value in list(configuration["slycat-web-server"]["authentication"]["kwargs"].items()):
     configuration["/"]["tools.%s.%s" % (authentication, key)] = value
 
   # Setup our static content directories.
@@ -229,14 +229,14 @@ def start(root_path, config_file):
 
   # Sanity-check to ensure that we have a marking plugin for every allowed marking type.
   for allowed_marking in configuration["slycat-web-server"]["allowed-markings"]:
-    if allowed_marking not in manager.markings.keys():
+    if allowed_marking not in list(manager.markings.keys()):
       cherrypy.log.error("slycat.web.server.engine.py start", "No marking plugin for type: %s" % allowed_marking)
       raise Exception("No marking plugin for type: %s" % allowed_marking)
 
   # Setup the requested directory plugin.
   # wsgi: this is the ldap fn to lookup a username and rtn/cache uid, name, email
   directory_type = configuration["slycat-web-server"]["directory"]["plugin"]
-  if directory_type not in manager.directories.keys():
+  if directory_type not in list(manager.directories.keys()):
     cherrypy.log.error("slycat.web.server.engine.py start", "No directory plugin for type: %s" % directory_type)
     raise Exception("No directory plugin for type: %s" % directory_type)
   directory_args = configuration["slycat-web-server"]["directory"].get("args", [])
