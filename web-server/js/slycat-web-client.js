@@ -187,7 +187,7 @@ module.get_project_data = function(params)
 };
 
 // Fetch version of get_configuration_markings
-module.get_project_data_fetch = function(params)
+module.get_project_data_fetch = function(params, successFunction, errorFunction)
 {
   return fetch(`${api_root}data/${params.did}`,
       {
