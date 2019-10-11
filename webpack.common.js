@@ -3,6 +3,9 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
+// importing vtk rules for for vtk.js package to work
+var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
+
 module.exports = {
   // mode is now specified in webpack.dev.js and webpack.prod.js
   // mode: 'production',
@@ -177,7 +180,9 @@ module.exports = {
           }
         ]
       },
-    ],
+    ]
+    // Adding vtk rules
+    .concat(vtkRules),
   },
   optimization: {
     splitChunks: {
