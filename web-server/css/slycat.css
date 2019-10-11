@@ -42,7 +42,7 @@ html#slycat-model-page body
 
 .bootstrap-styles .navbar-brand
 {
-  background: url("slycat-logo-navbar.png") transparent 0 center no-repeat;
+  background: url("../img/slycat-logo-navbar.png") transparent 0 center no-repeat;
   min-height: 38px;
   background-size: auto 20px;
   padding-right: 0;

@@ -13,37 +13,39 @@
       body {
         height: 100%%;
         background-color: #F2F2F2;
-        background-image: url('/resources/global/slycat-logo-navbar.png');
-        background-repeat: no-repeat;
-        background-position: 50%% 15%%;
         font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        background-image: url('/slycat-logo-navbar.png');
+        background-repeat: no-repeat;
+        background-position: top 25%% center;
+        background-size: 60%%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .message {
+        text-align: center;
+        font-weight: bold;
       }
 
       .auth-needed {
         font-size: 30px;
-        font-weight: bold;
-        text-align: center;
-        margin-top: 28%%;
-      }
-
-      .return-home {
-        text-align: center;
-        margin-top: 1%%;
       }
 
       .return-home a {
-        font-weight: bold;
         color: #800;
       }
     </style>
   </head>
 
   <body>
-    <div class="auth-needed">
-      Authentication is required.
-    </div>
-    <div class="return-home">
-      <a href="/">Slycat Login Page</a>
+    <div class="message">
+      <div class="auth-needed">
+        Authentication is required.
+      </div>
+      <div class="return-home">
+        <a href="/">Slycat Login Page</a>
+      </div>
     </div>
   </body>
 </html

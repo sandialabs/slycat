@@ -1,6 +1,6 @@
 # Slycat Docker-compose (Alpha release, non production build)
 ## Requirements
-  - Download `docker` see https://docs.docker.com/compose/install/
+  - Download `docker desktop for mac` see https://docs.docker.com/compose/install/
   - git
   - Currently only tested in a mac environment
 ## Docker service names
@@ -18,7 +18,7 @@
 - Start the docker services `$ docker-compose up` this step should take some time on the first load to download the images.
 - After the `slycat-client_1      | ℹ ｢wdm｣: Compiled successfully.` displays then everything has finished building and is running waiting for a connection.
 - The client is served at https://localhost:9000, NOTE: the browser with show a security warning when navigating to localhost because Slycat generates a self signed certificate.
-
+- admin::password is slycat::slycat
 ## List of helpfull docker commands
 
 #### Start the serivces
