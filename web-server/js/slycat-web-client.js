@@ -153,7 +153,7 @@ module.put_project_csv_data = function(params)
       {
           dataType: "json",
           type: "PUT",
-          url: api_root + "/projects/" + params.pid + "/data/" + params.file_key +
+          url: api_root + "projects/" + params.pid + "/data/" + params.file_key +
             "/parser/" + params.parser + "/mid/" + params.mid + "/aids/" + params.aids,
           success: function (result) {
               if (params.success)

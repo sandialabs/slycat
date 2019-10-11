@@ -327,6 +327,8 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
                 fid = item["_id"]
                 http_response = database.get_attachment(item, "content")
                 file = http_response.read()
+                # Must convert from bytes to string
+                file = str(file, 'utf-8')
                 attachment.append(file)
     # if we didnt fined the file repspond with not found
     if fid is None:
@@ -336,11 +338,14 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
         project_data["mid"].append(mid)
         database.save(project_data)
     except Exception as e:
-        cherrypy.log.error(e.message)
+        cherrypy.log.error(str(e))
     # clean up the attachment by removing white space
-    attachment[0] = attachment[0].replace('\\n', '\n')
-    attachment[0] = attachment[0].replace('["', '')
-    attachment[0] = attachment[0].replace('"]', '')
+    try:
+        attachment[0] = attachment[0].replace('\\n', '\n')
+        attachment[0] = attachment[0].replace('["', '')
+        attachment[0] = attachment[0].replace('"]', '')
+    except Exception as e:
+        cherrypy.log.error(str(e))
 
     model = database.get("model", mid)
     if "project_data" not in model:
@@ -525,7 +530,6 @@ def create_project_data(mid, aid, file):
         if "project_data" not in model:
             model["project_data"] = []
         model["project_data"].append(did)
-        model = database.get('model', model["_id"])
         database.save(model)
     database.save(data)
     database.put_attachment(data, filename="content", content_type=content_type, content=file)
