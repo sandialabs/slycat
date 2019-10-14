@@ -142,8 +142,10 @@ function constructor(params)
   component.get_server_file_names();
 
   component.cancel = function() {
-    if(component.model._id())
+    if(component.model._id()) {
       client.delete_model({ mid: component.model._id() });
+      // delete project data here
+    }
   };
 
   component.select_type = function() {

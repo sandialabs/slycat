@@ -649,6 +649,16 @@ def get_project_data(did, **kwargs):
     slycat.web.server.authentication.require_project_reader(project)
     return project_data
 
+def delete_project_data(did, **kwargs):
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project-data", did)
+    project = database.get("project", project_data["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    slycat.web.server.delete_project_data(database, project_data, did)
+
+    cherrypy.response.status = "204 Project Data deleted."
+
 
 def model_command(mid, type, command, **kwargs):
     """

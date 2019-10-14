@@ -499,6 +499,18 @@ def delete_model_parameter(database, model, aid):
         del model["artifact-types"][aid]
         database.save(model)
 
+def delete_project_data(database, project_data, did):
+    """
+    Delete a project data record in the couch database
+    :param database:
+    :param project:
+    :param did: project data id
+    :return: not used
+    """
+    with get_project_data_lock(did):
+        del project_data["did"]
+        database.save(project_data)
+
 
 def create_session(hostname, username, password):
     """Create a cached remote session for the given host.

@@ -1455,6 +1455,21 @@ module.put_project = function(params)
   });
 };
 
+module.delete_project_data_fetch = function(params, successFunction, errorFunction) {
+  return fetch(`${api_root}projects/data/${params.did}`,
+  {
+    credentials: "same-origin",
+    cache: "no-store",
+    dataType: "json",
+  })
+  .then(function(response) {
+    if (!response.ok) {
+      throw 'bad response with: ${response.status} :: ${response.statusText}';
+    }
+    return response.json();
+  });
+}
+
 module.delete_project_cache = function(params)
 {
   $.ajax(
