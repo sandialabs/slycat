@@ -508,7 +508,7 @@ def delete_project_data(database, project_data, did):
     :return: not used
     """
     with get_project_data_lock(did):
-        del project_data["did"]
+        del project_data["_id"]
         database.save(project_data)
 
 
