@@ -212,84 +212,11 @@ def register_slycat_plugin(context):
             result="succeeded", finished=datetime.datetime.utcnow().isoformat(),
             progress=1.0, message="")
 
-
-    def page_html(database, model):
-        return open(os.path.join(os.path.dirname(__file__),
-                    "html/vs-ui.html"), "r").read()
-
     # import parse code module from source by hand
     vs_parse = imp.load_source('vs-parse-files',
                                os.path.join(os.path.dirname(__file__), 'vs-parse-files.py'))
     # register the new model
     context.register_model("VS", finish)
-
-    # register a default page for displaying the model
-    context.register_page("VS", page_html)
-
-    # registry css resources with slycat
-    # context.register_page_bundle("VS", "text/css", [
-    #
-    #     # jquery ui
-    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery-ui.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.theme.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/jquery-ui/jquery.ui.resizable.css"),
-    #     # slickgrid
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.grid.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-default-theme.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick.headerbuttons.css"),
-    #     os.path.join(os.path.dirname(__file__), "css/slickGrid/slick-slycat-theme.css"),
-    #     # movie-plex
-    #     os.path.join(os.path.dirname(__file__), "css/vs-ui.css"),
-    #
-    #     ])
-    #
-    # # register js resources with slycat
-    # # (note that js files which depend on other js files
-    # # need to be listed first)
-    # context.register_page_bundle("VS", "text/javascript", [
-    #
-    #     # jquery
-    #     os.path.join(os.path.dirname(__file__), "js/jquery-ui-1.10.4.custom.min.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/jquery.layout-latest.min.js"),
-    #
-    #     # knob
-    #     os.path.join(os.path.dirname(__file__), "js/jquery.knob.js"),
-    #
-    #     # d3
-    #     os.path.join(os.path.dirname(__file__), "js/d3.min.js"),
-    #
-    #     # slickgrid
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/jquery.event.drag-2.2.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.core.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.grid.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.rowselectionmodel.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.headerbuttons.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.dataview.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/slickGrid/slick.autotooltips.js"),
-    #
-    #     # movie-plex
-    #     os.path.join(os.path.dirname(__file__), "js/slycat-scrubber.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/color-switcher.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-controls.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-request-data.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-table.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-scatter-plot.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-layout.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-trajectories.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-movies.js"),
-    #     os.path.join(os.path.dirname(__file__), "js/vs-ui.js"),
-    #
-    #     ])
-
-    context.register_page_resource("VS", "images", os.path.join(os.path.dirname(__file__), "images"))
-    # Register images and other resources
-    images = [
-        'ui-bg_glass_75_e6e6e6_1x400.png',
-    ]
-    for image in images:
-        context.register_page_resource("VS", image, os.path.join(os.path.dirname(__file__), "images", image))
-
-    context.register_page_resource("VS", "slycat-scrubber.html", os.path.join(os.path.dirname(__file__), "html/slycat-scrubber.html"))
     
     # Register custom commands for use by wizards.
     context.register_model_command("GET", "VS", "media-columns", media_columns)
@@ -300,5 +227,3 @@ def register_slycat_plugin(context):
 
     # register a wizard for creating instances of the new model
     context.register_wizard("VS", "New VideoSwarm Model", require={"action":"create", "context":"project"})
-    context.register_wizard_resource("VS", "ui.js", os.path.join(os.path.dirname(__file__), "js/vs-wizard.js"))
-    context.register_wizard_resource("VS", "ui.html", os.path.join(os.path.dirname(__file__), "html/vs-wizard.html"))
