@@ -113,7 +113,8 @@ three                 0.107.0   https://yarnpkg.com/en/package/three
 three-stl-loader        1.0.6   https://yarnpkg.com/en/package/three-stl-loader
 three-trackballcontrols 0.0.8   https://yarnpkg.com/en/package/three-trackballcontrols
 urijs                  1.19.1   https://medialize.github.io/URI.js/
-vtk                    8.3.15   https://www.npmjs.com/package/vtk.js
+vtk                    11.6.0   https://www.npmjs.com/package/vtk.js
+wslink                  0.1.8   
 
 2. Directly included in Slycat in slycat/web_server/js:
 jquery-scrollintoview     1.8   https://github.com/litera/jquery-scrollintoview
