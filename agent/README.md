@@ -1,4 +1,6 @@
 # Slycat Agent
+- The slycat server runs the agent by opening up an ssh session to where the agent code is going to run. 
+- It will then execute and agent command to start the remote agent and wait for the appropiate response from the agent before it start sending commands for the agent to execute.
 
 # Creating a custom Agent
 - When creating an agent for your specific evironment the first place to start should be looking at how the agent was implemented for other systems. 
