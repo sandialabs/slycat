@@ -125,3 +125,5 @@
         """
         pass
 ```
+
+- Here is an example of each function implemented for a slurm based hoc system.
