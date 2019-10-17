@@ -1,5 +1,9 @@
 # Slycat Agent
-The following functions need to be implemented
+- When creating an agent for your specific evironment the first place to start should be looking at how the agent was implemented for other systems. 
+- When creating you own agent you will need to implement https://github.com/sandialabs/slycat/blob/master/agent/agent.py
+- Review https://github.com/sandialabs/slycat/blob/master/agent/slycat-slurm-agent.py or https://github.com/sandialabs/slycat/blob/master/agent/slycat-pbs-agent.py to get a good idea of how the agent interface needs to implemented.
+
+- The following functions will need to be implemented
 ```python
     @abc.abstractmethod
     def run_remote_command(self, command):
