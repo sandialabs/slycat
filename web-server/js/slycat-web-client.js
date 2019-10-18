@@ -186,10 +186,9 @@ module.get_project_data = function(params)
   });
 };
 
-// Fetch version of get_configuration_markings
 module.get_project_data_fetch = function(params, successFunction, errorFunction)
 {
-  return fetch(`${api_root}data/${params.did}`,
+  return fetch(`${api_root}projects/data/${params.did}`,
       {
         credentials: "same-origin",
         cache: "no-store",
@@ -203,7 +202,29 @@ module.get_project_data_fetch = function(params, successFunction, errorFunction)
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
-    }else{
+    } else {
+      console.log(error);
+    }
+  });
+};
+
+module.get_project_data_in_model_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}projects/data/model/${params.mid}`,
+    {
+      credentials: "same-origin",
+      cache: "no-store",
+      dataType: "json"
+    })
+  .then(function(response){
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
       console.log(error);
     }
   });
@@ -1456,17 +1477,25 @@ module.put_project = function(params)
 };
 
 module.delete_project_data_fetch = function(params, successFunction, errorFunction) {
+  console.log("In delete_projet_data_fetch");
   return fetch(`${api_root}projects/data/${params.did}`,
   {
+    method: "DELETE",
     credentials: "same-origin",
     cache: "no-store",
     dataType: "json",
   })
   .then(function(response) {
     if (!response.ok) {
-      throw 'bad response with: ${response.status} :: ${response.statusText}';
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
     return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
   });
 }
 

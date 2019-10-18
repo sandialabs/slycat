@@ -143,8 +143,23 @@ function constructor(params)
 
   component.cancel = function() {
     if(component.model._id()) {
-      client.delete_model({ mid: component.model._id() });
-      // delete project data here
+      client.get_project_data_in_model_fetch({
+        mid: component.model._id()}).then((did) => {
+          // if the data id isn't empty
+          if(did[0] !== "") {
+            // delete project data and model
+            client.delete_project_data_fetch({ did: did }).then(() => {
+              client.delete_model({ mid: component.model._id() });
+              console.log("Model deleted");
+            });
+            console.log("Data deleted");
+          }
+          else { 
+            // No data to delete
+            client.delete_model({ mid: component.model._id() });
+            console.log("Model deleted");
+          }
+        });
     }
   };
 

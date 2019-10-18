@@ -653,13 +653,54 @@ def get_project_data(did, **kwargs):
     slycat.web.server.authentication.require_project_reader(project)
     return project_data
 
-def delete_project_data(did, **kwargs):
+@cherrypy.tools.json_out(on=True)
+def get_project_data_in_model(mid, **kwargs):
+    """
+    Returns a list of the project data in a model.
+
+    Arguments:
+        mid {string} -- model id
+
+    Returns:
+        json -- represents the project data in the model
+    """
     database = slycat.web.server.database.couchdb.connect()
-    project_data = database.get("project-data", did)
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_reader(project)
+    try:
+        did = model["project_data"]
+    except:
+        did = [""]
+    return did
+
+def delete_project_data(did, **kwargs):
+    """
+    Delete a project data record from couchdb.
+
+    Arguments:
+        did {string} -- project data id
+
+    Returns:
+        Nothing
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project_data", did)
     project = database.get("project", project_data["project"])
     slycat.web.server.authentication.require_project_writer(project)
 
-    slycat.web.server.delete_project_data(database, project_data, did)
+    for model in database.scan("slycat/models"):
+        updated = False
+        cherrypy.log.error("In the first for loop")
+        for index, model_did in enumerate(model["project_data"]):
+            if model_did == did:
+                updated = True
+                del model["project_data"][index]
+        if updated:
+            database.save(model)
+
+    with slycat.web.server.get_project_data_lock(did):
+        database.delete(project_data)
 
     cherrypy.response.status = "204 Project Data deleted."
 
@@ -1260,12 +1301,13 @@ def delete_model(mid):
 
     for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
         updated = False
-        for index, pd_mid in enumerate(project_data["mid"]):
-            if pd_mid == mid:
-                updated = True
-                del project_data["mid"][index]
-        if updated:
-            couchdb.save(project_data)
+        with slycat.web.server.get_project_data_lock(project_data["_id"]):
+            for index, pd_mid in enumerate(project_data["mid"]):
+                if pd_mid == mid:
+                    updated = True
+                    del project_data["mid"][index]
+            if updated:
+                couchdb.save(project_data)
 
     couchdb.delete(model)
     slycat.web.server.cleanup.arrays()
