@@ -2553,10 +2553,10 @@ def get_time_series_names(hostname, path, **kwargs):
     """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
-        csv = session.get_file(path, **kwargs)
-    rows = [row.split(",") for row in str(csv).splitlines()]
+        csv_file = str(session.get_file(path, **kwargs))
+    csv_file = csv_file.replace("\\r\\n","\r\n")
+    rows = [row.split(",") for row in csv_file.splitlines()]
     column_names = [name.strip() for name in rows[0]]
-
     def _isNumeric(j):
         """"
         Check if the input object is a numerical value, i.e. a float
