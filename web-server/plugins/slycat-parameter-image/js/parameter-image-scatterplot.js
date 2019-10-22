@@ -1623,6 +1623,10 @@ $.widget("parameter_image.scatterplot",
         self.state = "";
         self._sync_open_images();
         // d3.event.sourceEvent.stopPropagation();
+
+        // Fire a custom reize event to let vtk viewers know it was resized
+        var vtkresize_event = new Event('vtkresize');
+        this.closest('.image-frame').querySelector('.vtp').dispatchEvent(vtkresize_event);
       },
 
       maximize: function() {
@@ -2188,17 +2192,17 @@ $.widget("parameter_image.scatterplot",
         else if(image.uri.endsWith('.vtp'))
         {
           // This is a VTP file, so use the VTK 3d viewer
-          frame_html
-            .style({
-              "width": "200px",
-              "height": "200px",
-            });
           let vtk = frame_html
             .append("div")
+            .attr('class', 'vtp')
             .attr("width", "100%")
             .attr("height", "100%")
             ;
-          self._adjust_leader_line(frame_html);
+          // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
+          // other media, but caused VTP frame to grow by 20px each time the page is refreshed. So this
+          // adjustment fixes that.
+          frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
+
           // Convert the blob to an array buffer and pass it to the geometry loader
           blob.arrayBuffer().then((buffer) => {
             geometryLoad(

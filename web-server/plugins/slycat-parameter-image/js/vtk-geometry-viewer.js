@@ -55,8 +55,19 @@ export function load(container, buffer) {
   // Capture size of the container and set it to the renderWindow
   // ----------------------------------------------------------------------------
 
-  const { width, height } = container.getBoundingClientRect();
-  openglRenderWindow.setSize(width, height);
+  function setSize() {
+    const { width, height } = container.getBoundingClientRect();
+    openglRenderWindow.setSize(width, height);
+  }
+
+  setSize();
+
+  // Listen for the event.
+  container.addEventListener('vtkresize', (e) => { 
+    // console.log('vtk resized');
+    setSize();
+    interactor.render();
+  }, false);
 
   // ----------------------------------------------------------------------------
   // Setup an interactor to handle mouse events
