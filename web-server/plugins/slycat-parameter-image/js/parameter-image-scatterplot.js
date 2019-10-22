@@ -12,8 +12,7 @@ import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
 import "js/slycat-3d-viewer";
-
-import {load as vtkLoad, } from "./vtk";
+import {load as geometryLoad, } from "./vtk-geometry-viewer";
 
 var nodrag = d3.behavior.drag();
 
@@ -2194,11 +2193,19 @@ $.widget("parameter_image.scatterplot",
               "width": "200px",
               "height": "200px",
             });
+          let vtk = frame_html
+            .append("div")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            ;
           self._adjust_leader_line(frame_html);
-          vtkLoad(
-            frame_html.node(),
-            {fileURL: image_url},
-          )
+          // Convert the blob to an array buffer and pass it to the geometry loader
+          blob.arrayBuffer().then((buffer) => {
+            geometryLoad(
+              vtk.node(),
+              buffer
+            )
+          })
         }
         else {
           // We don't support this file type, so just create a download link for files
