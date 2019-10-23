@@ -208,3 +208,5 @@
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 ```
+
+### run_shell_command
