@@ -716,7 +716,6 @@ def delete_project_data(did, **kwargs):
 
     for model in database.scan("slycat/models"):
         updated = False
-        cherrypy.log.error("In the first for loop")
         for index, model_did in enumerate(model["project_data"]):
             if model_did == did:
                 updated = True
