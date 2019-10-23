@@ -127,3 +127,5 @@
 ```
 
 - Here is an example of each function implemented for a slurm based hoc system.
+
+### run_remote_command
