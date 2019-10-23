@@ -351,6 +351,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     if "project_data" not in model:
         model["project_data"] = []
     model["project_data"].append(project_data["_id"])
+    database.save(model)
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
@@ -652,6 +653,30 @@ def get_project_data(did, **kwargs):
     project = database.get("project", project_data["project"])
     slycat.web.server.authentication.require_project_reader(project)
     return project_data
+
+@cherrypy.tools.json_out(on=True)
+def get_project_data_parameter(did, param, **kwargs):
+    """
+    Returns a project data parameter.
+
+    Arguments:
+        did {string} -- data id
+        param {string} -- name of parameter to return
+    
+    Returns:
+        json -- represents a project data parameter
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project_data", did)
+    project = database.get("project", project_data["project"])
+    slycat.web.server.authentication.require_project_reader(project)
+    
+    try:
+        return slycat.web.server.get_project_data_parameter(database, project_data, param)
+    except KeyError as e:
+        cherrypy.log.error("slycat.web.server.handlers.py get_project_data_parameter",
+                                    "cherrypy.HTTPError 404 unknown parameter: %s" % param)
+        raise cherrypy.HTTPError("404 Unknown parameter: %s" % param)
 
 @cherrypy.tools.json_out(on=True)
 def get_project_data_in_model(mid, **kwargs):

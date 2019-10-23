@@ -147,17 +147,20 @@ function constructor(params)
         mid: component.model._id()}).then((did) => {
           // if the data id isn't empty
           if(did[0] !== "") {
-            // delete project data and model
-            client.delete_project_data_fetch({ did: did }).then(() => {
-              client.delete_model({ mid: component.model._id() });
-              console.log("Model deleted");
+            // delete model first
+            client.delete_model_fetch({ mid: component.model._id() }).then(() => {
+              // Get list of model ids project data is used in
+              client.get_project_data_parameter_fetch({ did: did, param: "mid"}).then((models) => {
+                // if there are no more models using that project data, delete it
+                if(models.length === 0) {
+                  client.delete_project_data_fetch({ did: did });
+                }
+              });
             });
-            console.log("Data deleted");
           }
           else { 
             // No data to delete
-            client.delete_model({ mid: component.model._id() });
-            console.log("Model deleted");
+            client.delete_model_fetch({ mid: component.model._id() });
           }
         });
     }

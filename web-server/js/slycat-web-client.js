@@ -35,6 +35,27 @@ module.delete_model = function(params)
   });
 };
 
+module.delete_model_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}models/${params.mid}`,
+      {
+        method: "DELETE",
+        credentials: "same-origin",
+        cache: "no-store",
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
+
 /**
  * delete a project in Slycat
  * @param params: object{
@@ -207,6 +228,28 @@ module.get_project_data_fetch = function(params, successFunction, errorFunction)
     }
   });
 };
+
+module.get_project_data_parameter_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}projects/data/${params.did}/parameters/${params.param}`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
 
 module.get_project_data_in_model_fetch = function(params, successFunction, errorFunction)
 {
@@ -1477,19 +1520,16 @@ module.put_project = function(params)
 };
 
 module.delete_project_data_fetch = function(params, successFunction, errorFunction) {
-  console.log("In delete_projet_data_fetch");
   return fetch(`${api_root}projects/data/${params.did}`,
   {
     method: "DELETE",
     credentials: "same-origin",
     cache: "no-store",
-    dataType: "json",
   })
   .then(function(response) {
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
-    return response.json();
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
