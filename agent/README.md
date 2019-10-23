@@ -210,3 +210,39 @@
 ```
 
 ### run_shell_command
+- this method is used to actually run the shell command on the remote system.
+- command is the is and array of string that when concatonated and space seperated comprise the shell command to run
+  - for example it could be as simple as ['echo', 'hello'] which when sent to the shell will be concatinate and ran as `echo hello`
+
+```python
+def run_shell_command(self, command, jid=0, log_to_file=False):
+        # create log file in the users directory for later polling
+        if log_to_file:
+            log = self.get_job_logger(jid)
+        try:
+            if log_to_file:
+                log("[STARTED]")
+            command = command.split(' ')
+
+            # remove empty list values
+            for _ in command:
+                if _ == "":
+                    command.remove("")
+            # open process to run script
+            p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if log_to_file:
+                log("[RUNNING]")
+            # execute script
+            value1, value2 = p.communicate()
+            if log_to_file:
+                log(str(value1))
+                log("[RAN SCRIPT]")
+                return value1, value2
+            else:
+                return value1, value2
+        except Exception as e:
+            log("[FAILED]")
+            return ["FAILED", "FAILED"]
+            # print traceback.format_exc()
+
+```
