@@ -44,21 +44,17 @@ def parse_file(file, model, database):
     data = []
     default_name_index = 0
     duplicate_name_index = 0
+    duplicate_names = []
+    duplicate_indeces = []
+    blank_header_columns = []
     column_headers = []
     error_message = []
     duplicate_headers = False
     blank_headers = False  # Header with a blank string, i.e. ",,"
-    empty_column = False  # There was at least one empty column in the CSV
 
     # go through the csv by column
     for column in zip(*rows):
         column_has_floats = False
-
-        column_is_empty = column.count("") == len(column)
-
-        if column_is_empty:
-            empty_column = True
-            continue
 
         # start from 1 to avoid the column name
         for value in column[1:]:
@@ -86,14 +82,17 @@ def parse_file(file, model, database):
         cherrypy.log.error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
-    for attribute in attributes:
+# Adding deafult headers and making duplicates unique
+
+    for index, attribute in enumerate(attributes):
         if attribute["name"] is "":
-            default_name_index += 1
-            attribute["name"] = "Default" + "_" + str(default_name_index)
+            message = "Column " + str(index + 1)
+            blank_header_columns.append(message)
             blank_headers = True
-        if column_headers.count(attribute["name"]) > 1:
-            duplicate_name_index += 1
-            attribute["name"] += str(duplicate_name_index)
+        # Don't want to include blank headers as duplicates.
+        if column_headers.count(attribute["name"]) > 1 and attribute["name"] is not '':
+            duplicate_names.append(attribute["name"])
+            duplicate_indeces.append(str(index + 1))
             duplicate_headers = True
 
     if invalid_csv is True:
@@ -101,25 +100,20 @@ def parse_file(file, model, database):
             "Your CSV is invalid because it's missing at least one column header. Please CLOSE this wizard, fix the issue, then start a new wizard. \n")
     else:
         if blank_headers is True:
-            error_message.append(
-                "Your CSV file contained at least one blank column header. A default header has been added for you. \n")
+            error_message.append("Your CSV file contained blank headers in: \n")
+            for message in blank_header_columns:
+                error_message.append(
+                    "%s \n" % message)
         if duplicate_headers is True:
-            error_message.append(
-                "Your CSV file contained at least two identical column headers. A number has been added to these headers to make them unique. \n")
-        if empty_column is True:
-            error_message.append(
-                "Your CSV file contained at least one empty column. This column has been removed for you. \n")
+            error_message.append("Your CSV file contained these identical headers: \n ")
+            for name, index in zip(duplicate_names, duplicate_indeces):
+                error_message.append(
+                    "%s \n" % str("'" + name + "' " + "in column " + index))
 
     if error_message is not "":
-        #cherrypy.log.error("Adding error_messages to the database.")
-        # model = database.get("models", mid)
         slycat.web.server.put_model_parameter(database, model, "error-messages", error_message)
-        # database.save(model)
     else:
         slycat.web.server.put_model_parameter(database, model, "error-messages", "")
-
-    #cherrypy.log.error("The error has been logged.")
-
 
     return attributes, dimensions, data
 

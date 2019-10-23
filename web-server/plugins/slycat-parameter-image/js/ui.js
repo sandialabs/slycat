@@ -225,7 +225,7 @@ $(document).ready(function() {
         resolve();
       });
       // Load the project data
-      client.get_project_data({
+      client.get_project_data_fetch({
         did: model.project_data[0],
         success: function(project_data)
         {

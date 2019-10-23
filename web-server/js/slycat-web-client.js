@@ -35,6 +35,27 @@ module.delete_model = function(params)
   });
 };
 
+module.delete_model_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}models/${params.mid}`,
+      {
+        method: "DELETE",
+        credentials: "same-origin",
+        cache: "no-store",
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
+
 /**
  * delete a project in Slycat
  * @param params: object{
@@ -186,10 +207,9 @@ module.get_project_data = function(params)
   });
 };
 
-// Fetch version of get_configuration_markings
 module.get_project_data_fetch = function(params, successFunction, errorFunction)
 {
-  return fetch(`${api_root}data/${params.did}`,
+  return fetch(`${api_root}projects/data/${params.did}`,
       {
         credentials: "same-origin",
         cache: "no-store",
@@ -203,7 +223,51 @@ module.get_project_data_fetch = function(params, successFunction, errorFunction)
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
-    }else{
+    } else {
+      console.log(error);
+    }
+  });
+};
+
+module.get_project_data_parameter_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}projects/data/${params.did}/parameters/${params.param}`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
+
+module.get_project_data_in_model_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}projects/data/model/${params.mid}`,
+    {
+      credentials: "same-origin",
+      cache: "no-store",
+      dataType: "json"
+    })
+  .then(function(response){
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
       console.log(error);
     }
   });
@@ -676,6 +740,21 @@ module.put_model_command = function(params)
     },
   });
 };
+
+module.get_model_parameter_fetch = function(params, successFunction, errorFunction) {
+  return fetch(`${api_root}models/${params.mid}/parameters/${params.aid}`,
+  {
+    credentials: "same-origin",
+    cache: "no-store",
+    dataType: "json",
+  })
+.then(function(response) {
+  if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+  }
+  return response.json();
+});
+}
 
 module.get_model_parameter = function(params)
 {
@@ -1439,6 +1518,26 @@ module.put_project = function(params)
     }
   });
 };
+
+module.delete_project_data_fetch = function(params, successFunction, errorFunction) {
+  return fetch(`${api_root}projects/data/${params.did}`,
+  {
+    method: "DELETE",
+    credentials: "same-origin",
+    cache: "no-store",
+  })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
 
 module.delete_project_cache = function(params)
 {

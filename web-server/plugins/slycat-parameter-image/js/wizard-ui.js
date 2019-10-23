@@ -25,6 +25,7 @@ function constructor(params)
   component.selected_file = ko.observable("");
   component.current_aids = ko.observable("");
   component.csv_data = ko.observableArray();
+  component.error_messages = ko.observable("");
   // Alex removing default model name per team meeting discussion
   // component.model = mapping.fromJS({_id: null, name: "New Parameter Space Model", description: "", marking: markings.preselected()});
   component.model = mapping.fromJS({_id: null, name: "", description: "", marking: markings.preselected()});
@@ -116,20 +117,24 @@ function constructor(params)
   };
 
   component.get_error_messages = function() {
-    client.get_model_parameter({
-        mid: component.model._id(),
-        aid: "error-messages",
-        success: function(errors) {
-          var error_messages = "";
-          if (errors.length >= 1) {
-            for (var i = 0; i < errors.length; i++) {
-              error_messages += (errors[i] + "\n");
-            }
-            alert(error_messages);
+    client.get_model_parameter_fetch({
+      mid: component.model._id(),
+      aid: "error-messages"}).then((errors) => {
+        var error_messages = "";
+        if (errors.length >= 1) {
+          for (var i = 0; i < errors.length; i++) {
+            error_messages += (errors[i] + "\n");
           }
-        },
-        error: dialog.ajax_error("There was error retrieving the error messages."),
-    });
+          component.error_messages(error_messages);
+        }
+        else {
+          component.error_messages(error_messages);
+        }
+        if(component.error_messages().length == 0) {
+          component.tab(4);
+          $('.browser-continue').toggleClass("disabled", false);
+        }
+      });
   };
 
   // Create a model as soon as the dialog loads. We rename, change description and marking later.
@@ -137,8 +142,28 @@ function constructor(params)
   component.get_server_file_names();
 
   component.cancel = function() {
-    if(component.model._id())
-      client.delete_model({ mid: component.model._id() });
+    if(component.model._id()) {
+      client.get_project_data_in_model_fetch({
+        mid: component.model._id()}).then((did) => {
+          // if the data id isn't empty
+          if(did[0] !== "") {
+            // delete model first
+            client.delete_model_fetch({ mid: component.model._id() }).then(() => {
+              // Get list of model ids project data is used in
+              client.get_project_data_parameter_fetch({ did: did, param: "mid"}).then((models) => {
+                // if there are no more models using that project data, delete it
+                if(models.length === 0) {
+                  client.delete_project_data_fetch({ did: did });
+                }
+              });
+            });
+          }
+          else { 
+            // No data to delete
+            client.delete_model_fetch({ mid: component.model._id() });
+          }
+        });
+    }
   };
 
   component.select_type = function() {
@@ -188,8 +213,6 @@ function constructor(params)
               });
             mapping.fromJS(attributes, component.attributes);
             component.get_error_messages();
-            component.tab(4);
-            $('.browser-continue').toggleClass("disabled", false);
           }
         });
       }

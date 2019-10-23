@@ -79,6 +79,7 @@ def start(root_path, config_file):
   dispatcher.connect("delete-upload", "/uploads/:uid", slycat.web.server.handlers.delete_upload, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-logout", "/logout", slycat.web.server.handlers.logout, conditions={"method" : ["DELETE"]})
   dispatcher.connect("delete-remote", "/remotes/:sid", slycat.web.server.handlers.delete_remote, conditions={"method" : ["DELETE"]})
+  dispatcher.connect("delete-project-data", "/projects/data/:did", slycat.web.server.handlers.delete_project_data, conditions={"method" : ["DELETE"]})
 
   dispatcher.connect("get-time-series-names", "/remotes/:hostname/time_series_names/file{path:.*}", slycat.web.server.handlers.get_time_series_names, conditions={"method" : ["GET"]})
   dispatcher.connect("get-bookmark", "/bookmarks/:bid", slycat.web.server.handlers.get_bookmark, conditions={"method" : ["GET"]})
@@ -107,10 +108,12 @@ def start(root_path, config_file):
   dispatcher.connect("get-projects", "/projects", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("get-projects-list", "/projects_list", slycat.web.server.handlers.get_projects_list, conditions={"method" : ["GET"]})
   dispatcher.connect("put-project-csv-data", "/projects/:pid/data/:file_key/parser/:parser/mid/:mid/aids/:aids", slycat.web.server.handlers.put_project_csv_data, conditions={"method": ["PUT"]})
-  dispatcher.connect("get-project-data", "/data/:did", slycat.web.server.handlers.get_project_data, conditions={"method": ["GET"]})
+  dispatcher.connect("get-project-data", "/projects/data/:did", slycat.web.server.handlers.get_project_data, conditions={"method": ["GET"]})
   dispatcher.connect("put-project-data-parameter", "/data/:did/aids/:aid", slycat.web.server.handlers.put_project_data_parameter, conditions={"method": ["PUT"]})
   dispatcher.connect("post-project-data", "/projects/data/:pid", slycat.web.server.handlers.create_project_data_from_pid, conditions={"method": ["POST"]})
+  dispatcher.connect("get-project-data-in-model", "/projects/data/model/:mid", slycat.web.server.handlers.get_project_data_in_model, conditions={"method": ["GET"]})
   dispatcher.connect("get-project-file-names", "/projects/:pid/name", slycat.web.server.handlers.get_project_file_names, conditions={"method": ["GET"]})
+  dispatcher.connect("get-project-data-parameter", "/projects/data/:did/parameters/:param", slycat.web.server.handlers.get_project_data_parameter, conditions={"method": ["GET"]})
   #TODO: scrub sid
   dispatcher.connect("get-remote-file", "/remotes/:hostname/file{path:.*}", slycat.web.server.handlers.get_remote_file, conditions={"method" : ["GET"]})
 
