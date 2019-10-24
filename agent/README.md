@@ -280,3 +280,31 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 ```
+
+### checkjob
+- this function is used to check on the jobs status
+- the `command` in this case is the jid used to check the job status
+- in the example below the `sacct` is the command to check the job status for a slurm environment
+
+```python
+    def checkjob(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]
+        }
+        try:
+            results["output"], results["errors"] = self.run_shell_command("sacct -j %s --format=jobname,state" % results["jid"])
+            myset = results["output"].split('\n')
+            results["output"]="COMPLETED"
+            for _ in myset:
+                if "slycat-tmp" in _:
+                    results["output"] = _.split()[1]
+                    break
+        except OSError as e:
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
+            sys.stdout.flush()
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+
+```
