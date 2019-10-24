@@ -248,3 +248,18 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
 ```
 
 ### launch
+- `command` is the command that is to be run with shell command
+
+```python
+    def launch(self, command):
+        results = {
+            "ok": True,
+            "command": command["command"]
+        }
+
+        results["output"], results["errors"] = self.run_shell_command(command["command"])
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+
+```
