@@ -263,3 +263,20 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.flush()
 
 ```
+
+### submit_batch
+- the `command` in this case is actually a file that is to be submitted to sbatch for the slurm environment
+
+```python
+    def submit_batch(self, command):
+        results = {
+            "ok": True,
+            "filename": command["command"],
+            "output": -1
+        }
+
+        results["output"], results["errors"] = self.run_shell_command("sbatch %s" % results["filename"])
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
