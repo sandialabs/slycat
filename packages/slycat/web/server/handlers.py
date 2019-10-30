@@ -716,7 +716,6 @@ def delete_project_data(did, **kwargs):
 
     for model in database.scan("slycat/models"):
         updated = False
-        cherrypy.log.error("In the first for loop")
         for index, model_did in enumerate(model["project_data"]):
             if model_did == did:
                 updated = True
@@ -1317,6 +1316,52 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
 
                         hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
 
+
+def delete_project_data_in_model(did, mid):
+    """
+    Removes a project data id from a model.
+
+    :param did: Project data id
+    :param mid: Model id
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    updated = False
+    with slycat.web.server.get_model_lock(model["_id"]):
+        for index, model_did in enumerate(model["project_data"]):
+            if model_did == did:
+                updated = True
+                del model["project_data"][index]
+        if updated:
+            database.save(model)
+
+    cherrypy.response.status = "204 Project data removed from model."
+
+def delete_model_in_project_data(mid, did):
+    """
+    Removes a model id from project data.
+
+    :param mid: Model id
+    :param did: Project data id
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project_data", did)
+    project = database.get("project", project_data["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    updated = False
+    with slycat.web.server.get_project_data_lock(project_data["_id"]):
+        for index, pd_mid in enumerate(project_data["mid"]):
+            if pd_mid == mid:
+                updated = True
+                del project_data["mid"][index]
+            if updated:
+                database.save(project_data)
+
+    cherrypy.response.status = "204 Model removed from project data."
 
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
