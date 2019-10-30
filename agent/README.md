@@ -327,7 +327,8 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.flush()
 ```
 ### get_job_output
-
+- this function is used to get job output and send it back to the web client
+- the output should be put in `results["output"]`
 ```python 
     def get_job_output(self, command):
         results = {
