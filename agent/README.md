@@ -347,3 +347,37 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 ```
+
+### generate_batch
+- Used to create the hpc scripts sent to the hpc engine eg. slurm
+- In the below example for slurm we are generating a slurm script that will launch our job
+```python
+    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                       time_seconds, fn,
+                       tmp_file):
+        f = tmp_file
+
+        f.write("#!/bin/bash\n\n")
+        f.write("#SBATCH --account=%s\n" % wckey)
+        f.write("#SBATCH --job-name=slycat-tmp\n")
+        f.write("#SBATCH --partition=%s\n\n" % partition)
+        f.write("#SBATCH --nodes=%s\n" % nnodes)
+        f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
+        f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+        f.write("module load %s\n" % module_name)
+        f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)\n")
+        f.write("echo \"Creating profile ${profile}\"\n")
+        f.write("ipython profile create --parallel \n")
+        f.write("echo \"Launching controller\"\n")
+        f.write("ipcontroller --ip='*' &\n")
+        f.write("sleep 1m\n")
+        f.write("echo \"Launching engines\"\n")
+        f.write("srun ipengine &\n")
+        f.write("sleep 1m\n")
+        f.write("echo \"Launching job\"\n")
+
+        for c in fn:
+            f.write("%s\n" % c)
+
+        f.close()
+```
