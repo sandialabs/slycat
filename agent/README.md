@@ -381,3 +381,42 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
 
         f.close()
 ```
+
+### run_function
+- calls the generate batch functino and then sends the launch script to the hpc runner
+
+```python
+    def run_function(self, command):
+        results = {
+            "ok": True,
+            "output": -1,
+            "temp_file": ""
+        }
+        module_name = command["command"]["module_name"]
+        wckey = command["command"]["wckey"]
+        nnodes = command["command"]["nnodes"]
+        partition = command["command"]["partition"]
+        ntasks_per_node = command["command"]["ntasks_per_node"]
+        time_hours = command["command"]["time_hours"]
+        time_minutes = command["command"]["time_minutes"]
+        time_seconds = command["command"]["time_seconds"]
+        fn = command["command"]["fn"]
+        working_dir = command["command"]["working_dir"]
+        # uid = command["command"]["uid"]
+        try:
+            self.run_shell_command("mkdir -p %s" % working_dir)
+        except Exception:
+            pass
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
+        self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                            time_seconds, fn,
+                            tmp_file)
+        with open(tmp_file.name, 'r') as myfile:
+            data = myfile.read().replace('\n', '')
+        results["working_dir"] = working_dir
+        results["temp_file"] = data
+        results["output"], results["errors"] = self.run_shell_command("sbatch %s" % tmp_file.name)
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
