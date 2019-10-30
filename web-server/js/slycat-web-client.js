@@ -56,7 +56,6 @@ module.delete_model_fetch = function(params, successFunction, errorFunction)
   });
 }
 
-// /projects/data/:did/model/:mid
 module.delete_project_data_in_model_fetch = function(params, successFunction, errorFunction)
 {
   return fetch(`${api_root}projects/data/${params.did}/model/${params.mid}`,
@@ -78,7 +77,6 @@ module.delete_project_data_in_model_fetch = function(params, successFunction, er
   });
 }
 
-// model/:mid/projects/data/:did
 module.delete_model_in_project_data_fetch = function(params, successFunction, errorFunction)
 {
   return fetch(`${api_root}model/${params.mid}/projects/data/${params.did}`,
