@@ -326,3 +326,23 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.write("%s\n" % json.dumps(results))
         sys.stdout.flush()
 ```
+### get_job_output
+
+```python 
+    def get_job_output(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]["jid"]
+        }
+
+        path = command["command"]["path"]
+        f = path + "slurm-%s.out" % results["jid"]
+        if os.path.isfile(f):
+            results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
+        else:
+            results["output"] = "see errors"
+            results["errors"] = "the file %s does not exist." % f
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
