@@ -310,8 +310,8 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
 ```
 
 ### cancel_job
-- this is the function used to cancel jobs on the hpc
-- generally it would be a shell command that is run with the given job id that would kill the job
+- This is the function used to cancel jobs on the hpc
+- Generally it would be a shell command that is run with the given job id that would kill the job
 
 ```python
     def cancel_job(self, command):
@@ -327,8 +327,8 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.flush()
 ```
 ### get_job_output
-- this function is used to get job output and send it back to the web client
-- the output should be put in `results["output"]`
+- This function is used to get job output and send it back to the web client
+- The output should be put in `results["output"]`
 ```python 
     def get_job_output(self, command):
         results = {
