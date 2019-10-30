@@ -308,3 +308,21 @@ def run_shell_command(self, command, jid=0, log_to_file=False):
         sys.stdout.flush()
 
 ```
+
+### cancel_job
+- this is the function used to cancel jobs on the hpc
+- generally it would be a shell command that is run with the given job id that would kill the job
+
+```python
+    def cancel_job(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]
+        }
+
+        results["output"], results["errors"] = self.run_shell_command(
+            "scancel %s" % results["jid"])
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
