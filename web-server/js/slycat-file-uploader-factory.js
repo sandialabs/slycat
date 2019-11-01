@@ -53,6 +53,219 @@ module.uploadFile = function (fileObject)
   }
 };
 
+// upload multiple files (modified from uploadFiles)
+// fileObject.file is passed as a FileList, and it
+// only works for local uploads.
+// S. Martin (10/23/2019)
+module.uploadMultipleFiles = function (fileObject)
+{
+
+    // open upload session
+    client.post_uploads({
+        mid: fileObject.mid,
+        input: true,
+        parser: fileObject.parser,
+        aids: fileObject.aids,
+        success: function (uid) {
+
+          var fileList = fileObject.file;
+
+          // Make sure we actually have a file list first
+          if(fileList == undefined)
+          {
+            if(fileObject.error)
+            {
+              fileObject.error();
+            }
+            return;
+          }
+
+          // how many files?
+          var numFiles = fileList.length;
+
+          // initially assume one slice per file
+          var fileSlicesUploaded = [];
+          for (var i = 0; i < numFiles; i++) {
+            fileSlicesUploaded.push(1);
+          }
+
+          // set up progress bar
+          var progress = {};
+          progress["IncreaseInitial"] = 10.0;
+          progress["Increase"] = 40.0/numFiles;
+
+          // check if caller has specific progress bar values
+          if(fileObject.progress_increment != undefined)
+          {
+            progress["IncreaseInitial"] = fileObject.progress_increment * 0.1;
+            progress["Increase"] = fileObject.progress_increment * 0.4/numFiles;
+          }
+
+          // set initial progress bar
+          if(fileObject.progress)
+          {
+            // Setting initial progress to 10%
+            fileObject.progress( fileObject.progress() + progress["IncreaseInitial"] )
+          }
+
+          // check for text on progress bar
+          if(fileObject.progress_status)
+          {
+            fileObject.progress_status('Uploading...');
+          }
+
+          // upload files, starting with first in list
+          uploadMultipleFiles(progress, uid, 0, fileSlicesUploaded, fileObject)
+
+        }
+    });
+}
+
+// this is the actual code that uploads the file list,
+// modified from the uploadFile routine.  it calls itself
+// repeatedly until all files/slices are loaded.
+// S. Martin (10/28/2019)
+function uploadMultipleFiles(progress, uid, fileNum, fileSlicesUploaded, fileObject)
+{
+
+  // console.log("uploading file " + fileNum + ".");
+
+  var fileList = fileObject.file;
+
+  // compute slices per file (must add 1 if actually sliced)
+  var slicesPerFile = Math.ceil(fileList[fileNum].size / module.MEGABYTE);
+  if (slicesPerFile > 1) {
+    slicesPerFile++;
+  }
+
+  // compute progress per slice
+  progress["IncreasePerSlice"] = progress["Increase"] / slicesPerFile;
+
+  if(fileList[fileNum].size > module.MEGABYTE)
+  {
+    // console.log("Multi-file upload initiated.");
+    uploadMultipleFileSlices(progress, uid, 0, fileNum, fileSlicesUploaded, fileObject);
+  }
+  else
+  {
+    // Upload the whole file since it is small.
+    // console.log("Uploading whole file.");
+
+    client.put_upload_file_part({
+      uid: uid,
+      fid: fileNum,
+      pid: 0,
+      file: fileList[fileNum],
+      success: function()
+      {
+        // console.log("File uploaded.");
+        if(fileObject.progress)
+        {
+          fileObject.progress(fileObject.progress() + progress["IncreasePerSlice"]);
+        }
+
+        // check for next file
+        fileNum++;
+        if (fileNum < fileList.length) {
+            uploadMultipleFiles(progress, uid, fileNum, fileSlicesUploaded, fileObject)
+        } else {
+            finishMultipleUpload(progress, uid, fileSlicesUploaded, fileObject);
+        }
+
+      },
+      error: function(){
+        if(fileObject.error) {
+          fileObject.error();
+        }
+      }
+    });
+  }
+}
+
+// this function replaces uploadFileSlices for multiple files.
+// it returns control to uploadMultipleFiles rather than
+// ending prematurely with finishUpload (now finishMultipleUpload).
+// S. Martin (10/28/2019)
+function uploadMultipleFileSlices(progress, uid, sliceNumber, fileNum,
+                                  fileSlicesUploaded, fileObject){
+
+  // Split the file into slices.
+  //TODO: add incrementing file id in upload file
+  var fileList = fileObject.file;
+  var fileSlice = getFileSlice(sliceNumber, fileList[fileNum]);
+  var running = true;
+    // Upload each part separately.
+    // console.log("Uploading part", sliceNumber);
+    client.put_upload_file_part({
+      uid: uid,
+      fid: fileNum,
+      pid: sliceNumber,
+      file: fileSlice,
+      success: function()
+      {
+        running = ((sliceNumber * module.MEGABYTE) <= fileList[fileNum].size);
+        sliceNumber ++;
+        // console.log("File uploaded part:" + sliceNumber + " successfully");
+        if(fileObject.progress)
+        {
+          fileObject.progress( fileObject.progress() + progress["IncreasePerSlice"] );
+        }
+        if(running){
+          uploadMultipleFileSlices(progress, uid, sliceNumber, fileNum,
+                                   fileSlicesUploaded, fileObject)
+        } else {
+
+            // check for next file
+            fileSlicesUploaded[fileNum] = sliceNumber;
+            fileNum++;
+            if (fileNum < fileList.length) {
+                uploadMultipleFiles(progress, uid, fileNum, fileSlicesUploaded, fileObject)
+            } else {
+                finishMultipleUpload(progress, uid, fileSlicesUploaded, fileObject);
+            }
+
+        }
+      },
+      error: function(){
+        // console.log("File part " + sliceNumber + " failed to upload will try to re-upload at the end");
+      }
+    });
+}
+
+// replaces finishUpload for multiple file uploads.
+// S. Martin (10/28/2019
+function finishMultipleUpload(progress, uid, fileSlicesUploaded, fileObject)
+{
+  // console.log(fileSlicesUploaded);
+
+  client.post_upload_finished({
+    uid: uid,
+    uploaded: fileSlicesUploaded,
+    success: function()
+    {
+      // console.log("Upload session finished.");
+      if(fileObject.progress)
+      {
+        // Setting progress to half by adding 1/10th of total progress or progress_increment
+        // since uploadFile() has already set it to 4/10ths
+        progress["To90"] = 10;
+        if(fileObject.progress_increment != undefined)
+        {
+          progress["To90"] = fileObject.progress_increment * 0.1;
+        }
+        fileObject.progress(fileObject.progress() + progress["To90"]);
+      }
+      deleteUpload(fileObject.pid, fileObject.mid, uid, fileObject);
+    },
+    error: function(request, status, reason_phrase)
+    {
+      if (fileObject.error) {
+        fileObject.error();
+      }
+    }
+  });
+}
+
 /**
  * used to upload a file to the server from a remote computer
  * @param pid
@@ -227,7 +440,16 @@ function uploadFile(pid, mid, uid, file, fileObject)
     progressIncreaseInitial = fileObject.progress_increment * 0.1;
     progressIncrease = fileObject.progress_increment * 0.4;
   }
-  var progressIncreasePerSlice = (progressIncrease - progressIncreaseInitial) / Math.ceil(file.size / module.MEGABYTE);
+
+  // modified to adjust inconsistency in progress bar for large files
+  // S. Martin (10/29/2019)
+  var slicesPerFile = Math.ceil(file.size / module.MEGABYTE);
+  if (slicesPerFile > 1) { slicesPerFile++; }
+  var progressIncreasePerSlice = progressIncrease / slicesPerFile;
+
+  // original code:
+  // var progressIncreasePerSlice = (progressIncrease - progressIncreaseInitial) / Math.ceil(file.size / module.MEGABYTE);
+
   if(fileObject.progress)
   {
     // Setting initial progress to 10%

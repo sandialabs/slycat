@@ -242,8 +242,6 @@ function constructor(params)
                 $("#dac-load-model-error").text("Error uploading UI preferences.");
                 $("#dac-load-model-error").show();
 
-                $('.dac-gen-browser-continue').toggleClass("disabled", false);
-                $('.pts-process-continue').toggleClass('disabled', false);
             },
         });
     }
@@ -324,36 +322,41 @@ function constructor(params)
 
         $("#dac-tdms-file-error").hide();
 
-        console.log("TDMS format");
-        /*
         // check for file selected
-        if (component.browser_dac_file.selection().length > 0) {
+        if (component.browser_tdms_files.selection().length > 0) {
 
-            // get file extension
-            var file = component.browser_dac_file.selection()[0];
-            var file_ext = file.name.split(".");
-            file_ext = file_ext[file_ext.length - 1];
+            // check file extensions
+            var tdms_files = true;
+            var file_num = component.browser_tdms_files.selection().length;
+            for (var i = 0; i < file_num; i++) {
 
-            if (file_ext == 'zip') {
+                var file = component.browser_tdms_files.selection()[i];
+                var file_ext = file.name.split(".");
+                file_ext = file_ext[file_ext.length - 1];
+
+                if (file_ext != 'tdms') {
+                    tdms_files = false;
+                }
+            }
+
+            if (tdms_files == true) {
 
                 // set model name back to blank
                 component.model.name("");
 
                 // go to model naming
-                component.tab(3);
+                component.tab(tabs['name-model']);
 
             } else {
-                $("#dac-gen-file-error").text("Please select a file with the .zip extension.")
-                $("#dac-gen-file-error").show();
+                $("#dac-tdms-file-error").text("Please select file(s) with the .tdms extension.")
+                $("#dac-tdms-file-error").show();
             }
 
         } else {
 
-            $("#dac-gen-file-error").text("Please select DAC generic .zip file.")
-            $("#dac-gen-file-error").show();
-
+            $("#dac-tdms-file-error").text("Please select .tdms file(s).")
+            $("#dac-tdms-file-error").show();
         }
-        */
     };
 
     // wizard finish model code
@@ -389,81 +392,93 @@ function constructor(params)
                     mid: component.model._id(),
                     success: function() {
 
-                            // set up pts format parameters
+                            // check for tdms format
+                            if (component.dac_format() == 'tdms') {
 
-                            // file selected
-                            var file = component.browser_zip_file.selection()[0];
+                                // upload multiple files
+                                upload_tdms_files();
 
-                            // get csv and number digitizer parameters
-                            var csv_parm = Math.round(Number(component.csv_min_size));
-                            var dig_parm = Math.round(Number(component.min_num_dig));
+                            // otherwise revert to pts or generic
+                            } else {
 
-                            // parameters for call to parser
-                            var aids = [[csv_parm, dig_parm], ["DAC"]];
-                            var parser = "dac-zip-file-parser";
-                            var progress = component.browser_zip_file.progress;
-
-                            // tab to show file upload
-                            var tab = tabs['pts'];
-
-                            // if not pts format, then change parameters
-                            if (component.dac_format() == "dac-gen") {
+                                // set up pts format parameters
 
                                 // file selected
-                                file = component.browser_dac_file.selection()[0];
+                                var file = component.browser_zip_file.selection()[0];
 
-                                // dac gen zip paraser parameters
-                                aids = [["Null"], ["DAC"]];
-                                parser = "dac-gen-zip-parser";
-                                progress = component.browser_dac_file.progress;
+                                // get csv and number digitizer parameters
+                                var csv_parm = Math.round(Number(component.csv_min_size));
+                                var dig_parm = Math.round(Number(component.min_num_dig));
 
-                                // tab that shows file upload for DAC generic format
-                                tab = tabs['dac-gen'];
+                                // parameters for call to parser
+                                var aids = [[csv_parm, dig_parm], ["DAC"]];
+                                var parser = "dac-zip-file-parser";
+                                var progress = component.browser_zip_file.progress;
 
+                                // tab to show file upload
+                                var tab = tabs['pts'];
+
+                                // if not pts format, then change parameters
+                                if (component.dac_format() == "dac-gen") {
+
+                                    // file selected
+                                    file = component.browser_dac_file.selection()[0];
+
+                                    // dac gen zip paraser parameters
+                                    aids = [["Null"], ["DAC"]];
+                                    parser = "dac-gen-zip-parser";
+                                    progress = component.browser_dac_file.progress;
+
+                                    // tab that shows file upload for DAC generic format
+                                    tab = tabs['dac-gen'];
+
+                                }
+
+                                // call to server
+
+                                // turn off continue button
+                                $(".browser-continue").toggleClass("disabled", true);
+                                $(".browser-continue").prop("disabled", true);
+
+
+                                // upload file
+                                var fileObject ={
+                                    pid: component.project._id(),
+                                    mid: component.model._id(),
+                                    file: file,
+                                    aids: aids,
+                                    parser: parser,
+                                    progress: progress,
+                                    progress_increment: 100,
+                                    success: function(){
+
+                                            // turn on continue button
+                                            $(".browser-continue").toggleClass("disabled", false);
+                                            $(".browser-continue").prop("disabled", false);
+
+                                            // go to model
+                                            component.go_to_model();
+
+                                        },
+                                    error: function(){
+
+                                        $("#dac-finish-model-error").text("There was a problem uploading file: "
+                                                                          + file.name + ".");
+                                        $("#dac-finish-model-error").show();
+
+                                        $('.browser-continue').toggleClass("disabled", false);
+                                        $(".browser-continue").prop("disabled", false);
+
+                                        }
+                                    };
+                                fileUploader.uploadFile(fileObject);
+
+                                // show message
+                                $(".dac-do-not-close-browser").show();
+
+                                // show upload
+                                component.tab(tab);
                             }
-
-                            // call to server
-
-                            // turn on continue button
-                            $(".dac-launch-thread").toggleClass("disabled", true);
-
-                            console.log("Uploading file: " + file.name);
-
-                            // upload file
-                            var fileObject ={
-                                pid: component.project._id(),
-                                mid: component.model._id(),
-                                file: file,
-                                aids: aids,
-                                parser: parser,
-                                progress: progress,
-                                progress_increment: 100,
-                                success: function(){
-
-                                        // turn off continue button
-                                        $(".dac-launch-thread").toggleClass("disabled", false);
-
-                                        // go to model
-                                        component.go_to_model();
-
-                                    },
-                                error: function(){
-
-                                    $("#dac-finish-model-error").text("There was a problem uploading the file: " + file);
-                                    $("#dac-finish-model-error").show();
-
-                                    $('.browser-continue').toggleClass("disabled", false);
-
-                                    }
-                                };
-                            fileUploader.uploadFile(fileObject);
-
-                            // show message
-                            $(".dac-do-not-close-browser").show();
-
-                            // show upload
-                            component.tab(tab);
-
                          }
                     });
                 },
@@ -474,6 +489,58 @@ function constructor(params)
             });
         }
     };
+
+    // upload tdms file list to server
+    function upload_tdms_files() {
+
+        // call to server
+
+        // turn off continue button
+        $(".browser-continue").prop("disabled", true);
+        $(".browser-continue").toggleClass("disabled", true);
+
+        // get parameters for file list upload
+        var filelist = component.browser_tdms_files.selection()
+        var parser = "dac-tdms-file-parser";
+        var progress = component.browser_tdms_files.progress;
+
+        // upload filelist
+        var fileObject ={
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: filelist,
+            aids: [],
+            parser: parser,
+            progress: progress,
+            progress_increment: 100,
+            success: function(){
+
+                    // turn off continue button
+                    $(".browser-continue").toggleClass("disabled", false);
+                    $(".browser-continue").prop("disabled", false);
+
+                    // go to model
+                    component.go_to_model();
+
+                },
+            error: function(){
+
+                $("#dac-finish-model-error").text("There was a problem uploading the selected file(s).");
+                $("#dac-finish-model-error").show();
+
+                $('.browser-continue').toggleClass("disabled", false);
+                $(".browser-continue").prop("disabled", false);
+
+                }
+            };
+        fileUploader.uploadMultipleFiles(fileObject);
+
+        // show message
+        $(".dac-do-not-close-browser").show();
+
+        // show upload
+        component.tab(tabs["tdms"]);
+    }
 
     // function for operating the back button in the wizard
     component.back = function() {
@@ -488,7 +555,7 @@ function constructor(params)
                 component.tab(tabs['pts'])}
 
             if (component.dac_format() == 'tdms') {
-                comonent.tab(tabs['tdms'])}
+                component.tab(tabs['tdms'])}
 
         // otherwise we are in file selection, go back to format selection
         } else {
@@ -499,11 +566,6 @@ function constructor(params)
 
 return component;
 }
-
-// export default {
-//     viewModel: constructor,
-//     template: {require: "text!" + api_root + "resources/wizards/DAC/ui.html"}
-// }
 
 export default {
     viewModel: constructor,

@@ -121,7 +121,9 @@ S. Martin
             multiple:true,
             progress:browser_tdms_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_tdms_files,category:'dac-tdms-files'"></slycat-parser-controls>
-         <label id="dac-tdms-file-error" style="display: none" class="invalid-text small text-danger">
+            <label class="dac-do-not-close-browser"
+                   style="display:none; color:red">Please wait for file(s) to upload (do not close browser).</label>
+            <label id="dac-tdms-file-error" style="display: none" class="invalid-text small text-danger">
             DAC file error.
         </label>
         </div>

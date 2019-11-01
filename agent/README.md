@@ -210,3 +210,213 @@
 ```
 
 ### run_shell_command
+- this method is used to actually run the shell command on the remote system.
+- command is the is and array of string that when concatonated and space seperated comprise the shell command to run
+  - for example it could be as simple as ['echo', 'hello'] which when sent to the shell will be concatinate and ran as `echo hello`
+
+```python
+def run_shell_command(self, command, jid=0, log_to_file=False):
+        # create log file in the users directory for later polling
+        if log_to_file:
+            log = self.get_job_logger(jid)
+        try:
+            if log_to_file:
+                log("[STARTED]")
+            command = command.split(' ')
+
+            # remove empty list values
+            for _ in command:
+                if _ == "":
+                    command.remove("")
+            # open process to run script
+            p = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if log_to_file:
+                log("[RUNNING]")
+            # execute script
+            value1, value2 = p.communicate()
+            if log_to_file:
+                log(str(value1))
+                log("[RAN SCRIPT]")
+                return value1, value2
+            else:
+                return value1, value2
+        except Exception as e:
+            log("[FAILED]")
+            return ["FAILED", "FAILED"]
+            # print traceback.format_exc()
+
+```
+
+### launch
+- `command` is the command that is to be run with shell command
+
+```python
+    def launch(self, command):
+        results = {
+            "ok": True,
+            "command": command["command"]
+        }
+
+        results["output"], results["errors"] = self.run_shell_command(command["command"])
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+
+```
+
+### submit_batch
+- the `command` in this case is actually a file that is to be submitted to sbatch for the slurm environment
+
+```python
+    def submit_batch(self, command):
+        results = {
+            "ok": True,
+            "filename": command["command"],
+            "output": -1
+        }
+
+        results["output"], results["errors"] = self.run_shell_command("sbatch %s" % results["filename"])
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
+
+### checkjob
+- this function is used to check on the jobs status
+- the `command` in this case is the jid used to check the job status
+- in the example below the `sacct` is the command to check the job status for a slurm environment
+
+```python
+    def checkjob(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]
+        }
+        try:
+            results["output"], results["errors"] = self.run_shell_command("sacct -j %s --format=jobname,state" % results["jid"])
+            myset = results["output"].split('\n')
+            results["output"]="COMPLETED"
+            for _ in myset:
+                if "slycat-tmp" in _:
+                    results["output"] = _.split()[1]
+                    break
+        except OSError as e:
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
+            sys.stdout.flush()
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+
+```
+
+### cancel_job
+- This is the function used to cancel jobs on the hpc
+- Generally it would be a shell command that is run with the given job id that would kill the job
+
+```python
+    def cancel_job(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]
+        }
+
+        results["output"], results["errors"] = self.run_shell_command(
+            "scancel %s" % results["jid"])
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
+### get_job_output
+- This function is used to get job output and send it back to the web client
+- The output should be put in `results["output"]`
+```python 
+    def get_job_output(self, command):
+        results = {
+            "ok": True,
+            "jid": command["command"]["jid"]
+        }
+
+        path = command["command"]["path"]
+        f = path + "slurm-%s.out" % results["jid"]
+        if os.path.isfile(f):
+            results["output"], results["errors"] = self.run_shell_command("cat %s" % f)
+        else:
+            results["output"] = "see errors"
+            results["errors"] = "the file %s does not exist." % f
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```
+
+### generate_batch
+- Used to create the hpc scripts sent to the hpc engine eg. slurm
+- In the below example for slurm we are generating a slurm script that will launch our job
+```python
+    def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                       time_seconds, fn,
+                       tmp_file):
+        f = tmp_file
+
+        f.write("#!/bin/bash\n\n")
+        f.write("#SBATCH --account=%s\n" % wckey)
+        f.write("#SBATCH --job-name=slycat-tmp\n")
+        f.write("#SBATCH --partition=%s\n\n" % partition)
+        f.write("#SBATCH --nodes=%s\n" % nnodes)
+        f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
+        f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
+        f.write("module load %s\n" % module_name)
+        f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)\n")
+        f.write("echo \"Creating profile ${profile}\"\n")
+        f.write("ipython profile create --parallel \n")
+        f.write("echo \"Launching controller\"\n")
+        f.write("ipcontroller --ip='*' &\n")
+        f.write("sleep 1m\n")
+        f.write("echo \"Launching engines\"\n")
+        f.write("srun ipengine &\n")
+        f.write("sleep 1m\n")
+        f.write("echo \"Launching job\"\n")
+
+        for c in fn:
+            f.write("%s\n" % c)
+
+        f.close()
+```
+
+### run_function
+- calls the generate batch functino and then sends the launch script to the hpc runner
+
+```python
+    def run_function(self, command):
+        results = {
+            "ok": True,
+            "output": -1,
+            "temp_file": ""
+        }
+        module_name = command["command"]["module_name"]
+        wckey = command["command"]["wckey"]
+        nnodes = command["command"]["nnodes"]
+        partition = command["command"]["partition"]
+        ntasks_per_node = command["command"]["ntasks_per_node"]
+        time_hours = command["command"]["time_hours"]
+        time_minutes = command["command"]["time_minutes"]
+        time_seconds = command["command"]["time_seconds"]
+        fn = command["command"]["fn"]
+        working_dir = command["command"]["working_dir"]
+        # uid = command["command"]["uid"]
+        try:
+            self.run_shell_command("mkdir -p %s" % working_dir)
+        except Exception:
+            pass
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
+        self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
+                            time_seconds, fn,
+                            tmp_file)
+        with open(tmp_file.name, 'r') as myfile:
+            data = myfile.read().replace('\n', '')
+        results["working_dir"] = working_dir
+        results["temp_file"] = data
+        results["output"], results["errors"] = self.run_shell_command("sbatch %s" % tmp_file.name)
+
+        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.flush()
+```

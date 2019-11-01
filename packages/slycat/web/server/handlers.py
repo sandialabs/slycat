@@ -499,6 +499,7 @@ def create_project_data(mid, aid, file):
     model = database.get("model", mid)
 
     with slycat.web.server.get_model_lock(model["_id"]):
+        model = database.get("model", mid)
         project = database.get("project", model["project"])
         pid = project["_id"]
         timestamp = time.time()
