@@ -122,6 +122,14 @@ function constructor(params)
       aid: "error-messages"}).then((errors) => {
         var error_messages = "";
         if (errors.length >= 1) {
+          // if there were errors, cleanup project data
+          client.get_project_data_in_model_fetch({
+            mid: component.model._id()}).then((did) => {
+              if(did.length !== 0) {
+                client.delete_project_data_fetch({did: did});
+              }
+            });
+
           for (var i = 0; i < errors.length; i++) {
             error_messages += (errors[i] + "\n");
           }
@@ -146,7 +154,7 @@ function constructor(params)
       client.get_project_data_in_model_fetch({
         mid: component.model._id()}).then((did) => {
           // if the data id isn't empty
-          if(did[0] !== "") {
+          if(did.length !== 0) {
             // delete model first
             client.delete_model_fetch({ mid: component.model._id() }).then(() => {
               // Get list of model ids project data is used in
@@ -452,6 +460,31 @@ function constructor(params)
 
   component.back = function() {
     var target = component.tab();
+
+    // Need to clean up project data if backing from tab 4
+    if(component.tab() == 4)
+    {
+      // Have to get the project data that was just added the current model
+      client.get_project_data_in_model_fetch({
+        mid: component.model._id()}).then((did) => {
+          // if the data id isn't empty
+          if(did[0] !== "") {
+            // Remove project data id from model
+            client.delete_project_data_in_model_fetch({did: did, mid: component.model._id()}).then(() => {
+              // Remove model id from project data
+              client.delete_model_in_project_data_fetch({mid: component.model._id(), did: did}).then(() => {
+                // Get the list of models using that project data
+                client.get_project_data_parameter_fetch({did: did, param: "mid"}).then((models) => {
+                  // if there are no more models using that project data, delete it
+                  if(models.length === 0) {
+                      client.delete_project_data_fetch({did: did});
+                    }
+                  });
+                });
+              });
+            }
+          });
+    }
 
     // Skip Upload Table tab if we're on the Choose Host tab.
     if(component.tab() == 2)

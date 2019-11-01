@@ -56,6 +56,48 @@ module.delete_model_fetch = function(params, successFunction, errorFunction)
   });
 }
 
+module.delete_project_data_in_model_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}projects/data/${params.did}/model/${params.mid}`,
+  {
+    method: "DELETE",
+    credentials: "same-origin",
+    cache: "no-store",
+  })
+  .then(function(response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
+
+module.delete_model_in_project_data_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}model/${params.mid}/projects/data/${params.did}`,
+  {
+    method: "DELETE",
+    credentials: "same-origin",
+    cache: "no-store",
+  })
+  .then(function(response) {
+    if (!response.ok) {
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
+
 /**
  * delete a project in Slycat
  * @param params: object{
