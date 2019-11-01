@@ -22,6 +22,12 @@ nodrag.on("dragstart", function() {
   // d3.event.sourceEvent.stopPropagation();
 });
 
+// Events for vtk viewer
+var vtkselect_event = new Event('vtkselect');
+var vtkunselect_event = new Event('vtkunselect');
+var vtkresize_event = new Event('vtkresize');
+var vtkclose_event = new Event('vtkclose');
+
 $.widget("parameter_image.scatterplot",
 {
   options:
@@ -1625,7 +1631,6 @@ $.widget("parameter_image.scatterplot",
         // d3.event.sourceEvent.stopPropagation();
 
         // Fire a custom reize event to let vtk viewers know it was resized
-        var vtkresize_event = new Event('vtkresize');
         this.closest('.image-frame').querySelector('.vtp').dispatchEvent(vtkresize_event);
       },
 
@@ -2208,7 +2213,11 @@ $.widget("parameter_image.scatterplot",
             geometryLoad(
               vtk.node(),
               buffer
-            )
+            );
+            // dispatch vtk select event so we know which camera to sync
+            if(image.current_frame) {
+              frame_html.node().querySelector('.vtp').dispatchEvent(vtkselect_event);
+            }
           })
         }
         else {
@@ -2633,6 +2642,7 @@ $.widget("parameter_image.scatterplot",
   {
     // console.log("_move_frame_to_front");
     var self = this;
+    let frameNode = frame;
     frame = $(frame);
     if(!frame.hasClass("selected"))
     {
@@ -2649,11 +2659,17 @@ $.widget("parameter_image.scatterplot",
       self.options.highest_z_index++;
       frame.css("z-index", self.options.highest_z_index);
 
-      $(".open-image").removeClass("selected");
+      $(".open-image").each(function() {
+        $(this).removeClass("selected");
+        this.querySelector('.vtp').dispatchEvent(vtkunselect_event);
+      });
       frame.addClass("selected");
 
       self.current_frame = Number(frame.data("index"));
       self._sync_open_images();
+
+      // Fire a custom selected event to let vtk viewers know it was selected
+      frameNode.querySelector('.vtp').dispatchEvent(vtkselect_event);
     }
   },
 
@@ -2663,6 +2679,10 @@ $.widget("parameter_image.scatterplot",
     var uri = frame_html.attr("data-uri");
     var index = frame_html.attr("data-index");
     var line = self.line_layer.select("line[data-uri='" + uri + "']");
+
+    // Let vtk viewer know it was closed
+    frame_html.node().querySelector('.vtp').dispatchEvent(vtkclose_event);
+
     frame_html.remove();
     line.remove();
     // Remove this frame's index from current_frame if it was selected

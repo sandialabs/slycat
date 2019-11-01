@@ -8,6 +8,8 @@ import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindo
 import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
 import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
 
+import { addCamera, } from './vtk-camera-synchronizer';
+
 export function load(container, buffer) {
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
@@ -62,7 +64,7 @@ export function load(container, buffer) {
 
   setSize();
 
-  // Listen for the event.
+  // Listen for the resize event and reset the size
   container.addEventListener('vtkresize', (e) => { 
     // console.log('vtk resized');
     setSize();
@@ -83,5 +85,8 @@ export function load(container, buffer) {
   // ----------------------------------------------------------------------------
 
   interactor.setInteractorStyle(vtkInteractorStyleTrackballCamera.newInstance());
-  
+
+  // Get the active camera and pass it to camera synchronizer
+  let camera = renderer.getActiveCamera();
+  addCamera(camera, container, interactor);
 }
