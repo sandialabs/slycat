@@ -122,6 +122,14 @@ function constructor(params)
       aid: "error-messages"}).then((errors) => {
         var error_messages = "";
         if (errors.length >= 1) {
+          // if there were errors, cleanup project data
+          client.get_project_data_in_model_fetch({
+            mid: component.model._id()}).then((did) => {
+              if(did.length !== 0) {
+                client.delete_project_data_fetch({did: did});
+              }
+            });
+
           for (var i = 0; i < errors.length; i++) {
             error_messages += (errors[i] + "\n");
           }
