@@ -85,6 +85,7 @@ $.widget("parameter_image.scatterplot",
     "video-sync" : false,
     "video-sync-time" : 0,
     frameLength : 1/25,
+    threeD_sync : false,
     highest_z_index: 0,
     axes_font_size: 12,
     axes_font_family: "Arial",
@@ -770,6 +771,13 @@ $.widget("parameter_image.scatterplot",
         self._schedule_update({update_video_sync_time:true,});
       }
     }
+    else if(key == "threeD_sync")
+    {
+      if(self.options["threeD_sync"])
+      {
+        self._schedule_update({update_threeD_sync:true,});
+      }
+    }
   },
 
   update_color_scale_and_v: function(data)
@@ -1265,6 +1273,11 @@ $.widget("parameter_image.scatterplot",
     self._sync_open_images();
   },
 
+  _update_threeD_sync: function()
+  {
+    // Not sure what to do here yet.
+  },
+
   _sync_open_images: function()
   {
     var self = this;
@@ -1298,6 +1311,11 @@ $.widget("parameter_image.scatterplot",
           open_element["currentTime"] = currentTime;
           open_element["video"] = true;
           open_element["playing"] = self._is_video_playing(video);
+        }
+        var threeD = frame.find('.vtp')[0];
+        if(threeD != undefined)
+        {
+          open_element["threeD"] = true;
         }
         self.options.open_images.push(open_element);
       })
@@ -1631,7 +1649,10 @@ $.widget("parameter_image.scatterplot",
         // d3.event.sourceEvent.stopPropagation();
 
         // Fire a custom reize event to let vtk viewers know it was resized
-        this.closest('.image-frame').querySelector('.vtp').dispatchEvent(vtkresize_event);
+        if(this.closest('.image-frame').querySelector('.vtp'))
+        {
+          this.closest('.image-frame').querySelector('.vtp').dispatchEvent(vtkresize_event);
+        }
       },
 
       maximize: function() {
@@ -2661,7 +2682,11 @@ $.widget("parameter_image.scatterplot",
 
       $(".open-image").each(function() {
         $(this).removeClass("selected");
-        this.querySelector('.vtp').dispatchEvent(vtkunselect_event);
+        // If this is a 3d vtp viewer, let it know it's been unselected
+        if(this.querySelector('.vtp'))
+        {
+          this.querySelector('.vtp').dispatchEvent(vtkunselect_event);
+        }
       });
       frame.addClass("selected");
 
@@ -2669,7 +2694,10 @@ $.widget("parameter_image.scatterplot",
       self._sync_open_images();
 
       // Fire a custom selected event to let vtk viewers know it was selected
-      frameNode.querySelector('.vtp').dispatchEvent(vtkselect_event);
+      if(frameNode.querySelector('.vtp'))
+      {
+        frameNode.querySelector('.vtp').dispatchEvent(vtkselect_event);
+      }
     }
   },
 
@@ -2681,8 +2709,10 @@ $.widget("parameter_image.scatterplot",
     var line = self.line_layer.select("line[data-uri='" + uri + "']");
 
     // Let vtk viewer know it was closed
-    frame_html.node().querySelector('.vtp').dispatchEvent(vtkclose_event);
-
+    if(frame_html.node().querySelector('.vtp'))
+    {
+      frame_html.node().querySelector('.vtp').dispatchEvent(vtkclose_event);
+    }
     frame_html.remove();
     line.remove();
     // Remove this frame's index from current_frame if it was selected
