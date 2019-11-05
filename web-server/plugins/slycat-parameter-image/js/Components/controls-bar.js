@@ -3,6 +3,7 @@ import { Provider } from 'react-redux';
 import ControlsPlayback from './controls-playback';
 import ControlsDropdown from './ControlsDropdown';
 import ControlsVideo from './controls-video';
+import ControlsThreeD from './ControlsThreeD';
 import ControlsSelection from './controls-selection';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonToggle from './controls-button-toggle';
@@ -24,6 +25,7 @@ class ControlsBar extends React.Component {
       video_sync: this.props.video_sync,
       video_sync_time: this.props.video_sync_time,
       video_sync_time_value: this.props.video_sync_time,
+      threeD_sync: this.props.threeD_sync,
       var_settings: this.props.var_settings,
       variable_aliases: this.props.variable_aliases,
     };
@@ -37,6 +39,7 @@ class ControlsBar extends React.Component {
     this.set_video_sync = this.set_video_sync.bind(this);
     this.set_video_sync_time = this.set_video_sync_time.bind(this);
     this.set_video_sync_time_value = this.set_video_sync_time_value.bind(this);
+    this.set_threeD_sync = this.set_threeD_sync.bind(this);
     this.trigger_show_all = this.trigger_show_all.bind(this);
     this.trigger_close_all = this.trigger_close_all.bind(this);
     this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
@@ -100,6 +103,14 @@ class ControlsBar extends React.Component {
     const new_video_sync_time = e.target.value;
     this.setState((prevState, props) => {
       return {video_sync_time_value: new_video_sync_time};
+    });
+  }
+
+  set_threeD_sync(e) {
+    this.setState((prevState, props) => {
+      const new_threeD_sync = !prevState.threeD_sync;
+      this.props.element.trigger("threeD_sync", new_threeD_sync);
+      return {threeD_sync: new_threeD_sync};
     });
   }
 
@@ -256,6 +267,26 @@ class ControlsBar extends React.Component {
     // This is used to decide if the play or the pause button is visible in the playback controls
     const playing = (this.state.video_sync && any_video_playing) || (!this.state.video_sync && current_frame_video_playing);
 
+    // 3D controls
+    let any_threeD_open = false;
+    let current_frame_threeD = false;
+    for(let open_media of this.state.open_images)
+    {
+      if(open_media.threeD){
+        any_threeD_open = true;
+        if(open_media.current_frame)
+        {
+          current_frame_threeD = true;
+        }
+      }
+      // No need to keep searching if we found a video and the current frame is also a video
+      if(any_threeD_open && current_frame_threeD)
+      {
+        break;
+      }
+    }
+
+
     return (
       <Provider store={window.store}>
         <React.Fragment>
@@ -319,6 +350,13 @@ class ControlsBar extends React.Component {
             />
           </ControlsGroup>
           </React.Fragment>
+          }
+          {any_threeD_open &&
+          <ControlsGroup id='threeD-controls' class='input-group input-group-sm ml-3'>
+            <ControlsThreeD threeD_sync={this.state.threeD_sync} set_threeD_sync={this.set_threeD_sync} 
+              any_threeD_open={any_threeD_open} button_style={button_style}
+            />
+          </ControlsGroup>
           }
         </React.StrictMode>
         </React.Fragment>
