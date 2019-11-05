@@ -37,6 +37,7 @@ $.widget("parameter_image.controls",
     "open_images" : [],
     "video-sync" : false,
     "video-sync-time" : 0,
+    "threeD_sync": false,
   },
 
   _create: function()
@@ -144,6 +145,7 @@ $.widget("parameter_image.controls",
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}
+        threeD_sync={self.options.threeD_sync}
         variable_aliases={window.store.getState().derived.variableAliases}
       />)
     ;
@@ -218,6 +220,10 @@ $.widget("parameter_image.controls",
         video_sync_time: self.options['video-sync-time'],
         video_sync_time_value: self.options['video-sync-time'],
       });
+    }
+    else if(key == 'threeD_sync')
+    {
+      self.ControlsBarComponent.setState({threeD_sync: self.options.threeD_sync});
     }
   },
 });
