@@ -5,27 +5,40 @@ let syncCameras = true;
 let cameras = [];
 
 let cameraOnModified = null;
+// Tracks the currently or last selected camera
+let selectedCamera = null;
 
-function handleModifiedCamera(sourceCamera, allCameras, interactor) {
+function handleModifiedCamera(sourceCamera, allCameras) {
   // console.log('inside handleModifiedCamera: ' + sourceCamera + ', with these cameras: ' + allCameras);
-  let noMatch = true;
-  for(let targetCamera of allCameras) {
-    if(targetCamera.camera != sourceCamera)
-    {
-      // console.log('this is not the source camera');
-      targetCamera.camera.setPosition(...sourceCamera.getPosition());
-      targetCamera.camera.setFocalPoint(...sourceCamera.getFocalPoint());
-      targetCamera.camera.setViewUp(...sourceCamera.getViewUp());
-      targetCamera.interactor.render();
+  if(syncCameras)
+  {
+    let noMatch = true;
+    for(let targetCamera of allCameras) {
+      if(targetCamera.camera != sourceCamera)
+      {
+        // console.log('this is not the source camera');
+        targetCamera.camera.setPosition(...sourceCamera.getPosition());
+        targetCamera.camera.setFocalPoint(...sourceCamera.getFocalPoint());
+        targetCamera.camera.setViewUp(...sourceCamera.getViewUp());
+        targetCamera.interactor.render();
+      }
+      else
+      {
+        noMatch = false;
+      }
     }
-    else
+    if(noMatch)
     {
-      noMatch = false;
+      console.log('we have a problem, there is no camera match in handleModifiedCamera');
     }
   }
-  if(noMatch)
+}
+
+export function setSyncCameras(syncCamerasBool) {
+  syncCameras = syncCamerasBool;
+  if(syncCameras)
   {
-    console.log('we have a problem, there is no camera match in handleModifiedCamera');
+    handleModifiedCamera(selectedCamera, cameras);
   }
 }
 
@@ -35,6 +48,7 @@ export function addCamera(camera, container, interactor) {
   // Listen for the selected event and add an onModified handler to the selected camera
   container.addEventListener('vtkselect', (e) => { 
     // console.log('vtk selected');
+    selectedCamera = camera;
     cameraOnModified = camera.onModified(
       (function() {
         return function() {
