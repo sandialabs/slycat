@@ -2229,6 +2229,14 @@ $.widget("parameter_image.scatterplot",
           // adjustment fixes that.
           frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
 
+          // Listen for vtk start interaction event (dispatched by vtk-geometry-viewer)
+          // and move the frame to the front since mouse interaction in the vtk viewer
+          // does not propagate.
+          vtk.node().addEventListener('vtkstartinteraction', (e) => { 
+            // console.log('vtkstartinteraction');
+            self._move_frame_to_front(e.target.parentElement);
+          }, false);
+
           // Convert the blob to an array buffer and pass it to the geometry loader
           blob.arrayBuffer().then((buffer) => {
             geometryLoad(
@@ -2667,6 +2675,7 @@ $.widget("parameter_image.scatterplot",
     frame = $(frame);
     if(!frame.hasClass("selected"))
     {
+      // console.log('frame is currently not selected, so will select it now.');
       // Detaching and appending (or insertAfter() or probably any other method of moving an element in the DOM) an element on mousedown
       // breaks other event listeners in Chrome and Safari by stopping propagation. It's as if it calls stopImmediatePropagation()
       // but probably what it's doing is thinking that since the element moved, there's no mouseup or click event fired after mousedown.
@@ -2691,13 +2700,14 @@ $.widget("parameter_image.scatterplot",
       frame.addClass("selected");
 
       self.current_frame = Number(frame.data("index"));
-      self._sync_open_images();
 
       // Fire a custom selected event to let vtk viewers know it was selected
       if(frameNode.querySelector('.vtp'))
       {
         frameNode.querySelector('.vtp').dispatchEvent(vtkselect_event);
       }
+
+      self._sync_open_images();
     }
   },
 

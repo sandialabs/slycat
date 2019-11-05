@@ -10,6 +10,8 @@ import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/
 
 import { addCamera, } from './vtk-camera-synchronizer';
 
+var vtkstartinteraction_event = new Event('vtkstartinteraction');
+
 export function load(container, buffer) {
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
@@ -84,7 +86,15 @@ export function load(container, buffer) {
   // Setup interactor style to use
   // ----------------------------------------------------------------------------
 
-  interactor.setInteractorStyle(vtkInteractorStyleTrackballCamera.newInstance());
+  const interactorStyle = vtkInteractorStyleTrackballCamera.newInstance();
+  interactor.setInteractorStyle(interactorStyle);
+
+  // Dispatching a vtk start interaction event when someone starts interacting with this 
+  // 3d model. It's used by the scatterplot to select the model's frame.
+  interactorStyle.onStartInteractionEvent(() => {
+    // console.log('interactorStyle.onStartInteractionEvent');
+    container.dispatchEvent(vtkstartinteraction_event);
+  });
 
   // Get the active camera and pass it to camera synchronizer
   let camera = renderer.getActiveCamera();
