@@ -47,17 +47,6 @@ import slycat.web.server.database
 import slycat.web.server.streaming
 import slycat.web.server
 
-class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, numpy.integer):
-            return int(obj)
-        elif isinstance(obj, numpy.floating):
-            return float(obj)
-        elif isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        elif type(obj) is bytes:
-            return str(obj.decode())
-            return super(MyEncoder, self).default(obj)
             
 def cache_object(pid, key, content_type, content):
     cherrypy.log.error("cache_object %s %s %s" % (pid, key, content_type))
