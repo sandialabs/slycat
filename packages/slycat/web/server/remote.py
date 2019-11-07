@@ -47,7 +47,18 @@ import slycat.web.server.database
 import slycat.web.server.streaming
 import slycat.web.server
 
-
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        elif isinstance(obj, numpy.floating):
+            return float(obj)
+        elif isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        elif type(obj) is bytes:
+            return str(obj.decode())
+            return super(MyEncoder, self).default(obj)
+            
 def cache_object(pid, key, content_type, content):
     cherrypy.log.error("cache_object %s %s %s" % (pid, key, content_type))
     database = slycat.web.server.database.couchdb.connect()
@@ -689,13 +700,19 @@ class Session(object):
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
             try:
+                cherrypy.log.error(json.dumps({"action": "get-file", "path": path}))
                 stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
                 stdin.flush()
             except socket.error as e:
                 delete_session(self._sid)
                 raise socket.error('Socket is closed')
-            metadata = json.loads(stdout.readline())
-
+            # json.loads(json.dumps(results, cls=MyEncoder))
+            cherrypy.log.error('reading value')
+            value = stdout.readline()
+            # cherrypy.log.error(value)
+            cherrypy.log.error('Done: loading metadata')
+            metadata = json.loads(value)
+            cherrypy.log.error('metadata:')
             if metadata["message"] == "Path must be absolute.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
                     self.hostname, path)
@@ -746,14 +763,21 @@ class Session(object):
                                         " appropriate permissions on all the parent directories." % (
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
-
             content_type = metadata["content-type"]
-            content = stdout.read(metadata["size"])
+            cherrypy.log.error("reading line")
+            content = base64.b64decode(metadata["content"])
+            # content = stdout.read((metadata["size"]))
+            # leftover = stdout.readline()
 
             if cache == "project":
                 cache_object(project, key, content_type, content)
 
+
             cherrypy.response.headers["content-type"] = content_type
+            cherrypy.log.error("returning content")
+            cherrypy.log.error(str(type(content)))
+            # cherrypy.log.error(content[0])
+            # cherrypy.log.error(str(leftover))
             return content
 
         # Use sftp to retrieve a file.
@@ -772,8 +796,8 @@ class Session(object):
 
             if cache == "project":
                 cache_object(project, key, content_type, content)
-
             cherrypy.response.headers["content-type"] = content_type
+            cherrypy.log.error(str(type(content)))
             return content
 
         except Exception as e:

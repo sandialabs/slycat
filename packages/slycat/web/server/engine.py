@@ -202,6 +202,9 @@ def start(root_path, config_file):
   configuration["/"]["request.dispatch"] = dispatcher
   configuration["/"]["tools.caching.on"] = True
   configuration["/"]["tools.caching.delay"] = 3600
+  configuration["/"]["tools.encode.on"] = True
+  configuration["/"]["tools.encode.encoding"] = 'utf-8'
+  configuration["/"]["tools.encode.text_only"] = False
 
   # wsgi: look at the auth below
   authentication = configuration["slycat-web-server"]["authentication"]["plugin"]
