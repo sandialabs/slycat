@@ -3,7 +3,7 @@ import React from "react";
 const ControlsButton = (props) => {
     return props.hidden ? null : (
       <button
-          className={`btn btn-sm ${props.button_style}`}
+          className={`btn btn-sm ${props.button_style} ${props.class}`}
           id={props.id}
           type="button" title={props.title}
           disabled={props.disabled}

@@ -1032,10 +1032,10 @@ a {
 #video-controls .video-sync-time {
   width: 75px;
 }
-#playback-controls .play-button,
-#playback-controls .pause-button
+.playback-controls .play-button,
+.playback-controls .pause-button
 {
-  width: 22px;
+  width: 30px;
 }
 .slick-cell.flashing {
   border-width: 0px !important;

@@ -329,27 +329,21 @@ class ControlsBar extends React.Component {
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
               indices={this.props.indices} button_style={button_style} />
-          </ControlsGroup>
-          <ControlsGroup id='file-selector' class='input-group input-group-sm ml-3'>
-            <ControlsButtonUpdateTable button_style={button_style} mid={this.props.mid} pid={this.props.pid}/>
+            <ControlsButtonUpdateTable button_style={button_style} mid={this.props.mid} pid={this.props.pid} />
           </ControlsGroup>
           {any_video_open &&
-          <React.Fragment>
-          <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3'>
+          <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3 playback-controls'>
             <ControlsVideo video_sync={this.state.video_sync} set_video_sync={this.set_video_sync} 
               video_sync_time_value={this.state.video_sync_time_value}
               set_video_sync_time_value={this.set_video_sync_time_value} set_video_sync_time={this.set_video_sync_time}
               any_video_open={any_video_open} button_style={button_style}
             />
-          </ControlsGroup>
-          <ControlsGroup id='playback-controls' class='btn-group ml-3'>
             <ControlsPlayback trigger_jump_to_start={this.trigger_jump_to_start} 
               trigger_frame_back={this.trigger_frame_back} trigger_play={this.trigger_play}
               trigger_pause={this.trigger_pause} trigger_frame_forward={this.trigger_frame_forward} trigger_jump_to_end={this.trigger_jump_to_end}
               any_video_open={any_video_open} disabled={disabled_playback} playing={playing} button_style={button_style}
             />
           </ControlsGroup>
-          </React.Fragment>
           }
           {any_threeD_open &&
           <ControlsGroup id='threeD-controls' class='input-group input-group-sm ml-3'>
