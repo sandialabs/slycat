@@ -324,7 +324,7 @@ class ControlsBar extends React.Component {
             />
             <ControlsButton label='Show All' title={show_all_title} disabled={show_all_disabled} 
               click={this.trigger_show_all} button_style={button_style} />
-            <ControlsButton label='Close All Pins' title='' disabled={close_all_disabled} 
+            <ControlsButton label='Close All' title='' disabled={close_all_disabled} 
               click={this.trigger_close_all} button_style={button_style} />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}

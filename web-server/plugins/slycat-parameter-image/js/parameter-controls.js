@@ -88,7 +88,7 @@ $.widget("parameter_image.controls",
     const dropdowns = [
       {
         id: 'x-axis-dropdown',
-        label: 'X Axis',
+        label: 'X',
         title: 'Change X Axis Variable', 
         state_label:'x_variable',
         trigger: 'x-selection-changed',
@@ -97,7 +97,7 @@ $.widget("parameter_image.controls",
       },
       {
         id: 'y-axis-dropdown',
-        label: 'Y Axis',
+        label: 'Y',
         title: 'Change Y Axis Variable', 
         state_label:'y_variable',
         trigger: 'y-selection-changed',
@@ -115,7 +115,7 @@ $.widget("parameter_image.controls",
       },
       {
         id: 'image-dropdown',
-        label: 'Media Set',
+        label: 'Media',
         title: 'Change Media Set Variable', 
         state_label: 'media_variable',
         trigger: 'images-selection-changed',
@@ -168,7 +168,7 @@ $.widget("parameter_image.controls",
 
     // Set the state of ControlsBarComponent's variable_aliases to what's in the Redux state
     // each time the Redux state changes. This is a work around to be used only
-    // until we conver PS to React because it currently uses local state in the controls bar.
+    // until we convert PS to React because it currently uses local state in the controls bar.
     const update_variable_aliases = () => {
       self.ControlsBarComponent.setState({variable_aliases: window.store.getState().derived.variableAliases});
     };
@@ -179,7 +179,7 @@ $.widget("parameter_image.controls",
   {
     var self = this;
 
-    //console.log("sparameter_image.variableswitcher._setOption()", key, value);
+    //console.log("parameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "x-variable")
