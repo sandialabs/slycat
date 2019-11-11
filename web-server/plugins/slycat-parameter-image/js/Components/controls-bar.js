@@ -346,7 +346,7 @@ class ControlsBar extends React.Component {
           </ControlsGroup>
           }
           {any_threeD_open &&
-          <ControlsGroup id='threeD-controls' class='input-group input-group-sm ml-3'>
+          <ControlsGroup id='threeD-controls' class='btn-group ml-3'>
             <ControlsThreeD threeD_sync={this.state.threeD_sync} set_threeD_sync={this.set_threeD_sync} 
               any_threeD_open={any_threeD_open} button_style={button_style}
             />
