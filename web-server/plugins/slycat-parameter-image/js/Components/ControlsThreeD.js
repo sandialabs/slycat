@@ -3,6 +3,7 @@ import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonToggle from "./controls-button-toggle";
 import ControlsDropdown from './ControlsDropdown';
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import { faCubes } from '@fortawesome/free-solid-svg-icons'
 
 class ControlsThreeD extends React.Component {
   constructor(props) {
@@ -16,8 +17,12 @@ class ControlsThreeD extends React.Component {
 
     return !this.props.any_threeD_open ? null : (
       <React.Fragment>
-        <ControlsButtonToggle title={this.props.threeD_sync ? 'Unsync 3D Viewers' : 'Sync 3D Viewers'} icon='fa-rotate-right' 
-          active={this.props.threeD_sync} set_active_state={this.props.set_threeD_sync} button_style={this.props.button_style}
+        <ControlsButtonToggle 
+          title={this.props.threeD_sync ? 'Unsync 3D Viewers' : 'Sync 3D Viewers'} 
+          icon={faCubes}
+          active={this.props.threeD_sync} 
+          set_active_state={this.props.set_threeD_sync} 
+          button_style={this.props.button_style}
         />
         <ControlsDropdown 
           key="threeD-color-dropdown"

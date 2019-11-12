@@ -12,6 +12,7 @@ import FileSelector from './file-selector';
 import ControlsButtonUpdateTable from './update-table.jsx';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
 import VisibleVarOptions from './visible-var-options';
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -306,7 +307,7 @@ class ControlsBar extends React.Component {
             />
           </ControlsGroup>
           <ControlsGroup id='selection-controls' class='btn-group ml-3'>
-            <ControlsButtonToggle title='Auto Scale' icon='fa-external-link' active={this.state.auto_scale} 
+            <ControlsButtonToggle title='Auto Scale' icon={faExternalLinkAlt} active={this.state.auto_scale} 
               set_active_state={this.set_auto_scale} button_style={button_style} />
             <ControlsSelection
               trigger_hide_selection={this.trigger_hide_selection}
