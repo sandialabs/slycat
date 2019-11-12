@@ -44,7 +44,7 @@ S. Martin
         </label>
         </div>
                 <div class="form-check" style="margin-left: 15px;">
-        <label>
+        <label style="display:none">
             <input type="radio" name="local-or-remote-radios" value="tdms-zip" data-bind="checked: dac_format">
             Switchtube TDMS Zip Format
         </label>
@@ -94,7 +94,10 @@ S. Martin
 
 
         <div style="margin-top: 30px">
-          <label>Minimum number of time points in a CSV file:</label>
+          <label>Minimum number of time points in a CSV file:
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+          title="A CSV file with less than the specified number of time points will be discarded during the data import."></i>
+          </label>
           <input id="dac-min-CSV" class="form-control" type="number" min="2" data-bind="value: csv_min_size">
            <div class="invalid-feedback">
                Each CSV file must have at least two values.
@@ -102,7 +105,9 @@ S. Martin
         </div>
 
         <div style="margin-top: 20px; margin-bottom: 20px">
-          <label>Minimum number of digitizers in a test:</label>
+          <label>Minimum number of digitizers in a test:
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+          title="Tests with less than the specified number of digitizers will be discarded during the data import."></i></label></label>
           <input id="dac-min-dig" class="form-control" type="number" min="1" data-bind="value: min_num_dig">
           <div class="invalid-feedback">
                Each test must have at least one digitizer.
@@ -127,6 +132,60 @@ S. Martin
             DAC file error.
         </label>
         </div>
+
+        <div style="margin-top: 30px">
+          <label>Minimum number of time points in a channel:
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+          title="A channel with less than the specified number of time points will be discarded during the data import."></i>
+          </label>
+          <input id="dac-min-time-steps" class="form-control" type="number" min="2" data-bind="value: min_time_steps">
+           <div class="invalid-feedback">
+               Each channel must have at least two values.
+           </div>
+        </div>
+
+        <div style="margin-top: 20px; margin-bottom: 20px">
+          <label>Minimum number of channels in a test:
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+          title="Tests with less than the specified number of channels will be discarded during the data import."></i></label>
+          <input id="dac-min-channel" class="form-control" type="number" min="1" data-bind="value: min_num_channels">
+          <div class="invalid-feedback">
+               Each test must have at least one channel.
+          </div>
+        </div>
+
+        <div>
+            <label>
+            Expecting
+            <input type="radio" name="dac-tdms-radios" value="General" data-bind="checked: dac_tdms_type">
+             General,
+            <input type="radio" name="dac-tdms-radios" value="Overvoltage" data-bind="checked: dac_tdms_type">
+             Overvoltage, or
+            <input type="radio" name="dac-tdms-radios" value="Sprytron" data-bind="checked: dac_tdms_type">
+             Sprytron data.
+            </label>
+        </div>
+
+        <div style="margin-top: 5px">
+            <label>
+            Combine mismatched time steps using
+            <input type="radio" name="dac-union-radios" value="Intersection" data-bind="checked: dac_union_type">
+             Intersection or
+            <input type="radio" name="dac-union-radios" value="Union" data-bind="checked: dac_union_type">
+             Union.
+            </label>
+        </div>
+
+        <div style="margin-top: 5px">
+            <input type="checkbox" name="dac-infer-units" value="True" data-bind="checked: dac_infer_units">
+            Infer channel units from channel name.
+        </div>
+
+        <div style="margin-top: 10px">
+            <input type="checkbox" name="dac-infer-time" value="True" data-bind="checked: dac_infer_time">
+            Infer time units (assume seconds).
+        </div>
+
 
     </div>
 

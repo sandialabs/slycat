@@ -73,6 +73,14 @@ function constructor(params)
     component.csv_min_size = ko.observable(null);
     component.min_num_dig = ko.observable(null);
 
+    // parameters for testing TDMS ingestion
+    component.min_time_steps = ko.observable(null);
+    component.min_num_channels = ko.observable(null);
+    component.dac_tdms_type = ko.observable(null);
+    component.dac_union_type = ko.observable(null);
+    component.dac_infer_units = ko.observable(null);
+    component.dac_infer_time = ko.observable(null);
+
     var num_vars = 0;
 
     // process pts continue or stop flag
@@ -101,6 +109,14 @@ function constructor(params)
         // set PTS parameter defaults
         component.csv_min_size = 10;
         component.min_num_dig = 3;
+
+        // set TDMS defaults
+        component.min_time_steps = 10;
+        component.min_num_channels = 2;
+        component.dac_tdms_type = 'General';
+        component.dac_union_type = 'Union';
+        component.dac_infer_units = 'True';
+        component.dac_infer_time = 'True';
 
         client.post_project_models({
             pid: component.project._id(),
@@ -320,6 +336,34 @@ function constructor(params)
     // this function uploads the switchtube TDMS format
     component.upload_tdms_format = function() {
 
+        // check TDMS parse parameters
+        var time_steps_parm = Math.round(Number(component.min_time_steps));
+        var channel_parm = Math.round(Number(component.min_num_channels));
+
+        // check for input parameter errors
+        var no_errors = true;
+
+        if (time_steps_parm < 2) {
+
+            $("#dac-min-time-steps").addClass("is-invalid");
+            no_errors = false;
+
+        } else {
+
+            // clear error
+            $("#dac-min-time-steps").removeClass("is-invalid");
+        }
+
+        if (channel_parm < 1) {
+
+            $("#dac-min-channel").addClass("is-invalid");
+            no_errors = false;
+        } else {
+
+            // clear error
+            $("#dac-min-channel").removeClass("is-invalid");
+        }
+
         $("#dac-tdms-file-error").hide();
 
         // check for file selected
@@ -339,24 +383,29 @@ function constructor(params)
                 }
             }
 
-            if (tdms_files == true) {
+            if (tdms_files == false) {
 
-                // set model name back to blank
-                component.model.name("");
-
-                // go to model naming
-                component.tab(tabs['name-model']);
-
-            } else {
                 $("#dac-tdms-file-error").text("Please select file(s) with the .tdms extension.")
                 $("#dac-tdms-file-error").show();
+                no_errors = false;
             }
 
         } else {
 
             $("#dac-tdms-file-error").text("Please select .tdms file(s).")
             $("#dac-tdms-file-error").show();
+            no_errors = false;
         }
+
+        if (no_errors == true) {
+
+                // set model name back to blank
+                component.model.name("");
+
+                // go to model naming
+                component.tab(tabs['name-model']);
+        };
+
     };
 
     // wizard finish model code
@@ -469,6 +518,8 @@ function constructor(params)
                                         $('.browser-continue').toggleClass("disabled", false);
                                         $(".browser-continue").prop("disabled", false);
 
+                                        component.tab(tabs["name-model"]);
+
                                         }
                                     };
                                 fileUploader.uploadFile(fileObject);
@@ -504,12 +555,17 @@ function constructor(params)
         var parser = "dac-tdms-file-parser";
         var progress = component.browser_tdms_files.progress;
 
+        // pass user parameters to server
+        var aids = [[component.min_time_steps, component.min_num_channels,
+                     component.dac_tdms_type, component.dac_union_type,
+                     Boolean(component.dac_infer_units), Boolean(component.dac_infer_time)], ["DAC"]];
+
         // upload filelist
         var fileObject ={
             pid: component.project._id(),
             mid: component.model._id(),
             file: filelist,
-            aids: [],
+            aids: aids,
             parser: parser,
             progress: progress,
             progress_increment: 100,
@@ -530,6 +586,8 @@ function constructor(params)
 
                 $('.browser-continue').toggleClass("disabled", false);
                 $(".browser-continue").prop("disabled", false);
+
+                component.tab(tabs["name-model"]);
 
                 }
             };
