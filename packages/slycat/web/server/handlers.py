@@ -185,6 +185,8 @@ def get_project(pid):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
+    if slycat.web.server.authentication.is_server_administrator():
+        project['acl']["administrators"].append({'user':cherrypy.request.login})
     return project
 
 def get_remote_host_dict():

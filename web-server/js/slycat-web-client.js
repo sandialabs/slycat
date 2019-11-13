@@ -940,6 +940,13 @@ module.get_remotes_fetch = function(hostname)
   });
 };
 
+module.get_user_fetch = function(params) {
+  return fetch(`${api_root}users/${params? params.uid : "-"}/${new Date().getTime()}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    return response.json();
+  })
+};
+
 module.get_user = function(params)
 {
   $.ajax(
