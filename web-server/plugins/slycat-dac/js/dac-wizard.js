@@ -26,7 +26,8 @@ function constructor(params)
                 'dac-gen': 1,
                 'pts': 2,
                 'tdms': 3,
-                'name-model': 4};
+                'tdms-options': 4,
+                'name-model': 5};
 
     // project/model information
     component.project = params.projects()[0];
@@ -70,16 +71,24 @@ function constructor(params)
     component.dac_format = ko.observable("dac-gen");
 
     // parameters for testing PTS ingestion
-    component.csv_min_size = ko.observable(null);
-    component.min_num_dig = ko.observable(null);
+    component.csv_min_size = ko.observable(10);
+    component.min_num_dig = ko.observable(3);
+
+    // TDMS defaults
+    var MIN_TIME_STEPS = 10;
+    var MIN_NUM_CHANNELS = 2;
+    var TDMS_TYPE = 'General';
+    var UNION_TYPE = 'Union';
+    var INFER_UNITS = true;
+    var INFER_TIME = true;
 
     // parameters for testing TDMS ingestion
-    component.min_time_steps = ko.observable(null);
-    component.min_num_channels = ko.observable(null);
-    component.dac_tdms_type = ko.observable(null);
-    component.dac_union_type = ko.observable(null);
-    component.dac_infer_units = ko.observable(null);
-    component.dac_infer_time = ko.observable(null);
+    component.min_time_steps = ko.observable(MIN_TIME_STEPS);
+    component.min_num_channels = ko.observable(MIN_NUM_CHANNELS);
+    component.dac_tdms_type = ko.observable(TDMS_TYPE);
+    component.dac_union_type = ko.observable(UNION_TYPE);
+    component.dac_infer_units = ko.observable(INFER_UNITS);
+    component.dac_infer_time = ko.observable(INFER_TIME);
 
     var num_vars = 0;
 
@@ -105,18 +114,6 @@ function constructor(params)
 
         // use large dialog format
         // $(".modal-dialog").addClass("modal-lg");
-
-        // set PTS parameter defaults
-        component.csv_min_size = 10;
-        component.min_num_dig = 3;
-
-        // set TDMS defaults
-        component.min_time_steps = 10;
-        component.min_num_channels = 2;
-        component.dac_tdms_type = 'General';
-        component.dac_union_type = 'Union';
-        component.dac_infer_units = 'True';
-        component.dac_infer_time = 'True';
 
         client.post_project_models({
             pid: component.project._id(),
@@ -269,8 +266,8 @@ function constructor(params)
     component.upload_pts_format = function() {
 
         // check PTS parse parameters
-        var csv_parm = Math.round(Number(component.csv_min_size));
-        var dig_parm = Math.round(Number(component.min_num_dig));
+        var csv_parm = Math.round(Number(component.csv_min_size()));
+        var dig_parm = Math.round(Number(component.min_num_dig()));
 
         // check for input parameter errors
         var no_errors = true;
@@ -336,9 +333,51 @@ function constructor(params)
     // this function uploads the switchtube TDMS format
     component.upload_tdms_format = function() {
 
-        // check TDMS parse parameters
-        var time_steps_parm = Math.round(Number(component.min_time_steps));
-        var channel_parm = Math.round(Number(component.min_num_channels));
+        $("#dac-tdms-file-error").hide();
+
+        // check for file selected
+        if (component.browser_tdms_files.selection().length > 0) {
+
+            // check file extensions
+            var tdms_files = true;
+            var file_num = component.browser_tdms_files.selection().length;
+            for (var i = 0; i < file_num; i++) {
+
+                var file = component.browser_tdms_files.selection()[i];
+                var file_ext = file.name.split(".");
+                file_ext = file_ext[file_ext.length - 1];
+
+                if (file_ext != 'tdms') {
+                    tdms_files = false;
+                }
+            }
+
+            if (tdms_files == false) {
+
+                $("#dac-tdms-file-error").text("Please select file(s) with the .tdms extension.")
+                $("#dac-tdms-file-error").show();
+
+            } else {
+
+                // get tdms load options
+                component.tab(tabs['tdms-options']);
+
+            }
+
+        } else {
+
+            $("#dac-tdms-file-error").text("Please select .tdms file(s).")
+            $("#dac-tdms-file-error").show();
+        }
+
+    };
+
+    // this function checks the TDMS upload format options
+    component.check_tdms_options = function() {
+
+            // check TDMS parse parameters
+        var time_steps_parm = Math.round(Number(component.min_time_steps()));
+        var channel_parm = Math.round(Number(component.min_num_channels()));
 
         // check for input parameter errors
         var no_errors = true;
@@ -364,39 +403,7 @@ function constructor(params)
             $("#dac-min-channel").removeClass("is-invalid");
         }
 
-        $("#dac-tdms-file-error").hide();
-
-        // check for file selected
-        if (component.browser_tdms_files.selection().length > 0) {
-
-            // check file extensions
-            var tdms_files = true;
-            var file_num = component.browser_tdms_files.selection().length;
-            for (var i = 0; i < file_num; i++) {
-
-                var file = component.browser_tdms_files.selection()[i];
-                var file_ext = file.name.split(".");
-                file_ext = file_ext[file_ext.length - 1];
-
-                if (file_ext != 'tdms') {
-                    tdms_files = false;
-                }
-            }
-
-            if (tdms_files == false) {
-
-                $("#dac-tdms-file-error").text("Please select file(s) with the .tdms extension.")
-                $("#dac-tdms-file-error").show();
-                no_errors = false;
-            }
-
-        } else {
-
-            $("#dac-tdms-file-error").text("Please select .tdms file(s).")
-            $("#dac-tdms-file-error").show();
-            no_errors = false;
-        }
-
+        // proceed to name model if no errors are present
         if (no_errors == true) {
 
                 // set model name back to blank
@@ -406,7 +413,24 @@ function constructor(params)
                 component.tab(tabs['name-model']);
         };
 
-    };
+    }
+
+    // this function resets the TDMS load defaults
+    component.reset_defaults = function () {
+
+        // set TDMS defaults
+        component.min_time_steps(MIN_TIME_STEPS);
+        component.min_num_channels(MIN_NUM_CHANNELS);
+        component.dac_tdms_type(TDMS_TYPE);
+        component.dac_union_type(UNION_TYPE);
+        component.dac_infer_units(INFER_UNITS);
+        component.dac_infer_time(INFER_TIME);
+
+        // turn off any errors
+        $("#dac-min-time-steps").removeClass("is-invalid");
+        $("#dac-min-channel").removeClass("is-invalid");
+
+    }
 
     // wizard finish model code
     // ************************
@@ -456,8 +480,8 @@ function constructor(params)
                                 var file = component.browser_zip_file.selection()[0];
 
                                 // get csv and number digitizer parameters
-                                var csv_parm = Math.round(Number(component.csv_min_size));
-                                var dig_parm = Math.round(Number(component.min_num_dig));
+                                var csv_parm = Math.round(Number(component.csv_min_size()));
+                                var dig_parm = Math.round(Number(component.min_num_dig()));
 
                                 // parameters for call to parser
                                 var aids = [[csv_parm, dig_parm], ["DAC"]];
@@ -556,9 +580,9 @@ function constructor(params)
         var progress = component.browser_tdms_files.progress;
 
         // pass user parameters to server
-        var aids = [[component.min_time_steps, component.min_num_channels,
-                     component.dac_tdms_type, component.dac_union_type,
-                     Boolean(component.dac_infer_units), Boolean(component.dac_infer_time)], ["DAC"]];
+        var aids = [[component.min_time_steps(), component.min_num_channels(),
+                     component.dac_tdms_type(), component.dac_union_type(),
+                     Boolean(component.dac_infer_units()), Boolean(component.dac_infer_time())], ["DAC"]];
 
         // upload filelist
         var fileObject ={
@@ -613,12 +637,16 @@ function constructor(params)
                 component.tab(tabs['pts'])}
 
             if (component.dac_format() == 'tdms') {
-                component.tab(tabs['tdms'])}
+                component.tab(tabs['tdms-options'])}
+
+        // if we are in load tdms options, just go back one tab
+        } else if (component.tab() == tabs['tdms-options']) {
+            component.tab(tabs['tdms']);
 
         // otherwise we are in file selection, go back to format selection
         } else {
             component.tab(tabs['sel-format']);
-        }
+        };
 
     };
 

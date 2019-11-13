@@ -19,7 +19,8 @@ S. Martin
         <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'"><a class="nav-link">Locate Data</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'"><a class="nav-link">Locate Data</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: dac_format() == 'tdms'"><a class="nav-link">Locate Data</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 4}"><a class="nav-link">Name Model</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: dac_format() == 'tdms'"><a class="nav-link">Import Options</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 5}"><a class="nav-link">Name Model</a></li>
     </ul>
 
     <!-- This tab lets the user select the file format to upload. -->
@@ -133,6 +134,11 @@ S. Martin
         </label>
         </div>
 
+    </div>
+
+    <!-- TDMS load options. -->
+    <div data-bind="visible:tab() == 4" class="form-horizontal">
+
         <div style="margin-top: 30px">
           <label>Minimum number of time points in a channel:
           <i class="fa fa-question-circle inline-help" aria-hidden="true"
@@ -144,7 +150,7 @@ S. Martin
            </div>
         </div>
 
-        <div style="margin-top: 20px; margin-bottom: 20px">
+        <div style="margin-top: 20px; margin-bottom: 30px">
           <label>Minimum number of channels in a test:
           <i class="fa fa-question-circle inline-help" aria-hidden="true"
           title="Tests with less than the specified number of channels will be discarded during the data import."></i></label>
@@ -166,7 +172,7 @@ S. Martin
             </label>
         </div>
 
-        <div style="margin-top: 5px">
+        <div>
             <label>
             Combine mismatched time steps using
             <input type="radio" name="dac-union-radios" value="Intersection" data-bind="checked: dac_union_type">
@@ -176,21 +182,20 @@ S. Martin
             </label>
         </div>
 
-        <div style="margin-top: 5px">
+        <div style="margin-top: 20px">
             <input type="checkbox" name="dac-infer-units" value="True" data-bind="checked: dac_infer_units">
             Infer channel units from channel name.
         </div>
 
-        <div style="margin-top: 10px">
+        <div style="margin-top: 10px; margin-bottom: 20px">
             <input type="checkbox" name="dac-infer-time" value="True" data-bind="checked: dac_infer_time">
             Infer time units (assume seconds).
         </div>
 
-
     </div>
 
     <!-- Inputs the name of the model (final tab). -->
-    <div data-bind="visible:tab() == 4">
+    <div data-bind="visible:tab() == 5">
         <form class="form-horizontal" role="form" onsubmit="return false">
             <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         </form>
@@ -213,7 +218,10 @@ S. Martin
             data-bind="visible:tab() == 2,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary browser-continue"
             data-bind="visible:tab() == 3,click:upload_tdms_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 4, click:reset_defaults">Reset Defaults</button>
+    <button class="btn btn-primary browser-continue"
+            data-bind="visible:tab() == 4,click:check_tdms_options"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary dac-launch-thread"
-            data-bind="visible:tab() == 4,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
+            data-bind="visible:tab() == 5,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
 
 </div>
