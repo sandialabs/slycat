@@ -181,7 +181,7 @@ def reduce_shot_channels (database, model, parse_error_log, first_shot_name, sho
         for i in range(0, num_shots):
             shot_data[i] = shot_data[i][0:min_channel_count]
 
-        min_channels = shot_channels[0]
+        min_channels = shot_channels[0][0:min_channel_count]
 
     else:
 
@@ -480,7 +480,7 @@ def infer_channel_time_units (database, model, parse_error_log, first_shot_name,
 
 
 # construct DAC variables to match time steps
-def construct_variables (shot_data, time_steps):
+def construct_variables (database, model, shot_data, time_steps):
 
     # get shot time interval data
     shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
@@ -535,6 +535,9 @@ def construct_variables (shot_data, time_steps):
         # create pairwise distance matrix
         dist_i = spatial.distance.pdist(variables[-1])
         var_dist.append(spatial.distance.squareform(dist_i))
+
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Computing ...", 50.0 + 10.0 * (i + 1.0)/num_channels])
 
     return variables, var_dist
 
@@ -716,7 +719,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                                               ["Computing ...", 50.0])
 
         # construct DAC variables and distance matrices to match time steps
-        variables, var_dist = construct_variables(shot_data, time_steps)
+        variables, var_dist = construct_variables(database, model, shot_data, time_steps)
 
         # get shot time units
         shot_time_units = [[channel['wf_unit'] for channel in shot] for shot in shot_data]

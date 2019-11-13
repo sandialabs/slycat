@@ -35,7 +35,13 @@ def init_upload_model (database, model, parse_error_log, meta_column_names, meta
     for index in range(len(meta_columns)):
         try:
             meta_columns[index] = numpy.array(meta_columns[index], dtype="float64")
-            meta_column_types[index] = "float64"
+
+            # if there are any nan values using strings instead
+            if numpy.any(numpy.isnan(meta_columns[index])):
+                meta_columns[index] = numpy.array(meta_columns[index], dtype="str")
+            else:
+                meta_column_types[index] = "float64"
+
         except:
             meta_columns[index] = numpy.array(meta_columns[index], dtype="str")
 
