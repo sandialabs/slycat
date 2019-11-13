@@ -17,6 +17,7 @@ import cherrypy
 
 # database, model are the slycat database and model to use for the upload
 # parse_error_log is the progress so far to be reported in the dac upload window
+# dac-uploading-progress starts at 70%
 # meta_column_names are the names of the metadata columns
 # meta_rows are the rows of the metadata table
 # meta_var_col_names are the names of the variable metadata columns
@@ -57,7 +58,7 @@ def init_upload_model (database, model, parse_error_log, meta_column_names, meta
     # Push DAC variables to slycat server
     # -----------------------------------
 
-    # starting uploads (30%)
+    # starting uploads (70%)
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Uploading ...", 70.0])
 
     # push error log to database

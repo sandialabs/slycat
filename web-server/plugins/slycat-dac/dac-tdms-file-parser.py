@@ -5,17 +5,21 @@
 # S. Martin
 # 7/14/2017
 
-import csv
+# computation and array manipulation
 import numpy
 from scipy import spatial
+
+# web server interaction
 import slycat.web.server
-import slycat.email
 import cherrypy
 
-# zip file manipulation
+# file manipulation
 import io
-import zipfile
 import os
+
+# reading tdms files
+import nptdms
+import pandas as pd
 
 # background thread does all the work on the server
 import threading
@@ -25,115 +29,514 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
-# CSV file parser
-def parse_csv(file):
 
-    """
-    parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
-    and sets attributes (attributes)
-    :param file: csv file to be parsed
-    :returns: attributes, dimensions, data
-              this version parses in memory so only returns data, no attributes or dimensions
-    """
+# go through all tdms files and make of record of each shot
+# filter out channels that have < MIN_TIME_STEPS
+# filter out shots that have < MIN_CHANNELS
+def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS):
 
-    def isfloat(value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
+    shot_meta = []          # meta data for shot
+    shot_data = []          # channel data for shot
 
-    rows = [row for row in csv.reader(file.decode().splitlines(), delimiter=",", doublequote=True,
-            escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
+    for tdms_file in tdms_ref:
 
-    if len(rows) < 2:
+        # get root meta data properties, same for every row of table
+        root_properties = pd.DataFrame(tdms_file.object().properties, index=[0]).add_suffix(' [Root]')
 
-        # use a row of zeros for an empty file
-        # attributes = []
-        data = []
-        for column in zip(*rows):
-            # attributes.append({"name":column[0], "type":"float64"})
-            data.append([0])
-        # dimensions = [{"name":"row", "type":"int64", "begin":0, "end":1}]
+        for group in tdms_file.groups():
 
-        # old code:
-        # slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
-        # raise Exception("File must contain at least two rows.")
+            # name shot/channel for potential errors
+            shot_name = tdms_file.object().properties['name'] + '_' + group
+
+            # get channels for group
+            group_channels = tdms_file.group_channels(group)
+
+            # compile channel data in a list
+            channel_data = []
+
+            for channel_object in group_channels:
+
+                # each channel is a dictionary containing name, unit, and time data
+                channel = {}
+
+                # get time information for channel
+                channel['wf_samples'] = channel_object.properties.get('wf_samples', None)
+                channel['wf_start_offset'] = channel_object.properties.get('wf_start_offset', None)
+                channel['wf_increment'] = channel_object.properties.get('wf_increment', None)
+                channel['wf_unit'] = channel_object.properties.get('wf_unit', None)
+
+                # get channel name
+                channel['name'] = channel_object.channel
+
+                # get channel unit
+                channel['unit'] = channel_object.properties.get('Unit', None)
+
+                # get actual time series
+                channel['data'] = channel_object.data
+
+                # check that channel is not empty
+                if channel['wf_samples'] is None:
+
+                    parse_error_log.append('Discarding channel "' + channel['name'] + '" in shot "' +
+                          shot_name + '" -- empty time series.')
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["Progress", "\n".join(parse_error_log)])
+
+                    continue
+
+                # check that channel has enough time steps
+                if channel['wf_samples'] < MIN_TIME_STEPS:
+
+                    parse_error_log.append('Discarding channel "' + channel['name'] + '" in shot "' +
+                          shot_name + '" -- less than ' + str(MIN_TIME_STEPS) + ' time steps.')
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["Progress", "\n".join(parse_error_log)])
+
+                    continue
+
+                # a shot contains a list of channel data
+                channel_data.append(channel)
+
+            # check that shot has enough channels
+            if len(channel_data) < MIN_CHANNELS:
+
+                parse_error_log.append('Discarding shot "' + shot_name + '" -- less than ' +
+                                       str(MIN_CHANNELS) + ' channels.')
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
+
+                continue
+
+            # keep track of channel names and time data
+            shot_data.append(channel_data)
+
+            # gather meta data:
+
+            # get group meta data properties, different for each row of table
+            group_properties = pd.DataFrame(tdms_file.object(group).properties, index=[0]).add_suffix(' [Group]')
+
+            # combine root and group properties
+            group_root_properties = group_properties.join(root_properties, sort=False)
+
+            # add shot index
+            shot = pd.DataFrame([group], index=[0], columns=['Group'])
+            group_root_shot_properties = group_root_properties.join(shot, sort=False)
+
+            # make unique index to row from name and group number (shot)
+            group_root_shot_properties['Index (Name_Group)'] = group_root_shot_properties['name [Root]'].astype(str) + \
+                                                               '_' + group_root_shot_properties['Group']
+            group_df = group_root_shot_properties.set_index('Index (Name_Group)')
+
+            shot_meta.append(group_df)
+
+    return parse_error_log, shot_meta, shot_data
+
+
+# routine to find minimal channel list for list of shots, order preserving
+# also returns maximum (union) of channels, for error messages, not order preserving
+def intersect_channels (shot_channels):
+
+    # assume empty intersection
+    min_chan = []
+    max_chan = []
+    channel_counts = []
+
+    # check for non-empty list of shots
+    if len(shot_channels) > 0:
+
+        # go through each shot and look at the channels available
+        min_chan = shot_channels[0]
+        max_chan = shot_channels[0]
+        for i in range(0, len(shot_channels)):
+
+            # get intersection and union of channels
+            min_chan = [channel for channel in min_chan if channel in shot_channels[i]]
+            max_chan = list(set(max_chan) | set(shot_channels[i]))
+
+            # count number of channels for each shot
+            channel_counts.append(len(shot_channels[i]))
+
+    # only care about minimum unique values for channel counts
+    min_channel_counts = min(numpy.unique(channel_counts))
+
+    return min_chan, max_chan, min_channel_counts
+
+
+# routine to reduce shot data to smallest channel minimum by order
+# if can't reduce, changes SHOT_TYPE to 'General'
+def reduce_shot_channels (database, model, parse_error_log, first_shot_name, shot_channels, shot_data, \
+                          min_channels, min_channel_count, SHOT_TYPE, shot_type_min):
+
+    num_shots = len(shot_channels)
+
+    if min_channel_count >= shot_type_min:
+
+        parse_error_log.append('Found ' + str(min_channel_count) +
+               ' channels for ' + SHOT_TYPE + ' testing -- using "' +
+               first_shot_name + '" for channel names.')
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
+
+        # reduce channels to consistent number
+        for i in range(0, num_shots):
+            shot_data[i] = shot_data[i][0:min_channel_count]
+
+        min_channels = shot_channels[0]
 
     else:
 
-        # attributes = []
-        # dimensions = [{"name":"row", "type":"int64", "begin":0, "end":len(rows[1:])}]
-        data = []
+        parse_error_log.append('Found less than ' + str(shot_type_min) + ' channels per shot for ' +
+               SHOT_TYPE + ' testing, reverting to General case.')
+        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                              ["Progress", "\n".join(parse_error_log)])
 
-        # go through the csv by column
-        for column in zip(*rows):
-            column_has_floats = False
+        SHOT_TYPE = 'General'
 
-            # start from 1 to avoid the column name
-            for value in column[1:]:
-                if isfloat(value):
-                    column_has_floats = True
-                try: # note NaN's are floats
-                    output_list = ['NaN' if x=='' else x for x in column[1:]]
-                    data.append(numpy.array(output_list).astype("float64"))
-                    # attributes.append({"name":column[0], "type":"float64"})
-
-                # could not convert something to a float defaulting to string
-                except Exception as e:
-                    column_has_floats = False
-                    cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
-                break
-
-            if not column_has_floats:
-                data.append(numpy.array(column[1:]))
-                # attributes.append({"name":column[0], "type":"string"})
-
-        # if len(attributes) < 1:
-        #     slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
-        #     raise Exception("File must contain at least one column.")
-
-    return data # attributes, dimensions, data
+    return parse_error_log, shot_data, min_channels, SHOT_TYPE
 
 
-# this is the parser for the very specific format of the .ini files in the META directory
-def parse_meta(file):
+# filter out channels to obtain a consistent number
+# of channels per shot and get channel names
+def filter_channels (database, model, parse_error_log, first_shot_name, shot_data, SHOT_TYPE):
 
-    """
-    parses out a csv file into numpy array by column (data), the dimension meta data(dimensions),
-    and sets attributes (attributes)
-    :param file: csv file to be parsed
-    :returns: attributes, dimensions, data
-    """
+    # get channel names
+    shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
 
-    # parse file one row at a time
-    rows = file.decode().splitlines()
-    data = []
-    for i in range(0,len(rows)):
+    # get list of channels that occur in every shot
+    min_channels, all_channels, min_channel_count = intersect_channels(shot_channels)
 
-        # keep prefixes
-        if "[" in rows[i]:
-            prefix = rows[i][0:5] + "]"
+    # in the overvoltage case, we use channel order and assume at least two channels
+    if SHOT_TYPE == 'Overvoltage':
+        parse_error_log, shot_data, min_channels, SHOT_TYPE = \
+            reduce_shot_channels(database, model, parse_error_log, first_shot_name, shot_channels, shot_data, \
+                                 min_channels, min_channel_count, SHOT_TYPE, 2)
 
-        # check line for one equal sign
-        row_data = rows[i].split("=")
-        if (len(row_data) == 2):
-            row_data[0] = row_data[0].translate(str.maketrans('','','"'))
-            row_data[1] = row_data[1].translate(str.maketrans('','','"'))
-            data.append((prefix + row_data[0], row_data[1]))
+    # in the sprytron case, we use channel order and assume at least six channels
+    if SHOT_TYPE == 'Sprytron':
+        parse_error_log, shot_data, min_channels, SHOT_TYPE = \
+            reduce_shot_channels(database, model, parse_error_log, first_shot_name, shot_channels, shot_data, \
+                                 min_channels, min_channel_count, SHOT_TYPE, 6)
 
-        # discard waveform_conversion information
-        if rows[i] == "[waveform_conversion]":
-            break
+    # in the general case, we discard channels not present in all shots
+    num_shots = len(shot_channels)
+    if SHOT_TYPE == 'General':
+        for channel in all_channels:
+            if channel not in min_channels:
 
-    # however many rows by 2 columns
-    # dimensions = [dict(name="row", end=len(data)),
-    #     dict(name="column", end=2)]
+                parse_error_log.append('Discarding channel "' + channel + '" -- not present in all shots.')
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
 
-    # attributes are the same for matrices and vectors
-    # attributes = [dict(name="value", type="string")]
+                # discard channel from all shots
+                for i in range(0, num_shots):
 
-    return data # attributes, dimensions, data
+                    # replace old channel data
+                    new_channel = []
+                    new_data = []
+
+                    for j in range(0, len(shot_channels[i])):
+                        if shot_channels[i][j] != channel:
+                            new_channel.append(shot_channels[i][j])
+                            new_data.append(shot_data[i][j])
+
+                    # update all channel information
+                    shot_channels[i] = new_channel
+                    shot_data[i] = new_data
+
+    return parse_error_log, min_channels, shot_data
+
+
+# get channel units from consensus or inference via channel names
+def infer_channel_units (database, model, parse_error_log, first_shot_name, channel_names,
+                         shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE):
+
+    num_channels = len(channel_names)
+    num_shots = len(shot_units)
+    channel_units = []
+
+    # check for consistent channel units
+    for i in range(0, num_channels):
+
+        # flag for inconsistent units
+        inconsistent_units = False
+
+        # get units of first shot in this channel
+        unit_0 = shot_units[0][i]
+
+        # compare units of each shot in list
+        for j in range(0, num_shots):
+            unit_j = shot_units[j][i]
+            if unit_j != unit_0:
+                inconsistent_units = True
+
+        # go with first unit assignment if inconsistent units found
+        if inconsistent_units:
+
+            parse_error_log.append('Inconsistent units found for channel "' + channel_names[i] + '", using "' +
+                  str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
+                  first_shot_name + '".')
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+        # if missing unit, infer from name using Jeremy's method
+        if unit_0 is None and INFER_CHANNEL_UNITS:
+
+            if channel_names[i].find('I') >= 0:
+                unit_0 = 'Amps'
+            elif channel_names[i].find('Current') >= 0:
+                unit_0 = 'Amps'
+            else:
+                unit_0 = 'Volts'
+
+        channel_units.append(unit_0)
+
+    # double check units using number of channels for Overvoltage type
+    if SHOT_TYPE == 'Overvoltage':
+
+        # if units don't agree with expected units issue warning
+        if not channel_units[0:2] == ['Amps', 'Volts']:
+
+            parse_error_log.append('Warning -- units different from expected units for Overvoltage testing.')
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+    # double check units for Sprytron type
+    if SHOT_TYPE == 'Sprytron':
+
+        # if units don't agree with expected units issue warning
+        if not channel_units[0:6] == ['Amps', 'Volts', 'Volts', 'Volts', 'Amps', 'Volts']:
+
+            parse_error_log.append('Warning -- units different from expected units for Sprytron testing.')
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+    # change None type to 'Not Given' for final output
+    channel_units = ['Not Given' if unit is None else unit for unit in channel_units]
+
+    return parse_error_log, channel_units
+
+
+# makes a time vector from start, increment, and samples
+def make_time_vector (shot_time):
+
+    # shot_time is [start, increment, samples]
+    start = shot_time[0]
+    increment = shot_time[1]
+    samples = int(shot_time[2])
+
+    # construct time vector
+    time_vector = []
+    for i in range(0, samples):
+        time_vector.append(start + increment*i)
+
+    return time_vector
+
+
+# construct and intersect/union all time vectors using a vector of shot times
+def combine_time_vectors (shot_times, TIME_STEP_TYPE):
+
+    num_shots = len(shot_times)
+
+    # go through each shot and intersect or union time vectors
+    time_vector = make_time_vector(shot_times[0])
+    for i in range(0, num_shots):
+
+        time_i = make_time_vector(shot_times[i])
+
+        if TIME_STEP_TYPE == 'Intersection':
+            time_vector = numpy.intersect1d(time_vector, time_i)
+        else:
+            time_vector = numpy.union1d(time_vector, time_i)
+
+    return time_vector
+
+
+# normalize time steps using either intersection or union
+# note shot_data, channel_names, and channel_units might be changed if
+# a channel is removed because it doesn't have enough time steps
+def normalize_time_steps (database, model, parse_error_log, shot_data, channel_names,
+                          channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE):
+
+    # get shot time interval data
+    shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
+                   for channel in shot] for shot in shot_data]
+
+    # check that time steps are the same for every included channel
+    num_shots = len(shot_times)
+    num_channels = len(channel_names)
+
+    # form time steps (list of time vectors) for DAC
+    time_steps = []
+
+    for i in range(0, num_channels):
+
+        time_0 = shot_times[0][i]
+        inconsistent_time_steps = False
+
+        # compare time for first shot with time for remaining shots
+        for j in range(0, num_shots):
+            time_j = shot_times[j][i]
+            if time_j != time_0:
+                inconsistent_time_steps = True
+
+        # if inconsistent time steps warn user then use intersection or union
+        if inconsistent_time_steps:
+
+            parse_error_log.append('Found inconsistent time steps for channel "' + channel_names[i] +
+                  '" -- normalizing time steps using ' + TIME_STEP_TYPE + '.')
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+            if TIME_STEP_TYPE == 'Union':
+
+                parse_error_log.append('Warning -- Union introduces artificial data from interpolation and extrapolation.')
+                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                      ["Progress", "\n".join(parse_error_log)])
+
+            # form union or intersection time vector
+            time_steps.append(combine_time_vectors(numpy.array(shot_times)[:, i], TIME_STEP_TYPE))
+
+        else:
+
+            # add time vector to time steps list
+            time_steps.append(make_time_vector(shot_times[0][i]))
+
+    # check if any time_steps have been reduced below MIN_TIME_STEPS threshold
+    # use reverse order because we may be removing items from the data lists
+    for i in range(num_channels - 1, -1, -1):
+
+        if len(time_steps[i]) < MIN_TIME_STEPS:
+
+            parse_error_log.append('Discarding channel "' + channel_names[i] + '" -- less than ' +
+                   str(MIN_TIME_STEPS) + ' time steps.')
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+            # discard channel from all shots
+            for j in range(0, num_shots):
+                # remove channel i from data, time steps, names, and units
+                shot_data[j].pop(i)
+                time_steps.pop(i)
+                channel_names.pop(i)
+                channel_units.pop(i)
+
+    return parse_error_log, time_steps, shot_data, channel_names, channel_units
+
+
+# get channel time units from data or time steps and seconds inference
+def infer_channel_time_units (database, model, parse_error_log, first_shot_name,
+                              shot_time_units, time_steps, INFER_SECONDS, channel_names):
+
+    num_channels = len(channel_names)
+    num_shots = len(shot_time_units)
+    channel_time_units = []
+
+    # check for consistent channel units
+    for i in range(0, num_channels):
+
+        # flag for inconsistent units
+        inconsistent_units = False
+
+        # get units of first shot in this channel
+        unit_0 = shot_time_units[0][i]
+
+        # compare units of each shot in list
+        for j in range(0, num_shots):
+            unit_j = shot_time_units[j][i]
+            if unit_j != unit_0:
+                inconsistent_units = True
+
+        # go with first unit assignment if inconsistent units found
+        if inconsistent_units:
+
+            parse_error_log.append('Inconsistent time units found for channel "' + channel_names[i] + '", using "' +
+                  str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
+                  first_shot_name + '".')
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+        # if missing unit, infer secons and time steps magnitude
+        if unit_0 is None and INFER_SECONDS:
+
+            # change unit_0 to seconds
+            unit_0 = 'Seconds'
+
+            # check if magnitude of time steps is in micro-seconds
+            time_magnitude = (time_steps[i][-1] - time_steps[i][0]) * 10**6
+            if time_magnitude > 0 and time_magnitude < 1000:
+
+                # change units to microseconds
+                unit_0 = 'Microseconds'
+
+                # change actual time values to microseconds
+                time_steps[i] = numpy.multiply(time_steps[i], 10**6)
+
+        channel_time_units.append(unit_0)
+
+    # change None type to 'Not Given' for final output
+    channel_time_units = ['Not Given' if unit is None else unit for unit in channel_time_units]
+
+    return parse_error_log, channel_time_units, time_steps
+
+
+# construct DAC variables to match time steps
+def construct_variables (shot_data, time_steps):
+
+    # get shot time interval data
+    shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
+                   for channel in shot] for shot in shot_data]
+
+    # check that time steps are the same for every included channel
+    num_shots = len(shot_times)
+    num_channels = len(shot_times[0])
+
+    # variables contains a list of matrices for DAC
+    variables = []
+    var_dist = []
+
+    # get variables for each channel
+    for i in range(0, num_channels):
+
+        # each channel has one array of variables
+        channel_vars = []
+
+        for j in range(0, num_shots):
+
+            # start with NaNs for entire variable
+            var_j = numpy.array([float('NaN')] * len(time_steps[i]))
+
+            # get time steps and variable for this channel and shot
+            time_j = make_time_vector(shot_times[j][i])
+            data_j = numpy.array(shot_data[j][i]['data'])
+
+            # get indices of time_j in time_steps
+            inds_in_time_steps = numpy.where(numpy.isin(time_steps[i], time_j) == True)[0]
+            inds_in_time_j = numpy.where(numpy.isin(time_j, time_steps[i]) == True)[0]
+
+            # fill in variable with available data
+            var_j[inds_in_time_steps] = data_j[inds_in_time_j]
+
+            # interpolate or extrapolate for any NaNs
+            nan_inds = numpy.isnan(var_j)
+            if numpy.any(nan_inds):
+
+                # returns time indices of logical array
+                time = lambda z: z.nonzero()[0]
+
+                # interpolates between values, extrapolates past ends
+                var_j[nan_inds] = numpy.interp(time(nan_inds), time(~nan_inds), var_j[~nan_inds])
+
+            # add this variable to our channel list
+            channel_vars.append(list(var_j))
+
+        # add the channel variable matrix to variable list
+        variables.append(numpy.array(channel_vars))
+
+        # create pairwise distance matrix
+        dist_i = spatial.distance.pdist(variables[-1])
+        var_dist.append(spatial.distance.squareform(dist_i))
+
+    return variables, var_dist
 
 
 def parse_tdms(database, model, input, files, aids, **kwargs):
@@ -152,151 +555,64 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
 
     cherrypy.log.error("DAC TDMS parser started.")
 
+    # get user parameters
+    MIN_TIME_STEPS = int(aids[0])
+    MIN_CHANNELS = int(aids[1])
+    SHOT_TYPE = aids[2]
+    TIME_STEP_TYPE = aids[3]
+    INFER_CHANNEL_UNITS = aids[4]
+    INFER_SECONDS = aids[4]
+
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
     parse_error_log = []
     parse_error_log.append("Notes:")
 
+    # count number of tdms files
+    num_files = len(files)
+    parse_error_log.append("Uploaded " + str(num_files) + " file(s).")
+
     # start parse log
     slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                           ["Progress", "\n".join(parse_error_log)])
 
-    # get parameters to eliminate likely unusable PTS files
-    CSV_MIN_SIZE = int(aids[0])
-    MIN_NUM_DIG = int(aids[1])
-
     # push progress for wizard polling to database
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
 
-    # treat uploaded file as bitstream
-    try:
+    # treat each uploaded file as bitstream
+    file_object = []
+    tdms_ref = []
 
-        file_like_object = io.BytesIO(files[0])
-        zip_ref = zipfile.ZipFile(file_like_object)
-        zip_files = zip_ref.namelist()
+    for i in range(0,num_files):
 
-    except Exception as e:
+        try:
 
-        # couldn't open zip file, report to user
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Error", "couldn't read .zip file (too large or corrupted)"])
+            file_object.append(io.BytesIO(files[i]))
+            tdms_ref.append(nptdms.TdmsFile(file_object[i]))
 
-        # record no data message in front of parser log
-        parse_error_log.append("Error -- couldn't read .zip file (too large or corrupted).")
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["No Data", "\n".join(parse_error_log)])
+        except Exception as e:
 
-        # print error to cherrypy.log.error
-        cherrypy.log.error(traceback.format_exc())
-
-    # loop through zip files and make a list of CSV/META files
-
-    csv_files = []
-    csv_no_ext = []
-
-    meta_files = []
-    meta_no_ext = []
-
-    for zip_file in zip_files:
-
-        # parse files in list
-        head, tail = os.path.split(zip_file)
-
-        # check for CSV or META file
-        if head == "CSV":
-
-            # check for .csv extension
-            if tail != "":
-
-                ext = tail.split(".")[-1]
-                if ext == "csv":
-                    csv_files.append(zip_file)
-                    csv_no_ext.append(tail.split(".")[0])
-                else:
-                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                         ["Error", "CSV files must have .csv extension"])
-
-                    parse_error_log.append("Error -- CSV files must have .csv extension.")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["No Data", "\n".join(parse_error_log)])
-
-                    raise Exception("CSV files must have .csv extension.")
-
-        elif head == "META":
-
-            # check for .ini extension
-            if tail != "":
-
-                ext = tail.split(".")[-1]
-                if ext == "ini":
-                    meta_files.append(zip_file)
-                    meta_no_ext.append(tail.split(".")[0])
-                else:
-                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                         ["Error", "META files must have .ini extension"])
-
-                    parse_error_log.append("Error -- META files must have .ini extension.")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["No Data", "\n".join(parse_error_log)])
-
-                    raise Exception("META files must have .ini extension.")
-
-        else:
-
-            # not CSV or META file
+            # couldn't open tdms file, report to user
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "unexpected file (not CSV/META) found in .zip file"])
+                                                  ["Error", "couldn't read .tdms file."])
 
-            parse_error_log.append("Error -- unexpected file (not CSV/META) found in .zip file.")
+            # record no data message in front of parser log
+            parse_error_log.append("Error -- couldn't read .tmds file.")
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                   ["No Data", "\n".join(parse_error_log)])
 
-            raise Exception("Unexpected file (not CSV/META) found in .zip file.")
-
-    # check that CSV and META files have a one-to-one correspondence
-    meta_order = []
-    if len(csv_no_ext) == len(meta_no_ext):
-
-        # go through CSV files and look for corresponding META file
-        for csv_file in csv_no_ext:
-
-            # get META file index of CSV file
-            if csv_file in meta_no_ext:
-                meta_order.append(meta_no_ext.index(csv_file))
-
-            else:
-                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Error", "CSV and META files do not match."])
-
-                parse_error_log.append("Error -- CSV and META files do not match.")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["No Data", "\n".join(parse_error_log)])
-
-                raise Exception("CSV and META files do not match.")
-
-    else:
-
-        # different number of CSV and META files
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Error", "PTS .zip file must have same number of CSV and META files"])
-
-        parse_error_log.append("Error -- PTS .zip file must have same number of CSV and META files.")
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["No Data", "\n".join(parse_error_log)])
-
-        raise Exception("PTS .zip file must have same number of CSV and META files.")
-
-    # re-order meta files to match csv files
-    meta_files = [meta_files[i] for i in meta_order]
+            # print error to cherrypy.log.error
+            cherrypy.log.error(traceback.format_exc())
 
     stop_event = threading.Event()
-    thread = threading.Thread(target=parse_pts_thread, args=(database, model, zip_ref,
-                                                             csv_files, meta_files, csv_no_ext, parse_error_log,
-                                                             CSV_MIN_SIZE, MIN_NUM_DIG, stop_event))
+    thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
+                              MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
+                              INFER_CHANNEL_UNITS, INFER_SECONDS, parse_error_log, stop_event))
     thread.start()
 
-def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_ext, parse_error_log,
-                      CSV_MIN_SIZE, MIN_NUM_DIG, stop_event):
+
+def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
+                              INFER_CHANNEL_UNITS, INFER_SECONDS, parse_error_log, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -308,315 +624,142 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
     # errors to cherrypy.log.error
     try:
 
-        # import dac_compute_coords module from source by hand
-        dac = imp.load_source('dac_compute_coords',
-                              os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
-
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
-        cherrypy.log.error("DAC PTS Zip thread started.")
+        cherrypy.log.error("DAC TDMS thread started.")
 
-        num_files = len(csv_files)
+        # filter shots according to user preferences MIN_TIME_STEPS and MIN_CHANNELS
+        parse_error_log, shot_meta, shot_data = filter_shots(database, model, parse_error_log, tdms_ref,
+                                            MIN_TIME_STEPS, MIN_CHANNELS)
 
-        # get meta/csv data, store as arrays of dictionaries
-        # (skip bad/empty files)
-        wave_data = []
-        table_data = []
-        csv_data = []
-        dig_id = []
-        test_op_id = []
-        file_name = []
-        table_keys = []
-        for i in range(0, num_files):
+        # was any data imported?
+        if len(shot_meta) == 0:
 
-            # push progress for wizard polling to database
+            # record no data message in front of parser log
+            parse_error_log.append("Error: no data imported -- check minimum channel (" + str(MIN_CHANNELS) +
+                  ") and minimum time step (" + str(MIN_TIME_STEPS) + ") filters.")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["No Data", "\n".join(parse_error_log)])
+
+            # done polling
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
+                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
-            # extract csv file from archive and parse
-            # cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
-            data = parse_csv(zip_ref.read(csv_files[i]))
-            csv_data_i = data[2:4]
+            # quit early
+            stop_event.set()
 
-            # check for an empty csv file
-            if len(csv_data_i[0]) < CSV_MIN_SIZE:
-                parse_error_log.append("CSV data file has less than " + str(CSV_MIN_SIZE)
-                                       + " entries -- skipping " + files_no_ext[i] + ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
-                continue
 
-            # extract meta file from archive and parse
-            data = parse_meta(zip_ref.read(meta_files[i]))
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Extracting ...", 20.0])
 
-            # make dictionary for wave, table data
-            meta_data_i = data
-            meta_dict_i = dict(meta_data_i)
+        # finalize list of usable channels
+        parse_error_log, channel_names, shot_data = filter_channels(database, model, parse_error_log, shot_meta[0].index[0],
+                                                   shot_data, SHOT_TYPE)
 
-            # split into wave/table data
-            wave_data_i = {}
-            table_data_i = {}
-            for j in range(len(meta_data_i)):
+        # check that enough channels are still present
+        if len(channel_names) < MIN_CHANNELS:
 
-                key = meta_data_i[j][0]
+            # record no data message in front of parser log
+            parse_error_log.append("Error: no data imported -- available numbers of channels is less than "
+                                   + str(MIN_CHANNELS) + ".")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["No Data", "\n".join(parse_error_log)])
 
-                # strip off key prefix to obtain new key
-                prefix = key[0:6]
-                key_no_prefix = key[6:]
-
-                # ignore [wave] prefix
-                if prefix == "[wave]":
-                    wave_data_i[key_no_prefix] = meta_dict_i[key]
-                else:
-                    table_data_i[key_no_prefix] = meta_dict_i[key]
-
-                    # add key to set of all table keys
-                    if not key_no_prefix in table_keys:
-                        table_keys.insert(j, key_no_prefix)
-
-            # record relevant information for organizing data
-            test_op_id.append (int(meta_dict_i["[oper]test_op_inst_id"]))
-            dig_id.append (int(meta_dict_i["[wave]WF_DIG_ID"]))
-
-            # record csv data
-            csv_data.append(csv_data_i)
-
-            # record meta data as table and wave data
-            wave_data.append(wave_data_i)
-            table_data.append(table_data_i)
-
-            # record file name origin
-            file_name.append(files_no_ext[i])
-
-            # update read progress
+            # done polling
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                     ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
+                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
-        # close archive
-        zip_ref.close()
+            # quit early
+            stop_event.set()
 
-        # look for unique test-op ids (these are the rows in the metadata table)
-        uniq_test_op, uniq_test_op_clusts = numpy.unique(test_op_id, return_inverse = True)
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Extracting ...", 30.0])
 
-        # loaded CSV/META data (50%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 50.0])
+        # get shot units
+        shot_units = [[channel['unit'] for channel in shot] for shot in shot_data]
 
-        cherrypy.log.error("DAC: screening for consistent digitizer IDs.")
+        # finalize channel units
+        parse_error_log, channel_units = infer_channel_units(database, model, parse_error_log, shot_meta[0].index[0],
+                                            channel_names, shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE)
 
-        # screen for consistent digitizer ids
-        test_inds = []
-        test_dig_ids = []
-        dig_id_keys = []
-        for i in range(len(uniq_test_op)):
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Extracting ...", 40.0])
 
-            # get indices for test op clusters
-            test_i_inds = numpy.where(uniq_test_op_clusts == i)[0]
+        # normalize time step data
+        parse_error_log, time_steps, shot_data, channel_names, channel_units = \
+            normalize_time_steps(database, model, parse_error_log,
+                shot_data, channel_names, channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE)
 
-            # order indices according to digitizer id
-            dig_ids_i = numpy.array(dig_id)[test_i_inds]
-            dig_ids_i_sort_inds = numpy.argsort(dig_ids_i)
+        # check that enough channels are still present
+        if len(channel_names) < MIN_CHANNELS:
 
-            test_i_inds = numpy.array(test_i_inds)[dig_ids_i_sort_inds]
-            dig_ids_i = numpy.array(dig_id)[test_i_inds]
+            # record no data message in front of parser log
+            parse_error_log.append("Error: no data imported -- available numbers of channels is less than " +
+                                   str(MIN_CHANNELS) + ".")
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["No Data", "\n".join(parse_error_log)])
 
-            # if too few digitizer signals ignore data
-            if len(dig_ids_i) < MIN_NUM_DIG:
-                parse_error_log.append("Less than " + str(MIN_NUM_DIG) +
-                                       " time series -- skipping test-op id #"
-                                       + str(uniq_test_op[i]) + ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
-                continue
+            # done polling
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
-            # store test inds for each row and digitizer ids (sorted)
-            test_inds.append(test_i_inds)
-            test_dig_ids.append(dig_ids_i)
+            # quit early
+            stop_event.set()
 
-            # keep track of total number of digitizers
-            for j in range(len(dig_ids_i)):
-                if not dig_ids_i[j] in dig_id_keys:
-                    dig_id_keys.append(dig_ids_i[j])
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Computing ...", 50.0])
 
-        cherrypy.log.error("DAC: getting intersecting IDs.")
+        # construct DAC variables and distance matrices to match time steps
+        variables, var_dist = construct_variables(shot_data, time_steps)
 
-        # screen for intersecting digitizer ids
-        keep_dig_ids = dig_id_keys
-        for i in range(len(test_dig_ids)):
-            keep_dig_ids = list(set(keep_dig_ids) & set(test_dig_ids[i]))
+        # get shot time units
+        shot_time_units = [[channel['wf_unit'] for channel in shot] for shot in shot_data]
 
-        # add removed ids to parse error log
-        for i in range(len(dig_id_keys)):
-            if not dig_id_keys[i] in keep_dig_ids:
-                parse_error_log.append("Not found in all test ops --- skipping digitizer #" +
-                                       str(dig_id_keys[i])+ ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
+        # finalize time units
+        parse_error_log, channel_time_units, time_steps = \
+            infer_channel_time_units(database, model, parse_error_log,
+                                     shot_meta[0].index[0], shot_time_units,
+                                     time_steps, INFER_SECONDS, channel_names)
 
-        # sort and keep consistent, intersecting digitizer ids
-        dig_id_keys = sorted(keep_dig_ids)
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Computing ...", 60.0])
 
-        # trim test_inds and dig_ids to according to new ids
-        for i in range(len(test_inds)):
+        # construct remaining DAC variables
 
-            # get previously unculled digitizer ids
-            old_dig_ids_i = test_dig_ids[i]
-            old_test_inds_i = test_inds[i]
+        # construct meta data table (modified from Jeremy Little's code to
+        # append [root] to root columns and [group] to group columns)
+        meta_df = pd.DataFrame()
+        for i in range(0, len(shot_meta)):
+            # add rows and repeat
+            meta_df = meta_df.append(shot_meta[i], sort=False)
 
-            # construct new indices
-            new_test_i_inds = []
-            new_dig_ids_i = []
+        # convert pandas dataframe to header and rows
+        meta_column_names = meta_df.reset_index().columns.values.tolist()
+        meta_rows = meta_df.reset_index().values.tolist()
 
-            # remove unused digitizers indices
-            for j in range(len(old_dig_ids_i)):
-                if old_dig_ids_i[j] in dig_id_keys:
-                    new_dig_ids_i.append(old_dig_ids_i[j])
-                    new_test_i_inds.append(old_test_inds_i[j])
+        # construct variables.meta table
+        meta_var_col_names = ['Name', 'Time Units', 'Units', 'Plot Type']
 
-            # replace in list of indices
-            test_inds[i] = new_test_i_inds
-            test_dig_ids[i] = new_dig_ids_i
-
-        cherrypy.log.error("DAC: constructing meta data table and variable/time matrices.")
-
-        # screened CSV/META data (55%)
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 55.0])
-
-        # construct meta data table and variable/time dictionaries
-        meta_column_names = table_keys
-        meta_rows = []
-        var_data = [[] for key in dig_id_keys]
-        time_data = [[] for key in dig_id_keys]
-        for i in range(len(test_inds)):
-
-            # get indices for test op
-            test_i_inds = test_inds[i]
-
-            # check that table data/wave form data is consistent
-            for j in range(len(test_i_inds)):
-                if table_data[test_i_inds[j]] != table_data[test_i_inds[0]]:
-                    parse_error_log.append("Inconsistent meta data for test-op id #" + str(uniq_test_op[i]) + ".")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
-
-            # use first row for table entry
-            meta_row_i = []
-            meta_dict_i = table_data[test_i_inds[0]]
-            for j in range(len(meta_column_names)):
-                if meta_column_names[j] in meta_dict_i:
-                    meta_row_i.append(meta_dict_i[meta_column_names[j]])
-                else:
-                    meta_row_i.append("")
-            meta_rows.append (meta_row_i)
-
-            # store variable/time information (should be in dig id order)
-            for j in range(len(test_i_inds)):
-
-                # get digitizer j variable and time information
-                time_data[j].append(csv_data[test_i_inds[j]][0])
-                var_data[j].append(csv_data[test_i_inds[j]][1])
-
-        cherrypy.log.error ("DAC: constructing variables.meta table and data matrices.")
-
-        # construct variables.meta table, variable/distance matrices, and time vectors
-        meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
+        # construct meta variable rows
         meta_vars = []
-        time_steps = []
-        variable = []
-        var_dist = []
-        for i in range(len(dig_id_keys)):
-
-            # row i for variables.meta table
-            if "WF_DIG_LABEL" in wave_data[test_inds[0][i]]:
-                name_i = wave_data[test_inds[0][i]]["WF_DIG_LABEL"] + " (" + str(dig_id_keys[i]) + ")"
-            else:
-                name_i = "WF_DIG_ID " + str(dig_id_keys[i])
-            units_i = wave_data[test_inds[0][i]].get("WF_Y_UNITS", "Not Given")
-            time_units_i = wave_data[test_inds[0][i]].get("WF_X_UNITS", "Not Given")
-            plot_type_i = "Curve"
-
-            # time vector for digitizer i
-            time_i = time_data[i][0]
-            max_time_i_len = len(time_i)
-
-            # look through each set of test indices to see if units are unchanged
-            for j in range(len(test_inds)):
-
-                # get units from next set of test indices
-                units_j = wave_data[test_inds[j][i]].get("WF_Y_UNITS", "Not Given")
-                time_units_j = wave_data[test_inds[j][i]].get("WF_X_UNITS", "Not Given")
-
-                # issue warning if units are not the same
-                if units_i != units_j:
-                    parse_error_log.append("Units for test op #" + str(test_op_id[test_inds[j][i]])
-                                           + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
-                                           + " for " + name_i + ".")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
-
-                # issue warning if time units are not the same
-                if time_units_i != time_units_j:
-                    parse_error_log.append("Time units for test op #" + str(test_op_id[test_inds[j][i]])
-                                           + " inconsistent with test op #" + str(test_op_id[test_inds[0][i]])
-                                           + " for " + name_i + ".")
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
-
-                # intersect time vector
-                time_i = list(set(time_i) & set(time_data[i][j]))
-                max_time_i_len = max(max_time_i_len, len(time_data[i][j]))
-
-            # check if time vectors were inconsistent
-            if len(time_i) < max_time_i_len:
-                parse_error_log.append("Inconsistent time points for digitizer #" + str(dig_id_keys[i])
-                                       + " -- reduced from " + str(max_time_i_len) + " to "
-                                       + str(len(time_i)) + " time points.")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
-
-            # check if reduction is below minimum threshold
-            if len(time_i) < CSV_MIN_SIZE:
-
-                # log as an error
-                parse_error_log.append("Common time points are less than " + str(CSV_MIN_SIZE)
-                                       + " -- skipping digitizer #" + str(dig_id_keys[i]) + ".")
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
-
-            else:
-
-                # populate variables.meta table
-                meta_vars.append([name_i, time_units_i, units_i, plot_type_i])
-
-                # push time vector to list of time vectors
-                time_i.sort()
-                time_steps.append (time_i)
-
-                # intersect variable data
-                variable_i = numpy.zeros((len(test_inds),len(time_i)))
-                for j in range(0,len(test_inds)):
-                    dict_time_j = dict((val, ind) for ind, val in enumerate(time_data[i][j]))
-                    time_j_inds = [dict_time_j[val] for val in time_i]
-                    variable_i[j:] = var_data[i][j][time_j_inds]
-                variable.append (variable_i)
-
-                # distance computations progress
-                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                      ["Computing ...", (i + 1.0)/len(dig_id_keys) * 10.0 + 55.0])
-
-                # create pairwise distance matrix
-                dist_i = spatial.distance.pdist(variable_i)
-                var_dist.append(spatial.distance.squareform (dist_i))
+        num_vars = len(channel_names)
+        for i in range(0, num_vars):
+            meta_vars.append([channel_names[i], channel_time_units[i], channel_units[i], 'Curve'])
 
         # show which digitizers were parsed
-        num_vars = len(meta_vars)
         for i in range(num_vars):
-            parse_error_log.append("Digitizer " + str(meta_vars[i][0]) + " parsed successfully.")
+            parse_error_log.append("Channel " + str(meta_vars[i][0]) + " parsed successfully.")
 
         # check that we still have enough digitizers
-        if num_vars < MIN_NUM_DIG:
-            parse_error_log.append("Total number of digitizers parsed less than " + str(MIN_NUM_DIG) +
+        if num_vars < MIN_CHANNELS:
+            parse_error_log.append("Total number of channels parsed less than " + str(MIN_CHANNELS) +
                                    " -- no data remaining.")
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                   ["Progress", "\n".join(parse_error_log)])
@@ -653,7 +796,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             push.init_upload_model (database, model, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variable, time_steps, var_dist)
+                                    variables, time_steps, var_dist)
 
             # done -- destroy the thread
             stop_event.set()
@@ -662,6 +805,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         # print error to cherrypy.log.error
         cherrypy.log.error(traceback.format_exc())
+
 
 def register_slycat_plugin(context):
     context.register_parser("dac-tdms-file-parser", ".tdms file", ["dac-tdms-files"], parse_tdms)
