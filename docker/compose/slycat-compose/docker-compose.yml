@@ -70,8 +70,8 @@ services:
     networks:
       - sly-net
     #uncomment to expose cherrypy @http://localhost:5984/_utils
-    ports:
-      - "5984:5984"
+    # ports:
+    #   - "5984:5984"
     volumes:
       - couchdb-data-volume:/usr/local/var/lib/couchdb
 
