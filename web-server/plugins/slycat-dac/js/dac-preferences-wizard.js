@@ -78,11 +78,11 @@ function constructor(params)
 
     // which color is selected (one for continuous, one for discrete)
     var cont_selected = null;
-    var disc_selected = null;
+    // var disc_selected = null;
 
     // also keep track of color maps
     var cont_map = null;
-    var disc_map = null;
+    // var disc_map = null;
 
     // option defaults
     var DEF_MAX_LABEL_LENGTH = 20;
@@ -338,7 +338,7 @@ function constructor(params)
             .enter().append("span")
                 .attr("class", "dac-palette")
                 .attr("title", function(d) { return d.key; })
-            .on("click", select_disc_palette)
+            .on("click", select_cont_palette)
             .selectAll(".dac-swatch")
                 .data(function(d) { return d.value[d3.keys(d.value).map(Number).sort(d3.descending)[0]]; })
                 .enter().append("span")
@@ -367,6 +367,13 @@ function constructor(params)
                         component.dac_scale_type("diverging");
                     }
 
+                    // is it a discrete selection? (added for continuous, discrete merge)
+                    if (cont_selected in cb_disc) {
+
+                        // yes, switch to discrete color scales
+                        component.dac_scale_type("discrete");
+                    }
+
                     // either way, highlight previous selection
                     d3.select("[title=" + cont_selected + "]")
                         .style("background-color", "#444")
@@ -376,6 +383,7 @@ function constructor(params)
 
         });
 
+        /* ignore any previous discrete bookmarks:
         // load up previous discrete selection, if any
         bookmarker.getState(function(bookmark)
         {
@@ -398,6 +406,7 @@ function constructor(params)
                 };
             };
         });
+        */
     }
 
     // set continuous color palette selection
@@ -437,6 +446,7 @@ function constructor(params)
 
     }
 
+    /* disconected, only using select_cont_palette
     // set discrete color palette selection
     var select_disc_palette = function (d) {
 
@@ -473,6 +483,7 @@ function constructor(params)
         }
 
     }
+    */
 
     // initialize all swatches, switch betweent them in wizard
     draw_swatches();
@@ -629,7 +640,7 @@ function constructor(params)
         bookmarker.updateState({"dac-cont-colormap": [cont_map, cont_selected]});
 
         // update bookmark state to reflect discrete colormap
-        bookmarker.updateState({"dac-disc-colormap": [disc_map, disc_selected]});
+        // bookmarker.updateState({"dac-disc-colormap": [disc_map, disc_selected]});
 
         // update remaining options in bookmark state
         bookmarker.updateState({"dac-MAX-PLOT-NAME": dac_max_label_length,

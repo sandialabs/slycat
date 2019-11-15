@@ -209,8 +209,11 @@ $(document).ready(function() {
                     if ("dac-cont-colormap" in bookmark) {
                         cont_colormap = JSON.parse(bookmark_preference("dac-cont-colormap", cont_colormap)[0]); };
 
-                    if ("dac-disc-colormap" in bookmark) {
-                        disc_colormap = JSON.parse(bookmark_preference("dac-disc-colormap", disc_colormap)[0]); };
+                        // no more discrete colormap (same as continuous)
+                        disc_colormap = cont_colormap;
+
+                    // if ("dac-disc-colormap" in bookmark) {
+                    //     disc_colormap = JSON.parse(bookmark_preference("dac-disc-colormap", disc_colormap)[0]); };
 
                     MAX_PLOT_NAME = bookmark_preference("dac-MAX-PLOT-NAME", MAX_PLOT_NAME);
                     MAX_COLOR_NAME = bookmark_preference("dac-MAX-COLOR-NAME", MAX_COLOR_NAME);
