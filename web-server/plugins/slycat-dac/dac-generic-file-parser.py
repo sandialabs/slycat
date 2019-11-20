@@ -274,10 +274,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
-    parse_error_log = []
-
-    # start parse log
-    parse_error_log = update_parse_log (database, model, parse_error_log, "Progress", "Notes:")
+    parse_error_log = update_parse_log (database, model, [], "Progress", "Notes:")
 
     # treat uploaded file as bitstream
     try:
@@ -362,8 +359,8 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                                                           ["Error", "time series files must have .time extension"])
 
                     # record no data message in front of parser log
-                    parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                                       "Error -- time series files must have .time extension.")
+                    update_parse_log(database, model, parse_error_log, "No Data",
+                                     "Error -- time series files must have .time extension.")
 
                     raise Exception("time series files must have .time extension.")
 
@@ -384,8 +381,8 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                                                           ["Error", "distance matrix files must have .dist extension"])
 
                     # record no data message in front of parser log
-                    parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                                       "Error -- distance matrix files must have .dist extension.")
+                    update_parse_log(database, model, parse_error_log, "No Data",
+                                     "Error -- distance matrix files must have .dist extension.")
 
                     raise Exception("distance matrix files must have .dist extension.")
 
@@ -426,8 +423,8 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                                                   ["Error", "variables.meta file has incorrect headers"])
 
             # record no data message in front of parser log
-            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                               "Error -- variables.meta file has incorrect headers.")
+            update_parse_log(database, model, parse_error_log, "No Data",
+                             "Error -- variables.meta file has incorrect headers.")
 
             raise Exception("variables.meta file has incorrect headers.")
 
@@ -464,8 +461,8 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                                               ["Error", "variables.meta file not found"])
 
         # record no data message in front of parser log
-        parse_error_log = update_parse_log (database, model, parse_error_log, "No Data",
-                                           "Error -- variables.meta file not found.")
+        update_parse_log (database, model, parse_error_log, "No Data",
+                          "Error -- variables.meta file not found.")
 
         raise Exception("variables.meta file not found.")
 
@@ -494,8 +491,8 @@ def check_file_names (database, model, parse_error_log,
                                               ["Error", error_msg])
 
         # record no data message in front of parser log
-        parse_error_log = update_parse_log (database, model, parse_error_log, "No Data",
-                                            "Error -- " + error_msg + ".")
+        update_parse_log (database, model, parse_error_log, "No Data",
+                          "Error -- " + error_msg + ".")
 
         raise Exception(error_msg + ".")
 

@@ -30,6 +30,16 @@ import traceback
 import imp
 
 
+# update dac-parse-log
+def update_parse_log (database, model, parse_error_log, error_type, error_string):
+
+    parse_error_log.append(error_string)
+    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                          [error_type, "\n".join(parse_error_log)])
+
+    return parse_error_log
+
+
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
 # filter out shots that have < MIN_CHANNELS
@@ -568,16 +578,12 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
-    parse_error_log = []
-    parse_error_log.append("Notes:")
+    parse_error_log = update_parse_log (database, model, [], "Progress", "Notes:")
 
     # count number of tdms files
     num_files = len(files)
-    parse_error_log.append("Uploaded " + str(num_files) + " file(s).")
-
-    # start parse log
-    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                          ["Progress", "\n".join(parse_error_log)])
+    parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                       "Uploaded " + str(num_files) + " file(s).")
 
     # push progress for wizard polling to database
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
@@ -600,9 +606,8 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
                                                   ["Error", "couldn't read .tdms file."])
 
             # record no data message in front of parser log
-            parse_error_log.append("Error -- couldn't read .tmds file.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["No Data", "\n".join(parse_error_log)])
+            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                               "Error -- couldn't read .tmds file.")
 
             # print error to cherrypy.log.error
             cherrypy.log.error(traceback.format_exc())
@@ -641,10 +646,10 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         if len(shot_meta) == 0:
 
             # record no data message in front of parser log
-            parse_error_log.append("Error: no data imported -- check minimum channel (" + str(MIN_CHANNELS) +
-                  ") and minimum time step (" + str(MIN_TIME_STEPS) + ") filters.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["No Data", "\n".join(parse_error_log)])
+            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                               "Error: no data imported -- check minimum channel (" +
+                                               str(MIN_CHANNELS) + ") and minimum time step (" +
+                                               str(MIN_TIME_STEPS) + ") filters.")
 
             # done polling
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -666,10 +671,9 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         if len(channel_names) < MIN_CHANNELS:
 
             # record no data message in front of parser log
-            parse_error_log.append("Error: no data imported -- available numbers of channels is less than "
-                                   + str(MIN_CHANNELS) + ".")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["No Data", "\n".join(parse_error_log)])
+            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                               "Error: no data imported -- available numbers of channels is less than " +
+                                                str(MIN_CHANNELS) + ".")
 
             # done polling
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -702,10 +706,9 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         if len(channel_names) < MIN_CHANNELS:
 
             # record no data message in front of parser log
-            parse_error_log.append("Error: no data imported -- available numbers of channels is less than " +
+            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                   "Error: no data imported -- available numbers of channels is less than " +
                                    str(MIN_CHANNELS) + ".")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["No Data", "\n".join(parse_error_log)])
 
             # done polling
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -762,17 +765,15 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
         # check that we still have enough digitizers
         if num_vars < MIN_CHANNELS:
-            parse_error_log.append("Total number of channels parsed less than " + str(MIN_CHANNELS) +
+            parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                   "Total number of channels parsed less than " + str(MIN_CHANNELS) +
                                    " -- no data remaining.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
             meta_rows = []
 
         # if no parse errors then inform user
         if len(parse_error_log) == 1:
-            parse_error_log.append("None.")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                    ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                               "No parse errors.")
 
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
