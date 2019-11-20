@@ -92,8 +92,9 @@ describe("when we load the RemoteFileBrowser", () =>{
       onSelectParserCallBack={onSelectParser}
       />
     );
-    DefaultInstance = component.getInstance();
-    expect(DefaultInstance).toMatchSnapshot();
+    // This breaks the test
+    // DefaultInstance = component.getInstance();
+    expect(component).toMatchSnapshot();
   });
   
 });
