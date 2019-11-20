@@ -86,6 +86,9 @@ $(document).ready(function() {
                             categories: [],
                             data: []};
 
+    // model origin data (initialize to empty)
+    var model_origin = [];
+
     // waits 1 minute past last successful progress update
     var endTime = Number(new Date()) + ONE_MINUTE;
 
@@ -225,8 +228,8 @@ $(document).ready(function() {
                     MAX_CATS = bookmark_preference("dac-MAX-CATS", MAX_CATS);
                     MAX_FREETEXT_LEN = bookmark_preference("dac-MAX-FREETEXT-LEN", MAX_FREETEXT_LEN);
 
-                    // set up editable column data
-                    setup_editable_columns();
+                    // set up model origin column data
+                    setup_model_origin();
 
                 });
 
@@ -256,6 +259,54 @@ $(document).ready(function() {
             }
 
         return bookmark_pref;
+    }
+
+    // set up model origin data
+    function setup_model_origin ()
+    {
+
+        // check for model origin data
+        client.get_model(
+        {
+
+            mid: mid,
+            success: function (result)
+            {
+
+                if ('artifact:dac-model-origin' in result) {
+
+                    // load model origin data
+                    client.get_model_parameter({
+
+                        mid: mid,
+                        aid: "dac-model-origin",
+                        success: function (result)
+                        {
+
+                            model_origin = result;
+
+                            // continue to editable columns
+                            setup_editable_columns();
+
+                        },
+                        error: function () {
+
+                            // notify user that editable columns exist, but could not be loaded
+                            dialog.ajax_error('Server error: could not load model origin column data.')
+                            ("","","")
+
+                            // continue to editable columns
+                            setup_editable_columns();
+                        }
+                    });
+
+                } else {
+
+                    setup_editable_columns();
+                }
+            }
+        });
+
     }
 
     // set up table with editable columns
@@ -702,11 +753,12 @@ $(document).ready(function() {
 					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_fisher_order, init_fisher_pos, init_diff_desired_state, editable_columns);
+					                init_fisher_order, init_fisher_pos, init_diff_desired_state, editable_columns,
+					                model_origin);
 
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, MAX_FREETEXT_LEN, init_sort_order,
+                                                 editable_columns, model_origin, MAX_FREETEXT_LEN, init_sort_order,
                                                  init_sort_col);
 
 		   	                },
