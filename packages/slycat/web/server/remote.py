@@ -695,13 +695,8 @@ class Session(object):
             except socket.error as e:
                 delete_session(self._sid)
                 raise socket.error('Socket is closed')
-            # json.loads(json.dumps(results, cls=MyEncoder))
-            cherrypy.log.error('reading value')
             value = stdout.readline()
-            # cherrypy.log.error(value)
-            cherrypy.log.error('Done: loading metadata')
             metadata = json.loads(value)
-            cherrypy.log.error('metadata:')
             if metadata["message"] == "Path must be absolute.":
                 cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
                     self.hostname, path)
@@ -753,20 +748,12 @@ class Session(object):
                                             self.hostname, path, self.hostname, path))
                 raise cherrypy.HTTPError("400 Access denied.")
             content_type = metadata["content-type"]
-            cherrypy.log.error("reading line")
             content = base64.b64decode(metadata["content"])
-            # content = stdout.read((metadata["size"]))
-            # leftover = stdout.readline()
 
             if cache == "project":
                 cache_object(project, key, content_type, content)
 
-
             cherrypy.response.headers["content-type"] = content_type
-            cherrypy.log.error("returning content")
-            cherrypy.log.error(str(type(content)))
-            # cherrypy.log.error(content[0])
-            # cherrypy.log.error(str(leftover))
             return content
 
         # Use sftp to retrieve a file.
@@ -786,7 +773,6 @@ class Session(object):
             if cache == "project":
                 cache_object(project, key, content_type, content)
             cherrypy.response.headers["content-type"] = content_type
-            cherrypy.log.error(str(type(content)))
             return content
 
         except Exception as e:
