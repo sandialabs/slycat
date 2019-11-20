@@ -351,10 +351,9 @@ class Agent(object, metaclass=abc.ABCMeta):
             raise Exception(e.message)
 
         content_type, encoding = slycat.mime_type.guess_type(path)
-        sys.stdout.write("%s\n%s" % (json.dumps(
-            {"ok": True, "message": "File retrieved.", "path": path, "content-type": content_type,
-             "size": len(file_content)}),
-                                     file_content))
+        self.get_job_logger("slycat_agent")(str(type(file_content)))
+        encoded_file_content = base64.b64encode(file_content).decode('utf-8')
+        sys.stdout.write("%s\n" % (json.dumps({"ok": True, "message": "File retrieved.", "path": path, "content-type": content_type,"size": len(file_content), "content": encoded_file_content})))
         sys.stdout.flush()
 
     # Handle the 'write-file' command.
@@ -560,6 +559,7 @@ class Agent(object, metaclass=abc.ABCMeta):
                     raise Exception("Unknown command.")
             except Exception as e:
                 if debug:
+                    self.get_job_logger("slycat_agent")("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
                     sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
                 else:
                     sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}))
