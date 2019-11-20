@@ -48,7 +48,7 @@
     "three-stl-loader": "1.0.6",
     "three-trackballcontrols": "0.0.8",
     "urijs": "1.19.1",
-    "vtk.js": "11.6.0",
+    "vtk.js": "11.11.2",
     "wslink": "0.1.12"
   },
   "devDependencies": {
