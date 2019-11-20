@@ -548,7 +548,7 @@ function constructor(params)
     // very last function called to launch model
     component.go_to_model = function() {
         // launch model
-        $(".modal-dialog").removeClass("modal-lg");
+        // $(".modal-dialog").removeClass("modal-lg");
         location = 'models/' + component.model._id();
     };
 

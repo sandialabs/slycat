@@ -185,6 +185,8 @@ def get_project(pid):
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
+    if slycat.web.server.authentication.is_server_administrator():
+        project['acl']["administrators"].append({'user':cherrypy.request.login})
     return project
 
 def get_remote_host_dict():
@@ -351,6 +353,7 @@ def put_project_csv_data(pid, file_key, parser, mid, aids):
     if "project_data" not in model:
         model["project_data"] = []
     model["project_data"].append(project_data["_id"])
+    database.save(model)
     slycat.web.server.parse_existing_file(database, parser, True, attachment, model, aids)
     return {"Status": "Success"}
 
@@ -498,6 +501,7 @@ def create_project_data(mid, aid, file):
     model = database.get("model", mid)
 
     with slycat.web.server.get_model_lock(model["_id"]):
+        model = database.get("model", mid)
         project = database.get("project", model["project"])
         pid = project["_id"]
         timestamp = time.time()
@@ -652,6 +656,80 @@ def get_project_data(did, **kwargs):
     project = database.get("project", project_data["project"])
     slycat.web.server.authentication.require_project_reader(project)
     return project_data
+
+@cherrypy.tools.json_out(on=True)
+def get_project_data_parameter(did, param, **kwargs):
+    """
+    Returns a project data parameter.
+
+    Arguments:
+        did {string} -- data id
+        param {string} -- name of parameter to return
+    
+    Returns:
+        json -- represents a project data parameter
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project_data", did)
+    project = database.get("project", project_data["project"])
+    slycat.web.server.authentication.require_project_reader(project)
+    
+    try:
+        return slycat.web.server.get_project_data_parameter(database, project_data, param)
+    except KeyError as e:
+        cherrypy.log.error("slycat.web.server.handlers.py get_project_data_parameter",
+                                    "cherrypy.HTTPError 404 unknown parameter: %s" % param)
+        raise cherrypy.HTTPError("404 Unknown parameter: %s" % param)
+
+@cherrypy.tools.json_out(on=True)
+def get_project_data_in_model(mid, **kwargs):
+    """
+    Returns a list of the project data in a model.
+
+    Arguments:
+        mid {string} -- model id
+
+    Returns:
+        json -- represents the project data in the model
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_reader(project)
+    try:
+        did = model["project_data"]
+    except:
+        did = [""]
+    return did
+
+def delete_project_data(did, **kwargs):
+    """
+    Delete a project data record from couchdb.
+
+    Arguments:
+        did {string} -- project data id
+
+    Returns:
+        Nothing
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project_data", did)
+    project = database.get("project", project_data["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    for model in database.scan("slycat/models"):
+        updated = False
+        for index, model_did in enumerate(model["project_data"]):
+            if model_did == did:
+                updated = True
+                del model["project_data"][index]
+        if updated:
+            database.save(model)
+
+    with slycat.web.server.get_project_data_lock(did):
+        database.delete(project_data)
+
+    cherrypy.response.status = "204 Project Data deleted."
 
 
 def model_command(mid, type, command, **kwargs):
@@ -1242,6 +1320,52 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                         hdf5_array.set_data(attribute.expression.index, hyperslice, hyperslice_data)
 
 
+def delete_project_data_in_model(did, mid):
+    """
+    Removes a project data id from a model.
+
+    :param did: Project data id
+    :param mid: Model id
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    model = database.get("model", mid)
+    project = database.get("project", model["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    updated = False
+    with slycat.web.server.get_model_lock(model["_id"]):
+        for index, model_did in enumerate(model["project_data"]):
+            if model_did == did:
+                updated = True
+                del model["project_data"][index]
+        if updated:
+            database.save(model)
+
+    cherrypy.response.status = "204 Project data removed from model."
+
+def delete_model_in_project_data(mid, did):
+    """
+    Removes a model id from project data.
+
+    :param mid: Model id
+    :param did: Project data id
+    """
+    database = slycat.web.server.database.couchdb.connect()
+    project_data = database.get("project_data", did)
+    project = database.get("project", project_data["project"])
+    slycat.web.server.authentication.require_project_writer(project)
+
+    updated = False
+    with slycat.web.server.get_project_data_lock(project_data["_id"]):
+        for index, pd_mid in enumerate(project_data["mid"]):
+            if pd_mid == mid:
+                updated = True
+                del project_data["mid"][index]
+            if updated:
+                database.save(project_data)
+
+    cherrypy.response.status = "204 Model removed from project data."
+
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
     model = couchdb.get("model", mid)
@@ -1250,12 +1374,13 @@ def delete_model(mid):
 
     for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
         updated = False
-        for index, pd_mid in enumerate(project_data["mid"]):
-            if pd_mid == mid:
-                updated = True
-                del project_data["mid"][index]
-        if updated:
-            couchdb.save(project_data)
+        with slycat.web.server.get_project_data_lock(project_data["_id"]):
+            for index, pd_mid in enumerate(project_data["mid"]):
+                if pd_mid == mid:
+                    updated = True
+                    del project_data["mid"][index]
+            if updated:
+                couchdb.save(project_data)
 
     couchdb.delete(model)
     slycat.web.server.cleanup.arrays()
@@ -2501,10 +2626,10 @@ def get_time_series_names(hostname, path, **kwargs):
     """
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
-        csv = session.get_file(path, **kwargs)
-    rows = [row.split(",") for row in str(csv).splitlines()]
+        csv_file = str(session.get_file(path, **kwargs))
+    csv_file = csv_file.replace("\\r\\n","\r\n")
+    rows = [row.split(",") for row in csv_file.splitlines()]
     column_names = [name.strip() for name in rows[0]]
-
     def _isNumeric(j):
         """"
         Check if the input object is a numerical value, i.e. a float

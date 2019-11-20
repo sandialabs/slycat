@@ -181,23 +181,38 @@ class Session(object):
       # TODO: need to decide if we should remove this or refactor for multi files again
       files = []
       storage = path(self._uid)
-      import zipfile
       for file_dir in sorted(glob.glob(os.path.join(storage, "file-*")), key=numeric_order):
         # cherrypy.log.error("Assembling %s" % file_dir)
-        is_zip_file = False
-        file = None
+
+        is_bin_file = False
+        file_parts = []
+
         for file_part in sorted(glob.glob(os.path.join(file_dir, "part-*")), key=numeric_order):
           # cherrypy.log.error(" Loading %s" % file_part)
-          if not is_zip_file:
-            is_zip_file = zipfile.is_zipfile(file_part)
-          if is_zip_file:
+
+          # is this a text file?
+          if is_bin_file == False:
+
+            # try to open as text file
+            try:
+              with open(file_part, "r") as f:
+                file_parts.append(f.read())
+
+            # not a text file, open as binary
+            except UnicodeDecodeError:
+              is_bin_file = True
+
+          # is it a binary file?
+          if is_bin_file == True:
             with open(file_part, "rb") as f:
-              file = f.read()
-          else:
-            if file is None:
-              file=""
-            with open(file_part, "r") as f:
-              file += f.read()
+              file_parts.append(f.read())
+
+        # join file parts to make full file
+        if is_bin_file == False:
+          file = ''.join(file_parts)
+        else:
+          file = b''.join(file_parts)
+
         files.append(file)
 
       try:

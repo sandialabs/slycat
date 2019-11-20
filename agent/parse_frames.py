@@ -2,9 +2,8 @@
 # Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government 
 # retains certain rights in this software.
 #
-#
 # This is a Python command line script which decomposes a set
-# of movies into pairwsie distance matrices and trajectories
+# of movies into pairwise distance matrices and trajectories
 # for the VideoSwarm application.  The inputs to this script are
 # a .csv file containing meta data, a column number in the .csv file
 # (indexed from 1) indicating the movie file names to use for the
@@ -13,6 +12,7 @@
 #
 # S. Martin
 # 9/15/2017
+
 
 # input parser
 import argparse
@@ -240,7 +240,7 @@ for i in range(0, num_movies):
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
-    # check for at lesat two dots in frame file name
+    # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')
     if len(frame_split) < 3:
         log("[VS-LOG] Error: incorrect frame file name format.")

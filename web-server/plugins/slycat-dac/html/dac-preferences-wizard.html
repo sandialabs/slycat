@@ -84,30 +84,34 @@ Matthew Letter
     <!-- Options for changing the color scheme in DAC. -->
     <div data-bind="visible:tab() == 2">
         <div>
-            <label>Select ColorBrewer scale for continuous metadata.
-                <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Continuous data is numerical data.  For information on ColorBrewer scales, see colorbrewer2.org."></i>
+            <label>Select ColorBrewer scale for metadata.
+                <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Colors are used for either numerical or string metadata.  For information on ColorBrewer scales, see colorbrewer2.org."></i>
             </label>
         </div>
 
         <div style="margin-bottom: 6px">
             Choose:
             <input type="radio" name="dac-sequential-or-diverging-radios" value="sequential" id="dac-sequential-radio" data-bind="checked: dac_scale_type">
-            sequential scales, or
+            sequential scales,
             <input type="radio" name="dac-sequential-or-diverging-radios" value="diverging" id="dac-diverging-radio" data-bind="checked: dac_scale_type">
-            diverging scales.
+            diverging scales, or
+            <input type="radio" name="dac-sequential-or-diverging-radios" value="discrete" id="dac-discrete-radio" data-bind="checked: dac_scale_type">
+            discrete scales.
         </div>
 
         <!-- sequential and divergin color palettes -->
         <div id="dac-sequential-swatches" data-bind="visible: dac_scale_type() == 'sequential'"></div>
         <div id="dac-diverging-swatches" data-bind="visible: dac_scale_type() == 'diverging'"></div>
 
+        <!-- Changed to have only one scale choice by Pat's suggestion.
         <div style="margin-top: 20px">
             <label>Select ColorBrewer scale for discrete metadata.
                 <i class="fa fa-question-circle inline-help" aria-hidden="true" title="Discrete data is string data.  If you have ordinal data, it will be considered numerical unless you use alphabetic labels."></i>
             </label>
         </div>
+        -->
 
-        <div id="dac-discrete-swatches"></div>
+        <div id="dac-discrete-swatches" data-bind="visible: dac_scale_type() == 'discrete'"></div>
 
     </div>
 

@@ -80,14 +80,22 @@
 /* no scroll bars for time series plots */
 #dac-plots
 {
-	overflow: hidden !important;
-	text-align: right;
+	overflow: hidden;
+	text-align: left;
 }
 
-/* wrapper around controls above each plot*/
+/* wrapper around controls above each plot */
 .dac-plot-controls
 {
 	white-space: nowrap;
+	position: absolute;
+	text-align: right;
+}
+
+/* position each plot to the left */
+.dac-plot
+{
+    float: left;
 }
 
 /* low resolution indicator */

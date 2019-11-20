@@ -89,6 +89,10 @@ var var_include_columns = null;
 // keep track of number of metadata columns (not counting editable columns)
 var num_metadata_cols = null;
 
+// model origin data
+var num_origin_col = null;
+var model_origin = {};
+
 // initial setup: read in MDS coordinates & plot
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
@@ -98,7 +102,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
 	init_subset_center, init_fisher_order,
-	init_fisher_pos, init_diff_desired_state, editable_columns)
+	init_fisher_pos, init_diff_desired_state, editable_columns, MODEL_ORIGIN)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -132,6 +136,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 
 	// include columns (variables and metadata)
 	var_include_columns = VAR_INCLUDE_COLUMNS;
+
+    // save model origin data
+    model_origin["data"] = [MODEL_ORIGIN];
 
     // set selection type button
     var dac_sel_button_ids = ["#dac-scatter-button-zoom",
@@ -194,6 +201,21 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 
 	};
 
+    // add origin column, if it exists
+    num_origin_col = 0;
+    if (MODEL_ORIGIN.length > 0) {
+
+        // add to list in drop down
+        color_by_type.push("string");
+        color_by_cols.push(num_metadata_cols);
+
+        // truncate origin column name if too long
+        color_by_names.push(truncate_color_by_name("From Model"));
+
+        // adjust number of metadata columns to accommodate model origin
+        num_origin_col = 1;
+    }
+
 	// add editable columns to menu as well
 	for (var i = 0; i < editable_columns["attributes"].length; i++) {
 
@@ -202,7 +224,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 
             // add to list in drop down
 	        color_by_type.push("string");
-	        color_by_cols.push(i + num_metadata_cols);
+	        color_by_cols.push(num_metadata_cols + num_origin_col + i);
 
 	        // make sure names aren't too long (if they are then truncate)
 			var name_i = truncate_color_by_name(editable_columns["attributes"][i]["name"]);
@@ -892,14 +914,15 @@ var display_pull_down = function(init_color_by_sel)
 function color_plot (select_col)
 {
 
-    // set up coloring
+    // no coloring
     if (select_col == -1) {
 
         // revert to no color & re-draw
         curr_color_by_col = [];
         module.draw();
 
-    } else if (select_col >= num_metadata_cols) {
+    // editable column coloring
+    } else if (select_col >= num_metadata_cols + num_origin_col) {
 
         // load editable columns
         client.get_model_parameter({
@@ -907,7 +930,7 @@ function color_plot (select_col)
             aid: "dac-editable-columns",
             success: function (data)
             {
-                color_plot_draw (data, select_col - num_metadata_cols);
+                color_plot_draw (data, select_col - num_metadata_cols - num_origin_col);
             },
             error: function () {
 
@@ -922,6 +945,12 @@ function color_plot (select_col)
             }
         });
 
+    // "From Model" origin column coloring
+    } else if (select_col == num_metadata_cols) {
+
+        color_plot_draw (model_origin, 0);
+
+    // actual meta data coloring
     } else {
 
         // request new data from server

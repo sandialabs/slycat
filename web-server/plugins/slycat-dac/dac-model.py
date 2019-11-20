@@ -713,11 +713,11 @@ def register_slycat_plugin(context):
             for i in range(len(metadata)):
                 meta_column_names.append(metadata[i]["name"])
 
-            # add column for model origin
-            meta_column_names.append("From Model")
+            # keep track of model origin
+            from_model = []
 
             # merge tables into new table
-            num_cols = len(meta_column_names) - 1
+            num_cols = len(meta_column_names)
             num_models = len(models_selected)
             num_rows_per_model = []
             meta_rows = []
@@ -727,6 +727,14 @@ def register_slycat_plugin(context):
                 meta_table = meta_columns = slycat.web.server.get_model_arrayset_data(database,
                                 models_selected[i], "dac-datapoints-meta", "0/.../...")
 
+                # check for existing model origin data
+                model_origin = []
+                if 'artifact:dac-model-origin' in models_selected[i]:
+
+                    # load model origin data
+                    model_origin = slycat.web.server.get_model_parameter(
+                        database, models_selected[i], "dac-model-origin")
+
                 # convert to rows and append origin model
                 num_rows = len(meta_table[0])
                 num_rows_per_model.append(num_rows)
@@ -734,12 +742,21 @@ def register_slycat_plugin(context):
                     meta_row_j = []
                     for k in range(num_cols):
                         meta_row_j.append(meta_table[k][j])
-                    meta_row_j.append(model_names[i])
+
+                    # use existing model origin, if available
+                    if len(model_origin) > 0:
+                        from_model.append(model_origin[j])
+                    else:
+                        from_model.append(model_names[i])
+
                     meta_rows.append(meta_row_j)
 
+            # save model origin column
+            slycat.web.server.put_model_parameter(database, model, "dac-model-origin", from_model)
+
             parse_error_log.append("Added new table column for model origin.")
-            parse_error_log.append("Duplicate time series in different models will be duplicated in table,")
-            parse_error_log.append("and will be plotted over each other in scatter plot and waveform plots.")
+            parse_error_log.append("Duplicate time series in different models will be duplicated in table, and")
+            parse_error_log.append("will be plotted on top of each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 53.0])
@@ -879,7 +896,7 @@ def register_slycat_plugin(context):
 
         # convert number of rows per model into cumulative index
         models_row_index = list(numpy.cumsum(num_rows_per_model))
-        num_rows = models_row_index.pop()
+        num_rows = int(models_row_index.pop())
         models_row_index.insert(0,0)
 
         # merge existing headers into unique list

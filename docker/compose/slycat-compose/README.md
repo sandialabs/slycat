@@ -55,7 +55,7 @@ $ docker-compose up -d
 $ docker-compose logs -f <name_of_service>
 ```
 
-### Building the images seperate without using the cache
+### Building the images separate without using the cache
 ```bash
 $ docker-compose build --no-cache
 ```

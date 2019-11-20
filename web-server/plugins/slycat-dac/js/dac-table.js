@@ -81,8 +81,8 @@ function make_column(id_index, name, editor, options)
 }
 
 // load grid data and set up colors for selections
-module.setup = function (metadata, data, include_columns, editable_columns, max_freetext_len,
-                         init_sort_order, init_sort_col)
+module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
+                         max_freetext_len, init_sort_order, init_sort_col)
 {
 	// set up callback for data download button
 	var download_button = document.querySelector("#dac-download-table-button");
@@ -97,6 +97,8 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 
 	// set number of columns to use
 	num_cols = include_columns.length;
+	var num_origin_cols = 0;
+	if (model_origin.length > 0) { num_origin_cols = 1 };
 	num_editable_cols = editable_columns["attributes"].length;
 
 	// set up slick grid column names (with non-mutable columns)
@@ -107,19 +109,25 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 			metadata[0]["column-names"][include_columns[i]], null, null));
 	}
 
+	// set up model origin, if available (also non-mutable)
+	for (var i = 0; i != num_origin_cols; i++) {
+	    grid_columns.push(make_column(num_cols,
+	        "From Model", null, null));
+	}
+
 	// set up editable column names
 	for (var i = 0; i != num_editable_cols; i++) {
 	    editable_col_types.push(editable_columns["attributes"][i].type);
 		if (editable_col_types[i] == "freetext") {
 
 			// set up freetext editor
-			grid_columns.push(make_column(num_cols + i,
+			grid_columns.push(make_column(num_cols + num_origin_cols + i,
 				editable_columns["attributes"][i].name, TextEditor, null));
 
 		} else {
 
 			// set up categorical editor
-			grid_columns.push(make_column(num_cols + i,
+			grid_columns.push(make_column(num_cols + num_origin_cols + i,
 				editable_columns["attributes"][i].name, SelectCellEditor,
 				editable_columns["categories"][i]));
 		}
@@ -131,10 +139,19 @@ module.setup = function (metadata, data, include_columns, editable_columns, max_
 		table_data.push(data[0]["data"][include_columns[i]])
 	}
 
+	// populate model origin data
+	for (var i = 0; i != num_origin_cols; i++) {
+	    table_data.push(model_origin);
+	}
+
 	// populate editable column data
 	for (var i = 0; i != num_editable_cols; i++) {
 		table_data.push(editable_columns["data"][i]);
 	}
+
+	// adjust number of columns to reflect origin column
+	// (from now on treat origin column the same as any non-mutable data)
+	num_cols = num_cols + num_origin_cols
 
 	// produce a vector of sequential id for table rows and a zero vector
 	var row_id = [];
