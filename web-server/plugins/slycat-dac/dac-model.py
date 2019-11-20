@@ -755,8 +755,8 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-model-origin", from_model)
 
             parse_error_log.append("Added new table column for model origin.")
-            parse_error_log.append("Duplicate time series in different models will be duplicated in table,")
-            parse_error_log.append("and will be plotted over each other in scatter plot and waveform plots.")
+            parse_error_log.append("Duplicate time series in different models will be duplicated in table, and")
+            parse_error_log.append("will be plotted on top of each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 53.0])
@@ -896,7 +896,7 @@ def register_slycat_plugin(context):
 
         # convert number of rows per model into cumulative index
         models_row_index = list(numpy.cumsum(num_rows_per_model))
-        num_rows = models_row_index.pop()
+        num_rows = int(models_row_index.pop())
         models_row_index.insert(0,0)
 
         # merge existing headers into unique list
