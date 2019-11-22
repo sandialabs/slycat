@@ -71,7 +71,7 @@ function constructor(params)
             list_models();
         },
         error: function() {
-            $("#dac-load-model-error").text("Error creating model.");
+            $("#dac-load-model-error").text("Server error creating model.");
             $("#dac-load-model-error").show();
         }
         });
@@ -348,7 +348,7 @@ function constructor(params)
                 },
                 error: function() {
 
-                    $("#dac-combine-model-error").text("Error finishing model.")
+                    $("#dac-combine-model-error").text("Server error finishing model.")
                     $("#dac-combine-model-error").show();
 
                 }

@@ -126,7 +126,7 @@ function constructor(params)
                 assign_pref_defaults();
             },
             error: function() {
-                $("#dac-load-model-error").text("Error creating model.");
+                $("#dac-load-model-error").text("Server error creating model.");
                 $("#dac-load-model-error").show();
             }
         });
@@ -252,7 +252,7 @@ function constructor(params)
             value: dac_ui_parms,
             error: function () {
 
-                $("#dac-load-model-error").text("Error uploading UI preferences.");
+                $("#dac-load-model-error").text("Server error uploading UI preferences.");
                 $("#dac-load-model-error").show();
 
             },
@@ -558,7 +558,7 @@ function constructor(params)
                     });
                 },
                 error: function() {
-                    $("#dac-finish-model-error").text("Error finishing model.");
+                    $("#dac-finish-model-error").text("Server error finishing model.");
                     $("#dac-finish-model-error").show();
                 }
             });

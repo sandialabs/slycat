@@ -387,7 +387,7 @@ function constructor(params)
                     },
                     error: function () {
 
-                        $("#dac-upload-cats-error").text("Server Error: Could not load the category list."); +
+                        $("#dac-upload-cats-error").text("Server error: could not load the category list."); +
                         $("#dac-upload-cats-error").show();
                         $('.browser-continue').toggleClass("disabled", false);
 

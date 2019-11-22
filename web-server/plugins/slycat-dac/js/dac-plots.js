@@ -170,12 +170,6 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
             plots_selected.push(var_include_columns[i]);
         }
 
-    } else {
-
-        // restore from bookmarks
-        for (var i = num_init_plots; i < Math.min(num_included_plots,3); i++) {
-            plots_selected[i] = var_include_columns[i];
-        }
     }
 
     // initialize plot zooming

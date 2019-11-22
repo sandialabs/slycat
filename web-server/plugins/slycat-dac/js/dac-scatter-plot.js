@@ -72,8 +72,7 @@ var outline_sel = null;
 // colors to use for scaling
 var color_by_low = null;
 var color_by_high = null;
-var cont_colormap = null;
-var disc_colormap = null;
+var colormap = null;
 
 // color by selection menu (default is "Do Not Color")
 var curr_color_by_sel = -1;
@@ -97,8 +96,8 @@ var model_origin = {};
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
 	NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
-	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
+	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, COLORMAP,
+	MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
 	init_subset_center, init_fisher_order,
@@ -124,8 +123,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// set colors for scaling
 	color_by_low = COLOR_BY_LOW;
 	color_by_high = COLOR_BY_HIGH;
-	cont_colormap = CONT_COLORMAP;
-	disc_colormap = DISC_COLORMAP;
+	colormap = COLORMAP;
 
 	// set maximum color by name length
 	max_color_by_name_length = MAX_COLOR_NAME;
@@ -997,51 +995,34 @@ function color_plot_draw(data, select_col)
         // get unique sorted string data
         var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
 
-
         // get indices or original string data in the unique sorted string data
         curr_color_by_col = [];
         for (var i=0; i < color_by_string_data.length; i++) {
             curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
         }
 
-        // set colormap to discrete color map if present
-        if (disc_colormap == null) {
-
-            // revert to default color map
-            color_scale = d3.scale.linear()
-                .range([color_by_low, color_by_high])
-                .interpolate(d3.interpolateRgb);
-
-        } else {
-
-            // use selected color brewer scale
-            color_scale = d3.scale.quantize()
-                .range(disc_colormap);
-
-        };
-
     } else {
 
         // get selected column from data base (number data)
         curr_color_by_col = data["data"][select_col];
 
-        // set colormap to continuous color map if present
-        if (cont_colormap == null) {
-
-            // revert to default color map
-            color_scale = d3.scale.linear()
-                .range([color_by_low, color_by_high])
-                .interpolate(d3.interpolateRgb);
-
-        } else {
-
-            // use selected color brewer scale
-            color_scale = d3.scale.quantize()
-                .range(cont_colormap);
-
-        };
-
     }
+
+    // set colormap if present
+    if (colormap == null) {
+
+        // revert to default color map
+        color_scale = d3.scale.linear()
+            .range([color_by_low, color_by_high])
+            .interpolate(d3.interpolateRgb);
+
+    } else {
+
+        // use selected color brewer scale
+        color_scale = d3.scale.quantize()
+            .range(colormap);
+
+    };
 
     // get max and min of appropriate column in metadata table
     var max_color_val = d3.max(curr_color_by_col);

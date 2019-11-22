@@ -60,7 +60,6 @@ $(document).ready(function() {
 
     // colormap defaults
     var cont_colormap = null;
-    var disc_colormap = null;
 
     // model id from address bar
     var mid = URI(window.location).segment(-1);
@@ -212,9 +211,7 @@ $(document).ready(function() {
                     if ("dac-cont-colormap" in bookmark) {
                         cont_colormap = JSON.parse(bookmark_preference("dac-cont-colormap", cont_colormap)[0]); };
 
-                        // no more discrete colormap (same as continuous)
-                        disc_colormap = cont_colormap;
-
+                    // no more discrete colormap (same as continuous)
                     // if ("dac-disc-colormap" in bookmark) {
                     //     disc_colormap = JSON.parse(bookmark_preference("dac-disc-colormap", disc_colormap)[0]); };
 
@@ -695,10 +692,13 @@ $(document).ready(function() {
                                     init_plots_selected = bookmark["dac-plots-selected"];
                                     init_plots_displayed = bookmark["dac-plots-displayed"];
 
-                                    // check if plots are in correct range
-                                    if (Math.max(...init_plots_selected) >= num_vars) {
-                                        init_plots_selected = [];
-                                        init_plots_displayed = [1,1,1];
+                                    // check if plots are in included variables list
+                                    // if not, revert to first three variables
+                                    for (var i = 0; i < init_plots_selected.length; i++) {
+                                        if (var_include_columns.indexOf(init_plots_selected[i]) == -1) {
+                                            init_plots_selected = [];
+                                            init_plots_displayed = [1,1,1];
+                                        }
                                     }
                                 }
 
@@ -750,7 +750,7 @@ $(document).ready(function() {
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
 					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_1_COLOR,
 					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
-					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
+					                cont_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
 					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
 					                init_fisher_order, init_fisher_pos, init_diff_desired_state, editable_columns,
