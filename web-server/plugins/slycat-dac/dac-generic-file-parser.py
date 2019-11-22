@@ -8,7 +8,6 @@ import csv
 import numpy
 import slycat.web.server
 import slycat.email
-import time
 import cherrypy
 
 # zip file manipulation
@@ -18,7 +17,6 @@ import os
 
 # background thread does all the work on the server
 import threading
-import sys
 import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
@@ -41,7 +39,6 @@ def parse_table_file(file):
                                       quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
     if len(rows) < 2:
-        slycat.email.send_error("slycat-csv-parser.py parse_table_file", "File must contain at least two rows.")
         raise Exception("File must contain at least two rows.")
 
     # get header
@@ -53,7 +50,6 @@ def parse_table_file(file):
         data.append(row)
 
     if len(attributes) < 1:
-        slycat.email.send_error("slycat-csv-parser.py parse_table_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
     return attributes, data
@@ -77,10 +73,10 @@ def parse_file(file):
         except ValueError:
             return False
 
-    cherrypy.log.error("dac gen table parsing:::::::")
+    cherrypy.log.error("DAC generic table parser started.")
+
     rows = [row for row in csv.reader(file.splitlines(), delimiter=",", doublequote=True, escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
     if len(rows) < 2:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least two rows.")
         raise Exception("File must contain at least two rows.")
 
     attributes = []
@@ -103,7 +99,7 @@ def parse_file(file):
             # could not convert something to a float defaulting to string
             except Exception as e:
                 column_has_floats = False
-                cherrypy.log.error("found floats but failed to convert, switching to string types Trace: %s" % e)
+                # cherrypy.log.error("DAC found floats but failed to convert, switching to string types Trace: %s" % e)
             break
 
         if not column_has_floats:
@@ -111,7 +107,6 @@ def parse_file(file):
             attributes.append({"name":column[0], "type":"string"})
 
     if len(attributes) < 1:
-        slycat.email.send_error("slycat-csv-parser.py parse_file", "File must contain at least one column.")
         raise Exception("File must contain at least one column.")
 
     return attributes, dimensions, data
@@ -187,8 +182,6 @@ def parse(database, model, input, files, aids, **kwargs):
     :param kwargs:
     """
 
-    start = time.time()
-
     # this version of parse is designed to pass in the column of the aid as the second
     # part of the aids array, so aids: ["variable", "0"] is the previous behavior.
     # if nothing extra is passed in, the array column defaults to 0.
@@ -219,7 +212,6 @@ def parse(database, model, input, files, aids, **kwargs):
     aids = [aids[0]]
 
     if len(files) != len(aids):
-        slycat.email.send_error("slycat-csv-parser.py parse", "Number of files and artifact IDs must match.")
         raise Exception("Number of files and artifact ids must match.")
 
     # parse file as either table or matrix
@@ -248,10 +240,6 @@ def parse(database, model, input, files, aids, **kwargs):
 
         slycat.web.server.put_model_array(database, model, aid, array_col, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, aid, "%s/0/..." % array_col, [data])
-
-    end = time.time()
-    model["db_creation_time"] = (end - start)
-    database.save(model)
 
 
 # update dac-parse-log
