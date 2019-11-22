@@ -120,13 +120,19 @@ export function renderNavBar() {
           var users = component.project()[0].acl;
           var get_name = function(x){ return x.user() };
           var roles = {
+            server_administrator: users.server_administrators?users.server_administrators().map(get_name):[],
             administrator: users.administrators().map(get_name),
             writer: users.writers().map(get_name),
             reader: users.readers().map(get_name)
           };
-          for(var k in roles)
-            if(roles[k].indexOf(component.user.uid()) != -1)
-              return k;
+          for(var role in roles){
+            if(roles[role].indexOf(component.user.uid()) != -1){
+              if (role === "server_administrator") {
+                return "administrator";
+              }
+              return role;
+            }
+          }
         }
         return "none";
       });
