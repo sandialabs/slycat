@@ -55,7 +55,7 @@ class Agent(agent.Agent):
         if not run_commands:
             results = {"ok": False, "message": "could not create a run command did you register your script with "
                                                "slycat?"}
-            sys.stdout.write("%s\n" % json.dumps(results))
+            sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
             sys.stdout.flush()
             return
         command["run_command"] = run_commands
@@ -78,7 +78,7 @@ class Agent(agent.Agent):
                 self.run_shell_command("mkdir -p %s" % working_dir)
             except Exception as e:
                 output[0] = e.message
-            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode='w')
             self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                                 time_seconds, run_commands,
                                 tmp_file)
@@ -110,7 +110,7 @@ class Agent(agent.Agent):
                 }
                 for script in self.scripts]
         }
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def run_shell_command(self, command, jid=0, log_to_file=False):
@@ -157,13 +157,13 @@ class Agent(agent.Agent):
                         results["status"] = line.strip(' \t\n\r')
         except IOError:
             sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": "file not found: job id log file is "
-                                                                          "probably missung"}))
+                                                                          "probably missung"}, cls=agent.MyEncoder))
             sys.stdout.flush()
         except Exception as e:
             self.log.log(logging.INFO, traceback.format_exc())
-            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}, cls=agent.MyEncoder))
             sys.stdout.flush()
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def launch(self, command):
@@ -174,7 +174,7 @@ class Agent(agent.Agent):
 
         results["output"], results["errors"] = self.run_shell_command(command["command"])
 
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def submit_batch(self, command):
@@ -186,7 +186,7 @@ class Agent(agent.Agent):
 
         results["output"], results["errors"] = self.run_shell_command("sbatch %s" % results["filename"])
 
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def checkjob(self, command):
@@ -203,10 +203,10 @@ class Agent(agent.Agent):
                     results["output"] = _.split()[1]
                     break
         except OSError as e:
-            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}))
+            sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}, cls=agent.MyEncoder))
             sys.stdout.flush()
 
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def cancel_job(self, command):
@@ -218,7 +218,7 @@ class Agent(agent.Agent):
         results["output"], results["errors"] = self.run_shell_command(
             "scancel %s" % results["jid"])  # TODO: this is wrong needs to be results["jid"]["jid"]
 
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def get_job_output(self, command):
@@ -235,7 +235,7 @@ class Agent(agent.Agent):
             results["output"] = "see errors"
             results["errors"] = "the file %s does not exist." % f
 
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
     def generate_batch(self, module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
@@ -243,7 +243,7 @@ class Agent(agent.Agent):
                        tmp_file):
         f = tmp_file
 
-        f.write("#!/bin/bash\n\n")
+        f.write('#!/bin/bash\n\n')
         f.write("#SBATCH --account=%s\n" % wckey)
         f.write("#SBATCH --job-name=slycat-tmp\n")
         f.write("#SBATCH --partition=%s\n\n" % partition)
@@ -288,7 +288,7 @@ class Agent(agent.Agent):
             self.run_shell_command("mkdir -p %s" % working_dir)
         except Exception:
             pass
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir)
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=working_dir, mode='w')
         self.generate_batch(module_name, wckey, nnodes, partition, ntasks_per_node, time_hours, time_minutes,
                             time_seconds, fn,
                             tmp_file)
@@ -298,7 +298,7 @@ class Agent(agent.Agent):
         results["temp_file"] = data
         results["output"], results["errors"] = self.run_shell_command("sbatch %s" % tmp_file.name)
 
-        sys.stdout.write("%s\n" % json.dumps(results))
+        sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
         sys.stdout.flush()
 
 
