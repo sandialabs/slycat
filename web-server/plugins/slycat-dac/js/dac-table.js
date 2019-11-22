@@ -425,6 +425,7 @@ function one_row_selected(e, args) {
                 selections.update_sel_range(range_sel);
 
             } else {
+
                 // check if row is already selected
                 // update selection and/or focus
                 selections.update_sel_focus(data_clicked);
@@ -433,8 +434,7 @@ function one_row_selected(e, args) {
 
 
 		// in zoom or subset mode, we can still do focus/de-focus
-		} else if (selections.sel_type() == 0 ||
-				   selections.sel_type() == 3 ) {
+		} else if (selections.sel_type() <= 0 ) {
 
 			selections.change_focus(data_clicked);
 

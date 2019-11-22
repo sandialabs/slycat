@@ -139,11 +139,11 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
     model_origin["data"] = [MODEL_ORIGIN];
 
     // set selection type button
-    var dac_sel_button_ids = ["#dac-scatter-button-zoom",
+    var dac_sel_button_ids = ["#dac-scatter-button-subset",
+                              "#dac-scatter-button-zoom",
                               "#dac-scatter-button-sel-1",
-                              "#dac-scatter-button-sel-2",
-                              "#dac-scatter-button-subset"];
-    $(dac_sel_button_ids[selections.sel_type()]).addClass("active");
+                              "#dac-scatter-button-sel-2"];
+    $(dac_sel_button_ids[selections.sel_type()+1]).addClass("active");
 
 	// set up selection button colors
 	$("#dac-scatter-button-sel-1").css("color", sel_1_color);
@@ -155,7 +155,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	$("#dac-scatter-button-sel-2").on("click",
 		function() { selections.set_sel_type(2); module.draw(); });
 	$("#dac-scatter-button-subset").on("click",
-		function() { selections.set_sel_type(3); module.draw(); })
+		function() { selections.set_sel_type(-1); module.draw(); })
 	$("#dac-scatter-button-zoom").on("click",
 		function() { selections.set_sel_type(0); module.draw(); });
 
@@ -1054,7 +1054,8 @@ var sel_zoom_buttons = function()
 				.y(y_scale)
 				.on("brushend", zoom));
 
-	} else if (selections.sel_type() == 3) {
+    // subset
+	} else if (selections.sel_type() == -1) {
 
 		// set up subset selection
 		scatter_plot.append("g")
@@ -1317,7 +1318,7 @@ function sel_individual (d,i)
 {
 
 	// check for subset exclusion
-	if (selections.sel_type() == 3) {
+	if (selections.sel_type() == -1) {
 
 		exclude_individual(i);
 
@@ -1361,8 +1362,8 @@ function exclude_individual (i) {
 // de-select currently focused point
 function defocus() {
 
-	// check to see if we're in selection mode
-	if ((selections.sel_type() == 3) && selections.shift_key()) {
+	// check to see if we're in subset mode
+	if ((selections.sel_type() == -1) && selections.shift_key()) {
 
 		exclude_individual(selections.focus());
 
