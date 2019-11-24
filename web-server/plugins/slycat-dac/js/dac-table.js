@@ -218,7 +218,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	if (selections.focus() != null) {
 	    module.jump_to([selections.focus()]);
 	} else {
-	    module.jump_to(selections.sel_1());
+	    module.jump_to(selections.sel(1));
 	};
 
 }
@@ -227,7 +227,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 var download_button_callback = function ()
 {
 	// concatenate selections
-	var sel = selections.sel_1().concat(selections.sel_2());
+	var sel = selections.sel(1).concat(selections.sel(2));
 	// check if there anything is selected
 	if (sel.length == 0) {
 		// nothing selected: download entire table
@@ -371,7 +371,7 @@ function openCSVSaveChoiceDialog(sel)
 		if(button.label == "Save Entire Table")
 			write_data_table([], "DAC_Untitled_Data_Table.csv");
 		else if(button.label == "Save Selected")
-			write_data_table( selections.sel_1().concat(selections.sel_2()),
+			write_data_table( selections.sel(1).concat(selections.sel(2)),
 				"DAC_Untitled_Data_Table_Selection.csv");
 		},
 	});
@@ -415,8 +415,7 @@ function one_row_selected(e, args) {
         }
 
 		// make sure we are in a selection mode
-		if (selections.sel_type() == 1 ||
-			selections.sel_type() == 2) {
+		if (selections.sel_type() > 0) {
 
             // check for range selection
             if (range_sel.length > 1) {
@@ -431,10 +430,8 @@ function one_row_selected(e, args) {
                 selections.update_sel_focus(data_clicked);
             }
 
-
-
 		// in zoom or subset mode, we can still do focus/de-focus
-		} else if (selections.sel_type() <= 0 ) {
+		} else {
 
 			selections.change_focus(data_clicked);
 
@@ -860,8 +857,8 @@ module.select_rows = function ()
 {
 
 	// update selection indices
-	var new_sel_1 = selections.sel_1();
-	var new_sel_2 = selections.sel_2();
+	var new_sel_1 = selections.sel(1);
+	var new_sel_2 = selections.sel(2);
 	var new_focus = selections.focus();
 	var subset_mask = selections.get_subset();
 

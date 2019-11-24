@@ -620,8 +620,8 @@ $(document).ready(function() {
                                 }
 
                                 // initialize selections/focus
-                                selections.set_sel_1(init_sel_1);
-                                selections.set_sel_2(init_sel_2);
+                                selections.set_sel(init_sel_1, 1);
+                                selections.set_sel(init_sel_2, 2);
                                 selections.set_focus(init_focus);
                                 selections.set_sel_type(init_sel_type);
 
@@ -868,7 +868,7 @@ $(document).ready(function() {
 		metadata_table.jump_to (new_selections.detail.active_sel);
 
 		// bookmark selections
-		bookmarker.updateState ({"dac-sel-1": selections.sel_1(), "dac-sel-2": selections.sel_2(),
+		bookmarker.updateState ({"dac-sel-1": selections.sel(1), "dac-sel-2": selections.sel(2),
 		                         "dac-sel-focus": selections.focus(), "dac-diff-desired-state": false})
     }
 

@@ -44,28 +44,16 @@ module.set_sel_type = function(new_sel_type)
     document.body.dispatchEvent(selTypeEvent);
 }
 
-// get actual selection (#1)
-module.sel_1 = function()
+// init selection array i >= 1
+module.set_sel = function(sel, i)
 {
-	return selection[0];
+    selection[i-1] = sel;
 }
 
-// init selection array 1
-module.set_sel_1 = function(sel)
+// get selection array i >= 1
+module.sel = function(i)
 {
-    selection[0] = sel;
-}
-
-// get selection #2
-module.sel_2 = function()
-{
-	return selection[1];
-}
-
-// init selection array 2
-module.set_sel_2 = function(sel)
-{
-    selection[1] = sel;
+    return selection[i-1];
 }
 
 // set subset mask, return new selection
@@ -136,8 +124,6 @@ module.subset_size = function()
 	return num_subset;
 }
 
-
-
 // check if an index is in the subset mask
 module.in_subset = function(i)
 {
@@ -156,18 +142,11 @@ module.focus = function()
 	return focus;
 }
 
-// is index i in selection 1?
+// is index i in selection x >= 1
 // return index or -1 if absent
-module.in_sel_1 = function(i)
+module.in_sel_x = function (i, x)
 {
-	return selection[0].indexOf(i);
-}
-
-// is index i in selection 2?
-// return index or -1 if absent
-module.in_sel_2 = function(i)
-{
-	return selection[1].indexOf(i);
+    return selection[x-1].indexOf(i);
 }
 
 // is index i in any selection?
@@ -184,16 +163,10 @@ module.in_sel = function(i)
 	}
 }
 
-// return length selection 1
-module.len_sel_1 = function()
+// return length of selection i >= 1
+module.len_sel = function(i)
 {
-	return selection[0].length;
-}
-
-// return length selection 2
-module.len_sel_2 = function()
-{
-	return selection[1].length;
+    return selection[i-1].length;
 }
 
 // toggle shift key flag

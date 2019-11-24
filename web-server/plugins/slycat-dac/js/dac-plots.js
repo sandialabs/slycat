@@ -617,8 +617,8 @@ function draw_plot(i)
 
 	// get rows of data to pass to server
 	var refresh_selections = [-2, -1];  // indicates empty python list
-	var selection_1 = selections.sel_1();
-	var selection_2 = selections.sel_2();
+	var selection_1 = selections.sel(1);
+	var selection_2 = selections.sel(2);
 
 	// starting with selection 1, up to max number of plots
 	for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
@@ -720,7 +720,7 @@ function update_data_d3(i)
 	plot[i].selectAll(".focus").remove();
 
 	// generate new data for each selection
-	if ((selections.len_sel_1() > 0) || (selections.len_sel_2() > 0)) {
+	if ((selections.len_sel(1) > 0) || (selections.len_sel(2) > 0)) {
 
 		// update scale domain
 		set_default_domain(i);
@@ -846,8 +846,8 @@ function generate_curve_data (i)
 	}
 
 	// get selections
-	var selection_1 = selections.sel_1();
-	var selection_2 = selections.sel_2();
+	var selection_1 = selections.sel(1);
+	var selection_2 = selections.sel(2);
 
 	// make array of data for selection 1
 	var curve_data = [];
@@ -1076,12 +1076,12 @@ function select_curve (d,i)
 	if (d[0][2] == 0) {
 
 		// we're in selection 1
-		curve_id = selections.sel_1()[i];
+		curve_id = selections.sel(1)[i];
 
 	} else {
 
 		// we're in selection 2
-		curve_id = selections.sel_2()[i - Math.min(selections.len_sel_1(), max_num_plots)];
+		curve_id = selections.sel(2)[i - Math.min(selections.len_sel(1), max_num_plots)];
 
 	}
 
@@ -1115,8 +1115,8 @@ function focus_curve_ind ()
 	var curve_in_focus_ind = -1;
 
 	// find curve index, if not null
-	var ind_sel_1 = selections.in_sel_1(curve_in_focus);
-	var ind_sel_2 = selections.in_sel_2(curve_in_focus);
+	var ind_sel_1 = selections.in_sel_x(curve_in_focus,1);
+	var ind_sel_2 = selections.in_sel_x(curve_in_focus,2);
 	if (ind_sel_1 != -1) {
 
 		// check to make sure curve is in dataset
@@ -1128,7 +1128,7 @@ function focus_curve_ind ()
 
 		// check to make sure curve is in dataset
 		if (ind_sel_2 < max_num_plots) {
-			curve_in_focus_ind = ind_sel_2 + Math.min(max_num_plots, selections.len_sel_1());
+			curve_in_focus_ind = ind_sel_2 + Math.min(max_num_plots, selections.len_sel(1));
 		}
 
 	}
@@ -1240,11 +1240,11 @@ module.update_plots = function ()
 function update_plot_limit_indicator ()
 {
 	limit_indicator_color = "green";
-	if ((selections.len_sel_1() > max_num_plots) & (selections.len_sel_2() > max_num_plots)) {
+	if ((selections.len_sel(1) > max_num_plots) & (selections.len_sel(2) > max_num_plots)) {
 		limit_indicator_color = "purple";
-	} else if (selections.len_sel_1() > max_num_plots) {
+	} else if (selections.len_sel(1) > max_num_plots) {
 		limit_indicator_color = "red";
-	} else if (selections.len_sel_2() > max_num_plots) {
+	} else if (selections.len_sel(2) > max_num_plots) {
 		limit_indicator_color = "blue";
 	}
 }

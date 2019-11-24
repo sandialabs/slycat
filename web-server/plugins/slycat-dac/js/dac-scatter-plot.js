@@ -380,10 +380,10 @@ function draw_circles ()
 		// default is point_color
 		var outline_color = no_sel_color;
 
-		if (selections.in_sel_1(i) != -1) {
+		if (selections.in_sel_x(i,1) != -1) {
 			outline_color = sel_1_color;
 		}
-		if (selections.in_sel_2(i) != -1) {
+		if (selections.in_sel_x(i,2) != -1) {
 			outline_color = sel_2_color;
 		}
 
@@ -397,8 +397,7 @@ function draw_circles ()
 		var outline_width = outline_no_sel;
 
 		// selected width is 2
-		if (selections.in_sel_1(i) != -1 ||
-			selections.in_sel_2(i) != -1) {
+		if (selections.in_sel(i)) {
 			outline_width = outline_sel;
 		}
 
@@ -482,10 +481,10 @@ function draw_squares ()
 		// default is point_color
 		var outline_color = no_sel_color;
 
-		if (selections.in_sel_1(i) != -1) {
+		if (selections.in_sel_x(i,1) != -1) {
 			outline_color = sel_1_color;
 		}
-		if (selections.in_sel_2(i) != -1) {
+		if (selections.in_sel_x(i,2) != -1) {
 			outline_color = sel_2_color;
 		}
 
@@ -499,8 +498,7 @@ function draw_squares ()
 		var outline_width = outline_no_sel;
 
 		// selected width is 2
-		if (selections.in_sel_1(i) != -1 ||
-			selections.in_sel_2(i) != -1) {
+		if (selections.in_sel(i)) {
 			outline_width = outline_sel;
 		}
 
@@ -701,8 +699,8 @@ var diff_button = function()
 	$("#dac-scatter-diff-button").prop("active", false);
 
 	// make sure there are two selections
-	if (selections.len_sel_1() <= 1 ||
-		selections.len_sel_2() <= 1)
+	if (selections.len_sel(1) <= 1 ||
+		selections.len_sel(2) <= 1)
 	{
 		dialog.ajax_error
 		('Please make sure both red and blue selections have two or more points before computing the difference.')
@@ -711,8 +709,8 @@ var diff_button = function()
 	}
 
 	// call server to compute Fisher values for time series
-	var sel_1 = selections.sel_1();
-	var sel_2 = selections.sel_2();
+	var sel_1 = selections.sel(1);
+	var sel_2 = selections.sel(2);
 	client.post_sensitive_model_command(
 	{
 		mid: mid,
@@ -1240,11 +1238,11 @@ function sel_brush()
 		} else {
 
 			// color everything else according to what's already selected
-			if (selections.in_sel_1(i) != -1) {
+			if (selections.in_sel_x(i,1) != -1) {
 				outline_color = sel_1_color;
 			};
 
-			if (selections.in_sel_2(i) != -1) {
+			if (selections.in_sel_x(i,2) != -1) {
 				outline_color = sel_2_color;
 			};
 		};
@@ -1266,8 +1264,7 @@ function sel_brush()
 		} else {
 
 			// outline is also thick for things that were previously selected
-			if (selections.in_sel_1(i) != -1 ||
-				selections.in_sel_2(i) != -1) {
+			if (selections.in_sel(i)) {
 				outline_width = outline_sel;
 			};
 
