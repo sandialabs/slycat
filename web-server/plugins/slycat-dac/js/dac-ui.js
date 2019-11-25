@@ -605,6 +605,7 @@ $(document).ready(function() {
                                 // get initial selections, using bookmarks if available
                                 var init_sel_1 = include_check("dac-sel-1", num_points, false);
                                 var init_sel_2 = include_check("dac-sel-2", num_points, false);
+                                var init_sel_3 = include_check("dac-sel-3", num_points, false);
 
                                 // get focus point
                                 var init_focus = null;
@@ -615,7 +616,8 @@ $(document).ready(function() {
 
                                     // make sure focus is in at least one selection
                                     if ((init_sel_1.indexOf(init_focus) == -1) &&
-                                        (init_sel_2.indexOf(init_focus) == -1)) {
+                                        (init_sel_2.indexOf(init_focus) == -1) &&
+                                        (init_sel_3.indexOf(init_focus) == -1)) {
                                          init_focus = null;
                                     }
                                 }
@@ -633,6 +635,7 @@ $(document).ready(function() {
                                 // initialize selections/focus
                                 selections.set_sel(init_sel_1, 1);
                                 selections.set_sel(init_sel_2, 2);
+                                selections.set_sel(init_sel_3, 3);
                                 selections.set_focus(init_focus);
                                 selections.set_sel_type(init_sel_type);
 
