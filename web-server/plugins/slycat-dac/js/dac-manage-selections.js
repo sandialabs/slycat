@@ -15,8 +15,8 @@ var module = {};
 var curr_sel_type = null;
 
 // selections, set to three (but could accomodate more)
-var selection = [[],[]];
-var max_num_sel = selection.length;
+var selection = [];
+var max_num_sel = null;
 
 // subset mask
 var subset_mask = [];
@@ -26,6 +26,15 @@ var focus = null;
 
 // shift or meta key pressed
 var shift_key_pressed = false;
+
+// set up maximum number of selections
+module.setup = function(MAX_NUM_SEL)
+{
+    max_num_sel = MAX_NUM_SEL;
+    for (var i = 0; i < max_num_sel; i++) {
+        selection.push([]);
+    }
+}
 
 // get selection type
 module.sel_type = function ()
@@ -51,9 +60,24 @@ module.set_sel = function(sel, i)
 }
 
 // get selection array i >= 1
-module.sel = function(i)
+// returns full selection if nothing passed
+module.sel = function(i=0)
 {
-    return selection[i-1];
+    // full selection
+    if (i==0) {
+
+        var full_sel = [];
+        for (var j = 0; j < max_num_sel; j++) {
+            full_sel = full_sel.concat(selection[j]);
+        }
+
+        return full_sel;
+
+    // partial selection
+    } else {
+        return selection[i-1];
+    }
+
 }
 
 // set subset mask, return new selection
@@ -153,14 +177,17 @@ module.in_sel_x = function (i, x)
 // return true or false
 module.in_sel = function(i)
 {
-	if ((selection[0].indexOf(i) == -1) &&
-		(selection[1].indexOf(i) == -1)) {
 
-		return false;
-	} else {
+    // check in each selection
+    for (var j = 0; j < max_num_sel; j++) {
+        if (selection[j].indexOf(i) != -1) {
+            return true;
+        }
+    }
 
-		return true;
-	}
+    // otherwise it wasn't found
+    return false;
+
 }
 
 // return length of selection i >= 1
@@ -184,11 +211,9 @@ module.shift_key = function ()
 module.zero_sel = function()
 {
 	if (shift_key_pressed == false) {
-		if (curr_sel_type == 1) {
-			selection[0] = [];
-		} else {
-			selection[1] = [];
-		}
+	    if (curr_sel_type > 0) {
+	        selection[curr_sel_type-1] = [];
+	    }
 	}
 }
 

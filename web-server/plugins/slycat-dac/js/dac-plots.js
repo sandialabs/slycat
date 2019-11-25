@@ -68,8 +68,11 @@ var plot_type = null;
 var var_include_columns = null;
 
 // colors for plots
-var sel_color = [];
+var sel_color = null;
 var focus_color = null;
+
+// number of selections allowed
+var max_num_sel = null;
 
 // pixel adjustments for d3 time series plots
 var plot_adjustments = {
@@ -98,15 +101,15 @@ var y_label = [];
 var mouse_over_line = [];
 
 // set up initial private variables, user interface
-module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
-						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_metadata, variables_data,
-						 INCLUDE_VARS, init_plots_selected, init_plots_displayed, init_plots_zoom_x,
+module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
+						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME,
+						 variables_metadata, variables_data, INCLUDE_VARS,
+						 init_plots_selected, init_plots_displayed, init_plots_zoom_x,
 						 init_plots_zoom_y, init_link_plots)
 {
 
 	// set ui constants
-	sel_color.push(SELECTION_1_COLOR);
-	sel_color.push(SELECTION_2_COLOR);
+	sel_color = SELECTION_COLOR;
 	focus_color = SEL_FOCUS_COLOR;
 	plot_adjustments.pull_down_height = PLOT_ADJUSTMENTS.PLOTS_PULL_DOWN_HEIGHT;
 	plot_adjustments.padding_top = PLOT_ADJUSTMENTS.PADDING_TOP;
@@ -118,6 +121,9 @@ module.setup = function (SELECTION_1_COLOR, SELECTION_2_COLOR, SEL_FOCUS_COLOR, 
 	plot_adjustments.label_opacity = PLOT_ADJUSTMENTS.LABEL_OPACITY;
 	plot_adjustments.x_tick_freq = PLOT_ADJUSTMENTS.X_TICK_FREQ;
 	plot_adjustments.y_tick_freq = PLOT_ADJUSTMENTS.Y_TICK_FREQ;
+
+    // number of selections allowed
+    max_num_sel = sel_color.length;
 
 	// set maximum resolution for plotting
 	max_time_points = MAX_TIME_POINTS;
@@ -617,17 +623,17 @@ function draw_plot(i)
 
 	// get rows of data to pass to server
 	var refresh_selections = [-2, -1];  // indicates empty python list
-	var selection_1 = selections.sel(1);
-	var selection_2 = selections.sel(2);
 
-	// starting with selection 1, up to max number of plots
-	for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
-		refresh_selections.push (selection_1[j]);
-	}
+	// compile selections into one list
+	for (var k = 0; k < max_num_sel; k++) {
 
-	// finishing with selection 2, up to max number of plots
-	for (var j = 0; j < Math.min(selection_2.length, max_num_plots); j++) {
-		refresh_selections.push (selection_2[j]);
+	    // get current selection
+	    var curr_sel = selections.sel(k+1);
+
+	    // add to list, up to max number of plots
+	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
+		    refresh_selections.push (curr_sel[j]);
+	    }
 	}
 
 	// if selection is non-empty show display indicator
@@ -719,8 +725,14 @@ function update_data_d3(i)
 	// remove focus curve if present
 	plot[i].selectAll(".focus").remove();
 
+    // are there any selections?
+    var any_selections = false;
+    for (var k = 0; k < max_num_sel; k++) {
+        if (selections.len_sel(k+1) > 0) { any_selections = true; }
+    }
+
 	// generate new data for each selection
-	if ((selections.len_sel(1) > 0) || (selections.len_sel(2) > 0)) {
+	if (any_selections) {
 
 		// update scale domain
 		set_default_domain(i);
@@ -833,36 +845,34 @@ function set_default_domain(i)
 // which is an array of arrays of curves, where each curve is an (x,y,c) array
 // where x,y is position and c is color
 // NOTE: in the second position we now push the curve id for use by the selection
-// routines (all the rest are stil color)
+// routines (all the rest are still color)
 function generate_curve_data (i)
 {
 
-	// make array of indices into selection colors
-	var sel_1_color = [];
-	var sel_2_color = [];
-	for (var j = 0; j < plots_selected_time[i].length; j++) {
-		sel_1_color.push(0);
-		sel_2_color.push(1);
-	}
+    // make data arrays for each selection
+    var curve_data = [];
+    var curr_sel_ind = 0;
+    for (var k = 0; k < max_num_sel; k++) {
 
-	// get selections
-	var selection_1 = selections.sel(1);
-	var selection_2 = selections.sel(2);
+        // make array of indices into selection colors
+        var curr_sel_color = [];
+        for (var j = 0; j < plots_selected_time[i].length; j++) {
+		    curr_sel_color.push(k);
+	    }
 
-	// make array of data for selection 1
-	var curve_data = [];
-	for (var j = 0; j < Math.min(selection_1.length, max_num_plots); j++) {
-		curve_data.push(d3.transpose([plots_selected_time[i],
-				  plots_selected_data[i][j],
-				  sel_1_color]));
-	};
+	    // get current selection
+	    var curr_sel = selections.sel(k+1);
 
-	// add more data for selection 2
-	for (var j = 0; j < Math.min(selection_2.length, max_num_plots); j++) {
-		curve_data.push(d3.transpose([plots_selected_time[i],
-				  plots_selected_data[i][j + Math.min(selection_1.length, max_num_plots)],
-				  sel_2_color]));
-	};
+	    // make array of data for current selection
+	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
+		    curve_data.push(d3.transpose([plots_selected_time[i],
+				  plots_selected_data[i][j + Math.min(curr_sel_ind, max_num_plots)],
+				  curr_sel_color]));
+	    };
+
+	    // update selection index
+	    curr_sel_ind = curr_sel_ind + Math.min(curr_sel.length, max_num_plots);
+    }
 
 	return curve_data;
 }
@@ -1071,19 +1081,26 @@ function identify_plots_to_update (i) {
 function select_curve (d,i)
 {
 
-	// find index of curve selected
-	var curve_id = null;
-	if (d[0][2] == 0) {
+    // get selection index
+    var sel_ind = d[0][2];
 
-		// we're in selection 1
-		curve_id = selections.sel(1)[i];
+    // find index of curve selected
+    var curve_id = null;
+    var curr_sel_ind = 0;
+    for (var k = 0; k < max_num_sel; k++) {
 
-	} else {
+        // get current selection
+        var curr_sel = selections.sel(k+1);
 
-		// we're in selection 2
-		curve_id = selections.sel(2)[i - Math.min(selections.len_sel(1), max_num_plots)];
+        // look for curve index
+        if (sel_ind == k) {
+            curve_id = curr_sel[i - curr_sel_ind];
+            break;
+        }
 
-	}
+        // update selection index
+        curr_sel_ind = curr_sel_ind + Math.min(curr_sel.length, max_num_plots);
+    }
 
 	// highlight selected curve in other views
 	var selectionEvent = new CustomEvent("DACActiveSelectionChanged", { detail: {
@@ -1114,24 +1131,24 @@ function focus_curve_ind ()
 	// return local index of curve
 	var curve_in_focus_ind = -1;
 
-	// find curve index, if not null
-	var ind_sel_1 = selections.in_sel_x(curve_in_focus,1);
-	var ind_sel_2 = selections.in_sel_x(curve_in_focus,2);
-	if (ind_sel_1 != -1) {
+    // find curve index, if not null
+    var curr_sel_ind = 0;
+    for (var k = 0; k < max_num_sel; k++) {
 
-		// check to make sure curve is in dataset
-		if (ind_sel_1 < max_num_plots) {
-			curve_in_focus_ind = ind_sel_1;
-		}
+        // check for curve index in current selection
+        var ind_sel = selections.in_sel_x(curve_in_focus, k+1);
 
-	} else if (ind_sel_2 != -1) {
+        // if found index (and within max number of plots), we're done
+        if ((ind_sel != -1) &&
+            (ind_sel < max_num_plots)) {
+            curve_in_focus_ind = ind_sel + curr_sel_ind;
+            break;
+        }
 
-		// check to make sure curve is in dataset
-		if (ind_sel_2 < max_num_plots) {
-			curve_in_focus_ind = ind_sel_2 + Math.min(max_num_plots, selections.len_sel(1));
-		}
+        // otherwise, update index into selection
+        curr_sel_ind = curr_sel_ind + Math.min(selections.len_sel(k+1), max_num_plots);
 
-	}
+    }
 
 	return curve_in_focus_ind;
 }
@@ -1240,6 +1257,17 @@ module.update_plots = function ()
 function update_plot_limit_indicator ()
 {
 	limit_indicator_color = "green";
+
+	// check if any selections are over plotting limit
+	for (var k = 0; k < max_num_sel; k++) {
+
+	    if (selections.len_sel(k+1) > max_num_plots) {
+	        limit_indicator_color = "orange";
+	        break;
+	    }
+	}
+
+	/*
 	if ((selections.len_sel(1) > max_num_plots) & (selections.len_sel(2) > max_num_plots)) {
 		limit_indicator_color = "purple";
 	} else if (selections.len_sel(1) > max_num_plots) {
@@ -1247,6 +1275,7 @@ function update_plot_limit_indicator ()
 	} else if (selections.len_sel(2) > max_num_plots) {
 		limit_indicator_color = "blue";
 	}
+	*/
 }
 
 export default module;

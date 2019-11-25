@@ -54,10 +54,12 @@ var scatter_border = null;
 // colors to use for selections
 var point_color = null;
 var point_size = null;
-var sel_1_color = null;
-var sel_2_color = null;
+var sel_color = null;
 var focus_color = null;
 var no_sel_color = null;
+
+// max number of selections
+var max_num_sel = null;
 
 // user preferences for circles or squares
 var scatter_plot_type = null;
@@ -95,8 +97,8 @@ var model_origin = {};
 // initial setup: read in MDS coordinates & plot
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
-	NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, COLORMAP,
+	NO_SEL_COLOR, SELECTION_COLOR, SEL_FOCUS_COLOR,
+	COLOR_BY_LOW, COLOR_BY_HIGH, COLORMAP,
 	MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
@@ -115,10 +117,12 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	focus_point_color = POINT_COLOR;
 	point_size = POINT_SIZE;
 	no_sel_color = NO_SEL_COLOR;
-	sel_1_color = SELECTION_1_COLOR;
-	sel_2_color = SELECTION_2_COLOR;
+	sel_color = SELECTION_COLOR;
 	focus_color = SEL_FOCUS_COLOR;
 	scatter_plot_type = SCATTER_PLOT_TYPE;
+
+    // maximum number of selections
+    max_num_sel = sel_color.length;
 
 	// set colors for scaling
 	color_by_low = COLOR_BY_LOW;
@@ -142,18 +146,22 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
     var dac_sel_button_ids = ["#dac-scatter-button-subset",
                               "#dac-scatter-button-zoom",
                               "#dac-scatter-button-sel-1",
-                              "#dac-scatter-button-sel-2"];
+                              "#dac-scatter-button-sel-2",
+                              "#dac-scatter-button-sel-3"];
     $(dac_sel_button_ids[selections.sel_type()+1]).addClass("active");
 
 	// set up selection button colors
-	$("#dac-scatter-button-sel-1").css("color", sel_1_color);
-	$("#dac-scatter-button-sel-2").css("color", sel_2_color);
+	$("#dac-scatter-button-sel-1").css("color", sel_color[0]);
+	$("#dac-scatter-button-sel-2").css("color", sel_color[1]);
+	$("#dac-scatter-button-sel-3").css("color", sel_color[2]);
 
 	// bind selection/zoom buttons to callback operations
 	$("#dac-scatter-button-sel-1").on("click",
 		function() { selections.set_sel_type(1); module.draw(); });
 	$("#dac-scatter-button-sel-2").on("click",
 		function() { selections.set_sel_type(2); module.draw(); });
+	$("#dac-scatter-button-sel-3").on("click",
+		function() { selections.set_sel_type(3); module.draw(); });
 	$("#dac-scatter-button-subset").on("click",
 		function() { selections.set_sel_type(-1); module.draw(); })
 	$("#dac-scatter-button-zoom").on("click",
@@ -359,6 +367,37 @@ function draw_points () {
 
 }
 
+// d3 function to set outline color according to selection
+var set_outline_color = function (d,i)
+{
+
+    // default is point_color
+    var outline_color = no_sel_color;
+
+    // color point according to selection
+    for (var j = 0; j < max_num_sel; j++) {
+        if (selections.in_sel_x(i,j+1) != -1) {
+            outline_color = sel_color[j]
+        }
+    }
+
+    return outline_color;
+}
+
+// d3 function to set outline width according to selection
+var set_outline_width = function (d,i)
+{
+    // default stroke-width is 1
+    var outline_width = outline_no_sel;
+
+    // selected width is 2
+    if (selections.in_sel(i)) {
+        outline_width = outline_sel;
+    }
+
+    return outline_width;
+}
+
 // entirely redraws points (including selection, using circles)
 function draw_circles ()
 {
@@ -375,34 +414,10 @@ function draw_circles ()
 		.append("circle")
 
 	// make sure they are colored according to selections
-	scatter_points.attr("stroke", function(d,i) {
-
-		// default is point_color
-		var outline_color = no_sel_color;
-
-		if (selections.in_sel_x(i,1) != -1) {
-			outline_color = sel_1_color;
-		}
-		if (selections.in_sel_x(i,2) != -1) {
-			outline_color = sel_2_color;
-		}
-
-		return outline_color;
-	});
+	scatter_points.attr("stroke", set_outline_color);
 
 	// selections get thicker outline
-	scatter_points.attr("stroke-width", function(d,i) {
-
-		// default stroke-width is 1
-		var outline_width = outline_no_sel;
-
-		// selected width is 2
-		if (selections.in_sel(i)) {
-			outline_width = outline_sel;
-		}
-
-		return outline_width;
-	});
+	scatter_points.attr("stroke-width", set_outline_width);
 
 	// fill in points
 	if (curr_color_by_col.length > 0) {
@@ -476,34 +491,10 @@ function draw_squares ()
 		.attr("class", "square");
 
 	// make sure they are colored according to selections
-	scatter_points.attr("stroke", function(d,i) {
-
-		// default is point_color
-		var outline_color = no_sel_color;
-
-		if (selections.in_sel_x(i,1) != -1) {
-			outline_color = sel_1_color;
-		}
-		if (selections.in_sel_x(i,2) != -1) {
-			outline_color = sel_2_color;
-		}
-
-		return outline_color;
-	});
+	scatter_points.attr("stroke", set_outline_color);
 
 	// selections get thicker outline
-	scatter_points.attr("stroke-width", function(d,i) {
-
-		// default stroke-width is 1
-		var outline_width = outline_no_sel;
-
-		// selected width is 2
-		if (selections.in_sel(i)) {
-			outline_width = outline_sel;
-		}
-
-		return outline_width;
-	});
+	scatter_points.attr("stroke-width", set_outline_width);
 
 	// fill in points
 	if (curr_color_by_col.length > 0) {
@@ -1229,22 +1220,20 @@ function sel_brush()
 			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
 				// use curr_sel_type to identify color
-				if (selections.sel_type() == 1) {
-					outline_color = sel_1_color;
-				} else {
-					outline_color = sel_2_color;
+				var curr_sel_type = selections.sel_type();
+				if (curr_sel_type > 0) {
+				    outline_color = sel_color[curr_sel_type-1]
 				}
 
 		} else {
 
 			// color everything else according to what's already selected
-			if (selections.in_sel_x(i,1) != -1) {
-				outline_color = sel_1_color;
-			};
+            for (var j = 0; j < max_num_sel; j++) {
+                if (selections.in_sel_x(i,j+1) != -1) {
+                    outline_color = sel_color[j]
+                }
+            }
 
-			if (selections.in_sel_x(i,2) != -1) {
-				outline_color = sel_2_color;
-			};
 		};
 
 		return outline_color;

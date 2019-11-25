@@ -49,6 +49,9 @@ var editable_col_types = [];
 
 var curr_sel_type = null;
 
+// max number of selections
+var max_num_sel = null;
+
 // keep track of current and previous rows selected
 var prev_row_selected = null;
 var curr_row_selected = null;
@@ -82,7 +85,7 @@ function make_column(id_index, name, editor, options)
 
 // load grid data and set up colors for selections
 module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
-                         max_freetext_len, init_sort_order, init_sort_col)
+                         max_freetext_len, MAX_NUM_SEL, init_sort_order, init_sort_col)
 {
 	// set up callback for data download button
 	var download_button = document.querySelector("#dac-download-table-button");
@@ -90,6 +93,10 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
 	// set maximum length of freetext for editable columns
 	MAX_FREETEXT_LEN = max_freetext_len;
+
+    // set maximum number of selections
+    // (note this cannot exceed 8 for the table, as of 11/25/2019)
+    max_num_sel = MAX_NUM_SEL;
 
 	// get number of rows and total available columns in data table
 	num_rows = data[0]["data"][0].length;
@@ -226,13 +233,17 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 // download data table button
 var download_button_callback = function ()
 {
-	// concatenate selections
-	var sel = selections.sel(1).concat(selections.sel(2));
+	// concatenate all selections
+	var sel = selections.sel();
+
 	// check if there anything is selected
 	if (sel.length == 0) {
+
 		// nothing selected: download entire table
 		write_data_table([], "DAC_Untitled_Data_Table.csv");
+
 	 } else {
+
 		// something selected, see what user wants to export
 		openCSVSaveChoiceDialog(sel);
 	 }
@@ -371,7 +382,7 @@ function openCSVSaveChoiceDialog(sel)
 		if(button.label == "Save Entire Table")
 			write_data_table([], "DAC_Untitled_Data_Table.csv");
 		else if(button.label == "Save Selected")
-			write_data_table( selections.sel(1).concat(selections.sel(2)),
+			write_data_table( selections.sel(),
 				"DAC_Untitled_Data_Table_Selection.csv");
 		},
 	});
@@ -547,17 +558,27 @@ function color_rows(old_metadata) {
 
 			var num_cols = item.length;
 
-			// set css class according to selection
-			if (item[num_cols-1] % 10 == 1) {
-				meta.cssClasses = 'selection-1';
-			} else if (item[num_cols-1] % 10 == 2) {
-				meta.cssClasses = 'selection-2';
-			} else if (item[num_cols-1] % 10 == 3) {
-				meta.cssClasses = 'focus-selection';
-			} else if (item[num_cols-1] % 10 == 4) {
-				meta.cssClasses = 'not-in-subset';
-			} else {
-				meta.cssClasses = 'no-selection';
+            // get the selection type
+            var sel_css_type = item[num_cols-1] % 10;
+
+            // set css according to selection type
+            for (var i = 1; i <= max_num_sel; i++) {
+                if (sel_css_type == i) {
+                    meta.cssClasses = 'selection-' + i.toString();
+                }
+            }
+
+			// set css class according to focus and subset
+			if (sel_css_type > max_num_sel) {
+
+				if (sel_css_type == (max_num_sel+1)) {
+                    meta.cssClasses = 'focus-selection';
+                } else if (sel_css_type == (max_num_sel+2)) {
+                    meta.cssClasses = 'not-in-subset';
+                } else {
+                    meta.cssClasses = 'no-selection';
+                }
+
 			}
 
 			// set css class for currently clicked item
@@ -857,8 +878,6 @@ module.select_rows = function ()
 {
 
 	// update selection indices
-	var new_sel_1 = selections.sel(1);
-	var new_sel_2 = selections.sel(2);
 	var new_focus = selections.focus();
 	var subset_mask = selections.get_subset();
 
@@ -869,25 +888,27 @@ module.select_rows = function ()
 		sel_vec.push(0);
 	}
 
-	// mark selection 1
-	for (var i = 0; i != new_sel_1.length; i++) {
-		sel_vec[new_sel_1[i]] = 1;
-	}
+    // mark all selections
+    for (var j = 0; j < max_num_sel; j++) {
 
-	// mark selection 2
-	for (var i = 0; i != new_sel_2.length; i++) {
-		sel_vec[new_sel_2[i]] = 2;
-	}
+        // get selections
+        var new_sel = selections.sel(j+1);
+
+        // mark selection j
+        for (var i = 0; i != new_sel.length; i++) {
+            sel_vec[new_sel[i]] = j+1;
+        }
+    }
 
 	// mark focus, if present
 	if (new_focus != null) {
-		sel_vec[new_focus] = 3;
+		sel_vec[new_focus] = max_num_sel+1;
 	}
 
 	// mark if not in subset
 	for (var i = 0; i < subset_mask.length; i++) {
 		if (!subset_mask[i]) {
-			sel_vec[i] = 4;
+			sel_vec[i] = max_num_sel+2;
 		}
 	}
 
