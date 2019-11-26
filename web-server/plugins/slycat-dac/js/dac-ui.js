@@ -501,6 +501,10 @@ $(document).ready(function() {
 				                       ui_parms["SELECTION_2_COLOR"],
 				                       'limegreen'];
 
+                // hard-coded user selected colors  (R, B, G)
+                // (for exporting tables, plots)
+                var USER_SEL_COLORS = ["Red", "Blue", "Green"];
+
 				var COLOR_BY_LOW = ui_parms["COLOR_BY_LOW"];
 				var COLOR_BY_HIGH = ui_parms["COLOR_BY_HIGH"];
 				var OUTLINE_NO_SEL = parseInt(ui_parms["OUTLINE_NO_SEL"]);
@@ -774,7 +778,7 @@ $(document).ready(function() {
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
                                                  editable_columns, model_origin, MAX_FREETEXT_LEN,
-                                                 MAX_NUM_SEL, init_sort_order, init_sort_col);
+                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col);
 
 		   	                },
 		   	                function () {
