@@ -689,26 +689,39 @@ var diff_button = function()
 	// inactivate button
 	$("#dac-scatter-diff-button").prop("active", false);
 
+    // make sure there are at least two selections
+    // with at least two points per selection
+    var num_valid_sel = 0;
+    for (var i = 0; i < max_num_sel; i++) {
+        if (selections.len_sel(i+1) > 1) {
+            num_valid_sel = num_valid_sel + 1;
+        }
+    }
+
 	// make sure there are two selections
-	if (selections.len_sel(1) <= 1 ||
-		selections.len_sel(2) <= 1)
-	{
+	if (num_valid_sel < 2) {
+
 		dialog.ajax_error
-		('Please make sure both red and blue selections have two or more points before computing the difference.')
+		('Please make sure at least two selections have two or more points ' +
+		 'each before computing the difference.')
 		("","","");
 		return;
+
 	}
 
-	// call server to compute Fisher values for time series
-	var sel_1 = selections.sel(1);
-	var sel_2 = selections.sel(2);
+	// put selections into array
+	var sel = [];
+    for (var i = 0; i < max_num_sel; i++) {
+        sel.push(selections.sel(i+1));
+    }
+
+    // call server to compute ordering using Fisher's multi-class discriminant
 	client.post_sensitive_model_command(
 	{
 		mid: mid,
 		type: "DAC",
 		command: "compute_fisher",
-		parameters: {selection_1: sel_1,
-					 selection_2: sel_2,
+		parameters: {selection: sel,
 					 include_columns: var_include_columns},
 		success: function (result)
 			{
