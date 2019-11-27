@@ -216,6 +216,9 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 		// bind to link check boxes
 		link_check_box.bind($("#dac-link-plot-" + (i+1)))();
 
+        // click download plot button
+        $("#dac-download-plot-" + (i+1)).on("click", {id:i}, download_plot);
+
 		// actual plot
 		plot[i] = d3.select("#dac-plot-" + (i+1));
 
@@ -390,6 +393,70 @@ function link_check_box()
 
 }
 
+// called when user clicks download plot data button
+function download_plot(event)
+{
+
+    // identify plot to be downloaded
+    var plot_id = event.data.id;
+
+    // get user selection
+    var curr_sel = selections.sel();
+
+    // get variable name
+
+    console.log("plot name");
+
+    // get zoom status
+    var zoomed = false;
+    if (plots_selected_zoom_x[i][0] != '-Inf' ||
+        plots_selected_zoom_x[i][1] != 'Inf') {
+        zoomed = true;
+    }
+
+    console.log("download plot " + plot_id);
+    console.log("selection " + curr_sel);
+    console.log(zoomed);
+
+
+}
+
+// opens a dialog to ask user if they want to save selection or full dataset
+function openCSVSaveChoiceDialog(sel)
+{
+	// sel contains the entire selection (both red and blue)
+	// (always non-empty when called)
+	// message to user
+	var txt = "You have " + sel.length + " plot(s) selected.  What would you like to do?";
+
+	// buttons for dialog
+	var buttons_save = [
+		{className: "btn-light", label:"Cancel"},
+		{className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"},
+		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
+	];
+
+	// launch dialog
+	dialog.dialog(
+	{
+		title: "Export Plot Data",
+		message: txt,
+		buttons: buttons_save,
+		callback: function(button)
+		{
+		    if (typeof button !== 'undefined') {
+
+                if(button.label == "Save All Plot Data")
+                    write_plot_data([], "DAC_Untitled_Plot_Data.csv");
+
+                else if(button.label == "Save Selected Plot Data")
+                    write_plot_data(selections.sel(),
+                        "DAC_Untitled_Data_Table_Selection.csv");
+            }
+		},
+	});
+}
+
 // check that linked plots are compatible
 function check_compatible_link(check_id)
 {
@@ -502,7 +569,7 @@ module.draw = function()
 
 	// draw each plot to size of container
 	var width = $("#dac-plots").width();
-	var height = $("#dac-plots").height()/3 -
+	var height = $("#dac-plots").height()/3.1 -
 		plot_adjustments.pull_down_height;
 
 	// compute number of tick marks needed

@@ -144,12 +144,22 @@ S. Martin
 
 		<!-- Times Series Plot #1 -->
 		<div style="top:0%" class="dac-plot-controls">
+
+			<span class="dac-link-download">
 			<!-- Zoom link checkbox -->
 			<label class="dac-link-plots" id="dac-link-label-plot-1" title="Link plots for zooming.">
 				<input id="dac-link-plot-1" type="checkbox"> Link
 			</label>
 
+			<!-- Plot export button -->
+			<button type="button" class="btn btn-sm btn-link text-muted dac-download-plots"
+							id="dac-download-plot-1" title="Download plot data.">
+							<i class="fa fa-download"></i>
+			</button>
+			</span>
+
 			<!-- Plot limiter indicator -->
+			<span class="dac-select-plot">
 			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
 					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-1"></i></label>
 			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
@@ -163,17 +173,26 @@ S. Martin
 
 			<!-- Variable selector -->
 			<select class="dac-select" id="dac-select-plot-1" title="Variable plotted below."></select>
+			</span>
+
 			<br />
 			<svg class="dac-plot" id="dac-plot-1"></svg>
 		</div>
 
 
 		<!-- Times Series Plot #2 -->
-		<div style="top:33%" class="dac-plot-controls">
+		<div style="top:33.3%" class="dac-plot-controls">
 			<label class="dac-link-plots" id="dac-link-label-plot-2" title="Link plots for zooming.">
 				<input id="dac-link-plot-2" type="checkbox"> Link
 			</label>
 
+			<!-- Plot export button -->
+			<button type="button" class="btn btn-sm btn-link text-muted dac-download-plots"
+							id="dac-download-plot-2" title="Download plot data.">
+							<i class="fa fa-download"></i>
+			</button>
+
+			<span class="dac-select-plot">
 			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
 					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-2"></i></label>
 			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
@@ -185,17 +204,26 @@ S. Martin
 			   title="Plots are full resolution." id="dac-full-resolution-plot-2"></i></label>
 
 			<select class="dac-select" id="dac-select-plot-2" title="Variable plotted below."></select>
+			</span>
+
 			<br />
 			<svg class="dac-plot" id="dac-plot-2"></svg>
 		</div>
 
 
 		<!-- Times Series Plot #3 -->
-		<div style="top:66%" class="dac-plot-controls">
+		<div style="top:66.6%" class="dac-plot-controls">
 			<label class="dac-link-plots" id="dac-link-label-plot-3" title="Link plots for zooming.">
 				<input id="dac-link-plot-3" type="checkbox"> Link
 			</label>
 
+			<!-- Plot export button -->
+			<button type="button" class="btn btn-sm btn-link text-muted dac-download-plots"
+							id="dac-download-plot-3" title="Download plot data.">
+							<i class="fa fa-download"></i>
+			</button>
+
+			<span class="dac-select-plot">
 			<label><i class="fa fa-exclamation-triangle dac-plots-not-displayed"
 					  title="You selected too many plots to display: not every plot in your selection is shown." id="dac-plots-not-displayed-3"></i></label>
 			<label><i class="fa fa-line-chart dac-plots-displayed" title="All selected plots are shown."
@@ -207,6 +235,8 @@ S. Martin
 					  title="Plots are full resolution." id="dac-full-resolution-plot-3"></i></label>
 
 			<select class="dac-select" id="dac-select-plot-3" title="Variable plotted below."></select>
+			</span>
+
 			<br />
 			<svg class="dac-plot" id="dac-plot-3"></svg>
 		</div>

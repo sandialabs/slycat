@@ -396,28 +396,34 @@ function openCSVSaveChoiceDialog(sel)
 	// (always non-empty when called)
 	// message to user
 	var txt = "You have " + sel.length + " row(s) selected.  What would you like to do?";
+
 	// buttons for dialog
 	var buttons_save = [
 		{className: "btn-light", label:"Cancel"},
 		{className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"},
 		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
 	];
+
 	// launch dialog
 	dialog.dialog(
 	{
-		title: "Download Choices",
+		title: "Export Table Data",
 		message: txt,
 		buttons: buttons_save,
 		callback: function(button)
 		{
-		if(button.label == "Save Entire Table")
-			write_data_table([], "DAC_Untitled_Data_Table.csv");
-		else if(button.label == "Save Selected")
-			write_data_table( selections.sel(),
-				"DAC_Untitled_Data_Table_Selection.csv");
+		    if (typeof button !== 'undefined') {
+
+                if(button.label == "Save Entire Table")
+                    write_data_table([], "DAC_Untitled_Data_Table.csv");
+
+                else if(button.label == "Save Selected")
+                    write_data_table( selections.sel(),
+                        "DAC_Untitled_Data_Table_Selection.csv");
+            }
 		},
 	});
- }
+}
 
 // single row selection
 function one_row_selected(e, args) {

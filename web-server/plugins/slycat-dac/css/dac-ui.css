@@ -80,22 +80,21 @@
 /* no scroll bars for time series plots */
 #dac-plots
 {
-	overflow: hidden;
-	text-align: left;
+    overflow: hidden;
 }
 
 /* wrapper around controls above each plot */
 .dac-plot-controls
 {
-	white-space: nowrap;
 	position: absolute;
-	text-align: right;
+    width: 100%;
 }
 
 /* position each plot to the left */
 .dac-plot
 {
-    float: left;
+    position: absolute;
+    left: 0%;
 }
 
 /* low resolution indicator */
@@ -115,9 +114,9 @@
 /* link check boxes for zooming */
 .dac-link-plots
 {
-    float:left;
     margin: 6px 3px 0px 3px;
 }
+
 
 /* warning for too many plots in selection */
 .dac-plots-not-displayed
@@ -138,6 +137,12 @@
 	border: 1px solid #c1c1c1;
     padding: 4px 20px;
     border-radius: 3px;
+}
+
+/* indicators and pull down for plots to the right */
+.dac-select-plot
+{
+    float:right;
 }
 
 /* axis styles */
