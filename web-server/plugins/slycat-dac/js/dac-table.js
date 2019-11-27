@@ -72,6 +72,9 @@ var MAX_FREETEXT_LEN = 0;
 // hardcoded pixel values for editable columns
 var SEL_BORDER_WIDTH = 11;
 
+// download dialog model status
+var download_dialog_open = false;
+
 // populate slick grid's column metadata
 function make_column(id_index, name, editor, options)
 {
@@ -251,8 +254,14 @@ var download_button_callback = function ()
 
 	 } else {
 
-		// something selected, see what user wants to export
-		openCSVSaveChoiceDialog(sel);
+        // check if dialog is already open
+        if (!download_dialog_open) {
+
+            download_dialog_open = true;
+
+            // something selected, see what user wants to export
+            openCSVSaveChoiceDialog(sel);
+        }
 	 }
  }
 
@@ -412,6 +421,9 @@ function openCSVSaveChoiceDialog(sel)
 		buttons: buttons_save,
 		callback: function(button)
 		{
+	        // download dialog is complete
+	        download_dialog_open = false;
+
 		    if (typeof button !== 'undefined') {
 
                 if(button.label == "Save Entire Table")

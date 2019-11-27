@@ -74,6 +74,9 @@ var focus_color = null;
 // number of selections allowed
 var max_num_sel = null;
 
+// keep track of download modal opened/closed
+var download_dialog_open = false;
+
 // pixel adjustments for d3 time series plots
 var plot_adjustments = {
 	pull_down_height: null,
@@ -403,58 +406,85 @@ function download_plot(event)
     // get user selection
     var curr_sel = selections.sel();
 
-    // get variable name
+	// make sure something is selected
+	if (curr_sel.length == 0) {
 
-    console.log("plot name");
+	    dialog.ajax_error("You must make a selection before you can export plot data.")("","","");
+
+	} else {
+
+        // check if dialog is already open
+        if (!download_dialog_open) {
+
+            download_dialog_open = true;
+
+            // something selected, see what user wants to export
+            openCSVSaveChoiceDialog(plot_id, curr_sel);
+        }
+	}
+}
+
+// open download modal dialog box
+function openCSVSaveChoiceDialog(plot_id, curr_sel)
+
+{
+
+    // get variable name
+    var sel_plot_ind = plots_selected[plot_id];
+    var sel_plot_name = plot_name[sel_plot_ind];
 
     // get zoom status
     var zoomed = false;
-    if (plots_selected_zoom_x[i][0] != '-Inf' ||
-        plots_selected_zoom_x[i][1] != 'Inf') {
+    if (plots_selected_zoom_x[plot_id][0] != '-Inf' ||
+        plots_selected_zoom_x[plot_id][1] != 'Inf') {
         zoomed = true;
     }
 
-    console.log("download plot " + plot_id);
-    console.log("selection " + curr_sel);
-    console.log(zoomed);
+    // create dialog message
+    var dialog_msg = 'You have ' + curr_sel.length + ' "' +
+                     sel_plot_name + '" plot(s) selected.  What would you like to do?';
 
+    // check for zooming
+    if (zoomed) {
+        dialog_msg += "<br /><br />Note: the selected plot(s) have been magnified (zoomed in), " +
+                      "and only the time points shown will be exported.  If you want all time " +
+                      "points, please close this dialog and reset the magnification.";
+    }
 
-}
-
-// opens a dialog to ask user if they want to save selection or full dataset
-function openCSVSaveChoiceDialog(sel)
-{
-	// sel contains the entire selection (both red and blue)
-	// (always non-empty when called)
-	// message to user
-	var txt = "You have " + sel.length + " plot(s) selected.  What would you like to do?";
-
-	// buttons for dialog
+    // buttons for dialog
 	var buttons_save = [
 		{className: "btn-light", label:"Cancel"},
-		{className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"},
+		{className: "btn-primary", label:"Save All Plots"},
 		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
 	];
 
-	// launch dialog
+    // launch dialog
 	dialog.dialog(
 	{
 		title: "Export Plot Data",
-		message: txt,
+		message: dialog_msg,
 		buttons: buttons_save,
 		callback: function(button)
 		{
+		    // download model is closed
+		    download_dialog_open = false;
+
 		    if (typeof button !== 'undefined') {
 
-                if(button.label == "Save All Plot Data")
-                    write_plot_data([], "DAC_Untitled_Plot_Data.csv");
+                if(button.label == "Save All Plots")
+                    console.log("save all plots");
 
-                else if(button.label == "Save Selected Plot Data")
-                    write_plot_data(selections.sel(),
-                        "DAC_Untitled_Data_Table_Selection.csv");
+                    //write_plot_data([], "DAC_Untitled_Plot_Data.csv");
+
+                else if(button.label == "Save Selected")
+
+                    console.log("save selected plots")
+                    //write_plot_data(selections.sel(),
+                    //    "DAC_Untitled_Data_Table_Selection.csv");
             }
 		},
 	});
+
 }
 
 // check that linked plots are compatible
