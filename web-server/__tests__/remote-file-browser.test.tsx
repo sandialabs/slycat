@@ -92,7 +92,7 @@ describe("when we load the RemoteFileBrowser", () =>{
       onSelectParserCallBack={onSelectParser}
       />
     );
-    // This breaks the test
+    // this causes js heap fault
     // DefaultInstance = component.getInstance();
     expect(component).toMatchSnapshot();
   });

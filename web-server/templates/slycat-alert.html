@@ -12,6 +12,7 @@
           <p data-bind="html:message"></p>
           <input type="text" class="form-control"
             data-bind="visible:input, value:value, attr:{placeholder:placeholder}">
+          <select class="custom-select" data-bind="visible:select, options:options, value:value"></select>
           <div class="alert alert-danger" role="alert"
             data-bind="visible:alert, text:alert"
           ></div>

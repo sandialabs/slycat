@@ -16,6 +16,12 @@ export function dialog(params)
   component.title = ko.observable(params.title || "Alert");
   component.message = ko.observable(params.message || "");
   component.input = ko.observable(params.input || false);
+
+  // added select drop down, returns value
+  // (S. Martin, 11/27/2019)
+  component.select = ko.observable(params.select || false);
+  component.options = ko.observableArray(params.select_options || []);
+
   component.placeholder = ko.observable(params.placeholder || "");
   component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
   component.alert = ko.observable(params.alert || "");

@@ -54,10 +54,12 @@ var scatter_border = null;
 // colors to use for selections
 var point_color = null;
 var point_size = null;
-var sel_1_color = null;
-var sel_2_color = null;
+var sel_color = null;
 var focus_color = null;
 var no_sel_color = null;
+
+// max number of selections
+var max_num_sel = null;
 
 // user preferences for circles or squares
 var scatter_plot_type = null;
@@ -72,8 +74,7 @@ var outline_sel = null;
 // colors to use for scaling
 var color_by_low = null;
 var color_by_high = null;
-var cont_colormap = null;
-var disc_colormap = null;
+var colormap = null;
 
 // color by selection menu (default is "Do Not Color")
 var curr_color_by_sel = -1;
@@ -96,9 +97,9 @@ var model_origin = {};
 // initial setup: read in MDS coordinates & plot
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
-	NO_SEL_COLOR, SELECTION_1_COLOR, SELECTION_2_COLOR,
-	SEL_FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, CONT_COLORMAP,
-	DISC_COLORMAP, MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
+	NO_SEL_COLOR, SELECTION_COLOR, SEL_FOCUS_COLOR,
+	COLOR_BY_LOW, COLOR_BY_HIGH, COLORMAP,
+	MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
 	init_subset_center, init_fisher_order,
@@ -116,16 +117,17 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	focus_point_color = POINT_COLOR;
 	point_size = POINT_SIZE;
 	no_sel_color = NO_SEL_COLOR;
-	sel_1_color = SELECTION_1_COLOR;
-	sel_2_color = SELECTION_2_COLOR;
+	sel_color = SELECTION_COLOR;
 	focus_color = SEL_FOCUS_COLOR;
 	scatter_plot_type = SCATTER_PLOT_TYPE;
+
+    // maximum number of selections
+    max_num_sel = sel_color.length;
 
 	// set colors for scaling
 	color_by_low = COLOR_BY_LOW;
 	color_by_high = COLOR_BY_HIGH;
-	cont_colormap = CONT_COLORMAP;
-	disc_colormap = DISC_COLORMAP;
+	colormap = COLORMAP;
 
 	// set maximum color by name length
 	max_color_by_name_length = MAX_COLOR_NAME;
@@ -141,23 +143,27 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
     model_origin["data"] = [MODEL_ORIGIN];
 
     // set selection type button
-    var dac_sel_button_ids = ["#dac-scatter-button-zoom",
+    var dac_sel_button_ids = ["#dac-scatter-button-subset",
+                              "#dac-scatter-button-zoom",
                               "#dac-scatter-button-sel-1",
                               "#dac-scatter-button-sel-2",
-                              "#dac-scatter-button-subset"];
-    $(dac_sel_button_ids[selections.sel_type()]).addClass("active");
+                              "#dac-scatter-button-sel-3"];
+    $(dac_sel_button_ids[selections.sel_type()+1]).addClass("active");
 
 	// set up selection button colors
-	$("#dac-scatter-button-sel-1").css("color", sel_1_color);
-	$("#dac-scatter-button-sel-2").css("color", sel_2_color);
+	$("#dac-scatter-button-sel-1").css("color", sel_color[0]);
+	$("#dac-scatter-button-sel-2").css("color", sel_color[1]);
+	$("#dac-scatter-button-sel-3").css("color", sel_color[2]);
 
 	// bind selection/zoom buttons to callback operations
 	$("#dac-scatter-button-sel-1").on("click",
 		function() { selections.set_sel_type(1); module.draw(); });
 	$("#dac-scatter-button-sel-2").on("click",
 		function() { selections.set_sel_type(2); module.draw(); });
+	$("#dac-scatter-button-sel-3").on("click",
+		function() { selections.set_sel_type(3); module.draw(); });
 	$("#dac-scatter-button-subset").on("click",
-		function() { selections.set_sel_type(3); module.draw(); })
+		function() { selections.set_sel_type(-1); module.draw(); })
 	$("#dac-scatter-button-zoom").on("click",
 		function() { selections.set_sel_type(0); module.draw(); });
 
@@ -361,6 +367,37 @@ function draw_points () {
 
 }
 
+// d3 function to set outline color according to selection
+var set_outline_color = function (d,i)
+{
+
+    // default is point_color
+    var outline_color = no_sel_color;
+
+    // color point according to selection
+    for (var j = 0; j < max_num_sel; j++) {
+        if (selections.in_sel_x(i,j+1) != -1) {
+            outline_color = sel_color[j]
+        }
+    }
+
+    return outline_color;
+}
+
+// d3 function to set outline width according to selection
+var set_outline_width = function (d,i)
+{
+    // default stroke-width is 1
+    var outline_width = outline_no_sel;
+
+    // selected width is 2
+    if (selections.in_sel(i)) {
+        outline_width = outline_sel;
+    }
+
+    return outline_width;
+}
+
 // entirely redraws points (including selection, using circles)
 function draw_circles ()
 {
@@ -377,35 +414,10 @@ function draw_circles ()
 		.append("circle")
 
 	// make sure they are colored according to selections
-	scatter_points.attr("stroke", function(d,i) {
-
-		// default is point_color
-		var outline_color = no_sel_color;
-
-		if (selections.in_sel_1(i) != -1) {
-			outline_color = sel_1_color;
-		}
-		if (selections.in_sel_2(i) != -1) {
-			outline_color = sel_2_color;
-		}
-
-		return outline_color;
-	});
+	scatter_points.attr("stroke", set_outline_color);
 
 	// selections get thicker outline
-	scatter_points.attr("stroke-width", function(d,i) {
-
-		// default stroke-width is 1
-		var outline_width = outline_no_sel;
-
-		// selected width is 2
-		if (selections.in_sel_1(i) != -1 ||
-			selections.in_sel_2(i) != -1) {
-			outline_width = outline_sel;
-		}
-
-		return outline_width;
-	});
+	scatter_points.attr("stroke-width", set_outline_width);
 
 	// fill in points
 	if (curr_color_by_col.length > 0) {
@@ -479,35 +491,10 @@ function draw_squares ()
 		.attr("class", "square");
 
 	// make sure they are colored according to selections
-	scatter_points.attr("stroke", function(d,i) {
-
-		// default is point_color
-		var outline_color = no_sel_color;
-
-		if (selections.in_sel_1(i) != -1) {
-			outline_color = sel_1_color;
-		}
-		if (selections.in_sel_2(i) != -1) {
-			outline_color = sel_2_color;
-		}
-
-		return outline_color;
-	});
+	scatter_points.attr("stroke", set_outline_color);
 
 	// selections get thicker outline
-	scatter_points.attr("stroke-width", function(d,i) {
-
-		// default stroke-width is 1
-		var outline_width = outline_no_sel;
-
-		// selected width is 2
-		if (selections.in_sel_1(i) != -1 ||
-			selections.in_sel_2(i) != -1) {
-			outline_width = outline_sel;
-		}
-
-		return outline_width;
-	});
+	scatter_points.attr("stroke-width", set_outline_width);
 
 	// fill in points
 	if (curr_color_by_col.length > 0) {
@@ -702,26 +689,39 @@ var diff_button = function()
 	// inactivate button
 	$("#dac-scatter-diff-button").prop("active", false);
 
+    // make sure there are at least two selections
+    // with at least two points per selection
+    var num_valid_sel = 0;
+    for (var i = 0; i < max_num_sel; i++) {
+        if (selections.len_sel(i+1) > 1) {
+            num_valid_sel = num_valid_sel + 1;
+        }
+    }
+
 	// make sure there are two selections
-	if (selections.len_sel_1() <= 1 ||
-		selections.len_sel_2() <= 1)
-	{
+	if (num_valid_sel < 2) {
+
 		dialog.ajax_error
-		('Please make sure both red and blue selections have two or more points before computing the difference.')
+		('Please make sure at least two selections have two or more points ' +
+		 'each before computing the difference.')
 		("","","");
 		return;
+
 	}
 
-	// call server to compute Fisher values for time series
-	var sel_1 = selections.sel_1();
-	var sel_2 = selections.sel_2();
+	// put selections into array
+	var sel = [];
+    for (var i = 0; i < max_num_sel; i++) {
+        sel.push(selections.sel(i+1));
+    }
+
+    // call server to compute ordering using Fisher's multi-class discriminant
 	client.post_sensitive_model_command(
 	{
 		mid: mid,
 		type: "DAC",
 		command: "compute_fisher",
-		parameters: {selection_1: sel_1,
-					 selection_2: sel_2,
+		parameters: {selection: sel,
 					 include_columns: var_include_columns},
 		success: function (result)
 			{
@@ -997,51 +997,34 @@ function color_plot_draw(data, select_col)
         // get unique sorted string data
         var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
 
-
         // get indices or original string data in the unique sorted string data
         curr_color_by_col = [];
         for (var i=0; i < color_by_string_data.length; i++) {
             curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
         }
 
-        // set colormap to discrete color map if present
-        if (disc_colormap == null) {
-
-            // revert to default color map
-            color_scale = d3.scale.linear()
-                .range([color_by_low, color_by_high])
-                .interpolate(d3.interpolateRgb);
-
-        } else {
-
-            // use selected color brewer scale
-            color_scale = d3.scale.quantize()
-                .range(disc_colormap);
-
-        };
-
     } else {
 
         // get selected column from data base (number data)
         curr_color_by_col = data["data"][select_col];
 
-        // set colormap to continuous color map if present
-        if (cont_colormap == null) {
-
-            // revert to default color map
-            color_scale = d3.scale.linear()
-                .range([color_by_low, color_by_high])
-                .interpolate(d3.interpolateRgb);
-
-        } else {
-
-            // use selected color brewer scale
-            color_scale = d3.scale.quantize()
-                .range(cont_colormap);
-
-        };
-
     }
+
+    // set colormap if present
+    if (colormap == null) {
+
+        // revert to default color map
+        color_scale = d3.scale.linear()
+            .range([color_by_low, color_by_high])
+            .interpolate(d3.interpolateRgb);
+
+    } else {
+
+        // use selected color brewer scale
+        color_scale = d3.scale.quantize()
+            .range(colormap);
+
+    };
 
     // get max and min of appropriate column in metadata table
     var max_color_val = d3.max(curr_color_by_col);
@@ -1073,7 +1056,8 @@ var sel_zoom_buttons = function()
 				.y(y_scale)
 				.on("brushend", zoom));
 
-	} else if (selections.sel_type() == 3) {
+    // subset
+	} else if (selections.sel_type() == -1) {
 
 		// set up subset selection
 		scatter_plot.append("g")
@@ -1249,22 +1233,20 @@ function sel_brush()
 			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
 				// use curr_sel_type to identify color
-				if (selections.sel_type() == 1) {
-					outline_color = sel_1_color;
-				} else {
-					outline_color = sel_2_color;
+				var curr_sel_type = selections.sel_type();
+				if (curr_sel_type > 0) {
+				    outline_color = sel_color[curr_sel_type-1]
 				}
 
 		} else {
 
 			// color everything else according to what's already selected
-			if (selections.in_sel_1(i) != -1) {
-				outline_color = sel_1_color;
-			};
+            for (var j = 0; j < max_num_sel; j++) {
+                if (selections.in_sel_x(i,j+1) != -1) {
+                    outline_color = sel_color[j]
+                }
+            }
 
-			if (selections.in_sel_2(i) != -1) {
-				outline_color = sel_2_color;
-			};
 		};
 
 		return outline_color;
@@ -1284,8 +1266,7 @@ function sel_brush()
 		} else {
 
 			// outline is also thick for things that were previously selected
-			if (selections.in_sel_1(i) != -1 ||
-				selections.in_sel_2(i) != -1) {
+			if (selections.in_sel(i)) {
 				outline_width = outline_sel;
 			};
 
@@ -1336,7 +1317,7 @@ function sel_individual (d,i)
 {
 
 	// check for subset exclusion
-	if (selections.sel_type() == 3) {
+	if (selections.sel_type() == -1) {
 
 		exclude_individual(i);
 
@@ -1380,8 +1361,8 @@ function exclude_individual (i) {
 // de-select currently focused point
 function defocus() {
 
-	// check to see if we're in selection mode
-	if ((selections.sel_type() == 3) && selections.shift_key()) {
+	// check to see if we're in subset mode
+	if ((selections.sel_type() == -1) && selections.shift_key()) {
 
 		exclude_individual(selections.focus());
 

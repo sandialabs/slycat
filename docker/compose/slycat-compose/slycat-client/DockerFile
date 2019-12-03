@@ -6,6 +6,7 @@ RUN git clone https://github.com/sandialabs/slycat.git
 WORKDIR /usr/src/slycat/slycat
 
 RUN npm config set registry http://registry.npmjs.org/
+RUN npm install node-sass --save-dev
 RUN npm install
 RUN npm rebuild node-sass
 CMD ls

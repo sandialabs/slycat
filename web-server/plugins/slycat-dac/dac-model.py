@@ -241,10 +241,12 @@ def register_slycat_plugin(context):
     # computes Fisher's discriminant for selections 1 and 2 by the user
     def compute_fisher(database, model, verb, type, command, **kwargs):
 
-        # convert kwargs into selections in two numpy arrays
-        sel_1 = numpy.array(kwargs["selection_1"])
-        sel_2 = numpy.array(kwargs["selection_2"])
+        # convert kwargs into selections and included columns
+        selection = kwargs["selection"]
         include_columns = numpy.array(kwargs["include_columns"])
+
+        # get total selection
+        tot_selection = [i for sel in selection for i in sel]
 
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
@@ -263,20 +265,38 @@ def register_slycat_plugin(context):
                 dist_mats.append(0)
 
         # calculate Fisher's discriminant for each variable
-        num_sel_1 = len(sel_1)
-        num_sel_2 = len(sel_2)
+        num_sel = len(selection)
         fisher_disc = numpy.zeros(num_vars)
         for i in include_columns:
-            sx2 = numpy.sum(numpy.square(dist_mats[i][sel_1, :][:, sel_1])) / (2 * num_sel_1)
-            sy2 = numpy.sum(numpy.square(dist_mats[i][sel_2, :][:, sel_2])) / (2 * num_sel_2)
-            uxuy2 = (numpy.sum(numpy.square(dist_mats[i][sel_1, :][:, sel_2])) /
-                     (num_sel_1 * num_sel_2) - sx2 / num_sel_1 - sy2 / num_sel_2)
 
-            # make sure we don't divide by zero
-            if (sx2 + sy2) > numpy.finfo(float).eps:
-                fisher_disc[i] = (uxuy2 / (sx2 + sy2))
+            # compute sum of squares for each selection
+            num_sel_x = []
+            ss_sel_x = []
+            for j in range(0, num_sel):
+                num_sel_x.append(len(selection[j]))
+                ss_sel_x.append(numpy.sum(numpy.square(dist_mats[i][selection[j], :][:, selection[j]])))
+
+            # compute total within class scatter
+            tot_num_sel = numpy.sum(num_sel_x)
+            tot_sw_sel = numpy.sum(ss_sel_x) / (2 * tot_num_sel)
+
+            # compute within and between class scatter
+            sw = numpy.zeros(num_sel)
+            sb = numpy.zeros(num_sel)
+            for j in range(0, num_sel):
+                if num_sel_x[j] > 0:
+                    sw[j] = ss_sel_x[j] / (2 * num_sel_x[j])
+                    sb[j] = num_sel_x[j] * (numpy.sum(numpy.square(
+                        dist_mats[i][selection[j], :][:, tot_selection])) /
+                        (num_sel_x[j] * tot_num_sel) - sw[j] / num_sel_x[j] -
+                        tot_sw_sel / tot_num_sel)
+
+            # compute multi-class Fisher (do not divide by zero)
+            if numpy.sum(sw) > numpy.finfo(float).eps:
+                fisher_disc[i] = numpy.sum(sb) / numpy.sum(sw)
+
             else:
-                fisher_disc[i] = uxuy2
+                fisher_disc[i] = numpy.sum(sb)
 
         # scale discriminant values between 0 and 1
         fisher_min = numpy.amin(fisher_disc)
