@@ -402,7 +402,9 @@ class Session(object):
         cherrypy.log.error("writing msg: %s" % json.dumps(payload))
         stdin.write("%s\n" % json.dumps(payload))
         stdin.flush()
-        response = json.loads(stdout.readline())
+        raw_response = stdout.readline()
+        cherrypy.log.error("reading msg: %s" % raw_response)
+        response = json.loads(raw_response)
         cherrypy.log.error("response msg: %s" % response)
         if not response["ok"]:
             cherrypy.response.headers["x-slycat-message"] = response["message"]
