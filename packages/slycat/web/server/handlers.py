@@ -186,7 +186,8 @@ def get_project(pid):
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_reader(project)
     if slycat.web.server.authentication.is_server_administrator():
-        project['acl']["administrators"].append({'user':cherrypy.request.login})
+        project['acl']["server_administrators"] = []
+        project['acl']["server_administrators"].append({'user':cherrypy.request.login})
     return project
 
 def get_remote_host_dict():
@@ -230,6 +231,8 @@ def put_project(pid):
     mutations = []
     if "acl" in cherrypy.request.json:
         slycat.web.server.authentication.require_project_administrator(project)
+        if "server_administrators" in cherrypy.request.json["acl"]:
+            del cherrypy.request.json["acl"]["server_administrators"]
         if "administrators" not in cherrypy.request.json["acl"]:
             cherrypy.log.error("slycat.web.server.handlers.py put_project",
                                     "cherrypy.HTTPError 400 missing administrators.")

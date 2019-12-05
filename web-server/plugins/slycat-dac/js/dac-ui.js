@@ -60,7 +60,6 @@ $(document).ready(function() {
 
     // colormap defaults
     var cont_colormap = null;
-    var disc_colormap = null;
 
     // model id from address bar
     var mid = URI(window.location).segment(-1);
@@ -212,9 +211,7 @@ $(document).ready(function() {
                     if ("dac-cont-colormap" in bookmark) {
                         cont_colormap = JSON.parse(bookmark_preference("dac-cont-colormap", cont_colormap)[0]); };
 
-                        // no more discrete colormap (same as continuous)
-                        disc_colormap = cont_colormap;
-
+                    // no more discrete colormap (same as continuous)
                     // if ("dac-disc-colormap" in bookmark) {
                     //     disc_colormap = JSON.parse(bookmark_preference("dac-disc-colormap", disc_colormap)[0]); };
 
@@ -498,8 +495,16 @@ $(document).ready(function() {
 				var POINT_COLOR = ui_parms["POINT_COLOR"];
 				var POINT_SIZE = parseInt(ui_parms["POINT_SIZE"]);
 				var NO_SEL_COLOR = ui_parms["NO_SEL_COLOR"];
-				var SELECTION_1_COLOR = ui_parms["SELECTION_1_COLOR"];
-				var SELECTION_2_COLOR = ui_parms["SELECTION_2_COLOR"];
+
+				// hard-coded third selection to all models (green)
+				var SELECTION_COLOR = [ui_parms["SELECTION_1_COLOR"],
+				                       ui_parms["SELECTION_2_COLOR"],
+				                       'limegreen'];
+
+                // hard-coded user selected colors  (R, B, G)
+                // (for exporting tables, plots)
+                var USER_SEL_COLORS = ["Red", "Blue", "Green"];
+
 				var COLOR_BY_LOW = ui_parms["COLOR_BY_LOW"];
 				var COLOR_BY_HIGH = ui_parms["COLOR_BY_HIGH"];
 				var OUTLINE_NO_SEL = parseInt(ui_parms["OUTLINE_NO_SEL"]);
@@ -507,13 +512,16 @@ $(document).ready(function() {
 
 				// pixel adjustments for d3 time series plots
 				var PLOT_ADJUSTMENTS = {
+
 				    // hard-coded after change to bootstrap 4
 				    PLOTS_PULL_DOWN_HEIGHT: 29,
                     PADDING_TOP: 10,
                     PADDING_BOTTOM: 30,
+
 					// PLOTS_PULL_DOWN_HEIGHT: parseInt(ui_parms["PLOTS_PULL_DOWN_HEIGHT"]),
 					// PADDING_TOP: parseInt(ui_parms["PADDING_TOP"]),
 					// PADDING_BOTTOM: parseInt(ui_parms["PADDING_BOTTOM"]),
+
 					PADDING_LEFT: parseInt(ui_parms["PADDING_LEFT"]),
 					PADDING_RIGHT: parseInt(ui_parms["PADDING_RIGHT"]),
 					X_LABEL_PADDING: parseInt(ui_parms["X_LABEL_PADDING"]),
@@ -601,6 +609,7 @@ $(document).ready(function() {
                                 // get initial selections, using bookmarks if available
                                 var init_sel_1 = include_check("dac-sel-1", num_points, false);
                                 var init_sel_2 = include_check("dac-sel-2", num_points, false);
+                                var init_sel_3 = include_check("dac-sel-3", num_points, false);
 
                                 // get focus point
                                 var init_focus = null;
@@ -611,7 +620,8 @@ $(document).ready(function() {
 
                                     // make sure focus is in at least one selection
                                     if ((init_sel_1.indexOf(init_focus) == -1) &&
-                                        (init_sel_2.indexOf(init_focus) == -1)) {
+                                        (init_sel_2.indexOf(init_focus) == -1) &&
+                                        (init_sel_3.indexOf(init_focus) == -1)) {
                                          init_focus = null;
                                     }
                                 }
@@ -622,9 +632,14 @@ $(document).ready(function() {
                                     init_sel_type = bookmark["dac-sel-type"];
                                 }
 
+                                // set up maximum number of selections
+                                var MAX_NUM_SEL = SELECTION_COLOR.length;
+                                selections.setup(MAX_NUM_SEL);
+
                                 // initialize selections/focus
-                                selections.set_sel_1(init_sel_1);
-                                selections.set_sel_2(init_sel_2);
+                                selections.set_sel(init_sel_1, 1);
+                                selections.set_sel(init_sel_2, 2);
+                                selections.set_sel(init_sel_3, 3);
                                 selections.set_focus(init_focus);
                                 selections.set_sel_type(init_sel_type);
 
@@ -695,10 +710,13 @@ $(document).ready(function() {
                                     init_plots_selected = bookmark["dac-plots-selected"];
                                     init_plots_displayed = bookmark["dac-plots-displayed"];
 
-                                    // check if plots are in correct range
-                                    if (Math.max(...init_plots_selected) >= num_vars) {
-                                        init_plots_selected = [];
-                                        init_plots_displayed = [1,1,1];
+                                    // check if plots are in included variables list
+                                    // if not, revert to first three variables
+                                    for (var i = 0; i < init_plots_selected.length; i++) {
+                                        if (var_include_columns.indexOf(init_plots_selected[i]) == -1) {
+                                            init_plots_selected = [];
+                                            init_plots_displayed = [1,1,1];
+                                        }
                                     }
                                 }
 
@@ -741,25 +759,26 @@ $(document).ready(function() {
 				                alpha_buttons.setup(num_vars, var_include_columns);
 
 				                // set up the time series plots
-				                plots.setup(SELECTION_1_COLOR, SELECTION_2_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
-				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, variables_meta, variables,
-				                            var_include_columns, init_plots_selected, init_plots_displayed,
+				                plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
+				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME,
+				                            variables_meta, variables, var_include_columns,
+				                            init_plots_selected, init_plots_displayed,
 				                            init_plots_zoom_x, init_plots_zoom_y, init_link_plots);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_1_COLOR,
-					                SELECTION_2_COLOR, FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH,
-					                cont_colormap, disc_colormap, MAX_COLOR_NAME, OUTLINE_NO_SEL,
-					                OUTLINE_SEL, data_table_meta[0], meta_include_columns, var_include_columns,
+					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_COLOR,
+					                FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, cont_colormap,
+					                MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
+					                data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_fisher_order, init_fisher_pos, init_diff_desired_state, editable_columns,
-					                model_origin);
+					                init_fisher_order, init_fisher_pos, init_diff_desired_state,
+					                editable_columns, model_origin);
 
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, model_origin, MAX_FREETEXT_LEN, init_sort_order,
-                                                 init_sort_col);
+                                                 editable_columns, model_origin, MAX_FREETEXT_LEN,
+                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col);
 
 		   	                },
 		   	                function () {
@@ -868,8 +887,9 @@ $(document).ready(function() {
 		metadata_table.jump_to (new_selections.detail.active_sel);
 
 		// bookmark selections
-		bookmarker.updateState ({"dac-sel-1": selections.sel_1(), "dac-sel-2": selections.sel_2(),
-		                         "dac-sel-focus": selections.focus(), "dac-diff-desired-state": false})
+		bookmarker.updateState ({"dac-sel-1": selections.sel(1), "dac-sel-2": selections.sel(2),
+		                         "dac-sel-3": selections.sel(3), "dac-sel-focus": selections.focus(),
+		                         "dac-diff-desired-state": false})
     }
 
     // custom event for jumping to an individual selection in the table
