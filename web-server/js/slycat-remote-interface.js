@@ -408,10 +408,6 @@ ko.components.register('slycat-remote-interface', {
                 {
                     "name": "--hash",
                     "value": uid
-                },
-                {
-                    "name": "--profile",
-                    "value": "${profile}"
                 }
             ]
         });
@@ -448,10 +444,6 @@ ko.components.register('slycat-remote-interface', {
                   {
                       "name": "--hash",
                       "value": uid
-                  },
-                  {
-                      "name": "--profile",
-                      "value": "${profile}"
                   }
               ]
           });

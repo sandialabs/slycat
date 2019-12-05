@@ -160,7 +160,6 @@ class Agent(agent.Agent):
                                                                           "probably missung"}, cls=agent.MyEncoder))
             sys.stdout.flush()
         except Exception as e:
-            self.log.log(logging.INFO, traceback.format_exc())
             sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e}, cls=agent.MyEncoder))
             sys.stdout.flush()
         sys.stdout.write("%s\n" % json.dumps(results, cls=agent.MyEncoder))
@@ -196,7 +195,7 @@ class Agent(agent.Agent):
         }
         try:
             results["output"], results["errors"] = self.run_shell_command("sacct -j %s --format=jobname,state" % results["jid"])
-            myset = results["output"].split('\n')
+            myset = str(results["output"].decode()).split('\n')
             results["output"]="COMPLETED"
             for _ in myset:
                 if "slycat-tmp" in _:

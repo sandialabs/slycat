@@ -12,6 +12,7 @@ def register_slycat_plugin(context):
     import slycat.web.server
     import threading
     import sys
+    import traceback
     import numpy
     import re
     import couchdb
@@ -291,7 +292,8 @@ def register_slycat_plugin(context):
                 database = slycat.web.server.database.couchdb.connect()
                 model = database.get("model", model_id)
                 slycat.web.server.put_model_parameter(database, model, "computing", False)
-                cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
+                cherrypy.log.error(traceback.format_exc())
+                cherrypy.log.error("Timeseries cperror model compute exception type: %s" % sys.exc_info()[0])
                 cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
                 cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
                 raise Exception(e.message)
@@ -299,6 +301,7 @@ def register_slycat_plugin(context):
                 database = slycat.web.server.database.couchdb.connect()
                 model = database.get("model", model_id)
                 slycat.web.server.put_model_parameter(database, model, "computing", False)
+                cherrypy.log.error(traceback.format_exc())
                 cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
                 cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
                 cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
