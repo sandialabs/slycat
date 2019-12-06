@@ -28,6 +28,7 @@ memory use manageable.
 """
 
 import numpy
+import cherrypy
 
 
 class Prototype(object):
@@ -176,7 +177,7 @@ def _require_dimension_type(type):
 _require_dimension_type.allowed_types = set(["int64"])
 
 def _require_dimension_bound(bound):
-  if not isinstance(bound, int):
+  if not isinstance(bound, int) and type(bound) is not numpy.int64:
     cherrypy.log.error("darray.py _require_dimension_bound", "Dimension bound must be an integer.")
     raise ValueError("Dimension bound must be an integer.")
   return bound
