@@ -291,11 +291,18 @@ for i in range(0, num_movies):
         log("[VS-LOG] Error: inconsistent number of frames for video " + str(movie_files[i]))
         sys.exit()
 
-# read in an image file and get number of pixels
-frame = cv2.imread(all_frame_files[0][0])
+# try to read image
+try:
+    frame = cv2.imread(all_frame_files[0][0])
+except:
+    log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
+    sys.exit()
+
+# may succeed and be empty
 if frame is None:
     log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
     sys.exit()
+
 num_pixels = numpy.size(frame)
 
 # get duration of video based on number of frames and fps
@@ -320,7 +327,13 @@ for i in range(num_frames-1, -1, -1):
     for j in range(0, num_movies):
 
         # get frame i
-        frame_i = cv2.imread(all_frame_files[j][i])
+        try:
+            frame_i = cv2.imread(all_frame_files[j][i])
+        except:
+            log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
+            sys.exit()
+
+        # check for empty image file
         if frame_i is None:
             log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
             sys.exit()
