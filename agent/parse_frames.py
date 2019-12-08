@@ -266,6 +266,11 @@ for i in range(0, num_movies):
         if len(file_split) < 3:
             continue
 
+        # only consider files with same extension
+        file_ext = file_split[-1]
+        if file_ext != frame_ext:
+            continue
+
         # get file root & frame num
         file_root = ".".join(file_split[0:-2])
         file_num = file_split[-2]
