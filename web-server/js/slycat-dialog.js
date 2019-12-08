@@ -17,10 +17,24 @@ export function dialog(params)
   component.message = ko.observable(params.message || "");
   component.input = ko.observable(params.input || false);
 
-  // added select drop down, returns value
+  // added select drop down, returns value index
   // (S. Martin, 11/27/2019)
   component.select = ko.observable(params.select || false);
-  component.options = ko.observableArray(params.select_options || []);
+
+  // set up options list with an index id
+  var select_options = []
+  if (typeof params.select_options !== 'undefined') {
+    var select_option_data = function(data){
+      var self = this;
+      self.id = ko.observable(data.id);
+      self.name = ko.observable(data.name);
+    };
+    for (var i = 0; i < params.select_options.length; i++) {
+      select_options.push(new select_option_data({id: i,
+        name: params.select_options[i]}))
+    }
+  }
+  component.options = ko.observableArray(select_options);
 
   component.placeholder = ko.observable(params.placeholder || "");
   component.value = ko.isObservable(params.value) ? params.value : ko.observable(params.value || "");
