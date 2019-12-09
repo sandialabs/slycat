@@ -88,6 +88,9 @@ $(document).ready(function() {
     // model origin data (initialize to empty)
     var model_origin = [];
 
+    // model name (for downloading tables)
+    var MODEL_NAME = "";
+
     // waits 1 minute past last successful progress update
     var endTime = Number(new Date()) + ONE_MINUTE;
 
@@ -197,6 +200,9 @@ $(document).ready(function() {
             success: function (result)
             {
 
+                // save model name for naming tables
+                MODEL_NAME = result.name;
+
                 // set up bookmark object
                 bookmarker = bookmark_manager.create(result.project, result._id);
 
@@ -224,6 +230,9 @@ $(document).ready(function() {
                     SCATTER_PLOT_TYPE = bookmark_preference("dac-SCATTER-PLOT-TYPE", SCATTER_PLOT_TYPE);
                     MAX_CATS = bookmark_preference("dac-MAX-CATS", MAX_CATS);
                     MAX_FREETEXT_LEN = bookmark_preference("dac-MAX-FREETEXT-LEN", MAX_FREETEXT_LEN);
+
+                    // truncate model name to max name length
+                    MODEL_NAME = MODEL_NAME.substring(0, MAX_PLOT_NAME);
 
                     // set up model origin column data
                     setup_model_origin();
@@ -760,7 +769,7 @@ $(document).ready(function() {
 
 				                // set up the time series plots
 				                plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
-				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME,
+				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
 				                            variables_meta, variables, var_include_columns,
 				                            data_table[0]["data"][0].length, init_plots_selected,
 				                            init_plots_displayed, init_plots_zoom_x,
@@ -778,7 +787,7 @@ $(document).ready(function() {
 
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, model_origin, MAX_FREETEXT_LEN,
+                                                 editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
                                                  MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col);
 
 		   	                },

@@ -32,8 +32,9 @@ var max_num_plots = null;
 // maximum plot name length to (hopefully) avoid bad plot alignment in the pane
 var max_plot_name_length = null;
 
-// model ID
+// model ID & name
 var mid = URI(window.location).segment(-1);
+var model_name = "";
 
 // current plots being shown (indices & data)
 var plots_selected = [];
@@ -110,7 +111,7 @@ var mouse_over_line = [];
 
 // set up initial private variables, user interface
 module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
-						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME,
+						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
 						 variables_metadata, variables_data, INCLUDE_VARS, TOT_NUM_PLOTS,
 						 init_plots_selected, init_plots_displayed, init_plots_zoom_x,
 						 init_plots_zoom_y, init_link_plots)
@@ -147,6 +148,9 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 
 	// which variables to actually plot
 	var_include_columns = INCLUDE_VARS;
+
+    // save model name for downloading plot data
+    model_name = MODEL_NAME;
 
 	// populate pull down menus and initialize d3 plots
 
@@ -509,6 +513,12 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
 	];
 
+    // name file according to model name, variable
+    // (model_name is already truncated in dac-ui.js)
+    var defaultFilename = model_name + " " +
+                          sel_plot_name.substring(0, max_plot_name_length) + ".csv";
+    defaultFilename = defaultFilename.replace(/ /g,"_");
+
     // launch dialog
 	dialog.dialog(
 	{
@@ -530,11 +540,11 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 
                 if(button.label == "Save All Plots")
                     convert_to_csv([], plot_id, header_index,
-                        "DAC_Untitled_Plot_Data.csv");
+                        defaultFilename);
 
                 else if(button.label == "Save Selected")
                     convert_to_csv(curr_sel, plot_id, header_index,
-                        "DAC_Untitled_Plot_Data_Selection.csv");
+                        defaultFilename);
             }
 		},
 	});

@@ -66,6 +66,9 @@ var grid_options = {
 	editable: true,
 };
 
+// model name for downloaded table
+var model_name = "";
+
 // maximum freetext length for editable columns
 var MAX_FREETEXT_LEN = 0;
 
@@ -91,7 +94,7 @@ function make_column(id_index, name, editor, options)
 
 // load grid data and set up colors for selections
 module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
-                         max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
+                         MODEL_NAME, max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
                          init_sort_order, init_sort_col)
 {
 	// set up callback for data download button
@@ -100,6 +103,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
 	// set maximum length of freetext for editable columns
 	MAX_FREETEXT_LEN = max_freetext_len;
+
+    // set model name
+    model_name = MODEL_NAME;
 
     // set maximum number of selections
     // (note this cannot exceed 8 for the table, as of 11/25/2019)
@@ -246,11 +252,15 @@ var download_button_callback = function ()
 	// concatenate all selections
 	var sel = selections.sel();
 
+    // construct model based name for table download
+    var defaultFilename = model_name + " Metadata_Table.csv";
+    defaultFilename = defaultFilename.replace(/ /g,"_");
+
 	// check if there anything is selected
 	if (sel.length == 0) {
 
 		// nothing selected: download entire table
-		write_data_table([], "DAC_Untitled_Data_Table.csv");
+		write_data_table([], defaultFilename);
 
 	 } else {
 
@@ -260,7 +270,7 @@ var download_button_callback = function ()
             download_dialog_open = true;
 
             // something selected, see what user wants to export
-            openCSVSaveChoiceDialog(sel);
+            openCSVSaveChoiceDialog(sel, defaultFilename);
         }
 	 }
  }
@@ -360,7 +370,7 @@ function convert_to_csv (user_selection)
 				}
 
 				// strip commas
-				csv_row.push(String(item[j]).replace(/,/g, ""));
+				csv_row.push(String(item[j]).replace(/,/g,""));
 
 			}
 
@@ -479,7 +489,7 @@ module.selection_values = function (header_col, rows_to_output)
 
 // opens a dialog to ask user if they want to save selection or whole table
 // (modified from videoswarm code)
-function openCSVSaveChoiceDialog(sel)
+function openCSVSaveChoiceDialog(sel, defaultFilename)
 {
 	// sel contains the entire selection (both red and blue)
 	// (always non-empty when called)
@@ -507,11 +517,11 @@ function openCSVSaveChoiceDialog(sel)
 		    if (typeof button !== 'undefined') {
 
                 if(button.label == "Save Entire Table")
-                    write_data_table([], "DAC_Untitled_Data_Table.csv");
+                    write_data_table([], defaultFilename);
 
                 else if(button.label == "Save Selected")
                     write_data_table( selections.sel(),
-                        "DAC_Untitled_Data_Table_Selection.csv");
+                        defaultFilename);
             }
 		},
 	});
