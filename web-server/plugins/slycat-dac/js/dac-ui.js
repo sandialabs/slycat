@@ -762,8 +762,9 @@ $(document).ready(function() {
 				                plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME,
 				                            variables_meta, variables, var_include_columns,
-				                            init_plots_selected, init_plots_displayed,
-				                            init_plots_zoom_x, init_plots_zoom_y, init_link_plots);
+				                            data_table[0]["data"][0].length, init_plots_selected,
+				                            init_plots_displayed, init_plots_zoom_x,
+				                            init_plots_zoom_y, init_link_plots);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
