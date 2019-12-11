@@ -7,12 +7,18 @@ import vtkRenderWindow from 'vtk.js/Sources/Rendering/Core/RenderWindow';
 import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindowInteractor';
 import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
 import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
+import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
+import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
+import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 
 import { addCamera, } from './vtk-camera-synchronizer';
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
 export function load(container, buffer) {
+  // lut
+  const lutName = 'erdc_rainbow_bright';
+
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
   // ----------------------------------------------------------------------------
@@ -30,11 +36,34 @@ export function load(container, buffer) {
 
   const vtpReader = vtkXMLPolyDataReader.newInstance();
   vtpReader.parseAsArrayBuffer(buffer);
+
+  const lookupTable = vtkColorTransferFunction.newInstance();
   const source = vtpReader.getOutputData(0);
-  const mapper = vtkMapper.newInstance();
+  const mapper = vtkMapper.newInstance({
+    interpolateScalarsBeforeMapping: false,
+    useLookupTableScalarRange: true,
+    lookupTable,
+    scalarVisibility: false,
+  });
   mapper.setInputData(source);
   const actor = vtkActor.newInstance();
+  const scalars = source.getPointData().getScalars();
+  const dataRange = [].concat(scalars ? scalars.getRange() : [0, 1]);
+  let activeArray = vtkDataArray;
   actor.setMapper(mapper);
+
+  // --------------------------------------------------------------------
+  // Color handling
+  // --------------------------------------------------------------------
+
+  function applyPreset() {
+    // const preset = vtkColorMaps.getPresetByName(presetSelector.value);
+    const preset = vtkColorMaps.getPresetByName(lutName);
+    lookupTable.applyColorMap(preset);
+    lookupTable.setMappingRange(dataRange[0], dataRange[1]);
+    lookupTable.updateRange();
+  }
+  applyPreset();
 
   // ----------------------------------------------------------------------------
   // Add the actor to the renderer and set the camera based on it
