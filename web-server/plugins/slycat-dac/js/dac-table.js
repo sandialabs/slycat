@@ -66,6 +66,9 @@ var grid_options = {
 	editable: true,
 };
 
+// model name for downloaded table
+var model_name = "";
+
 // maximum freetext length for editable columns
 var MAX_FREETEXT_LEN = 0;
 
@@ -91,7 +94,7 @@ function make_column(id_index, name, editor, options)
 
 // load grid data and set up colors for selections
 module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
-                         max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
+                         MODEL_NAME, max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
                          init_sort_order, init_sort_col)
 {
 	// set up callback for data download button
@@ -100,6 +103,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
 	// set maximum length of freetext for editable columns
 	MAX_FREETEXT_LEN = max_freetext_len;
+
+    // set model name
+    model_name = MODEL_NAME;
 
     // set maximum number of selections
     // (note this cannot exceed 8 for the table, as of 11/25/2019)
@@ -246,11 +252,15 @@ var download_button_callback = function ()
 	// concatenate all selections
 	var sel = selections.sel();
 
+    // construct model based name for table download
+    var defaultFilename = model_name + " Metadata_Table.csv";
+    defaultFilename = defaultFilename.replace(/ /g,"_");
+
 	// check if there anything is selected
 	if (sel.length == 0) {
 
 		// nothing selected: download entire table
-		write_data_table([], "DAC_Untitled_Data_Table.csv");
+		write_data_table([], defaultFilename);
 
 	 } else {
 
@@ -260,7 +270,7 @@ var download_button_callback = function ()
             download_dialog_open = true;
 
             // something selected, see what user wants to export
-            openCSVSaveChoiceDialog(sel);
+            openCSVSaveChoiceDialog(sel, defaultFilename);
         }
 	 }
  }
@@ -271,6 +281,14 @@ function write_data_table (rows_to_output, defaultFilename)
 	// convert data table to csv for writing
 	var csvData = convert_to_csv (rows_to_output);
 
+    module.download_data_table (csvData, defaultFilename);
+
+}
+
+// download data table to browser
+module.download_data_table = function (csvData, defaultFilename)
+{
+
 	// set up download link
 	var D = document;
 	var a = D.createElement("a");
@@ -279,7 +297,7 @@ function write_data_table (rows_to_output, defaultFilename)
 	//build download link:
 	a.href = "data:" + strMimeType + ";charset=utf-8," + encodeURIComponent(csvData);
 
-	// opens download dialog (this code is crap)
+	// opens download dialog
 	if ('download' in a) {
 		a.setAttribute("download", defaultFilename);
 		a.innerHTML = "downloading...";
@@ -293,9 +311,10 @@ function write_data_table (rows_to_output, defaultFilename)
 		}, 66);
 	return true;
 	} else {
-		console.log("Could not detect firefox/chrome.");
+		dialog.ajax_error("Could not download file.  Browser incompatibility?")("","","");
 	}
- };
+
+};
 
 // generate csv text from data table
 function convert_to_csv (user_selection)
@@ -312,31 +331,22 @@ function convert_to_csv (user_selection)
 	else {
 		rows_to_output = user_selection;
 	}
-    
-	// look for extra commas and warn user
-	var extra_commas_found = false;
 
 	// output data in data_view (sorted as desired by user) order
 	var csv_output = "";
 
-	// output headers
-	for (var i = 0; i < (num_cols + num_editable_cols); i++) {
-		var header_name = grid_columns[i].name;
+    // output headers
+    var headers = module.get_headers(true);
+    csv_output = headers[0].join(",");
 
-		// check for commas in column header
-		if (header_name.indexOf(",") != -1) {
-			extra_commas_found = true;
-		}
-
-		// strip any commas and add to csv header
-		csv_output += header_name.replace(/,/g,"") + ",";
-	}
+    // look for extra commas and warn user
+	var extra_commas_found = headers[1];
 
 	// add selection color to header, end line
-	csv_output += 'User Selection\n'
+	csv_output += ',User Selection\n'
 
 	// remove last comma, end line
-	//csv_output = csv_output.slice(0,-1) + "\n";
+	// csv_output = csv_output.slice(0,-1) + "\n";
 
 	// output data
 	for (var i = 0; i < num_rows; i++) {
@@ -360,28 +370,12 @@ function convert_to_csv (user_selection)
 				}
 
 				// strip commas
-				csv_row.push(String(item[j]).replace(/,/g, ""));
+				csv_row.push(String(item[j]).replace(/,/g,""));
+
 			}
 
-            // convert focus selection to selection-#
-            var row_sel = selection_type(item);
-            if (row_sel == 'focus-selection') {
-                var focus_sel = selections.focus();
-                for (var j = 0; j < max_num_sel; j++) {
-                    if (selections.in_sel_x(focus_sel, j+1) != -1) {
-                        row_sel = 'selection-' + (j+1);
-                        break;
-                    }
-                }
-            }
-
-            // convert selection-# to user output color
-            var row_color = "";
-            if (row_sel.search("selection-") != -1) {
-                row_color = user_sel_colors[parseInt(row_sel.charAt(row_sel.length-1))-1];
-            }
-
-            csv_row.push(row_color);
+            // add row selection color to last column
+            csv_row.push(row_sel_color(item));
 
 			// add row to csv output
 			csv_output += csv_row + "\n";
@@ -390,16 +384,112 @@ function convert_to_csv (user_selection)
 
 	// produce warning if extra commas were detected
 	if (extra_commas_found) {
-		 dialog.ajax_error("Warning.  Commas were detected in the table data " +
+		 dialog.ajax_error("Commas were detected in the table data " +
 		    "text and will be removed in the .csv output file.")
 			("","","");
 	}
 	return csv_output;
 }
 
+// returns table headers and checks for extra commas
+// replaces commas with spaces if replace_commas is true
+module.get_headers = function (replace_commas)
+{
+
+    // keep track of extra commas
+    var extra_commas = false;
+
+    // output headers
+    var headers = [];
+	for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+		var header_name = grid_columns[i].name;
+
+		// check for commas in column header
+		if (header_name.indexOf(",") != -1) {
+			extra_commas = true;
+		}
+
+		// strip any commas (optional) and add to csv header
+		if (replace_commas) {
+    		headers.push(header_name.replace(/,/g,""));
+    	} else {
+    	    headers.push(header_name);
+    	}
+	}
+
+    return [headers, extra_commas];
+}
+
+// gets user selection color for a row in the table
+function row_sel_color (item)
+{
+
+    // convert focus selection to selection-#
+    var row_sel = selection_type(item);
+    if (row_sel == 'focus-selection') {
+        var focus_sel = selections.focus();
+        for (var j = 0; j < max_num_sel; j++) {
+            if (selections.in_sel_x(focus_sel, j+1) != -1) {
+                row_sel = 'selection-' + (j+1);
+                break;
+            }
+        }
+    }
+
+    // convert selection-# to user output color
+    var row_color = "";
+    if (row_sel.search("selection-") != -1) {
+        row_color = user_sel_colors[parseInt(row_sel.charAt(row_sel.length-1))-1];
+    }
+
+    return row_color;
+
+}
+
+// return table values for a selection
+module.selection_values = function (header_col, rows_to_output)
+{
+
+    // return header value and selection color
+    var header_val = []
+    var sel_color = []
+
+    // also return flag indicating if commas were found
+    var extra_commas = false;
+
+    // go through table rows in table order
+	for (var i = 0; i < num_rows; i++) {
+
+		// get slick grid table data
+		var item = grid_view.getDataItem(i);
+
+		// get selection index
+		var sel_i = item[item.length-2];
+
+		// check if data is in the selection
+		if (rows_to_output.indexOf(sel_i) != -1) {
+
+            // check for commas for later warning
+            if (String(item[header_col]).indexOf(",") != -1) {
+                extra_commas = true;
+            }
+
+            // strip commas and add to header list
+            header_val.push(String(item[header_col]).replace(/,/g, ""));
+
+			// get selection color
+            sel_color.push(row_sel_color(item));
+
+		}
+    }
+
+    return [header_val, sel_color, extra_commas];
+
+}
+
 // opens a dialog to ask user if they want to save selection or whole table
 // (modified from videoswarm code)
-function openCSVSaveChoiceDialog(sel)
+function openCSVSaveChoiceDialog(sel, defaultFilename)
 {
 	// sel contains the entire selection (both red and blue)
 	// (always non-empty when called)
@@ -427,11 +517,11 @@ function openCSVSaveChoiceDialog(sel)
 		    if (typeof button !== 'undefined') {
 
                 if(button.label == "Save Entire Table")
-                    write_data_table([], "DAC_Untitled_Data_Table.csv");
+                    write_data_table([], defaultFilename);
 
                 else if(button.label == "Save Selected")
                     write_data_table( selections.sel(),
-                        "DAC_Untitled_Data_Table_Selection.csv");
+                        defaultFilename);
             }
 		},
 	});

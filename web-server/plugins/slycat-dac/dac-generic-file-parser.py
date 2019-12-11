@@ -127,13 +127,21 @@ def parse_mat_file(file):
     rows = [row for row in csv.reader(file.decode().splitlines(), delimiter=",", doublequote=True,
             escapechar=None, quotechar='"', quoting=csv.QUOTE_MINIMAL, skipinitialspace=True)]
 
+    # check that we have a matrix
+    num_rows = len(rows)
+    num_cols = len(rows[0])
+    is_a_matrix = True
+    for i in range(0, num_rows):
+        if len(rows[i]) != num_cols:
+            is_a_matrix = False
+
     # fill a numpy matrix with matrix from file (assumes floats, fails otherwise)
     data = numpy.zeros((len(rows[0:]), len(rows[0])))
     for j in range(len(rows[0:])):
         try:
             data[j,:] = numpy.array([float(name) for name in rows[j]])
         except:
-            raise Exception ("Matrix entries must be floats.")
+            is_a_matrix = False
 
     # for a vector we strip off the outer python array []
     if int(data.shape[0]) == 1:
@@ -150,7 +158,12 @@ def parse_mat_file(file):
     # attributes are the same for matrices and vectors
     attributes = [dict(name="value", type="float64")]
 
-    return attributes, dimensions, data
+    # return matrix, if found
+    if is_a_matrix:
+        return attributes, dimensions, data
+
+    else:
+        return [], [], []
 
 
 def parse_list_file(file):
@@ -160,12 +173,16 @@ def parse_list_file(file):
     :return: a list of strings
     """
     cherrypy.log.error ("Started DAC list file parser.")
+
     # get rows of file
     rows = [row.strip() for row in file.splitlines()]
+
     # remove any empty rows
     rows = [_f for _f in rows if _f]
+
     # return only unique rows
     rows = list(set(rows))
+
     return rows
 
 
@@ -226,10 +243,13 @@ def parse(database, model, input, files, aids, **kwargs):
 
     elif list_file:
          # list file (one string per row)
+
          # get strings in list
         list_data = parse_list_file(files[0])
+
          # put list in slycat database as a model parameter
         slycat.web.server.put_model_parameter(database, model, aids[0], list_data, input)
+
     else:
 
         # matrix parser (newer parser)
@@ -474,7 +494,6 @@ def check_file_names (database, model, parse_error_log,
 
     # quit if files do not match
     if not files_found:
-        model = database.get('model', model["_id"])
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Error", error_msg])
 
@@ -502,8 +521,10 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
         # parse meta file
         meta_column_names, meta_rows = parse_table_file(zip_ref.read(dac_file))
 
+        num_datapoints = len(meta_rows)
+
         parse_error_log = update_parse_log (database, model, parse_error_log, "Progress",
-                                            "Read " + str(len(meta_rows)) + " datapoints.")
+                                            "Read " + str(num_datapoints) + " datapoints.")
 
         # push progress for wizard polling to database
         model = database.get('model', model["_id"])
@@ -528,6 +549,21 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
         for i in range(0, num_vars):
 
             attr, dim, data = parse_mat_file(zip_ref.read("time/variable_" + str(i + 1) + ".time"))
+
+            # check that time steps match variable length
+            if len(variable[i][0]) != len(data):
+
+                error_msg = 'time steps do not match variable data for variable ' + str(i+1)
+
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                      ["Error", error_msg])
+
+                # record no data message in front of parser log
+                update_parse_log(database, model, parse_error_log, "No Data",
+                                 "Error -- " + error_msg + ".")
+
+                raise Exception(error_msg + ".")
+
             time_steps.append(list(data))
 
         parse_error_log = update_parse_log (database, model, parse_error_log, "Progress",
@@ -542,6 +578,36 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
         for i in range(0, num_vars):
 
             attr, dim, data = parse_mat_file(zip_ref.read("dist/variable_" + str(i + 1) + ".dist"))
+
+            # check that distance matrix is square
+            if len(data) != len(data[0]):
+
+                error_msg = 'distance matrix is not square for variable ' + str(i + 1)
+
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                      ["Error", error_msg])
+
+                # record no data message in front of parser log
+                update_parse_log(database, model, parse_error_log, "No Data",
+                                 "Error -- " + error_msg + ".")
+
+                raise Exception(error_msg + ".")
+
+            # check that distance matrix matches number of datapoints
+            if len(data) != num_datapoints:
+
+                error_msg = 'distance matrix size does not match number of datapoints for variable ' \
+                            + str(i + 1)
+
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                      ["Error", error_msg])
+
+                # record no data message in front of parser log
+                update_parse_log(database, model, parse_error_log, "No Data",
+                                 "Error -- " + error_msg + ".")
+
+                raise Exception(error_msg + ".")
+
             var_dist.append(numpy.array(data))
 
         parse_error_log = update_parse_log (database, model, parse_error_log, "Progress",

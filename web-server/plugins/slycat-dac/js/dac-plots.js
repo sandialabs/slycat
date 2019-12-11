@@ -16,6 +16,8 @@ import * as dialog from "js/slycat-dialog";
 import selections from "./dac-manage-selections.js";
 import d3 from "d3";
 import URI from "urijs";
+import ko from "knockout";
+import metadata_table from "./dac-table.js";
 
 // public functions (or variables)
 var module = {};
@@ -30,8 +32,9 @@ var max_num_plots = null;
 // maximum plot name length to (hopefully) avoid bad plot alignment in the pane
 var max_plot_name_length = null;
 
-// model ID
+// model ID & name
 var mid = URI(window.location).segment(-1);
+var model_name = "";
 
 // current plots being shown (indices & data)
 var plots_selected = [];
@@ -74,6 +77,9 @@ var focus_color = null;
 // number of selections allowed
 var max_num_sel = null;
 
+// total number of plots available in dataset
+var tot_num_plots = null;
+
 // keep track of download modal opened/closed
 var download_dialog_open = false;
 
@@ -105,8 +111,8 @@ var mouse_over_line = [];
 
 // set up initial private variables, user interface
 module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
-						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME,
-						 variables_metadata, variables_data, INCLUDE_VARS,
+						 MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
+						 variables_metadata, variables_data, INCLUDE_VARS, TOT_NUM_PLOTS,
 						 init_plots_selected, init_plots_displayed, init_plots_zoom_x,
 						 init_plots_zoom_y, init_link_plots)
 {
@@ -134,11 +140,17 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 	// set maximum number of plots (per selection)
 	max_num_plots = MAX_NUM_PLOTS;
 
+    // total number of plots possible
+    tot_num_plots = TOT_NUM_PLOTS;
+
 	// set maximum length of plot names
 	max_plot_name_length = MAX_PLOT_NAME;
 
 	// which variables to actually plot
 	var_include_columns = INCLUDE_VARS;
+
+    // save model name for downloading plot data
+    model_name = MODEL_NAME;
 
 	// populate pull down menus and initialize d3 plots
 
@@ -396,6 +408,41 @@ function link_check_box()
 
 }
 
+// check that linked plots are compatible
+function check_compatible_link(check_id)
+{
+
+    // yes -- check compatibility with previously checked links
+    var compatible_link = true;
+    for (var j = 0; j < Math.min(num_included_plots, 3); j++) {
+
+        // only check axes that are linked
+        if (link_plots[j] != 0) {
+
+            // are axes same length?
+            if (plots_selected_time[j].length == plots_selected_time[check_id].length) {
+
+                // compute difference between time vectors
+                var abs_diff = 0;
+                for (var k = 0; k < plots_selected_time[j].length; k++) {
+                    abs_diff = abs_diff + Math.abs(plots_selected_time[j][k] -
+                                plots_selected_time[check_id][k]);
+                }
+
+                // are vectors different?
+                if (abs_diff != 0) {
+                    compatible_link = false;
+                }
+
+            } else {
+                compatible_link = false;
+            }
+        }
+    }
+
+    return compatible_link;
+}
+
 // called when user clicks download plot data button
 function download_plot(event)
 {
@@ -441,15 +488,23 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
     }
 
     // create dialog message
-    var dialog_msg = 'You have ' + curr_sel.length + ' "' +
-                     sel_plot_name + '" plot(s) selected.  What would you like to do?';
+    var dialog_msg = 'You have selected ' + curr_sel.length + ' "' +
+                     sel_plot_name + '" plot(s).  ';
 
-    // check for zooming
+    // extra text for zoomed plots
     if (zoomed) {
-        dialog_msg += "<br /><br />Note: the selected plot(s) have been magnified (zoomed in), " +
-                      "and only the time points shown will be exported.  If you want all time " +
-                      "points, please close this dialog and reset the magnification.";
+        dialog_msg += "The selected plots have been magnified (zoomed in), " +
+                      "and only the time points shown will be exported.  (If you want " +
+                      "to export more time points, close this dialog and reset the " +
+                      "magnification.)";
     }
+
+    // text for selecting point identifier
+    dialog_msg += "<br /><br />Please select the meta-data column that will identify " +
+                  "the plots in the .csv file.";
+
+    // construct options for point identifier pull down
+    var table_headers = metadata_table.get_headers(false);
 
     // buttons for dialog
 	var buttons_save = [
@@ -458,68 +513,135 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
 	];
 
+    // name file according to model name, variable
+    // (model_name is already truncated in dac-ui.js)
+    var defaultFilename = model_name + " " +
+                          sel_plot_name.substring(0, max_plot_name_length) + ".csv";
+    defaultFilename = defaultFilename.replace(/ /g,"_");
+
     // launch dialog
 	dialog.dialog(
 	{
 		title: "Export Plot Data",
 		message: dialog_msg,
 		buttons: buttons_save,
-		callback: function(button)
+		select: true,
+		select_options: table_headers[0],
+		callback: function(button, value)
 		{
+
+            // user selected header for labeling ouptput
+            var header_index = value();
+
 		    // download model is closed
 		    download_dialog_open = false;
 
 		    if (typeof button !== 'undefined') {
 
                 if(button.label == "Save All Plots")
-                    console.log("save all plots");
-
-                    //write_plot_data([], "DAC_Untitled_Plot_Data.csv");
+                    convert_to_csv([], plot_id, header_index,
+                        defaultFilename);
 
                 else if(button.label == "Save Selected")
-
-                    console.log("save selected plots")
-                    //write_plot_data(selections.sel(),
-                    //    "DAC_Untitled_Data_Table_Selection.csv");
+                    convert_to_csv(curr_sel, plot_id, header_index,
+                        defaultFilename);
             }
 		},
 	});
 
 }
 
-// check that linked plots are compatible
-function check_compatible_link(check_id)
+// generate csv table from selected plot data
+function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
 {
 
-    // yes -- check compatibility with previously checked links
-    var compatible_link = true;
-    for (var j = 0; j < Math.min(num_included_plots, 3); j++) {
+    // if selection is empty, use all plots
+    if (curr_sel.length == 0) {
 
-        // only check axes that are linked
-        if (link_plots[j] != 0) {
-
-            // are axes same length?
-            if (plots_selected_time[j].length == plots_selected_time[check_id].length) {
-
-                // compute difference between time vectors
-                var abs_diff = 0;
-                for (var k = 0; k < plots_selected_time[j].length; k++) {
-                    abs_diff = abs_diff + Math.abs(plots_selected_time[j][k] -
-                                plots_selected_time[check_id][k]);
-                }
-
-                // are vectors different?
-                if (abs_diff != 0) {
-                    compatible_link = false;
-                }
-
-            } else {
-                compatible_link = false;
-            }
+        // construct current selection as all points
+        for (var i = 0; i < tot_num_plots; i++) {
+            curr_sel.push(i);
         }
+
     }
 
-    return compatible_link;
+    var num_sel = curr_sel.length;
+
+    // pre-pend current selection with [-2, -1] for passing to server
+    curr_sel.unshift(-1)
+    curr_sel.unshift(-2)
+
+    // table to return
+    var csv_output = ",";
+
+    // get header values and selection colors
+    var sel_col_commas = metadata_table.selection_values(header_index, curr_sel);
+
+    // keep track of extra commas found
+    var extra_commas = sel_col_commas[2];
+
+    // first line of table identifies plots with header value
+    csv_output += sel_col_commas[0].join(",") + "\n";
+
+    // get variable name, repeated across header
+    var sel_plot_ind = plots_selected[plot_id];
+    var sel_plot_name = [];
+    for (var i = 0; i < num_sel; i++) {
+        sel_plot_name.push(plot_name[sel_plot_ind]);
+    }
+
+    // next line of table identifies variable
+    csv_output += "," + sel_plot_name.join(",") + "\n";
+
+    // last header shows time column followed by user selection color
+    csv_output += "Time," + sel_col_commas[1].join(",") + "\n";
+
+    // call server to get data, no subsampling
+    client.get_model_command(
+	{
+		mid: mid,
+		type: "DAC",
+		command: "subsample_time_var",
+		parameters: [plot_id, sel_plot_ind, curr_sel, "Inf",
+					 plots_selected_zoom_x[plot_id][0], plots_selected_zoom_x[plot_id][1],
+					 plots_selected_zoom_y[plot_id][0], plots_selected_zoom_y[plot_id][1]],
+		success: function (result)
+		{
+
+			// add data to table, rows are time steps
+			var num_time_steps = result["time_points"].length;
+			for (var i = 0; i < num_time_steps; i++) {
+
+			    // time step is first column
+			    csv_output += result["time_points"][i] + ","
+
+			    // next columns are variables
+			    for (var j = 0; j < num_sel-1; j++) {
+			        csv_output += result["var_data"][j][i] + ","
+			    }
+
+			    // last variable
+			    csv_output += result["var_data"][num_sel-1][i] + "\n";
+
+			}
+
+			// now write out file
+			metadata_table.download_data_table(csv_output, defaultFilename);
+
+		},
+		error: function ()
+		{
+			dialog.ajax_error ('Server failure: could not download variable data.')("","","");
+		}
+	});
+
+	// produce warning if extra commas were detected
+	if (extra_commas) {
+		 dialog.ajax_error("Commas were detected in the table data " +
+		    "text and will be removed in the .csv output file.")
+			("","","");
+	}
+
 }
 
 // update selections based on other input

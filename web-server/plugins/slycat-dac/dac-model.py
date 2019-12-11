@@ -310,8 +310,7 @@ def register_slycat_plugin(context):
         return json.dumps({"fisher_disc": fisher_disc.tolist()})
 
 
-    # sub-samples time and variable data from database and pushes to "dac-sub-time-points"
-    # and "dac-sub-var-data"
+    # sub-samples time and variable data from database
     def subsample_time_var(database, model, verb, type, command, **kwargs):
 
         # get input parameters
@@ -330,7 +329,7 @@ def register_slycat_plugin(context):
         rows.pop(0)
 
         # number of samples to return in subsample
-        num_subsample = int(kwargs["3"])
+        num_subsample = str2float(kwargs["3"])
 
         # range of samples (x-value)
         x_min = str2float(kwargs["4"])
@@ -341,20 +340,6 @@ def register_slycat_plugin(context):
         # load time points and data from database
         time_points = slycat.web.server.get_model_arrayset_data(
             database, model, "dac-time-points", "%s/0/..." % database_ind)[0]
-
-        # get desired rows of variable data from database (one at a time)
-        # var_data = []
-        # num_rows = len(rows)
-        # for i in range(0, num_rows):
-        #     if i == 0:
-        #         first_slice = slycat.web.server.get_model_arrayset_data (
-        #             database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[0]))[0]
-        #         num_cols = len(first_slice)
-        #         var_data = numpy.zeros((num_rows, num_cols))
-        #         var_data[0,:] = first_slice
-        #     else:
-        #         var_data[i,:] = slycat.web.server.get_model_arrayset_data (
-        #             database, model, "dac-var-data", "%s/0/%s" % (database_ind, rows[i]))[0]
 
         # get desired rows of variable data from database (all at once)
         num_rows = len(rows)
@@ -404,7 +389,7 @@ def register_slycat_plugin(context):
 
         # compute step size for subsample
         num_samples = len(range_inds)
-        subsample_stepsize = int(numpy.ceil(float(num_samples) / float(num_subsample)))
+        subsample_stepsize = max(1, int(numpy.ceil(float(num_samples) / num_subsample)))
         sub_inds = range_inds[0::subsample_stepsize]
 
         # add in last index, if not already present
