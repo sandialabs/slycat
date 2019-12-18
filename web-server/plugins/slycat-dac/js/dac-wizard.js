@@ -11,6 +11,7 @@ import ko from "knockout";
 import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import dacWizardUI from "../html/dac-wizard.html";
+import ZipInfo from "zipinfo.js";
 
 
 function constructor(params)

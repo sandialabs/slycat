@@ -220,6 +220,8 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 		$("#dac-low-resolution-plot-" + (i+1)).remove();
 		$("#dac-full-resolution-plot-" + (i+1)).remove();
 		$("#dac-link-label-plot-" + (i+1)).remove();
+		$("#dac-download-plot-" + (i+1)).remove();
+
 	}
 
 	// initialize plots as d3 plots
@@ -669,6 +671,7 @@ module.change_selections = function(change_plot_selections)
 		$("#dac-select-plot-" + (i+1)).show();
 		$("#dac-link-plot-" + (i+1)).show();
 		$("#dac-link-label-plot-" + (i+1)).show();
+		$("#dac-download-plot-" + (i+1)).show();
 
         // update plot
 		$("#dac-select-plot-" + (i+1)).val(change_plot_selections[i]).change();
@@ -708,6 +711,7 @@ var hide_plots = function (num_plots)
 		$("#dac-link-label-plot-" + (i+1)).hide();
 		$("#dac-plots-displayed-" + (i+1)).hide();
 		$("#dac-plots-not-displayed-" + (i+1)).hide();
+		$("#dac-download-plot-" + (i+1)).hide();
 
 	}
 
