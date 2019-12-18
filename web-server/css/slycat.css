@@ -92,17 +92,20 @@ html#slycat-model-page body
 }
 .nav-bookmarks .bookmark-delete,
 .nav-bookmarks .bookmark-edit {
-  position: absolute;
+  /*position: absolute;*/
   padding: 0.15rem 0.4rem;
   font-size: 0.775rem;
   line-height: 1.4;
 }
+
+/*
 .nav-bookmarks .bookmark-delete {
   right: 20px;
 }
 .nav-bookmarks .bookmark-edit {
   right: 49px;
 }
+*/
 
 .bootstrap-styles .modal .jumbotron
 {
@@ -624,7 +627,10 @@ label.bottom-margin
   z-index: 3;
 }
 
-/* Needed to make bootstrap dropdowns scrollable when they become too long */
-.dropdown-menu {
+/* Needed to make bookmarks dropdown scrollable when it becomes too long */
+.dropdown-menu-bookmarks {
   overflow-y: scroll;
+  overflow-x: scroll;
+  max-height: 80vh;
+  max-width: 70vw;
 }
