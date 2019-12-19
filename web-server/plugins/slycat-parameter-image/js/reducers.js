@@ -3,12 +3,14 @@ import {
   CHANGE_FONT_FAMILY,
   CHANGE_AXES_VARIABLE_SCALE,
   CHANGE_VARIABLE_ALIAS_LABEL,
+  CHANGE_CURRENT_FRAME,
 } from './actions';
 
 const initialState = {
   fontSize: 15,
   fontFamily: "Arial",
   axesVariables: {},
+  currentFrame: null,
 }
 
 export default function slycat(state = initialState, action) {
@@ -34,6 +36,10 @@ export default function slycat(state = initialState, action) {
             [action.aliasVariable]: action.aliasLabel
           }
         }
+      })
+    case CHANGE_CURRENT_FRAME:
+      return Object.assign({}, state, {
+        currentFrame: action.currentFrame
       })
     default:
       return state
