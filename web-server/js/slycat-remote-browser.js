@@ -138,6 +138,21 @@ ko.components.register("slycat-remote-browser",
 
     component.browse = function(path)
     {
+      client.get_remotes_fetch(component.hostname())
+        .then((json) => {
+          if(json.status) {
+            component.browse_to(path);
+          }
+          else {
+            if(params.reauth) {
+              params.reauth();
+            }
+          }
+      });
+    }
+
+    component.browse_to = function(path)
+    {
       client.post_remote_browse(
       {
         hostname : component.hostname(),
