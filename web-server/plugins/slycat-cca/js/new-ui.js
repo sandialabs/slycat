@@ -59,6 +59,11 @@ function constructor(params)
     // }
   });
 
+  component.reauth = function() {
+    console.log('component.reauth');
+    component.tab(2);
+  }
+
   component.create_model = function() {
     client.post_project_models({
       pid: component.project._id(),
