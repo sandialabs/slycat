@@ -153,7 +153,7 @@ def convert_timeseries(timeseries_index, eval_id):
   with h5py.File(hdf5_path, "w") as file:
     arrayset = slycat.hdf5.start_arrayset(file)
     dimensions = [dict(name="row", end=data.shape[0])]
-    attributes = [dict(name=name, type=type) for name, type in zip(column_names, column_types)[1:]] # Leave out the Index column
+    attributes = [dict(name=name, type=type) for name, type in list(zip(column_names, column_types))[1:]] # Leave out the Index column
     array = arrayset.start_array(0, dimensions, attributes)
     for attribute, column in enumerate(data.T[1:]):
       array.set_data(attribute, slice(0, column.shape[0]), column)

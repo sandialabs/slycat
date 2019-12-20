@@ -160,6 +160,7 @@ three-trackballcontrols              0.0.8   https://yarnpkg.com/en/package/thre
 urijs                               1.19.2   https://medialize.github.io/URI.js/
 vtk                                11.11.2   https://github.com/Kitware/vtk-js
 wslink                              0.1.12   https://github.com/Kitware/wslink
+zipinfo.js                           1.0.0   https://github.com/Rob--W/zipinfo.js
 
 2. Directly included in Slycat in slycat/web_server/js:
 jquery-scrollintoview                  1.8   https://github.com/litera/jquery-scrollintoview
@@ -235,33 +236,34 @@ whatwg-fetch                                  3.0.0
 
 
 -System Services-
-Apache CouchDB   2.3.0   https://couchdb.apache.org/
-couch-js         1.8.5   http://www.mozilla.org/js/
-couch-js-devel   1.8.5   http://www.mozilla.org/js/
+Apache CouchDB      2.3.1   https://couchdb.apache.org/
+couch-js            1.8.5   http://www.mozilla.org/js/
+couch-js-devel      1.8.5   http://www.mozilla.org/js/
+python-progressbar  2.3     
+python-requests     2.6.0   
+python-urllib3      1.10.2  
 
 
 -Operating System & OS Support-
-Red Hat Enterprise Linux  7.6
-httpd                2.4.6
-crypto-utils         2.4.1
-httpd-manual         2.4.6
-mod_fcgid            2.3.9
-mod_ssl              2.4.6
-httpd-devel          2.4.6
-hdf5-devel           1.8.12
-lapack-devel         3.4.2
-openssl-devel        1.0.1e
-lcms2-devel          2.6
-tcl-devel            8.5.13
-tkinter              2.7.5
-libjpeg-turbo-devel  1.2.90
-openjpeg-devel       1.5.1
-libtiff-devel        4.0.3
-libffi-devel         3.0.13
-libX11-devel         1.6.3
-libcurl-devel        7.29.0
-erlang               R16B
-js-devel             1.8.5
-libicu-devel         50.1.2
-python-progressbar   2.3
-
+Red Hat Enterprise Linux  7.7
+hdf5-devel           1.8.12  
+erlang               R16B    
+httpd                2.4.6   
+crypto-utils         2.4.1   
+httpd-manual         2.4.6   
+mod_fcgid            2.3.9   
+mod_ssl              2.4.6   
+httpd-devel          2.4.6   
+lapack-devel         3.4.2   
+openssl-devel        1.0.1e  
+lcms2-devel          2.6     
+tcl-devel            8.5.13  
+tkinter              2.7.5   
+libjpeg-turbo-devel  1.2.90  
+openjpeg-devel       1.5.1   
+libtiff-devel        4.0.3   
+libffi-devel         3.0.13  
+libX11-devel         1.6.3   
+libcurl-devel        7.29.0  
+js-devel             1.8.5   
+libicu-devel         50.1.2  
