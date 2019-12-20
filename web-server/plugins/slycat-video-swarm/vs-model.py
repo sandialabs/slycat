@@ -13,6 +13,7 @@
 def register_slycat_plugin(context):
 
     import os
+    import io
     import datetime
     import slycat.web.server
     import re
@@ -98,6 +99,7 @@ def register_slycat_plugin(context):
 
         # look through lines for [VS-LOG], [VS-PROGRESS], or [VS-FINISHED] tags
         for line in lines:
+            line = line.decode(encoding='UTF-8')
 
             # split first word
             tokens = line.split(" ", 1)
@@ -141,9 +143,10 @@ def register_slycat_plugin(context):
         # read csv file
         csv_file = slycat.web.server.get_remote_file(sid, filename)
 
+
         # parse file and upload to server
         slycat.web.server.plugin.manager.parsers["slycat-csv-parser"] \
-            ["parse"](database, model, False, [csv_file], ["movies.meta"], **kwargs)
+            ["parse"](database, model, False, [csv_file.decode('utf-8')], ["movies.meta"], **kwargs)
 
         return json.dumps({"error": False,
                            "error_message": "none."})
@@ -174,7 +177,7 @@ def register_slycat_plugin(context):
         mat_file = slycat.web.server.get_remote_file(sid, filename)
 
         # parse file and upload to server
-        attributes, dimensions, data = vs_parse.parse_mat_file(mat_file)
+        attributes, dimensions, data = vs_parse.parse_mat_file(mat_file.decode('utf-8'))
         slycat.web.server.put_model_arrayset(database, model, aid)
         slycat.web.server.put_model_array(database, model, aid, 0, attributes, dimensions)
         slycat.web.server.put_model_arrayset_data(database, model, aid, "0/.../...", [data])
