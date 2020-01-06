@@ -144,6 +144,9 @@ ko.components.register("slycat-remote-browser",
             component.browse_to(path);
           }
           else {
+            // We don't have a session anymore, so set the session_exists
+            // var accordingly and run the reauth method if one was passed.
+            component.session_exists(false);
             if(params.reauth) {
               params.reauth();
             }
