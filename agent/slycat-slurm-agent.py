@@ -84,10 +84,7 @@ class Agent(agent.Agent):
                                 tmp_file)
             # with open(tmp_file.name, 'r') as myfile:
             #     data = myfile.read().replace('\n', '')
-            stream = os.popen('sbatch %s' % tmp_file.name)
-            output[0] = stream.read()
-            output[1] = output[0]
-            # output[0], output[1] = self.run_shell_command("sbatch %s" % tmp_file.name, jid, log_to_file=True)
+            output[0], output[1] = self.run_shell_command("sbatch %s" % tmp_file.name, jid, log_to_file=True)
         else:
             try:
                 self.get_job_logger(jid)("[COMMAND length] %s" % len(run_commands))

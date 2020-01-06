@@ -560,9 +560,7 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     :param model: database.get("model", self._mid)
     :param input: boolean
     :param files: files to be parsed
-    :param aids: normally artifact ID, but we are using it as [csv parms, dig parms],
-                 where csv parms is number of csv files to require, and digitizer parms
-                 is number of digitizers to require (see wizard)
+    :param aids: normally artifact ID, but we are using it to pass parameters from the UI
     :param kwargs:
     """
 
@@ -811,6 +809,23 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         cherrypy.log.error(traceback.format_exc())
 
 
+def parse_tdms_zip(database, model, input, files, aids, **kwargs):
+
+    """
+    uploads a set of .tdms .zip file and parses it for the database
+    :param database: slycat.web.server.database.couchdb.connect()
+    :param model: database.get("model", self._mid)
+    :param input: boolean
+    :param files: files to be parsed
+    :param aids: artiftact id
+    :param kwargs:
+    """
+
+    cherrypy.log.error("DAC TDMS zip parser started.")
+
+
 def register_slycat_plugin(context):
-    context.register_parser("dac-tdms-file-parser", ".tdms file", ["dac-tdms-files"], parse_tdms)
+    context.register_parser("dac-tdms-file-parser", ".tdms file(s)", ["dac-tdms-files"], parse_tdms)
+    context.register_parser("dac-tdms-zip-file-parser", "TDMS .zip file", ["dac-tdms-files"], parse_tdms_zip)
+
 
