@@ -8,6 +8,12 @@ import mapping from "knockout-mapping";
 import ispasswordrequired from "js/slycat-server-ispasswordrequired";
 import slycatRemoteControls from "templates/slycat-remote-controls.html";
 
+// Set alert message when user needs to reauthenticate
+export function remoteControlsReauth(status, status_type) {
+  status('Oops, your session has disconnected. Please log in again.');
+  status_type("danger");
+}  
+
 ko.components.register("slycat-remote-controls",
 {
   viewModel:

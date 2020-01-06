@@ -19,6 +19,7 @@ import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import URI from "urijs";
 import vsWizardUI from "../html/vs-wizard.html";
+import { remoteControlsReauth } from "js/slycat-remote-controls";
 
 function constructor(params)
 {
@@ -94,6 +95,13 @@ component.remote = mapping.fromJS({
   session_exists: false,
   progress: ko.observable(null),
 });
+
+// Navigate to login controls and set alert message to 
+// inform user their session has been disconnected.
+component.reauth = function() {
+    remoteControlsReauth(component.remote.status, component.remote.status_type);
+    component.tab(3);
+}
 
 // file parser (table is csv table, vs is videoswarm specific files)
 component.table_parser = ko.observable(null);

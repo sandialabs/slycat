@@ -9,7 +9,7 @@ import mapping from "knockout-mapping";
 import fileUploader from "js/slycat-file-uploader-factory";
 import "js/slycat-local-browser";
 import "js/slycat-remote-controls";
-import "js/slycat-remote-browser";
+import { remoteControlsReauth } from "js/slycat-remote-controls";
 import "js/slycat-table-ingestion";
 import "js/slycat-model-controls";
 import newCCAWizardUI from "../new-ui.html";
@@ -59,10 +59,10 @@ function constructor(params)
     // }
   });
 
+  // Navigate to login controls and set alert message to 
+  // inform user their session has been disconnected.
   component.reauth = function() {
-    console.log('component.reauth');
-    component.remote.status('Oops, your session has disconnected. Please log in again.');
-    component.remote.status_type("danger");
+    remoteControlsReauth(component.remote.status, component.remote.status_type);
     component.tab(2);
   }
 
