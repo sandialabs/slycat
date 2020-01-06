@@ -61,6 +61,8 @@ function constructor(params)
 
   component.reauth = function() {
     console.log('component.reauth');
+    component.remote.status('Oops, your session has disconnected. Please log in again.');
+    component.remote.status_type("danger");
     component.tab(2);
   }
 
