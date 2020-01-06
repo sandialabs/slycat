@@ -49,6 +49,7 @@ ko.components.register("slycat-remote-controls",
       component.hostname.subscribe(function(value)
       {
         localStorage.setItem("slycat-remote-controls-hostname", value);
+        component.status_type(null);
         component.status(null);
 
         if(value != null && value.trim() != "")
@@ -81,11 +82,13 @@ ko.components.register("slycat-remote-controls",
       component.username.subscribe(function(value)
       {
         localStorage.setItem("slycat-remote-controls-username", value);
+        component.status_type(null);
         component.status(null);
       });
 
       component.password.subscribe(function(value)
       {
+        component.status_type(null);
         component.status(null);
       });
 
