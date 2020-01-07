@@ -47,15 +47,15 @@ export default class ModalLarge  extends React.Component<ModalLargeProps,ModalLa
           <div className='modal-content'>
             <div className='modal-header'>
               <h3 className='modal-title'>{this.props.title}</h3>
-              <button type='button' className='close' onClick={this.closeModal} aria-label='Close'>
-                X
+              <button type='button' className='close' aria-label='Close' onClick={this.closeModal}>
+                <span aria-hidden='true'>&times;</span>
               </button>
             </div>
             <div className='modal-body' id="slycat-wizard">
               {this.props.body}
-              <div className='modal-footer'>
-                {this.props.footer}
-              </div>
+            </div>
+            <div className='modal-footer'>
+              {this.props.footer}
             </div>
           </div>
         </div>
