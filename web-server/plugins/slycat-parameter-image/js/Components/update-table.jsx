@@ -1,4 +1,3 @@
-'use strict';
 import React, { Component } from 'react';
 import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
 import ProgressBar from 'components/ProgressBar.tsx';
@@ -20,9 +19,12 @@ import checkColumns from "utils/check-columns.ts";
 let initialState = {};
 const localNavBar = ['Locate Data', 'Upload Table'];
 const remoteNavBar = ['Locate Data', 'Choose Host', 'Select Table'];
-const warningMessage = ['Warning: By using this feature, you run the risk of corrupting your models.\n',
-  'ADDING, REMOVING, OR CHANGING THE ORDER OF COLUMNS IS CURRENTLY NOT SUPPORTED.\n',
-  'IF YOU DO ANY OF THESE THINGS, IT WILL CORRUPT ALL MODELS USING THIS DATA TABLE.\n'];
+const warningMessage = 
+(<React.Fragment>
+  <h4 className='alert-heading'>By using this feature, you run the risk of corrupting your models.</h4>
+  <p className='mt-3'>Adding, removing, or changing the order of columns is currently not supported.</p>
+  <p className='mb-0'>If you do any of these things, it will corrupt all models using this data table.</p>
+</React.Fragment>);
 
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
