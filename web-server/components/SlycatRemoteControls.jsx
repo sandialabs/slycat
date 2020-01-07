@@ -1,4 +1,3 @@
-'use strict';
 import React, {Component} from 'react';
 import client from "js/slycat-web-client";
 import ConnectButton from 'components/ConnectButton.tsx';
@@ -167,22 +166,25 @@ export default class SlycatRemoteControls extends Component {
     if(!this.state.session_exists){
       return (
         <div>
-          <div className="form-group row">
-            <label className="col-sm-1 col-form-label" style={{marginLeft: '3%', marginBottom:'15px'}}>Username</label>
-            <div className="col-sm-9">
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} className="form-control" style={{width: "118.5%"}} type="text"
-              value={this.state.username?this.state.username:""}
-              onChange={(e)=>this.onValueChange(e.target.value, "username")}></input>
+          <div className='form-group row mb-3'>
+            <label className='col-sm-2 col-form-label'>Username</label>
+            <div className='col-sm-9'>
+              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
+                className='form-control' type='text'
+                value={this.state.username?this.state.username:""}
+                onChange={(e)=>this.onValueChange(e.target.value, "username")} />
             </div>
           </div>
-          <div className="form-group row" data-bind-old="visible: !session_exists()">
-            <label className="col-sm-1 col-form-label" style={{marginLeft: '3%', marginBottom:'15px'}}>Password</label>
-            <div className="col-sm-9">
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} className="form-control" style={{width: "118.5%"}} type="password" onKeyDown={this.handleKeyDown}
-              onChange={(e)=>this.onValueChange(e.target.value, "password")}></input>
+          <div className='form-group row mb-3' data-bind-old='visible: !session_exists()'>
+            <label className='col-sm-2 col-form-label'>Password</label>
+            <div className='col-sm-9'>
+              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
+                className='form-control' type='password' 
+                onKeyDown={this.handleKeyDown}
+                onChange={(e)=>this.onValueChange(e.target.value, "password")} />
             </div>
             {this.state.showConnectButton?
-            <div className="col">
+            <div className='col'>
               <ConnectButton
                 loadingData={this.state.loadingData}
                 hostname = {this.state.hostname}
@@ -207,7 +209,11 @@ export default class SlycatRemoteControls extends Component {
   getHostnamesJSX = () => {
     const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => {
       return (
-      <a className="dropdown-item" key={i} onClick={(e)=>this.onValueChange(e.target.text, "hostname")}>{hostnameObject.hostname}</a>
+      <li key={i}>
+        <a className='dropdown-item' onClick={(e)=>this.onValueChange(e.target.text, "hostname")}>
+          {hostnameObject.hostname}
+        </a>
+      </li>
       )
     });
     return hostnamesJSX;
@@ -222,28 +228,29 @@ export default class SlycatRemoteControls extends Component {
   render() {
     //make sure our data is loaded before we render
     if(!this.state.initialLoad){
-      return (<div></div>)
+      return (<div />)
     }
     return (
-      <form style={{margin: '2%'}}>
-        <div className="form-group row">
-          <label className="col-sm-1 col-form-label" style={{marginLeft: '3%', marginBottom:'15px'}}>Hostname</label>
-          <div className="col">
-            <div className="input-group">
-              <div className="dropdown">
-                <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                </button>
-                <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                {this.getHostnamesJSX()}
-                </div>
+      <form>
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Hostname</label>
+          <div className='col-sm-9'>
+            <div className='input-group'>
+              <div className='input-group-prepend'>
+                <button className='btn btn-secondary dropdown-toggle' 
+                  type='button' id='dropdownMenuButton' 
+                  data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' />
+                <ul className='dropdown-menu' aria-labelledby='dropdownMenuButton'>
+                  {this.getHostnamesJSX()}
+                </ul>
               </div>
-              <input className="form-control" value={this.state.hostname?this.state.hostname:""} type="text" 
-              onChange={(e)=>this.onValueChange(e.target.value, "hostname")}></input>
+              <input className='form-control' value={this.state.hostname?this.state.hostname:""} type='text' 
+              onChange={(e)=>this.onValueChange(e.target.value, "hostname")} />
             </div>
           </div>
         </div>
         {this.getFormInputsJSX()}
       </form>
     );
-  };
+  }
 }
