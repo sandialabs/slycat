@@ -803,6 +803,7 @@ $(document).ready(function() {
 		                            $("#dac-link-label-plot-" + (i+1)).remove();
 		                            $("#dac-plots-displayed-" + (i+1)).remove();
 		                            $("#dac-plots-not-displayed-" + (i+1)).remove();
+		                            $("#dac-download-plot-" + (i+1)).remove();
 		                        };
 
 		   	                });
