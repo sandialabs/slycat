@@ -33,7 +33,7 @@ export default class SlycatFormRadioCheckbox extends React.Component<SlycatFormR
   public render () {
     let uuid = uuidv1();
     return (
-      <div className="form-check">
+      <div className="form-check justify-content-start mb-2">
         <input type="radio" className="form-check-input" 
           value={this.props.value} 
           name={uuid} id={uuid} 

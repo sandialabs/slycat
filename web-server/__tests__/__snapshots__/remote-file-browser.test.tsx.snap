@@ -103,12 +103,12 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
     className="form-group row"
   >
     <label
-      className="col-sm-1 col-form-label"
+      className="col-sm-2 col-form-label"
     >
       Filetype
     </label>
     <div
-      className="col-sm-10"
+      className="col-sm-9"
     >
       <select
         className="form-control"

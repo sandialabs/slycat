@@ -307,27 +307,25 @@ export default class ControlsButtonUpdateTable extends Component {
       <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
       <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
       {this.state.visible_tab === "0" ?
-        <form style={{marginLeft: '16px'}}>
+        <form className='ml-3'>
           <SlycatFormRadioCheckbox
             checked={this.state.selectedOption === 'local'}
             onChange={this.sourceSelect}
             value={'local'}
             text={'Local'}
-            style={{marginRight: '92%'}}
           />
           <SlycatFormRadioCheckbox
             checked={this.state.selectedOption === 'remote'}
             onChange={this.sourceSelect}
             value={'remote'}
             text={'Remote'}
-            style={{marginRight: '89.7%'}}
           />
         </form>
         :null}
 
       {this.state.visible_tab === "1"?
       <div className='tab-content'>
-        <div className="form-horizontal">
+        <div className='form-horizontal'>
           <FileSelector handleChange = {this.handleFileSelection} />
           <SlycatSelector
             onSelectCallBack={this.props.onSelectParserCallBack}
