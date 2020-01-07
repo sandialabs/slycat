@@ -5,7 +5,7 @@
       <div class="input-group-prepend">
         <button type="button" class="btn btn-secondary dropdown-toggle" data-bind="css:{disabled:!enable()}"  data-toggle="dropdown" aria-expanded="false"></button>
         <ul class="dropdown-menu" role="menu" data-bind="foreach:remote_hosts">
-          <li><a data-bind="click:$parent.use_remote($data),text:hostname"></a></li>
+          <li><a class="dropdown-item" data-bind="click:$parent.use_remote($data),text:hostname"></a class="dropdown-item"></li>
         </ul>
       </div>
       <input class="form-control" type="text" data-bind="enable:enable, textInput:hostname"></input>
