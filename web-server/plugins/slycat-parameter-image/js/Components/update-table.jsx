@@ -346,12 +346,16 @@ export default class ControlsButtonUpdateTable extends Component {
       />
       :null}
 
+      {/* Hiding progress bar div when progress bar is also hidden,
+          otherwise it still takes up vertical space. */}
+      {!this.state.progressBarHidden ? 
       <div className='slycat-progress-bar'>
         <ProgressBar
           hidden={this.state.progressBarHidden}
           progress={this.state.progressBarProgress}
         />
       </div>
+      : null }
 
       {this.state.visible_tab === "3" ?
         <RemoteFileBrowser 
