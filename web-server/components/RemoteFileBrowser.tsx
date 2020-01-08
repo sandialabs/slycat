@@ -306,11 +306,11 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
       return (
         <div className="slycat-remote-browser">
-            <div className="form-group path">
-              <label className="col-sm-3">
-              {this.props.hostname}
-              </label>
-              <div className="col-sm-10">
+            <label className='font-weight-bold justify-content-start mb-2' htmlFor='slycat-remote-browser-path'>
+            {this.props.hostname}:
+            </label>
+            <div className="form-group row path mb-3">
+              <div className="col-sm-12">
                 <div className="input-group" 
                   style={pathStyle}>
                   <input type="text" className="form-control" id="slycat-remote-browser-path" 

@@ -4,16 +4,18 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
 <div
   className="slycat-remote-browser"
 >
-  <div
-    className="form-group path"
+  <label
+    className="font-weight-bold justify-content-start mb-2"
+    htmlFor="slycat-remote-browser-path"
   >
-    <label
-      className="col-sm-3"
-    >
-      string
-    </label>
+    string
+    :
+  </label>
+  <div
+    className="form-group row path mb-3"
+  >
     <div
-      className="col-sm-10"
+      className="col-sm-12"
     >
       <div
         className="input-group"
