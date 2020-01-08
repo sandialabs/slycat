@@ -42,6 +42,7 @@ export default class ControlsButtonUpdateTable extends Component {
       selectedOption: "local",
       visible_tab: "0",
       sessionExists: null,
+      reauth: false,
       selected_path: "",
       loadingData: false,
       selectedNameIndex: 0,
@@ -234,10 +235,22 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({parserType:type});
   }
 
+  onReauth = () => {
+    // console.log('onReauth');
+    // Session has been lost, so update state to reflect this.
+    this.setState({
+      sessionExists: false,
+      reauth: true,
+    });
+    // Switch to login controls
+    this.setState({visible_tab: "2", selectedNameIndex: 1});
+  }
+
   connectButtonCallBack = (sessionExists, loadingData) => {
     this.setState({
       sessionExists,
-      loadingData
+      loadingData,
+      reauth: false,
     },()=>{
       if(this.state.sessionExists){
         this.continue();
@@ -270,7 +283,7 @@ export default class ControlsButtonUpdateTable extends Component {
       footerJSX.push(            
         <ConnectButton
           key={3}
-          text="Continue"
+          text='Continue'
           loadingData={this.state.loadingData}
           hostname = {this.state.hostname}
           username = {this.state.username}
@@ -339,12 +352,18 @@ export default class ControlsButtonUpdateTable extends Component {
         <Warning warningMessage={this.state.failedColumnCheckMessage}/>
       :null}
 
-      {this.state.visible_tab === "2"?
-      <SlycatRemoteControls
-      loadingData={this.state.loadingData} 
-      callBack={this.controlsCallBack}
-      />
-      :null}
+      {this.state.visible_tab === "2" ? 
+        <SlycatRemoteControls
+          loadingData={this.state.loadingData} 
+          callBack={this.controlsCallBack}
+        />
+      : null}
+
+      {this.state.visible_tab === "2" && this.state.reauth ? 
+        <div className='alert alert-danger' role='alert'>
+          Oops, your session has disconnected. Please log in again.
+        </div>
+      : null}
 
       {/* Hiding progress bar div when progress bar is also hidden,
           otherwise it still takes up vertical space. */}
@@ -359,14 +378,15 @@ export default class ControlsButtonUpdateTable extends Component {
 
       {this.state.visible_tab === "3" ?
         <RemoteFileBrowser 
-        onSelectFileCallBack={this.onSelectFile}
-        onSelectParserCallBack={this.onSelectParser}
-        hostname={this.state.hostname} 
+          onSelectFileCallBack={this.onSelectFile}
+          onSelectParserCallBack={this.onSelectParser}
+          onReauthCallBack={this.onReauth}
+          hostname={this.state.hostname} 
         />:
       null}
 
       {this.state.visible_tab === "3" && this.state.passedColumnCheck === false ?
-      <Warning warningMessage={this.state.failedColumnCheckMessage}/>
+        <Warning warningMessage={this.state.failedColumnCheckMessage} />
       :null}
 
     </div>

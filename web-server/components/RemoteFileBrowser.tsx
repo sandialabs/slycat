@@ -1,6 +1,6 @@
 'use strict';
 import * as React from 'react';
-import client from '../js/slycat-web-client';
+import client from 'js/slycat-web-client';
 import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
 
 /**
@@ -11,6 +11,7 @@ import SlycatSelector, {Option} from 'components/SlycatSelector.tsx';
  * returns the files info (path, file.type, file:FileMetaData)
  * @member onSelectParserCallBack called every time a parser is selected
  * returns the parser type (dakota or csv)
+ * @member onReauthCallBack called every time we lose connection to the host
  * @export
  * @interface RemoteFileBrowserProps
  */
@@ -19,6 +20,7 @@ export interface RemoteFileBrowserProps {
   persistenceId?: string
   onSelectFileCallBack: Function
   onSelectParserCallBack: Function
+  onReauthCallBack: Function
 }
 
 /**
@@ -92,47 +94,63 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
      */
     private browse = (pathInput:string) =>
     {
-      pathInput = (pathInput === ""?"/":pathInput);
-      this.setState({
-        rawFiles:[], 
-        browserUpdating:true, 
-        selected:-1,
-        path:pathInput,
-        pathInput
-      })
-      client.post_remote_browse(
-      {
-        hostname : this.props.hostname,
-        path : pathInput,
-        success : (results:any) =>
-        {
-          localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
-          this.setState({
-            browseError:false,
-            pathError:false,
-          });
+      // First check if we have a remote connection...
+      client.get_remotes_fetch(this.props.hostname)
+        .then((json) => {
+          // If we have a session, go on.
+          if(json.status) {
+            // console.log('inside browse function');
+            pathInput = (pathInput === ""?"/":pathInput);
+            this.setState({
+              rawFiles:[], 
+              browserUpdating:true, 
+              selected:-1,
+              path:pathInput,
+              pathInput
+            })
+            client.post_remote_browse(
+            {
+              hostname : this.props.hostname,
+              path : pathInput,
+              success : (results:any) =>
+              {
+                localStorage.setItem("slycat-remote-browser-path-" + this.state.persistenceId + this.props.hostname, pathInput);
+                this.setState({
+                  browseError:false,
+                  pathError:false,
+                });
 
-          let files: FileMetaData[] = []
-          if(pathInput != "/")
-            files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
-          for(let i = 0; i != results.names.length; ++i)
-            files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mimeType:results["mime-types"][i]});
-          this.setState({
-            rawFiles:files,
-            browserUpdating:false
-          });
-        },
-        error : (results:any) =>
-        {
-          if(this.state.path != this.state.pathInput)
-          {
-            this.setState({pathError:true, browserUpdating:false});
+                let files: FileMetaData[] = []
+                if(pathInput != "/")
+                  files.push({type: "", name: "..", size: "", mtime: "", mimeType:"application/x-directory"});
+                for(let i = 0; i != results.names.length; ++i)
+                  files.push({name:results.names[i], size:results.sizes[i], type:results.types[i], mtime:results.mtimes[i], mimeType:results["mime-types"][i]});
+                this.setState({
+                  rawFiles:files,
+                  browserUpdating:false
+                });
+              },
+              error : (results:any) =>
+              {
+                if(this.state.path != this.state.pathInput)
+                {
+                  this.setState({pathError:true, browserUpdating:false});
+                }
+                if(results.status == 400){
+                  alert("bad file path")
+                }
+                this.setState({browseError:true, browserUpdating:false});
+              }
+            });
           }
-          if(results.status == 400){
-            alert("bad file path")
+          // Otherwise...we don't have a session anymore, so 
+          // run the reauth callback if one was passed.
+          else {
+            // console.log('about to call onReauthCallback');
+            if(this.props.onReauthCallBack) {
+              this.props.onReauthCallBack();
+            }
           }
-          this.setState({browseError:true, browserUpdating:false});
-        }
       });
     }
 

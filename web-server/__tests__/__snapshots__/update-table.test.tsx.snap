@@ -28,6 +28,7 @@ Object {
   "password": "",
   "progressBarHidden": true,
   "progressBarProgress": 0,
+  "reauth": false,
   "selectedNameIndex": 0,
   "selectedOption": "local",
   "selected_path": "",
