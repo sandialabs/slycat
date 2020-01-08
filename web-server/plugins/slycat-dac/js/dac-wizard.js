@@ -32,9 +32,8 @@ function constructor(params)
 
     // project/model information
     component.project = params.projects()[0];
-    // Alex removing default model name per team meeting discussion
-    // component.model = mapping.fromJS({_id: null, name: "New Dial-A-Cluster Model",
-    //                         description: "", marking: markings.preselected()});
+
+    // name defaults to "Unfinished" in case user aborts wizard prematurely
     component.model = mapping.fromJS({_id: null, name: "Unfinished Dial-A-Cluster Model",
                             description: "", marking: markings.preselected()});
 
@@ -111,6 +110,9 @@ function constructor(params)
     var csv_file_names = [];
     var meta_files = [];
     var meta_file_names = [];
+
+    // tdms zip suffixes
+    var include_suffix = [];
 
     // upload state information
 
@@ -494,8 +496,25 @@ function constructor(params)
     // checks the suffix selection and continues
     component.check_suffix_selection = function () {
 
-        console.log("check suffix selection.");
+        // clear any errors
+        $("#dac-inc-suffix-error").hide();
 
+        // get suffix selection
+        include_suffix = [];
+        for(var i = 0; i != component.suffix_attributes().length; ++i) {
+            if(component.suffix_attributes()[i].Include())
+                include_suffix.push(component.suffix_attributes()[i].name());
+        };
+
+        // check for at least one suffix
+        if (include_suffix.length < 1) {
+            $("#dac-inc-suffix-error").show();
+
+        } else {
+
+            // go to options tab
+            component.tab(tabs["tdms-options"]);
+        }
     }
 
     // this function checks the TDMS upload format options
@@ -591,95 +610,20 @@ function constructor(params)
                     mid: component.model._id(),
                     success: function() {
 
-                            // check for tdms format
-                            if (component.dac_format() == 'tdms') {
+                            // check for multiple file upload (tdms only)
+                            if (component.dac_format() == 'tdms' &&
+                                component.dac_tdms_zip() == 'false') {
 
-                                // upload multiple files
+                                // upload multiple tdms files
                                 upload_tdms_files();
 
-                            // otherwise revert to pts or generic
                             } else {
 
-                                // set up pts format parameters
+                                // upload single zip file (could be different formats)
+                                upload_zip_file();
 
-                                // file selected
-                                var file = component.browser_zip_file.selection()[0];
-
-                                // get csv and number digitizer parameters
-                                var csv_parm = Math.round(Number(component.csv_min_size()));
-                                var dig_parm = Math.round(Number(component.min_num_dig()));
-
-                                // parameters for call to parser
-                                var aids = [[csv_parm, dig_parm], ["DAC"]];
-                                var parser = "dac-zip-file-parser";
-                                var progress = component.browser_zip_file.progress;
-
-                                // tab to show file upload
-                                var tab = tabs['pts'];
-
-                                // if not pts format, then change parameters
-                                if (component.dac_format() == "dac-gen") {
-
-                                    // file selected
-                                    file = component.browser_dac_file.selection()[0];
-
-                                    // dac gen zip paraser parameters
-                                    aids = [["Null"], ["DAC"]];
-                                    parser = "dac-gen-zip-parser";
-                                    progress = component.browser_dac_file.progress;
-
-                                    // tab that shows file upload for DAC generic format
-                                    tab = tabs['dac-gen'];
-
-                                }
-
-                                // call to server
-
-                                // turn off continue button
-                                $(".browser-continue").toggleClass("disabled", true);
-                                $(".browser-continue").prop("disabled", true);
-
-
-                                // upload file
-                                var fileObject ={
-                                    pid: component.project._id(),
-                                    mid: component.model._id(),
-                                    file: file,
-                                    aids: aids,
-                                    parser: parser,
-                                    progress: progress,
-                                    progress_increment: 100,
-                                    success: function(){
-
-                                            // turn on continue button
-                                            $(".browser-continue").toggleClass("disabled", false);
-                                            $(".browser-continue").prop("disabled", false);
-
-                                            // go to model
-                                            component.go_to_model();
-
-                                        },
-                                    error: function(){
-
-                                        $("#dac-finish-model-error").text("There was a problem uploading file: "
-                                                                          + file.name + ".");
-                                        $("#dac-finish-model-error").show();
-
-                                        $('.browser-continue').toggleClass("disabled", false);
-                                        $(".browser-continue").prop("disabled", false);
-
-                                        component.tab(tabs["name-model"]);
-
-                                        }
-                                    };
-                                fileUploader.uploadFile(fileObject);
-
-                                // show message
-                                $(".dac-do-not-close-browser").show();
-
-                                // show upload
-                                component.tab(tab);
                             }
+
                          }
                     });
                 },
@@ -691,7 +635,112 @@ function constructor(params)
         }
     };
 
-    // upload tdms file list to server
+    // upload single zip file (could be pts, dac-gen, or tdms) to server
+    function upload_zip_file() {
+
+        // assume pts format parameters
+
+        // file selected
+        var file = component.browser_zip_file.selection()[0];
+
+        // get csv and number digitizer parameters
+        var csv_parm = Math.round(Number(component.csv_min_size()));
+        var dig_parm = Math.round(Number(component.min_num_dig()));
+
+        // parameters for call to parser
+        var aids = [[csv_parm, dig_parm], ["DAC"]];
+        var parser = "dac-zip-file-parser";
+        var progress = component.browser_zip_file.progress;
+
+        // tab to show file upload
+        var tab = tabs['pts'];
+
+        // if not pts format, then is it dac-gen?
+        if (component.dac_format() == "dac-gen") {
+
+            // file selected
+            file = component.browser_dac_file.selection()[0];
+
+            // dac gen zip parser parameters
+            aids = [["Null"], ["DAC"]];
+            parser = "dac-gen-zip-parser";
+            progress = component.browser_dac_file.progress;
+
+            // tab that shows file upload for DAC generic format
+            tab = tabs['dac-gen'];
+
+        }
+
+        // if not dac-gen, is it tdms?
+        if (component.dac_format() == 'tdms') {
+
+            // file selected
+            file = component.browser_tdms_files.selection()[0];
+
+            // tdms parser parameters
+            parser = "dac-tdms-zip-file-parser";
+            progress = component.browser_tdms_files.progress;
+
+            // pass user parameters to server
+            aids = [[component.min_time_steps(), component.min_num_channels(),
+                     component.dac_tdms_type(), component.dac_union_type(),
+                     Boolean(component.dac_infer_units()), Boolean(component.dac_infer_time()),
+                     include_suffix], ["DAC"]];
+
+            // tab that shows file upload for tdms zip format
+            tab = tabs['tdms'];
+
+        }
+
+        // call to server
+
+        // turn off continue button
+        $(".browser-continue").toggleClass("disabled", true);
+        $(".browser-continue").prop("disabled", true);
+
+        // upload file
+        var fileObject ={
+            pid: component.project._id(),
+            mid: component.model._id(),
+            file: file,
+            aids: aids,
+            parser: parser,
+            progress: progress,
+            progress_increment: 100,
+            success: function(){
+
+                    // turn on continue button
+                    $(".browser-continue").toggleClass("disabled", false);
+                    $(".browser-continue").prop("disabled", false);
+
+                    // go to model
+                    component.go_to_model();
+
+                },
+            error: function(){
+
+                $("#dac-finish-model-error").text("There was a problem uploading file: "
+                                                  + file.name + ".");
+                $("#dac-finish-model-error").show();
+
+                $('.browser-continue').toggleClass("disabled", false);
+                $(".browser-continue").prop("disabled", false);
+
+                component.tab(tabs["name-model"]);
+
+                }
+            };
+        fileUploader.uploadFile(fileObject);
+
+        // show message
+        $(".dac-do-not-close-browser").show();
+
+        // show upload
+        component.tab(tab);
+
+    }
+
+    // upload multiple tdms file list to server
     function upload_tdms_files() {
 
         // call to server
