@@ -70,17 +70,24 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
     </div>
   </div>
   <div
+    className="mb-3"
     style={
       Object {
+        "border": "1px solid rgb(222, 226, 230)",
         "display": "block",
-        "height": "384px",
+        "height": "307.20000000000005px",
         "overflow": "auto",
         "position": "relative",
       }
     }
   >
     <table
-      className="table table-hover table-bordered"
+      className="table table-hover table-sm"
+      style={
+        Object {
+          "borderBottom": "1px solid rgb(222, 226, 230)",
+        }
+      }
     >
       <thead
         className="thead-light"

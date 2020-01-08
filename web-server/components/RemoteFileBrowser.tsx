@@ -300,9 +300,10 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
       }
       const styleTable:any = {
         position: "relative",
-        height: (window.innerHeight*0.5)+"px",
+        height: (window.innerHeight*0.4)+"px",
         overflow: "auto",
-        display: "block"
+        display: "block",
+        border: "1px solid rgb(222, 226, 230)",
       }
       return (
         <div className="slycat-remote-browser">
@@ -341,10 +342,8 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
             </div>
           
           {!this.state.browserUpdating?
-          <div
-          style={styleTable}
-          >
-            <table className="table table-hover table-bordered">
+          <div style={styleTable} className='mb-3'>
+            <table className="table table-hover table-sm" style={{borderBottom: '1px solid rgb(222, 226, 230)'}}>
               <thead className="thead-light">
                 <tr>
                   <th></th>
