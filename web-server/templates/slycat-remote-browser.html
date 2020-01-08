@@ -1,10 +1,11 @@
 <div class="slycat-remote-browser" data-bind="css: persistence_id">
   <form data-bind="submit: browse_path">
+    <div>
+      <label class="font-weight-bold" for="slycat-remote-browser-path"
+        data-bind="text: hostname() + ':'" />
+    </div>
     <div class="form-group row path" data-bind="css: {'is-invalid': path_error}">
-      <label class="col-sm-2 col-form-label" for="slycat-remote-browser-path"
-        data-bind="text: hostname()"
-      ></label>
-      <div class="col-sm-10">
+      <div class="col-sm-12">
         <div class="input-group" style="width: calc(100% - 44px); float: left; margin-right: 5px;">
           <input type="text" class="form-control" id="slycat-remote-browser-path" 
             data-bind="value: path_input"
