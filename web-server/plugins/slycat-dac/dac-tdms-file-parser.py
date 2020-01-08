@@ -15,6 +15,7 @@ import cherrypy
 
 # file manipulation
 import io
+import zipfile
 import os
 
 # reading tdms files
@@ -572,7 +573,7 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     SHOT_TYPE = aids[2]
     TIME_STEP_TYPE = aids[3]
     INFER_CHANNEL_UNITS = aids[4]
-    INFER_SECONDS = aids[4]
+    INFER_SECONDS = aids[5]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -610,6 +611,7 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
             # print error to cherrypy.log.error
             cherrypy.log.error(traceback.format_exc())
 
+    # start actual parsing as a thread
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
                               MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
@@ -822,6 +824,96 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     """
 
     cherrypy.log.error("DAC TDMS zip parser started.")
+
+    # get user parameters
+    MIN_TIME_STEPS = int(aids[0])
+    MIN_CHANNELS = int(aids[1])
+    SHOT_TYPE = aids[2]
+    TIME_STEP_TYPE = aids[3]
+    INFER_CHANNEL_UNITS = aids[4]
+    INFER_SECONDS = aids[5]
+    SUFFIX_LIST = aids[6]
+
+    # keep a parsing error log to help user correct input data
+    # (each array entry is a string)
+    parse_error_log = update_parse_log(database, model, [], "Progress", "Notes:")
+
+    # push progress for wizard polling to database
+    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
+
+    # treat uploaded file as bitstream
+    try:
+
+        file_like_object = io.BytesIO(files[0])
+        zip_ref = zipfile.ZipFile(file_like_object)
+        zip_files = zip_ref.namelist()
+
+    except Exception as e:
+
+        # couldn't open zip file, report to user
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Error", "couldn't read .zip file (too large or corrupted)"])
+
+        # record no data message in front of parser log
+        parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                           "Error -- couldn't read .zip file (too large or corrupted).")
+
+        # print error to cherrypy.log.error
+        cherrypy.log.error(traceback.format_exc())
+
+    # loop through zip files and look for tdms files matching suffix list
+    file_list = []
+    file_object = []
+    tdms_ref = []
+
+    for zip_file in zip_files:
+
+        # get file name and extension
+        head, tail = os.path.split(zip_file)
+        ext = tail.split(".")[-1]
+
+        # is it a tdms file?
+        if ext == 'tdms':
+
+            # get suffix
+            suffix = tail.split("_")[-1].split(".")[0]
+
+            # should we read this file?
+            if suffix in SUFFIX_LIST:
+
+                try:
+
+                    file_object.append(io.BytesIO(zip_ref.read(zip_file)))
+                    tdms_ref.append(nptdms.TdmsFile(file_object[-1]))
+
+                    file_list.append(zip_file)
+
+                except Exception as e:
+
+                    # couldn't open tdms file, report to user
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                                          ["Error", "couldn't read .tdms file."])
+
+                    # record no data message in front of parser log
+                    parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
+                                                       "Error -- couldn't read .tmds file.")
+
+                    # print error to cherrypy.log.error
+                    cherrypy.log.error(traceback.format_exc())
+
+    # log files to be parsed
+    for file_to_parse in file_list:
+        parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+                                           'Found file to parse: "' + file_to_parse + '".')
+
+    # launch thread to read actual tdms files
+    stop_event = threading.Event()
+    thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
+                                                              MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE,
+                                                              TIME_STEP_TYPE,
+                                                              INFER_CHANNEL_UNITS, INFER_SECONDS,
+                                                              parse_error_log, stop_event))
+    thread.start()
 
 
 def register_slycat_plugin(context):
