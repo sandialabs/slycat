@@ -117,11 +117,11 @@ zstd                          1.3.7     https://anaconda.org
 
 1. From https://www.npmjs.com in slycat/node_modules:
 @babel/runtime                       7.5.5   https://babeljs.io/docs/en/babel-runtime
-@fortawesome/fontawesome-svg-core   1.2.25   https://www.npmjs.com/package/@fortawesome/fontawesome-svg-core
-@fortawesome/free-solid-svg-icons   5.11.2   https://www.npmjs.com/package/@fortawesome/free-solid-svg-icons
-@fortawesome/react-fontawesome       0.1.7   https://www.npmjs.com/package/@fortawesome/react-fontawesome
-bootstrap                            4.3.1   http://getbootstrap.com
-css-loader                           3.0.0   https://github.com/webpack-contrib/css-loader
+@fortawesome/fontawesome-svg-core   1.2.26   https://www.npmjs.com/package/@fortawesome/fontawesome-svg-core
+@fortawesome/free-solid-svg-icons   5.12.0   https://www.npmjs.com/package/@fortawesome/free-solid-svg-icons
+@fortawesome/react-fontawesome       0.1.8   https://www.npmjs.com/package/@fortawesome/react-fontawesome
+bootstrap                            4.4.1   http://getbootstrap.com
+css-loader                           3.4.1   https://github.com/webpack-contrib/css-loader
 d3                                  3.5.17   http://d3js.org
 font-awesome                         4.7.0   https://fontawesome.com/
 he                                   1.2.0   https://github.com/mathiasbynens/he
@@ -137,7 +137,7 @@ knockout.mapping                     2.6.0   https://github.com/SteveSanderson/k
 layout                             1.7.0.2   https://github.com/GedMarc/layout.git
 lodash                             4.17.15   https://lodash.com/
 object-assign                        4.1.1   https://github.com/sindresorhus/object-assign
-papaparse                            5.1.0   https://github.com/mholt/PapaParse
+papaparse                            5.1.1   https://github.com/mholt/PapaParse
 popper.js                           1.16.0   https://popper.js.org
 prop-types                          15.7.2   https://facebook.github.io/react/
 react                              16.12.0   https://reactjs.org
@@ -150,16 +150,16 @@ redux-logger                         3.0.6   https://github.com/LogRocket/redux-
 redux-thunk                          2.3.0   https://github.com/reduxjs/redux-thunk
 regenerator-runtime                 0.13.2   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
 scheduler                           0.13.6   https://reactjs.org
-slickgrid                           2.4.14   https://github.com/6pac/SlickGrid
+slickgrid                           2.4.16   https://github.com/6pac/SlickGrid
 sphinx                               1.8.4   https://www.sphinx-doc.org/en/master/
-style-loader                         1.0.0   https://github.com/webpack-contrib/style-loader#readme
+style-loader                         1.1.2   https://github.com/webpack-contrib/style-loader#readme
 symbol-observable                    1.2.0   https://www.npmjs.com/package/symbol-observable
-three                              0.110.0   https://yarnpkg.com/en/package/three
+three                              0.112.2   https://yarnpkg.com/en/package/three
 three-stl-loader                     1.0.6   https://yarnpkg.com/en/package/three-stl-loader
 three-trackballcontrols              0.0.8   https://yarnpkg.com/en/package/three-trackballcontrols
 urijs                               1.19.2   https://medialize.github.io/URI.js/
 uuid                                 3.3.3   https://www.npmjs.com/package/uuid
-vtk                                11.11.2   https://github.com/Kitware/vtk-js
+vtk                                 13.4.2   https://github.com/Kitware/vtk-js
 wslink                              0.1.12   https://github.com/Kitware/wslink
 zipinfo.js                           1.0.0   https://github.com/Rob--W/zipinfo.js
 
