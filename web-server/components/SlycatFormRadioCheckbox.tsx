@@ -1,5 +1,6 @@
 'use strict';
 import * as React from 'react';
+import uuidv1 from 'uuid/v1';
 
 /**
  */
@@ -30,10 +31,15 @@ export default class SlycatFormRadioCheckbox extends React.Component<SlycatFormR
   }
 
   public render () {
+    let uuid = uuidv1();
     return (
-      <div className="form-check">
-        <label className="form-check-label" style={this.props.style} htmlFor="radio1">
-          <input type="radio" className="form-check-input" value={this.props.value} checked={this.props.checked} onChange={(e)=>this.props.onChange(e.target.value)}/>
+      <div className="form-check justify-content-start mb-2">
+        <input type="radio" className="form-check-input" 
+          value={this.props.value} 
+          name={uuid} id={uuid} 
+          checked={this.props.checked}
+          onChange={(e)=>this.props.onChange(e.target.value)} />
+        <label className="form-check-label" style={this.props.style} htmlFor={uuid}>
           {this.props.text}
         </label>
       </div>

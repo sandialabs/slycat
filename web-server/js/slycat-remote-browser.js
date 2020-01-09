@@ -114,22 +114,37 @@ ko.components.register("slycat-remote-browser",
 
     component.open = function(file)
     {
-      // If the file is our parent directory, move up the hierarchy.
-      if(file.name() == "..")
-      {
-        component.browse(path_dirname(component.path()));
-      }
-      // If the file is a directory, move down the hierarchy.
-      else if(file.type() == "d")
-      {
-        component.browse(path_join(component.path(), file.name()));
-      }
-      // If it's a file, signal observers.
-      else if(file.type() == "f")
-      {
-        if(component.open_file_callback)
-          component.open_file_callback();
-      }
+      // First check if we have a remote connection...
+      client.get_remotes_fetch(component.hostname())
+        .then((json) => {
+          // If we have a session, go on.
+          if(json.status) {
+            // If the file is our parent directory, move up the hierarchy.
+            if(file.name() == "..")
+            {
+              component.browse(path_dirname(component.path()));
+            }
+            // If the file is a directory, move down the hierarchy.
+            else if(file.type() == "d")
+            {
+              component.browse(path_join(component.path(), file.name()));
+            }
+            // If it's a file, signal observers.
+            else if(file.type() == "f")
+            {
+              if(component.open_file_callback)
+                component.open_file_callback();
+            }
+          }
+          // Otherwise...we don't have a session anymore, so set the session_exists
+          // var accordingly and run the reauth method if one was passed.
+          else {
+            component.session_exists(false);
+            if(params.reauth) {
+              params.reauth();
+            }
+          }
+      });
     }
 
     component.up = function() {

@@ -8,7 +8,7 @@ import * as dialog from "js/slycat-dialog";
 import markings from "js/slycat-markings";
 import ko from "knockout";
 import mapping from "knockout-mapping";
-import "js/slycat-remote-controls";
+import { remoteControlsReauth } from "js/slycat-remote-controls";
 import "js/slycat-remote-browser";
 import "js/slycat-remote-interface";
 import "js/slycat-model-controls";
@@ -76,6 +76,13 @@ function constructor(params) {
   // component.time_minutes = ko.observable('');
   // component.time_seconds = ko.observable('');
   component.submit_job_continue_button = null;
+
+  // Navigate to login controls and set alert message to 
+  // inform user their session has been disconnected.
+  component.reauth = function() {
+    remoteControlsReauth(component.remote.status, component.remote.status_type);
+    component.tab(0);
+  }
 
   component.timeseries_type.subscribe(function(newValue){
     var vm = ko.dataFor($('.slycat-remote-interface')[0]);
