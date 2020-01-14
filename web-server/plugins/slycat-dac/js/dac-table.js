@@ -458,6 +458,7 @@ module.selection_values = function (header_col, rows_to_output)
     var extra_commas = false;
 
     // go through table rows in table order
+    var sel_table_order = [];
 	for (var i = 0; i < num_rows; i++) {
 
 		// get slick grid table data
@@ -468,6 +469,9 @@ module.selection_values = function (header_col, rows_to_output)
 
 		// check if data is in the selection
 		if (rows_to_output.indexOf(sel_i) != -1) {
+
+            // save selection in table order
+            sel_table_order.push(sel_i);
 
             // check for commas for later warning
             if (String(item[header_col]).indexOf(",") != -1) {
@@ -483,7 +487,7 @@ module.selection_values = function (header_col, rows_to_output)
 		}
     }
 
-    return [header_val, sel_color, extra_commas];
+    return [header_val, sel_color, sel_table_order, extra_commas];
 
 }
 
