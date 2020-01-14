@@ -593,7 +593,7 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
         csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind] +
             " (" + sel_col_commas[1][i] + ")";
 
-        // separted by commas, ended by newline
+        // separated by commas, ended by newline
         if (i < num_sel-1) {
             csv_output += ",";
         } else {
