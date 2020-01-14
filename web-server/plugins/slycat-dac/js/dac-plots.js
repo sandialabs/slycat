@@ -569,34 +569,37 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
 
     var num_sel = curr_sel.length;
 
-    // pre-pend current selection with [-2, -1] for passing to server
-    curr_sel.unshift(-1)
-    curr_sel.unshift(-2)
-
-    // table to return
-    var csv_output = ",";
-
     // get header values and selection colors
     var sel_col_commas = metadata_table.selection_values(header_index, curr_sel);
 
+    // use new table order for data
+    var curr_sel_table_order = sel_col_commas[2];
+
+    // pre-pend selection with [-2, -1] for passing to server
+    curr_sel_table_order.unshift(-1)
+    curr_sel_table_order.unshift(-2)
+
     // keep track of extra commas found
-    var extra_commas = sel_col_commas[2];
+    var extra_commas = sel_col_commas[3];
 
-    // first line of table identifies plots with header value
-    csv_output += sel_col_commas[0].join(",") + "\n";
+    // table to return
+    var csv_output = "Time,";
 
-    // get variable name, repeated across header
+    // construct header row
     var sel_plot_ind = plots_selected[plot_id];
-    var sel_plot_name = [];
     for (var i = 0; i < num_sel; i++) {
-        sel_plot_name.push(plot_name[sel_plot_ind]);
+
+        // text is "ID Var (selection color)"
+        csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind] +
+            " (" + sel_col_commas[1][i] + ")";
+
+        // separted by commas, ended by newline
+        if (i < num_sel-1) {
+            csv_output += ",";
+        } else {
+            csv_output += "\n";
+        }
     }
-
-    // next line of table identifies variable
-    csv_output += "," + sel_plot_name.join(",") + "\n";
-
-    // last header shows time column followed by user selection color
-    csv_output += "Time," + sel_col_commas[1].join(",") + "\n";
 
     // call server to get data, no subsampling
     client.get_model_command(
@@ -604,7 +607,7 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
 		mid: mid,
 		type: "DAC",
 		command: "subsample_time_var",
-		parameters: [plot_id, sel_plot_ind, curr_sel, "Inf",
+		parameters: [plot_id, sel_plot_ind, curr_sel_table_order, "Inf",
 					 plots_selected_zoom_x[plot_id][0], plots_selected_zoom_x[plot_id][1],
 					 plots_selected_zoom_y[plot_id][0], plots_selected_zoom_y[plot_id][1]],
 		success: function (result)
