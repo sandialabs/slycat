@@ -86,7 +86,7 @@ function display_alpha_sliders(ALPHA_STEP)
 
 			// add to HTML
 			var list_item = $('<li class="dac-alpha-slider">').appendTo(this);
-			var label_item = $('<label for="dac-slider-' + j + '">').appendTo(list_item);
+			var label_item = $('<label for="dac-alpha-slider-' + j + '">').appendTo(list_item);
 			var input_item = $('<input type="range" title="' + alpha_values[j] + '" id="dac-alpha-slider-' +
 					j + '" step="' + ALPHA_STEP + '" min="0" max="1" value="' +
 					alpha_values[j] + '">').appendTo(list_item);

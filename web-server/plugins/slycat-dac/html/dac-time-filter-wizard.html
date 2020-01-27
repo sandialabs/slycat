@@ -1,0 +1,55 @@
+<!-- DAC wizard template, modeled on the CCA wizard
+
+S. Martin
+4/6/2017
+
+-->
+
+<div class="modal-header">
+    <h3 class="modal-title">Dial-A-Cluster Time Filtered Model</h3>
+    <button type="button" class="close" data-bind="click: cancel" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!-- Organizes the tabs in the input wizard. -->
+<div class="modal-body">
+    <ul class="nav nav-pills">
+        <li class="nav-item" data-bind="css:{active:tab() == 0}" class="btn-secondary"><a class="nav-link">Set Filters</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 1}"><a class="nav-link">Name Model</a></li>
+    </ul>
+
+    <!-- This tab lets the user select whether or not the file to upload is on the local
+       computer or a remote computer. -->
+    <div class="tab-content">
+    <div data-bind="visible:tab() == 0">
+		<div id = "dac-time-sliders" class="ui-layout-center">
+		</div>
+        <label id="dac-load-model-error" style="display: none" class="invalid-text small text-danger">
+            Load model error.
+        </label>
+    </div>
+
+    <!-- Inputs the name of the model (final tab). -->
+    <div data-bind="visible:tab() == 1">
+        <form class="form-horizontal" role="form" onsubmit="return false">
+            <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
+        </form>
+        <label id="dac-filter-model-error" style="display: none" class="invalid-text small text-danger">
+            Filtered model error.
+        </label>
+    </div>
+
+    </div>
+</div>
+
+<!-- The following organizes the buttons at the bottom of the tabs and tells which javascript functions
+     to call when the buttons are pressed. -->
+<div class="modal-footer">
+    <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click:back">Back</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 0,click:reset_sliders">Reset</button>
+    <button class="btn btn-primary browser-continue" data-bind="visible:tab() == 0,click:check_time_filters">Continue</button>
+    <button class="btn btn-primary dac-launch-thread"
+            data-bind="visible:tab() == 1,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
+
+</div>

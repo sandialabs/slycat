@@ -130,7 +130,7 @@ def register_slycat_plugin(context):
 
         # upload done indicator for polling routine
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
-        cherrypy.log.error("DAC: done initializing MDS coords.")
+        cherrypy.log.error("[DAC] done initializing MDS coords.")
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
@@ -546,7 +546,7 @@ def register_slycat_plugin(context):
             else:
 
                 # called with un-implemented column type (should never happen)
-                cherrypy.log.error("DAC error: un-implemented column type for manage editable columns.")
+                cherrypy.log.error("[DAC] error: un-implemented column type for manage editable columns.")
                 return json.dumps({"error": 0})
 
         elif col_cmd == 'remove':
@@ -571,7 +571,7 @@ def register_slycat_plugin(context):
         else:
 
             # called with invalid command (should never happen)
-            cherrypy.log.error("DAC error: un-implemented command for manage editable columns.")
+            cherrypy.log.error("[DAC] error: un-implemented command for manage editable columns.")
             return json.dumps({"error": 0})
 
         # returns argument indicating success
@@ -892,7 +892,8 @@ def register_slycat_plugin(context):
         except Exception as e:
 
             # print error to cherrypy.log.error
-            cherrypy.log.error(traceback.format_exc())
+            cherrypy.log.error("[DAC]" + traceback.format_exc())
+
 
     # helper function for combine_models_thread which merges editable columns
     def merge_editable_cols (editable_cols, num_rows_per_model):
@@ -999,6 +1000,28 @@ def register_slycat_plugin(context):
         return merged_cols
 
 
+    # filter model by recomputing
+    def filter_model(database, model, verb, type, command, **kwargs):
+
+        cherrypy.log.error("[DAC] creating time filtered model.")
+
+        # get filters to create new model
+        time_filter = kwargs["time_filter"]
+        origin_model = kwargs["origin_model"]
+
+        cherrypy.log.error(str(time_filter))
+        cherrypy.log.error(str(origin_model))
+
+        # start thread to do actual work
+        #stop_event = threading.Event()
+        #thread = threading.Thread(target=filter_model_thread,
+        #                          args=(database, model, models_selected,
+        #                                new_model_type, model_names, stop_event))
+        #thread.start()
+
+        return json.dumps(["Success", 1])
+
+
     # import dac_compute_coords module from source by hand
     dac = imp.load_source('dac_compute_coords',
                           os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
@@ -1017,6 +1040,7 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
     context.register_model_command("GET", "DAC", "check_compatible_models", check_compatible_models)
     context.register_model_command("GET", "DAC", "combine_models", combine_models)
+    context.register_model_command("POST", "DAC", "filter_model", filter_model)
 
     # register input wizard with slycat
     context.register_wizard("DAC", "New Dial-A-Cluster Model", require={"action": "create", "context": "project"})
@@ -1054,3 +1078,11 @@ def register_slycat_plugin(context):
                                      os.path.join(os.path.dirname(__file__), "js/dac-add-data-wizard.js"))
     context.register_wizard_resource("dac-add-data-wizard", "ui.html",
                                      os.path.join(os.path.dirname(__file__), "html/dac-add-data-wizard.html"))
+
+    # register time filter wizard
+    context.register_wizard("dac-time-filter-wizard", "Time Filtered Model",
+                            require={"action": "create", "context": "model", "model-type": ["DAC"]})
+    context.register_wizard_resource("dac-time-filter-wizard", "ui.js",
+                                     os.path.join(os.path.dirname(__file__), "js/dac-time-filter-wizard.js"))
+    context.register_wizard_resource("dac-time-filter-wizard", "ui.html",
+                                     os.path.join(os.path.dirname(__file__), "html/dac-time-filter-wizard.html"))
