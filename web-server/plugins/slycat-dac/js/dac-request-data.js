@@ -32,14 +32,13 @@ export default {
 
     // get parameter data stored in model
     get_parameters: function (parmid, mid) {
-
         return $.ajax(api_root + "models/" + mid + "/parameters/" + parmid);
     },
 
     // get array metadata (e.g. number of rows and columns)
     // arrayid is the name and arraynum is index in the case of multiple arrays
-    get_array_metadata: function (arrayid, arraynum) {
-        return $.ajax(location.href + "/arraysets/" + arrayid + "/metadata?arrays=" +
+    get_array_metadata: function (arrayid, arraynum, mid) {
+        return $.ajax(api_root + "models/" + mid + "/arraysets/" + arrayid + "/metadata?arrays=" +
             arraynum);
     },
 
@@ -62,5 +61,11 @@ export default {
                 }
             }
         );
+    },
+
+    // get full array set
+    get_arrayset: function (arrayid, mid) {
+        return $.ajax(api_root + "models/" + mid + "/arraysets/" + arrayid + "/data?hyperchunks=.../0/...");
     }
+
 };
