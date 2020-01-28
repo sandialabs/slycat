@@ -303,7 +303,10 @@ $(document).ready(function() {
         success: function(table_metadata)
         {
           redux_state_tree.derived.table_metadata = table_metadata;
-          redux_state_tree.variable_selected = table_metadata["column-count"] - 1;
+          if(redux_state_tree.variable_selected === undefined)
+          {
+            redux_state_tree.variable_selected = table_metadata["column-count"] - 1;
+          }
           resolve();
         },
         error: reject
