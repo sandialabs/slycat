@@ -138,9 +138,7 @@ class ControlsBar extends React.Component {
   }
 
   trigger_pin_selection(e) {
-    if(!this.state.disable_hide_show) {
       this.props.element.trigger("pin-selection", this.state.selection);
-    }
   }
 
   trigger_jump_to_start(e) {
@@ -185,8 +183,13 @@ class ControlsBar extends React.Component {
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
     // Disable close all button when there are no open frames
     const close_all_disabled = this.state.open_images.length == 0;
-    const disable_pin = !(this.state.media_variable && this.state.media_variable >= 0);
-    const hide_pin = !(this.props.media_variables.length > 0);
+    // Completely hide the Pin functionality when the model has no media variables to choose from
+    const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
+    // Disable the Pin function when no media variable is selected
+    // or if the current selection only contains hidden simulations
+    const no_media_variable_selected = !(this.state.media_variable && this.state.media_variable >= 0);
+    const all_selection_hidden = _.difference(this.state.selection, this.state.hidden_simulations).length === 0;
+    const disable_pin = no_media_variable_selected || all_selection_hidden;
 
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
