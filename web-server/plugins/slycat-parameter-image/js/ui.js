@@ -529,8 +529,16 @@ $(document).ready(function() {
       }
 
       images_index = -1;
+      // Set images index from bookmark if it's there
       if("images-selection" in bookmark)
+      {
         images_index = bookmark["images-selection"];
+      }
+      // Otherwise set it to the first images column if we have any
+      else if(image_columns.length > 0)
+      {
+        images_index = image_columns[0];
+      }
       setup_table();
       if(image_columns.length > 0 && images_index > -1)
       {
