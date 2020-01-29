@@ -534,11 +534,13 @@ $(document).ready(function() {
       {
         images_index = bookmark["images-selection"];
       }
-      // Otherwise set it to the first images column if we have any
-      else if(image_columns.length > 0)
-      {
-        images_index = image_columns[0];
-      }
+      // We don't want to set it to the first column because we have a 
+      // None option that users can select to get rid of media sets.
+      // // Otherwise set it to the first images column if we have any
+      // else if(image_columns.length > 0)
+      // {
+      //   images_index = image_columns[0];
+      // }
       setup_table();
       if(image_columns.length > 0 && images_index > -1)
       {

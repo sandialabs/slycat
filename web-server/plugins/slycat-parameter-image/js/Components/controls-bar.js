@@ -194,7 +194,12 @@ class ControlsBar extends React.Component {
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
       dropdown.items = dropdown.items.map((item) => {
-        item.name = this.get_variable_label(item.key);
+        // Don't try to update variable names for keys less than 0, because those are not
+        // real variables. For example, the "None" first item in the Media Set dropdown.
+        if(item.key >= 0)
+        {
+          item.name = this.get_variable_label(item.key);
+        }
         return item;
       });
       return dropdown;
