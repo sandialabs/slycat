@@ -181,7 +181,7 @@ redux-logger                         3.0.6   https://github.com/LogRocket/redux-
 redux-thunk                          2.3.0   https://github.com/reduxjs/redux-thunk
 regenerator-runtime                 0.13.2   https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime
 scheduler                           0.13.6   https://reactjs.org
-slickgrid                           2.4.17   https://github.com/6pac/SlickGrid
+slickgrid                           2.4.16   https://github.com/6pac/SlickGrid
 sphinx                               1.8.4   https://www.sphinx-doc.org/en/master/
 style-loader                         1.1.2   https://github.com/webpack-contrib/style-loader#readme
 symbol-observable                    1.2.0   https://www.npmjs.com/package/symbol-observable
