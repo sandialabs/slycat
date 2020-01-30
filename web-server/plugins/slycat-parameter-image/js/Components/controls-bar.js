@@ -41,6 +41,7 @@ class ControlsBar extends React.Component {
     this.trigger_close_all = this.trigger_close_all.bind(this);
     this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
     this.trigger_hide_unselected = this.trigger_hide_unselected.bind(this);
+    this.trigger_show_unselected = this.trigger_show_unselected.bind(this);
     this.trigger_show_selection = this.trigger_show_selection.bind(this);
     this.trigger_pin_selection = this.trigger_pin_selection.bind(this);
     this.trigger_jump_to_start = this.trigger_jump_to_start.bind(this);
@@ -127,18 +128,27 @@ class ControlsBar extends React.Component {
 
   trigger_hide_unselected(e) {
     if(!this.state.disable_hide_show) {
-      this.props.element.trigger("hide-unselected", this.state.selection);
+      // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
+      // https://api.jquery.com/trigger/
+      // Thus we need to wrap our selection array in another array to pass it.
+      this.props.element.trigger("hide-unselected", [this.state.selection]);
+    }
+  }
+
+  trigger_show_unselected(e) {
+    if(!this.state.disable_hide_show) {
+      this.props.element.trigger("show-unselected", [this.state.selection]);
     }
   }
 
   trigger_show_selection(e) {
     if(!this.state.disable_hide_show) {
-      this.props.element.trigger("show-selection", this.state.selection);
+      this.props.element.trigger("show-selection", [this.state.selection]);
     }
   }
 
   trigger_pin_selection(e) {
-      this.props.element.trigger("pin-selection", this.state.selection);
+      this.props.element.trigger("pin-selection", [this.state.selection]);
   }
 
   trigger_jump_to_start(e) {
@@ -288,12 +298,15 @@ class ControlsBar extends React.Component {
             <ControlsSelection
               trigger_hide_selection={this.trigger_hide_selection}
               trigger_hide_unselected={this.trigger_hide_unselected}
+              trigger_show_unselected={this.trigger_show_unselected}
               trigger_show_selection={this.trigger_show_selection}
               trigger_pin_selection={this.trigger_pin_selection}
               disable_hide_show={this.state.disable_hide_show}
               disable_pin={disable_pin}
               hide_pin={hide_pin}
               selection={this.state.selection}
+              hidden_simulations={this.state.hidden_simulations}
+              indices={this.props.indices}
               rating_variables={this.props.rating_variables}
               metadata={this.props.metadata}
               element={this.props.element}
