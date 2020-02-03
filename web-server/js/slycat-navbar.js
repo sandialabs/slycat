@@ -476,8 +476,10 @@ export function renderNavBar() {
           buttons: [{className: "btn-light", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
           callback: function(button)
           {
-            if(button.label != "OK")
+            if(!button || button.label != "OK")
+            {
               return;
+            }
             client.put_reference(
             {
               rid: reference._id(),
@@ -501,7 +503,7 @@ export function renderNavBar() {
           buttons: [{className: "btn-primary", label:"Cancel"}, {className: "btn-danger",label:"OK"}],
           callback: function(button)
           {
-            if(button.label != "OK")
+            if(!button || button.label != "OK")
               return;
             client.delete_reference(
             {
