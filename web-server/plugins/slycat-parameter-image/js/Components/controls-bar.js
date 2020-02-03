@@ -300,7 +300,7 @@ class ControlsBar extends React.Component {
               indices={this.props.indices} button_style={button_style} />
           </ControlsGroup>
           <ControlsGroup id='file-selector' class='input-group input-group-sm ml-3'>
-            <ControlsButtonUpdateTable button_style={button_style} mid={this.props.mid} pid={this.props.pid}/>
+            <ControlsButtonUpdateTable button_style={button_style} mid={this.props.mid} pid={this.props.pid} aliases={this.state.variable_aliases}/>
           </ControlsGroup>
           {any_video_open &&
           <React.Fragment>
