@@ -121,6 +121,18 @@
 .slick-row.clicked {
     box-shadow: inset 0px 0px 0px 2px;
 }
+/* header row has filters */
+.slick-headerrow-column {
+    font-size: small;
+    height:18px;
+}
+
+.slick-headerrow-column input {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 90%;
+}
 
 /* No customizations from slick.grid.css */
 
