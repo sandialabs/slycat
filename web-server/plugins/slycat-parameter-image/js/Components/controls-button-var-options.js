@@ -172,7 +172,7 @@ export default function ControlsButtonVarOptions(props) {
                         <label htmlFor='font-size'>Size</label>
                         <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
                           value={props.font_size} 
-                          onChange={() => props.changeFontSize(event.target.value)}
+                          onChange={props.onFontSizeChange}
                         />
                       </div>
                     </div>
