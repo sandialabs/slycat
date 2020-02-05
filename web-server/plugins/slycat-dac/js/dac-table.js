@@ -64,7 +64,11 @@ var grid_options = {
 	enableColumnReorder: false,
 	multiSelect: false,
 	editable: true,
+	showHeaderRow: true,
 };
+
+// column filters
+var columnFilters = {};
 
 // model name for downloaded table
 var model_name = "";
@@ -214,11 +218,38 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	// add sorting
 	grid_view.onSort.subscribe(col_sort);
 
+    // do filtering after something is typed
+    $(grid_view.getHeaderRow()).delegate(":input", "change keyup", function (e) {
+      var columnId = $(this).data("columnId");
+      if (columnId != null) {
+        columnFilters[columnId] = $.trim($(this).val());
+        data_view.refresh();
+      }
+    });
+
+    // add filter to header
+    grid_view.onHeaderRowCellRendered.subscribe(function(e, args) {
+        $(args.node).empty();
+        $('<input type="search" placeholder="Filter" class="form-control" ' +
+          'title="Filter metadata table by ' + args.column.name +  '.">')
+            .data("columnId", args.column.id)
+            .val(columnFilters[args.column.id])
+            .on('search', function () {
+                // called when user hits the "x" clear button
+                columnFilters[args.column.id] = "";
+                data_view.refresh();
+            })
+            .appendTo(args.node);
+    });
+
+    // add filters
+    data_view.setFilter(filter);
+
 	// fit table into container
 	module.resize();
 
 	// show selections, if any
-	module.select_rows()
+	module.select_rows();
 
     // check for bookmarked sort order
     if (init_sort_order != null) {
@@ -686,6 +717,29 @@ function change_cols (e, args)
 	grid_view.invalidateRows(args.rows);
 	grid_view.render();
 }
+
+// slick grid filter using filter in header row
+function filter(item) {
+
+    // go through each column and check for filter
+    for (var columnId in columnFilters) {
+      if (columnId !== undefined && columnFilters[columnId] !== "") {
+
+        // compare item to filter for that column
+        var c = grid_view.getColumns()[grid_view.getColumnIndex(columnId)];
+
+        // check that item passes through filter
+        if (item[c.field].toString().toLowerCase().indexOf(columnFilters[columnId].toLowerCase()) == -1) {
+          return false;
+        }
+
+      }
+    }
+
+    // item passed through all the filters
+    return true;
+}
+
 
 // override slick grid meta data method to color rows according to selection
 function color_rows(old_metadata) {

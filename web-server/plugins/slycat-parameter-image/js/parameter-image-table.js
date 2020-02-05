@@ -82,20 +82,35 @@ $.widget("parameter_image.table",
       self.element.trigger("variable-sort-changed", [column, order]);
     }
 
-    function get_variable_label(variable)
+    function get_column_name(variable)
     {
-      let label;
+      let name;
       if(window.store.getState().derived.variableAliases[variable] !== undefined)
       {
-        label= window.store.getState().derived.variableAliases[variable];
+        name= window.store.getState().derived.variableAliases[variable];
       }
       else
       {
-        label = self.options.metadata["column-names"][variable];
+        name = self.options.metadata["column-names"][variable];
       }
-      // Using he package to encode label text otherwise slickgrid will 
+      return name;
+    }
+
+    function get_column_header_title(variable)
+    {
+      // Using he package to encode header title text otherwise slickgrid will 
       // execute <scrpt> tags in it and choke on other code
-      return he.encode(label);
+      // return he.encode(label);
+      return he.encode(get_column_name(variable));
+    }
+
+    function get_column_header_tooltip(variable)
+    {
+      // Can't encode header tooltips because tooltip displays character references
+      // instead of the characters themselved (e.g., &#x27; instead of apostrophe ' character).
+      // Sneaky JS code does not affect tooltips like it does header titles, it's not executed
+      // so we are safe passing the unencoded text to the tooltip.
+      return get_column_name(variable);
     }
 
     function make_column(column_index, header_class, cell_class, formatter)
@@ -103,8 +118,8 @@ $.widget("parameter_image.table",
       var column = {
         id : column_index,
         field : column_index,
-        name : get_variable_label(column_index),
-        toolTip : get_variable_label(column_index),
+        name : get_column_header_title(column_index),
+        toolTip : get_column_header_tooltip(column_index),
         sortable : false,
         headerCssClass : header_class,
         cssClass : cell_class,
@@ -316,15 +331,16 @@ $.widget("parameter_image.table",
     const update_variable_aliases = () => {
       let label;
 
-      for(var i in self.columns)
+      for(const [index, element] of self.columns.entries())
       {
-        label = get_variable_label(self.columns[i].id);
+        let title = get_column_header_title(self.columns[index].id);
+        let tooltip = get_column_header_tooltip(self.columns[index].id);
         // Update column name and tooltip if it has changed
-        if(label != self.columns[i].name)
+        if(label != self.columns[index].name)
         {
-          self.columns[i].name = label;
-          self.columns[i].tooltip = label;
-          self.grid.updateColumnHeader(self.columns[i].id, label, label);
+          self.columns[index].name = title;
+          self.columns[index].tooltip = tooltip;
+          self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
         }
       }
     };

@@ -540,8 +540,18 @@ $(document).ready(function() {
       }
 
       images_index = -1;
+      // Set images index from bookmark if it's there
       if("images-selection" in bookmark)
+      {
         images_index = bookmark["images-selection"];
+      }
+      // We don't want to set it to the first column because we have a 
+      // None option that users can select to get rid of media sets.
+      // // Otherwise set it to the first images column if we have any
+      // else if(image_columns.length > 0)
+      // {
+      //   images_index = image_columns[0];
+      // }
       setup_table();
       if(image_columns.length > 0 && images_index > -1)
       {
@@ -1050,20 +1060,40 @@ $(document).ready(function() {
       // Log changes to hidden selection ...
       $("#controls").bind("hide-unselected", function(event, selection)
       {
-        // Remove any selected_simulations from hidden_simulations
-        for(var i=0; i<selected_simulations.length; i++){
-          var index = $.inArray(selected_simulations[i], hidden_simulations);
-          if(index != -1) {
-            hidden_simulations.splice(index, 1);
-          }
-        }
+        let unselected = _.difference(indices, selected_simulations);
+        let visible_unselected = _.difference(unselected, hidden_simulations);
+        hidden_simulations.push(...visible_unselected);
+
+        // This is the old way of doing this. Seems wrong because we shouldn't
+        // be unhiding selected simulations when users want to hide unselected.
+        // This section can be removed once the team agrees this not what we want.
+
+        // // Remove any selected_simulations from hidden_simulations
+        // for(var i=0; i<selected_simulations.length; i++){
+        //   var index = $.inArray(selected_simulations[i], hidden_simulations);
+        //   if(index != -1) {
+        //     hidden_simulations.splice(index, 1);
+        //   }
+        // }
 
         // Add all non-selected_simulations to hidden_simulations
-        for(var i=0; i<indices.length; i++){
-          if($.inArray(indices[i], selected_simulations) == -1) {
-            hidden_simulations.push(indices[i]);
-          }
-        }
+        // for(var i=0; i<indices.length; i++){
+        //   if($.inArray(indices[i], selected_simulations) == -1) {
+        //     hidden_simulations.push(indices[i]);
+        //   }
+        // }
+
+        update_widgets_when_hidden_simulations_change();
+        manually_hidden_simulations = hidden_simulations.slice();
+      });
+
+      // Log changes to hidden selection ...
+      $("#controls").bind("show-unselected", function(event, selection)
+      {
+        // Remove any non-selected_simulations from hidden_simulations 
+        let difference = _.difference(hidden_simulations, selected_simulations);
+        _.pullAll(hidden_simulations, difference);
+        // console.log("here's what we need to remove from hidden_simulations: " + difference);
 
         update_widgets_when_hidden_simulations_change();
         manually_hidden_simulations = hidden_simulations.slice();

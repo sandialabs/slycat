@@ -119,10 +119,27 @@ export default class ControlsButtonUpdateTable extends Component {
       this.uploadRemoteFile();
   }
 
+  updateVariableAliases = (mid, variable_aliases) =>
+  {
+        return client.get_project_data_in_model_fetch({
+          mid: mid}).then((results) => {
+            client.put_project_data_parameter({
+              did: results[0],
+              aid: 'variable_aliases',
+              input: false,
+              value: variable_aliases,
+              success: function() {
+                location.reload();
+              }
+            });
+          });
+  }
+
   uploadLocalFile = () =>
   {
     let mid = this.props.mid;
     let pid = this.props.pid;
+    let variable_aliases = this.props.aliases;
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
@@ -155,7 +172,12 @@ export default class ControlsButtonUpdateTable extends Component {
                 }).then(() => {
                 this.setState({progressBarProgress: 100});
                 //this.closeModal();
-                location.reload();
+                if(Object.keys(variable_aliases).length !== 0) {
+                  this.updateVariableAliases(mid, variable_aliases)
+                }
+                else {
+                  location.reload();
+                }
               });
             }
           };
@@ -172,6 +194,7 @@ export default class ControlsButtonUpdateTable extends Component {
   uploadRemoteFile = () => {
     let mid = this.props.mid;
     let pid = this.props.pid;
+    let variable_aliases = this.props.aliases;
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_remote_file_fetch({hostname:this.state.hostname, path:this.state.selected_path})
@@ -205,7 +228,12 @@ export default class ControlsButtonUpdateTable extends Component {
                   }).then(() => {
                     this.setState({progressBarProgress:100});
                     //this.closeModal();
-                    location.reload();
+                    if(Object.keys(variable_aliases).length !== 0) {
+                      this.updateVariableAliases(mid, variable_aliases)
+                    }
+                    else {
+                      location.reload();
+                    }
                   });
                 }
               };

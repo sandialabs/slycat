@@ -10,10 +10,24 @@
         </div>
         <div class="modal-body">
           <p data-bind="html:message"></p>
+          <!-- Alex adding ko if, otherwise the value binding breaks
+               because it seems that it can't be used at the same time for an
+               input field and a select control, with one of them just not visible.
+          -->
+          <!--ko if: input -->
           <input type="text" class="form-control"
-            data-bind="visible:input, value:value, attr:{placeholder:placeholder}">
-          <select class="custom-select" data-bind="visible:select, options:options,
-                optionsText: 'name', optionsValue: 'id', value:value"></select>
+            data-bind="
+              value:value, 
+              attr:{placeholder:placeholder}">
+          <!--/ko-->
+          <!--ko if: select -->
+          <select class="custom-select" 
+            data-bind="
+              options:options,
+              optionsText: 'name', 
+              optionsValue: 'id', 
+              value:value"></select>
+          <!--/ko-->
           <div class="alert alert-danger" role="alert"
             data-bind="visible:alert, text:alert"
           ></div>

@@ -45,6 +45,7 @@ class ControlsBar extends React.Component {
     this.trigger_close_all = this.trigger_close_all.bind(this);
     this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
     this.trigger_hide_unselected = this.trigger_hide_unselected.bind(this);
+    this.trigger_show_unselected = this.trigger_show_unselected.bind(this);
     this.trigger_show_selection = this.trigger_show_selection.bind(this);
     this.trigger_pin_selection = this.trigger_pin_selection.bind(this);
     this.trigger_jump_to_start = this.trigger_jump_to_start.bind(this);
@@ -139,20 +140,27 @@ class ControlsBar extends React.Component {
 
   trigger_hide_unselected(e) {
     if(!this.state.disable_hide_show) {
-      this.props.element.trigger("hide-unselected", this.state.selection);
+      // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
+      // https://api.jquery.com/trigger/
+      // Thus we need to wrap our selection array in another array to pass it.
+      this.props.element.trigger("hide-unselected", [this.state.selection]);
+    }
+  }
+
+  trigger_show_unselected(e) {
+    if(!this.state.disable_hide_show) {
+      this.props.element.trigger("show-unselected", [this.state.selection]);
     }
   }
 
   trigger_show_selection(e) {
     if(!this.state.disable_hide_show) {
-      this.props.element.trigger("show-selection", this.state.selection);
+      this.props.element.trigger("show-selection", [this.state.selection]);
     }
   }
 
   trigger_pin_selection(e) {
-    if(!this.state.disable_hide_show) {
-      this.props.element.trigger("pin-selection", this.state.selection);
-    }
+      this.props.element.trigger("pin-selection", [this.state.selection]);
   }
 
   trigger_jump_to_start(e) {
@@ -197,13 +205,23 @@ class ControlsBar extends React.Component {
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
     // Disable close all button when there are no open frames
     const close_all_disabled = this.state.open_images.length == 0;
-    const disable_pin = !(this.state.media_variable && this.state.media_variable >= 0);
-    const hide_pin = !(this.props.media_variables.length > 0);
+    // Completely hide the Pin functionality when the model has no media variables to choose from
+    const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
+    // Disable the Pin function when no media variable is selected
+    // or if the current selection only contains hidden simulations
+    const no_media_variable_selected = !(this.state.media_variable && this.state.media_variable >= 0);
+    const all_selection_hidden = _.difference(this.state.selection, this.state.hidden_simulations).length === 0;
+    const disable_pin = no_media_variable_selected || all_selection_hidden;
 
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
       dropdown.items = dropdown.items.map((item) => {
-        item.name = this.get_variable_label(item.key);
+        // Don't try to update variable names for keys less than 0, because those are not
+        // real variables. For example, the "None" first item in the Media Set dropdown.
+        if(item.key >= 0)
+        {
+          item.name = this.get_variable_label(item.key);
+        }
         return item;
       });
       return dropdown;
@@ -312,12 +330,15 @@ class ControlsBar extends React.Component {
             <ControlsSelection
               trigger_hide_selection={this.trigger_hide_selection}
               trigger_hide_unselected={this.trigger_hide_unselected}
+              trigger_show_unselected={this.trigger_show_unselected}
               trigger_show_selection={this.trigger_show_selection}
               trigger_pin_selection={this.trigger_pin_selection}
               disable_hide_show={this.state.disable_hide_show}
               disable_pin={disable_pin}
               hide_pin={hide_pin}
               selection={this.state.selection}
+              hidden_simulations={this.state.hidden_simulations}
+              indices={this.props.indices}
               rating_variables={this.props.rating_variables}
               metadata={this.props.metadata}
               element={this.props.element}
@@ -330,7 +351,12 @@ class ControlsBar extends React.Component {
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
               indices={this.props.indices} button_style={button_style} />
-            <ControlsButtonUpdateTable button_style={button_style} mid={this.props.mid} pid={this.props.pid} />
+            <ControlsButtonUpdateTable 
+              button_style={button_style} 
+              mid={this.props.mid}
+              pid={this.props.pid} 
+              aliases={this.state.variable_aliases} 
+            />
           </ControlsGroup>
           {any_video_open &&
           <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3 playback-controls'>
