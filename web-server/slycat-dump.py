@@ -62,7 +62,12 @@ for project_id in arguments.project_id:
     logging.info("Dumping project %s", project_id)
     project = couchdb.get(project_id, attachments=True)
     json.dump(project, open(os.path.join(arguments.output_dir, "project-%s.json" % project["_id"]), "w"))
-
+    # dump project data
+    project_datas_ids = list(row["id"] for row in couchdb.view("slycat/project_datas", startkey=project_id, endkey=project_id))
+    for project_datas_id in project_datas_ids:
+      project_data = couchdb.get(project_datas_id, attachments=True)
+      json.dump(project_data, open(os.path.join(arguments.output_dir, "project-data-%s.json" % project_data["_id"]), "w"))
+      
     project_arrays = set()
 
     for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
