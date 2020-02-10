@@ -1,17 +1,17 @@
 import React from "react";
 import { Provider } from 'react-redux';
-import ControlsPlayback from './controls-playback';
+import ControlsPlayback from './ControlsPlayback';
 import ControlsDropdown from './ControlsDropdown';
-import ControlsVideo from './controls-video';
+import ControlsVideo from './ControlsVideo';
 import ControlsThreeD from './ControlsThreeD';
-import ControlsSelection from './controls-selection';
+import ControlsSelection from './ControlsSelection';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonToggle from './ControlsButtonToggle';
 import ControlsButton from 'components/ControlsButton';
-import FileSelector from './file-selector';
-import ControlsButtonUpdateTable from './update-table.jsx';
+import FileSelector from './FileSelector';
+import ControlsButtonUpdateTable from './ControlsButtonUpdateTable.jsx';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
-import ControlsButtonVarOptions from './controls-button-var-options';
+import ControlsButtonVarOptions from './ControlsButtonVarOptions';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 
 class ControlsBar extends React.Component {

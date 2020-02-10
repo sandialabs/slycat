@@ -4,7 +4,7 @@ import ProgressBar from 'components/ProgressBar.tsx';
 import ModalLarge from 'components/ModalLarge.tsx';
 import ControlsButton from 'components/ControlsButton';
 import '../../css/controls-button-var-options.css';
-import { FileSelector } from './file-selector';
+import { FileSelector } from './FileSelector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
