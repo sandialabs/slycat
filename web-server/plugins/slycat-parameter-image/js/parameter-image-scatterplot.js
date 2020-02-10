@@ -2699,7 +2699,6 @@ $.widget("parameter_image.scatterplot",
       frame.addClass("selected");
 
       self.current_frame = Number(frame.data("index"));
-      console.log("_move_frame_to_front: " + self.current_frame);
 
       // Fire a custom selected event to let vtk viewers know it was selected
       if(frameNode.querySelector('.vtp'))

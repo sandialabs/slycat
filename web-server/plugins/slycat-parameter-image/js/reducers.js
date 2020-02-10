@@ -11,9 +11,10 @@ const initialState = {
   fontFamily: "Arial",
   axesVariables: {},
   currentFrame: null,
+  threeD_sync: false,
 }
 
-export default function slycat(state = initialState, action) {
+export default function ps_reducer(state = initialState, action) {
   switch (action.type) {
     case CHANGE_FONT_SIZE:
       return Object.assign({}, state, {
@@ -41,6 +42,7 @@ export default function slycat(state = initialState, action) {
       return Object.assign({}, state, {
         currentFrame: action.currentFrame
       })
+
     default:
       return state
   }

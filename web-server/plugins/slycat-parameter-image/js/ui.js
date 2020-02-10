@@ -38,7 +38,7 @@ import "js/slycat-range-slider";
 import "./category-select";
 
 import { createStore } from 'redux';
-import slycat from './reducers';
+import ps_reducer from './reducers';
 
 import { setSyncCameras, } from './vtk-camera-synchronizer';
 
@@ -70,7 +70,7 @@ $(document).ready(function() {
   var x_index = null;
   var y_index = null;
   var v_index = null;
-  var images_index = null;
+  var images_index = null; // Currently selected media column
   var x = null;
   var y = null;
   var v = null;
@@ -309,8 +309,16 @@ $(document).ready(function() {
           fontSize: 15,
           fontFamily: "Arial",
           axesVariables: {},
+          threeD_sync: false,
         }
-        window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
+        window.store = createStore(
+          ps_reducer, 
+          {
+            ...state_tree, 
+            ...bookmark.state, 
+            derived: {variableAliases: variable_aliases}
+          }
+        );
 
         // Save Redux state to bookmark whenever it changes
         const bookmarkReduxStateTree = () => {
