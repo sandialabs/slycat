@@ -572,9 +572,9 @@ class Agent(object, metaclass=abc.ABCMeta):
             except Exception as e:
                 if debug:
                     self.get_job_logger("slycat_agent")("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}))
-                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": traceback.format_exc()}, cls=MyEncoder))
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": str(traceback.format_exc())}, cls=MyEncoder))
                 else:
-                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": e.message}, cls=MyEncoder))
+                    sys.stdout.write("%s\n" % json.dumps({"ok": False, "message": str(e)}, cls=MyEncoder))
                 sys.stdout.flush()
 
 

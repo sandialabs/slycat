@@ -219,15 +219,20 @@ $(document).ready(function() {
   function get_variable_aliases(resolve, reject)
   {
     // If the model has project_data, try to get aliases from it
-    if(model.project_data !== undefined && model.project_data[0] !== undefined)
+    if(model.project_data && model.project_data[0])
     {
       client.get_project_data_fetch({did: model.project_data[0]}).then((project_data) => {
-        if(project_data['artifact:variable_aliases'] !== undefined) {
+        if(project_data['artifact:variable_aliases']) {
           variable_aliases = project_data['artifact:variable_aliases'];
         }
         // console.log('Set aliases from project_data');
         resolve();
-      });
+      }).catch(() => {
+            // eslint-disable-next-line no-alert
+            window.alert('Project data is missing: variable aliases will not be loaded');
+            resolve();
+          }
+        );
     }
     // Otherwise try to get the aliases from the model's attributes
     else if(model['artifact:variable_aliases'] !== undefined)

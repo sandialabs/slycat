@@ -917,8 +917,8 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
     except Exception as e:
         cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
-                                "cherrypy.HTTPError 400 %s" % e.message)
-        raise cherrypy.HTTPError("400 %s" % e.message)
+                                "cherrypy.HTTPError 400 %s" % str(e))
+        raise cherrypy.HTTPError("400 %s" % str(e))
 
 
 @cherrypy.tools.json_in(on=True)

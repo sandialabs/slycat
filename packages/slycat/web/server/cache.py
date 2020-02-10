@@ -279,7 +279,7 @@ class Cache(object):
       try:
         del self[digest_hash]
       except CacheError as e:
-        print((cherrypy.log.error("[CACHE] error deleteing item %s"%e.message)))
+        print((cherrypy.log.error("[CACHE] error deleteing item %s" % str(e))))
 
   def _remove(self, digest):
     """
@@ -427,7 +427,7 @@ class Cache(object):
     # try:
     #   string_rep = cPickle.dumps(key)
     # except Exception as e:
-    #   cherrypy.log.error("PICKLE error: %s  %s" % (e.message,key))
+    #   cherrypy.log.error("PICKLE error: %s  %s" % (str(e),key))
     #   raise Exception
     digest_hash = hashlib.sha256(str(key).encode()).digest()
     b64_digest_hash = str(base64.urlsafe_b64encode(digest_hash)[:-2])
@@ -548,7 +548,7 @@ if __name__ == "__main__":
   try:
     Cache.to_seconds(not_a_key=1, minutes=1)
   except TimeError as e:
-    assert e.message == 'invalid time argument: not_a_key', "did not catch bac key"
+    assert str(e) == 'invalid time argument: not_a_key', "did not catch bac key"
   cache = Cache("cache/dir", seconds=20)
 
   @cache

@@ -41,8 +41,8 @@ class Database:
     try:
       return self._database.save(*arguments, **keywords)
     except couchdb.http.ServerError as e:
-      cherrypy.log.error("slycat.web.server.database.couchdb.py save", "%s %s" % (e.message[0], e.message[1][1]))
-      raise cherrypy.HTTPError("%s %s" % (e.message[0], e.message[1][1]))
+      cherrypy.log.error("slycat.web.server.database.couchdb.py save", "%s" % str(e))
+      raise cherrypy.HTTPError("%s" % str(e))
 
   def view(self, *arguments, **keywords):
     return self._database.view(*arguments, **keywords)
