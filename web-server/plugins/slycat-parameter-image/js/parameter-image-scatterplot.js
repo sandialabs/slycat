@@ -1457,7 +1457,6 @@ $.widget("parameter_image.scatterplot",
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
         .attr("data-index", img.index)
-        .attr("data-uri", img.uri)
         .call(
           d3.behavior.drag()
             .on('drag', handlers["move"])
@@ -2700,6 +2699,7 @@ $.widget("parameter_image.scatterplot",
       frame.addClass("selected");
 
       self.current_frame = Number(frame.data("index"));
+      console.log("_move_frame_to_front: " + self.current_frame);
 
       // Fire a custom selected event to let vtk viewers know it was selected
       if(frameNode.querySelector('.vtp'))
