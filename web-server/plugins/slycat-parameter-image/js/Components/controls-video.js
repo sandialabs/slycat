@@ -1,5 +1,5 @@
 import React from "react";
-import ControlsButtonToggle from "./controls-button-toggle";
+import ControlsButtonToggle from "./ControlsButtonToggle";
 import { faVideo } from '@fortawesome/free-solid-svg-icons'
 
 class ControlsVideo extends React.Component {

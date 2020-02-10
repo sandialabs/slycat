@@ -6,7 +6,7 @@ import ControlsVideo from './controls-video';
 import ControlsThreeD from './ControlsThreeD';
 import ControlsSelection from './controls-selection';
 import ControlsGroup from 'components/ControlsGroup';
-import ControlsButtonToggle from './controls-button-toggle';
+import ControlsButtonToggle from './ControlsButtonToggle';
 import ControlsButton from 'components/ControlsButton';
 import FileSelector from './file-selector';
 import ControlsButtonUpdateTable from './update-table.jsx';
@@ -34,29 +34,9 @@ class ControlsBar extends React.Component {
     {
       this.state[dropdown.state_label] = dropdown.selected;
     }
-    // This binding is necessary to make `this` work in the callback
-    this.set_selected = this.set_selected.bind(this);
-    this.set_auto_scale = this.set_auto_scale.bind(this);
-    this.set_video_sync = this.set_video_sync.bind(this);
-    this.set_video_sync_time = this.set_video_sync_time.bind(this);
-    this.set_video_sync_time_value = this.set_video_sync_time_value.bind(this);
-    this.set_threeD_sync = this.set_threeD_sync.bind(this);
-    this.trigger_show_all = this.trigger_show_all.bind(this);
-    this.trigger_close_all = this.trigger_close_all.bind(this);
-    this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
-    this.trigger_hide_unselected = this.trigger_hide_unselected.bind(this);
-    this.trigger_show_unselected = this.trigger_show_unselected.bind(this);
-    this.trigger_show_selection = this.trigger_show_selection.bind(this);
-    this.trigger_pin_selection = this.trigger_pin_selection.bind(this);
-    this.trigger_jump_to_start = this.trigger_jump_to_start.bind(this);
-    this.trigger_frame_back = this.trigger_frame_back.bind(this);
-    this.trigger_play = this.trigger_play.bind(this);
-    this.trigger_pause = this.trigger_pause.bind(this);
-    this.trigger_frame_forward = this.trigger_frame_forward.bind(this);
-    this.trigger_jump_to_end = this.trigger_jump_to_end.bind(this);
   }
 
-  set_selected(state_label, key, trigger, e) {
+  set_selected = (state_label, key, trigger, e) => {
     // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
     if(key === this.state[state_label])
     {
@@ -72,7 +52,7 @@ class ControlsBar extends React.Component {
     this.props.element.trigger(trigger, key);
   }
 
-  set_auto_scale(e) {
+  set_auto_scale = (e) => {
     this.setState((prevState, props) => {
       const new_auto_scale = !prevState.auto_scale;
       this.props.element.trigger("auto-scale", new_auto_scale);
@@ -80,7 +60,7 @@ class ControlsBar extends React.Component {
     });
   }
 
-  set_video_sync(e) {
+  set_video_sync = (e) => {
     this.setState((prevState, props) => {
       const new_video_sync = !prevState.video_sync;
       this.props.element.trigger("video-sync", new_video_sync);
@@ -88,7 +68,7 @@ class ControlsBar extends React.Component {
     });
   }
 
-  set_video_sync_time(value) {
+  set_video_sync_time = (value) => {
     const new_video_sync_time = value;
     this.setState((prevState, props) => {
       this.props.element.trigger("video-sync-time", value);
@@ -101,14 +81,14 @@ class ControlsBar extends React.Component {
     });
   }
 
-  set_video_sync_time_value(e) {
+  set_video_sync_time_value = (e) => {
     const new_video_sync_time = e.target.value;
     this.setState((prevState, props) => {
       return {video_sync_time_value: new_video_sync_time};
     });
   }
 
-  set_threeD_sync(e) {
+  set_threeD_sync = (e) => {
     this.setState((prevState, props) => {
       const new_threeD_sync = !prevState.threeD_sync;
       this.props.element.trigger("threeD_sync", new_threeD_sync);
@@ -116,15 +96,15 @@ class ControlsBar extends React.Component {
     });
   }
 
-  trigger_show_all(e) {
+  trigger_show_all = (e) => {
     this.props.element.trigger("show-all");
   }
 
-  trigger_close_all(e) {
+  trigger_close_all = (e) => {
     this.props.element.trigger("close-all");
   }
 
-  trigger_hide_selection(e) {
+  trigger_hide_selection = (e) => {
     if(!this.state.disable_hide_show) {
       this.props.element.trigger("hide-selection", this.state.selection);
     }
@@ -138,7 +118,7 @@ class ControlsBar extends React.Component {
     // }
   }
 
-  trigger_hide_unselected(e) {
+  trigger_hide_unselected = (e) => {
     if(!this.state.disable_hide_show) {
       // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
       // https://api.jquery.com/trigger/
@@ -147,43 +127,43 @@ class ControlsBar extends React.Component {
     }
   }
 
-  trigger_show_unselected(e) {
+  trigger_show_unselected = (e) => {
     if(!this.state.disable_hide_show) {
       this.props.element.trigger("show-unselected", [this.state.selection]);
     }
   }
 
-  trigger_show_selection(e) {
+  trigger_show_selection = (e) => {
     if(!this.state.disable_hide_show) {
       this.props.element.trigger("show-selection", [this.state.selection]);
     }
   }
 
-  trigger_pin_selection(e) {
+  trigger_pin_selection = (e) => {
       this.props.element.trigger("pin-selection", [this.state.selection]);
   }
 
-  trigger_jump_to_start(e) {
+  trigger_jump_to_start = (e) => {
     this.props.element.trigger("jump-to-start");
   }
 
-  trigger_frame_back(e) {
+  trigger_frame_back = (e) => {
     this.props.element.trigger("frame-back");
   }
 
-  trigger_play(e) {
+  trigger_play = (e) => {
     this.props.element.trigger("play");
   }
 
-  trigger_pause(e) {
+  trigger_pause = (e) => {
     this.props.element.trigger("pause");
   }
 
-  trigger_frame_forward(e) {
+  trigger_frame_forward = (e) => {
     this.props.element.trigger("frame-forward");
   }
 
-  trigger_jump_to_end(e) {
+  trigger_jump_to_end = (e) => {
     this.props.element.trigger("jump-to-end");
   }
 

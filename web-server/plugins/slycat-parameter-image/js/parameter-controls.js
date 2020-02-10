@@ -5,7 +5,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "jquery-ui";
-import ControlsBar from './Components/controls-bar';
+import ControlsBar from './Components/PSControlsBar';
 import "bootstrap";
 import $ from 'jquery';
 

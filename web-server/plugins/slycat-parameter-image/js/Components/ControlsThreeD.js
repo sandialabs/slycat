@@ -1,6 +1,6 @@
 import React from "react";
 import ControlsGroup from 'components/ControlsGroup';
-import ControlsButtonToggle from "./controls-button-toggle";
+import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsDropdown from './ControlsDropdown';
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import { faCubes } from '@fortawesome/free-solid-svg-icons'
