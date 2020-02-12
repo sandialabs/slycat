@@ -10,7 +10,7 @@ let selectedCamera = null;
 
 function handleModifiedCamera(sourceCamera, allCameras) {
   // console.log('inside handleModifiedCamera: ' + sourceCamera + ', with these cameras: ' + allCameras);
-  if(syncCameras)
+  if(syncCameras && allCameras.length > 0)
   {
     let noMatch = true;
     for(let targetCamera of allCameras) {
