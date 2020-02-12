@@ -69,7 +69,7 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
 
 # Load project data ...
 logging.info("Loading project datas")
-for source in glob.glob(os.path.join(arguments.input_dir, "project-data-*.json")):
+for source in glob.glob(os.path.join(arguments.input_dir, "projects-data-*.json")):
     logging.info("Loading project-data %s", source)
     reference = json.load(open(source))
     del reference["_rev"]
