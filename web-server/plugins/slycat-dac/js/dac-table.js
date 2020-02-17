@@ -803,11 +803,23 @@ function selection_type (item)
 function col_sort (e, args)
 {
 
+    // get previous row in data index, if it exists
+    var prev_data_row = null;
+    if (prev_row_selected != null) {
+        prev_data_row = convert_row_ids([prev_row_selected])[0];
+    }
+
+    // sort table
 	var comparer = function (a,b) {
 		return (a[args.sortCol.field] > b[args.sortCol.field]) ? 1 : -1;
 	}
 
 	data_view.sort(comparer, args.sortAsc);
+
+    // convert previous row selected into new sorted order
+    if (prev_data_row != null) {
+        prev_row_selected = data_view.getRowById(prev_data_row);
+    }
 
     // table order sort event
     var tableOrderEvent = new CustomEvent("DACTableOrderChanged", { detail: {
