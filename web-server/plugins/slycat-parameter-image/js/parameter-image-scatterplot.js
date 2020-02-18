@@ -12,7 +12,8 @@ import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
 import "js/slycat-3d-viewer";
-import {load as geometryLoad, } from "./vtk-geometry-viewer";
+import { load as geometryLoad, } from "./vtk-geometry-viewer";
+import { changeCurrentFrame } from './actions';
 
 var nodrag = d3.behavior.drag();
 
@@ -2706,6 +2707,9 @@ $.widget("parameter_image.scatterplot",
         frameNode.querySelector('.vtp').dispatchEvent(vtkselect_event);
       }
 
+      // Dispatch update to current frame to redux store
+      window.store.dispatch(changeCurrentFrame(frame.data("uri")));
+
       self._sync_open_images();
     }
   },
@@ -2728,6 +2732,8 @@ $.widget("parameter_image.scatterplot",
     if(self.current_frame == index)
     {
       self.current_frame = null;
+      // Dispatch update to current frame to redux store
+      window.store.dispatch(changeCurrentFrame(null));
     }
   },
 
