@@ -4,7 +4,8 @@ import {
   CHANGE_AXES_VARIABLE_SCALE,
   CHANGE_VARIABLE_ALIAS_LABEL,
   CHANGE_CURRENT_FRAME,
-  UPDATE_THREE_D_COLORMAP,
+  CHANGE_THREED_COLORMAP,
+  UPDATE_THREE_D_COLORVAR,
 } from './actions';
 
 const initialState = {
@@ -44,12 +45,16 @@ export default function ps_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         currentFrame: action.currentFrame
       })
-    case UPDATE_THREE_D_COLORMAP:
+    case CHANGE_THREED_COLORMAP:
       return Object.assign({}, state, {
-        three_d_colormaps: {
-          ...state.three_d_colormaps,
+        threeDColormap: action.threeDColormap
+      })
+    case UPDATE_THREE_D_COLORVAR:
+      return Object.assign({}, state, {
+        three_d_colorvars: {
+          ...state.three_d_colorvars,
           // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
-          [action.uri]: action.colormap
+          [action.uri]: action.colorVar
         }
       })
 

@@ -40,6 +40,7 @@ import "./category-select";
 import { createStore } from 'redux';
 import ps_reducer from './reducers';
 
+import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import { setSyncCameras, } from './vtk-camera-synchronizer';
 
 // Wait for document ready
@@ -310,6 +311,7 @@ $(document).ready(function() {
           fontFamily: "Arial",
           axesVariables: {},
           threeD_sync: false,
+          threeDColormap: vtkColorMaps.rgbPresetNames[0],
         }
         window.store = createStore(
           ps_reducer, 

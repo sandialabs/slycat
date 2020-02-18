@@ -1,3 +1,5 @@
+import ControlsDropdownColor from "components/ControlsDropdownColor"
+
 /*
  * action types
  */
@@ -7,32 +9,57 @@ export const CHANGE_FONT_FAMILY = 'CHANGE_FONT_FAMILY'
 export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'
 export const CHANGE_VARIABLE_ALIAS_LABEL = 'CHANGE_VARIABLE_ALIAS_LABEL'
 export const CHANGE_CURRENT_FRAME = 'CHANGE_CURRENT_FRAME'
-export const UPDATE_THREE_D_COLORMAP = 'UPDATE_THREE_D_COLORMAP'
+export const CHANGE_THREED_COLORMAP = 'CHANGE_THREED_COLORMAP'
+export const UPDATE_THREE_D_COLORVAR = 'UPDATE_THREE_D_COLORVAR'
 
 export function changeFontSize(size) {
-  return { type: CHANGE_FONT_SIZE, fontSize: size }
+  return { 
+    type: CHANGE_FONT_SIZE, 
+    fontSize: size 
+  }
 }
 
 export function changeFontFamily(family) {
-  return { type: CHANGE_FONT_FAMILY, fontFamily: family }
+  return { 
+    type: CHANGE_FONT_FAMILY, 
+    fontFamily: family 
+  }
 }
 
 export function changeAxesVariableScale(variable, scale) {
-  return { type: CHANGE_AXES_VARIABLE_SCALE, axesVariable: variable, axesScale: scale }
+  return { 
+    type: CHANGE_AXES_VARIABLE_SCALE, 
+    axesVariable: variable, 
+    axesScale: scale 
+  }
 }
 
 export function changeVariableAliasLabels(variable, label) {
-  return { type: CHANGE_VARIABLE_ALIAS_LABEL, aliasVariable: variable, aliasLabel: label }
+  return { 
+    type: CHANGE_VARIABLE_ALIAS_LABEL, 
+    aliasVariable: variable, 
+    aliasLabel: label 
+  }
 }
 
 export function changeCurrentFrame(frame) {
-  return { type: CHANGE_CURRENT_FRAME, currentFrame: frame }
+  return { 
+    type: CHANGE_CURRENT_FRAME, 
+    currentFrame: frame 
+  }
 }
 
-export function updateThreeDColormap(uri, colormap) {
+export function changeThreeDColormap(label, key) {
   return { 
-    type: UPDATE_THREE_D_COLORMAP, 
+    type: CHANGE_THREED_COLORMAP, 
+    threeDColormap: key 
+  }
+}
+
+export function updateThreeDColorVar(uri, colorVar) {
+  return { 
+    type: UPDATE_THREE_D_COLORVAR, 
     uri: uri, 
-    colormap: colormap,
+    colorVar: colorVar,
   }
 }
