@@ -10,6 +10,10 @@ import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/
 import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
 import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import {
+  ColorMode,
+  ScalarMode,
+} from 'vtk.js/Sources/Rendering/Core/Mapper/Constants';
 
 import { addCamera, } from './vtk-camera-synchronizer';
 
@@ -55,13 +59,29 @@ export function load(container, buffer, uri) {
   // --------------------------------------------------------------------
   // Color handling
   // --------------------------------------------------------------------
+  
+  let colormap;
 
   function applyPreset() {
     // console.log('setting color to: ' + window.store.getState().threeDColormap);
-    const preset = vtkColorMaps.getPresetByName(window.store.getState().threeDColormap);
-    lookupTable.applyColorMap(preset);
+    colormap = vtkColorMaps.getPresetByName(window.store.getState().threeDColormap);
+    lookupTable.applyColorMap(colormap);
     lookupTable.setMappingRange(dataRange[0], dataRange[1]);
     lookupTable.updateRange();
+
+    // Not part of VTK example, but needs to be done to get update after chaning color options
+    renderWindow.render();
+  }
+
+  function applyPresetIfChanged() {
+    if(vtkColorMaps.getPresetByName(window.store.getState().threeDColormap) != colormap)
+    {
+      // console.log("Colormap changed, so applying the new one.");
+      applyPreset();
+    }
+    else{
+      // console.log("Colormap did not changed, so not applying the new one.");
+    }
   }
 
   // Set the 3D colormap to what's currently in the Redux store
@@ -69,12 +89,14 @@ export function load(container, buffer, uri) {
 
   // Set the 3D colormap to what's in the Redux state
   // each time the Redux state changes.
-  window.store.subscribe(applyPreset);
+  window.store.subscribe(applyPresetIfChanged);
 
   // --------------------------------------------------------------------
   // ColorBy handling
   // --------------------------------------------------------------------
   
+  let colorBy;
+
   const colorByOptions = [{ value: ':', label: 'Solid color' }].concat(
     source
       .getPointData()
@@ -93,6 +115,81 @@ export function load(container, buffer, uri) {
   );
   // Dispatch update to available color by options to redux store
   window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
+
+  function updateColorBy() {
+    colorBy = window.store.getState().three_d_colorvars[uri];
+
+    const [location, colorByArrayName] = colorBy.split(':');
+    const interpolateScalarsBeforeMapping = location === 'PointData';
+    let colorMode = ColorMode.DEFAULT;
+    let scalarMode = ScalarMode.DEFAULT;
+    const scalarVisibility = location.length > 0;
+
+    if (scalarVisibility) {
+      const newArray = source[`get${location}`]().getArrayByName(
+        colorByArrayName
+      );
+      activeArray = newArray;
+      const newDataRange = activeArray.getRange();
+      dataRange[0] = newDataRange[0];
+      dataRange[1] = newDataRange[1];
+      colorMode = ColorMode.MAP_SCALARS;
+      scalarMode =
+        location === 'PointData'
+          ? ScalarMode.USE_POINT_FIELD_DATA
+          : ScalarMode.USE_CELL_FIELD_DATA
+      ;
+      
+      const numberOfComponents = activeArray.getNumberOfComponents();
+      if (numberOfComponents > 1) {
+        // always start on magnitude setting
+        if (mapper.getLookupTable()) {
+          const lut = mapper.getLookupTable();
+          lut.setVectorModeToMagnitude();
+        }
+        // componentSelector.style.display = 'block';
+        // const compOpts = ['Magnitude'];
+        // while (compOpts.length <= numberOfComponents) {
+        //   compOpts.push(`Component ${compOpts.length}`);
+        // }
+        // componentSelector.innerHTML = compOpts
+        //   .map((t, index) => `<option value="${index - 1}">${t}</option>`)
+        //   .join('');
+      } else {
+        // componentSelector.style.display = 'none';
+      }
+    }
+    else {
+      // componentSelector.style.display = 'none';
+    }
+    mapper.set({
+      colorByArrayName,
+      colorMode,
+      interpolateScalarsBeforeMapping,
+      scalarMode,
+      scalarVisibility,
+    });
+    applyPreset();
+
+    // debugger;
+  }
+
+  function updateColorByIfChanged() {
+    if(window.store.getState().three_d_colorvars[uri] != colorBy)
+    {
+      console.log("ColorBy changed, so applying the new one.");
+      updateColorBy();
+    }
+    else{
+      console.log("ColorBy did not changed, so not applying the new one.");
+    }
+  }
+
+  updateColorBy();
+
+  // Set the 3D colormap to what's in the Redux state
+  // each time the Redux state changes.
+  window.store.subscribe(updateColorByIfChanged);
 
   // ----------------------------------------------------------------------------
   // Add the actor to the renderer and set the camera based on it
