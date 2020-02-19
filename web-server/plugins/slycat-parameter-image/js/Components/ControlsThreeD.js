@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from 'react-redux';
-import { changeThreeDColormap } from '../actions';
+import { changeThreeDColormap, updateThreeDColorBy } from '../actions';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsDropdown from './ControlsDropdown';
@@ -10,6 +10,10 @@ import { faCubes } from '@fortawesome/free-solid-svg-icons'
 class ControlsThreeD extends React.Component {
   constructor(props) {
     super(props);
+  }
+
+  changeThreeDColorBy = (label, key) => {
+    this.props.updateThreeDColorBy(this.props.currentFrame, key);
   }
 
   render() {
@@ -32,33 +36,62 @@ class ControlsThreeD extends React.Component {
           label='3D Color'
           title='Change 3D color'
           state_label='threeD_color'
-          trigger='threeD-color-selection-changed'
           items={color_map_items}
           selected={this.props.threeDColormap} 
-          // single={this.props.dropdown[0].single} 
+          single={false} 
           set_selected={this.props.changeThreeDColormap}
           button_style={this.props.button_style}
         />
+        { this.props.color_by_items &&
+        <ControlsDropdown 
+          key='threeD-colorBy-dropdown'
+          id='threeD-colorBy-dropdown' 
+          label='Color By'
+          title='Change 3D color by'
+          state_label='threeD_colorBy'
+          items={this.props.color_by_items}
+          selected={this.props.threeDColorBy} 
+          single={false} 
+          set_selected={this.changeThreeDColorBy}
+          button_style={this.props.button_style}
+        />
+        }
       </React.Fragment>
     );
   }
 }
 
 const mapStateToProps = state => {
+  let color_by_items;
+  // Only create color by items if we have color by options
+  // and we have a frame currently selected
+  // and we have color by options for that frame
+  if(
+    state.derived.three_d_colorby_options 
+    && state.currentFrame 
+    && state.derived.three_d_colorby_options[state.currentFrame] 
+  )
+  {
+    color_by_items = state.derived.three_d_colorby_options[state.currentFrame].map(
+      (option) => {
+        return {
+          key: option.value, 
+          name: option.label
+        }
+    });
+  }
+
+  let threeDColorBy;
+  if(state.three_d_colorvars)
+  {
+    threeDColorBy = state.three_d_colorvars[state.currentFrame];
+  }
+  
   return {
     threeDColormap: state.threeDColormap,
-    // mid: state.derived.model_id,
-    // inputs: state.derived.input_columns,
-    // outputs: state.derived.output_columns,
-    // others: state.derived.other_columns,
-    // metadata: state.derived.table_metadata,
-    // row_selection: state.simulations_selected,
-    // colormap: slycat_color_maps.get_color_scale(state.colormap),
-    // sort_variable: state.variable_sorted,
-    // sort_order: state.variable_sort_direction,
-    // variable_selection: state.variable_selected,
-    // width: state.derived.table_width,
-    // height: state.derived.table_height,
+    color_by_items: color_by_items,
+    currentFrame: state.currentFrame,
+    threeDColorBy: threeDColorBy,
   }
 };
 
@@ -66,8 +99,6 @@ export default connect(
   mapStateToProps,
   { 
     changeThreeDColormap,
-    // setVariableSelected,
-    // setVariableSorted,
-    // setSimulationsSelected,
+    updateThreeDColorBy,
   }
 )(ControlsThreeD)

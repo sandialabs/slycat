@@ -13,11 +13,11 @@ import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/Co
 
 import { addCamera, } from './vtk-camera-synchronizer';
 
+import { updateThreeDColorByOptions } from './actions';
+
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
-export function load(container, buffer) {
-  // lut
-  const lutName = 'erdc_rainbow_bright';
+export function load(container, buffer, uri) {
 
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
@@ -57,13 +57,42 @@ export function load(container, buffer) {
   // --------------------------------------------------------------------
 
   function applyPreset() {
-    // const preset = vtkColorMaps.getPresetByName(presetSelector.value);
-    const preset = vtkColorMaps.getPresetByName(lutName);
+    // console.log('setting color to: ' + window.store.getState().threeDColormap);
+    const preset = vtkColorMaps.getPresetByName(window.store.getState().threeDColormap);
     lookupTable.applyColorMap(preset);
     lookupTable.setMappingRange(dataRange[0], dataRange[1]);
     lookupTable.updateRange();
   }
+
+  // Set the 3D colormap to what's currently in the Redux store
   applyPreset();
+
+  // Set the 3D colormap to what's in the Redux state
+  // each time the Redux state changes.
+  window.store.subscribe(applyPreset);
+
+  // --------------------------------------------------------------------
+  // ColorBy handling
+  // --------------------------------------------------------------------
+  
+  const colorByOptions = [{ value: ':', label: 'Solid color' }].concat(
+    source
+      .getPointData()
+      .getArrays()
+      .map((a) => ({
+        label: `(p) ${a.getName()}`,
+        value: `PointData:${a.getName()}`,
+      })),
+    source
+      .getCellData()
+      .getArrays()
+      .map((a) => ({
+        label: `(c) ${a.getName()}`,
+        value: `CellData:${a.getName()}`,
+      }))
+  );
+  // Dispatch update to available color by options to redux store
+  window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
 
   // ----------------------------------------------------------------------------
   // Add the actor to the renderer and set the camera based on it

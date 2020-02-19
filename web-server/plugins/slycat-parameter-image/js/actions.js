@@ -10,7 +10,8 @@ export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'
 export const CHANGE_VARIABLE_ALIAS_LABEL = 'CHANGE_VARIABLE_ALIAS_LABEL'
 export const CHANGE_CURRENT_FRAME = 'CHANGE_CURRENT_FRAME'
 export const CHANGE_THREED_COLORMAP = 'CHANGE_THREED_COLORMAP'
-export const UPDATE_THREE_D_COLORVAR = 'UPDATE_THREE_D_COLORVAR'
+export const UPDATE_THREE_D_COLORBY = 'UPDATE_THREE_D_COLORBY'
+export const UPDATE_THREE_D_COLORBY_OPTIONS = 'UPDATE_THREE_D_COLORBY_OPTIONS'
 
 export function changeFontSize(size) {
   return { 
@@ -56,10 +57,18 @@ export function changeThreeDColormap(label, key) {
   }
 }
 
-export function updateThreeDColorVar(uri, colorVar) {
+export function updateThreeDColorBy(uri, colorBy) {
   return { 
-    type: UPDATE_THREE_D_COLORVAR, 
+    type: UPDATE_THREE_D_COLORBY, 
     uri: uri, 
-    colorVar: colorVar,
+    colorBy: colorBy,
+  }
+}
+
+export function updateThreeDColorByOptions(uri, options) {
+  return {
+    type: UPDATE_THREE_D_COLORBY_OPTIONS,
+    uri: uri,
+    options: options,
   }
 }

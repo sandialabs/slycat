@@ -37,7 +37,9 @@ import "layout";
 import "js/slycat-range-slider"; 
 import "./category-select";
 
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import thunkMiddleware from 'redux-thunk';
+import { createLogger } from 'redux-logger';
 import ps_reducer from './reducers';
 
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
@@ -305,6 +307,9 @@ $(document).ready(function() {
       
       let variable_aliases_promise = new Promise(get_variable_aliases);
       variable_aliases_promise.then(() => {
+        // Create logger for redux
+        const loggerMiddleware = createLogger();
+
         // Create Redux store and set its state based on what's in the bookmark
         const state_tree = {
           fontSize: 15,
@@ -319,7 +324,14 @@ $(document).ready(function() {
             ...state_tree, 
             ...bookmark.state, 
             derived: {variableAliases: variable_aliases}
-          }
+          },
+          applyMiddleware(
+            thunkMiddleware, // Lets us dispatch() functions
+            loggerMiddleware, // Neat middleware that logs actions. 
+                              // Logger must be the last middleware in chain, 
+                              // otherwise it will log thunk and promise, 
+                              // not actual actions.
+          )
         );
 
         // Save Redux state to bookmark whenever it changes

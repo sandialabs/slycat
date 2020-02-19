@@ -2241,7 +2241,8 @@ $.widget("parameter_image.scatterplot",
           blob.arrayBuffer().then((buffer) => {
             geometryLoad(
               vtk.node(),
-              buffer
+              buffer,
+              image.uri
             );
             // dispatch vtk select event so we know which camera to sync
             if(image.current_frame) {
