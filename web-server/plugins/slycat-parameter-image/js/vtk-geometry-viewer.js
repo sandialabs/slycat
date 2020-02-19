@@ -125,7 +125,8 @@ export function load(container, buffer, uri) {
     let scalarMode = ScalarMode.DEFAULT;
     const scalarVisibility = location.length > 0;
 
-    if (scalarVisibility) {
+    if (scalarVisibility) 
+    {
       const newArray = source[`get${location}`]().getArrayByName(
         colorByArrayName
       );
@@ -141,7 +142,8 @@ export function load(container, buffer, uri) {
       ;
       
       const numberOfComponents = activeArray.getNumberOfComponents();
-      if (numberOfComponents > 1) {
+      if (numberOfComponents > 1) 
+      {
         // always start on magnitude setting
         if (mapper.getLookupTable()) {
           const lut = mapper.getLookupTable();
@@ -155,11 +157,24 @@ export function load(container, buffer, uri) {
         // componentSelector.innerHTML = compOpts
         //   .map((t, index) => `<option value="${index - 1}">${t}</option>`)
         //   .join('');
-      } else {
+
+        // Temporary dev code to display number of components
+        let counter = 1;
+        while (counter <= numberOfComponents) 
+        {
+          // compOpts.push(`Component ${compOpts.length}`);
+          console.log("COMPONENT " + counter);
+          counter++;
+        }
+      } 
+      else 
+      {
         // componentSelector.style.display = 'none';
+        console.log("Zero components on this one.");
       }
     }
-    else {
+    else 
+    {
       // componentSelector.style.display = 'none';
     }
     mapper.set({
