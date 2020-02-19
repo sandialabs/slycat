@@ -10,6 +10,9 @@ import slick_default_theme_css from "slickgrid/slick-default-theme.css";
 import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import ui_css from "../css/ui.css";
+import React from "react";
+import ReactDOM from "react-dom";
+import LoadingPage from '../plugin-components/LoadingPage.tsx';
 
 import api_root from "js/slycat-api-root";
 import ko from "knockout";
@@ -160,7 +163,7 @@ $(document).ready(function() {
         cluster_type = model["artifact:cluster-type"];
         // If the model isn't ready or failed, we're done.
         if(model["state"] === "waiting" || model["state"] === "running") {
-          show_checkjob();
+          showLoadingPage();
           setTimeout(doPoll, 15000);
           return;
         }
@@ -212,8 +215,33 @@ $(document).ready(function() {
     });
   }
   //TODO remove this timeout when we convert to react as it is only here to let KO load
-  setTimeout(doPoll, 500);
-
+  // setTimeout(doPoll, 500);
+  var showLoadingPage = function() {
+    console.log("initializing loading page");
+    $.ajax(
+      {
+        type : "GET",
+        url : api_root + "models/" + model._id,
+        success : function(result)
+        {
+          model = result;
+          console.log(model['artifact:hostname']);
+          ReactDOM.render(
+              <LoadingPage
+               jid={model['artifact:jid']}
+               hostname={model['artifact:hostname']?model['artifact:hostname']:"missing"}
+              />,
+              document.querySelector('#timeseries-model')
+          );
+        },
+        error: function(request, status, reason_phrase)
+        {
+          // eslint-disable-next-line no-alert
+          window.alert("Error retrieving model: " + reason_phrase);
+        }
+      });
+  };
+  showLoadingPage();
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -231,18 +259,6 @@ $(document).ready(function() {
     else
       return JSON.parse(s);
   }
-
-  var show_checkjob = function() {
-    var jc = $('#timeseries-model').children()[0];
-    var $jc = $(jc);
-    $jc.detach();
-
-    $($('#timeseries-model').children()).remove();
-    $('#timeseries-model').append($jc);
-
-    var vm = ko.dataFor($('.slycat-job-checker')[0]);
-    vm.set_jid(model['artifact:jid']);
-  };
 
   function setup_page()
   {

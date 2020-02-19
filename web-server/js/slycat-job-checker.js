@@ -156,7 +156,7 @@ ko.components.register('slycat-job-checker', {
     };
     vm.pullHPCData = function() {
       console.log("2");
-  client.get_model_command({
+      client.get_model_command({
         mid: model._id,
         type: "timeseries",
         command: "pull_data",

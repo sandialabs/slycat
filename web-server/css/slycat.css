@@ -581,7 +581,9 @@ input,
 
 /* slycat-job-checker component */
 .slycat-job-checker {
-  padding: 10px;
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-top: 20px;
 }
 
 .slycat-job-checker-controls {
@@ -589,11 +591,14 @@ input,
 }
 
 .slycat-job-checker-output {
+  margin-top: 25px;
   padding: 10px;
+  border-radius: 5px;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
 }
+
 .bottom-margin,
 label.bottom-margin 
 {
