@@ -50,7 +50,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
   public constructor(props:ConnectButtonProps) {
     super(props)
     this.state = {
-      text: this.props.text?this.props.text:"Connect",
+      text: props.text?props.text:"Connect",
       loadingData: props.loadingData,
       sessionExists: props.sessionExists
     }
@@ -81,7 +81,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
    * @async
    * @memberof SlycatRemoteControls
    */
-  private connect = async () => {
+  public connect = async () => {
     this.setState({loadingData:true})
     this.props.callBack(this.state.sessionExists, true);
     client.post_remotes_fetch({
