@@ -32,8 +32,8 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   componentWillUnmount() {
 
   }
-  private connectModalCallBack = () => {
-    console.log('Callback Called');
+  private connectModalCallBack = (sessionExists: boolean, loadingData: boolean) => {
+    console.log(`Callback Called sessionExists:${sessionExists}: loadingData:${loadingData}`);
   }
   /**
    * function used to test if we have an ssh connection to the hostname
@@ -42,13 +42,13 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * @memberof SlycatRemoteControls
    */
   private checkRemoteStatus = async (hostname:string) => {
-    return client.get_remotes_fetch('chama.sandia.gov')
+    return client.get_remotes_fetch(hostname)
       .then((json:any) => {
         this.setState({
           sessionExists:json.status,
           progressBarProgress: 10
         }, () => {
-          ($('#varUpdateTableModal') as any).modal('show');
+          ($('#ConnectModal') as any).modal('show');
         });
     });
   };
@@ -57,8 +57,9 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     return (
       <div>
         <ConnectModal
+          // hostname = {this.props.hostname}
           hostname = {this.props.hostname}
-          modalId = {'varUpdateTableModal'}
+          modalId = {'ConnectModal'}
           callBack = {this.connectModalCallBack}
         />
       </div>

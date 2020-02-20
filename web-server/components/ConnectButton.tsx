@@ -49,10 +49,18 @@ export interface ConnectButtonState {
 export default class ConnectButton extends React.Component<ConnectButtonProps, ConnectButtonState> {
   public constructor(props:ConnectButtonProps) {
     super(props)
+    console.log(`connect props this.state.loadingData ${props.loadingData}`);
     this.state = {
       text: props.text?props.text:"Connect",
       loadingData: props.loadingData,
       sessionExists: props.sessionExists
+    }
+  }
+
+  componentWillReceiveProps(nextProps: any){
+    if(nextProps.loadingData!==this.props.loadingData){
+      //Perform some operation
+      this.setState({loadingData: nextProps.loadingData });
     }
   }
 
@@ -81,7 +89,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
    * @async
    * @memberof SlycatRemoteControls
    */
-  public connect = async () => {
+  private connect = async () => {
     this.setState({loadingData:true})
     this.props.callBack(this.state.sessionExists, true);
     client.post_remotes_fetch({
@@ -109,6 +117,7 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
   };
 
   public render() {
+    console.log(`connect button this.state.loadingData: ${this.state.loadingData}`)
     return (
       <button disabled={this.state.loadingData} type='button' className='btn btn-primary float-right' onClick={this.connect}>
         {this.state.loadingData?<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>:null}

@@ -88,6 +88,7 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   private checkRemoteStatus = async (hostname:string) => {
     return client.get_remotes_fetch(hostname)
       .then((json:any) => {
+        console.log(`checkRemoteStatus res:${json.status} for ${hostname}`)
         this.setState({
           sessionExists:json.status,
           loadingData:false
@@ -103,9 +104,10 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
    * @async
    * @memberof SlycatRemoteControls
    */
-  public connect = async () => {
-    this.setState({loadingData:true})
+  private connect = async () => {
+    this.setState({loadingData:true},()=> {
     // this.props.callBack(this.state.sessionExists, true);
+    console.log(`this.state.loadingDate:${this.state.loadingData}`);
     client.post_remotes_fetch({
       parameters: {
         hostname: this.props.hostname,
@@ -113,8 +115,12 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
         password: this.state.password,
       }
     }).then(() => {
-      this.checkRemoteStatus(this.props.hostname);
-      console.log("Remote session created.");
+      this.checkRemoteStatus(this.props.hostname).then(()=>{
+        console.log(`Remote session created. this.state.sessionExists:${this.state.sessionExists}`);
+        if(this.state.sessionExists){
+          ($('#' + this.props.modalId) as any).modal('hide');
+        }
+      });
     }).catch((errorResponse:any) => {
       if (errorResponse.status == 403){
         alert(`${errorResponse.statusText} \n\n-Make sure your username and password are entered correctly.
@@ -127,7 +133,8 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
       this.setState({loadingData:false}, () => {
         // this.props.callBack(this.state.sessionExists, this.state.loadingData);
       })
-    });
+    })}
+    );
   };
 
   /**
@@ -168,13 +175,13 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   }
 
   getFooterJSX(): JSX.Element {
+    console.log(`called! connect button this.state.loadingData:${this.state.loadingData}`);
     return (
       <div>
         <div className='col'>
           <ConnectButton
             loadingData={this.state.loadingData}
-            hostname = {'chama.sandia.gov'}
-            // hostname = {this.props.hostname}
+            hostname = {this.props.hostname}
             username = {this.state.username}
             password = {this.state.password}
             callBack = {this.connectButtonCallBack}
