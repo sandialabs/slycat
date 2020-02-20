@@ -49,7 +49,6 @@ export interface ConnectButtonState {
 export default class ConnectButton extends React.Component<ConnectButtonProps, ConnectButtonState> {
   public constructor(props:ConnectButtonProps) {
     super(props)
-    console.log(`connect props this.state.loadingData ${props.loadingData}`);
     this.state = {
       text: props.text?props.text:"Connect",
       loadingData: props.loadingData,
@@ -100,7 +99,6 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
       }
     }).then(() => {
       this.checkRemoteStatus(this.props.hostname);
-      console.log("Remote session created.");
     }).catch((errorResponse:any) => {
       if (errorResponse.status == 403){
         alert(`${errorResponse.statusText} \n\n-Make sure your username and password are entered correctly.
@@ -117,7 +115,6 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
   };
 
   public render() {
-    console.log(`connect button this.state.loadingData: ${this.state.loadingData}`)
     return (
       <button disabled={this.state.loadingData} type='button' className='btn btn-primary float-right' onClick={this.connect}>
         {this.state.loadingData?<span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>:null}

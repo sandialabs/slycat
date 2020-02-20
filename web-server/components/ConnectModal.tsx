@@ -88,7 +88,6 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   private checkRemoteStatus = async (hostname:string) => {
     return client.get_remotes_fetch(hostname)
       .then((json:any) => {
-        console.log(`checkRemoteStatus res:${json.status} for ${hostname}`)
         this.setState({
           sessionExists:json.status,
           loadingData:false
@@ -107,7 +106,6 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   private connect = async () => {
     this.setState({loadingData:true},()=> {
     // this.props.callBack(this.state.sessionExists, true);
-    console.log(`this.state.loadingDate:${this.state.loadingData}`);
     client.post_remotes_fetch({
       parameters: {
         hostname: this.props.hostname,
@@ -116,7 +114,6 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
       }
     }).then(() => {
       this.checkRemoteStatus(this.props.hostname).then(()=>{
-        console.log(`Remote session created. this.state.sessionExists:${this.state.sessionExists}`);
         if(this.state.sessionExists){
           ($('#' + this.props.modalId) as any).modal('hide');
         }
@@ -175,7 +172,6 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   }
 
   getFooterJSX(): JSX.Element {
-    console.log(`called! connect button this.state.loadingData:${this.state.loadingData}`);
     return (
       <div>
         <div className='col'>
@@ -193,7 +189,6 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   }
 
   render () {
-    console.log("creating modal")
     return (
       <div>
         <ModalMedium
