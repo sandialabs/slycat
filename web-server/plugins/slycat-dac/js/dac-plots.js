@@ -62,7 +62,7 @@ var plots_expected = 0;
 var draw_called = false;
 
 // meta data for plots
-var num_plots = null;
+var num_vars = null;
 var num_included_plots = null;
 var plot_name = null;
 var x_axis_name = null;
@@ -155,7 +155,7 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 	// populate pull down menus and initialize d3 plots
 
 	// sort out the variable metadata we need
-	num_plots = variables_metadata[0]["row-count"];
+	num_vars = variables_metadata[0]["row-count"];
 	num_included_plots = var_include_columns.length;
 	x_axis_name = variables_data[0]["data"][1];
 	y_axis_name = variables_data[0]["data"][2];
@@ -165,7 +165,7 @@ module.setup = function (SELECTION_COLOR, SEL_FOCUS_COLOR, PLOT_ADJUSTMENTS,
 	plot_name = variables_data[0]["data"][0];
 
 	// truncate plot names if too long
-	for (var i = 0; i < num_plots; i++) {
+	for (var i = 0; i < num_vars; i++) {
 
 		if (plot_name[i].length > max_plot_name_length) {
 			plot_name[i] = plot_name[i].substring(0, max_plot_name_length) + " ...";
@@ -304,7 +304,7 @@ function display_plot_pull_down(i)
 	this.empty();
 
 	// every pull down contains the list of plot names in the same order
-	for (var j = 0; j != num_plots; ++j)
+	for (var j = 0; j != num_vars; ++j)
 	{
 		// show included variables only for plots
 		if (var_include_columns.indexOf(j) != -1) {
@@ -654,7 +654,7 @@ module.change_selections = function(change_plot_selections)
 {
 
 	// change number of plots to match the number of selections
-	num_plots = Math.min(3,change_plot_selections.length);
+	var num_plots = Math.min(3,change_plot_selections.length);
 
     // change plots to display
     plots_displayed = [0, 0, 0];
@@ -1137,6 +1137,16 @@ function draw_plot_d3(i)
 // update indicators for current plot
 function update_indicators(i)
 {
+
+    // how many plots are being displayed?
+    var num_plots_displayed = plots_displayed[0] + plots_displayed[1] + plots_displayed[2];
+
+    // if the user has rapidly clicked the difference button
+    // we may get behind the actual display -- check if we need up date
+    if (i >= num_plots_displayed) {
+        return;
+    }
+
 	// update resolution indicator
 	toggle_resolution (i, plots_selected_resolution[i]);
 

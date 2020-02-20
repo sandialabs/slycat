@@ -222,8 +222,37 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
     $(grid_view.getHeaderRow()).delegate(":input", "change keyup", function (e) {
       var columnId = $(this).data("columnId");
       if (columnId != null) {
+
+        // get previous row in data index, if it exists
+        var prev_data_row = null;
+        if (prev_row_selected != null) {
+            prev_data_row = convert_row_ids([prev_row_selected])[0];
+        }
+
+        // filter data
         columnFilters[columnId] = $.trim($(this).val());
         data_view.refresh();
+
+        // convert previous row selected into new filtered order
+        if (prev_data_row != null) {
+
+             // check that previous row is still visible
+             var prev_row_update = data_view.getRowById(prev_data_row);
+             if (prev_row_update != null) {
+
+                // update previous row to filtered order
+                prev_row_selected = prev_row_update;
+
+             } else {
+
+                // if previous row is not visible, then un-highlight
+                unhighlight_prev_row(prev_data_row);
+                prev_row_selected = null;
+             }
+        }
+
+        // update bookmarks
+
       }
     });
 
@@ -235,9 +264,24 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
             .data("columnId", args.column.id)
             .val(columnFilters[args.column.id])
             .on('search', function () {
+
+                // get previous row in data index, if it exists
+                var prev_data_row = null;
+                if (prev_row_selected != null) {
+                    prev_data_row = convert_row_ids([prev_row_selected])[0];
+                }
+
                 // called when user hits the "x" clear button
                 columnFilters[args.column.id] = "";
                 data_view.refresh();
+
+                // update previously selected row
+                var prev_row_update = data_view.getRowById(prev_data_row);
+                prev_row_selected = prev_row_update;
+
+                // update bookmarks
+
+
             })
             .appendTo(args.node);
     });
@@ -596,6 +640,7 @@ function one_row_selected(e, args) {
 
                 // convert to data ids
                 range_sel = convert_row_ids(range_sel_inds);
+
             }
         }
 
@@ -629,7 +674,7 @@ function one_row_selected(e, args) {
 
 }
 
-// hihglight the current row by drawing a box around it
+// highlight the current row by drawing a box around it
 function highlight_curr_row()
 {
 
@@ -652,17 +697,30 @@ function highlight_curr_row()
 
         // get previous row
         var prev_data_row = convert_row_ids([prev_row_selected])[0];
-        item = data_view.getItemById(prev_data_row);
 
-        // remove box around previous row
-        item[num_cols-1] = item[num_cols-1] - 10;
+        // un-highlight previous row
+        unhighlight_prev_row(prev_data_row);
 
-        // put row back in table
-        data_view.updateItem(prev_data_row, item);
     }
 
 	// turn on table rendering
 	data_view.endUpdate();
+
+}
+
+// update highlight condition for previous selected row
+function unhighlight_prev_row(prev_data_row)
+{
+
+    // get previous row
+    var item = data_view.getItemById(prev_data_row);
+    var num_cols = item.length;
+
+    // remove box around previous row
+    item[num_cols-1] = item[num_cols-1] - 10;
+
+    // put row back in table
+    data_view.updateItem(prev_data_row, item);
 
 }
 
@@ -803,11 +861,23 @@ function selection_type (item)
 function col_sort (e, args)
 {
 
+    // get previous row in data index, if it exists
+    var prev_data_row = null;
+    if (prev_row_selected != null) {
+        prev_data_row = convert_row_ids([prev_row_selected])[0];
+    }
+
+    // sort table
 	var comparer = function (a,b) {
 		return (a[args.sortCol.field] > b[args.sortCol.field]) ? 1 : -1;
 	}
 
 	data_view.sort(comparer, args.sortAsc);
+
+    // convert previous row selected into new sorted order
+    if (prev_data_row != null) {
+        prev_row_selected = data_view.getRowById(prev_data_row);
+    }
 
     // table order sort event
     var tableOrderEvent = new CustomEvent("DACTableOrderChanged", { detail: {
@@ -1089,7 +1159,6 @@ module.select_rows = function ()
 
 	// generate vector of data view with new selections
 	var sel_vec = [];
-	var num_rows = data_view.getLength();
 	for (var i = 0; i != num_rows; i++) {
 		sel_vec.push(0);
 	}
@@ -1122,8 +1191,8 @@ module.select_rows = function ()
 	var data_row_selected = null;
 	if (curr_row_selected != null) {
 	    data_row_selected = convert_row_ids([curr_row_selected])[0];
+	    sel_vec[data_row_selected] = sel_vec[data_row_selected] + 10;
 	}
-	sel_vec[data_row_selected] = sel_vec[data_row_selected] + 10;
 
 	// temporarily turn off table rendering
 	data_view.beginUpdate();
