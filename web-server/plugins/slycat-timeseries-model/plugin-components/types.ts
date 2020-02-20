@@ -17,4 +17,6 @@ export interface LoadingPageState {
   sessionExists: boolean
   progressBarHidden: boolean
   progressBarProgress: number
+  modalId: string
+  modelShow: boolean
 }

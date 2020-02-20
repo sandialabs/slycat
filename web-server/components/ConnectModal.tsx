@@ -45,6 +45,7 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
    * @memberof ConnectModal
    */
   private cleanup = () => {
+    this.props.callBack(this.state.sessionExists, this.state.loadingData)
     console.log('clean')
   };
 
@@ -73,6 +74,7 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
       sessionExists,
       loadingData
     }, () => {
+      this.props.callBack(this.state.sessionExists, this.state.loadingData)
       if(sessionExists){
         ($('#' + this.props.modalId) as any).modal('hide');
       }
@@ -93,6 +95,9 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
           loadingData:false
         }, () => {
           this.props.callBack(this.state.sessionExists, this.state.loadingData)
+          if(this.state.sessionExists){
+            ($('#' + this.props.modalId) as any).modal('hide');
+          }
         });
     });
   };
@@ -113,11 +118,7 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
         password: this.state.password,
       }
     }).then(() => {
-      this.checkRemoteStatus(this.props.hostname).then(()=>{
-        if(this.state.sessionExists){
-          ($('#' + this.props.modalId) as any).modal('hide');
-        }
-      });
+      this.checkRemoteStatus(this.props.hostname)
     }).catch((errorResponse:any) => {
       if (errorResponse.status == 403){
         alert(`${errorResponse.statusText} \n\n-Make sure your username and password are entered correctly.
