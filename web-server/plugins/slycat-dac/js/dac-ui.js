@@ -665,6 +665,13 @@ $(document).ready(function() {
                                 var init_zoom_extent = null;
                                 if ("dac-zoom-extent" in bookmark) {
                                     init_zoom_extent = bookmark["dac-zoom-extent"];
+
+                                    // check if button should be marked
+                                    if ("dac-zoom-flag" in bookmark) {
+                                        if (bookmark["dac-zoom-flag"] == false) {
+                                            init_zoom_extent = null;
+                                        }
+                                    }
                                 }
 
                                 // initialize subset center, if bookmarked
@@ -1020,7 +1027,8 @@ $(document).ready(function() {
     function zoom_changed (new_extent)
     {
         // bookmark new zoom extent
-        bookmarker.updateState({"dac-zoom-extent": new_extent.detail});
+        bookmarker.updateState({"dac-zoom-extent": new_extent.detail.extent,
+                                "dac-zoom-flag": new_extent.detail.zoom});
     }
 
     // event for zoom changes in time series plots

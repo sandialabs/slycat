@@ -292,6 +292,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                         if (init_zoom_extent != null) {
                             x_scale.domain([init_zoom_extent[0][0], init_zoom_extent[1][0]]);
                             y_scale.domain([init_zoom_extent[0][1], init_zoom_extent[1][1]]);
+
+                            // change zoom button to yellow
+                            $("#dac-scatter-button-zoom").addClass("text-warning");
                         }
 
                         // default color scale
@@ -1089,9 +1092,6 @@ function zoom()
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
-	// reset scale (assumed nothing zoomed)
-	module.reset_zoom();
-
     // was it an empty zoom?
     if (extent[0][0] != extent[1][0] &&
         extent[0][1] != extent[1][1])
@@ -1100,11 +1100,21 @@ function zoom()
         x_scale.domain([extent[0][0], extent[1][0]]);
         y_scale.domain([extent[0][1], extent[1][1]]);
 
+        // change button color to indicate zoom state
+        $("#dac-scatter-button-zoom").addClass("text-warning");
+
         // fire zoom changed event
         var zoomEvent = new CustomEvent("DACZoomChanged",
-                                          {detail: extent});
+                                          {detail: {extent: extent, zoom: true}});
         document.body.dispatchEvent(zoomEvent);
-    };
+    } else {
+
+        // reset scale
+        module.reset_zoom();
+
+        // empty zoom -- changed button color back
+        $("#dac-scatter-button-zoom").removeClass("text-warning");
+    }
 
     // remove gray selection box
     d3.event.target.clear();
@@ -1211,7 +1221,7 @@ module.reset_zoom = function ()
 
 	// reset zoom in bookmarks
     var zoomEvent = new CustomEvent("DACZoomChanged",
-                                      {detail: extent});
+                                      {detail: {extent: extent, zoom: false}});
     document.body.dispatchEvent(zoomEvent);
 
 }
