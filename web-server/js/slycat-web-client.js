@@ -572,6 +572,16 @@ module.get_configuration_agent_functions = function(params) {
     }
   });
 };
+module.fetch_get_model = function(mid)
+{
+  return fetch(`${api_root}models/${mid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
+    }
+    return response.json();
+  });
+};
 
 module.get_model = function(params)
 {
@@ -1260,6 +1270,16 @@ module.post_submit_batch = function(params) {
       if (params.error)
         params.error(request, status, reason_phrase);
     }
+  });
+};
+
+module.get_checkjob_fetch = function(hostname, jid) {
+  return fetch(`${api_root}remotes/checkjob/${hostname}/${jid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
+    }
+    return response.json();
   });
 };
 

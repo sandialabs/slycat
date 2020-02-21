@@ -56,11 +56,11 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
     }
   }
 
-  componentWillReceiveProps(nextProps: any){
-    if(nextProps.loadingData!==this.props.loadingData){
-      //Perform some operation
-      this.setState({loadingData: nextProps.loadingData });
+  static getDerivedStateFromProps(nextProps:any, prevState:any) {
+    if (nextProps.loadingData !== prevState.loadingData) {
+      return ({ loadingData: nextProps.loadingData }) // <- this is setState equivalent
     }
+    return null
   }
 
   /**

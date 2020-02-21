@@ -214,32 +214,25 @@ $(document).ready(function() {
       }
     });
   }
-  //TODO remove this timeout when we convert to react as it is only here to let KO load
   // setTimeout(doPoll, 500);
   var showLoadingPage = function() {
     console.log("initializing loading page");
-    $.ajax(
-      {
-        type : "GET",
-        url : api_root + "models/" + model._id,
-        success : function(result)
-        {
-          model = result;
-          console.log(model['artifact:hostname']);
-          ReactDOM.render(
-              <LoadingPage
-               jid={model['artifact:jid']}
-               hostname={model['artifact:hostname']?model['artifact:hostname']:"missing"}
-              />,
-              document.querySelector('#timeseries-model')
-          );
-        },
-        error: function(request, status, reason_phrase)
-        {
+    client.fetch_get_model(model._id).then((modelResponse) => {
+        console.log(modelResponse['artifact:hostname']);
+        ReactDOM.render(
+            <LoadingPage
+              modelId={modelResponse._id}
+              jid={modelResponse['artifact:jid']}
+              // hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
+              hostname={model._id}
+            />,
+            document.querySelector('#timeseries-model')
+        );
+      }
+    ).catch((msg) => {
           // eslint-disable-next-line no-alert
-          window.alert("Error retrieving model: " + reason_phrase);
-        }
-      });
+          window.alert(`Error retrieving model: ${msg}`);
+    })
   };
   showLoadingPage();
   //////////////////////////////////////////////////////////////////////////////////////////

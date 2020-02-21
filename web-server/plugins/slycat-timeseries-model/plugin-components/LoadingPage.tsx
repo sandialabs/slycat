@@ -23,14 +23,25 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
       modalId: 'ConnectModal',
       progressBarProgress: 0,
       modelShow: false,
+      log: {
+        pending: [] as any,// [string]
+        failed: [] as any,
+        running: [] as any,
+        complete: [] as any,
+      },
+      modelId: props.modelId
     }
   }
   /**
    * method runs after the component output has been rendered to the DOM
    */
   componentDidMount() {
-    this.checkRemoteStatus(this.props.hostname);
-    this.timer = setInterval(()=> this.checkRemoteStatus(this.props.hostname), 10000);
+    this.checkRemoteStatus().then(() => {
+      if(this.state.sessionExists) {
+        this.checkRemoteJob();
+      }
+    });
+    this.timer = setInterval(()=> this.checkRemoteStatus(), 30000);
   }
 
   // tear down
@@ -52,21 +63,55 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * @async
    * @memberof SlycatRemoteControls
    */
-  private checkRemoteStatus = async (hostname:string) => {
-    return client.get_remotes_fetch(hostname)
+  private checkRemoteJob = async () => {
+    return client.get_checkjob_fetch(this.props.hostname, this.props.jid)
       .then((json:any) => {
-        this.setState({
-          sessionExists:json.status,
-          progressBarProgress: 10
-        }, () => {
-          console.log(this.state.sessionExists);
-          if(!this.state.sessionExists){
-            this.setState({modelShow:true});
-            ($(`#${this.state.modalId}`) as any).modal('show');
-          }
-        });
+        console.log(json);
+        this.appendLog(json);
     });
   };
+
+  private appendLog = (resJson: string) => {
+    switch (resJson.status.state) {
+      case 'COMPLETED':
+          console.log("COMPLETED");
+          this.state.log.complete.push(resJson)
+          this.setState({
+            log : this.state.log
+          });
+          break;
+      case 1:
+          console.log("It is a Monday.");
+          break;
+      case 2:
+          console.log("It is a Tuesday.");
+          break;
+      default:
+          console.log("No such day exists!");
+          break;
+  }
+  }
+
+  /**
+   * function used to test if we have an ssh connection to the hostname
+   * @param hostname name of the host we want to connect to
+   * @async
+   * @memberof SlycatRemoteControls
+   */
+  private checkRemoteStatus = async () => {
+    return client.get_remotes_fetch(this.props.hostname)
+    .then((json: any) => {
+      this.setState({
+        sessionExists: json.status,
+        progressBarProgress: 10
+      }, () => {
+        if (!this.state.sessionExists) {
+          this.setState({ modelShow: true });
+          ($(`#${this.state.modalId}`) as any).modal('show');
+        }
+      });
+    });
+  }
 
   private loginModal = () => {
     return (
@@ -91,6 +136,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
 
     return this.state.sessionExists?(
       <dl>
+        {JSON.stringify(this.state.log.complete)}
         <dt>
           > Pending
         </dt>
@@ -111,7 +157,6 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     ):(<Spinner />);
   }
   public render() {
-    console.log(this.state.sessionExists);
     let d = new Date();
     let datestring = d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " +
       d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();

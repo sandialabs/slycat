@@ -46,7 +46,6 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
    */
   private cleanup = () => {
     this.props.callBack(this.state.sessionExists, this.state.loadingData)
-    console.log('clean')
   };
 
   /**
