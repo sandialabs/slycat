@@ -834,8 +834,7 @@ module.toggle_difference = function (desired_state)
 	if (desired_state == true) {
 
         // set difference button color to green
-        $("#dac-scatter-diff-button").removeClass("text-warning");
-        $("#dac-scatter-diff-button").addClass("text-success");
+        $("#dac-scatter-diff-button").removeClass("bg-warning");
 
 		// difference button has been used
 		diff_button_used = true;
@@ -843,8 +842,7 @@ module.toggle_difference = function (desired_state)
 	} else if (diff_button_used == true) {
 
         // set difference button color to yellow
-        $("#dac-scatter-diff-button").addClass("text-warning");
-        $("#dac-scatter-diff-button").removeClass("text-success");
+        $("#dac-scatter-diff-button").addClass("bg-warning");
 
 	}
 }
