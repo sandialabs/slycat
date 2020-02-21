@@ -1107,13 +1107,12 @@ function zoom()
         var zoomEvent = new CustomEvent("DACZoomChanged",
                                           {detail: {extent: extent, zoom: true}});
         document.body.dispatchEvent(zoomEvent);
+
     } else {
 
         // reset scale
         module.reset_zoom();
 
-        // empty zoom -- changed button color back
-        $("#dac-scatter-button-zoom").removeClass("text-warning");
     }
 
     // remove gray selection box
@@ -1178,14 +1177,13 @@ function subset ()
 					mds_subset[i] = 1;
 				}
             }
-				// in this case, we set the center to the subset view
-				subset_center = [(extent[0][0] + extent[1][0])/2.0,
-								 (extent[0][1] + extent[1][1])/2.0];
 
-				// reset zoom to full screen
-				//x_scale.domain([0 - scatter_border, 1 + scatter_border]);
-				//y_scale.domain([0 - scatter_border, 1 + scatter_border]);
-				reset_zoom = true;
+            // in this case, we set the center to the subset view
+            subset_center = [(extent[0][0] + extent[1][0])/2.0,
+                             (extent[0][1] + extent[1][1])/2.0];
+
+            // reset zoom to full screen
+            reset_zoom = true;
 
 		}
 
@@ -1210,7 +1208,7 @@ function subset ()
 	document.body.dispatchEvent(subsetEvent);
 }
 
-// reset zoom, accessable to ui controller
+// reset zoom, accessible to ui controller
 module.reset_zoom = function ()
 {
 	// reset zoom to full screen
@@ -1218,6 +1216,9 @@ module.reset_zoom = function ()
 	              [1 + scatter_border, 1 + scatter_border]];
 	x_scale.domain([extent[0][0], extent[1][0]]);
     y_scale.domain([extent[0][1], extent[1][1]]);
+
+    // empty zoom -- change button color back
+    $("#dac-scatter-button-zoom").removeClass("text-warning");
 
 	// reset zoom in bookmarks
     var zoomEvent = new CustomEvent("DACZoomChanged",
