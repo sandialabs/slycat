@@ -704,7 +704,7 @@ $(document).ready(function() {
                                 selections.update_subset(init_mds_subset);
 
                                 // initialize difference button order and position
-                                var init_fisher_order = null;
+                                var init_fisher_order = [];
                                 var init_fisher_pos = null;
                                 if ("dac-fisher-order" in bookmark) {
 
@@ -715,7 +715,7 @@ $(document).ready(function() {
 
                                     // check that order is correct length
                                     if (init_fisher_order.length != num_vars) {
-                                        init_fisher_order = null;
+                                        init_fisher_order = [];
                                         init_fisher_pos = null;
                                     }
                                 }

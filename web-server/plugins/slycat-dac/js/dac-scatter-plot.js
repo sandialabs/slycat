@@ -31,7 +31,7 @@ var subset_center = [];
 var mid = URI(window.location).segment(-1);
 
 // difference button fisher ordering and current position
-var fisher_order = null;
+var fisher_order = [];
 var fisher_pos = null;
 
 // has the difference button ever been used?
@@ -180,7 +180,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// set up difference button state
 	fisher_order = init_fisher_order;
 	fisher_pos = init_fisher_pos;
-	if (fisher_order != null) {
+	if (fisher_order.length > 0) {
 	    diff_button_used = true;
 	}
 	diff_desired_state = init_diff_desired_state;
@@ -833,18 +833,19 @@ module.toggle_difference = function (desired_state)
 
 	if (desired_state == true) {
 
-		// set difference indicator to synced
-		$("#dac-selection-synced").show();
-		$("#dac-selection-not-synced").hide();
+        // set difference button color to green
+        $("#dac-scatter-diff-button").removeClass("text-warning");
+        $("#dac-scatter-diff-button").addClass("text-success");
 
 		// difference button has been used
 		diff_button_used = true;
 
 	} else if (diff_button_used == true) {
 
-		// set difference state to out of sync
-		$("#dac-selection-synced").hide();
-		$("#dac-selection-not-synced").show();
+        // set difference button color to yellow
+        $("#dac-scatter-diff-button").addClass("text-warning");
+        $("#dac-scatter-diff-button").removeClass("text-success");
+
 	}
 }
 
