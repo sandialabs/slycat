@@ -1116,7 +1116,6 @@ def clear_ssh_sessions():
   """
   clears out of the ssh session for the current user
   """
-  pass
   try:
       if "slycatauth" in cherrypy.request.cookie:
           sid = cherrypy.request.cookie["slycatauth"].value
