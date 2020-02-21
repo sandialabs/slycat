@@ -99,8 +99,9 @@ function make_column(id_index, name, editor, options)
 // load grid data and set up colors for selections
 module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
                          MODEL_NAME, max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
-                         init_sort_order, init_sort_col)
+                         init_sort_order, init_sort_col, init_col_filters)
 {
+
 	// set up callback for data download button
 	var download_button = document.querySelector("#dac-download-table-button");
 	download_button.addEventListener("click", download_button_callback);
@@ -218,6 +219,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	// add sorting
 	grid_view.onSort.subscribe(col_sort);
 
+    // set up initial column filters
+    columnFilters = init_col_filters;
+    
     // do filtering after something is typed
     $(grid_view.getHeaderRow()).delegate(":input", "change keyup", function (e) {
       var columnId = $(this).data("columnId");
@@ -252,6 +256,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
         }
 
         // update bookmarks
+        var filterEvent = new CustomEvent("DACFilterChanged", { detail: {
+										 columnFilters: columnFilters} });
+	    document.body.dispatchEvent(filterEvent);
 
       }
     });
@@ -280,7 +287,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
                 prev_row_selected = prev_row_update;
 
                 // update bookmarks
-
+                var filterEvent = new CustomEvent("DACFilterChanged", { detail: {
+                                                 columnFilters: columnFilters} });
+                document.body.dispatchEvent(filterEvent);
 
             })
             .appendTo(args.node);

@@ -586,6 +586,9 @@ $(document).ready(function() {
                 // editable column event
                 document.body.addEventListener("DACEditableColChanged", editable_col_changed);
 
+                // table filter event
+                document.body.addEventListener("DACFilterChanged", filter_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -759,6 +762,12 @@ $(document).ready(function() {
                                     init_sort_col = bookmark["dac-table-sort-col"];
                                 }
 
+                                // initialize table column filters, if bookmarked
+                                var column_filters = {};
+                                if ("dac-table-filters" in bookmark) {
+                                    column_filters = bookmark["dac-table-filters"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -788,7 +797,8 @@ $(document).ready(function() {
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
                                                  editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col);
+                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                                                 column_filters);
 
 		   	                },
 		   	                function () {
@@ -1041,6 +1051,14 @@ $(document).ready(function() {
     {
         // change color in scatter plot if necessary
         scatter_plot.recolor_plot (col.detail);
+
+    }
+
+    // event for table filter change
+    function filter_changed (filter)
+    {
+        // bookmark filter change
+        bookmarker.updateState({"dac-table-filters": filter.detail.columnFilters});
 
     }
 
