@@ -21,7 +21,7 @@ def parse(string):
   -------
   hyperchunks: parsed representation of a hyperchunk.
   """
-  cherrypy.log.error(string)
+  #cherrypy.log.error(string)
   parsed_hyperchuncks = slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True).asList()
   return slycat.hyperchunks.grammar.Hyperchunks(parsed_hyperchuncks)
 

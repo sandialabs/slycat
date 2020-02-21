@@ -1116,13 +1116,12 @@ def clear_ssh_sessions():
   """
   clears out of the ssh session for the current user
   """
-  pass
   try:
       if "slycatauth" in cherrypy.request.cookie:
           sid = cherrypy.request.cookie["slycatauth"].value
           couchdb = slycat.web.server.database.couchdb.connect()
           session = couchdb.get("session", sid)
-          cherrypy.log.error("session %s" % session)
+          cherrypy.log.error("ssh sessions cleared for user session: %s" % session)
           cherrypy.response.status = "200"
           if session is not None:
               for ssh_session in session["sessions"]:
@@ -1605,7 +1604,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
-    cherrypy.log.error("GOT RESULTS")
+    #cherrypy.log.error("GOT RESULTS")
     if "unique" in results:
         #cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         #cherrypy.log.error("type:")
