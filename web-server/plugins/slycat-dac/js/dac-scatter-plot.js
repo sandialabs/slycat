@@ -102,7 +102,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
-	init_subset_center, init_fisher_order,
+	init_subset_center, init_subset_flag, init_fisher_order,
 	init_fisher_pos, init_diff_desired_state, editable_columns, MODEL_ORIGIN)
 {
 
@@ -166,6 +166,11 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 		function() { selections.set_sel_type(-1); module.draw(); })
 	$("#dac-scatter-button-zoom").on("click",
 		function() { selections.set_sel_type(0); module.draw(); });
+
+    // set initial subset button indicator
+    if (init_subset_flag) {
+        $("#dac-scatter-button-subset").addClass("text-warning");
+    }
 
 	// bind difference buttons to callback
 	$("#dac-previous-three-button").on("click", previous_three);
@@ -1156,8 +1161,9 @@ function subset ()
 	subset_center = [(subset_extent[0][0] + subset_extent[1][0])/2.0,
 					 (subset_extent[0][1] + subset_extent[1][1])/2.0];
 
-	// default to leave zoom alone
+	// default to leave zoom alone, no subset
 	var reset_zoom = false;
+    var subset_flag = true;
 
 	// separate into inclusion and exclusion based on shift key
 	if (!selections.shift_key())
@@ -1165,9 +1171,12 @@ function subset ()
 
 		// if nothing is included, we reset to all data
 		if (selection.length == 0) {
+
 			for (var i = 0; i < mds_coords.length; i++) {
 				mds_subset[i] = 1;
 			}
+			subset_flag = false;
+
 		} else {
 
 			// otherwise we include only the selection, and nothing else
@@ -1200,10 +1209,18 @@ function subset ()
 	d3.event.target.clear();
 	d3.select(this).call(d3.event.target);
 
+    // update subset button status
+    if (subset_flag) {
+        $("#dac-scatter-button-subset").addClass("text-warning");
+    } else {
+    	$("#dac-scatter-button-subset").removeClass("text-warning");
+    }
+
 	// fire subset changed event
 	var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
 										 new_subset: mds_subset,
 										 subset_center: subset_center,
+										 subset_flag: subset_flag,
 										 zoom: reset_zoom} });
 	document.body.dispatchEvent(subsetEvent);
 }
@@ -1356,9 +1373,13 @@ function exclude_individual (i) {
 		// remove point from subset
 		mds_subset[i] = 0;
 
+        // subset changed, update button
+        $("#dac-scatter-button-subset").addClass("text-warning");
+
 		// fire subset changed event
 		var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
-											new_subset: mds_subset} });
+											new_subset: mds_subset,
+											subset_flag: true} });
 		document.body.dispatchEvent(subsetEvent);
 
 	// otherwise it's a focus event

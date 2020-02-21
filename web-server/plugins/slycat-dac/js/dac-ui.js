@@ -682,6 +682,7 @@ $(document).ready(function() {
 
                                 // initialize subset itself, if bookmarked
                                 var init_mds_subset = [];
+                                var init_subset_flag = false;
                                 for (var i = 0; i < num_points; i++ ) {
                                     init_mds_subset.push(1);
                                 }
@@ -693,6 +694,11 @@ $(document).ready(function() {
                                     // check that subset is correct length
                                     if (book_mds_subset.length == num_points) {
                                         init_mds_subset = book_mds_subset;
+                                    }
+
+                                    // get subset button status
+                                    if ("dac-subset-flag" in bookmark) {
+                                        init_subset_flag = bookmark["dac-subset-flag"];
                                     }
                                 }
                                 selections.update_subset(init_mds_subset);
@@ -798,7 +804,7 @@ $(document).ready(function() {
 					                MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 					                data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_fisher_order, init_fisher_pos, init_diff_desired_state,
+					                init_subset_flag, init_fisher_order, init_fisher_pos, init_diff_desired_state,
 					                editable_columns, model_origin);
 
                                 // set up table with editable columns
@@ -997,7 +1003,8 @@ $(document).ready(function() {
 
         // bookmark subset data
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
-                                "dac-subset-center": new_subset.detail.subset_center});
+                                "dac-subset-center": new_subset.detail.subset_center,
+                                "dac-subset-flag": new_subset.detail.subset_flag});
 
     }
 
