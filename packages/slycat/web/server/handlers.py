@@ -1122,7 +1122,7 @@ def clear_ssh_sessions():
           sid = cherrypy.request.cookie["slycatauth"].value
           couchdb = slycat.web.server.database.couchdb.connect()
           session = couchdb.get("session", sid)
-          cherrypy.log.error("session %s" % session)
+          cherrypy.log.error("ssh sessions cleared for user session: %s" % session)
           cherrypy.response.status = "200"
           if session is not None:
               for ssh_session in session["sessions"]:
