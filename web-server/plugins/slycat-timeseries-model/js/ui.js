@@ -223,8 +223,7 @@ $(document).ready(function() {
             <LoadingPage
               modelId={modelResponse._id}
               jid={modelResponse['artifact:jid']}
-              // hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
-              hostname={model._id}
+              hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
             />,
             document.querySelector('#timeseries-model')
         );

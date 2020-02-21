@@ -201,24 +201,25 @@ class Session(object):
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
             payload = {"action": "checkjob", "command": jid}
-
-            stdin.write("%s\n" % json.dumps(payload))
-            stdin.flush()
-
+            try:
+                stdin.write("%s\n" % json.dumps(payload))
+                stdin.flush()
+            except socket.error as e:
+                delete_session(self._sid)
+                raise socket.error('Socket is closed')
             response = json.loads(stdout.readline())
             if not response["ok"]:
                 cherrypy.response.headers["x-slycat-message"] = response["message"]
                 cherrypy.log.error("slycat.web.server.remote.py checkjob",
                                         "cherrypy.HTTPError 400 %s" % response["message"])
                 raise cherrypy.HTTPError(400)
-
             # parses the useful information from job status
             #cherrypy.log.error("response state:%s" % response["output"])
             status = {
                 "state": response["output"]
             }
 
-            return {"jid": response["jid"], "status": status, "errors": response["errors"]}
+            return {"jid": response["jid"], "status": status, "errors": response["errors"], "logFile":response["logFile"]}
         else:
             cherrypy.response.headers["x-slycat-message"] = "No Slycat agent present on remote host."
             cherrypy.log.error("slycat.web.server.remote.py checkjob",

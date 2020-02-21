@@ -15,6 +15,7 @@ import Spinner from 'components/Spinner.tsx';
  */
 export default class LoadingPage extends React.Component<LoadingPageProps, LoadingPageState> {
   timer: any; //NodeJS.Timeout
+  TIMER_MS: number = 10000;
   public constructor(props:LoadingPageProps) {
     super(props)
     this.state = {
@@ -23,11 +24,9 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
       modalId: 'ConnectModal',
       progressBarProgress: 0,
       modelShow: false,
+      jobStatus: 'Job Status Unknown',
       log: {
-        pending: [] as any,// [string]
-        failed: [] as any,
-        running: [] as any,
-        complete: [] as any,
+        logLineArray: [] as any,// [string]
       },
       modelId: props.modelId
     }
@@ -41,7 +40,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
         this.checkRemoteJob();
       }
     });
-    this.timer = setInterval(()=> this.checkRemoteStatus(), 30000);
+    this.timer = setInterval(()=> this.checkRemoteStatus(), this.TIMER_MS);
   }
 
   // tear down
@@ -51,7 +50,11 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   }
 
   private connectModalCallBack = (sessionExists: boolean, loadingData: boolean) => {
-    this.setState({sessionExists})
+    this.setState({sessionExists},() => {
+      if(this.state.sessionExists) {
+        this.checkRemoteJob();
+      }
+    })
     clearInterval(this.timer);
     this.timer = null;
     console.log(`Callback Called sessionExists:${sessionExists}: loadingData:${loadingData}`);
@@ -70,13 +73,44 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
         this.appendLog(json);
     });
   };
-
-  private appendLog = (resJson: string) => {
+  // Job codes
+  // JOB STATE CODES
+  // BF BOOT_FAIL
+  // Job terminated due to launch failure, typically due to a hardware failure (e.g. unable to boot the node or block and the job can not be requeued).
+  // CA CANCELLED
+  // Job was explicitly cancelled by the user or system administrator. The job may or may not have been initiated.
+  // CD COMPLETED
+  // Job has terminated all processes on all nodes with an exit code of zero.
+  // DL DEADLINE
+  // Job terminated on deadline.
+  // F FAILED
+  // Job terminated with non-zero exit code or other failure condition.
+  // NF NODE_FAIL
+  // Job terminated due to failure of one or more allocated nodes.
+  // OOM OUT_OF_MEMORY
+  // Job experienced out of memory error.
+  // PD PENDING
+  // Job is awaiting resource allocation.
+  // PR PREEMPTED
+  // Job terminated due to preemption.
+  // R RUNNING
+  // Job currently has an allocation.
+  // RQ REQUEUED
+  // Job was requeued.
+  // RS RESIZING
+  // Job is about to change size.
+  // RV REVOKED
+  // Sibling was removed from cluster due to other cluster starting the job.
+  // S SUSPENDED
+  // Job has an allocation, but execution has been suspended and CPUs have been released for other jobs.
+  // TO TIMEOUT
+  // Job terminated upon reaching its time limit.
+  private appendLog = (resJson: any) => {
     switch (resJson.status.state) {
       case 'COMPLETED':
-          console.log("COMPLETED");
-          this.state.log.complete.push(resJson)
+          this.state.log.logLineArray = resJson.logFile.split("\n")
           this.setState({
+            jobStatus: `Job Status: ${resJson.status.state}`,
             log : this.state.log
           });
           break;
@@ -108,6 +142,8 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
         if (!this.state.sessionExists) {
           this.setState({ modelShow: true });
           ($(`#${this.state.modalId}`) as any).modal('show');
+        } else {
+          this.checkRemoteJob();
         }
       });
     });
@@ -132,27 +168,26 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
 
     );
   }
-  private getLog = ()  =>  {
 
+  private logBuilder = (itemList:[string]) => {
+    return itemList.map((item, index) =>
+      <dd key={index.toString()}>
+        {JSON.stringify(item)}
+      </dd>
+    );
+  }
+
+  private getLog = ()  =>  {
+    let items: [] = this.logBuilder(this.state.log.logLineArray) as any;
     return this.state.sessionExists?(
       <dl>
-        {JSON.stringify(this.state.log.complete)}
         <dt>
-          > Pending
+          > {this.state.jobStatus}
         </dt>
-        <dd>
-          > Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-          aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat.
-        </dd>
         <dt>
-          > Running
+          > Slurm run Log:
         </dt>
-        <dd>
-          > Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-          aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat.
-        </dd>
+          {items.length>=1?items:<Spinner />}
       </dl>
     ):(<Spinner />);
   }
@@ -172,9 +207,9 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
         <div className='slycat-job-checker-controls'>
           <div className="row">
             <div className="col-3">Updated {datestring}</div>
-            <div className="col-2">Job id <b>{this.props.jid}</b></div>
-            <div className="col-3">Remote host name <b>{this.props.hostname}</b></div>
-            <div className="col-2">Session <b>{this.state.sessionExists?'true':'false'}</b></div>
+            <div className="col-2">Job id: <b>{this.props.jid}</b></div>
+            <div className="col-3">Remote host: <b>{this.props.hostname}</b></div>
+            <div className="col-2">Session: <b>{this.state.sessionExists?'true':'false'}</b></div>
             <div className="col-2">{this.loginModal()}</div>
           </div>
         </div>

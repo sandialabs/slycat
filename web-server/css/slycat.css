@@ -594,6 +594,8 @@ input,
   margin-top: 25px;
   padding: 10px;
   border-radius: 5px;
+  overflow-y: scroll;
+  max-height: 750px;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;

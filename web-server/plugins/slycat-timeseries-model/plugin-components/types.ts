@@ -14,10 +14,7 @@ export interface LoadingPageProps {
  * @interface LoadingPageState
  */
 export interface logMap {
-  pending: [string]
-  failed: [string]
-  running: [string]
-  complete: [string]
+  logLineArray: [string]
 }
 /**
  *
@@ -32,4 +29,5 @@ export interface LoadingPageState {
   modalId: string
   modelId: string
   modelShow: boolean
+  jobStatus: string
 }
