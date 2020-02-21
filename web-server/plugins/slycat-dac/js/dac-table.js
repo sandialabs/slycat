@@ -221,7 +221,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
     // set up initial column filters
     columnFilters = init_col_filters;
-    
+
     // do filtering after something is typed
     $(grid_view.getHeaderRow()).delegate(":input", "change keyup", function (e) {
       var columnId = $(this).data("columnId");
@@ -255,6 +255,13 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
              }
         }
 
+        // if not empty color filter orange to indicate use
+        if (columnFilters[columnId] != "") {
+            $(this).addClass("bg-warning");
+        } else {
+            $(this).removeClass("bg-warning");
+        }
+
         // update bookmarks
         var filterEvent = new CustomEvent("DACFilterChanged", { detail: {
 										 columnFilters: columnFilters} });
@@ -266,6 +273,14 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
     // add filter to header
     grid_view.onHeaderRowCellRendered.subscribe(function(e, args) {
         $(args.node).empty();
+
+        // check if column filter is empty
+        var set_bg_warning = "";
+        if (typeof columnFilters[args.column.id] !== "undefined" &
+            columnFilters[args.column.id] !== "") {
+                set_bg_warning = "bg-warning";
+            }
+
         $('<input type="search" placeholder="Filter" class="form-control" ' +
           'title="Filter metadata table by ' + args.column.name +  '.">')
             .data("columnId", args.column.id)
@@ -280,6 +295,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
                 // called when user hits the "x" clear button
                 columnFilters[args.column.id] = "";
+                $(this).removeClass("bg-warning");
                 data_view.refresh();
 
                 // update previously selected row
@@ -292,6 +308,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
                 document.body.dispatchEvent(filterEvent);
 
             })
+            .addClass(set_bg_warning)
             .appendTo(args.node);
     });
 
