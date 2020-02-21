@@ -59,7 +59,12 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     this.timer = null;
     console.log(`Callback Called sessionExists:${sessionExists}: loadingData:${loadingData}`);
   }
-
+  private pullHPCData = () => {
+    const params = {mid:this.props.modelId, type:"timeseries", command: "pull_data"}
+    client.get_model_command_fetch(params).then((json) => {
+      console.log(json)
+    });
+  };
   /**
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
@@ -106,12 +111,18 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   // TO TIMEOUT
   // Job terminated upon reaching its time limit.
   private appendLog = (resJson: any) => {
+    this.state.log.logLineArray = resJson.logFile.split("\n")
+    this.setState({
+      jobStatus: `Job Status: ${resJson.status.state}`,
+      log : this.state.log,
+    });
     switch (resJson.status.state) {
       case 'COMPLETED':
-          this.state.log.logLineArray = resJson.logFile.split("\n")
           this.setState({
-            jobStatus: `Job Status: ${resJson.status.state}`,
-            log : this.state.log
+            progressBarProgress: 100
+          },()=>{
+            clearInterval(this.timer);
+            this.timer = null;
           });
           break;
       case 1:
@@ -164,6 +175,15 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           data_target={'#' + this.state.modalId}
           button_style={'btn-primary float-right'} id='controls-button-death'
         />:null}
+          <button
+          className={`btn btn-md btn-primary`}
+          id={'pullbtn'}
+          type='button' 
+          title={'pull'}
+          disabled={false}
+          onClick={() => this.pullHPCData()} >
+          {'pull'}
+          </button>
       </div>
 
     );

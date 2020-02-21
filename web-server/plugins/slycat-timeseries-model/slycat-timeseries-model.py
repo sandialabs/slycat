@@ -57,7 +57,6 @@ def register_slycat_plugin(context):
         """
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model_id)
-        """Called to finish the model.  This function must return immediately, so any real work would be done in a separate thread."""
         slycat.web.server.update_model(database, model, state="finished", result="succeeded",
                                        finished=datetime.datetime.utcnow().isoformat(), progress=1.0, message="")
 
@@ -73,37 +72,15 @@ def register_slycat_plugin(context):
         slycat.web.server.update_model(database, model, state="finished", result="failed",
                                        finished=datetime.datetime.utcnow().isoformat(), message=message)
 
-    # def get_remote_file(sid, hostname, username, password, filename):
-    #     """
-    #     Utility function to fetch remote files.
-    #
-    #     :param sid:      session ID
-    #     :param hostname:
-    #     :param username:
-    #     :param password:
-    #     :param filename: Full path for the requested file
-    #     :return: tuple with session ID and file content
-    #     """
-    #     try:
-    #         data = slycat.web.server.get_remote_file(sid, filename)
-    #     except:
-    #         sid = slycat.web.server.create_session(hostname, username, password)
-    #         data = slycat.web.server.get_remote_file(sid, filename)
-    #     return sid, data
-
-    def get_remote_file_server(client, sid, filename):
+    def get_remote_file_server(hostname, filename):
         """
         Utility function to fetch remote files.
-
-        :param client:
-        :param sid:      session ID
         :param hostname:
         :param username:
-        :param password:
         :param filename: Full path for the requested file
         :return: tuple with session ID and file content
         """
-        return slycat.web.server.get_remote_file_server(client, sid, filename)
+        return slycat.web.server.handlers.get_remote_file(hostname, filename)
 
     def get_sid(hostname, model):
         """
@@ -150,7 +127,7 @@ def register_slycat_plugin(context):
         #cherrypy.log.error("got sid")
         return sid
 
-    def compute(model_id, password):
+    def compute(model_id):
         """
         Computes the Time Series model. It fetches the necessary files from a
         remote server that were computed by the slycat-agent-compute-timeseries.py
@@ -162,7 +139,6 @@ def register_slycat_plugin(context):
         :param workdir:
         :param hostname:
         :param username:
-        :param password:
         """
         #cherrypy.log.error("in thread")
         # workdir += "/slycat/pickle"  # route to the slycat directory
@@ -183,7 +159,6 @@ def register_slycat_plugin(context):
                 model = database.get("model", model_id)
                 slycat.web.server.put_model_parameter(database, model, "computing", False)
                 computing = False
-                fail_model(model_id, "Exceeded max number of tries to pull data over to the server.")
                 cherrypy.log.error("[TIMESERIES] Exceeded max number of tries to pull data.")
                 raise Exception("Exceeded max number of tries to pull data over to the server.")
             try:
@@ -198,7 +173,7 @@ def register_slycat_plugin(context):
 
                 #cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s" % (
                 #    sid, uid, workdir, hostname, username))
-                inputs = get_remote_file_server(model["creator"], sid,
+                inputs = get_remote_file_server(hostname,
                                                 "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
                 #cherrypy.log.error("got inputs")
                 inputs = pickle.loads(inputs)
@@ -207,7 +182,7 @@ def register_slycat_plugin(context):
                 attributes = inputs["attributes"]
                 slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
 
-                data = get_remote_file_server(model["creator"], sid,
+                data = get_remote_file_server(hostname,
                                               "%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (workdir, uid))
                 attributes_data = pickle.loads(data)
 
@@ -217,7 +192,7 @@ def register_slycat_plugin(context):
                                                               [attributes_data[attribute]])
 
                 clusters = json.loads(
-                    slycat.web.server.get_remote_file_server(model["creator"], sid,
+                    slycat.web.server.get_remote_file_server(hostname,
                                                       "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
                 clusters_file = json.JSONDecoder().decode(clusters["file"])
                 timeseries_count = json.JSONDecoder().decode(clusters["timeseries_count"])
@@ -228,7 +203,7 @@ def register_slycat_plugin(context):
                 # TODO this can become multi processored
                 cherrypy.log.error("Pulling timeseries computed data")
                 for file_name in clusters_file:
-                    file_cluster_data = get_remote_file_server(model["creator"], sid,
+                    file_cluster_data = get_remote_file_server(hostname,
                                                                "%s/slycat_timeseries_%s/file_cluster_%s.json" % (
                                                                    workdir, uid, file_name))
                     file_cluster_attr = json.loads(file_cluster_data)
@@ -240,22 +215,22 @@ def register_slycat_plugin(context):
                     model = database.get("model", model["_id"])
                     slycat.web.server.put_model_arrayset(database, model, "preview-%s" % file_name)
 
-                    waveform_dimensions_data = get_remote_file_server(model["creator"], sid,
+                    waveform_dimensions_data = get_remote_file_server(hostname,
                                                                            "%s/slycat_timeseries_%s/waveform_%s_dimensions"
                                                                            ".pickle" % (
                                                                                workdir, uid, file_name))
                     waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
-                    waveform_attributes_data = get_remote_file_server(model["creator"], sid,
+                    waveform_attributes_data = get_remote_file_server(hostname,
                                                                            "%s/slycat_timeseries_%s/waveform_%s_attributes"
                                                                            ".pickle" % (
                                                                                workdir, uid, file_name))
                     waveform_attributes_array = pickle.loads(waveform_attributes_data)
-                    waveform_times_data = get_remote_file_server(model["creator"], sid,
+                    waveform_times_data = get_remote_file_server(hostname,
                                                                       "%s/slycat_timeseries_%s/waveform_%s_times"
                                                                       ".pickle" % (
                                                                           workdir, uid, file_name))
                     waveform_times_array = pickle.loads(waveform_times_data)
-                    waveform_values_data = get_remote_file_server(model["creator"], sid,
+                    waveform_values_data = get_remote_file_server(hostname,
                                                                        "%s/slycat_timeseries_%s/waveform_%s_values"
                                                                        ".pickle" % (
                                                                            workdir, uid, file_name))
@@ -281,7 +256,7 @@ def register_slycat_plugin(context):
                 model["computing"] = False
                 slycat.web.server.update_model(database, model)
                 computing = False
-                cherrypy.log.error("finnished Pulling timeseries computed data")
+                cherrypy.log.error("finished Pulling timeseries computed data")
                 # TODO add finished to the model state
                 # TODO add remove dir command by uncommenting below
                 # payload = {
@@ -310,9 +285,10 @@ def register_slycat_plugin(context):
 
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model_id)
-        slycat.web.server.delete_model_parameter(database, model, "computing")
+        slycat.web.server.put_model_parameter(database, model, "computing", False)
+        # slycat.web.server.delete_model_parameter(database, model, "computing")
 
-    def get_job_status(tries, mid, sid, jid, stop_event):
+    def get_job_status(hostname, jid):
         """
         returns the job status of a running timeseries job from the cluster called from a thread
         :param tries: number of tries left to use this function
@@ -322,32 +298,16 @@ def register_slycat_plugin(context):
         :param stop_event: thread stop event
         :return:
         """
-        if tries <= 0:
-            cherrypy.log.error("[TIMESERIES] Check job tries exceeded max number.")
-            fail_model(mid, "Check job tries exceeded max number")
-            stop_event.set()
-            raise Exception("An error occurred while checking on a remote job: %s" % jid)
         try:
-            response = slycat.web.server.checkjob(sid, jid)
+            response = slycat.web.server.handlers.get_checkjob(hostname, jid)
         except Exception as e:
-            tries = tries - 1
-            if tries == 0:
-                fail_model(mid,
-                           "Something went wrong while checking on job %s status: check for the generated files "
-                           "when the job completes." % jid)
-                cherrypy.log.error("[TIMESERIES] An error occurred while checking on a remote job error_message: %s"
-                                   % e.message)
-                stop_event.set()
-                raise Exception("An error occurred while checking on a remote job: %s" % jid)
             cherrypy.log.error("Something went wrong while checking on job %s status, trying again..." % jid)
             response = {"status": {"state": "ERROR"}}
-            time.sleep(15)
         return response
 
-    # TODO this function needs to be migrated to the implementation of the computation interface
-    def checkjob_thread(mid, sid, jid, request_from, stop_event, callback):
+    def update_remote_job(mid, jid, hostname):
         """
-        Routine running on a separate thread which checks on the status of remote
+        Routine that checks on the status of remote
         jobs running on a SLURM infrastructure.
 
         :param mid:          model ID
@@ -357,48 +317,41 @@ def register_slycat_plugin(context):
         :param stop_event:   event stopping the thread when the job completes
         :param callback:     callback methods when the job successfully completes
         """
-        cherrypy.request.headers["x-forwarded-for"] = request_from
 
-        tries = 100
-        running = True
+        # get the status of the job
+        state = get_job_status(hostname, jid)["status"]["state"]
+        cherrypy.log.error("[Timeseries] checkjob %s returned with status %s" % (jid, state))
 
-        while running:
-            # get the status of the job
-            state = get_job_status(tries, mid, sid, jid, stop_event)["status"]["state"]
-            cherrypy.log.error("[Timeseries] checkjob %s returned with status %s" % (jid, state))
+        if state in ["RUNNING", "PENDING"]:
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", mid)
+            if "job_running_time" not in model:
+                model["job_running_time"] = datetime.datetime.utcnow().isoformat()
+                slycat.web.server.update_model(database, model)
 
-            if state in ["RUNNING", "PENDING"]:
-                database = slycat.web.server.database.couchdb.connect()
-                model = database.get("model", mid)
-                if "job_running_time" not in model:
-                    model["job_running_time"] = datetime.datetime.utcnow().isoformat()
-                    slycat.web.server.update_model(database, model)
+        if state in ["CANCELLED", "REMOVED", "VACATED"]:
+            fail_model(mid, "Job %s was cancelled. Exit code %s" % (jid, state))
 
-            if state in ["CANCELLED", "REMOVED", "VACATED", "REMOVED"]:
-                fail_model(mid, "Job %s was cancelled. Exit code %s" % (jid, state))
-                stop_event.set()
-                break
+        if state == "COMPLETED":
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", mid)
+            if "job_running_time" not in model:
+                model["job_running_time"] = datetime.datetime.utcnow().isoformat()
+                slycat.web.server.update_model(database, model)
+            if "job_completed_time" not in model:
+                model["job_completed_time"] = datetime.datetime.utcnow().isoformat()
+                slycat.web.server.update_model(database, model)
+            """
+            Callback for a successful remote job completion. It computes the model
+            and successfully completes it.
+            """
+            compute(model["_id"])
+            finish(model["_id"])
 
-            if state == "COMPLETED":
-                database = slycat.web.server.database.couchdb.connect()
-                model = database.get("model", mid)
-                if "job_running_time" not in model:
-                    model["job_running_time"] = datetime.datetime.utcnow().isoformat()
-                    slycat.web.server.update_model(database, model)
-                if "job_completed_time" not in model:
-                    model["job_completed_time"] = datetime.datetime.utcnow().isoformat()
-                    slycat.web.server.update_model(database, model)
+        if state == ["FAILED", "UNKNOWN", "NOTQUEUED"]:
+            tries = tries - 1
+            cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
 
-                callback()
-                stop_event.set()
-                break
-
-            if state == ["FAILED", "UNKNOWN", "NOTQUEUED"]:
-                tries = tries - 1
-                cherrypy.log.error("Something went wrong with job %s, trying again..." % jid)
-
-            # waits 10 seconds in between each status check
-            time.sleep(10)
 
     # TODO verb, type and command might be obsolete
     def checkjob(database, model, verb, type, command, **kwargs):
@@ -407,7 +360,7 @@ def register_slycat_plugin(context):
 
         :param database:
         :param model:
-        :param kwargs: arguments contain hostname, username, password, jid,
+        :param kwargs: arguments contain hostname, username, jid,
                        function name and parameters, UID
         """
         sid = None
@@ -419,9 +372,7 @@ def register_slycat_plugin(context):
                     sid = host_session["sid"]
                     break
         except Exception as e:
-            cherrypy.log.error("could not retrieve host session for remotes %s going to create one" % e)
-        if sid is None:
-            sid = slycat.web.server.create_session(kwargs["hostname"], kwargs["username"], kwargs["password"])
+            cherrypy.log.error("could not retrieve host session for remotes %s" % e)
         jid = kwargs["jid"]
         fn = kwargs["fn"]
         fn_params = kwargs["fn_params"]
@@ -445,14 +396,6 @@ def register_slycat_plugin(context):
                     if tries == 0:
                         raise Exception("failed to update model with params")
 
-        def callback():
-            """
-            Callback for a successful remote job completion. It computes the model
-            and successfully completes it.
-            """
-            compute(model["_id"], kwargs["password"])
-            finish(model["_id"])
-
         # give some time for the job to be remotely started before starting its
         # checks.
         time.sleep(5)
@@ -462,29 +405,14 @@ def register_slycat_plugin(context):
         model["job_submit_time"] = datetime.datetime.utcnow().isoformat()
         slycat.web.server.update_model(database, model)
 
-        stop_event = threading.Event()
-        t = threading.Thread(target=checkjob_thread, args=(
-            model["_id"], sid, jid, cherrypy.request.headers.get("x-forwarded-for"), stop_event, callback))
-        t.start()
+        update_remote_job(model["_id"], jid, kwargs["hostname"])
 
     def pull_data(database, model, verb, type, command, **kwargs):
         """
-        check if a data pull is allowed, if so
+        check if a data pull is allowed
         :param mid: model id
         :return:
         """
-
-        def pull(mid):
-            """
-            thread for pulling data back to the server
-            :param mid: model id
-            :return:
-            """
-            # giving compute a none password as we should already have a session at this point
-            #cherrypy.log.error("calling compute")
-            compute(mid, password=None)
-            finish(mid)
-
         database = slycat.web.server.database.couchdb.connect()
         model = database.get("model", model["_id"])
         try:
@@ -496,8 +424,7 @@ def register_slycat_plugin(context):
         if model["state"] == "finished":
             raise cherrypy.HTTPError("409 model is in the finished state already")
         if not slycat.web.server.get_model_parameter(database, model, "computing"):
-            t = threading.Thread(target=pull, args=([model["_id"]]))
-            t.start()
+            update_remote_job(model["_id"], model["artifact:jid"], model["artifact:hostname"])
         else:
             raise cherrypy.HTTPError("409 compute is currently still running.")
 

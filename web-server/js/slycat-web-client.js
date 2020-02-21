@@ -686,7 +686,7 @@ module.get_model_command = function(params)
   });
 };
 
-module.get_model_command_fetch = function(params, successFunction, errorFunction)
+module.get_model_command_fetch = function(params, errorFunction)
 {
   return fetch(URI(api_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
       {
