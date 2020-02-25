@@ -722,10 +722,11 @@ def delete_project_data(did, **kwargs):
 
     for model in database.scan("slycat/models"):
         updated = False
-        for index, model_did in enumerate(model["project_data"]):
-            if model_did == did:
-                updated = True
-                del model["project_data"][index]
+        if "project_data" in model:
+            for index, model_did in enumerate(model["project_data"]):
+                if model_did == did:
+                    updated = True
+                    del model["project_data"][index]
         if updated:
             database.save(model)
 
