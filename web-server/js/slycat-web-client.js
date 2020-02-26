@@ -703,7 +703,7 @@ module.get_model_command_fetch = function(params, errorFunction)
     if (errorFunction) {
       errorFunction(error)
     }else{
-      console.log(error);
+      throw error;
     }
   });
 };

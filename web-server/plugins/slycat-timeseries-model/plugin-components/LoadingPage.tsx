@@ -63,7 +63,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     const params = {mid:this.props.modelId, type:"timeseries", command: "pull_data"}
     client.get_model_command_fetch(params).then((json) => {
       console.log(json)
-    });
+    }).catch((res)=>window.alert(res));
   };
   /**
    * function used to test if we have an ssh connection to the hostname
@@ -179,10 +179,10 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           className={`btn btn-md btn-primary`}
           id={'pullbtn'}
           type='button' 
-          title={'pull'}
+          title={'load data'}
           disabled={false}
           onClick={() => this.pullHPCData()} >
-          {'pull'}
+          {'load'}
           </button>
       </div>
 
