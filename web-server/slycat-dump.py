@@ -27,8 +27,10 @@ parser.add_argument("--project-id", default=[], action="append",
 arguments = parser.parse_args()
 
 
+logFile = '~/dumpLog.txt'
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.FileHandler(logFile))
+#logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 if arguments.force and os.path.exists(arguments.output_dir):
