@@ -63,7 +63,14 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     const params = {mid:this.props.modelId, type:"timeseries", command: "pull_data"}
     client.get_model_command_fetch(params).then((json) => {
       console.log(json)
-    }).catch((res)=>window.alert(res));
+    }).catch((res)=> {
+      if((res as string).includes('409 :: error connecting to check on the job')){
+        this.checkRemoteStatus()
+      } else{
+        window.alert(res);
+      }
+
+    });
   };
   /**
    * function used to test if we have an ssh connection to the hostname
@@ -78,38 +85,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
         this.appendLog(json);
     });
   };
-  // Job codes
-  // JOB STATE CODES
-  // BF BOOT_FAIL
-  // Job terminated due to launch failure, typically due to a hardware failure (e.g. unable to boot the node or block and the job can not be requeued).
-  // CA CANCELLED
-  // Job was explicitly cancelled by the user or system administrator. The job may or may not have been initiated.
-  // CD COMPLETED
-  // Job has terminated all processes on all nodes with an exit code of zero.
-  // DL DEADLINE
-  // Job terminated on deadline.
-  // F FAILED
-  // Job terminated with non-zero exit code or other failure condition.
-  // NF NODE_FAIL
-  // Job terminated due to failure of one or more allocated nodes.
-  // OOM OUT_OF_MEMORY
-  // Job experienced out of memory error.
-  // PD PENDING
-  // Job is awaiting resource allocation.
-  // PR PREEMPTED
-  // Job terminated due to preemption.
-  // R RUNNING
-  // Job currently has an allocation.
-  // RQ REQUEUED
-  // Job was requeued.
-  // RS RESIZING
-  // Job is about to change size.
-  // RV REVOKED
-  // Sibling was removed from cluster due to other cluster starting the job.
-  // S SUSPENDED
-  // Job has an allocation, but execution has been suspended and CPUs have been released for other jobs.
-  // TO TIMEOUT
-  // Job terminated upon reaching its time limit.
+  
   private appendLog = (resJson: any) => {
     this.state.log.logLineArray = resJson.logFile.split("\n")
     this.setState({
@@ -231,6 +207,46 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
             <div className="col-3">Remote host: <b>{this.props.hostname}</b></div>
             <div className="col-2">Session: <b>{this.state.sessionExists?'true':'false'}</b></div>
             <div className="col-2">{this.loginModal()}</div>
+          </div>
+          <div className="row">
+            <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+              Show job status meanings
+            </button>
+            <div className="collapse" id="collapseExample">
+              <div className="card card-body">
+                <dt>JOB STATE CODES</dt>
+                <dt>BF BOOT_FAIL</dt>
+                <dd>Job terminated due to launch failure, typically due to a hardware failure (e.g. unable to boot the node or block and the job can not be requeued).</dd>
+                <dt>CA CANCELLED</dt>
+                <dd>Job was explicitly cancelled by the user or system administrator. The job may or may not have been initiated.</dd>
+                <dt>CD COMPLETED</dt>
+                <dd>Job has terminated all processes on all nodes with an exit code of zero.</dd>
+                <dt>DL DEADLINE</dt>
+                <dd>Job terminated on deadline.</dd>
+                <dt>F FAILED</dt>
+                <dd>Job terminated with non-zero exit code or other failure condition.</dd>
+                <dt>NF NODE_FAIL</dt>
+                <dd>Job terminated due to failure of one or more allocated nodes.</dd>
+                <dt>OOM OUT_OF_MEMORY</dt>
+                <dd>Job experienced out of memory error.</dd>
+                <dt>PD PENDING</dt>
+                <dd>Job is awaiting resource allocation.</dd>
+                <dt>PR PREEMPTED</dt>
+                <dd>Job terminated due to preemption.</dd>
+                <dt>R RUNNING</dt>
+                <dd>Job currently has an allocation.</dd>
+                <dt>RQ REQUEUED</dt>
+                <dd>Job was requeued.</dd>
+                <dt>RS RESIZING</dt>
+                <dd>Job is about to change size.</dd>
+                <dt>RV REVOKED</dt>
+                <dd>Sibling was removed from cluster due to other cluster starting the job.</dd>
+                <dt>S SUSPENDED</dt>
+                <dd>Job has an allocation, but execution has been suspended and CPUs have been released for other jobs.</dd>
+                <dt>TO TIMEOUT</dt>
+                <dd>Job terminated upon reaching its time limit.   </dd>           
+              </div>
+            </div>
           </div>
         </div>
         <div className="slycat-job-checker-output text-white bg-secondary" >

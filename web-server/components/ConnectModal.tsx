@@ -149,6 +149,7 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
   getBodyJsx(): JSX.Element {
     return (
       <div>
+        <form>
         <div className='form-group row mb-3'>
           <label className='col-sm-2 col-form-label'>Username</label>
           <div className='col-sm-9'>
@@ -167,6 +168,7 @@ export default class ConnectModal  extends React.Component<ConnectModalProps,Con
               onChange={(e)=>this.onValueChange(e.target.value, "password")} />
           </div>
         </div>
+        </form>
       </div>
     )
   }

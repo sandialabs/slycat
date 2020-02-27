@@ -342,6 +342,7 @@ def register_slycat_plugin(context):
             cherrypy.log.error("calling compute")
             # compute(model["_id"])
             # finish(model["_id"])
+            slycat.web.server.put_model_parameter(database, model, "computing", False)
 
         if state == ["FAILED", "UNKNOWN", "NOTQUEUED"]:
             tries = tries - 1
@@ -421,6 +422,8 @@ def register_slycat_plugin(context):
         if not slycat.web.server.get_model_parameter(database, model, "computing"):
             cherrypy.log.error("calling update remote job")
             update_remote_job(model["_id"], model["artifact:jid"], model["artifact:hostname"])
+            cherrypy.log.error("returning")
+            return json.dumps({'status': 'computing'})
         else:
             raise cherrypy.HTTPError("409 compute is currently still running.")
 

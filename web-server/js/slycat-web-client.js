@@ -698,7 +698,10 @@ module.get_model_command_fetch = function(params, errorFunction)
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
-    return response.json();
+    if (Object.keys(response).indexOf("json") > -1){
+      return response.json();
+    }
+    return {};
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
@@ -1280,6 +1283,8 @@ module.get_checkjob_fetch = function(hostname, jid) {
         throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
     }
     return response.json();
+  }).catch((error) => {
+      throw error;
   });
 };
 
