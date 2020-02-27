@@ -99,8 +99,9 @@ function make_column(id_index, name, editor, options)
 // load grid data and set up colors for selections
 module.setup = function (metadata, data, include_columns, editable_columns, model_origin,
                          MODEL_NAME, max_freetext_len, MAX_NUM_SEL, USER_SEL_COLORS,
-                         init_sort_order, init_sort_col)
+                         init_sort_order, init_sort_col, init_col_filters)
 {
+
 	// set up callback for data download button
 	var download_button = document.querySelector("#dac-download-table-button");
 	download_button.addEventListener("click", download_button_callback);
@@ -218,6 +219,9 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	// add sorting
 	grid_view.onSort.subscribe(col_sort);
 
+    // set up initial column filters
+    columnFilters = init_col_filters;
+
     // do filtering after something is typed
     $(grid_view.getHeaderRow()).delegate(":input", "change keyup", function (e) {
       var columnId = $(this).data("columnId");
@@ -251,7 +255,17 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
              }
         }
 
+        // if not empty color filter orange to indicate use
+        if (columnFilters[columnId] != "") {
+            $(this).addClass("bg-warning");
+        } else {
+            $(this).removeClass("bg-warning");
+        }
+
         // update bookmarks
+        var filterEvent = new CustomEvent("DACFilterChanged", { detail: {
+										 columnFilters: columnFilters} });
+	    document.body.dispatchEvent(filterEvent);
 
       }
     });
@@ -259,6 +273,14 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
     // add filter to header
     grid_view.onHeaderRowCellRendered.subscribe(function(e, args) {
         $(args.node).empty();
+
+        // check if column filter is empty
+        var set_bg_warning = "";
+        if (typeof columnFilters[args.column.id] !== "undefined" &
+            columnFilters[args.column.id] !== "") {
+                set_bg_warning = "bg-warning";
+            }
+
         $('<input type="search" placeholder="Filter" class="form-control" ' +
           'title="Filter metadata table by ' + args.column.name +  '.">')
             .data("columnId", args.column.id)
@@ -273,6 +295,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
                 // called when user hits the "x" clear button
                 columnFilters[args.column.id] = "";
+                $(this).removeClass("bg-warning");
                 data_view.refresh();
 
                 // update previously selected row
@@ -280,9 +303,12 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
                 prev_row_selected = prev_row_update;
 
                 // update bookmarks
-
+                var filterEvent = new CustomEvent("DACFilterChanged", { detail: {
+                                                 columnFilters: columnFilters} });
+                document.body.dispatchEvent(filterEvent);
 
             })
+            .addClass(set_bg_warning)
             .appendTo(args.node);
     });
 
@@ -327,15 +353,21 @@ var download_button_callback = function ()
 	// concatenate all selections
 	var sel = selections.sel();
 
+    // get visible data (from filters)
+    var vis_sel = module.get_filtered_selection();
+
+    // intersect visible data and selected data
+    var filtered_sel = vis_sel.filter(value => sel.includes(value));
+
     // construct model based name for table download
     var defaultFilename = model_name + " Metadata_Table.csv";
     defaultFilename = defaultFilename.replace(/ /g,"_");
 
 	// check if there anything is selected
-	if (sel.length == 0) {
+	if (filtered_sel.length == 0) {
 
 		// nothing selected: download entire table
-		write_data_table([], defaultFilename);
+		write_data_table(vis_sel, defaultFilename);
 
 	 } else {
 
@@ -345,7 +377,7 @@ var download_button_callback = function ()
             download_dialog_open = true;
 
             // something selected, see what user wants to export
-            openCSVSaveChoiceDialog(sel, defaultFilename);
+            openCSVSaveChoiceDialog(filtered_sel, vis_sel, defaultFilename);
         }
 	 }
  }
@@ -392,20 +424,8 @@ module.download_data_table = function (csvData, defaultFilename)
 };
 
 // generate csv text from data table
-function convert_to_csv (user_selection)
+function convert_to_csv (rows_to_output)
 {
-	// if nothing selected, then output entire table
-	var rows_to_output = [];
-	if (user_selection.length == 0) {
-
-		// get indices of every row in the table
-		for (var i = 0; i < num_rows; i++) {
-			rows_to_output.push(i);
-		}
-	} 
-	else {
-		rows_to_output = user_selection;
-	}
 
 	// output data in data_view (sorted as desired by user) order
 	var csv_output = "";
@@ -420,11 +440,10 @@ function convert_to_csv (user_selection)
 	// add selection color to header, end line
 	csv_output += ',User Selection\n'
 
-	// remove last comma, end line
-	// csv_output = csv_output.slice(0,-1) + "\n";
+    var num_vis_rows = grid_view.getDataLength();
 
 	// output data
-	for (var i = 0; i < num_rows; i++) {
+	for (var i = 0; i < num_vis_rows; i++) {
 
 		// get slick grid table data
 		var item = grid_view.getDataItem(i);
@@ -568,18 +587,32 @@ module.selection_values = function (header_col, rows_to_output)
 
 // opens a dialog to ask user if they want to save selection or whole table
 // (modified from videoswarm code)
-function openCSVSaveChoiceDialog(sel, defaultFilename)
+function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 {
-	// sel contains the entire selection (both red and blue)
+	// sel contains the filtered selection (both red and blue)
 	// (always non-empty when called)
+
+	// check if filters have been applied
+	var filters_applied = false;
+	for (var i in columnFilters) {
+	    if (columnFilters[i] !== "") {
+	        filters_applied = true;
+	    }
+	}
+
 	// message to user
-	var txt = "You have " + sel.length + " row(s) selected.  What would you like to do?";
+	var txt = "There are " + sel.length + " selected row(s) visible.  What would you like to do?";
+
+	// if filters have been applied, add cautionary note
+	if (filters_applied) {
+	    txt = txt + '<br><br><p class="text-danger">Warning: Filters have been applied and the entire table may not be visible!'
+	}
 
 	// buttons for dialog
 	var buttons_save = [
 		{className: "btn-light", label:"Cancel"},
-		{className: "btn-primary", label:"Save Entire Table", icon_class:"fa fa-table"},
-		{className: "btn-primary", label:"Save Selected", icon_class:"fa fa-check"}
+		{className: "btn-primary", label:"Save All Visible", icon_class:"fa fa-table"},
+		{className: "btn-primary", label:"Save Selected Visible", icon_class:"fa fa-check"}
 	];
 
 	// launch dialog
@@ -595,11 +628,11 @@ function openCSVSaveChoiceDialog(sel, defaultFilename)
 
 		    if (typeof button !== 'undefined') {
 
-                if(button.label == "Save Entire Table")
-                    write_data_table([], defaultFilename);
+                if(button.label == "Save All Visible")
+                    write_data_table(all_sel, defaultFilename);
 
-                else if(button.label == "Save Selected")
-                    write_data_table( selections.sel(),
+                else if(button.label == "Save Selected Visible")
+                    write_data_table(sel,
                         defaultFilename);
             }
 		},
@@ -777,7 +810,8 @@ function change_cols (e, args)
 }
 
 // slick grid filter using filter in header row
-function filter(item) {
+function filter(item)
+{
 
     // go through each column and check for filter
     for (var columnId in columnFilters) {
@@ -798,6 +832,27 @@ function filter(item) {
     return true;
 }
 
+// request for filtered data selection
+module.get_filtered_selection = function ()
+{
+
+    var filtered_sel = [];
+
+    // go through grid data and get ids
+    var num_rows_visible = grid_view.getDataLength();
+    for (var i = 0; i < num_rows_visible; i++) {
+
+        // get grid item
+        var item = grid_view.getDataItem(i);
+
+        // get selection index
+		var sel_i = item[item.length-2];
+
+        filtered_sel.push(sel_i);
+    }
+
+    return filtered_sel;
+}
 
 // override slick grid meta data method to color rows according to selection
 function color_rows(old_metadata) {

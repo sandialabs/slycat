@@ -31,7 +31,7 @@ var subset_center = [];
 var mid = URI(window.location).segment(-1);
 
 // difference button fisher ordering and current position
-var fisher_order = null;
+var fisher_order = [];
 var fisher_pos = null;
 
 // has the difference button ever been used?
@@ -102,7 +102,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
-	init_subset_center, init_fisher_order,
+	init_subset_center, init_subset_flag, init_fisher_order,
 	init_fisher_pos, init_diff_desired_state, editable_columns, MODEL_ORIGIN)
 {
 
@@ -167,6 +167,11 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	$("#dac-scatter-button-zoom").on("click",
 		function() { selections.set_sel_type(0); module.draw(); });
 
+    // set initial subset button indicator
+    if (init_subset_flag) {
+        $("#dac-scatter-button-subset").addClass("text-warning");
+    }
+
 	// bind difference buttons to callback
 	$("#dac-previous-three-button").on("click", previous_three);
 	$("#dac-scatter-diff-button").on("click", diff_button);
@@ -175,7 +180,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// set up difference button state
 	fisher_order = init_fisher_order;
 	fisher_pos = init_fisher_pos;
-	if (fisher_order != null) {
+	if (fisher_order.length > 0) {
 	    diff_button_used = true;
 	}
 	diff_desired_state = init_diff_desired_state;
@@ -292,6 +297,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                         if (init_zoom_extent != null) {
                             x_scale.domain([init_zoom_extent[0][0], init_zoom_extent[1][0]]);
                             y_scale.domain([init_zoom_extent[0][1], init_zoom_extent[1][1]]);
+
+                            // change zoom button to yellow
+                            $("#dac-scatter-button-zoom").addClass("text-warning");
                         }
 
                         // default color scale
@@ -825,18 +833,17 @@ module.toggle_difference = function (desired_state)
 
 	if (desired_state == true) {
 
-		// set difference indicator to synced
-		$("#dac-selection-synced").show();
-		$("#dac-selection-not-synced").hide();
+        // set difference button color to green
+        $("#dac-scatter-diff-button").removeClass("bg-warning");
 
 		// difference button has been used
 		diff_button_used = true;
 
 	} else if (diff_button_used == true) {
 
-		// set difference state to out of sync
-		$("#dac-selection-synced").hide();
-		$("#dac-selection-not-synced").show();
+        // set difference button color to yellow
+        $("#dac-scatter-diff-button").addClass("bg-warning");
+
 	}
 }
 
@@ -1089,9 +1096,6 @@ function zoom()
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
-	// reset scale (assumed nothing zoomed)
-	module.reset_zoom();
-
     // was it an empty zoom?
     if (extent[0][0] != extent[1][0] &&
         extent[0][1] != extent[1][1])
@@ -1100,11 +1104,20 @@ function zoom()
         x_scale.domain([extent[0][0], extent[1][0]]);
         y_scale.domain([extent[0][1], extent[1][1]]);
 
+        // change button color to indicate zoom state
+        $("#dac-scatter-button-zoom").addClass("text-warning");
+
         // fire zoom changed event
         var zoomEvent = new CustomEvent("DACZoomChanged",
-                                          {detail: extent});
+                                          {detail: {extent: extent, zoom: true}});
         document.body.dispatchEvent(zoomEvent);
-    };
+
+    } else {
+
+        // reset scale
+        module.reset_zoom();
+
+    }
 
     // remove gray selection box
     d3.event.target.clear();
@@ -1147,8 +1160,9 @@ function subset ()
 	subset_center = [(subset_extent[0][0] + subset_extent[1][0])/2.0,
 					 (subset_extent[0][1] + subset_extent[1][1])/2.0];
 
-	// default to leave zoom alone
+	// default to leave zoom alone, no subset
 	var reset_zoom = false;
+    var subset_flag = true;
 
 	// separate into inclusion and exclusion based on shift key
 	if (!selections.shift_key())
@@ -1156,9 +1170,12 @@ function subset ()
 
 		// if nothing is included, we reset to all data
 		if (selection.length == 0) {
+
 			for (var i = 0; i < mds_coords.length; i++) {
 				mds_subset[i] = 1;
 			}
+			subset_flag = false;
+
 		} else {
 
 			// otherwise we include only the selection, and nothing else
@@ -1168,14 +1185,13 @@ function subset ()
 					mds_subset[i] = 1;
 				}
             }
-				// in this case, we set the center to the subset view
-				subset_center = [(extent[0][0] + extent[1][0])/2.0,
-								 (extent[0][1] + extent[1][1])/2.0];
 
-				// reset zoom to full screen
-				//x_scale.domain([0 - scatter_border, 1 + scatter_border]);
-				//y_scale.domain([0 - scatter_border, 1 + scatter_border]);
-				reset_zoom = true;
+            // in this case, we set the center to the subset view
+            subset_center = [(extent[0][0] + extent[1][0])/2.0,
+                             (extent[0][1] + extent[1][1])/2.0];
+
+            // reset zoom to full screen
+            reset_zoom = true;
 
 		}
 
@@ -1192,15 +1208,23 @@ function subset ()
 	d3.event.target.clear();
 	d3.select(this).call(d3.event.target);
 
+    // update subset button status
+    if (subset_flag) {
+        $("#dac-scatter-button-subset").addClass("text-warning");
+    } else {
+    	$("#dac-scatter-button-subset").removeClass("text-warning");
+    }
+
 	// fire subset changed event
 	var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
 										 new_subset: mds_subset,
 										 subset_center: subset_center,
+										 subset_flag: subset_flag,
 										 zoom: reset_zoom} });
 	document.body.dispatchEvent(subsetEvent);
 }
 
-// reset zoom, accessable to ui controller
+// reset zoom, accessible to ui controller
 module.reset_zoom = function ()
 {
 	// reset zoom to full screen
@@ -1209,9 +1233,12 @@ module.reset_zoom = function ()
 	x_scale.domain([extent[0][0], extent[1][0]]);
     y_scale.domain([extent[0][1], extent[1][1]]);
 
+    // empty zoom -- change button color back
+    $("#dac-scatter-button-zoom").removeClass("text-warning");
+
 	// reset zoom in bookmarks
     var zoomEvent = new CustomEvent("DACZoomChanged",
-                                      {detail: extent});
+                                      {detail: {extent: extent, zoom: false}});
     document.body.dispatchEvent(zoomEvent);
 
 }
@@ -1345,9 +1372,13 @@ function exclude_individual (i) {
 		// remove point from subset
 		mds_subset[i] = 0;
 
+        // subset changed, update button
+        $("#dac-scatter-button-subset").addClass("text-warning");
+
 		// fire subset changed event
 		var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
-											new_subset: mds_subset} });
+											new_subset: mds_subset,
+											subset_flag: true} });
 		document.body.dispatchEvent(subsetEvent);
 
 	// otherwise it's a focus event

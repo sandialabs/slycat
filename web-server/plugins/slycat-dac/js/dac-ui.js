@@ -586,6 +586,9 @@ $(document).ready(function() {
                 // editable column event
                 document.body.addEventListener("DACEditableColChanged", editable_col_changed);
 
+                // table filter event
+                document.body.addEventListener("DACFilterChanged", filter_changed);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -662,6 +665,13 @@ $(document).ready(function() {
                                 var init_zoom_extent = null;
                                 if ("dac-zoom-extent" in bookmark) {
                                     init_zoom_extent = bookmark["dac-zoom-extent"];
+
+                                    // check if button should be marked
+                                    if ("dac-zoom-flag" in bookmark) {
+                                        if (bookmark["dac-zoom-flag"] == false) {
+                                            init_zoom_extent = null;
+                                        }
+                                    }
                                 }
 
                                 // initialize subset center, if bookmarked
@@ -672,6 +682,7 @@ $(document).ready(function() {
 
                                 // initialize subset itself, if bookmarked
                                 var init_mds_subset = [];
+                                var init_subset_flag = false;
                                 for (var i = 0; i < num_points; i++ ) {
                                     init_mds_subset.push(1);
                                 }
@@ -684,11 +695,16 @@ $(document).ready(function() {
                                     if (book_mds_subset.length == num_points) {
                                         init_mds_subset = book_mds_subset;
                                     }
+
+                                    // get subset button status
+                                    if ("dac-subset-flag" in bookmark) {
+                                        init_subset_flag = bookmark["dac-subset-flag"];
+                                    }
                                 }
                                 selections.update_subset(init_mds_subset);
 
                                 // initialize difference button order and position
-                                var init_fisher_order = null;
+                                var init_fisher_order = [];
                                 var init_fisher_pos = null;
                                 if ("dac-fisher-order" in bookmark) {
 
@@ -699,7 +715,7 @@ $(document).ready(function() {
 
                                     // check that order is correct length
                                     if (init_fisher_order.length != num_vars) {
-                                        init_fisher_order = null;
+                                        init_fisher_order = [];
                                         init_fisher_pos = null;
                                     }
                                 }
@@ -759,6 +775,12 @@ $(document).ready(function() {
                                     init_sort_col = bookmark["dac-table-sort-col"];
                                 }
 
+                                // initialize table column filters, if bookmarked
+                                var column_filters = {};
+                                if ("dac-table-filters" in bookmark) {
+                                    column_filters = bookmark["dac-table-filters"];
+                                }
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -782,13 +804,14 @@ $(document).ready(function() {
 					                MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 					                data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_fisher_order, init_fisher_pos, init_diff_desired_state,
+					                init_subset_flag, init_fisher_order, init_fisher_pos, init_diff_desired_state,
 					                editable_columns, model_origin);
 
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
                                                  editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col);
+                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                                                 column_filters);
 
 		   	                },
 		   	                function () {
@@ -980,7 +1003,8 @@ $(document).ready(function() {
 
         // bookmark subset data
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
-                                "dac-subset-center": new_subset.detail.subset_center});
+                                "dac-subset-center": new_subset.detail.subset_center,
+                                "dac-subset-flag": new_subset.detail.subset_flag});
 
     }
 
@@ -1010,7 +1034,8 @@ $(document).ready(function() {
     function zoom_changed (new_extent)
     {
         // bookmark new zoom extent
-        bookmarker.updateState({"dac-zoom-extent": new_extent.detail});
+        bookmarker.updateState({"dac-zoom-extent": new_extent.detail.extent,
+                                "dac-zoom-flag": new_extent.detail.zoom});
     }
 
     // event for zoom changes in time series plots
@@ -1041,6 +1066,14 @@ $(document).ready(function() {
     {
         // change color in scatter plot if necessary
         scatter_plot.recolor_plot (col.detail);
+
+    }
+
+    // event for table filter change
+    function filter_changed (filter)
+    {
+        // bookmark filter change
+        bookmarker.updateState({"dac-table-filters": filter.detail.columnFilters});
 
     }
 

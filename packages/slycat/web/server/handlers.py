@@ -722,10 +722,11 @@ def delete_project_data(did, **kwargs):
 
     for model in database.scan("slycat/models"):
         updated = False
-        for index, model_did in enumerate(model["project_data"]):
-            if model_did == did:
-                updated = True
-                del model["project_data"][index]
+        if "project_data" in model:
+            for index, model_did in enumerate(model["project_data"]):
+                if model_did == did:
+                    updated = True
+                    del model["project_data"][index]
         if updated:
             database.save(model)
 
@@ -1116,13 +1117,12 @@ def clear_ssh_sessions():
   """
   clears out of the ssh session for the current user
   """
-  pass
   try:
       if "slycatauth" in cherrypy.request.cookie:
           sid = cherrypy.request.cookie["slycatauth"].value
           couchdb = slycat.web.server.database.couchdb.connect()
           session = couchdb.get("session", sid)
-          cherrypy.log.error("session %s" % session)
+          cherrypy.log.error("ssh sessions cleared for user session: %s" % session)
           cherrypy.response.status = "200"
           if session is not None:
               for ssh_session in session["sessions"]:
