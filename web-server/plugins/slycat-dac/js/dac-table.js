@@ -68,7 +68,7 @@ var grid_options = {
 };
 
 // column filters
-var columnFilters = {};
+var columnFilters = [];
 
 // model name for downloaded table
 var model_name = "";
@@ -276,8 +276,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
         // check if column filter is empty
         var set_bg_warning = "";
-        if (typeof columnFilters[args.column.id] !== "undefined" &
-            columnFilters[args.column.id] !== "") {
+        if (columnFilters[args.column.id] !== "") {
                 set_bg_warning = "bg-warning";
             }
 
@@ -350,11 +349,17 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 // download data table button
 var download_button_callback = function ()
 {
-	// concatenate all selections
-	var sel = selections.sel();
-
     // get visible data (from filters)
     var vis_sel = module.get_filtered_selection();
+
+    // check that table has at least one row visible
+    if (vis_sel.length == 0) {
+        dialog.ajax_error("There are no rows visible in the table.  Please relax table filters -- only visible rows can be exported.")("","","");
+        return;
+    }
+
+	// concatenate all selections
+	var sel = selections.sel();
 
     // intersect visible data and selected data
     var filtered_sel = vis_sel.filter(value => sel.includes(value));
@@ -556,7 +561,7 @@ module.selection_values = function (header_col, rows_to_output)
 	for (var i = 0; i < num_rows; i++) {
 
 		// get slick grid table data
-		var item = grid_view.getDataItem(i);
+		var item = data_view.getItemById(i);
 
 		// get selection index
 		var sel_i = item[item.length-2];

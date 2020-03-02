@@ -255,6 +255,23 @@ module.update_sel = function(i)
 
 }
 
+// remove i from any selection
+module.remove_sel = function(i)
+{
+
+    if (curr_sel_type > 0) {
+
+        // remove from any selections
+		for (var j = 0; j < max_num_sel; j++) {
+            var sel_j_ind = selection[j].indexOf(i);
+            if (sel_j_ind != -1) {
+                selection[j].splice(sel_j_ind, 1);
+            }
+		}
+    }
+
+}
+
 // update selection range (all at once), but
 // do not remove from current selection if present
 module.update_sel_range = function(sel)

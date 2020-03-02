@@ -590,8 +590,12 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
     for (var i = 0; i < num_sel; i++) {
 
         // text is "ID Var (selection color)"
-        csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind] +
-            " (" + sel_col_commas[1][i] + ")";
+        csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind];
+
+        // add selection color, if available
+        if (sel_col_commas[1][i] != "") {
+            csv_output += " (" + sel_col_commas[1][i] + ")";
+        }
 
         // separated by commas, ended by newline
         if (i < num_sel-1) {

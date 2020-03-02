@@ -589,6 +589,9 @@ $(document).ready(function() {
                 // table filter event
                 document.body.addEventListener("DACFilterChanged", filter_changed);
 
+                // filter button state event
+                document.body.addEventListener("DACFilterButtonState", filter_button_state);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -600,6 +603,7 @@ $(document).ready(function() {
                                 // get number of variables, points and columns in table
                                 var num_vars = variables_meta[0]["row-count"];
                                 var num_cols = data_table_meta[0]["column-count"];
+                                var num_editable_cols = editable_columns.attributes.length;
                                 var num_points = data_table_meta[0]["row-count"];
 
                                 // check variables to be included
@@ -771,14 +775,40 @@ $(document).ready(function() {
                                 var init_sort_order = null;
                                 var init_sort_col = null;
                                 if ("dac-table-order" in bookmark) {
-                                    init_sort_order = bookmark["dac-table-order"];
-                                    init_sort_col = bookmark["dac-table-sort-col"];
+
+                                    // check if sort col exists
+                                    if (bookmark["dac-table-sort-col"] < (num_cols + num_editable_cols)) {
+                                        init_sort_order = bookmark["dac-table-order"];
+                                        init_sort_col = bookmark["dac-table-sort-col"];
+                                    }
                                 }
 
                                 // initialize table column filters, if bookmarked
-                                var column_filters = {};
+                                var column_filters = [];
+                                for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+                                    column_filters.push("");
+                                }
                                 if ("dac-table-filters" in bookmark) {
-                                    column_filters = bookmark["dac-table-filters"];
+
+                                    // check if column filters are in table
+                                    if (bookmark["dac-table-filters"].length == column_filters.length) {
+                                        column_filters = bookmark["dac-table-filters"];
+                                    }
+                                }
+
+                                // initialize filter button state and filter mask
+                                var init_filter_button = false;
+                                var init_filter_mask = [];
+                                for (var i = 0; i < num_points; i++) {
+                                    init_filter_mask.push(1.0);
+                                }
+                                if ("dac-filter-button-state" in bookmark) {
+                                    init_filter_button = bookmark["dac-filter-button-state"];
+
+                                    // check if filters is correct length
+                                    if (bookmark["dac-filter-mask"].length == num_points) {
+                                        init_filter_mask = bookmark["dac-filter-mask"];
+                                    }
                                 }
 
 		   	                    // set up the alpha sliders
@@ -805,7 +835,7 @@ $(document).ready(function() {
 					                data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
 					                init_subset_flag, init_fisher_order, init_fisher_pos, init_diff_desired_state,
-					                editable_columns, model_origin);
+					                init_filter_button, init_filter_mask, editable_columns, model_origin);
 
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
@@ -1075,6 +1105,14 @@ $(document).ready(function() {
         // bookmark filter change
         bookmarker.updateState({"dac-table-filters": filter.detail.columnFilters});
 
+    }
+
+    // event for scatter button filter state
+    function filter_button_state (state)
+    {
+        // bookmark filter button state
+        bookmarker.updateState({"dac-filter-button-state": state.detail.button_state,
+                                "dac-filter-mask": state.detail.filter_mask});
     }
 
 });

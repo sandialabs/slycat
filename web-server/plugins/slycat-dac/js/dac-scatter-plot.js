@@ -12,6 +12,7 @@ import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import request from "./dac-request-data.js";
 import selections from "./dac-manage-selections.js";
+import metadata_table from "./dac-table.js";
 import d3 from "d3";
 import URI from "urijs";
 
@@ -37,6 +38,9 @@ var fisher_pos = null;
 // has the difference button ever been used?
 var diff_button_used = false;
 var diff_desired_state = null;
+
+// filter button state
+var filter_button_on = false;
 
 // d3 variables for drawing MDS coords
 var scatter_plot = null;
@@ -87,6 +91,9 @@ var max_color_by_name_length = null;
 // variables to use in analysis
 var var_include_columns = null;
 
+// show/hide filtered points (mask)
+var filtered_selection = [];
+
 // keep track of number of metadata columns (not counting editable columns)
 var num_metadata_cols = null;
 
@@ -103,7 +110,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
 	init_alpha_values, init_color_by_sel, init_zoom_extent,
 	init_subset_center, init_subset_flag, init_fisher_order,
-	init_fisher_pos, init_diff_desired_state, editable_columns, MODEL_ORIGIN)
+	init_fisher_pos, init_diff_desired_state, init_filter_button,
+	init_filter_mask, editable_columns, MODEL_ORIGIN)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -176,6 +184,18 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	$("#dac-previous-three-button").on("click", previous_three);
 	$("#dac-scatter-diff-button").on("click", diff_button);
 	$("#dac-next-three-button").on("click", next_three);
+
+    // bind filter button to callback
+    $("#dac-filter-plots-button").on("click", filter_plots);
+
+    // initialize filter button state
+    filter_button_on = init_filter_button;
+    if (filter_button_on) {
+        $("#dac-filter-plots-button").addClass("bg-warning");
+    }
+
+    // initialize filter mask
+    filtered_selection = init_filter_mask;
 
 	// set up difference button state
 	fisher_order = init_fisher_order;
@@ -406,9 +426,30 @@ var set_outline_width = function (d,i)
     return outline_width;
 }
 
+// d3 function to label a class
+var filtered_class = function (d,i)
+{
+    // default is non filtered
+    var filter = "dac-not-filtered";
+    if (filtered_selection[i] == 1) {
+        filter = "dac-filtered";
+    }
+
+    return filter;
+}
+
 // entirely redraws points (including selection, using circles)
 function draw_circles ()
 {
+    /*
+    console.log("----");
+    console.log("filtered: ");
+    console.log(filtered_selection);
+    console.log("subset: ");
+    console.log(mds_subset);
+    console.log("----");
+    */
+
 	// erase any old points
 	scatter_plot.selectAll("circle").remove();
 
@@ -420,6 +461,7 @@ function draw_circles ()
 		.data(mds_coords)
 		.enter()
 		.append("circle")
+		.attr("class", filtered_class);
 
 	// make sure they are colored according to selections
 	scatter_points.attr("stroke", set_outline_color);
@@ -446,44 +488,54 @@ function draw_circles ()
 		.attr("r", point_size)
 		.on("mousedown", sel_individual);
 
+    // hide unfiltered points
+    scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.2);
+
+    // raise filtered points to foreground
+    scatter_plot.selectAll(".dac-filtered").each(function() {
+            this.parentNode.appendChild(this); });
+
 	// draw new focus circle, if needed
 	if (selections.focus() != null) {
 
-		// are we in color by mode?
-		if (curr_color_by_col.length > 0) {
-			// yes -- get current point color
-			focus_point_color = color_scale(curr_color_by_col[selections.focus()]);
-		} else {
-			// no -- revert to standard point color
-			focus_point_color = point_color;
-		}
+	    // check that this is not filtered
+	    if (filtered_selection[selections.focus()] == 1) {
 
-		// get focus data
-		scatter_plot.selectAll(".focus")
-					.data([mds_coords[selections.focus()]])
-					.attr("class", "focus")
-					.enter()
-					.append("circle")
-					.attr("class", "focus")
-					.attr("stroke", focus_color)
-					.attr("stroke-width", outline_sel)
-					.attr("fill", focus_point_color)
-					.attr("cx", function(d) {
-						return x_scale(d[0])
-					})
-					.attr("cy", function(d) {
-						return y_scale(d[1])
-					})
-					.attr("r", point_size)
-					.on("mousedown", defocus);
+            // are we in color by mode?
+            if (curr_color_by_col.length > 0) {
+                // yes -- get current point color
+                focus_point_color = color_scale(curr_color_by_col[selections.focus()]);
+            } else {
+                // no -- revert to standard point color
+                focus_point_color = point_color;
+            }
 
+            // get focus data
+            scatter_plot.selectAll(".focus")
+                        .data([mds_coords[selections.focus()]])
+                        .enter()
+                        .append("circle")
+                        .attr("class", "focus")
+                        .attr("stroke", focus_color)
+                        .attr("stroke-width", outline_sel)
+                        .attr("fill", focus_point_color)
+                        .attr("cx", function(d) {
+                            return x_scale(d[0])
+                        })
+                        .attr("cy", function(d) {
+                            return y_scale(d[1])
+                        })
+                        .attr("r", point_size)
+                        .on("mousedown", defocus);
+
+	    }
 	}
-
 }
 
 // entirely redraws points (including selection)
 function draw_squares ()
 {
+
 	// erase any old points
 	scatter_plot.selectAll(".square").remove();
 
@@ -493,10 +545,10 @@ function draw_squares ()
 	// input new points
 	scatter_points = scatter_plot.selectAll(".square")
 		.data(mds_coords)
-		.attr("class", "square")
 		.enter()
 		.append("rect")
-		.attr("class", "square");
+		.attr("class", filtered_class)
+		.classed("square", true)
 
 	// make sure they are colored according to selections
 	scatter_points.attr("stroke", set_outline_color);
@@ -524,46 +576,55 @@ function draw_squares ()
 		.attr("height", point_size*2)
 		.on("mousedown", sel_individual);
 
+    // hide unfiltered points
+    scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
+
+    // raise filtered points to foreground
+    scatter_plot.selectAll(".dac-filtered").each(function() {
+            this.parentNode.appendChild(this); });
+
 	// draw new focus rect, if needed
 	if (selections.focus() != null) {
 
-		// are we in color by mode?
-		if (curr_color_by_col.length > 0) {
-			// yes -- get current point color
-			focus_point_color = color_scale(curr_color_by_col[selections.focus()]);
-		} else {
-			// no -- revert to standard point color
-			focus_point_color = point_color;
-		}
+	    // check that this is not filtered
+	    if (filtered_selection[selections.focus()] == 1) {
 
-		// get focus data
-		scatter_plot.selectAll(".focus")
-					.data([mds_coords[selections.focus()]])
-					.attr("class", "focus")
-					.enter()
-					.append("rect")
-					.attr("class", "focus")
-					.attr("stroke", focus_color)
-					.attr("stroke-width", outline_sel)
-					.attr("fill", focus_point_color)
-					.attr("x", function(d) {
-						return x_scale(d[0]) - point_size;
-					})
-					.attr("y", function(d) {
-						return y_scale(d[1]) - point_size;
-					})
-					.attr("width", point_size*2)
-					.attr("height", point_size*2)
-					.on("mousedown", defocus);
 
+            // are we in color by mode?
+            if (curr_color_by_col.length > 0) {
+                // yes -- get current point color
+                focus_point_color = color_scale(curr_color_by_col[selections.focus()]);
+            } else {
+                // no -- revert to standard point color
+                focus_point_color = point_color;
+            }
+
+            // get focus data
+            scatter_plot.selectAll(".focus")
+                        .data([mds_coords[selections.focus()]])
+                        .enter()
+                        .append("rect")
+                        .attr("class", "focus")
+                        .attr("stroke", focus_color)
+                        .attr("stroke-width", outline_sel)
+                        .attr("fill", focus_point_color)
+                        .attr("x", function(d) {
+                            return x_scale(d[0]) - point_size;
+                        })
+                        .attr("y", function(d) {
+                            return y_scale(d[1]) - point_size;
+                        })
+                        .attr("width", point_size*2)
+                        .attr("height", point_size*2)
+                        .on("mousedown", defocus);
+
+	    }
 	}
-
 }
 
 // animate if MDS coordinates have changed, or from zoom
 var animate = function ()
 {
-
 	// circles and square have to be treated differently
 	if (scatter_plot_type == "circle") {
 		animate_circles();
@@ -801,12 +862,14 @@ var set_diff_arrows = function ()
     if (fisher_pos + 3 >= fisher_order.length) {
 
 		// disable next button
-		$("#dac-next-three-button").addClass("disabled");
+		//$("#dac-next-three-button").addClass("disabled");
+		$("#dac-next-three-button").prop("disabled", true);
 
     } else {
 
         // enable next button
-        $("#dac-next-three-button").removeClass("disabled");
+        //$("#dac-next-three-button").removeClass("disabled");
+        $("#dac-next-three-button").prop("disabled", false);
 
     }
 
@@ -814,11 +877,14 @@ var set_diff_arrows = function ()
     if (fisher_pos - 3 < 0) {
 
         // disable previous button
-        $("#dac-previous-three-button").addClass("disabled");
+        //$("#dac-previous-three-button").addClass("disabled");
+		$("#dac-previous-three-button").prop("disabled", true);
 
     } else {
 
-        $("#dac-previous-three-button").removeClass("disabled");
+        //$("#dac-previous-three-button").removeClass("disabled");
+		$("#dac-previous-three-button").prop("disabled", false);
+
 
     }
 
@@ -845,6 +911,60 @@ module.toggle_difference = function (desired_state)
         $("#dac-scatter-diff-button").addClass("bg-warning");
 
 	}
+}
+
+// routine to filter scatter plot using table filters
+var filter_plots = function ()
+{
+
+    // are we filtering of unfiltering?
+    if (filter_button_on) {
+
+        // restore unfiltered visualization
+        for (var i = 0; i < filtered_selection.length; i++) {
+            filtered_selection[i] = 1.0;
+        }
+        module.draw();
+
+        // unfilter plots
+        console.log("unfilter plots");
+
+    } else {
+
+        // get filtered selection from table
+        var filtered_selection_list = metadata_table.get_filtered_selection();
+
+        // change list to mask
+        for (var i = 0; i < filtered_selection.length; i++) {
+            filtered_selection[i] = 0;
+        }
+        for (var i = 0; i < filtered_selection_list.length; i++) {
+            filtered_selection[filtered_selection_list[i]] = 1;
+        }
+
+        // filter scatter plot
+        module.draw();
+
+        // filter plots
+        console.log("filter plots");
+
+    }
+
+    // button toggles between filtered/unfiltered state
+    if (filter_button_on) {
+        filter_button_on = false;
+        $("#dac-filter-plots-button").removeClass("bg-warning");
+    } else {
+        filter_button_on = true;
+        $("#dac-filter-plots-button").addClass("bg-warning");
+    }
+
+    // bookmark filter state
+    var filterEvent = new CustomEvent("DACFilterButtonState",
+                             { detail: {button_state: filter_button_on,
+                                        filter_mask: filtered_selection} });
+    document.body.dispatchEvent(filterEvent);
+
 }
 
 // routine to return sort array and return indices
@@ -1148,10 +1268,17 @@ function subset ()
 			extent[0][1] <= mds_coords[i][1] &&
 			mds_coords[i][1] < extent[1][1])
 			{
-				// save current selection
-				selection.push(i);
+			    // restrict to filtered selection, if applicable
+			    //if (filtered_selection[i] == 1) {
+
+                    // save current selection
+                    selection.push(i);
+			    //}
+
 			};
 	};
+
+    console.log(selection);
 
 	// save current center for scaling
 	var subset_extent = d3.transpose([x_scale.domain(), y_scale.domain()]);
@@ -1173,6 +1300,7 @@ function subset ()
 
 			for (var i = 0; i < mds_coords.length; i++) {
 				mds_subset[i] = 1;
+
 			}
 			subset_flag = false;
 
@@ -1321,11 +1449,15 @@ function sel_brush_end()
 			extent[0][1] <= mds_coords[i][1] &&
 			mds_coords[i][1] < extent[1][1])
 			{
+                // remove if selection is invisible
+                if (filtered_selection[i] == 0) {
+                    selections.remove_sel(i);
 
-				// save current selection
-				selections.update_sel(i);
-				selection.push(i);
-
+                } else {
+          			// otherwise, save current selection
+				    selections.update_sel(i);
+				    selection.push(i);
+                }
 			};
 	};
 
@@ -1342,25 +1474,27 @@ function sel_brush_end()
 // select an individual point
 function sel_individual (d,i)
 {
+    // check if point is visible
+    if (filtered_selection[i] == 1.0) {
 
-	// check for subset exclusion
-	if (selections.sel_type() == -1) {
+        // check for subset exclusion
+        if (selections.sel_type() == -1) {
 
-		exclude_individual(i);
+            exclude_individual(i);
 
-	// check for zoom mode
-	} else if (selections.sel_type() == 0) {
+        // check for zoom mode
+        } else if (selections.sel_type() == 0) {
 
-		// potentially change focus
-		selections.change_focus(i);
+            // potentially change focus
+            selections.change_focus(i);
 
-	// in selection mode
-	} else {
+        // in selection mode
+        } else {
 
-		// update focus and/or selection
-		selections.update_sel_focus(i);
-	}
-
+            // update focus and/or selection
+            selections.update_sel_focus(i);
+        }
+    }
 }
 
 // perform subset exclusion (assuming we're in subset mode)
