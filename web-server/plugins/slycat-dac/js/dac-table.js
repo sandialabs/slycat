@@ -346,6 +346,19 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
 }
 
+// check if any column filters are active
+module.filters_active = function ()
+{
+    var filters_on = false;
+    for (var i = 0; i < columnFilters.length; i++) {
+        if (columnFilters[i] !== "") {
+            filters_on = true;
+        }
+    }
+
+    return filters_on;
+}
+
 // download data table button
 var download_button_callback = function ()
 {
@@ -546,7 +559,7 @@ function row_sel_color (item)
 }
 
 // return table values for a selection
-module.selection_values = function (header_col, rows_to_output)
+module.selection_values = function (header_col, rows_to_output, use_data_order)
 {
 
     // return header value and selection color
@@ -558,10 +571,19 @@ module.selection_values = function (header_col, rows_to_output)
 
     // go through table rows in table order
     var sel_table_order = [];
-	for (var i = 0; i < num_rows; i++) {
+    var num_vis_rows = grid_view.getDataLength();
+    if (use_data_order) {
+        num_vis_rows = num_rows;
+    }
+    for (var i = 0; i < num_vis_rows; i++) {
 
 		// get slick grid table data
-		var item = data_view.getItemById(i);
+		var item = null;
+		if (use_data_order) {
+		    item = data_view.getItemById(i);
+		} else {
+		    item = grid_view.getDataItem(i);
+		}
 
 		// get selection index
 		var sel_i = item[item.length-2];
@@ -610,7 +632,9 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 
 	// if filters have been applied, add cautionary note
 	if (filters_applied) {
-	    txt = txt + '<br><br><p class="text-danger">Warning: Filters have been applied and the entire table may not be visible!'
+	    txt = txt + '<br><br><i class="text-warning fa fa-exclamation-triangle"></i> Filters ' +
+	                'have been applied and the entire table may not be visible!  To use entire table ' +
+	                'close this dialog and clear the filters.'
 	}
 
 	// buttons for dialog

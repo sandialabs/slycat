@@ -13,6 +13,7 @@ import * as dialog from "js/slycat-dialog";
 import request from "./dac-request-data.js";
 import selections from "./dac-manage-selections.js";
 import metadata_table from "./dac-table.js";
+import plots from "./dac-plots.js";
 import d3 from "d3";
 import URI from "urijs";
 
@@ -38,9 +39,6 @@ var fisher_pos = null;
 // has the difference button ever been used?
 var diff_button_used = false;
 var diff_desired_state = null;
-
-// filter button state
-var filter_button_on = false;
 
 // d3 variables for drawing MDS coords
 var scatter_plot = null;
@@ -93,6 +91,9 @@ var var_include_columns = null;
 
 // show/hide filtered points (mask)
 var filtered_selection = [];
+
+// filter button state
+var filter_button_on = false;
 
 // keep track of number of metadata columns (not counting editable columns)
 var num_metadata_cols = null;
@@ -441,14 +442,6 @@ var filtered_class = function (d,i)
 // entirely redraws points (including selection, using circles)
 function draw_circles ()
 {
-    /*
-    console.log("----");
-    console.log("filtered: ");
-    console.log(filtered_selection);
-    console.log("subset: ");
-    console.log(mds_subset);
-    console.log("----");
-    */
 
 	// erase any old points
 	scatter_plot.selectAll("circle").remove();
@@ -458,7 +451,7 @@ function draw_circles ()
 
 	// input new points
 	scatter_points = scatter_plot.selectAll("circle")
-		.data(mds_coords)
+		.data(mds_coords, function(d) { return d[2]; })
 		.enter()
 		.append("circle")
 		.attr("class", filtered_class);
@@ -489,7 +482,7 @@ function draw_circles ()
 		.on("mousedown", sel_individual);
 
     // hide unfiltered points
-    scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.2);
+    scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
 
     // raise filtered points to foreground
     scatter_plot.selectAll(".dac-filtered").each(function() {
@@ -544,7 +537,7 @@ function draw_squares ()
 
 	// input new points
 	scatter_points = scatter_plot.selectAll(".square")
-		.data(mds_coords)
+		.data(mds_coords, function(d) { return d[2]; })
 		.enter()
 		.append("rect")
 		.attr("class", filtered_class)
@@ -699,9 +692,9 @@ module.update = function (alpha_values)
 				// record new values in mds_coords
 				mds_coords = JSON.parse(result)["mds_coords"];
 
-				// update the data in d3 (using either cirlces or squares)
+				// update the data in d3 (using either circes or squares)
 				scatter_plot.selectAll(scatter_plot_type)
-					.data(mds_coords);
+					.data(mds_coords, function(d) { return d[2]; });
 
 				// update the focus point
 				if (selections.focus() != null) {
@@ -922,12 +915,15 @@ var filter_plots = function ()
 
         // restore unfiltered visualization
         for (var i = 0; i < filtered_selection.length; i++) {
-            filtered_selection[i] = 1.0;
+            filtered_selection[i] = 1;
         }
         module.draw();
 
+        // update filter mask and filter button state
+        selections.update_filter(filtered_selection, !filter_button_on);
+
         // unfilter plots
-        console.log("unfilter plots");
+        plots.draw();
 
     } else {
 
@@ -945,8 +941,11 @@ var filter_plots = function ()
         // filter scatter plot
         module.draw();
 
+        // update filter mask and filter button state
+        selections.update_filter(filtered_selection, !filter_button_on);
+
         // filter plots
-        console.log("filter plots");
+        plots.draw();
 
     }
 
@@ -958,6 +957,34 @@ var filter_plots = function ()
         filter_button_on = true;
         $("#dac-filter-plots-button").addClass("bg-warning");
     }
+
+    // bookmark filter state
+    var filterEvent = new CustomEvent("DACFilterButtonState",
+                             { detail: {button_state: filter_button_on,
+                                        filter_mask: filtered_selection} });
+    document.body.dispatchEvent(filterEvent);
+
+}
+
+// turn off filter button (independent of actual filters)
+module.turn_off_filter_button = function ()
+{
+
+    // restore unfiltered visualization
+    for (var i = 0; i < filtered_selection.length; i++) {
+        filtered_selection[i] = 1;
+    }
+    module.draw();
+
+    // turn off button
+    filter_button_on = false;
+    $("#dac-filter-plots-button").removeClass("bg-warning");
+
+    // update filter mask and filter button state
+    selections.update_filter(filtered_selection, filter_button_on);
+
+    // unfilter plots
+    plots.draw();
 
     // bookmark filter state
     var filterEvent = new CustomEvent("DACFilterButtonState",
@@ -1277,8 +1304,6 @@ function subset ()
 
 			};
 	};
-
-    console.log(selection);
 
 	// save current center for scaling
 	var subset_extent = d3.transpose([x_scale.domain(), y_scale.domain()]);

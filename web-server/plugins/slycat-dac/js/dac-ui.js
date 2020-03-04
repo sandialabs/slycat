@@ -811,6 +811,9 @@ $(document).ready(function() {
                                     }
                                 }
 
+                                // update filter mask/button in selections
+                                selections.update_filter(init_filter_mask, init_filter_button);
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -824,8 +827,8 @@ $(document).ready(function() {
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
 				                            variables_meta, variables, var_include_columns,
 				                            data_table[0]["data"][0].length, init_plots_selected,
-				                            init_plots_displayed, init_plots_zoom_x,
-				                            init_plots_zoom_y, init_link_plots);
+				                            init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
+				                            init_link_plots);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -1102,9 +1105,11 @@ $(document).ready(function() {
     // event for table filter change
     function filter_changed (filter)
     {
+        // if filter button is on, turn it off
+        scatter_plot.turn_off_filter_button();
+
         // bookmark filter change
         bookmarker.updateState({"dac-table-filters": filter.detail.columnFilters});
-
     }
 
     // event for scatter button filter state
