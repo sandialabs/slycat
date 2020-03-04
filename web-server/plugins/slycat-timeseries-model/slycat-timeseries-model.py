@@ -72,15 +72,17 @@ def register_slycat_plugin(context):
         slycat.web.server.update_model(database, model, state="finished", result="failed",
                                        finished=datetime.datetime.utcnow().isoformat(), message=message)
 
-    def get_remote_file_server(hostname, filename):
+    def get_remote_file_server(hostname, model, filename):
         """
         Utility function to fetch remote files.
         :param hostname:
         :param username:
-        :param filename: Full path for the requested file
+        :param filename: Full filename for the requested file
         :return: tuple with session ID and file content
         """
-        return slycat.web.server.handlers.get_remote_file(hostname, filename)
+        sid = get_sid(hostname, model)
+        with slycat.web.server.remote.get_session(sid) as session:
+          return session.get_file(filename)
 
     def get_sid(hostname, model):
         """
@@ -90,44 +92,35 @@ def register_slycat_plugin(context):
         :return:
         """
         sid = None
-        #cherrypy.log.error(str(hostname))
         try:
-            #cherrypy.log.error("getting db")
             database = slycat.web.server.database.couchdb.connect()
-            #cherrypy.log.error("getting session for %s" % model["creator"])
             sessions = [session for session in database.scan("slycat/sessions") if
                         session["creator"] == model["creator"]]
             if len(sessions) > 1:
                 cherrypy.log.error("to many user sessions %s" % str(sessions))
                 raise Exception("to many user sessions")
-            for host_session in sessions[0]["sessions"]:  # our session should be in index 0 or else something
-                # went wrong
-                #cherrypy.log.error("hostname %s" % str(host_session))
+            for index, host_session in enumerate(sessions[0]["sessions"]):
                 if host_session["hostname"] == hostname:
                     sid = host_session["sid"]
+                    if(not slycat.web.server.remote.check_session(sid)):
+                        cherrypy.log.error("error session %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, list(slycat.web.server.remote.session_cache.keys())))
+                        slycat.web.server.remote.delete_session(sid)
+                        del session["sessions"][index]
+                        database.save(session)
+                        raise cherrypy.HTTPError("404")
                     break
         except Exception as e:
-            cherrypy.log.error("[Timeseries] session exception type: %s" % sys.exc_info()[0])
-            cherrypy.log.error("[Timeseries] session exception value: %s" % sys.exc_info()[1])
-            cherrypy.log.error("[Timeseries] session exception traceback: %s" % sys.exc_info()[2])
-            cherrypy.log.error(
-                "[Timeseries] could not retrieve host session for remotes %s in timeseries compute function "
-                "did you create this time series?")
-            raise Exception(
-                "[Timeseries] exeception message %s" % e.message)
+            cherrypy.log.error(traceback.format_exc())
+            cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
+            cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
+            cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
+            cherrypy.log.error("could not retrieve host session for remotes %s" % e)
+            raise cherrypy.HTTPError("404")
         if sid is None:
-            database = slycat.web.server.database.couchdb.connect()
-            model = database.get("model", model["_id"])
-            slycat.web.server.update_model(database, model,
-                                           message="data was computed, but can't be pulled over because the server "
-                                                   "needs an active ssh session to the host in order to get your data")
-            raise Exception(
-                "data was computed, but can't be pulled over because the server needs an active ssh session to the "
-                "host in order to get your data")
-        #cherrypy.log.error("got sid")
+            raise cherrypy.HTTPError("400 session is None value")
         return sid
 
-    def compute(model_id):
+    def compute(model_id, stop_event):
         """
         Computes the Time Series model. It fetches the necessary files from a
         remote server that were computed by the slycat-agent-compute-timeseries.py
@@ -140,21 +133,18 @@ def register_slycat_plugin(context):
         :param hostname:
         :param username:
         """
-        #cherrypy.log.error("in thread")
-        # workdir += "/slycat/pickle"  # route to the slycat directory
-        database = slycat.web.server.database.couchdb.connect()
-        model = database.get("model", model_id)
-        slycat.web.server.put_model_parameter(database, model, "computing", True)
-
-        database = slycat.web.server.database.couchdb.connect()
-        model = database.get("model", model_id)
-        model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
-        slycat.web.server.update_model(database, model, state="waiting")
-
-        model = database.get("model", model_id)
-        slycat.web.server.put_model_parameter(database, model, "computing", False)
-        cherrypy.log.error("[TIMESERIES] Exceeded max number of tries to pull data.")
         try:
+            #cherrypy.log.error("in thread")
+            # workdir += "/slycat/pickle"  # route to the slycat directory
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", model_id)
+            model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
+            cherrypy.log.error("Computing 1model_id: %s" % model_id)
+            slycat.web.server.update_model(database, model, state="waiting")
+            # slycat.web.server.put_model_parameter(database, model, "computing", False)
+            cherrypy.log.error("Computing model_id: %s" % model_id)
+
+            model = database.get("model", model_id)
             uid = slycat.web.server.get_model_parameter(database, model, "pickle_uid")
             workdir_raw = slycat.web.server.get_model_parameter(database, model, "working_directory")
             workdir = workdir_raw + "pickle"
@@ -163,29 +153,39 @@ def register_slycat_plugin(context):
 
             # get an active session
             sid = get_sid(hostname, model)
-
-            #cherrypy.log.error("sid:%s uid:%s work_dir:%s host:%s user:%s" % (
-            #    sid, uid, workdir, hostname, username))
-            inputs = get_remote_file_server(hostname,
+            # load inputs
+            inputs = get_remote_file_server(hostname, model,
                                             "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid))
-            #cherrypy.log.error("got inputs")
             inputs = pickle.loads(inputs)
-
+            cherrypy.log.error("Computing thread inputs: %s" % inputs)
+            database = slycat.web.server.database.couchdb.connect()
+            model = database.get("model", model_id)
+            cherrypy.log.error("putting false for computing")
+            slycat.web.server.put_model_parameter(database, model, "computing", False)
+            cherrypy.log.error("finished Pulling timeseries computed data")
+            stop_event.set()
+            return
+            # done -- destroy the thread
             slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
+
+            # load attributes
             attributes = inputs["attributes"]
             slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
 
-            data = get_remote_file_server(hostname,
+            # load attribute data
+            data = get_remote_file_server(hostname, model,
                                           "%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (workdir, uid))
             attributes_data = pickle.loads(data)
 
+            # push attribute arraysets
             # TODO this can become multi processored
             for attribute in range(len(attributes)):
+                model = database.get("model", model["_id"])
                 slycat.web.server.put_model_arrayset_data(database, model, inputs["aid"], "0/%s/..." % attribute,
                                                           [attributes_data[attribute]])
-
+            # load clusters data
             clusters = json.loads(
-                slycat.web.server.get_remote_file_server(hostname,
+                slycat.web.server.get_remote_file_server(hostname, model,
                                                   "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid)))
             clusters_file = json.JSONDecoder().decode(clusters["file"])
             timeseries_count = json.JSONDecoder().decode(clusters["timeseries_count"])
@@ -196,7 +196,7 @@ def register_slycat_plugin(context):
             # TODO this can become multi processored
             cherrypy.log.error("Pulling timeseries computed data")
             for file_name in clusters_file:
-                file_cluster_data = get_remote_file_server(hostname,
+                file_cluster_data = get_remote_file_server(hostname, model,
                                                             "%s/slycat_timeseries_%s/file_cluster_%s.json" % (
                                                                 workdir, uid, file_name))
                 file_cluster_attr = json.loads(file_cluster_data)
@@ -208,35 +208,35 @@ def register_slycat_plugin(context):
                 model = database.get("model", model["_id"])
                 slycat.web.server.put_model_arrayset(database, model, "preview-%s" % file_name)
 
-                waveform_dimensions_data = get_remote_file_server(hostname,
+                waveform_dimensions_data = get_remote_file_server(hostname, model,
                                                                         "%s/slycat_timeseries_%s/waveform_%s_dimensions"
                                                                         ".pickle" % (
                                                                             workdir, uid, file_name))
                 waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
-                waveform_attributes_data = get_remote_file_server(hostname,
+                waveform_attributes_data = get_remote_file_server(hostname, model,
                                                                         "%s/slycat_timeseries_%s/waveform_%s_attributes"
                                                                         ".pickle" % (
                                                                             workdir, uid, file_name))
                 waveform_attributes_array = pickle.loads(waveform_attributes_data)
-                waveform_times_data = get_remote_file_server(hostname,
+                waveform_times_data = get_remote_file_server(hostname, model,
                                                                   "%s/slycat_timeseries_%s/waveform_%s_times"
                                                                   ".pickle" % (
                                                                       workdir, uid, file_name))
                 waveform_times_array = pickle.loads(waveform_times_data)
-                waveform_values_data = get_remote_file_server(hostname,
+                waveform_values_data = get_remote_file_server(hostname, model,
                                                                     "%s/slycat_timeseries_%s/waveform_%s_values"
                                                                     ".pickle" % (
                                                                         workdir, uid, file_name))
                 waveform_values_array = pickle.loads(waveform_values_data)
 
-                # cherrypy.log.error("timeseries_count=%s" % timeseries_count)
-
                 # TODO this can become multi processored
                 for index in range(int(timeseries_count)):
                     try:
+                        model = database.get("model", model["_id"])
                         slycat.web.server.put_model_array(database, model, "preview-%s" % file_name, index,
                                                           waveform_attributes_array[index],
                                                           waveform_dimensions_array[index])
+                        model = database.get("model", model["_id"])
                         slycat.web.server.put_model_arrayset_data(database, model, "preview-%s" % file_name,
                                                                   "%s/0/...;%s/1/..." % (index, index),
                                                                   [waveform_times_array[index],
@@ -262,8 +262,8 @@ def register_slycat_plugin(context):
             cherrypy.log.error("Timeseries cperror model compute exception type: %s" % sys.exc_info()[0])
             cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
             cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
-            raise Exception(e.message)
-        except Exception as e:
+            stop_event.set()
+        except:
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", model_id)
             slycat.web.server.put_model_parameter(database, model, "computing", False)
@@ -271,13 +271,7 @@ def register_slycat_plugin(context):
             cherrypy.log.error("Timeseries model compute exception type: %s" % sys.exc_info()[0])
             cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
             cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
-            # fail_model(model_id, "Timeseries model compute exception: %s" % sys.exc_info()[0])
-            raise Exception(e.message)
-
-        database = slycat.web.server.database.couchdb.connect()
-        model = database.get("model", model_id)
-        slycat.web.server.put_model_parameter(database, model, "computing", False)
-        # slycat.web.server.delete_model_parameter(database, model, "computing")
+            stop_event.set()
 
     def get_job_status(hostname, jid):
         """
@@ -340,6 +334,10 @@ def register_slycat_plugin(context):
             and successfully completes it.
             """
             cherrypy.log.error("calling compute")
+                # now start thread to prevent timing out on large files
+            stop_event = threading.Event()
+            thread = threading.Thread(target=compute, args=(model["_id"], stop_event))
+            thread.start()
             # compute(model["_id"])
             # finish(model["_id"])
             slycat.web.server.put_model_parameter(database, model, "computing", False)
@@ -420,9 +418,11 @@ def register_slycat_plugin(context):
         if model["state"] == "finished":
             raise cherrypy.HTTPError("409 model is in the finished state already")
         if not slycat.web.server.get_model_parameter(database, model, "computing"):
+            slycat.web.server.put_model_parameter(database, model, "computing", True)
             cherrypy.log.error("calling update remote job")
             update_remote_job(model["_id"], model["artifact:jid"], model["artifact:hostname"])
             cherrypy.log.error("returning")
+            cherrypy.response.headers["content-type"] = "application/json"
             return json.dumps({'status': 'computing'})
         else:
             raise cherrypy.HTTPError("409 compute is currently still running.")

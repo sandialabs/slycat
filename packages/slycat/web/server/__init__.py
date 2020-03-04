@@ -114,11 +114,12 @@ def update_model(database, model, **kwargs):
     Update the model, and signal any waiting threads that it's changed.
     will only update model base on "state", "result", "started", "finished", "progress", "message"
     """
-    model = database.get('model',model["_id"])
-    for name, value in list(kwargs.items()):
-        if name in ["state", "result", "started", "finished", "progress", "message"]:
-            model[name] = value
-    database.save(model)
+    with get_model_lock(model["_id"]):
+      model = database.get('model',model["_id"])
+      for name, value in list(kwargs.items()):
+          if name in ["state", "result", "started", "finished", "progress", "message"]:
+              model[name] = value
+      database.save(model)
 
 def parse_existing_file(database, parser, input, attachment, model, aid):
     """
