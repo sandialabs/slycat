@@ -428,15 +428,21 @@ var set_outline_width = function (d,i)
 }
 
 // d3 function to label a class
-var filtered_class = function (d,i)
+var filtered_selected_class = function (d,i)
 {
     // default is non filtered
-    var filter = "dac-not-filtered";
+    var filtered = "dac-not-filtered";
     if (filtered_selection[i] == 1) {
-        filter = "dac-filtered";
+        filtered = "dac-filtered";
     }
 
-    return filter;
+    // selected points are also marked
+    var selected = "dac-not-selected";
+    if (selections.in_sel(i)) {
+        selected = "dac-selected";
+    }
+
+    return filtered + " " + selected;
 }
 
 // entirely redraws points (including selection, using circles)
@@ -454,7 +460,7 @@ function draw_circles ()
 		.data(mds_coords, function(d) { return d[2]; })
 		.enter()
 		.append("circle")
-		.attr("class", filtered_class);
+		.attr("class", filtered_selected_class);
 
 	// make sure they are colored according to selections
 	scatter_points.attr("stroke", set_outline_color);
@@ -483,6 +489,10 @@ function draw_circles ()
 
     // hide unfiltered points
     scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
+
+    // raise selected points to foreground
+    scatter_plot.selectAll(".dac-selected").each(function() {
+            this.parentNode.appendChild(this); });
 
     // raise filtered points to foreground
     scatter_plot.selectAll(".dac-filtered").each(function() {
@@ -540,7 +550,7 @@ function draw_squares ()
 		.data(mds_coords, function(d) { return d[2]; })
 		.enter()
 		.append("rect")
-		.attr("class", filtered_class)
+		.attr("class", filtered_selected_class)
 		.classed("square", true)
 
 	// make sure they are colored according to selections
@@ -571,6 +581,10 @@ function draw_squares ()
 
     // hide unfiltered points
     scatter_plot.selectAll(".dac-not-filtered").style("opacity", 0.0);
+
+    // raise selected points to foreground
+    scatter_plot.selectAll(".dac-selected").each(function() {
+            this.parentNode.appendChild(this); });
 
     // raise filtered points to foreground
     scatter_plot.selectAll(".dac-filtered").each(function() {
