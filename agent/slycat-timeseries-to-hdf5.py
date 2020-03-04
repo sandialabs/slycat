@@ -225,7 +225,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
         data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
         if t_add_index_column is True:
             data = numpy.insert(data, 0, list(range(len(data))), axis=1)
-
+        timeseries_dir = os.path.join(arguments.output_directory, timeseries_name)
         try:
           if not os.path.exists(timeseries_dir):
               os.makedirs(timeseries_dir)
