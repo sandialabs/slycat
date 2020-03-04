@@ -227,10 +227,10 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
             data = numpy.insert(data, 0, list(range(len(data))), axis=1)
         timeseries_dir = os.path.join(arguments.output_directory, timeseries_name)
         try:
-          if not os.path.exists(timeseries_dir):
-              os.makedirs(timeseries_dir)
+            if not os.path.exists(timeseries_dir):
+                os.makedirs(timeseries_dir)
         except Exception as e:
-          pass
+            pass
 
         hdf5_path = os.path.join(timeseries_dir, "timeseries-%s.hdf5" % timeseries_index)
         with log_lock:
