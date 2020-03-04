@@ -246,7 +246,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
     except IOError as err:
         log.error("Failed reading %s: %s", path, err)
     except Exception as e:
-        log.error("Unexpected error reading %s \n msg%s" % (path, str(message)))
+        log.error("Unexpected error reading %s \n msg%s" % (path, str(e)))
 
 def convert_timeseries(timeseries_index, eval_id, row):
     """
