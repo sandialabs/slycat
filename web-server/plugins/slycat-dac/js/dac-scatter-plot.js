@@ -427,6 +427,20 @@ var set_outline_width = function (d,i)
     return outline_width;
 }
 
+// d3 function to set point size for selections
+var set_point_size = function (d,i)
+{
+    // default point size
+    var def_point_size = point_size;
+
+    // selected points are larger
+    if (selections.in_sel(i)) {
+        def_point_size = point_size * 1.5;
+    }
+
+    return def_point_size;
+}
+
 // d3 function to label a class
 var filtered_selected_class = function (d,i)
 {
@@ -484,7 +498,7 @@ function draw_circles ()
 		.attr("cy", function(d) {
 			return y_scale(d[1])
 		})
-		.attr("r", point_size)
+		.attr("r", set_point_size)
 		.on("mousedown", sel_individual);
 
     // hide unfiltered points
@@ -528,11 +542,25 @@ function draw_circles ()
                         .attr("cy", function(d) {
                             return y_scale(d[1])
                         })
-                        .attr("r", point_size)
+                        .attr("r", point_size * 1.5)
                         .on("mousedown", defocus);
 
 	    }
 	}
+}
+
+// d3 function to set point size for selections for rectangle
+var set_point_size_rect = function (d,i)
+{
+    // default point size
+    var def_point_size = point_size * 2;
+
+    // selected points are larger
+    if (selections.in_sel(i)) {
+        def_point_size = point_size * 3;
+    }
+
+    return def_point_size;
 }
 
 // entirely redraws points (including selection)
@@ -575,8 +603,8 @@ function draw_squares ()
 		.attr("y", function(d) {
 			return y_scale(d[1]) - point_size;
 		})
-		.attr("width", point_size*2)
-		.attr("height", point_size*2)
+		.attr("width", set_point_size_rect)
+		.attr("height", set_point_size_rect)
 		.on("mousedown", sel_individual);
 
     // hide unfiltered points
@@ -621,8 +649,8 @@ function draw_squares ()
                         .attr("y", function(d) {
                             return y_scale(d[1]) - point_size;
                         })
-                        .attr("width", point_size*2)
-                        .attr("height", point_size*2)
+                        .attr("width", point_size * 3)
+                        .attr("height", point_size * 3)
                         .on("mousedown", defocus);
 
 	    }
