@@ -983,7 +983,7 @@ function TextEditor(args) {
 
 		$input = $("<INPUT type=text class='editor-text' maxlength='" +
 					String(MAX_FREETEXT_LEN) + "'/>");
-
+        $input.width(args.column.width - SEL_BORDER_WIDTH - 2);
 		$input.appendTo(args.container);
 
         $input.bind("keydown.nav", function (e) {
