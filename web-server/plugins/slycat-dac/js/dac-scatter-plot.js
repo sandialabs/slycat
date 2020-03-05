@@ -430,15 +430,28 @@ var set_outline_width = function (d,i)
 // d3 function to set point size for selections
 var set_point_size = function (d,i)
 {
-    // default point size
-    var def_point_size = point_size;
+    return compute_point_size (selections.in_sel(i));
+}
 
-    // selected points are larger
-    if (selections.in_sel(i)) {
-        def_point_size = point_size * 1.5;
+// function to determine point size
+// selected is true if point is selected
+function compute_point_size (selected)
+{
+
+    // default point size
+    var new_point_size = point_size;
+
+    // different size for circles and squares
+    if (scatter_plot_type != 'circle') {
+        new_point_size = point_size * 2;
+    };
+
+    // for selected points, everything is larger
+    if (selected) {
+        new_point_size = new_point_size * 1.5;
     }
 
-    return def_point_size;
+    return new_point_size;
 }
 
 // d3 function to label a class
@@ -549,20 +562,6 @@ function draw_circles ()
 	}
 }
 
-// d3 function to set point size for selections for rectangle
-var set_point_size_rect = function (d,i)
-{
-    // default point size
-    var def_point_size = point_size * 2;
-
-    // selected points are larger
-    if (selections.in_sel(i)) {
-        def_point_size = point_size * 3;
-    }
-
-    return def_point_size;
-}
-
 // entirely redraws points (including selection)
 function draw_squares ()
 {
@@ -603,8 +602,8 @@ function draw_squares ()
 		.attr("y", function(d) {
 			return y_scale(d[1]) - point_size;
 		})
-		.attr("width", set_point_size_rect)
-		.attr("height", set_point_size_rect)
+		.attr("width", set_point_size)
+		.attr("height", set_point_size)
 		.on("mousedown", sel_individual);
 
     // hide unfiltered points
@@ -1496,6 +1495,45 @@ function sel_brush()
 
 		return outline_width;
 	});
+
+    // different point sizes for circles or squares
+    if (scatter_plot_type == 'circle') {
+        scatter_points.attr("r", set_sel_point_size);
+    } else {
+        scatter_points.attr("width", set_sel_point_size);
+	    scatter_points.attr("height", set_sel_point_size);
+    }
+
+}
+
+// helper function for sel_brush_start
+// to determine point size when selected
+function set_sel_point_size (d,i)
+{
+
+	// gray real-time selection box
+	var extent = d3.event.target.extent();
+
+    // default point size
+    var sel_point_size = compute_point_size (false);
+
+    // if newly selected, outline is thick
+    if (extent[0][0] <= d[0] && d[0] < extent[1][0]
+        && extent[0][1] <= d[1] && d[1] < extent[1][1]) {
+
+            sel_point_size = compute_point_size (true);
+
+    } else {
+
+        // outline is also thick for things that were previously selected
+        if (selections.in_sel(i)) {
+
+            sel_point_size = compute_point_size (true);
+        };
+
+    };
+
+    return sel_point_size;
 
 }
 
