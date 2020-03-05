@@ -458,7 +458,8 @@ function download_plot(event)
 	// make sure something is selected
 	if (curr_sel.length == 0) {
 
-	    dialog.ajax_error("You must make a selection before you can export plot data.")("","","");
+	    dialog.ajax_error("There are no plots visible. Please make " +
+	                      "a selection or relax filters before exporting plot data.")("","","");
 
 	} else {
 
