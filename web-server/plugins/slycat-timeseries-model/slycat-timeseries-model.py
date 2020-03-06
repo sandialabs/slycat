@@ -11,7 +11,6 @@ def register_slycat_plugin(context):
     import json
     import slycat.web.server
     import threading
-    import multiprocessing
     import sys
     import traceback
     import numpy
@@ -141,7 +140,6 @@ def register_slycat_plugin(context):
             model = database.get("model", model_id)
             model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
             slycat.web.server.update_model(database, model, state="waiting", message="starting data pull Timeseries")
-
             model = database.get("model", model_id)
             uid = slycat.web.server.get_model_parameter(database, model, "pickle_uid")
             workdir_raw = slycat.web.server.get_model_parameter(database, model, "working_directory")
@@ -337,11 +335,6 @@ def register_slycat_plugin(context):
 
             stop_event = threading.Event()
             # compute(model["_id"], stop_event, calling_client)
-            # event_lock = getClientLock(calling_client)
-            # p = multiprocessing.Process(target=compute, args=(model["_id"], event_lock, calling_client))
-            # p.start()
-            # if l.locked():
-            #     l.release()
             thread = threading.Thread(target=compute, args=(model["_id"], stop_event, calling_client))
             thread.start()
 
@@ -349,22 +342,6 @@ def register_slycat_plugin(context):
             cherrypy.log.error("Something went wrong with job %s job state:" % (jid, state))
             slycat.web.server.update_model(database, model, message="Job %s had returned a bad or unknown state from the hpc system" % jid)
             slycat.web.server.put_model_parameter(database, model, "computing", False)
-
-    lock_cache = {}
-    def getClientLock(lockup_id):
-        """
-        multiprocessor locks for users
-        
-        Arguments:
-            lockup_id {string} -- string id to lookup lock
-        
-        Returns:
-            [multiprocessing.Lock] -- lock that can be acquired and released
-        """
-        if lockup_id in lock_cache:
-            return lock_cache[lockup_id]
-        lock_cache[lockup_id] = multiprocessing.Lock()
-        return lock_cache[lockup_id]
 
     def update_model_info(database, model, verb, type, command, **kwargs):
         """
@@ -407,7 +384,7 @@ def register_slycat_plugin(context):
         if model["state"] == "finished":
             raise cherrypy.HTTPError("409 model is in the finished state already")
         if not slycat.web.server.get_model_parameter(database, model, "computing"):
-            # slycat.web.server.put_model_parameter(database, model, "computing", True)
+            slycat.web.server.put_model_parameter(database, model, "computing", True)
             cherrypy.log.error("calling update remote job")
             update_remote_job(model["_id"], model["artifact:jid"], model["artifact:hostname"], calling_client)
             cherrypy.log.error("returning")
