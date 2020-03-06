@@ -572,7 +572,7 @@ module.get_configuration_agent_functions = function(params) {
     }
   });
 };
-module.fetch_get_model = function(mid)
+module.get_model_fetch = function(mid)
 {
   return fetch(`${api_root}models/${mid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
   .then(function(response) {

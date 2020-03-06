@@ -234,7 +234,7 @@ ko.components.register('slycat-remote-interface', {
       return invalid;
     };
 
-    var server_checkjob = function(uid) {
+    var server_update_model_info = function(uid) {
       if (!vm.mid)
         return void 0;
 
@@ -248,14 +248,13 @@ ko.components.register('slycat-remote-interface', {
       client.post_sensitive_model_command({
         mid: vm.mid(),
         type: vm.model_type,
-        command: "checkjob",
+        command: "update-model-info",
         parameters: {
           working_directory: vm.working_directory(),
           jid: vm.jid(),
           fn: vm.agent_function(),
           hostname: vm.remote.hostname(),
           username: vm.remote.username(),
-          password: vm.remote.password(),
           fn_params: vm.agent_function_params(),
           uid: uid
         },
@@ -465,7 +464,7 @@ ko.components.register('slycat-remote-interface', {
           const jid =  splitResult[splitResult.length-1];
           vm.jid(jid);
           vm.working_directory(fn_params.workdir + "/slycat/" + uid + "/");
-          server_checkjob(uid);
+          server_update_model_info(uid);
         },
         error: function(request, status, reason_phrase) {
           alert('[Error] Could not start batch file: ' + reason_phrase);

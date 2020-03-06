@@ -34,7 +34,6 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout";
-import "js/slycat-job-checker";
 
 // Wait for document ready
 $(document).ready(function() {
@@ -149,7 +148,7 @@ $(document).ready(function() {
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
-  function doPoll() {
+  function loadPage() {
     $.ajax(
     {
       type : "GET",
@@ -164,7 +163,6 @@ $(document).ready(function() {
         // If the model isn't ready or failed, we're done.
         if(model["state"] === "waiting" || model["state"] === "running") {
           showLoadingPage();
-          setTimeout(doPoll, 15000);
           return;
         }
 
@@ -200,8 +198,6 @@ $(document).ready(function() {
           image_columns = model["artifact:image-columns"];
         }
 
-        $('.slycat-job-checker').remove();
-
         if(model["state"] == "closed" && model["result"] === null)
           return;
         if(model["result"] == "failed")
@@ -214,14 +210,14 @@ $(document).ready(function() {
       }
     });
   }
-  // setTimeout(doPoll, 500);
-  var showLoadingPage = function() {
+  const showLoadingPage = () => {
     console.log("initializing loading page");
-    client.fetch_get_model(model._id).then((modelResponse) => {
+    client.get_model_fetch(model._id).then((modelResponse) => {
         console.log(modelResponse['artifact:hostname']);
         ReactDOM.render(
             <LoadingPage
               modelId={modelResponse._id}
+              modelState={modelResponse["state"]}
               jid={modelResponse['artifact:jid']}
               hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
             />,
@@ -234,6 +230,7 @@ $(document).ready(function() {
     })
   };
   showLoadingPage();
+  // loadPage()
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
   //////////////////////////////////////////////////////////////////////////////////////////

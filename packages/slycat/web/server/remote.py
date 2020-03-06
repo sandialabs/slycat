@@ -198,6 +198,7 @@ class Session(object):
         response : dict
           A dictionary with the following keys: jid, status, errors
         """
+        cherrypy.log.error('calling checkjob in remote')
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
             payload = {"action": "checkjob", "command": jid}
@@ -1040,7 +1041,7 @@ def create_session(hostname, username, password, agent):
         raise cherrypy.HTTPError("401 Remote connection failed: %s" % str(e))
 
 
-def get_session(sid):
+def get_session(sid, calling_client=None):
     """
     Return a cached remote session.
 
@@ -1056,13 +1057,16 @@ def get_session(sid):
     session : :class:`slycat.web.server.remote.Session`
       Session object that encapsulates the connection to a remote host.
     """
-    client = cherrypy.request.headers.get("x-forwarded-for")
+    if calling_client is None:
+        client = cherrypy.request.headers.get("x-forwarded-for")
+    else:
+        client=calling_client
     with session_cache_lock:
         _expire_session(sid)
 
         if sid in session_cache:
             session = session_cache[sid]
-            # Only the originating client can access a session.
+            #Only the originating client can access a session.
             if client != session.client:
                 cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (
                     client, session.username, session.hostname, session.client))
@@ -1104,7 +1108,7 @@ def get_session_server(client, sid):
         if sid in session_cache:
             session = session_cache[sid]
             # Only the originating client can access a session.
-            if client != session.username:
+            if client != session.client:
                 cherrypy.log.error("Client %s attempted to access remote session for %s@%s from %s" % (
                     client, session.username, session.hostname, session.client))
                 del session_cache[sid]
@@ -1137,7 +1141,7 @@ def check_session(sid):
     -------
     boolean :
     """
-    client = cherrypy.request.headers.get("x-forwarded-for")
+    # client = cherrypy.request.headers.get("x-forwarded-for")
 
     with session_cache_lock:
         _expire_session(sid)
@@ -1145,8 +1149,8 @@ def check_session(sid):
         if sid in session_cache:
             session = session_cache[sid]
             # Only the originating client can access a session.
-            if client != session.client:
-                response = False
+            # if client != session.client:
+            #     response = False
 
         if sid not in session_cache:
             response = False

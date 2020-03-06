@@ -6,6 +6,7 @@ import {LoadingPageProps, LoadingPageState} from './types';
 import ConnectModal from 'components/ConnectModal.tsx';
 import ControlsButton from 'components/ControlsButton';
 import Spinner from 'components/Spinner.tsx';
+import {JobCodes} from './JobCodes.tsx'
 /**
  * react component used to create a loading page
  *
@@ -15,15 +16,19 @@ import Spinner from 'components/Spinner.tsx';
  */
 export default class LoadingPage extends React.Component<LoadingPageProps, LoadingPageState> {
   timer: any; //NodeJS.Timeout
+  progressTimer: any;
   TIMER_MS: number = 10000;
   public constructor(props:LoadingPageProps) {
     super(props)
     this.state = {
+      modelState: this.props.modelState,
       sessionExists: false,
       progressBarHidden: false,
       modalId: 'ConnectModal',
       progressBarProgress: 0,
+      modelMessage: '',
       modelShow: false,
+      pullCalled: 0,
       jobStatus: 'Job Status Unknown',
       log: {
         logLineArray: [] as any,// [string]
@@ -41,14 +46,29 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
       }
     });
     this.timer = setInterval(()=> this.checkRemoteStatus(), this.TIMER_MS);
+    this.progressTimer = setInterval(()=> this.updateProgress(), 3000);
   }
 
   // tear down
   componentWillUnmount() {
     clearInterval(this.timer);
+    clearInterval(this.progressTimer);
     this.timer = null;
+    this.progressTimer = null;
   }
-
+  private updateProgress = () => {
+    client.get_model_fetch(this.props.modelId).then((model: any) => {
+      if (model.hasOwnProperty('progress') && model.hasOwnProperty('state')){
+        this.setState({progressBarProgress:model.progress, modelState:model.state}, () => {
+          if(this.state.progressBarProgress === 100){
+            window.location.reload(true);
+          }
+        });
+      }
+    }).catch((err:any)=>{
+      alert(`error retrieving the model ${err}`)
+    })
+  }
   private connectModalCallBack = (sessionExists: boolean, loadingData: boolean) => {
     this.setState({sessionExists},() => {
       if(this.state.sessionExists) {
@@ -61,9 +81,9 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   }
   private pullHPCData = () => {
     const params = {mid:this.props.modelId, type:"timeseries", command: "pull_data"}
-    client.get_model_command_fetch(params).then((json) => {
+    client.get_model_command_fetch(params).then((json: any) => {
       console.log(json)
-    }).catch((res)=> {
+    }).catch((res: any)=> {
       if((res as string).includes('409 :: error connecting to check on the job')){
         this.checkRemoteStatus()
       } else{
@@ -94,22 +114,23 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     });
     switch (resJson.status.state) {
       case 'COMPLETED':
-          this.setState({
-            progressBarProgress: 100
-          },()=>{
-            clearInterval(this.timer);
-            this.timer = null;
-          });
-          break;
-      case 1:
-          console.log("It is a Monday.");
-          break;
-      case 2:
-          console.log("It is a Tuesday.");
-          break;
+        if(this.state.pullCalled<3){
+          this.setState({ pullCalled: 3 }, () => this.pullHPCData());
+        }
+        break;
+      case 'RUNNING':
+        if(this.state.pullCalled<2){
+          this.setState({ pullCalled: 2 }, () => this.pullHPCData());
+        }
+        break;
+      case "PENDING":
+        if(this.state.pullCalled<1){
+          this.setState({ pullCalled: 1 }, () => this.pullHPCData());
+        }
+        break;
       default:
-          console.log("No such day exists!");
-          break;
+        console.log("Unknown state");
+        break;
   }
   }
 
@@ -123,13 +144,12 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     return client.get_remotes_fetch(this.props.hostname)
     .then((json: any) => {
       this.setState({
-        sessionExists: json.status,
-        progressBarProgress: 10
+        sessionExists: json.status
       }, () => {
         if (!this.state.sessionExists) {
           this.setState({ modelShow: true });
           ($(`#${this.state.modalId}`) as any).modal('show');
-        } else {
+        } else if(this.state.progressBarProgress < 50){
           this.checkRemoteJob();
         }
       });
@@ -156,7 +176,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           id={'pullbtn'}
           type='button' 
           title={'load data'}
-          disabled={false}
+          disabled={!this.state.jobStatus.includes('COMPLETED')}
           onClick={() => this.pullHPCData()} >
           {'load'}
           </button>
@@ -212,41 +232,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
             <button className="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
               Show job status meanings
             </button>
-            <div className="collapse" id="collapseExample">
-              <div className="card card-body">
-                <dt>JOB STATE CODES</dt>
-                <dt>BF BOOT_FAIL</dt>
-                <dd>Job terminated due to launch failure, typically due to a hardware failure (e.g. unable to boot the node or block and the job can not be requeued).</dd>
-                <dt>CA CANCELLED</dt>
-                <dd>Job was explicitly cancelled by the user or system administrator. The job may or may not have been initiated.</dd>
-                <dt>CD COMPLETED</dt>
-                <dd>Job has terminated all processes on all nodes with an exit code of zero.</dd>
-                <dt>DL DEADLINE</dt>
-                <dd>Job terminated on deadline.</dd>
-                <dt>F FAILED</dt>
-                <dd>Job terminated with non-zero exit code or other failure condition.</dd>
-                <dt>NF NODE_FAIL</dt>
-                <dd>Job terminated due to failure of one or more allocated nodes.</dd>
-                <dt>OOM OUT_OF_MEMORY</dt>
-                <dd>Job experienced out of memory error.</dd>
-                <dt>PD PENDING</dt>
-                <dd>Job is awaiting resource allocation.</dd>
-                <dt>PR PREEMPTED</dt>
-                <dd>Job terminated due to preemption.</dd>
-                <dt>R RUNNING</dt>
-                <dd>Job currently has an allocation.</dd>
-                <dt>RQ REQUEUED</dt>
-                <dd>Job was requeued.</dd>
-                <dt>RS RESIZING</dt>
-                <dd>Job is about to change size.</dd>
-                <dt>RV REVOKED</dt>
-                <dd>Sibling was removed from cluster due to other cluster starting the job.</dd>
-                <dt>S SUSPENDED</dt>
-                <dd>Job has an allocation, but execution has been suspended and CPUs have been released for other jobs.</dd>
-                <dt>TO TIMEOUT</dt>
-                <dd>Job terminated upon reaching its time limit.   </dd>           
-              </div>
-            </div>
+            <JobCodes/>
           </div>
         </div>
         <div className="slycat-job-checker-output text-white bg-secondary" >
