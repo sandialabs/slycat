@@ -327,7 +327,6 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
   :param dimensions: number of data rows
   :return:
   """
-    model = database.get('model', model['_id'])
     slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
     storage = model["artifact:%s" % aid]
     with slycat.web.server.hdf5.lock:
@@ -359,8 +358,6 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
 
     data = iter(data)
-
-    model = database.get('model', model['_id'])
     slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
 
     with slycat.web.server.hdf5.lock:
