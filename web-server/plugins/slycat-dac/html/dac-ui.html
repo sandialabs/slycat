@@ -52,35 +52,38 @@ S. Martin
 						</label>
 						<label class="btn btn-outline-secondary btn-sm"
 							id="dac-scatter-button-subset" 
-							title="Select subset for all analysis. Use shift to exclude subset.">
+							title="Select subset for all analysis. Use shift to exclude subset. Subset symbol turns yellow when viewing a subset.">
 							<input type="radio" name="options" autocomplete="off"
 								value="subset"><b>&sube;</b></input>
 						</label>
 						<label class="btn btn-outline-secondary btn-sm"
-							id="dac-scatter-button-zoom" title="Zoom for scatter plot.">
+							id="dac-scatter-button-zoom" title="Zoom for scatter plot. Magnifying glass turns yellow when zoomed.">
 							<input type="radio" name="options" autocomplete="off"
 								value="zoom"><i class="fa fa-search"></i></input>
 						</label>
         			</div>
 
 					<div class="btn-group mt-1" id="dac-difference-buttons">
-						<button id="dac-previous-three-button" class="btn btn-outline-secondary btn-sm disabled"
+						<button id="dac-previous-three-button" class="btn btn-outline-secondary btn-sm" disabled
 							   title="Previous three most different plots.">
 							<i class="fa fa-chevron-left" aria-hidden="true"></i>
 						</button>
 						<button id="dac-scatter-diff-button" class="btn btn-outline-secondary btn-sm"
-							title="Order variable plots to maximize difference between selections."><i class="fa fa-minus"></i>
+							title="Order variable plots to maximize difference between selections. Button turns yellow when the calculation is out of sync with the selection."><i class="fa fa-minus"></i>
 						</button>
-						<button id="dac-next-three-button" class="btn btn-outline-secondary btn-sm disabled"
+						<button id="dac-next-three-button" class="btn btn-outline-secondary btn-sm" disabled
 							   title="Next three most different plots.">
 							<i class="fa fa-chevron-right" aria-hidden="true"></i>
 						</button>
 					</div>
-					<label><i class="fa fa-exclamation-triangle" id="dac-selection-not-synced"
-							  title="The difference calculation is out of sync with the current selection."> </i></label>
-					<label><i class="fa fa-refresh" id="dac-selection-synced"
-							  title="The difference calculation is in sync with the current selection."> </i></label>
-        			
+
+					<div class="btn-group mt-1">
+						<button id="dac-filter-plots-button" class="btn btn-outline-secondary btn-sm"
+								title="Show only filtered point and plots.  Button turns yellow when plots are filtered.">
+							<i class="fa fa-filter" aria-hidden="true"></i>
+						</button>
+					</div>
+
         			<select class="dac-select" title="Color scatter plot by table column." id="dac-scatter-select"></select>
         					
 				</div>

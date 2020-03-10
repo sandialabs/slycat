@@ -99,6 +99,29 @@ var workDir = "";
 var user_scroll = false;
 $("#vs_processing_textarea").focus (function () { user_scroll = true; });
 $("#vs_processing_textarea").focusout(function () { user_scroll = false; });
+// reconnect button
+var reconnect = function ()
+{
+
+    // sever connections associated with this user
+    $.ajax(
+    {
+        dataType: "json",
+        type: "GET",
+        url: api_root + "clear/ssh-sessions",
+        success: function(id)
+        {
+            // polling will automatically ask for new connection
+        },
+        error: function(request, status, reason_phrase)
+        {
+            dialog.ajax_error("Server error: could not reset connection.")("","","");
+        },
+    });
+
+}
+// set-up reconnect button
+$("#vs-reconnect-button").on("click", reconnect);
 
 // poll database for artifact "vs-loading-progress"
 (function poll() {
@@ -120,9 +143,6 @@ $("#vs_processing_textarea").focusout(function () { user_scroll = false; });
                 logFileName = result[1];
                 logHostName = result[2];
                 workDir = result[3];
-
-                // set-up reconnect button
-                $("#vs-reconnect-button").on("click", reconnect);
 
                 // call web server to read log file
                 client.get_model_command({

@@ -21,6 +21,10 @@ var max_num_sel = null;
 // subset mask
 var subset_mask = [];
 
+// filter mask/button
+var filter_mask = [];
+var filter_button = null;
+
 // focus selection (index into data, or null if nothing in focus)
 var focus = null;
 
@@ -78,6 +82,35 @@ module.sel = function(i=0)
         return selection[i-1];
     }
 
+}
+
+// set filter mask
+module.update_filter = function(mask, button)
+{
+    filter_mask = mask;
+    filter_button = button;
+}
+
+// get selection accounting for filters
+module.filtered_sel = function(i=0)
+{
+    // get full selection
+    var curr_sel = module.sel(i);
+
+    // check if filter button is on
+    if (filter_button) {
+
+        // reduce selection according to filters
+        curr_sel = curr_sel.filter (j => filter_mask[j] == 1)
+    }
+
+    return curr_sel;
+}
+
+// return filter button status
+module.filter_button_status = function()
+{
+    return filter_button;
 }
 
 // set subset mask, return new selection
@@ -173,6 +206,14 @@ module.in_sel_x = function (i, x)
     return selection[x-1].indexOf(i);
 }
 
+// filtered version of in_sel_x
+module.in_filtered_sel_x = function (i,x)
+{
+    var filtered_sel = module.filtered_sel(x);
+
+    return filtered_sel.indexOf(i)
+}
+
 // is index i in any selection?
 // return true or false
 module.in_sel = function(i)
@@ -194,6 +235,14 @@ module.in_sel = function(i)
 module.len_sel = function(i)
 {
     return selection[i-1].length;
+}
+
+// return length of filtered selection, i >= 1
+module.len_filtered_sel = function(i)
+{
+    var filtered_sel = module.filtered_sel(i);
+
+    return filtered_sel.length;
 }
 
 // toggle shift key flag
@@ -252,6 +301,23 @@ module.update_sel = function(i)
 		}
 
 	}
+
+}
+
+// remove i from any selection
+module.remove_sel = function(i)
+{
+
+    if (curr_sel_type > 0) {
+
+        // remove from any selections
+		for (var j = 0; j < max_num_sel; j++) {
+            var sel_j_ind = selection[j].indexOf(i);
+            if (sel_j_ind != -1) {
+                selection[j].splice(sel_j_ind, 1);
+            }
+		}
+    }
 
 }
 
