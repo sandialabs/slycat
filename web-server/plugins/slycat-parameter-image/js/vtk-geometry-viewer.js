@@ -95,29 +95,40 @@ export function load(container, buffer, uri) {
   // ColorBy handling
   // --------------------------------------------------------------------
   
-  let colorBy;
+  // Default to Solid color
+  let colorBy = ":";
 
   const colorByOptions = [{ value: ':', label: 'Solid color' }].concat(
     source
       .getPointData()
       .getArrays()
-      .map((a) => ({
-        label: `(p) ${a.getName()}`,
-        value: `PointData:${a.getName()}`,
-      })),
+      .map((a) => {
+        console.log('Getting points data arrays');
+        return {
+          label: `(p) ${a.getName()}`,
+          value: `PointData:${a.getName()}`,
+          type: 'point',
+          components: [],
+        };
+      }),
     source
       .getCellData()
       .getArrays()
       .map((a) => ({
         label: `(c) ${a.getName()}`,
         value: `CellData:${a.getName()}`,
+        type: 'cell',
       }))
   );
   // Dispatch update to available color by options to redux store
   window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
 
   function updateColorBy() {
-    colorBy = window.store.getState().three_d_colorvars[uri];
+    // Use default colorBy if we don't have a setting for it in the state
+    if(window.store.getState().three_d_colorvars && window.store.getState().three_d_colorvars[uri])
+    {
+      colorBy = window.store.getState().three_d_colorvars[uri];
+    }
 
     const [location, colorByArrayName] = colorBy.split(':');
     const interpolateScalarsBeforeMapping = location === 'PointData';
@@ -190,7 +201,9 @@ export function load(container, buffer, uri) {
   }
 
   function updateColorByIfChanged() {
-    if(window.store.getState().three_d_colorvars[uri] != colorBy)
+    if(window.store.getState().three_d_colorvars
+       && window.store.getState().three_d_colorvars[uri]
+       && window.store.getState().three_d_colorvars[uri] != colorBy)
     {
       console.log("ColorBy changed, so applying the new one.");
       updateColorBy();

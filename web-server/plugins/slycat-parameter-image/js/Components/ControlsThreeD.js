@@ -21,6 +21,10 @@ class ControlsThreeD extends React.Component {
       return {key: name, name: name,} 
     });
 
+    // Only show Color By control if we have more than 1 item in it, 
+    // otherwise there's nothing to choose between.
+    let showColorBy = this.props.color_by_items && this.props.color_by_items.length > 1;
+
     return !this.props.any_threeD_open ? null : (
       <React.Fragment>
         <ControlsButtonToggle 
@@ -42,7 +46,7 @@ class ControlsThreeD extends React.Component {
           set_selected={this.props.changeThreeDColormap}
           button_style={this.props.button_style}
         />
-        { this.props.color_by_items &&
+        { showColorBy &&
         <ControlsDropdown 
           key='threeD-colorBy-dropdown'
           id='threeD-colorBy-dropdown' 
