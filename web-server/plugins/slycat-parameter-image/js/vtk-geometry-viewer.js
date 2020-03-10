@@ -98,19 +98,35 @@ export function load(container, buffer, uri) {
   // Default to Solid color
   let colorBy = ":";
 
+  function getComponents(array) {
+    let numberOfComponents = array.getNumberOfComponents();
+    let components = [];
+    if(numberOfComponents > 1)
+    {
+      components.push({
+        label: 'Magnitude',
+        value: -1,
+      });
+      while (components.length <= numberOfComponents) {
+        components.push({
+          label: `Component ${components.length}`,
+          value: components.length - 1,
+        });
+      }
+    }
+    return components;
+  }
+
   const colorByOptions = [{ value: ':', label: 'Solid color' }].concat(
     source
       .getPointData()
       .getArrays()
-      .map((a) => {
-        console.log('Getting points data arrays');
-        return {
-          label: `(p) ${a.getName()}`,
-          value: `PointData:${a.getName()}`,
-          type: 'point',
-          components: [],
-        };
-      }),
+      .map((a) => ({       
+        label: `(p) ${a.getName()}`,
+        value: `PointData:${a.getName()}`,
+        type: 'point',
+        components: getComponents(a),
+      })),
     source
       .getCellData()
       .getArrays()
@@ -118,6 +134,7 @@ export function load(container, buffer, uri) {
         label: `(c) ${a.getName()}`,
         value: `CellData:${a.getName()}`,
         type: 'cell',
+        components: getComponents(a),
       }))
   );
   // Dispatch update to available color by options to redux store
