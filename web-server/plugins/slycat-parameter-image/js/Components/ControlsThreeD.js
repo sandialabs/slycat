@@ -76,13 +76,35 @@ const mapStateToProps = state => {
     && state.derived.three_d_colorby_options[state.currentFrame] 
   )
   {
-    color_by_items = state.derived.three_d_colorby_options[state.currentFrame].map(
-      (option) => {
-        return {
+    color_by_items = state.derived.three_d_colorby_options[state.currentFrame].flatMap(
+      (option, index, array) => {
+        let item = [];
+        item.push({
           key: option.value, 
-          name: option.label
+          name: option.label,
+        });
+        
+        // If there's more than 1 component, add a menu item for each
+        if(option.components > 1)
+        {
+          [...Array(option.components)].map((component, componentIndex) => {
+            item.push({
+              key: `${option.value} component ${componentIndex}`,
+              name: `— Component ${componentIndex + 1}`,
+            });
+          });
         }
+
+        // Add a separator and header label if we have a next option 
+        // and its type is different than the current option's type
+        if(array[index+1] && (option.type != array[index+1].type))
+        {
+          item.push({type: 'divider'});
+          item.push({type: 'header', name: array[index+1].type});
+        }
+        return item;
     });
+    debugger;
   }
 
   let threeDColorBy;
