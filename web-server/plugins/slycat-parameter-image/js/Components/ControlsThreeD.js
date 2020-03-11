@@ -76,7 +76,25 @@ const mapStateToProps = state => {
     && state.derived.three_d_colorby_options[state.currentFrame] 
   )
   {
-    color_by_items = state.derived.three_d_colorby_options[state.currentFrame].flatMap(
+    // Sort Color By options. 
+    // List points data first, then cell data. 
+    // Within each, list the items alphabetically.
+    color_by_items = state.derived.three_d_colorby_options[state.currentFrame];
+    // Compare using English locale
+    const locale = 'en';
+    // Make it case and accent insensitive. 
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Collator/Collator
+    const options = {sensitivity: 'base'};
+
+    color_by_items.sort(function (a, b) {
+      if(a.type && b.type)
+      {
+        return b.type.localeCompare(a.type, locale, options) || a.label.localeCompare(b.label, locale, options);
+      }
+    });
+
+
+    color_by_items = color_by_items.flatMap(
       (option, index, array) => {
         let item = [];
         item.push({
