@@ -98,44 +98,30 @@ export function load(container, buffer, uri) {
   // Default to Solid color
   let colorBy = ":";
 
-  function getComponents(array) {
-    let numberOfComponents = array.getNumberOfComponents();
-    let components = [];
-    if(numberOfComponents > 1)
-    {
-      components.push({
-        label: 'Magnitude',
-        value: -1,
-      });
-      while (components.length <= numberOfComponents) {
-        components.push({
-          label: `Component ${components.length}`,
-          value: components.length - 1,
-        });
-      }
-    }
-    return components;
-  }
-
-  const colorByOptions = [{ value: ':', label: 'Solid color' }].concat(
-    source
-      .getPointData()
-      .getArrays()
-      .map((a) => ({       
-        label: `(p) ${a.getName()}`,
-        value: `PointData:${a.getName()}`,
-        type: 'point',
-        components: getComponents(a),
+  const colorByOptions = [{ 
+      value: ':', 
+      label: 'Solid color',
+    }]
+    .concat(
+      source
+        .getPointData()
+        .getArrays()
+        .map((a) => ({       
+          label: a.getName(),
+          value: `PointData:${a.getName()}`,
+          type: 'Point',
+          components: a.getNumberOfComponents(),
       })),
-    source
-      .getCellData()
-      .getArrays()
-      .map((a) => ({
-        label: `(c) ${a.getName()}`,
-        value: `CellData:${a.getName()}`,
-        type: 'cell',
-        components: getComponents(a),
-      }))
+      source
+        .getCellData()
+        .getArrays()
+        .map((a) => ({
+          label: a.getName(),
+          value: `CellData:${a.getName()}`,
+          type: 'Cell',
+          components: a.getNumberOfComponents(),
+      })
+    )
   );
   // Dispatch update to available color by options to redux store
   window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
