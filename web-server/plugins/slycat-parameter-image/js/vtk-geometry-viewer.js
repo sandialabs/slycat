@@ -133,18 +133,23 @@ export function load(container, buffer, uri) {
       colorBy = window.store.getState().three_d_colorvars[uri];
     }
 
-    const [location, colorByArrayName] = colorBy.split(':');
+    const [location, colorByArrayName, componentString] = colorBy.split(':');
+    // Convert component string to integer, set to undefined if there isn't one
+    const component = componentString ? parseInt(componentString, 10) : undefined;
     const interpolateScalarsBeforeMapping = location === 'PointData';
     let colorMode = ColorMode.DEFAULT;
     let scalarMode = ScalarMode.DEFAULT;
     const scalarVisibility = location.length > 0;
 
+    // We are coloring by point or cell data
     if (scalarVisibility) 
     {
       const newArray = source[`get${location}`]().getArrayByName(
         colorByArrayName
       );
       activeArray = newArray;
+      const numberOfComponents = activeArray.getNumberOfComponents();
+
       const newDataRange = activeArray.getRange();
       dataRange[0] = newDataRange[0];
       dataRange[1] = newDataRange[1];
@@ -155,42 +160,28 @@ export function load(container, buffer, uri) {
           : ScalarMode.USE_CELL_FIELD_DATA
       ;
       
-      const numberOfComponents = activeArray.getNumberOfComponents();
-      if (numberOfComponents > 1) 
+      if(mapper.getLookupTable())
       {
-        // always start on magnitude setting
-        if (mapper.getLookupTable()) {
-          const lut = mapper.getLookupTable();
+        const lut = mapper.getLookupTable();
+        // Use the selected component if we have one
+        if(component > -1) 
+        {
+          lut.setVectorModeToComponent();
+          lut.setVectorComponent(component);
+          const componentDataRange = activeArray.getRange(component);
+          dataRange[0] = componentDataRange[0];
+          dataRange[1] = componentDataRange[1];
+          lookupTable.setMappingRange(dataRange[0], dataRange[1]);
+          lut.updateRange();
+        }
+        // Set the component to magnitude if we don't have one
+        else
+        {
           lut.setVectorModeToMagnitude();
         }
-        // componentSelector.style.display = 'block';
-        // const compOpts = ['Magnitude'];
-        // while (compOpts.length <= numberOfComponents) {
-        //   compOpts.push(`Component ${compOpts.length}`);
-        // }
-        // componentSelector.innerHTML = compOpts
-        //   .map((t, index) => `<option value="${index - 1}">${t}</option>`)
-        //   .join('');
-
-        // Temporary dev code to display number of components
-        let counter = 1;
-        while (counter <= numberOfComponents) 
-        {
-          // compOpts.push(`Component ${compOpts.length}`);
-          console.log("COMPONENT " + counter);
-          counter++;
-        }
-      } 
-      else 
-      {
-        // componentSelector.style.display = 'none';
-        console.log("Zero components on this one.");
       }
     }
-    else 
-    {
-      // componentSelector.style.display = 'none';
-    }
+
     mapper.set({
       colorByArrayName,
       colorMode,
@@ -199,8 +190,6 @@ export function load(container, buffer, uri) {
       scalarVisibility,
     });
     applyPreset();
-
-    // debugger;
   }
 
   function updateColorByIfChanged() {
