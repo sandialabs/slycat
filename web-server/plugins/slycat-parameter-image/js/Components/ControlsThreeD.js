@@ -89,8 +89,12 @@ const mapStateToProps = state => {
         {
           [...Array(option.components)].map((component, componentIndex) => {
             item.push({
-              key: `${option.value} component ${componentIndex}`,
-              name: `— Component ${componentIndex + 1}`,
+              key: `${option.value}:${componentIndex}`,
+              // Adding 2 non-breaking space characters before the bullet.
+              // Opt + Space on macOS. Please do not replace with plain
+              // spaces because they will dissapear during rendering and the component
+              // bullets will not be indented.
+              name: `  • Component ${componentIndex + 1}`,
             });
           });
         }
@@ -104,7 +108,6 @@ const mapStateToProps = state => {
         }
         return item;
     });
-    debugger;
   }
 
   let threeDColorBy;
