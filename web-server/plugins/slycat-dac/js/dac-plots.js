@@ -751,8 +751,8 @@ module.draw = function()
 
 	// draw each plot to size of container
 	var width = $("#dac-plots").width();
-	var height = $("#dac-plots").height()/3.1 -
-		plot_adjustments.pull_down_height;
+	var height = Math.max($("#dac-plots").height()/3.1 -
+		plot_adjustments.pull_down_height,0);
 
 	// compute number of tick marks needed
 	var num_x_ticks = Math.round(width/plot_adjustments.x_tick_freq);
@@ -785,19 +785,20 @@ module.draw = function()
 
 		// update size of clip rectangle
 		plot[i].selectAll("#clip-rect")
-			.attr("width", width - plot_adjustments.padding_left
+			.attr("width", Math.max(width - plot_adjustments.padding_left
 								 - plot_adjustments.y_label_padding
-								 - plot_adjustments.padding_right)
-			.attr("height", height - plot_adjustments.padding_bottom
+								 - plot_adjustments.padding_right, 0))
+			.attr("height", Math.max(height - plot_adjustments.padding_bottom
 								   - plot_adjustments.x_label_padding
-								   - plot_adjustments.padding_top);
+								   - plot_adjustments.padding_top, 0));
+
 		// update mouse-over line plot limits
 		mouse_over_line[i].attr("x1", plot_adjustments.padding_left +
 									  plot_adjustments.y_label_padding)
-						  .attr("y1", $("#dac-plots").height()/3 -
+						  .attr("y1", Math.max($("#dac-plots").height()/3.1 -
 									  plot_adjustments.pull_down_height -
 									  plot_adjustments.padding_bottom -
-									  plot_adjustments.x_label_padding)
+									  plot_adjustments.x_label_padding, 0))
 						  .attr("x2", plot_adjustments.padding_left +
 									  plot_adjustments.y_label_padding)
 						  .attr("y2", plot_adjustments.padding_top);

@@ -87,7 +87,7 @@ function constructor(params)
     // option defaults
     var DEF_MAX_LABEL_LENGTH = 20;
     var DEF_MAX_TIME_POINTS = 500;
-    var DEF_MAX_NUM_PLOTS = 50;
+    var DEF_MAX_NUM_PLOTS = 33;
     var DEF_MAX_POINTS_ANIMATE = 2500;
     var DEF_SCATTER_PLOT_TYPE = "circle";
     var DEF_CONTROL_BAR_POSITION = "scatter-plot";
@@ -383,30 +383,6 @@ function constructor(params)
 
         });
 
-        /* ignore any previous discrete bookmarks:
-        // load up previous discrete selection, if any
-        bookmarker.getState(function(bookmark)
-        {
-
-            if ("dac-disc-colormap" in bookmark) {
-
-                var disc_data = bookmark["dac-disc-colormap"];
-
-                // set continuous color map data
-                disc_map = disc_data[0];
-                disc_selected = disc_data[1];
-
-                // is there a selection?
-                if (disc_selected != null) {
-
-                    // either way, highlight previous selection
-                    d3.select("[title=" + disc_selected + "]")
-                        .style("background-color", "#444")
-
-                };
-            };
-        });
-        */
     }
 
     // set continuous color palette selection
