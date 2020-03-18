@@ -25,8 +25,10 @@ parser.add_argument("--marking", default=[], nargs="+",
                     help="Use --marking='<source>:<target>' to map <source> markings to <target> markings.  You may specify multiple maps, separated by whitespace.")
 arguments = parser.parse_args()
 
+logFile = '~/loadLog.txt'
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.FileHandler(logFile))
+#logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 # Sanity check input arguments ...

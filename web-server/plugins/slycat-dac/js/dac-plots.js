@@ -453,12 +453,13 @@ function download_plot(event)
     var plot_id = event.data.id;
 
     // get user selection
-    var curr_sel = selections.sel();
+    var curr_sel = selections.filtered_sel();
 
 	// make sure something is selected
 	if (curr_sel.length == 0) {
 
-	    dialog.ajax_error("You must make a selection before you can export plot data.")("","","");
+	    dialog.ajax_error("There are no plots visible. Please make " +
+	                      "a selection or relax filters before exporting plot data.")("","","");
 
 	} else {
 
@@ -490,15 +491,30 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
     }
 
     // create dialog message
-    var dialog_msg = 'You have selected ' + curr_sel.length + ' "' +
-                     sel_plot_name + '" plot(s).  ';
+    var dialog_msg = 'There are ' + curr_sel.length + ' "' +
+                     sel_plot_name + '" plot(s) displayed.  ';
 
     // extra text for zoomed plots
     if (zoomed) {
-        dialog_msg += "The selected plots have been magnified (zoomed in), " +
-                      "and only the time points shown will be exported.  (If you want " +
-                      "to export more time points, close this dialog and reset the " +
-                      "magnification.)";
+        dialog_msg += "<br><br><i class='text-warning fa fa-exclamation-triangle'></i> The " +
+                      "displayed plots have been magnified (zoomed in), " +
+                      "and only the time points shown will be exported.";
+    }
+
+    // check for filters, warning for save all plots
+    var use_data_order_all_plots = metadata_table.filters_active();
+    if (use_data_order_all_plots) {
+        dialog_msg += "<br><br><i class='text-warning fa fa-exclamation-triangle'></i> The " +
+                      "table is filtered.  The default data order (rather than the current " +
+                      'table order) will be used in the "Save All Plots" option.'
+    }
+
+    // check for filters active but not used
+    var use_data_order = (selections.filter_button_status() == false) && metadata_table.filters_active();
+    if (use_data_order) {
+        dialog_msg += "<br><br><i class='text-warning fa fa-exclamation-triangle'></i> The table is filtered " +
+                      "but not the plots.  The default data order (rather than the current table order) will be " +
+                      'used with the "Save Selected" option.';
     }
 
     // text for selecting point identifier
@@ -542,11 +558,11 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 
                 if(button.label == "Save All Plots")
                     convert_to_csv([], plot_id, header_index,
-                        defaultFilename);
+                        defaultFilename, use_data_order_all_plots);
 
                 else if(button.label == "Save Selected")
                     convert_to_csv(curr_sel, plot_id, header_index,
-                        defaultFilename);
+                        defaultFilename, use_data_order);
             }
 		},
 	});
@@ -554,7 +570,8 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
 }
 
 // generate csv table from selected plot data
-function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
+function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
+                         use_data_order)
 {
 
     // if selection is empty, use all plots
@@ -570,14 +587,10 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
     var num_sel = curr_sel.length;
 
     // get header values and selection colors
-    var sel_col_commas = metadata_table.selection_values(header_index, curr_sel);
+    var sel_col_commas = metadata_table.selection_values(header_index, curr_sel, use_data_order);
 
     // use new table order for data
     var curr_sel_table_order = sel_col_commas[2];
-
-    // pre-pend selection with [-2, -1] for passing to server
-    curr_sel_table_order.unshift(-1)
-    curr_sel_table_order.unshift(-2)
 
     // keep track of extra commas found
     var extra_commas = sel_col_commas[3];
@@ -590,8 +603,12 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
     for (var i = 0; i < num_sel; i++) {
 
         // text is "ID Var (selection color)"
-        csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind] +
-            " (" + sel_col_commas[1][i] + ")";
+        csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind];
+
+        // add selection color, if available
+        if (sel_col_commas[1][i] != "") {
+            csv_output += " (" + sel_col_commas[1][i] + ")";
+        }
 
         // separated by commas, ended by newline
         if (i < num_sel-1) {
@@ -602,16 +619,22 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename)
     }
 
     // call server to get data, no subsampling
-    client.get_model_command(
+    client.post_sensitive_model_command(
 	{
 		mid: mid,
 		type: "DAC",
 		command: "subsample_time_var",
-		parameters: [plot_id, sel_plot_ind, curr_sel_table_order, "Inf",
-					 plots_selected_zoom_x[plot_id][0], plots_selected_zoom_x[plot_id][1],
-					 plots_selected_zoom_y[plot_id][0], plots_selected_zoom_y[plot_id][1]],
+		parameters: {plot_id: plot_id, database_id: sel_plot_ind,
+		             plot_selection: curr_sel_table_order,
+		             num_subsamples: "Inf",
+		             x_min: plots_selected_zoom_x[plot_id][0],
+		             x_max: plots_selected_zoom_x[plot_id][1],
+		             y_min: plots_selected_zoom_y[plot_id][0],
+		             y_max: plots_selected_zoom_y[plot_id][1]},
 		success: function (result)
 		{
+            // convert to variable
+		    result = JSON.parse(result);
 
 			// add data to table, rows are time steps
 			var num_time_steps = result["time_points"].length;
@@ -728,8 +751,8 @@ module.draw = function()
 
 	// draw each plot to size of container
 	var width = $("#dac-plots").width();
-	var height = $("#dac-plots").height()/3.1 -
-		plot_adjustments.pull_down_height;
+	var height = Math.max($("#dac-plots").height()/3.1 -
+		plot_adjustments.pull_down_height,0);
 
 	// compute number of tick marks needed
 	var num_x_ticks = Math.round(width/plot_adjustments.x_tick_freq);
@@ -762,19 +785,20 @@ module.draw = function()
 
 		// update size of clip rectangle
 		plot[i].selectAll("#clip-rect")
-			.attr("width", width - plot_adjustments.padding_left
+			.attr("width", Math.max(width - plot_adjustments.padding_left
 								 - plot_adjustments.y_label_padding
-								 - plot_adjustments.padding_right)
-			.attr("height", height - plot_adjustments.padding_bottom
+								 - plot_adjustments.padding_right, 0))
+			.attr("height", Math.max(height - plot_adjustments.padding_bottom
 								   - plot_adjustments.x_label_padding
-								   - plot_adjustments.padding_top);
+								   - plot_adjustments.padding_top, 0));
+
 		// update mouse-over line plot limits
 		mouse_over_line[i].attr("x1", plot_adjustments.padding_left +
 									  plot_adjustments.y_label_padding)
-						  .attr("y1", $("#dac-plots").height()/3 -
+						  .attr("y1", Math.max($("#dac-plots").height()/3.1 -
 									  plot_adjustments.pull_down_height -
 									  plot_adjustments.padding_bottom -
-									  plot_adjustments.x_label_padding)
+									  plot_adjustments.x_label_padding, 0))
 						  .attr("x2", plot_adjustments.padding_left +
 									  plot_adjustments.y_label_padding)
 						  .attr("y2", plot_adjustments.padding_top);
@@ -847,39 +871,45 @@ function draw_plot(i)
 	// since this is an ajax call, we only continue after the
 	// data has been retrieved
 
-	// get rows of data to pass to server
-	var refresh_selections = [-2, -1];  // indicates empty python list
-
 	// compile selections into one list
+	var refresh_selections = [];
 	for (var k = 0; k < max_num_sel; k++) {
 
 	    // get current selection
-	    var curr_sel = selections.sel(k+1);
+	    var curr_sel = selections.filtered_sel(k+1);
 
 	    // add to list, up to max number of plots
 	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
 		    refresh_selections.push (curr_sel[j]);
 	    }
+
 	}
 
 	// if selection is non-empty show display indicator
-	if (refresh_selections.length == 2) {
+	if (refresh_selections.length == 0) {
 		plots_selected_displayed[i] = 0;
 	} else {
 		plots_selected_displayed[i] = 1;
 	}
 
 	// call to server to get subsampled data
-	client.get_model_command(
+	client.post_sensitive_model_command(
 	{
 		mid: mid,
 		type: "DAC",
 		command: "subsample_time_var",
-		parameters: [i, plots_selected[i], refresh_selections, max_time_points,
-					 plots_selected_zoom_x[i][0], plots_selected_zoom_x[i][1],
-					 plots_selected_zoom_y[i][0], plots_selected_zoom_y[i][1]],
+		parameters: {plot_id: i, database_id: plots_selected[i],
+		             plot_selection: refresh_selections,
+		             num_subsamples: max_time_points,
+		             x_min: plots_selected_zoom_x[i][0],
+		             x_max: plots_selected_zoom_x[i][1],
+		             y_min: plots_selected_zoom_y[i][0],
+		             y_max: plots_selected_zoom_y[i][1]},
 		success: function (result)
 		{
+		    // convert to variable
+		    result = JSON.parse(result);
+
 			// recover plot id
 			var plot_id = result["plot_id"];
 
@@ -954,7 +984,7 @@ function update_data_d3(i)
     // are there any selections?
     var any_selections = false;
     for (var k = 0; k < max_num_sel; k++) {
-        if (selections.len_sel(k+1) > 0) { any_selections = true; }
+        if (selections.len_filtered_sel(k+1) > 0) { any_selections = true; }
     }
 
 	// generate new data for each selection
@@ -1087,7 +1117,7 @@ function generate_curve_data (i)
 	    }
 
 	    // get current selection
-	    var curr_sel = selections.sel(k+1);
+	    var curr_sel = selections.filtered_sel(k+1);
 
 	    // make array of data for current selection
 	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
@@ -1326,7 +1356,7 @@ function select_curve (d,i)
     for (var k = 0; k < max_num_sel; k++) {
 
         // get current selection
-        var curr_sel = selections.sel(k+1);
+        var curr_sel = selections.filtered_sel(k+1);
 
         // look for curve index
         if (sel_ind == k) {
@@ -1372,7 +1402,7 @@ function focus_curve_ind ()
     for (var k = 0; k < max_num_sel; k++) {
 
         // check for curve index in current selection
-        var ind_sel = selections.in_sel_x(curve_in_focus, k+1);
+        var ind_sel = selections.in_filtered_sel_x(curve_in_focus, k+1);
 
         // if found index (and within max number of plots), we're done
         if ((ind_sel != -1) &&
@@ -1382,7 +1412,7 @@ function focus_curve_ind ()
         }
 
         // otherwise, update index into selection
-        curr_sel_ind = curr_sel_ind + Math.min(selections.len_sel(k+1), max_num_plots);
+        curr_sel_ind = curr_sel_ind + Math.min(selections.len_filtered_sel(k+1), max_num_plots);
 
     }
 
@@ -1497,21 +1527,12 @@ function update_plot_limit_indicator ()
 	// check if any selections are over plotting limit
 	for (var k = 0; k < max_num_sel; k++) {
 
-	    if (selections.len_sel(k+1) > max_num_plots) {
+	    if (selections.len_filtered_sel(k+1) > max_num_plots) {
 	        limit_indicator_color = "orange";
 	        break;
 	    }
 	}
 
-	/*
-	if ((selections.len_sel(1) > max_num_plots) & (selections.len_sel(2) > max_num_plots)) {
-		limit_indicator_color = "purple";
-	} else if (selections.len_sel(1) > max_num_plots) {
-		limit_indicator_color = "red";
-	} else if (selections.len_sel(2) > max_num_plots) {
-		limit_indicator_color = "blue";
-	}
-	*/
 }
 
 export default module;
