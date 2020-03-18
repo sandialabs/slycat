@@ -328,6 +328,7 @@ def put_model_array(database, model, aid, array_index, attributes, dimensions):
   :return:
   """
     slycat.web.server.update_model(database, model, message="Starting array set %s array %s." % (aid, array_index))
+    model = database.get('model', model['_id'])
     storage = model["artifact:%s" % aid]
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(storage, "r+") as file:
@@ -359,7 +360,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
     data = iter(data)
     slycat.web.server.update_model(database, model, message="Storing data to array set %s." % (aid))
-
+    model = database.get('model', model['_id'])
     with slycat.web.server.hdf5.lock:
         with slycat.web.server.hdf5.open(model["artifact:%s" % aid], "r+") as file:
             hdf5_arrayset = slycat.hdf5.ArraySet(file)

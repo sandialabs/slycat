@@ -229,8 +229,8 @@ $(document).ready(function() {
           window.alert(`Error retrieving model: ${msg}`);
     })
   };
-  showLoadingPage();
-  // loadPage()
+  // showLoadingPage();
+  loadPage()
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
   //////////////////////////////////////////////////////////////////////////////////////////
