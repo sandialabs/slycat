@@ -25,8 +25,10 @@ parser.add_argument("--marking", default=[], nargs="+",
                     help="Use --marking='<source>:<target>' to map <source> markings to <target> markings.  You may specify multiple maps, separated by whitespace.")
 arguments = parser.parse_args()
 
+logFile = '~/loadLog.txt'
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.FileHandler(logFile))
+#logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 # Sanity check input arguments ...
@@ -67,6 +69,17 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
         os.makedirs(os.path.dirname(destination))
     shutil.copy(source, destination)
 
+# Load project data ...
+logging.info("Loading project datas")
+for source in glob.glob(os.path.join(arguments.input_dir, "projects-data-*.json")):
+    logging.info("Loading project-data %s", source)
+    reference = json.load(open(source))
+    del reference["_rev"]
+    if arguments.force and reference["_id"] in couchdb:
+        del couchdb[reference["_id"]]
+    couchdb.save(reference)
+logging.info("Loading project datas done")
+
 # Load bookmarks ...
 logging.info("Loading bookmarks")
 for source in glob.glob(os.path.join(arguments.input_dir, "bookmark-*.json")):
@@ -77,7 +90,7 @@ for source in glob.glob(os.path.join(arguments.input_dir, "bookmark-*.json")):
     couchdb.save(boomark)
 logging.info("Loading bookmarks Done")
 
-# Load bookmarks ...
+# Load references ...
 logging.info("Loading references")
 for source in glob.glob(os.path.join(arguments.input_dir, "reference-*.json")):
     logging.info("Loading references %s", source)

@@ -9,8 +9,9 @@ import logging
 import os
 import shutil
 import slycat.hdf5
-
+import time
 import sys
+import subprocess
 
 parser = argparse.ArgumentParser()
 parser.add_argument("output_dir", help="Directory where results will be stored.")
@@ -19,7 +20,10 @@ parser.add_argument("--all-references-bookmarks", action="store_true", help="Dum
 parser.add_argument("--couchdb-database", default="slycat", help="CouchDB database.  Default: %(default)s")
 parser.add_argument("--couchdb-host", default="localhost", help="CouchDB host.  Default: %(default)s")
 parser.add_argument("--couchdb-port", type=int, default=5984, help="CouchDB port.  Default: %(default)s")
-parser.add_argument("--data-store", default="data-store",
+parser.add_argument("--port", default="5984", help="CouchDB port.  Default: %(default)s")
+parser.add_argument("--admin", default="admin", help="CouchDB admin user.  Default: %(default)s")
+parser.add_argument("--password", default="password", help="CouchDB admin password.  Default: %(default)s")
+parser.add_argument("--data-store", default="/var/lib/slycat/data-store",
                     help="Path to the hdf5 data storage directory.  Default: %(default)s")
 parser.add_argument("--force", action="store_true", help="Overwrite existing data.")
 parser.add_argument("--project-id", default=[], action="append",
@@ -27,10 +31,8 @@ parser.add_argument("--project-id", default=[], action="append",
 arguments = parser.parse_args()
 
 
-logFile = '~/dumpLog.txt'
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().addHandler(logging.FileHandler(logFile))
-#logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 if arguments.force and os.path.exists(arguments.output_dir):
@@ -38,7 +40,24 @@ if arguments.force and os.path.exists(arguments.output_dir):
 if os.path.exists(arguments.output_dir):
     raise Exception("Output directory already exists.")
 
-couchdb = couchdb.Server()[arguments.couchdb_database]
+# assuming CouchDB initialization from local process to local server
+creds = ""
+if arguments.admin != "":
+  creds = arguments.admin + ":" + arguments.password + "@"
+
+serverURL = "http://" + creds + arguments.couchdb_host + ":" + arguments.port + "/"
+logging.error("couch serverURL:%s" % serverURL)
+while True:
+  try:
+    couchdb_server = couchdb.Server(serverURL)
+    version = couchdb_server.version()
+    couchdb = couchdb_server[arguments.couchdb_database]
+    logging.error("couchdb version %s" % (version))
+    break
+  except Exception as e:
+    logging.error("Waiting for couchdb for data load.")
+    logging.error(e.msg)
+    time.sleep(2)
 
 os.makedirs(arguments.output_dir)
 
@@ -69,7 +88,7 @@ for project_id in arguments.project_id:
     for project_datas_id in project_datas_ids:
       project_data = couchdb.get(project_datas_id, attachments=True)
       json.dump(project_data, open(os.path.join(arguments.output_dir, "projects-data-%s.json" % project_data["_id"]), "w"))
-      
+
     project_arrays = set()
 
     for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):
@@ -88,8 +107,16 @@ for project_id in arguments.project_id:
                     logging.info("Dumping array set %s", value)
                     project_arrays.add(value)
                     try:
-                        shutil.copy(slycat.hdf5.path(value, arguments.data_store),
-                                    os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
+                        logging.error(slycat.hdf5.path(value, arguments.data_store))
+                        bashCommand ='docker cp slycat-compose_slycat-web-server_1:%s %s' % (slycat.hdf5.path(value, arguments.data_store), os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
+                        logging.error(bashCommand)
+
+                        process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+                        output, error = process.communicate()
+                        # 'docker cp slycat-web-server:'+ slycat.hdf5.path(value, arguments.data_store) + 
+                        # ' ' + os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value)
+                        # shutil.copy(slycat.hdf5.path(value, arguments.data_store),
+                        #             os.path.join(arguments.output_dir, "array-set-%s.hdf5" % value))
                     except IOError:
                         logging.error("is the data store directory correct for hdf5 files? we couldn't find the file")
                         raise Exception("hdf5 file not found")

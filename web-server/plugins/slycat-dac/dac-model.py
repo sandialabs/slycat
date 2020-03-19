@@ -231,9 +231,13 @@ def register_slycat_plugin(context):
         scaled_mds_coords = dac.scale_coords(mds_coords,
                                              full_mds_coords[:, 0:2], subset_mask, subset_center)
 
+        # add index as third coordinate
+        index_col = numpy.vstack(numpy.arange(len(scaled_mds_coords)))
+        scaled_indexed_mds_coords = numpy.append(scaled_mds_coords, index_col, axis=1)
+
         # return data using content function
         def content():
-            yield json.dumps({"mds_coords": scaled_mds_coords.tolist()})
+            yield json.dumps({"mds_coords": scaled_indexed_mds_coords.tolist()})
 
         return content()
 
@@ -316,26 +320,22 @@ def register_slycat_plugin(context):
         # get input parameters
 
         # first parameter is just passed along then echoed back as a result
-        plot_id = int(kwargs["0"])
+        plot_id = int(kwargs["plot_id"])
 
         # variable number in database
-        database_ind = int(kwargs["1"])
+        database_ind = int(kwargs["database_id"])
 
         # rows of matrix to subsample
-        rows = kwargs["2"]
-
-        # remove first two entries (padding to correctly pass an array to python from js)
-        rows.pop(0)
-        rows.pop(0)
+        rows = kwargs["plot_selection"]
 
         # number of samples to return in subsample
-        num_subsample = str2float(kwargs["3"])
+        num_subsample = str2float(kwargs["num_subsamples"])
 
         # range of samples (x-value)
-        x_min = str2float(kwargs["4"])
-        x_max = str2float(kwargs["5"])
-        y_min = str2float(kwargs["6"])
-        y_max = str2float(kwargs["7"])
+        x_min = str2float(kwargs["x_min"])
+        x_max = str2float(kwargs["x_max"])
+        y_min = str2float(kwargs["y_min"])
+        y_max = str2float(kwargs["y_max"])
 
         # load time points and data from database
         time_points = slycat.web.server.get_model_arrayset_data(
@@ -1192,7 +1192,7 @@ def register_slycat_plugin(context):
     context.register_model_command("POST", "DAC", "update_alpha_clusters", update_alpha_clusters)
     context.register_model_command("POST", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
-    context.register_model_command("GET", "DAC", "subsample_time_var", subsample_time_var)
+    context.register_model_command("POST", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
     context.register_model_command("GET", "DAC", "check_compatible_models", check_compatible_models)
     context.register_model_command("GET", "DAC", "combine_models", combine_models)

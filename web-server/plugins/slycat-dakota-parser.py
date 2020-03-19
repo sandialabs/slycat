@@ -5,7 +5,7 @@
 import numpy
 import slycat.web.server
 
-from io import StringIO
+import io
 
 
 def parse_file(file):
@@ -24,7 +24,7 @@ def parse_file(file):
             return False
 
     #cherrypy.log.error("parsing:::::::")
-    rows = [row.split() for row in StringIO.StringIO(file)]
+    rows = [row.split() for row in io.StringIO(file)]
     if len(rows) < 2:
         cherrypy.log.error("slycat-dakota-parser.py parse_file", "File must contain at least two rows.")
         raise Exception("File must contain at least two rows.")
