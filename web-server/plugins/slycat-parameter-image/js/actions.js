@@ -84,7 +84,7 @@ export function updateThreeDCameras(cameras) {
     // 3D model, and that overwhelms the browser as it tries to bookmark
     // the state constantly.
     meta: {
-      throttle: 3000
+      throttle: 1500
     },
   }
 }
