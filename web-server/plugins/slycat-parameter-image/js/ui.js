@@ -40,7 +40,9 @@ import "./category-select";
 import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { createLogger } from 'redux-logger';
+import throttle from "redux-throttle";
 import ps_reducer from './reducers';
+import { updateThreeDSync } from './actions';
 
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import { setSyncCameras, } from './vtk-camera-synchronizer';
@@ -310,12 +312,20 @@ $(document).ready(function() {
         // Create logger for redux
         const loggerMiddleware = createLogger();
 
+        // Create throttle for redux
+        const defaultWait = 500
+        const defaultThrottleOption = { // https://lodash.com/docs#throttle
+          leading: true,
+          trailing: true
+        }
+        const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
+
         // Create Redux store and set its state based on what's in the bookmark
         const state_tree = {
           fontSize: 15,
           fontFamily: "Arial",
           axesVariables: {},
-          threeD_sync: false,
+          threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
           threeDColormap: vtkColorMaps.rgbPresetNames[0],
         }
         window.store = createStore(
@@ -331,6 +341,7 @@ $(document).ready(function() {
                               // Logger must be the last middleware in chain, 
                               // otherwise it will log thunk and promise, 
                               // not actual actions.
+            throttleMiddleware, // Allows throttling of actions
           )
         );
 
@@ -1469,6 +1480,8 @@ $(document).ready(function() {
     threeD_sync = threeD_sync_value;
     $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
     setSyncCameras(threeD_sync);
+    // Update Redux state
+    window.store.dispatch(updateThreeDSync(threeD_sync_value));
     $.ajax(
     {
       type : "POST",
