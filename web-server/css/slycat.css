@@ -629,3 +629,9 @@ label.bottom-margin
   max-height: 80vh;
   max-width: 70vw;
 }
+.slycat-big-scrolling-alert
+{
+  max-height: 159px;
+  overflow-y: scroll;
+  white-space: pre-line;
+}

@@ -80,9 +80,8 @@
 
     <div data-bind="visible:tab() == 3" style="height: 600px">
       <div class="slycat-remote-browser-flex-layout">
-        <label class="alert alert-danger" role="alert" data-bind="visible:error_messages().length > 0, text: error_messages()" style="
-          white-space:pre-line;
-          "></label>
+        <label class="alert alert-danger slycat-big-scrolling-alert" role="alert" 
+          data-bind="visible:error_messages().length > 0, text: error_messages()"></label>
         <slycat-remote-browser params="
           type:'remote',
           sid:remote.sid,
