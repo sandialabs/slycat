@@ -12,6 +12,8 @@ export const CHANGE_CURRENT_FRAME = 'CHANGE_CURRENT_FRAME'
 export const CHANGE_THREED_COLORMAP = 'CHANGE_THREED_COLORMAP'
 export const UPDATE_THREE_D_COLORBY = 'UPDATE_THREE_D_COLORBY'
 export const UPDATE_THREE_D_COLORBY_OPTIONS = 'UPDATE_THREE_D_COLORBY_OPTIONS'
+export const UPDATE_THREE_D_CAMERAS = 'UPDATE_THREE_D_CAMERAS'
+export const UPDATE_THREE_D_SYNC = 'UPDATE_THREE_D_SYNC'
 
 export function changeFontSize(size) {
   return { 
@@ -70,5 +72,26 @@ export function updateThreeDColorByOptions(uri, options) {
     type: UPDATE_THREE_D_COLORBY_OPTIONS,
     uri: uri,
     options: options,
+  }
+}
+
+export function updateThreeDCameras(cameras) {
+  return { 
+    type: UPDATE_THREE_D_CAMERAS, 
+    cameras: cameras,
+    // Throttle this action to only invoke it once every x milliseconds
+    // because it gets called very often as the user interacts with a
+    // 3D model, and that overwhelms the browser as it tries to bookmark
+    // the state constantly.
+    meta: {
+      throttle: 3000
+    },
+  }
+}
+
+export function updateThreeDSync(threeD_sync) {
+  return { 
+    type: UPDATE_THREE_D_SYNC, 
+    threeD_sync: threeD_sync 
   }
 }

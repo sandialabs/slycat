@@ -7,6 +7,8 @@ import {
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
   UPDATE_THREE_D_COLORBY_OPTIONS,
+  UPDATE_THREE_D_CAMERAS,
+  UPDATE_THREE_D_SYNC,
 } from './actions';
 
 const initialState = {
@@ -68,6 +70,30 @@ export default function ps_reducer(state = initialState, action) {
             [action.uri]: action.options
           }
         }
+      })
+    case UPDATE_THREE_D_CAMERAS:
+      let newCameras = {};
+      for(let camera of action.cameras)
+      {
+        newCameras[camera.uri] = {
+          position: camera.camera.getPosition(),
+          focalPoint: camera.camera.getFocalPoint(),
+          viewUp: camera.camera.getViewUp(),
+        }
+      }
+
+      return Object.assign({}, state, {
+        three_d_cameras: {
+          ...state.three_d_cameras,
+          // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
+          // [action.uri]: action.camera
+          ...newCameras
+        }
+      })
+    
+    case UPDATE_THREE_D_SYNC:
+      return Object.assign({}, state, {
+        threeD_sync: action.threeD_sync
       })
 
     default:
