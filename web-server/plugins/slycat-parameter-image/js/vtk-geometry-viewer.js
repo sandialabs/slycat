@@ -197,11 +197,11 @@ export function load(container, buffer, uri) {
        && window.store.getState().three_d_colorvars[uri]
        && window.store.getState().three_d_colorvars[uri] != colorBy)
     {
-      console.log("ColorBy changed, so applying the new one.");
+      // console.log("ColorBy changed, so applying the new one.");
       updateColorBy();
     }
     else{
-      console.log("ColorBy did not changed, so not applying the new one.");
+      // console.log("ColorBy did not changed, so not applying the new one.");
     }
   }
 
@@ -271,7 +271,21 @@ export function load(container, buffer, uri) {
     container.dispatchEvent(vtkstartinteraction_event);
   });
 
-  // Get the active camera and pass it to camera synchronizer
+  // Get the active camera
   let camera = renderer.getActiveCamera();
-  addCamera(camera, container, interactor);
+
+  // Set the camera based on what's in the state
+  let cameraState = window.store.getState().three_d_cameras? window.store.getState().three_d_cameras[uri] : false;
+  if(cameraState)
+  {
+    // console.log('we have state for the camera: ' + cameraState);
+    camera.setPosition(...cameraState.position);
+    camera.setFocalPoint(...cameraState.focalPoint);
+    camera.setViewUp(...cameraState.viewUp);
+    interactor.render();
+    // renderer.resetCamera();
+  }
+
+  // Pass the active camera to camera synchronizer
+  addCamera(camera, container, interactor, uri);
 }
