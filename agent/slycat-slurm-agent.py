@@ -191,8 +191,15 @@ class Agent(agent.Agent):
     def checkjob(self, command):
         results = {
             "ok": True,
-            "jid": command["command"]
+            "jid": command["command"],
+            "logFile": "Log file is missing or empty"
         }
+        try:
+            with open(os.path.join(os.path.expanduser('~'), "slurm-%s.out"%command["command"]), "r") as f:
+                results["logFile"]=f.read()
+        except:
+            # something went wrong getting the log let just move on
+            pass
         try:
             results["output"], results["errors"] = self.run_shell_command("sacct -j %s --format=jobname,state" % results["jid"])
             myset = str(results["output"].decode()).split('\n')

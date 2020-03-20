@@ -572,6 +572,16 @@ module.get_configuration_agent_functions = function(params) {
     }
   });
 };
+module.get_model_fetch = function(mid)
+{
+  return fetch(`${api_root}models/${mid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
+    }
+    return response.json();
+  });
+};
 
 module.get_model = function(params)
 {
@@ -676,7 +686,7 @@ module.get_model_command = function(params)
   });
 };
 
-module.get_model_command_fetch = function(params, successFunction, errorFunction)
+module.get_model_command_fetch = function(params, errorFunction)
 {
   return fetch(URI(api_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
       {
@@ -688,12 +698,15 @@ module.get_model_command_fetch = function(params, successFunction, errorFunction
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
-    return response.json();
+    if (Object.keys(response).indexOf("json") > -1){
+      return response.json();
+    }
+    return {};
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
     }else{
-      console.log(error);
+      throw error;
     }
   });
 };
@@ -1260,6 +1273,18 @@ module.post_submit_batch = function(params) {
       if (params.error)
         params.error(request, status, reason_phrase);
     }
+  });
+};
+
+module.get_checkjob_fetch = function(hostname, jid) {
+  return fetch(`${api_root}remotes/checkjob/${hostname}/${jid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
+    }
+    return response.json();
+  }).catch((error) => {
+      throw error;
   });
 };
 
