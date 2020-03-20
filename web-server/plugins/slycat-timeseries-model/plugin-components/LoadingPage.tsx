@@ -82,7 +82,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   private pullHPCData = () => {
     const params = {mid:this.props.modelId, type:"timeseries", command: "pull_data"}
     client.get_model_command_fetch(params).then((json: any) => {
-      console.log(json)
+      console.log(`pulling data down from hpc ${json}`)
     }).catch((res: any)=> {
       if((res as string).includes('409 :: error connecting to check on the job')){
         this.checkRemoteStatus()
@@ -101,7 +101,6 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   private checkRemoteJob = async () => {
     return client.get_checkjob_fetch(this.props.hostname, this.props.jid)
       .then((json:any) => {
-        console.log(json);
         this.appendLog(json);
     });
   };

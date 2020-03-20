@@ -156,15 +156,15 @@ $(document).ready(function() {
       success : function(result)
       {
         model = result;
-        bookmarker = bookmark_manager.create(model.project, model._id);
-        cluster_bin_count = model["artifact:cluster-bin-count"];
-        cluster_bin_type = model["artifact:cluster-bin-type"];
-        cluster_type = model["artifact:cluster-type"];
         // If the model isn't ready or failed, we're done.
         if(model["state"] === "waiting" || model["state"] === "running") {
           showLoadingPage();
           return;
         }
+        bookmarker = bookmark_manager.create(model.project, model._id);
+        cluster_bin_count = model["artifact:cluster-bin-count"];
+        cluster_bin_type = model["artifact:cluster-bin-type"];
+        cluster_type = model["artifact:cluster-type"];
 
         // Check if model has the image-columns artifact and create one if it doesn't
         if(!model.hasOwnProperty("artifact:image-columns"))
@@ -211,9 +211,7 @@ $(document).ready(function() {
     });
   }
   const showLoadingPage = () => {
-    console.log("initializing loading page");
     client.get_model_fetch(model._id).then((modelResponse) => {
-        console.log(modelResponse['artifact:hostname']);
         ReactDOM.render(
             <LoadingPage
               modelId={modelResponse._id}
