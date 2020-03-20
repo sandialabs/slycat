@@ -102,7 +102,7 @@ def register_slycat_plugin(context):
 
     forest = {}
     for column in columns:
-      tmp_uris = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % column))
+      tmp_uris = next(iter(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % column)))
       update_forest(forest, tmp_uris, column)
 
     formatted_forest = format_forest(forest)
