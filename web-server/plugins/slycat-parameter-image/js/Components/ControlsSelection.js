@@ -59,6 +59,10 @@ const ControlsSelection = (props) => {
   const no_hidden_unselected = _.difference(props.hidden_simulations, props.selection).length === 0;
   const unselected = _.difference(props.indices, props.selection);
   const no_visible_unselected = _.difference(unselected, props.hidden_simulations).length === 0;
+  
+  // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
+  const show_all_disabled = props.hidden_simulations.length == 0 || props.disable_hide_show;
+  const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
 
   return (
     <div className='btn-group'>
@@ -69,6 +73,12 @@ const ControlsSelection = (props) => {
         Actions
       </button>
       <div id='selection-switcher' className='dropdown-menu' aria-labelledby='selection-dropdown'>
+        <a href='#' 
+          className={`dropdown-item ${show_all_disabled ? 'disabled' : ''}`}
+          title={show_all_title}
+          onClick={props.trigger_show_all}>
+          Show All Hidden Items
+        </a>
 
         {rating_variable_controls}
 
