@@ -66,10 +66,12 @@ const ControlsSelection = (props) => {
         className={`btn btn-sm dropdown-toggle ${props.button_style} ${props.selection.length > 0 ? '' : 'disabled'}`}
         type='button' id='selection-dropdown' data-toggle='dropdown' 
         aria-expanded='false' aria-haspopup='true' title='Perform Action On Selection'>
-        Selection Action
+        Actions
       </button>
       <div id='selection-switcher' className='dropdown-menu' aria-labelledby='selection-dropdown'>
+
         {rating_variable_controls}
+
         <h6 className='dropdown-header'>Selected Items</h6>
         <a href='#' 
           className={`dropdown-item ${props.disable_hide_show || all_selected_hidden ? 'disabled' : ''}`}
@@ -81,13 +83,7 @@ const ControlsSelection = (props) => {
           onClick={props.trigger_show_selection}>
           Show
         </a>
-        {!props.hide_pin &&
-          <a href='#' 
-            className={`dropdown-item ${props.disable_pin ? 'disabled' : ''}`}
-            onClick={props.trigger_pin_selection}>
-            Pin
-          </a>
-        }
+
         <h6 className='dropdown-header'>Unselected Items</h6>
         <a href='#' 
           className={`dropdown-item ${props.disable_hide_show || no_visible_unselected ? 'disabled' : ''}`}
@@ -99,6 +95,24 @@ const ControlsSelection = (props) => {
           onClick={props.trigger_show_unselected}>
           Show Unselected
         </a>
+
+        {/* // Completely hide the Pin functionality when the model has no media variables to choose from */
+        !props.hide_pin &&
+        <React.Fragment>
+        <h6 className='dropdown-header'>Pins</h6>
+        <a href='#' 
+          className={`dropdown-item ${props.disable_pin ? 'disabled' : ''}`}
+          onClick={props.trigger_pin_selection}>
+          Pin Selected Items
+        </a>
+        <a href='#' 
+          className={`dropdown-item ${props.open_images.length == 0 ? 'disabled' : ''}`}
+          onClick={props.trigger_close_all}>
+          Close All Pins
+        </a>
+        </React.Fragment>
+        }
+
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { Provider } from 'react-redux';
 import ControlsPlayback from './ControlsPlayback';
 import ControlsDropdown from './ControlsDropdown';
@@ -13,6 +13,7 @@ import ControlsButtonUpdateTable from './ControlsButtonUpdateTable.jsx';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
 import ControlsButtonVarOptions from './ControlsButtonVarOptions';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import _ from 'lodash';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -183,8 +184,6 @@ class ControlsBar extends React.Component {
     // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
     const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
-    // Disable close all button when there are no open frames
-    const close_all_disabled = this.state.open_images.length == 0;
     // Completely hide the Pin functionality when the model has no media variables to choose from
     const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
     // Disable the Pin function when no media variable is selected
@@ -313,6 +312,7 @@ class ControlsBar extends React.Component {
               trigger_show_unselected={this.trigger_show_unselected}
               trigger_show_selection={this.trigger_show_selection}
               trigger_pin_selection={this.trigger_pin_selection}
+              trigger_close_all={this.trigger_close_all}
               disable_hide_show={this.state.disable_hide_show}
               disable_pin={disable_pin}
               hide_pin={hide_pin}
@@ -323,11 +323,10 @@ class ControlsBar extends React.Component {
               metadata={this.props.metadata}
               element={this.props.element}
               button_style={button_style}
+              open_images={this.state.open_images}
             />
             <ControlsButton label='Show All' title={show_all_title} disabled={show_all_disabled} 
               click={this.trigger_show_all} button_style={button_style} />
-            <ControlsButton label='Close All' title='' disabled={close_all_disabled} 
-              click={this.trigger_close_all} button_style={button_style} />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
               indices={this.props.indices} button_style={button_style} />
