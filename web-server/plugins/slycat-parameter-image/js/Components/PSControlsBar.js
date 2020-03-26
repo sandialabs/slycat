@@ -21,6 +21,7 @@ class ControlsBar extends React.Component {
     this.state = {
       auto_scale: this.props.auto_scale,
       hidden_simulations: this.props.hidden_simulations,
+      // disable_hide_show is set to true when there are filters in use
       disable_hide_show: this.props.disable_hide_show,
       open_images: this.props.open_images,
       selection: this.props.selection,
@@ -141,7 +142,11 @@ class ControlsBar extends React.Component {
   }
 
   trigger_pin_selection = (e) => {
-      this.props.element.trigger("pin-selection", [this.state.selection]);
+    this.props.element.trigger("pin-selection", [this.state.selection]);
+  }
+
+  trigger_select_pinned = (e) => {
+    this.props.element.trigger("select-pinned", [this.state.open_images]);
   }
 
   trigger_jump_to_start = (e) => {
@@ -185,9 +190,12 @@ class ControlsBar extends React.Component {
     const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
     // Disable the Pin function when no media variable is selected
     // or if the current selection only contains hidden simulations
+    // of if the current selection is already pinned
     const no_media_variable_selected = !(this.state.media_variable && this.state.media_variable >= 0);
     const all_selection_hidden = _.difference(this.state.selection, this.state.hidden_simulations).length === 0;
-    const disable_pin = no_media_variable_selected || all_selection_hidden;
+    // To Do: figure out if the current selection is already pinned
+    const current_selection_pinned = false;
+    const disable_pin = no_media_variable_selected || all_selection_hidden || current_selection_pinned;
 
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
@@ -311,6 +319,7 @@ class ControlsBar extends React.Component {
               trigger_pin_selection={this.trigger_pin_selection}
               trigger_close_all={this.trigger_close_all}
               trigger_show_all={this.trigger_show_all}
+              trigger_select_pinned={this.trigger_select_pinned}
               disable_hide_show={this.state.disable_hide_show}
               disable_pin={disable_pin}
               hide_pin={hide_pin}
