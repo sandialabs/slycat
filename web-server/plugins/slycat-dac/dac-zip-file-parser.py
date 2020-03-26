@@ -332,7 +332,6 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                                                   ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
 
             # extract csv file from archive and parse
-            # cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
             data = parse_csv(zip_ref.read(csv_files[i]))
             csv_data_i = data[2:4]
 

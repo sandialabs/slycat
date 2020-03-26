@@ -1719,7 +1719,6 @@ def post_model_arrayset_data(mid, aid):
     hyperchunks = None
     byteorder = None
     require_json_parameter("hyperchunks")
-    #cherrypy.log.error("parsing post arrayset data")
     hyperchunks = cherrypy.request.json["hyperchunks"]
     try:
         byteorder = cherrypy.request.json["byteorder"]
