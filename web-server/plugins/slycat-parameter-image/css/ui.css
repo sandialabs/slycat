@@ -1006,6 +1006,9 @@ a {
     white-space: nowrap;
     margin-left: -7px;
 }
+.bootstrap-styles .dropdown-header.disabled {
+  color: #6c757d;
+}
 #controls-pane .bootstrap-styles .dropdown-menu
 {
   max-height: 500px;
