@@ -26,6 +26,7 @@ import "./parameter-image-scatterplot";
 import "./parameter-controls";
 import "./parameter-image-table";
 import "./color-switcher";
+import $ from "jquery";
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
 import "jquery-ui/ui/disable-selection";
@@ -705,8 +706,8 @@ $(document).ready(function() {
           temp.push(selection[i]);
 
         selected_simulations_changed(temp);
-        $("#scatterplot").scatterplot("option", "selection",  temp);
-        $("#controls").controls("option", "selection",  temp);
+        $("#scatterplot").scatterplot("option", "selection", temp);
+        $("#controls").controls("option", "selection", temp);
       });
 
       // Changing the scatterplot selection updates the table row selection and controls ..
@@ -1164,6 +1165,29 @@ $(document).ready(function() {
         $("#scatterplot").scatterplot("pin", simulations_to_pin);
       });
 
+      // Log changes to selection ...
+      $("#controls").bind("select-pinned", function(event, open_images_to_select)
+      {
+        let pinned_simulations = [];
+
+        for(const open_image of open_images_to_select)
+        {
+          // Removing any hidden simulations from those that will be selected
+          if(!hidden_simulations.includes(open_image.index))
+          {
+            pinned_simulations.push(open_image.index);
+          }
+        }
+
+        // Merging unhidden pinned simulations with currently selected simulations
+        let to_select = _.union(pinned_simulations, selected_simulations);
+
+        selected_simulations_changed(to_select);
+        $("#scatterplot").scatterplot("option", "selection", to_select);
+        $("#controls").controls("option", "selection", to_select);
+        $("#table").table("option", "row-selection", to_select);
+      });
+
       // Log changes to hidden selection ...
       $("#controls").bind("show-all", function(event, selection)
       {
@@ -1398,6 +1422,7 @@ $(document).ready(function() {
 
   function selected_simulations_changed(selection)
   {
+    // console.log("selected_simulations_changed");
     // Logging every selected item is too slow, so just log the count instead.
     $.ajax(
     {
@@ -1628,13 +1653,13 @@ $(document).ready(function() {
       });
     }
 
-    $("#controls").controls("option", "disable_hide_show",  filter_manager.active_filters().length > 0);
+    $("#controls").controls("option", "disable_hide_show", filter_manager.active_filters().length > 0);
 
     filter_manager.active_filters.subscribe(function(newValue) {
       filters_changed(newValue);
       if($("#controls").data("parameter_image-controls"))
       {
-        $("#controls").controls("option", "disable_hide_show",  newValue.length > 0);
+        $("#controls").controls("option", "disable_hide_show", newValue.length > 0);
       }
     });
   }
