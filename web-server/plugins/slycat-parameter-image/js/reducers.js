@@ -3,6 +3,10 @@ import {
   CHANGE_FONT_FAMILY,
   CHANGE_AXES_VARIABLE_SCALE,
   CHANGE_VARIABLE_ALIAS_LABEL,
+  SET_UNSELECTED_POINT_SIZE,
+  SET_UNSELECTED_BORDER_SIZE,
+  SET_SELECTED_POINT_SIZE,
+  SET_SELECTED_BORDER_SIZE,
 } from './actions';
 
 const initialState = {
@@ -34,6 +38,22 @@ export default function slycat(state = initialState, action) {
             [action.aliasVariable]: action.aliasLabel
           }
         }
+      })
+    case SET_UNSELECTED_POINT_SIZE:
+      return Object.assign({}, state, {
+        unselected_point_size: action.size
+      })
+    case SET_UNSELECTED_BORDER_SIZE:
+      return Object.assign({}, state, {
+        unselected_border_size: action.size
+      })
+    case SET_SELECTED_POINT_SIZE:
+      return Object.assign({}, state, {
+        selected_point_size: action.size
+      })
+    case SET_SELECTED_BORDER_SIZE:
+      return Object.assign({}, state, {
+        selected_border_size: action.size
       })
     default:
       return state
