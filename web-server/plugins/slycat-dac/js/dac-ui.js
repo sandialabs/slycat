@@ -43,7 +43,7 @@ $(document).ready(function() {
     var MAX_TIME_POINTS = 500;
 
     // maximum number of plots (per selection)
-    var MAX_NUM_PLOTS = 50;
+    var MAX_NUM_PLOTS = 33;
 
     // animation threshold (overrides push script value)
     var MAX_POINTS_ANIMATE = 2500;
