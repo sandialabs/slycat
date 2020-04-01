@@ -154,7 +154,7 @@ export default function ControlsButtonVarOptions(props) {
                 <li className='nav-item'>
                   <a className='nav-link' id='scatterplot-options-tab' data-toggle='tab' 
                     href='#scatterplot-options-tab-content' role='tab' aria-controls='scatterplot-options-tab-content' aria-selected='false'>
-                    <h5 className='mb-0'>Points</h5>
+                    <h5 className='mb-0'>Point Formatting</h5>
                   </a>
                 </li>
               </ul>
