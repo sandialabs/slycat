@@ -609,7 +609,7 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
                                                "Error -- couldn't read .tmds file.")
 
             # print error to cherrypy.log.error
-            cherrypy.log.error(traceback.format_exc())
+            cherrypy.log.error("[DAC] " + traceback.format_exc())
 
     # start actual parsing as a thread
     stop_event = threading.Event()
@@ -808,7 +808,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
     except Exception as e:
 
         # print error to cherrypy.log.error
-        cherrypy.log.error(traceback.format_exc())
+        cherrypy.log.error("[DAC] " + traceback.format_exc())
 
 
 def parse_tdms_zip(database, model, input, files, aids, **kwargs):
@@ -859,7 +859,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
                                            "Error -- couldn't read .zip file (too large or corrupted).")
 
         # print error to cherrypy.log.error
-        cherrypy.log.error(traceback.format_exc())
+        cherrypy.log.error("[DAC] " + traceback.format_exc())
 
     # loop through zip files and look for tdms files matching suffix list
     file_list = []
@@ -899,7 +899,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
                                                        "Error -- couldn't read .tmds file.")
 
                     # print error to cherrypy.log.error
-                    cherrypy.log.error(traceback.format_exc())
+                    cherrypy.log.error("[DAC] " + traceback.format_exc())
 
     # log files to be parsed
     for file_to_parse in file_list:

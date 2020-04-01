@@ -52,7 +52,7 @@ def register_slycat_plugin(context):
         # compute MDS coords
         # ------------------
 
-        cherrypy.log.error("DAC: initializing MDS coords.")
+        cherrypy.log.error("[DAC] Initializing MDS coords.")
 
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
@@ -130,7 +130,7 @@ def register_slycat_plugin(context):
 
         # upload done indicator for polling routine
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
-        cherrypy.log.error("[DAC] done initializing MDS coords.")
+        cherrypy.log.error("[DAC] Done initializing MDS coords.")
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
@@ -546,7 +546,7 @@ def register_slycat_plugin(context):
             else:
 
                 # called with un-implemented column type (should never happen)
-                cherrypy.log.error("[DAC] error: un-implemented column type for manage editable columns.")
+                cherrypy.log.error("[DAC] Error: un-implemented column type for manage editable columns.")
                 return json.dumps({"error": 0})
 
         elif col_cmd == 'remove':
@@ -571,7 +571,7 @@ def register_slycat_plugin(context):
         else:
 
             # called with invalid command (should never happen)
-            cherrypy.log.error("[DAC] error: un-implemented command for manage editable columns.")
+            cherrypy.log.error("[DAC] Error: un-implemented command for manage editable columns.")
             return json.dumps({"error": 0})
 
         # returns argument indicating success
@@ -581,8 +581,11 @@ def register_slycat_plugin(context):
     # check compatibility for before combining models
     def check_compatible_models(database, model, verb, type, command, **kwargs):
 
+        # intersect time flag
+        intersect_time = kwargs["intersect_time"]
+
         # get models to compare from database
-        model_ids_selected = kwargs["0"][1:]
+        model_ids_selected = kwargs["models_selected"][1:]
         models_selected = []
         model_names = []
         for i in range(len(model_ids_selected)):
@@ -642,7 +645,7 @@ def register_slycat_plugin(context):
                     database, models_selected[i], "dac-time-points", "%s/0/..." % j)[0]
 
                 # check that the time points are the same
-                if not numpy.array_equal(origin_time_points[j], new_time_points):
+                if not numpy.array_equal(origin_time_points[j], new_time_points) and not intersect_time:
                     return json.dumps(["Error", 'model "' +
                                        model_names[i] + '" time points do not match existing model ("' +
                                        model["name"] + '").'])
@@ -674,8 +677,12 @@ def register_slycat_plugin(context):
 
         # get models to compare from database
         # (first model is origin model)
-        model_ids_selected = kwargs["0"]
-        new_model_type = kwargs["1"]
+        model_ids_selected = kwargs["models_selected"]
+        new_model_type = kwargs["model_type"]
+
+        # do we need to intersect time points?
+        intersect_time = kwargs["intersect_time"]
+
         models_selected = []
         model_names = []
         for i in range(len(model_ids_selected)):
@@ -686,14 +693,14 @@ def register_slycat_plugin(context):
         stop_event = threading.Event()
         thread = threading.Thread(target=combine_models_thread,
                                   args=(database, model, models_selected,
-                                        new_model_type, model_names, stop_event))
+                                        new_model_type, model_names, intersect_time, stop_event))
         thread.start()
 
         return json.dumps(["Success", 1])
 
     # thread that does actual work for combine by recomputing
     def combine_models_thread(database, model, models_selected, new_model_type,
-                                        model_names, stop_event):
+                                        model_names, intersect_time, stop_event):
 
         # put entire thread into a try-except block in order
         # to print errors to cherrypy.log.error
@@ -818,11 +825,75 @@ def register_slycat_plugin(context):
             time_steps = []
             for i in range(num_vars):
 
-                # get time points from database
+                # get time points from database (only from original model)
                 time_steps_i = slycat.web.server.get_model_arrayset_data(
                     database, models_selected[0], "dac-time-points", "%s/0/..." % i)[0]
                 time_steps.append(time_steps_i)
 
+            # check if we have mismatched time steps
+            keep_var_inds = [i for i in range(num_vars)]
+            if intersect_time:
+
+                intersected_time_steps = []
+                for i in range(num_vars):
+
+                    # get time steps from origin model
+                    intersected_time_steps_i = time_steps[i]
+
+                    # go through each model and intersect time steps
+                    intersected_true = False
+                    for j in range(1,num_models):
+
+                        # get time points from database for model j
+                        time_steps_i = slycat.web.server.get_model_arrayset_data(
+                            database, models_selected[j], "dac-time-points", "%s/0/..." % i)[0]
+
+                        # intersect time steps
+                        intersected_time_steps_i = numpy.intersect1d(intersected_time_steps_i, time_steps_i)
+
+                        # note intersections
+                        if len(intersected_time_steps_i) == len(time_steps_i):
+                            intersected_true = True
+
+                    intersected_time_steps.append(intersected_time_steps_i)
+
+                    # log any intersections
+                    if intersected_true:
+                        parse_error_log.append("Variable " + meta_vars[i][0] + " had mismatched time steps " +
+                                               "which were truncated.")
+
+                # replace time steps with intersected time steps
+                time_steps = intersected_time_steps
+
+                # check if any variables have been thrown out
+                for i in reversed(range(num_vars)):
+                    if len(time_steps[i]) == 0:
+                        parse_error_log.append("Variable " + meta_vars[i][0] + " will be discarded due to " +
+                                               "empty time point intersection.")
+                        keep_var_inds.remove(i)
+                        meta_vars.pop(i)
+
+                # check if any variables are left
+                if len(keep_var_inds) == 0:
+
+                    parse_error_log.append("All variables have been discarded -- empty data set.")
+
+                    # record no data message in front of parser log
+                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                          ["No Data", "\n".join(parse_error_log)])
+
+                    # done polling
+                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                        ["Error", "no data could be imported (see Info > Parse Log for details)"])
+
+                    # quit early
+                    stop_event.set()
+
+            # update parse log
+            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
+                                                  ["Progress", "\n".join(parse_error_log)])
+
+            # update progress
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 56.0])
 
@@ -832,20 +903,37 @@ def register_slycat_plugin(context):
             var_dist = []
             for i in range(num_vars):
 
-                # get variable data for each variable
-                var_data_i = []
-                for j in range(num_models):
+                if i in keep_var_inds:
 
-                    var_data_j = slycat.web.server.get_model_arrayset_data(database,
-                                    models_selected[j], "dac-var-data", "%s/0/..." % i)[0]
-                    var_data_i.append(var_data_j)
+                    # get variable data for each variable
+                    var_data_i = []
+                    for j in range(num_models):
 
-                # concatenate and put into list of variables
-                var_data.append(numpy.concatenate(tuple(var_data_i)))
+                        # get time points from database for model j
+                        time_steps_i = slycat.web.server.get_model_arrayset_data(
+                            database, models_selected[j], "dac-time-points", "%s/0/..." % i)[0]
 
-                # create pairwise distance matrix
-                dist_i = spatial.distance.pdist(var_data[-1])
-                var_dist.append(spatial.distance.squareform(dist_i))
+                        # find intersected indices into time steps
+                        int_time_steps_i, int_inds_i, int_inds_i_arr_2 = numpy.intersect1d(time_steps_i,
+                            time_steps[i], return_indices=True)
+
+                        # get variable data
+                        var_data_j = slycat.web.server.get_model_arrayset_data(database,
+                                        models_selected[j], "dac-var-data", "%s/0/..." % i)[0]
+
+                        var_data_i.append(numpy.array(var_data_j)[:,int_inds_i])
+
+                    # concatenate and put into list of variables
+                    var_data.append(numpy.concatenate(tuple(var_data_i)))
+
+                    # create pairwise distance matrix
+                    dist_i = spatial.distance.pdist(var_data[-1])
+                    var_dist.append(spatial.distance.squareform(dist_i))
+
+            # remove empty time steps
+            for i in reversed(range(num_vars)):
+                if i not in keep_var_inds:
+                    time_steps.pop(i)
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 58.0])
@@ -892,7 +980,7 @@ def register_slycat_plugin(context):
         except Exception as e:
 
             # print error to cherrypy.log.error
-            cherrypy.log.error("[DAC]" + traceback.format_exc())
+            cherrypy.log.error("[DAC] " + traceback.format_exc())
 
 
     # helper function for combine_models_thread which merges editable columns
@@ -1003,7 +1091,7 @@ def register_slycat_plugin(context):
     # filter model by recomputing
     def filter_model(database, model, verb, type, command, **kwargs):
 
-        cherrypy.log.error("[DAC] creating time filtered model.")
+        cherrypy.log.error("[DAC] Creating time filtered model.")
 
         # get filters to create new model
         time_filter = kwargs["time_filter"]
@@ -1120,9 +1208,6 @@ def register_slycat_plugin(context):
                 parse_error_log.append('Filtered "' + meta_vars[i][0] + '" to range ' +
                                        str(time_filter[i][0]) + " - " + str(time_filter[i][1]) + ".")
 
-                cherrypy.log.error (str(time_filter[i]))
-                cherrypy.log.error (str(meta_vars[i][0]))
-
             # update progress report
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
                                                   ["Progress", "\n".join(parse_error_log)])
@@ -1175,7 +1260,7 @@ def register_slycat_plugin(context):
         except Exception as e:
 
             # print error to cherrypy.log.error
-            cherrypy.log.error("[DAC]" + traceback.format_exc())
+            cherrypy.log.error("[DAC] " + traceback.format_exc())
 
 
     # import dac_compute_coords module from source by hand
@@ -1194,8 +1279,8 @@ def register_slycat_plugin(context):
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("POST", "DAC", "subsample_time_var", subsample_time_var)
     context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
-    context.register_model_command("GET", "DAC", "check_compatible_models", check_compatible_models)
-    context.register_model_command("GET", "DAC", "combine_models", combine_models)
+    context.register_model_command("POST", "DAC", "check_compatible_models", check_compatible_models)
+    context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)
 
     # register input wizard with slycat
