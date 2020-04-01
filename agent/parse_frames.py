@@ -36,6 +36,10 @@ from sklearn.metrics.pairwise import euclidean_distances
 import time
 import logging
 
+# create movies
+import ffmpy
+from os import listdir
+
 
 # subroutines
 #############
@@ -135,9 +139,8 @@ parser.add_argument("--log_file", default=None,
                     help="log file for job status (optional)")
 
 # mandatory argument for column of movies
-parser.add_argument("--movie_col",
-                    help="column number (indexed by 1) with the movie files "
-                         "to be processed")
+parser.add_argument("--movie_dir",
+                    help="directory to write movies to.")
 
 # madatory argument for column of frames
 parser.add_argument("--frame_col",
@@ -194,6 +197,10 @@ if args.output_dir == None:
     log("[VS-LOG] Error: output directory not specified.")
     sys.exit()
 
+if args.movie_dir == None:
+    log("[VS-LOG] Error: movie directory not specified.")
+    sys.exit()
+
 # check limits on number dimensions
 num_dim = int(float(args.num_dim))
 if num_dim < 2:
@@ -243,6 +250,17 @@ for i in range(0, num_rows):
     # isolate first frame file
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
+
+    movie_output = args.movie_dir + '/movie_%d.mp4' % i
+    movie_input = frame_file_path + '/*.jpg'
+
+    #create the movie
+    ff = ffmpy.FFmpeg(
+        inputs={None: ['-pattern_type', 'glob'],
+            movie_input: None},
+        outputs={movie_output: None}
+    )
+    ff.run()
 
     # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')

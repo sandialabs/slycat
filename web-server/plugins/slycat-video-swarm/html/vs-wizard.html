@@ -141,9 +141,9 @@ S. Martin
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-frames-selector">
       </select>
 
-      <label style="margin-top:30px">Please choose column of CSV file with links to video files.</label>
+      <!-- <label style="margin-top:30px">Please choose column of CSV file with links to video files.</label>
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-videos-selector">
-      </select>
+      </select> -->
 
       <label style="margin-top:30px">Working Directory
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
@@ -151,6 +151,16 @@ S. Martin
         ></i>
       </label>
       <input id="VS-working-directory" class="form-control" type="text" placeholder="full path for temporary slycat files" data-bind="value: workdir"></input>
+      <div class="invalid-feedback">
+        Please enter a working directory.
+      </div>
+
+      <label style="margin-top:30px">Movie Directory
+        <i class="fa fa-question-circle inline-help" aria-hidden="true"
+           title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
+        ></i>
+      </label>
+      <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
       <div class="invalid-feedback">
         Please enter a working directory.
       </div>

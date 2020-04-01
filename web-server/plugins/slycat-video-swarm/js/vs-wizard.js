@@ -62,6 +62,9 @@ var vs_table_num_rows = null;
 localStorage["VS_WORKDIR"] ? component.workdir = ko.observable(localStorage["VS_WORKDIR"]) : component.workdir = ko.observable('');
 component.delete_workdir = ko.observable(false);
 
+// movie write directory
+localStorage["VS_MOVIEDIR"] ? component.moviedir = ko.observable(localStorage["VS_MOVIEDIR"]) : component.moviedir = ko.observable('');
+
 // video frame rate (defaults to 25)
 component.frame_rate = ko.observable(25);
 
@@ -499,7 +502,7 @@ var start_remote_job = function () {
         {"scripts":[{"name":"parse_frames","parameters":[
         {"name":"--csv_file","value": component.table_browser.selection()[0]},
         {"name":"--frame_col","value": frame_column + 1},
-        {"name":"--movie_col","value": link_column + 1},
+        {"name":"--movie_dir","value": component.moviedir()},
         {"name":"--output_dir","value": component.workdir()},
         {"name":"--fps","value": component.frame_rate()}]}],
         "hpc":{"is_hpc_job": component.HPC_Job(),
