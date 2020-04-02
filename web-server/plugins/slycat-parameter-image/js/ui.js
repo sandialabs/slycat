@@ -98,6 +98,11 @@ $(document).ready(function() {
   var axes_variables_scale = {};
   var variable_aliases = {};
 
+  var unselected_point_size = 8;
+  var unselected_border_size = 1;
+  var selected_point_size = 16;
+  var selected_border_size = 2;
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -305,6 +310,10 @@ $(document).ready(function() {
           fontSize: 15,
           fontFamily: "Arial",
           axesVariables: {},
+          unselected_point_size: 8,
+          unselected_border_size: 1,
+          selected_point_size: 16,
+          selected_border_size: 2,
         }
         window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
 
@@ -330,6 +339,10 @@ $(document).ready(function() {
         axes_font_size = store.getState().fontSize;
         axes_font_family = store.getState().fontFamily;
         axes_variables_scale = store.getState().axesVariables;
+        unselected_point_size = store.getState().unselected_point_size;
+        unselected_border_size = store.getState().unselected_border_size;
+        selected_point_size = store.getState().selected_point_size;
+        selected_border_size = store.getState().selected_border_size;
 
         // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
         filter_manager.set_bookmark(bookmark);
@@ -758,6 +771,10 @@ $(document).ready(function() {
         axes_font_size : axes_font_size,
         axes_font_family : axes_font_family,
         axes_variables_scale : axes_variables_scale,
+        canvas_square_size : unselected_point_size,
+        canvas_square_border_size : unselected_border_size,
+        canvas_selected_square_size : selected_point_size,
+        canvas_selected_square_border_size : selected_border_size,
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)
