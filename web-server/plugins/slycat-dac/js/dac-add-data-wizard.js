@@ -44,6 +44,9 @@ function constructor(params)
     // dac-generic format is selected by default
     component.dac_model_type = ko.observable("new");
 
+    // dac time intersection flag for combining models
+    component.dac_intersect_time = ko.observable(false);
+
     // creates a model of type "DAC"
     component.create_model = function() {
 
@@ -243,13 +246,17 @@ function constructor(params)
             $("#dac-inc-model-error").hide();
 
             // call server to check model compatibility
-            client.get_model_command({
+            client.post_sensitive_model_command({
                 mid: origin_model._id(),
                 type: "DAC",
                 command: "check_compatible_models",
-                parameters: [models_selected],
+                parameters: {models_selected: models_selected,
+                             intersect_time: component.dac_intersect_time()},
 		        success: function (result)
 		        {
+		            // convert result to variable
+                    result = JSON.parse(result);
+
 		            // turn off wait button
 		            $('.dac-check-compatibility-continue').toggleClass("disabled", false);
 
@@ -321,11 +328,13 @@ function constructor(params)
                     success: function() {
 
                             // combine by recomputing
-                            client.get_model_command({
+                            client.post_sensitive_model_command({
                                 mid: component.model._id(),
                                 type: "DAC",
                                 command: "combine_models",
-                                parameters: [models_selected, component.dac_model_type()],
+                                parameters: {models_selected: models_selected,
+                                             model_type: component.dac_model_type(),
+                                             intersect_time: component.dac_intersect_time()},
                                 success: function (result)
                                 {
 

@@ -50,10 +50,17 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
   public constructor(props:ConnectButtonProps) {
     super(props)
     this.state = {
-      text: this.props.text?this.props.text:"Connect",
+      text: props.text?props.text:"Connect",
       loadingData: props.loadingData,
       sessionExists: props.sessionExists
     }
+  }
+
+  static getDerivedStateFromProps(nextProps:any, prevState:any) {
+    if (nextProps.loadingData !== prevState.loadingData) {
+      return ({ loadingData: nextProps.loadingData }) // <- this is setState equivalent
+    }
+    return null
   }
 
   /**
@@ -92,7 +99,6 @@ export default class ConnectButton extends React.Component<ConnectButtonProps, C
       }
     }).then(() => {
       this.checkRemoteStatus(this.props.hostname);
-      console.log("Remote session created.");
     }).catch((errorResponse:any) => {
       if (errorResponse.status == 403){
         alert(`${errorResponse.statusText} \n\n-Make sure your username and password are entered correctly.

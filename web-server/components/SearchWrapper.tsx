@@ -49,7 +49,7 @@ export default class SearchWrapper extends React.Component<SearchWrapperProps, S
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
       this.setState({items: this.state.initialItems});
   }
 

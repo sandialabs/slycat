@@ -5,13 +5,13 @@ const ControlsButton = (props) => {
       <button
           className={`btn btn-sm ${props.button_style}`}
           id={props.id}
-          type="button" title={props.title}
+          type='button' title={props.title}
           disabled={props.disabled}
           onClick={props.click}
           data-toggle={props.data_toggle}
           data-target={props.data_target}>
         {props.icon &&
-          <span className={'fa ' + props.icon} aria-hidden="true"/>
+          <span className={'fa ' + props.icon} aria-hidden='true'/>
         }
         {props.label}
       </button>

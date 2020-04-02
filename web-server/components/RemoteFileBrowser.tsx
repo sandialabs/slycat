@@ -99,7 +99,6 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
         .then((json) => {
           // If we have a session, go on.
           if(json.status) {
-            // console.log('inside browse function');
             pathInput = (pathInput === ""?"/":pathInput);
             this.setState({
               rawFiles:[], 
@@ -146,7 +145,6 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
           // Otherwise...we don't have a session anymore, so 
           // run the reauth callback if one was passed.
           else {
-            // console.log('about to call onReauthCallback');
             if(this.props.onReauthCallBack) {
               this.props.onReauthCallBack();
             }

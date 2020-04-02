@@ -161,7 +161,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     :param kwargs:
     """
 
-    cherrypy.log.error("DAC PTS Zip parser started.")
+    cherrypy.log.error("[DAC] PTS Zip parser started.")
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -312,7 +312,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
-        cherrypy.log.error("DAC PTS Zip thread started.")
+        cherrypy.log.error("[DAC] PTS Zip thread started.")
 
         num_files = len(csv_files)
 
@@ -332,7 +332,6 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                                                   ["Extracting ...", 10.0 + 40.0 * (i + 1.0) / num_files])
 
             # extract csv file from archive and parse
-            # cherrypy.log.error("Parsing CSV/META files: %s" % files_no_ext[i])
             data = parse_csv(zip_ref.read(csv_files[i]))
             csv_data_i = data[2:4]
 
@@ -398,7 +397,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         # loaded CSV/META data (50%)
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 50.0])
 
-        cherrypy.log.error("DAC: screening for consistent digitizer IDs.")
+        cherrypy.log.error("[DAC] Screening for consistent digitizer IDs.")
 
         # screen for consistent digitizer ids
         test_inds = []
@@ -433,7 +432,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                 if not dig_ids_i[j] in dig_id_keys:
                     dig_id_keys.append(dig_ids_i[j])
 
-        cherrypy.log.error("DAC: getting intersecting IDs.")
+        cherrypy.log.error("[DAC] Getting intersecting IDs.")
 
         # screen for intersecting digitizer ids
         keep_dig_ids = dig_id_keys
@@ -471,7 +470,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             test_inds[i] = new_test_i_inds
             test_dig_ids[i] = new_dig_ids_i
 
-        cherrypy.log.error("DAC: constructing meta data table and variable/time matrices.")
+        cherrypy.log.error("[DAC] Constructing meta data table and variable/time matrices.")
 
         # screened CSV/META data (55%)
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Computing ...", 55.0])
@@ -509,7 +508,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                 time_data[j].append(csv_data[test_i_inds[j]][0])
                 var_data[j].append(csv_data[test_i_inds[j]][1])
 
-        cherrypy.log.error ("DAC: constructing variables.meta table and data matrices.")
+        cherrypy.log.error ("[DAC] Constructing variables.meta table and data matrices.")
 
         # construct variables.meta table, variable/distance matrices, and time vectors
         meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
