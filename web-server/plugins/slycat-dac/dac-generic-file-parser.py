@@ -639,6 +639,8 @@ def parse_gen_zip_thread(database, model, zip_ref, parse_error_log,
         # print error to cherrypy.log.error
         cherrypy.log.error(traceback.format_exc())
 
+        stop_event.set()
+
 
 # register all generic file parsers (really just the same csv parser), so that they
 # appear with different labels in the file picker.

@@ -57,7 +57,7 @@ def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MI
         for group in tdms_file.groups():
 
             # name shot/channel for potential errors
-            shot_name = tdms_file.object().properties['name'] + '_' + group
+            shot_name = str(tdms_file.object().properties['name']) + '_' + group
 
             # get channels for group
             group_channels = tdms_file.group_channels(group)
@@ -636,7 +636,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
-        cherrypy.log.error("DAC TDMS thread started.")
+        cherrypy.log.error("[DAC] TDMS thread started.")
 
         # filter shots according to user preferences MIN_TIME_STEPS and MIN_CHANNELS
         parse_error_log, shot_meta, shot_data = filter_shots(database, model, parse_error_log, tdms_ref,
@@ -656,8 +656,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                                                   ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
             # quit early
-            stop_event.set()
-
+            raise Exception("No data imported.")
 
         # push progress for wizard polling to database
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -680,7 +679,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                                                   ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
             # quit early
-            stop_event.set()
+            raise Exception("No data imported.")
 
         # push progress for wizard polling to database
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -715,7 +714,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                                                   ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
             # quit early
-            stop_event.set()
+            raise Exception("No data imported.")
 
         # push progress for wizard polling to database
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -810,6 +809,8 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         # print error to cherrypy.log.error
         cherrypy.log.error("[DAC] " + traceback.format_exc())
 
+        stop_event.set()
+
 
 def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
@@ -823,7 +824,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     :param kwargs:
     """
 
-    cherrypy.log.error("DAC TDMS zip parser started.")
+    cherrypy.log.error("[DAC] TDMS zip parser started.")
 
     # get user parameters
     MIN_TIME_STEPS = int(aids[0])

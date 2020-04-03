@@ -192,7 +192,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
                                            "Error -- couldn't read .zip file (too large or corrupted).")
 
         # print error to cherrypy.log.error
-        cherrypy.log.error(traceback.format_exc())
+        raise Exception("Couldn't read .zip file.")
 
     # loop through zip files and make a list of CSV/META files
 
@@ -648,6 +648,8 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         # print error to cherrypy.log.error
         cherrypy.log.error(traceback.format_exc())
 
+        # done -- destroy the thread
+        stop_event.set()
 
 def register_slycat_plugin(context):
     context.register_parser("dac-zip-file-parser", "PTS CSV/META .zip file", ["dac-zip-file"], parse_zip)

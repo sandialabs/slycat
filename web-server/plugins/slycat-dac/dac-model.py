@@ -832,6 +832,7 @@ def register_slycat_plugin(context):
 
             # check if we have mismatched time steps
             keep_var_inds = [i for i in range(num_vars)]
+            stop_thread = False
             if intersect_time:
 
                 intersected_time_steps = []
@@ -849,10 +850,12 @@ def register_slycat_plugin(context):
                             database, models_selected[j], "dac-time-points", "%s/0/..." % i)[0]
 
                         # intersect time steps
+                        len_prev_time_steps = len(intersected_time_steps_i)
                         intersected_time_steps_i = numpy.intersect1d(intersected_time_steps_i, time_steps_i)
 
                         # note intersections
-                        if len(intersected_time_steps_i) == len(time_steps_i):
+                        if len(intersected_time_steps_i) < len_prev_time_steps or \
+                           len(intersected_time_steps_i) < len(time_steps_i):
                             intersected_true = True
 
                     intersected_time_steps.append(intersected_time_steps_i)
@@ -860,7 +863,7 @@ def register_slycat_plugin(context):
                     # log any intersections
                     if intersected_true:
                         parse_error_log.append("Variable " + meta_vars[i][0] + " had mismatched time steps " +
-                                               "which were truncated.")
+                                               "and was truncated.")
 
                 # replace time steps with intersected time steps
                 time_steps = intersected_time_steps
@@ -886,8 +889,7 @@ def register_slycat_plugin(context):
                     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                         ["Error", "no data could be imported (see Info > Parse Log for details)"])
 
-                    # quit early
-                    stop_event.set()
+                    raise Exception("All variables have been discarded -- empty data set.")
 
             # update parse log
             slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
@@ -981,6 +983,9 @@ def register_slycat_plugin(context):
 
             # print error to cherrypy.log.error
             cherrypy.log.error("[DAC] " + traceback.format_exc())
+
+            # done -- destroy the thread
+            stop_event.set()
 
 
     # helper function for combine_models_thread which merges editable columns
@@ -1261,6 +1266,9 @@ def register_slycat_plugin(context):
 
             # print error to cherrypy.log.error
             cherrypy.log.error("[DAC] " + traceback.format_exc())
+
+            # done -- destroy the thread
+            stop_event.set()
 
 
     # import dac_compute_coords module from source by hand
