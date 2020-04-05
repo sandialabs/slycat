@@ -882,7 +882,7 @@ def register_slycat_plugin(context):
 
 
                     parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
-                                      "Progress", "All variables have been discarded -- empty data set.")
+                        "Progress", "All variables have been discarded -- empty data set.")
 
                     raise Exception("All variables have been discarded -- empty data set.")
 
