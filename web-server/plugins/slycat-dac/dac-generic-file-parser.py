@@ -283,7 +283,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
     except Exception as e:
 
-        quit_raise_exception(database, model, dac_error, parse_error_log,
+        dac_error.quit_raise_exception(database, model, parse_error_log,
                              "Couldn't read zip file (too large or corrupted).")
 
     # look for one occurrence (only) of .dac file and var, dist, and time directories
@@ -322,7 +322,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                 else:
 
-                    quit_raise_exception(database, model, dac_error, parse_error_log,
+                    dac_error.quit_raise_exception(database, model, parse_error_log,
                                          "Variable files must have .var extension.")
 
         # is it "time/" directory?
@@ -337,7 +337,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                 else:
 
-                    quit_raise_exception(database, model, dac_error, parse_error_log,
+                    dac_error.quit_raise_exception(database, model, parse_error_log,
                                          "Time series files must have .time extension.")
 
         # is it "dist/" directory?
@@ -352,7 +352,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
                 else:
 
-                    quit_raise_exception(database, model, dac_error, parse_error_log,
+                    dac_error.quit_raise_exception(database, model, parse_error_log,
                         "Distance matrix files must have .dist extension.")
 
     parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
@@ -387,7 +387,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
         # quit if headers are un-recognized
         if not headers_OK:
 
-            quit_raise_exception(database, model, dac_error, parse_error_log,
+            dac_error.quit_raise_exception(database, model, parse_error_log,
                                  "Variables.meta file has incorrect headers.")
 
         # check var file names
@@ -418,7 +418,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
     else:
 
-        quit_raise_exception(database, model, dac_error, parse_error_log,
+        dac_error.quit_raise_exception(database, model, parse_error_log,
                              "Variables.meta file not found.")
 
     # now start thread to prevent timing out on large files
@@ -427,16 +427,6 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
                               args=(database, model, zip_ref, dac_error, parse_error_log,
                               meta_var_col_names, meta_vars, dac_file, stop_event))
     thread.start()
-
-
-# helper function to raise exceptions and log errors
-def quit_raise_exception (database, model, dac_error, parse_error_log, error_msg):
-
-    dac_error.update_parse_log(database, model, parse_error_log, "Progress", error_msg)
-
-    dac_error.report_load_exception(database, model, parse_error_log, error_msg)
-
-    raise Exception(error_msg)
 
 
 # helper function which checks file names
@@ -453,7 +443,7 @@ def check_file_names (database, model, dac_error, parse_error_log,
     # quit if files do not match
     if not files_found:
 
-        quit_raise_exception(database, model, dac_error, parse_error_log, error_msg)
+        dac_error.quit_raise_exception(database, model, parse_error_log, error_msg)
 
 
 # gen zip parsing thread to prevent time outs by browser
@@ -504,7 +494,7 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
             # check that time steps match variable length
             if len(variable[i][0]) != len(data):
 
-                quit_raise_exception(database, model, dac_error, parse_error_log,
+                dac_error.quit_raise_exception(database, model, parse_error_log,
                                      'Time steps do not match variable data for variable ' + str(i+1) + ".")
 
             time_steps.append(list(data))
@@ -525,13 +515,13 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
             # check that distance matrix is square
             if len(data) != len(data[0]):
 
-                quit_raise_exception(database, model, dac_error, parse_error_log,
+                dac_error.quit_raise_exception(database, model, parse_error_log,
                                      'Distance matrix is not square for variable ' + str(i + 1) + '.')
 
             # check that distance matrix matches number of datapoints
             if len(data) != num_datapoints:
 
-                quit_raise_exception(database, model, dac_error, parse_error_log,
+                dac_error.quit_raise_exception(database, model, parse_error_log,
                                      'Distance matrix size does not match number of datapoints for variable ' \
                                      + str(i + 1) + '.')
 

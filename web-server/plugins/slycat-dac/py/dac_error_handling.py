@@ -40,3 +40,13 @@ def report_load_exception (database, model, parse_error_log, traceback_msg):
     # done polling
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
         ["Error", "no data could be imported (see Info > Parse Log for details)"])
+
+
+# log an error and raise exception
+def quit_raise_exception(database, model, parse_error_log, error_msg):
+
+    update_parse_log(database, model, parse_error_log, "Progress", error_msg)
+
+    report_load_exception(database, model, parse_error_log, error_msg)
+
+    raise Exception(error_msg)
