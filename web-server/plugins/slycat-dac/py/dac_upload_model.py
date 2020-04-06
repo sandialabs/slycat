@@ -13,7 +13,6 @@ import numpy
 
 # slycat server
 import slycat.web.server
-import dac_error_handling as dac_error
 
 # database, model are the slycat database and model to use for the upload
 # parse_error_log is the progress so far to be reported in the dac upload window
@@ -25,7 +24,7 @@ import dac_error_handling as dac_error
 # variable is a list of variable matrices
 # time_steps is a list of time step vectors
 # var_dist is a list of pairwise distance matrices
-def init_upload_model (database, model, parse_error_log, meta_column_names, meta_rows,
+def init_upload_model (database, model, dac_error, parse_error_log, meta_column_names, meta_rows,
                        meta_var_col_names, meta_vars, variable, time_steps, var_dist, proj=None):
 
     # convert from meta data from row-oriented to column-oriented data,

@@ -543,7 +543,7 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
                                               ["Progress", "\n".join(parse_error_log)])
 
         # upload model to slycat database
-        push.init_upload_model(database, model, parse_error_log,
+        push.init_upload_model(database, model, dac_error, parse_error_log,
                                meta_column_names, meta_rows,
                                meta_var_col_names, meta_vars,
                                variable, time_steps, var_dist)

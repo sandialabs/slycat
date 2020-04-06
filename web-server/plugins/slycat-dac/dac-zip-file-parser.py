@@ -588,7 +588,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         else:
 
             # upload model to slycat database
-            push.init_upload_model (database, model, parse_error_log,
+            push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
                                     variable, time_steps, var_dist)

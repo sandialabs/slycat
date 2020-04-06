@@ -471,7 +471,7 @@ def register_slycat_plugin(context):
 
     # adds, removes, and updates the editable columns in the metadata table.
     # inputs are described below, if no inputs for a particular command, use -1 in call.
-    def manage_editable_cols(database, model, verb, type, command, **kwargs):
+    def manage_editable_cols (database, model, verb, type, command, **kwargs):
 
         # check if user is a reader (if so do not change table)
         project = database.get("project", model["project"])
@@ -480,28 +480,28 @@ def register_slycat_plugin(context):
 
         # get input parameters (-1 means ignore)
         # manage column command ('add', 'remove', or 'update')
-        col_cmd = kwargs["0"]
+        col_cmd = kwargs["col_cmd"]
 
         # type of column to add ('freetext' or 'categorical')
-        col_type = kwargs["1"]
+        col_type = kwargs["col_type"]
 
         # name of column to add
-        col_name = kwargs["2"]
+        col_name = kwargs["col_name"]
 
         # categories in the case of a categorical column
-        col_cats = kwargs["3"]
+        col_cats = kwargs["col_cat"]
 
         # column to remove (for remove), or update (for update)
-        if isinstance(kwargs["4"], list):
-            col_id = [int(id) for id in kwargs["4"]]
+        if isinstance(kwargs["col_id"], list):
+            col_id = [int(id) for id in kwargs["col_id"]]
         else:
-            col_id = [int(kwargs["4"])]
+            col_id = [int(kwargs["col_id"])]
 
         # row to update (for update)
-        row_id = int(kwargs["5"])
+        row_id = int(kwargs["data_row"])
 
         # value to update (for update)
-        col_value = kwargs["6"]
+        col_value = kwargs["data_val"]
 
         # get number of rows in meta data table
         meta_data = slycat.web.server.get_model_arrayset_metadata(
@@ -963,7 +963,7 @@ def register_slycat_plugin(context):
                                                   ["Progress", "\n".join(parse_error_log)])
 
             # finally, we upload the combined data
-            push.init_upload_model (database, model, parse_error_log,
+            push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
                                     var_data, time_steps, var_dist, proj)
@@ -1243,7 +1243,7 @@ def register_slycat_plugin(context):
                                                   ["Progress", "\n".join(parse_error_log)])
 
             # finally, we upload the combined data
-            push.init_upload_model(database, model, parse_error_log,
+            push.init_upload_model(database, model, dac_error, parse_error_log,
                                    meta_column_names, meta_rows,
                                    meta_var_col_names, meta_vars,
                                    var_data, time_steps, var_dist)
@@ -1278,7 +1278,7 @@ def register_slycat_plugin(context):
     context.register_model_command("POST", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("POST", "DAC", "subsample_time_var", subsample_time_var)
-    context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
+    context.register_model_command("POST", "DAC", "manage_editable_cols", manage_editable_cols)
     context.register_model_command("POST", "DAC", "check_compatible_models", check_compatible_models)
     context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)

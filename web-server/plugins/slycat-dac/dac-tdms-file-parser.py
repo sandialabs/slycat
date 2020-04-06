@@ -775,7 +775,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         else:
 
             # upload model to slycat database
-            push.init_upload_model (database, model, parse_error_log,
+            push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
                                     variables, time_steps, var_dist)
