@@ -13,7 +13,7 @@ import numpy
 
 # slycat server
 import slycat.web.server
-import cherrypy
+import dac_error_handling as dac_error
 
 # database, model are the slycat database and model to use for the upload
 # parse_error_log is the progress so far to be reported in the dac upload window
@@ -59,7 +59,7 @@ def init_upload_model (database, model, parse_error_log, meta_column_names, meta
     # finally compute alpha cluster values
     alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)
 
-    cherrypy.log.error("[DAC] Pushing data to database.")
+    dac_error.log_dac_msg("Pushing data to database.")
 
     # Push DAC variables to slycat server
     # -----------------------------------
@@ -190,4 +190,4 @@ def init_upload_model (database, model, parse_error_log, meta_column_names, meta
 
     # upload done indicator for polling routine
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
-    cherrypy.log.error("[DAC] Done initializing MDS coords.")
+    dac_error.log_dac_msg("Done initializing MDS coords.")

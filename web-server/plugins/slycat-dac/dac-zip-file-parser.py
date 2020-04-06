@@ -18,7 +18,6 @@ import os
 
 # background thread does all the work on the server
 import threading
-import sys
 import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
