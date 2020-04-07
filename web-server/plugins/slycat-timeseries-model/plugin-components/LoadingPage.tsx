@@ -56,7 +56,13 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     this.timer = null;
     this.progressTimer = null;
   }
-  private updateProgress = () => {
+  /**
+   * updates the progress bar
+   *
+   * @private
+   * @memberof LoadingPage
+   */
+  private updateProgress = (): void => {
     client.get_model_fetch(this.props.modelId).then((model: any) => {
       if (model.hasOwnProperty('progress') && model.hasOwnProperty('state')){
         this.setState({progressBarProgress:model.progress, modelState:model.state}, () => {
@@ -69,7 +75,13 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
       alert(`error retrieving the model ${err}`)
     })
   }
-  private connectModalCallBack = (sessionExists: boolean, loadingData: boolean) => {
+  /**
+   * callback for the model that establishes connection to the remote server
+   *
+   * @private
+   * @memberof LoadingPage
+   */
+  private connectModalCallBack = (sessionExists: boolean, loadingData: boolean): void => {
     this.setState({sessionExists},() => {
       if(this.state.sessionExists) {
         this.checkRemoteJob();
@@ -77,9 +89,15 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     })
     clearInterval(this.timer);
     this.timer = null;
-    console.log(`Callback Called sessionExists:${sessionExists}: loadingData:${loadingData}`);
   }
-  private pullHPCData = () => {
+
+  /**
+   *  Tells the server to go and grab the data needed to load the timeseries data
+   *
+   * @private
+   * @memberof LoadingPage
+   */
+  private pullHPCData = (): void => {
     const params = {mid:this.props.modelId, type:"timeseries", command: "pull_data"}
     client.get_model_command_fetch(params).then((json: any) => {
       console.log(`pulling data down from hpc ${json}`)
@@ -105,6 +123,12 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     });
   };
   
+  /**
+   * function used to determine job state and what to do when its done
+   *
+   * @private
+   * @memberof LoadingPage
+   */
   private appendLog = (resJson: any) => {
     this.state.log.logLineArray = resJson.logFile.split("\n")
     this.setState({
@@ -139,7 +163,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * @async
    * @memberof SlycatRemoteControls
    */
-  private checkRemoteStatus = async () => {
+  private checkRemoteStatus = async (): Promise<any> => {
     return client.get_remotes_fetch(this.props.hostname)
     .then((json: any) => {
       this.setState({
@@ -155,7 +179,14 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     });
   }
 
-  private loginModal = () => {
+  /**
+   * Creates the connectModal and buttons for pulling data and 
+   * connecting back to the remote servers
+   *
+   * @private
+   * @memberof LoadingPage
+   */
+  private loginModal = (): JSX.Element => {
     return (
       <div>
         <ConnectModal
@@ -184,7 +215,13 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     );
   }
 
-  private logBuilder = (itemList:[string]) => {
+  /**
+   * Take items from the log and builds out dd elements
+   *
+   * @private
+   * @memberof LoadingPage
+   */
+  private logBuilder = (itemList:[string]): JSX.Element[] => {
     return itemList.map((item, index) =>
       <dd key={index.toString()}>
         {JSON.stringify(item)}
@@ -192,8 +229,14 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     );
   }
 
-  private getLog = ()  =>  {
-    let items: [] = this.logBuilder(this.state.log.logLineArray) as any;
+  /**
+   * Creates the JSX for the log list
+   *
+   * @private
+   * @memberof LoadingPage
+   */
+  private getLog = (): JSX.Element  =>  {
+    let items: JSX.Element[] = this.logBuilder(this.state.log.logLineArray);
     return this.state.sessionExists?(
       <dl>
         <dt>
@@ -206,11 +249,12 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
       </dl>
     ):(<Spinner />);
   }
-  public render() {
-    let d = new Date();
-    let datestring = d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " +
+  private getFormattedDateTime = (): string => {
+    const d = new Date();
+    return  d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() + " " +
       d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
-
+  }
+  public render() {
     return (
       <div className="slycat-job-checker bootstrap-styles">
         <div>
@@ -221,7 +265,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
         </div>
         <div className='slycat-job-checker-controls'>
           <div className="row">
-            <div className="col-3">Updated {datestring}</div>
+            <div className="col-3">Updated {this.getFormattedDateTime()}</div>
             <div className="col-2">Job id: <b>{this.props.jid}</b></div>
             <div className="col-3">Remote host: <b>{this.props.hostname}</b></div>
             <div className="col-2">Session: <b>{this.state.sessionExists?'true':'false'}</b></div>

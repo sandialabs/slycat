@@ -1372,35 +1372,6 @@ module.set_user_config = function(params) {
 };
 
 module.post_remote_command = function(params) {
-
-  // this is an example of the format that this function is expecting
-  // var test_script_json = {
-  //       "scripts": [
-  //           {
-  //               "name": "test",
-  //               "parameters": [
-  //                   {
-  //                       "name": "--number",
-  //                       "value": 2
-  //                   }
-  //               ]
-  //           }
-  //       ],
-  //       "hpc": {
-  //           "is_hpc_job": false,
-  //           "parameters": {
-  //               wckey : "test1",
-  //               nnodes : "1",
-  //               partition : "mypartition",
-  //               ntasks_per_node : "1",
-  //               time_hours : "01",
-  //               time_minutes : "30",
-  //               time_seconds : "30",
-  //               working_dir : "slycat"
-  //           }
-  //       }
-  // };
-  console.log("parsing " + JSON.stringify(params));
   $.ajax({
     contentType: 'application/json',
     data: JSON.stringify({"command": params.command}),
