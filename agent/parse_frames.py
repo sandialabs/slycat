@@ -243,15 +243,21 @@ frame_files = frame_files[1:]
 log("[VS-LOG] Locating and ordering frame files ...")
 # num_movies = len(movie_files)
 # num_movies = 1
+
 num_frames = 0
 all_frame_files = []
+all_movies = []
+all_movies.append("movie_files")
 for i in range(0, num_rows):
-
     # isolate first frame file
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
-    movie_output = args.movie_dir + '/movie_%d.mp4' % i
+    split_path = frame_files[i].split(frame_file_path)
+    file_location = split_path[0]
+
+    movie_output = args.movie_dir + 'movie_%d.mp4' % (i+1)
+    all_movies.append(file_location + movie_output)
     movie_input = frame_file_path + '/*.jpg'
 
     #create the movie
@@ -472,6 +478,15 @@ if not os.path.exists(args.output_dir):
 
 # write out movies.meta (the .csv file)
 log("[VS-LOG] Writing movies.csv file ...")
+
+# add a column to the end of the csv with created movie files
+for i in range(0, (len(meta_data))):
+    if i == 0:
+        meta_data[i].append("movie_files")
+    else:
+        meta_data[i].append(all_movies[i])
+
+
 meta_file = open(os.path.join(args.output_dir, 'movies.csv'), 'w')
 csv_meta_file = csv.writer(meta_file)
 csv_meta_file.writerows(meta_data)
