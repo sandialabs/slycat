@@ -109,7 +109,15 @@ module.exports = {
       // This enables the style and css loaders, which are needed to load CSS files
       {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
+        use: [ 
+          'style-loader', 
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true,
+            },
+          },
+        ]
       },
       // This enabled the URL loader for loading images referenced in CSS files as url()
       {
@@ -147,7 +155,12 @@ module.exports = {
         test: /\.less$/,
         use: [ 
           'style-loader', // creates style nodes from JS strings
-          'css-loader', // translates CSS into CommonJS
+          {
+            loader: 'css-loader', // translates CSS into CommonJS modules
+            options: {
+              sourceMap: true,
+            },
+          },
           'less-loader' // compiles Less to CSS
         ]
       },
@@ -160,7 +173,10 @@ module.exports = {
           }, 
           {
             loader: 'css-loader', // translates CSS into CommonJS modules
-          }, 
+            options: {
+              sourceMap: true,
+            },
+          },
           {
             loader: 'postcss-loader', // Run post css actions
             options: {
@@ -173,8 +189,11 @@ module.exports = {
             }
           }, 
           {
-            loader: 'sass-loader' // compiles Sass to CSS
-          }
+            loader: 'sass-loader', // compiles Sass to CSS
+            options: {
+              sourceMap: true,
+            },
+          },
         ]
       },
     ],
