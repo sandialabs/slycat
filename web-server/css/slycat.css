@@ -636,3 +636,8 @@ label.bottom-margin
   max-height: 80vh;
   max-width: 70vw;
 }
+
+/* Making sure that controls dropdowns scroll when contents are longer than the menu. */
+#controls .dropdown-menu {
+  overflow-y: auto;
+}
