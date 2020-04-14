@@ -271,7 +271,8 @@ for i in range(0, num_rows):
         ff = ffmpy.FFmpeg(
             inputs={None: ['-pattern_type', 'glob'],
                 movie_input: None},
-            outputs={movie_output: None}
+            outputs={None: ['-force_key_frames', '0.0,0.04,0.08'],
+            movie_output: None}
         )
         ff.run()
 
