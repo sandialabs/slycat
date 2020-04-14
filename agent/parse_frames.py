@@ -245,8 +245,8 @@ log("[VS-LOG] Locating and ordering frame files ...")
 movies_exist = False
 for fname in os.listdir(args.movie_dir):
     if fname.endswith('.mp4'):
-        # log("[VS-LOG] MP4 files located. Skipping movie creation.")
         movies_exist = True
+        log("[VS-LOG] MP4 files located. Skipping movie creation.")
         break
 
 
@@ -319,7 +319,6 @@ for i in range(0, num_rows):
     # order frames in path by frame number
     all_frame_files.append([os.path.join(frame_file_path, frames_in_path[j])
                             for j in numpy.argsort(frame_nums_in_path)])
-    #log("All frame files: " + str(all_frame_files))
     # check that all movie have same number of frames
     if i == 0:
         num_frames = len(all_frame_files[i])
