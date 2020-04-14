@@ -241,8 +241,14 @@ frame_files = frame_files[1:]
 
 # identify all frame files and order them by frame number
 log("[VS-LOG] Locating and ordering frame files ...")
-# num_movies = len(movie_files)
-# num_movies = 1
+
+movies_exist = False
+for fname in os.listdir(args.movie_dir):
+    if fname.endswith('.mp4'):
+        # log("[VS-LOG] MP4 files located. Skipping movie creation.")
+        movies_exist = True
+        break
+
 
 num_frames = 0
 all_frame_files = []
@@ -260,13 +266,14 @@ for i in range(0, num_rows):
     all_movies.append(file_location + movie_output)
     movie_input = frame_file_path + '/*.jpg'
 
-    #create the movie
-    ff = ffmpy.FFmpeg(
-        inputs={None: ['-pattern_type', 'glob'],
-            movie_input: None},
-        outputs={movie_output: None}
-    )
-    ff.run()
+    if not movies_exist:
+        #create the movie
+        ff = ffmpy.FFmpeg(
+            inputs={None: ['-pattern_type', 'glob'],
+                movie_input: None},
+            outputs={movie_output: None}
+        )
+        ff.run()
 
     # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')
