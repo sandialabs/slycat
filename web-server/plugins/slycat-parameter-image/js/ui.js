@@ -1704,6 +1704,14 @@ $(document).ready(function() {
     // We have no more filters, so revert to any manually hidden simulations
     else
     {
+      // Abort any remaining filter xhr calls since the last filter was closed
+      // and we don't want long calls to come back now and filter anything.
+      if(filterxhr)
+      {
+        filterxhr.abort();
+        console.debug('filter xhr aborted because last filter was closed');
+      }
+
       // Clear hidden_simulations
       while(hidden_simulations.length > 0) {
         hidden_simulations.pop();
