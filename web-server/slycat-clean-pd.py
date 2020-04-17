@@ -63,6 +63,11 @@ for row in couchdb.view("slycat/project_datas"):
                 log.error("Removing PD from none parameter-space model")
                 del model_doc["project_data"]
                 couchdb.save(model_doc)
+        # clean up models that don't have a type
+        elif "project_data" in model_doc:
+            log.error("Removing PD from none type model")
+            del model_doc["project_data"]
+            couchdb.save(model_doc)
     if delete_pd:
         # delete the bad project data
         log.error("starting Deletion of PD::: %s" % str(row.id))
