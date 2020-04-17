@@ -53,15 +53,16 @@ for row in couchdb.view("slycat/project_datas"):
     # go through model list in pd and start cleaning
     for model_id in pd_doc['mid']:
         model_doc = couchdb.get(type="model",id=model_id)
-        log.error("testing model type:[%s]" % str(model_doc["model-type"]))
-        if model_doc["model-type"] == "parameter-image":
-            log.error("found parameter-image not deleting PD: %s" % str(row.id))
-            delete_pd = False
-        # clean up models that don't need pd
-        elif "project_data" in model_doc:
-            log.error("Removing PD from none parameter-space model")
-            del model_doc["project_data"]
-            couchdb.save(model_doc)
+        if "model-type" in model_doc:
+            log.error("testing model type:[%s]" % str(model_doc["model-type"]))
+            if model_doc["model-type"] == "parameter-image":
+                log.error("found parameter-image not deleting PD: %s" % str(row.id))
+                delete_pd = False
+            # clean up models that don't need pd
+            elif "project_data" in model_doc:
+                log.error("Removing PD from none parameter-space model")
+                del model_doc["project_data"]
+                couchdb.save(model_doc)
     if delete_pd:
         # delete the bad project data
         log.error("starting Deletion of PD::: %s" % str(row.id))
