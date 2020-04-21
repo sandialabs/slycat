@@ -1108,6 +1108,7 @@ function generate_curve_data (i)
     // make data arrays for each selection
     var curve_data = [];
     var curr_sel_ind = 0;
+
     for (var k = 0; k < max_num_sel; k++) {
 
         // make array of indices into selection colors
@@ -1122,7 +1123,7 @@ function generate_curve_data (i)
 	    // make array of data for current selection
 	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
 		    curve_data.push(d3.transpose([plots_selected_time[i],
-				  plots_selected_data[i][j + Math.min(curr_sel_ind, max_num_plots)],
+				  plots_selected_data[i][j + curr_sel_ind],
 				  curr_sel_color]));
 	    };
 

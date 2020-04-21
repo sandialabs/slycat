@@ -43,23 +43,37 @@ export default function ControlsButtonVarOptions(props) {
         success: function(response) {
           $('#' + modalId).modal('hide');
         },
-        error: dialog.ajax_error("There was an error saving the variable alias labels."),
+        error: function(response) {
+          // dialog.ajax_error("There was an error saving the variable alias labels to project data.")();
+          // We have a pointer to project data but can't save to it.
+          // Maybe it was deleted.
+          // Let's save to the model's artifact instead.
+          writeAliasesToModelArtifact();
+        }
       });
     }
     // Otherwise write to the model's artifact:variable_aliases attribute
     else
     {
-      client.put_model_parameter({
-        mid: props.model._id,
-        aid: "variable_aliases",
-        value: props.variable_aliases,
-        input: false,
-        success: function() {
-          $('#' + modalId).modal('hide');
-        },
-        error: dialog.ajax_error("There was an error saving the variable alias labels."),
-      });
+      writeAliasesToModelArtifact();
     }
+  }
+
+  function writeAliasesToModelArtifact() {
+    client.put_model_parameter({
+      mid: props.model._id,
+      aid: "variable_aliases",
+      value: props.variable_aliases,
+      input: false,
+      success: function() {
+        $('#' + modalId).modal('hide');
+      },
+      error: function() {
+        console.log("Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog.");
+        $('#' + modalId).modal('hide');
+        dialog.ajax_error("There was an error saving the variable alias labels to the model's artifact.")();
+      }
+    });
   }
 
   let axes_variables = [];

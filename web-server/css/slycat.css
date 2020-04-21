@@ -636,9 +636,15 @@ label.bottom-margin
   max-height: 80vh;
   max-width: 70vw;
 }
+
 .slycat-big-scrolling-alert
 {
   max-height: 159px;
   overflow-y: scroll;
   white-space: pre-line;
+}
+
+/* Making sure that controls dropdowns scroll when contents are longer than the menu. */
+#controls .dropdown-menu {
+  overflow-y: auto;
 }

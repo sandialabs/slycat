@@ -7,12 +7,12 @@
 # 1/28/2015
 
 def register_slycat_plugin(context):
+
     import datetime
     import json
     import os
     import slycat.web.server
     import slycat.web.server.authentication
-    import cherrypy
 
     # to import other dac modules
     import imp
@@ -52,7 +52,7 @@ def register_slycat_plugin(context):
         # compute MDS coords
         # ------------------
 
-        cherrypy.log.error("[DAC] Initializing MDS coords.")
+        dac_error.log_dac_msg("Initializing MDS coords.")
 
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
@@ -130,7 +130,7 @@ def register_slycat_plugin(context):
 
         # upload done indicator for polling routine
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Done", 100])
-        cherrypy.log.error("[DAC] Done initializing MDS coords.")
+        dac_error.log_dac_msg("Done initializing MDS coords.")
 
         # returns dummy argument indicating success
         return json.dumps({"success": 1})
@@ -471,7 +471,7 @@ def register_slycat_plugin(context):
 
     # adds, removes, and updates the editable columns in the metadata table.
     # inputs are described below, if no inputs for a particular command, use -1 in call.
-    def manage_editable_cols(database, model, verb, type, command, **kwargs):
+    def manage_editable_cols (database, model, verb, type, command, **kwargs):
 
         # check if user is a reader (if so do not change table)
         project = database.get("project", model["project"])
@@ -480,28 +480,28 @@ def register_slycat_plugin(context):
 
         # get input parameters (-1 means ignore)
         # manage column command ('add', 'remove', or 'update')
-        col_cmd = kwargs["0"]
+        col_cmd = kwargs["col_cmd"]
 
         # type of column to add ('freetext' or 'categorical')
-        col_type = kwargs["1"]
+        col_type = kwargs["col_type"]
 
         # name of column to add
-        col_name = kwargs["2"]
+        col_name = kwargs["col_name"]
 
         # categories in the case of a categorical column
-        col_cats = kwargs["3"]
+        col_cats = kwargs["col_cat"]
 
         # column to remove (for remove), or update (for update)
-        if isinstance(kwargs["4"], list):
-            col_id = [int(id) for id in kwargs["4"]]
+        if isinstance(kwargs["col_id"], list):
+            col_id = [int(id) for id in kwargs["col_id"]]
         else:
-            col_id = [int(kwargs["4"])]
+            col_id = [int(kwargs["col_id"])]
 
         # row to update (for update)
-        row_id = int(kwargs["5"])
+        row_id = int(kwargs["data_row"])
 
         # value to update (for update)
-        col_value = kwargs["6"]
+        col_value = kwargs["data_val"]
 
         # get number of rows in meta data table
         meta_data = slycat.web.server.get_model_arrayset_metadata(
@@ -546,7 +546,7 @@ def register_slycat_plugin(context):
             else:
 
                 # called with un-implemented column type (should never happen)
-                cherrypy.log.error("[DAC] Error: un-implemented column type for manage editable columns.")
+                dac_error.log_dac_msg("Error: un-implemented column type for manage editable columns.")
                 return json.dumps({"error": 0})
 
         elif col_cmd == 'remove':
@@ -571,7 +571,7 @@ def register_slycat_plugin(context):
         else:
 
             # called with invalid command (should never happen)
-            cherrypy.log.error("[DAC] Error: un-implemented command for manage editable columns.")
+            dac_error.log_dac_msg("Error: un-implemented command for manage editable columns.")
             return json.dumps({"error": 0})
 
         # returns argument indicating success
@@ -703,14 +703,11 @@ def register_slycat_plugin(context):
                                         model_names, intersect_time, stop_event):
 
         # put entire thread into a try-except block in order
-        # to print errors to cherrypy.log.error
+        # to log and report loading errors
         try:
 
             # init parse error log for UI
-            parse_error_log = []
-            parse_error_log.append("Notes:")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
 
             # init dac polling progress bar for UI
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -766,9 +763,10 @@ def register_slycat_plugin(context):
             # save model origin column
             slycat.web.server.put_model_parameter(database, model, "dac-model-origin", from_model)
 
-            parse_error_log.append("Added new table column for model origin.")
-            parse_error_log.append("Duplicate time series in different models will be duplicated in table, and")
-            parse_error_log.append("will be plotted on top of each other in scatter plot and waveform plots.")
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                    "Added new table column for model origin.\n" +
+                    "Duplicate time series in different models will be duplicated in table, and\n" +
+                    "will be plotted on top of each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Combining ...", 53.0])
@@ -789,13 +787,15 @@ def register_slycat_plugin(context):
 
             # report on absence of editable columns
             if not found_editable_cols:
-                parse_error_log.append("No editable columns found.")
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                                             "No editable columns found.")
 
             # otherwise merge columns
             else:
                 merged_cols = merge_editable_cols(editable_cols, num_rows_per_model)
                 slycat.web.server.put_model_parameter(database, model, "dac-editable-columns", merged_cols)
-                parse_error_log.append("Merged editable columns.")
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                                             "Merged editable columns.")
 
             # get variable metadata table header
             var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
@@ -832,6 +832,7 @@ def register_slycat_plugin(context):
 
             # check if we have mismatched time steps
             keep_var_inds = [i for i in range(num_vars)]
+            stop_thread = False
             if intersect_time:
 
                 intersected_time_steps = []
@@ -849,18 +850,21 @@ def register_slycat_plugin(context):
                             database, models_selected[j], "dac-time-points", "%s/0/..." % i)[0]
 
                         # intersect time steps
+                        len_prev_time_steps = len(intersected_time_steps_i)
                         intersected_time_steps_i = numpy.intersect1d(intersected_time_steps_i, time_steps_i)
 
                         # note intersections
-                        if len(intersected_time_steps_i) == len(time_steps_i):
+                        if len(intersected_time_steps_i) < len_prev_time_steps or \
+                           len(intersected_time_steps_i) < len(time_steps_i):
                             intersected_true = True
 
                     intersected_time_steps.append(intersected_time_steps_i)
 
                     # log any intersections
                     if intersected_true:
-                        parse_error_log.append("Variable " + meta_vars[i][0] + " had mismatched time steps " +
-                                               "which were truncated.")
+                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                          "Progress", "Variable " + meta_vars[i][0] +
+                                          " had mismatched time steps and was truncated.")
 
                 # replace time steps with intersected time steps
                 time_steps = intersected_time_steps
@@ -868,30 +872,20 @@ def register_slycat_plugin(context):
                 # check if any variables have been thrown out
                 for i in reversed(range(num_vars)):
                     if len(time_steps[i]) == 0:
-                        parse_error_log.append("Variable " + meta_vars[i][0] + " will be discarded due to " +
-                                               "empty time point intersection.")
+                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                          "Progress", "Variable " + meta_vars[i][0] +
+                                          " will be discarded due to empty time point intersection.")
                         keep_var_inds.remove(i)
                         meta_vars.pop(i)
 
                 # check if any variables are left
                 if len(keep_var_inds) == 0:
 
-                    parse_error_log.append("All variables have been discarded -- empty data set.")
 
-                    # record no data message in front of parser log
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["No Data", "\n".join(parse_error_log)])
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                        "Progress", "All variables have been discarded -- empty data set.")
 
-                    # done polling
-                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                        ["Error", "no data could be imported (see Info > Parse Log for details)"])
-
-                    # quit early
-                    stop_event.set()
-
-            # update parse log
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+                    raise Exception("All variables have been discarded -- empty data set.")
 
             # update progress
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -969,7 +963,7 @@ def register_slycat_plugin(context):
                                                   ["Progress", "\n".join(parse_error_log)])
 
             # finally, we upload the combined data
-            push.init_upload_model (database, model, parse_error_log,
+            push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
                                     var_data, time_steps, var_dist, proj)
@@ -979,8 +973,11 @@ def register_slycat_plugin(context):
 
         except Exception as e:
 
-            # print error to cherrypy.log.error
-            cherrypy.log.error("[DAC] " + traceback.format_exc())
+            # log exception and inform user
+            dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+
+            # done -- destroy the thread
+            stop_event.set()
 
 
     # helper function for combine_models_thread which merges editable columns
@@ -1091,7 +1088,7 @@ def register_slycat_plugin(context):
     # filter model by recomputing
     def filter_model(database, model, verb, type, command, **kwargs):
 
-        cherrypy.log.error("[DAC] Creating time filtered model.")
+        dac_error.log_dac_msg("Creating time filtered model.")
 
         # get filters to create new model
         time_filter = kwargs["time_filter"]
@@ -1114,19 +1111,16 @@ def register_slycat_plugin(context):
     def filter_model_thread(database, model, origin_model, time_filter, stop_event):
 
         # put entire thread into a try-except block in order
-        # to print errors to cherrypy.log.error
+        # to catch and log load errors
         try:
 
             # init parse error log for UI
-            parse_error_log = []
-            parse_error_log.append("Notes:")
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            # init parse error log for UI
+            parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
 
             # init dac polling progress bar for UI
-            parse_error_log.append ('Creating time-filtered model from "' + origin_model["name"] + '".')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                              "Progress", 'Creating time-filtered model from "' + origin_model["name"] + '".')
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Copying ...", 50.0])
 
@@ -1155,7 +1149,8 @@ def register_slycat_plugin(context):
 
                 meta_rows.append(meta_row_j)
 
-            parse_error_log.append('Copied metadata from original model.')
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                              "Progress", 'Copied metadata from original model.')
 
             # get variable metadata table header
             var_table_meta = slycat.web.server.get_model_arrayset_metadata(database,
@@ -1181,9 +1176,9 @@ def register_slycat_plugin(context):
                     meta_row_i.append(var_table[j][i])
                 meta_vars.append(meta_row_i)
 
-            parse_error_log.append('Copied variable labels from original model.')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                              "Progress", 'Copied variable labels from original model.')
+
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Filtering ...", 60.0])
 
@@ -1231,9 +1226,8 @@ def register_slycat_plugin(context):
                 var_dist.append(spatial.distance.squareform(dist_i))
 
             # final update of error log to reflect re-compute distance matrices
-            parse_error_log.append('Recomputed distance matrices using time filters.')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                              "Progress", 'Recomputed distance matrices using time filters.')
 
             # summarize results for user
             parse_error_log.insert(0, "Summary:")
@@ -1249,7 +1243,7 @@ def register_slycat_plugin(context):
                                                   ["Progress", "\n".join(parse_error_log)])
 
             # finally, we upload the combined data
-            push.init_upload_model(database, model, parse_error_log,
+            push.init_upload_model(database, model, dac_error, parse_error_log,
                                    meta_column_names, meta_rows,
                                    meta_var_col_names, meta_vars,
                                    var_data, time_steps, var_dist)
@@ -1259,16 +1253,22 @@ def register_slycat_plugin(context):
 
         except Exception as e:
 
-            # print error to cherrypy.log.error
-            cherrypy.log.error("[DAC] " + traceback.format_exc())
+            # log exception and inform user
+            dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+
+            # done -- destroy the thread
+            stop_event.set()
 
 
-    # import dac_compute_coords module from source by hand
+    # import dac modules from source by hand
     dac = imp.load_source('dac_compute_coords',
                           os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
 
     push = imp.load_source('dac_upload_model',
                            os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+
+    dac_error = imp.load_source('dac_error_handling',
+                                os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
 
     # register plugin with slycat           
     context.register_model("DAC", finish)
@@ -1278,7 +1278,7 @@ def register_slycat_plugin(context):
     context.register_model_command("POST", "DAC", "compute_fisher", compute_fisher)
     context.register_model_command("GET", "DAC", "init_mds_coords", init_mds_coords)
     context.register_model_command("POST", "DAC", "subsample_time_var", subsample_time_var)
-    context.register_model_command("GET", "DAC", "manage_editable_cols", manage_editable_cols)
+    context.register_model_command("POST", "DAC", "manage_editable_cols", manage_editable_cols)
     context.register_model_command("POST", "DAC", "check_compatible_models", check_compatible_models)
     context.register_model_command("POST", "DAC", "combine_models", combine_models)
     context.register_model_command("POST", "DAC", "filter_model", filter_model)

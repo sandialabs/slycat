@@ -125,6 +125,9 @@ $(document).ready(function() {
                     $("#dac_processing_progress_bar").text("No Data Loaded (See Info > Parse Log)");
                     $("#dac_processing_progress_bar").width(100 + "%");
 
+                    // request error log
+                    update_error_log(user_scroll);
+
                 } else {
 
                     // update progress and output log
@@ -132,18 +135,7 @@ $(document).ready(function() {
                     $("#dac_processing_progress_bar").width(result[1] + "%");
 
                     // request error log
-                    $.when(request.get_parameters("dac-parse-log", mid)).then(
-                        function(error_log)
-                        {
-                            // update text box unless user has focused on it
-                            if (user_scroll == false) {
-                                // display text then scroll to bottom
-                                $("#dac_processing_textarea").text(error_log[1]);
-
-                                // scroll to bottom
-                                $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
-                            }
-                        });
+                    update_error_log(user_scroll);
 
                     // reset time out and continue
                     endTime = Number(new Date()) + ONE_MINUTE;
@@ -185,6 +177,23 @@ $(document).ready(function() {
             }
         });
     })();
+
+    // read and update error log
+    function update_error_log (user_scroll)
+    {
+        $.when(request.get_parameters("dac-parse-log", mid)).then(
+            function(error_log)
+            {
+                // update text box unless user has focused on it
+                if (user_scroll == false) {
+                    // display text then scroll to bottom
+                    $("#dac_processing_textarea").text(error_log[1]);
+
+                    // scroll to bottom
+                    $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
+                }
+            });
+    }
 
     // check for preferences using bookmarks, and set up variables
     // note that we only set data independent bookmarks here, e.g. bookmarks

@@ -1166,15 +1166,17 @@ function update_editable_col(row, col, val)
 	data_view.beginUpdate();
 
 	// update table on server
-	client.get_model_command({
+	client.post_sensitive_model_command({
 		mid: mid,
 		type: "DAC",
 		command: "manage_editable_cols",
-		parameters: ['update', -1, -1, -1, col, data_row, val],
+		parameters: {col_cmd: 'update', col_type: -1, col_name: -1, col_cat: -1,
+		             col_id: col, data_row: data_row, data_val: val},
 		success: function(result) {
 
-				if (result["error"] === "reader") {
-					dialog.ajax_error("Access denied.  You must be a project writer or administrator to change the table data.")
+				if (JSON.parse(result)["error"] === "reader") {
+					dialog.ajax_error("Access denied.  You must be a project writer or " +
+					                  "administrator to change the table data.")
 					("","","");
 				} else {
 

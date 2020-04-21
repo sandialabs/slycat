@@ -226,14 +226,32 @@ $(document).ready(function() {
         if(project_data['artifact:variable_aliases']) {
           variable_aliases = project_data['artifact:variable_aliases'];
         }
-        // console.log('Set aliases from project_data');
+        console.log('Set aliases from project_data');
         resolve();
       }).catch(() => {
-            // eslint-disable-next-line no-alert
-            window.alert('Project data is missing: variable aliases will not be loaded');
-            resolve();
+          // Disabling this alert and replacing with log entry because it comes up every time user opens the model.
+          // Now I am writing to model's artifact if I can't get to the project data, 
+          // so we don't need this alert anymore.
+          // window.alert(
+          //   'Ooops, this model had project data in the past but it is no longer there. ' +
+          //   'Original variable aliases can not be loaded. ' +
+          //   'But we will try to load any aliases that were created after the project data disappeared. '
+          // );
+          console.log(
+            'Ooops, this model had project data in the past but it is no longer there. ' +
+            'Original variable aliases can not be loaded. ' +
+            'But we will try to load any aliases that were created after the project data disappeared.'
+          );
+          // Something went wrong. We have a pointer to project data, but can't retrieve it.
+          // Might have gotten deleted. So let's try to load aliases from the model's attributes 
+          // as a last-ditch effort.
+          if(model['artifact:variable_aliases'] !== undefined)
+          {
+            variable_aliases = model['artifact:variable_aliases'];
           }
-        );
+          resolve();
+        }
+      );
     }
     // Otherwise try to get the aliases from the model's attributes
     else if(model['artifact:variable_aliases'] !== undefined)
@@ -1686,6 +1704,14 @@ $(document).ready(function() {
     // We have no more filters, so revert to any manually hidden simulations
     else
     {
+      // Abort any remaining filter xhr calls since the last filter was closed
+      // and we don't want long calls to come back now and filter anything.
+      if(filterxhr)
+      {
+        filterxhr.abort();
+        console.debug('filter xhr aborted because last filter was closed');
+      }
+
       // Clear hidden_simulations
       while(hidden_simulations.length > 0) {
         hidden_simulations.pop();

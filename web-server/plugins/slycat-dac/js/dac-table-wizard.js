@@ -187,16 +187,17 @@ function constructor(params)
             $("#dac-free-text-error").hide();
 
             // call server add new free text column
-            client.get_model_command({
+            client.post_sensitive_model_command({
                 mid: component.model._id(),
                 type: "DAC",
                 command: "manage_editable_cols",
-                parameters: ['add', 'freetext', component.dac_freetext_name(), -1, -1, -1, -1],
+                parameters: {col_cmd: 'add', col_type: 'freetext', col_name: component.dac_freetext_name(),
+                             col_cat: -1, col_id: -1, data_row: -1, data_val: -1},
                 success: function(result)
                 {
 
                     // if user was a reader, then error, otherwise go to model
-                    if (result["error"] === "reader") {
+                    if (JSON.parse(result)["error"] === "reader") {
 
                        $("#dac-free-text-error").text("Access denied. " +
                             "You must be a project writer or administrator to change the table data.");
@@ -457,17 +458,17 @@ function constructor(params)
             $(".browser-continue").toggleClass("disabled", true);
 
             // call server add new free text column
-            client.get_model_command({
+            client.post_sensitive_model_command({
                 mid: component.model._id(),
                 type: "DAC",
                 command: "manage_editable_cols",
-                parameters: ['add', 'categorical', component.dac_categorical_name(),
-                             cats_to_add, -1, -1, -1],
+                parameters: {col_cmd: 'add', col_type: 'categorical', col_name: component.dac_categorical_name(),
+                             col_cat: cats_to_add, col_id: -1, data_row: -1, data_val: -1},
                 success: function(result)
                 {
 
                     // if user was a reader, then error, otherwise go to model
-                    if (result["error"] === "reader") {
+                    if (JSON.parse(result)["error"] === "reader") {
 
                         $("#dac-upload-cats-error").text("Access denied. " +
                             "You must be a project writer or administrator to change the table data.");
@@ -517,16 +518,17 @@ function constructor(params)
             $("#dac-rm-col-error").hide();
 
             // call server add new free text column
-            client.get_model_command({
+            client.post_sensitive_model_command({
                 mid: component.model._id(),
                 type: "DAC",
                 command: "manage_editable_cols",
-                parameters: ['remove', -1, -1, -1 , rm_columns, -1, -1],
+                parameters: {col_cmd: 'remove', col_type: -1, col_name: -1, col_cat: -1 ,
+                             col_id: rm_columns, data_row: -1, data_val: -1},
                 success: function(result)
                 {
 
                     // if user was a reader, then error, otherwise go to model
-                    if (result["error"] === "reader") {
+                    if (JSON.parse(result)["error"] === "reader") {
                         $("#dac-rm-col-error").text("Access denied.  You must be a project writer or administrator to change the table data.");
                         $("#dac-rm-col-error").show();
                         $(".browser-continue").toggleClass("disabled", false);

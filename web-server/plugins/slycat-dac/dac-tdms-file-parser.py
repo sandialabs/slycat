@@ -11,7 +11,6 @@ from scipy import spatial
 
 # web server interaction
 import slycat.web.server
-import cherrypy
 
 # file manipulation
 import io
@@ -24,30 +23,24 @@ import pandas as pd
 
 # background thread does all the work on the server
 import threading
-import sys
 import traceback
 
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
 
-# update dac-parse-log
-def update_parse_log (database, model, parse_error_log, error_type, error_string):
-
-    parse_error_log.append(error_string)
-    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                          [error_type, "\n".join(parse_error_log)])
-
-    return parse_error_log
-
-
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
 # filter out shots that have < MIN_CHANNELS
-def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS):
+def filter_shots (database, model, dac_error, parse_error_log, tdms_ref,
+                  MIN_TIME_STEPS, MIN_CHANNELS, start_progress, end_progress):
 
     shot_meta = []          # meta data for shot
     shot_data = []          # channel data for shot
+
+    # set up file progress indicator
+    curr_file = start_progress
+    inc_file = (end_progress - start_progress) / len(tdms_ref)
 
     for tdms_file in tdms_ref:
 
@@ -57,7 +50,7 @@ def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MI
         for group in tdms_file.groups():
 
             # name shot/channel for potential errors
-            shot_name = tdms_file.object().properties['name'] + '_' + group
+            shot_name = str(tdms_file.object().properties['name']) + '_' + group
 
             # get channels for group
             group_channels = tdms_file.group_channels(group)
@@ -88,20 +81,18 @@ def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MI
                 # check that channel is not empty
                 if channel['wf_samples'] is None:
 
-                    parse_error_log.append('Discarding channel "' + channel['name'] + '" in shot "' +
-                          shot_name + '" -- empty time series.')
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                        "Progress", 'Discarding channel "' + channel['name'] + '" in shot "' +
+                        shot_name + '" -- empty time series.')
 
                     continue
 
                 # check that channel has enough time steps
                 if channel['wf_samples'] < MIN_TIME_STEPS:
 
-                    parse_error_log.append('Discarding channel "' + channel['name'] + '" in shot "' +
-                          shot_name + '" -- less than ' + str(MIN_TIME_STEPS) + ' time steps.')
-                    slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                          ["Progress", "\n".join(parse_error_log)])
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                        "Progress", 'Discarding channel "' + channel['name'] + '" in shot "' +
+                        shot_name + '" -- less than ' + str(MIN_TIME_STEPS) + ' time steps.')
 
                     continue
 
@@ -111,10 +102,9 @@ def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MI
             # check that shot has enough channels
             if len(channel_data) < MIN_CHANNELS:
 
-                parse_error_log.append('Discarding shot "' + shot_name + '" -- less than ' +
-                                       str(MIN_CHANNELS) + ' channels.')
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                    "Progress", 'Discarding shot "' + shot_name + '" -- less than ' +
+                     str(MIN_CHANNELS) + ' channels.')
 
                 continue
 
@@ -139,6 +129,15 @@ def filter_shots (database, model, parse_error_log, tdms_ref, MIN_TIME_STEPS, MI
             group_df = group_root_shot_properties.set_index('Index (Name_Group)')
 
             shot_meta.append(group_df)
+
+        # update file progress indicator
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+            ["Extracting ...", curr_file + inc_file])
+        curr_file = curr_file + inc_file
+
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+        'Filtered TDMS shots by minimum number of time steps (' + str(MIN_TIME_STEPS) +
+        ') and minimum number of channels (' + str(MIN_CHANNELS) + ').')
 
     return parse_error_log, shot_meta, shot_data
 
@@ -175,18 +174,17 @@ def intersect_channels (shot_channels):
 
 # routine to reduce shot data to smallest channel minimum by order
 # if can't reduce, changes SHOT_TYPE to 'General'
-def reduce_shot_channels (database, model, parse_error_log, first_shot_name, shot_channels, shot_data, \
-                          min_channels, min_channel_count, SHOT_TYPE, shot_type_min):
+def reduce_shot_channels (database, model, dac_error, parse_error_log, first_shot_name,
+                          shot_channels, shot_data, min_channels, min_channel_count,
+                          SHOT_TYPE, shot_type_min):
 
     num_shots = len(shot_channels)
 
     if min_channel_count >= shot_type_min:
 
-        parse_error_log.append('Found ' + str(min_channel_count) +
-               ' channels for ' + SHOT_TYPE + ' testing -- using "' +
-               first_shot_name + '" for channel names.')
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["Progress", "\n".join(parse_error_log)])
+        parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
+            'Found ' + str(min_channel_count) + ' channels for ' + SHOT_TYPE + ' testing -- using "' +
+            first_shot_name + '" for channel names.')
 
         # reduce channels to consistent number
         for i in range(0, num_shots):
@@ -196,10 +194,9 @@ def reduce_shot_channels (database, model, parse_error_log, first_shot_name, sho
 
     else:
 
-        parse_error_log.append('Found less than ' + str(shot_type_min) + ' channels per shot for ' +
-               SHOT_TYPE + ' testing, reverting to General case.')
-        slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                              ["Progress", "\n".join(parse_error_log)])
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+            'Found less than ' + str(shot_type_min) + ' channels per shot for ' +
+            SHOT_TYPE + ' testing, reverting to General case.')
 
         SHOT_TYPE = 'General'
 
@@ -208,7 +205,7 @@ def reduce_shot_channels (database, model, parse_error_log, first_shot_name, sho
 
 # filter out channels to obtain a consistent number
 # of channels per shot and get channel names
-def filter_channels (database, model, parse_error_log, first_shot_name, shot_data, SHOT_TYPE):
+def filter_channels (database, model, dac_error, parse_error_log, first_shot_name, shot_data, SHOT_TYPE):
 
     # get channel names
     shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
@@ -219,14 +216,14 @@ def filter_channels (database, model, parse_error_log, first_shot_name, shot_dat
     # in the overvoltage case, we use channel order and assume at least two channels
     if SHOT_TYPE == 'Overvoltage':
         parse_error_log, shot_data, min_channels, SHOT_TYPE = \
-            reduce_shot_channels(database, model, parse_error_log, first_shot_name, shot_channels, shot_data, \
-                                 min_channels, min_channel_count, SHOT_TYPE, 2)
+            reduce_shot_channels(database, model, dac_error, parse_error_log, first_shot_name,
+                shot_channels, shot_data, min_channels, min_channel_count, SHOT_TYPE, 2)
 
     # in the sprytron case, we use channel order and assume at least six channels
     if SHOT_TYPE == 'Sprytron':
         parse_error_log, shot_data, min_channels, SHOT_TYPE = \
-            reduce_shot_channels(database, model, parse_error_log, first_shot_name, shot_channels, shot_data, \
-                                 min_channels, min_channel_count, SHOT_TYPE, 6)
+            reduce_shot_channels(database, model, dac_error, parse_error_log, first_shot_name,
+                shot_channels, shot_data, min_channels, min_channel_count, SHOT_TYPE, 6)
 
     # in the general case, we discard channels not present in all shots
     num_shots = len(shot_channels)
@@ -234,9 +231,8 @@ def filter_channels (database, model, parse_error_log, first_shot_name, shot_dat
         for channel in all_channels:
             if channel not in min_channels:
 
-                parse_error_log.append('Discarding channel "' + channel + '" -- not present in all shots.')
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                    'Discarding channel "' + channel + '" -- not present in all shots.')
 
                 # discard channel from all shots
                 for i in range(0, num_shots):
@@ -254,11 +250,14 @@ def filter_channels (database, model, parse_error_log, first_shot_name, shot_dat
                     shot_channels[i] = new_channel
                     shot_data[i] = new_data
 
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+        "Filtered TDMS channels to least common number per shot.")
+
     return parse_error_log, min_channels, shot_data
 
 
 # get channel units from consensus or inference via channel names
-def infer_channel_units (database, model, parse_error_log, first_shot_name, channel_names,
+def infer_channel_units (database, model, dac_error, parse_error_log, first_shot_name, channel_names,
                          shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE):
 
     num_channels = len(channel_names)
@@ -283,11 +282,10 @@ def infer_channel_units (database, model, parse_error_log, first_shot_name, chan
         # go with first unit assignment if inconsistent units found
         if inconsistent_units:
 
-            parse_error_log.append('Inconsistent units found for channel "' + channel_names[i] + '", using "' +
-                  str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
-                  first_shot_name + '".')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                'Inconsistent units found for channel "' + channel_names[i] + '", using "' +
+                str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
+                first_shot_name + '".')
 
         # if missing unit, infer from name using Jeremy's method
         if unit_0 is None and INFER_CHANNEL_UNITS:
@@ -307,9 +305,8 @@ def infer_channel_units (database, model, parse_error_log, first_shot_name, chan
         # if units don't agree with expected units issue warning
         if not channel_units[0:2] == ['Amps', 'Volts']:
 
-            parse_error_log.append('Warning -- units different from expected units for Overvoltage testing.')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                'Warning -- units different from expected units for Overvoltage testing.')
 
     # double check units for Sprytron type
     if SHOT_TYPE == 'Sprytron':
@@ -317,12 +314,14 @@ def infer_channel_units (database, model, parse_error_log, first_shot_name, chan
         # if units don't agree with expected units issue warning
         if not channel_units[0:6] == ['Amps', 'Volts', 'Volts', 'Volts', 'Amps', 'Volts']:
 
-            parse_error_log.append('Warning -- units different from expected units for Sprytron testing.')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                'Warning -- units different from expected units for Sprytron testing.')
 
     # change None type to 'Not Given' for final output
     channel_units = ['Not Given' if unit is None else unit for unit in channel_units]
+
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+        "Determined channel units for TDMS data.")
 
     return parse_error_log, channel_units
 
@@ -344,9 +343,10 @@ def make_time_vector (shot_time):
 
 
 # construct and intersect/union all time vectors using a vector of shot times
-def combine_time_vectors (shot_times, TIME_STEP_TYPE):
+def combine_time_vectors (database, model, start_progress, end_progress, shot_times, TIME_STEP_TYPE):
 
     num_shots = len(shot_times)
+    int_progress = end_progress - start_progress
 
     # go through each shot and intersect or union time vectors
     time_vector = make_time_vector(shot_times[0])
@@ -359,14 +359,19 @@ def combine_time_vectors (shot_times, TIME_STEP_TYPE):
         else:
             time_vector = numpy.union1d(time_vector, time_i)
 
+        # shot progress
+        if i % 10 == 0:
+            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                ["Computing ...", start_progress + int_progress / num_shots * (i + 1.0)])
+
     return time_vector
 
 
 # normalize time steps using either intersection or union
 # note shot_data, channel_names, and channel_units might be changed if
 # a channel is removed because it doesn't have enough time steps
-def normalize_time_steps (database, model, parse_error_log, shot_data, channel_names,
-                          channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE):
+def normalize_time_steps (database, model, dac_error, parse_error_log, shot_data, channel_names,
+                          channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE, start_progress, end_progress):
 
     # get shot time interval data
     shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
@@ -375,6 +380,9 @@ def normalize_time_steps (database, model, parse_error_log, shot_data, channel_n
     # check that time steps are the same for every included channel
     num_shots = len(shot_times)
     num_channels = len(channel_names)
+
+    # progress per channel
+    inc_progress = (end_progress - start_progress) / num_channels
 
     # form time steps (list of time vectors) for DAC
     time_steps = []
@@ -393,19 +401,21 @@ def normalize_time_steps (database, model, parse_error_log, shot_data, channel_n
         # if inconsistent time steps warn user then use intersection or union
         if inconsistent_time_steps:
 
-            parse_error_log.append('Found inconsistent time steps for channel "' + channel_names[i] +
-                  '" -- normalizing time steps using ' + TIME_STEP_TYPE + '.')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                'Found inconsistent time steps for channel "' + channel_names[i] +
+                '" -- normalizing time steps using ' + TIME_STEP_TYPE + '.')
 
             if TIME_STEP_TYPE == 'Union':
 
-                parse_error_log.append('Warning -- Union introduces artificial data from interpolation and extrapolation.')
-                slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                      ["Progress", "\n".join(parse_error_log)])
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                    'Warning -- Union introduces artificial data from interpolation and extrapolation.')
+
+            start_combine = start_progress + inc_progress * i
+            end_combine = start_combine + inc_progress
 
             # form union or intersection time vector
-            time_steps.append(combine_time_vectors(numpy.array(shot_times)[:, i], TIME_STEP_TYPE))
+            time_steps.append(combine_time_vectors(database, model, start_combine, end_combine,
+                numpy.array(shot_times)[:, i], TIME_STEP_TYPE))
 
         else:
 
@@ -418,10 +428,9 @@ def normalize_time_steps (database, model, parse_error_log, shot_data, channel_n
 
         if len(time_steps[i]) < MIN_TIME_STEPS:
 
-            parse_error_log.append('Discarding channel "' + channel_names[i] + '" -- less than ' +
-                   str(MIN_TIME_STEPS) + ' time steps.')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                'Discarding channel "' + channel_names[i] + '" -- less than ' +
+                str(MIN_TIME_STEPS) + ' time steps.')
 
             # discard channel from all shots
             for j in range(0, num_shots):
@@ -431,11 +440,14 @@ def normalize_time_steps (database, model, parse_error_log, shot_data, channel_n
                 channel_names.pop(i)
                 channel_units.pop(i)
 
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+        "Normalized time steps for TDMS data.")
+
     return parse_error_log, time_steps, shot_data, channel_names, channel_units
 
 
 # get channel time units from data or time steps and seconds inference
-def infer_channel_time_units (database, model, parse_error_log, first_shot_name,
+def infer_channel_time_units (database, model, dac_error, parse_error_log, first_shot_name,
                               shot_time_units, time_steps, INFER_SECONDS, channel_names):
 
     num_channels = len(channel_names)
@@ -460,11 +472,10 @@ def infer_channel_time_units (database, model, parse_error_log, first_shot_name,
         # go with first unit assignment if inconsistent units found
         if inconsistent_units:
 
-            parse_error_log.append('Inconsistent time units found for channel "' + channel_names[i] + '", using "' +
-                  str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
-                  first_shot_name + '".')
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["Progress", "\n".join(parse_error_log)])
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                'Inconsistent time units found for channel "' + channel_names[i] + '", using "' +
+                str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
+                first_shot_name + '".')
 
         # if missing unit, infer secons and time steps magnitude
         if unit_0 is None and INFER_SECONDS:
@@ -487,11 +498,15 @@ def infer_channel_time_units (database, model, parse_error_log, first_shot_name,
     # change None type to 'Not Given' for final output
     channel_time_units = ['Not Given' if unit is None else unit for unit in channel_time_units]
 
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+        "Determined TDMS channel time units.")
+
     return parse_error_log, channel_time_units, time_steps
 
 
 # construct DAC variables to match time steps
-def construct_variables (database, model, shot_data, time_steps):
+def construct_variables (database, model, dac_error, parse_error_log, shot_data,
+                         time_steps, start_progress, end_progress):
 
     # get shot time interval data
     shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
@@ -500,6 +515,9 @@ def construct_variables (database, model, shot_data, time_steps):
     # check that time steps are the same for every included channel
     num_shots = len(shot_times)
     num_channels = len(shot_times[0])
+
+    # progress per channel
+    inc_progress = (end_progress - start_progress) / num_channels
 
     # variables contains a list of matrices for DAC
     variables = []
@@ -510,6 +528,10 @@ def construct_variables (database, model, shot_data, time_steps):
 
         # each channel has one array of variables
         channel_vars = []
+
+        start_shot = start_progress + inc_progress * i
+        end_shot = start_shot + inc_progress
+        int_shot = (end_shot - start_shot)
 
         for j in range(0, num_shots):
 
@@ -540,6 +562,11 @@ def construct_variables (database, model, shot_data, time_steps):
             # add this variable to our channel list
             channel_vars.append(list(var_j))
 
+            # shot progress
+            if j % 10 == 0:
+                slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                    ["Computing ...", start_shot + int_shot / num_shots * (j + 1.0)])
+
         # add the channel variable matrix to variable list
         variables.append(numpy.array(channel_vars))
 
@@ -547,10 +574,10 @@ def construct_variables (database, model, shot_data, time_steps):
         dist_i = spatial.distance.pdist(variables[-1])
         var_dist.append(spatial.distance.squareform(dist_i))
 
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Computing ...", 50.0 + 10.0 * (i + 1.0)/num_channels])
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+        "Extended/contracted TDMS channels to match time steps.")
 
-    return variables, var_dist
+    return parse_error_log, variables, var_dist
 
 
 def parse_tdms(database, model, input, files, aids, **kwargs):
@@ -565,7 +592,11 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     :param kwargs:
     """
 
-    cherrypy.log.error("DAC TDMS parser started.")
+    # import error handling from source
+    dac_error = imp.load_source('dac_error_handling',
+                           os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+
+    dac_error.log_dac_msg("TDMS parser started.")
 
     # get user parameters
     MIN_TIME_STEPS = int(aids[0])
@@ -577,11 +608,11 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
-    parse_error_log = update_parse_log (database, model, [], "Progress", "Notes:")
+    parse_error_log = dac_error.update_parse_log (database, model, [], "Progress", "Notes:")
 
     # count number of tdms files
     num_files = len(files)
-    parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                        "Uploaded " + str(num_files) + " file(s).")
 
     # push progress for wizard polling to database
@@ -600,27 +631,19 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
 
         except Exception as e:
 
-            # couldn't open tdms file, report to user
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "couldn't read .tdms file."])
-
-            # record no data message in front of parser log
-            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                               "Error -- couldn't read .tmds file.")
-
-            # print error to cherrypy.log.error
-            cherrypy.log.error("[DAC] " + traceback.format_exc())
+            dac_error.quit_raise_exception(database, model, parse_error_log,
+                                           "Couldn't read .tdms file.")
 
     # start actual parsing as a thread
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
                               MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
-                              INFER_CHANNEL_UNITS, INFER_SECONDS, parse_error_log, stop_event))
+                              INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
     thread.start()
 
 
 def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
-                              INFER_CHANNEL_UNITS, INFER_SECONDS, parse_error_log, stop_event):
+                              INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -636,106 +659,64 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
-        cherrypy.log.error("DAC TDMS thread started.")
+        dac_error.log_dac_msg("TDMS thread started.")
 
         # filter shots according to user preferences MIN_TIME_STEPS and MIN_CHANNELS
-        parse_error_log, shot_meta, shot_data = filter_shots(database, model, parse_error_log, tdms_ref,
-                                            MIN_TIME_STEPS, MIN_CHANNELS)
+        parse_error_log, shot_meta, shot_data = filter_shots(database, model, dac_error,
+            parse_error_log, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 10.0, 40.0)
 
         # was any data imported?
         if len(shot_meta) == 0:
 
-            # record no data message in front of parser log
-            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                               "Error: no data imported -- check minimum channel (" +
-                                               str(MIN_CHANNELS) + ") and minimum time step (" +
-                                               str(MIN_TIME_STEPS) + ") filters.")
-
-            # done polling
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
-
-            # quit early
-            stop_event.set()
-
-
-        # push progress for wizard polling to database
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Extracting ...", 20.0])
+            dac_error.quit_raise_exception(database, model, parse_error_log,
+                "No data imported -- check minimum channel (" +
+                str(MIN_CHANNELS) + ") and minimum time step (" +
+                str(MIN_TIME_STEPS) + ") filters.")
 
         # finalize list of usable channels
-        parse_error_log, channel_names, shot_data = filter_channels(database, model, parse_error_log, shot_meta[0].index[0],
-                                                   shot_data, SHOT_TYPE)
+        parse_error_log, channel_names, shot_data = filter_channels(database, model,
+            dac_error, parse_error_log, shot_meta[0].index[0], shot_data, SHOT_TYPE)
 
         # check that enough channels are still present
         if len(channel_names) < MIN_CHANNELS:
 
-            # record no data message in front of parser log
-            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                               "Error: no data imported -- available numbers of channels is less than " +
-                                                str(MIN_CHANNELS) + ".")
-
-            # done polling
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
-
-            # quit early
-            stop_event.set()
+            dac_error.quit_raise_exception(database, model, parse_error_log,
+                "No data imported -- available numbers of channels is less than " + str(MIN_CHANNELS) + ".")
 
         # push progress for wizard polling to database
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Extracting ...", 30.0])
+                                              ["Extracting ...", 45.0])
 
         # get shot units
         shot_units = [[channel['unit'] for channel in shot] for shot in shot_data]
 
         # finalize channel units
-        parse_error_log, channel_units = infer_channel_units(database, model, parse_error_log, shot_meta[0].index[0],
-                                            channel_names, shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE)
-
-        # push progress for wizard polling to database
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Extracting ...", 40.0])
+        parse_error_log, channel_units = infer_channel_units(database, model, dac_error,
+            parse_error_log, shot_meta[0].index[0], channel_names, shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE)
 
         # normalize time step data
         parse_error_log, time_steps, shot_data, channel_names, channel_units = \
-            normalize_time_steps(database, model, parse_error_log,
-                shot_data, channel_names, channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE)
+            normalize_time_steps(database, model, dac_error, parse_error_log,
+                shot_data, channel_names, channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE, 45.0, 55.0)
 
         # check that enough channels are still present
         if len(channel_names) < MIN_CHANNELS:
 
-            # record no data message in front of parser log
-            parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                   "Error: no data imported -- available numbers of channels is less than " +
-                                   str(MIN_CHANNELS) + ".")
-
-            # done polling
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
-
-            # quit early
-            stop_event.set()
-
-        # push progress for wizard polling to database
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Computing ...", 50.0])
+            dac_error.quit_raise_exception(database, model, parse_error_log,
+                "No data imported -- available numbers of channels is less than " + str(MIN_CHANNELS) + ".")
 
         # construct DAC variables and distance matrices to match time steps
-        variables, var_dist = construct_variables(database, model, shot_data, time_steps)
+        parse_error_log, variables, var_dist = construct_variables(database, model,
+            dac_error, parse_error_log, shot_data, time_steps, 55.0, 65.0)
 
         # get shot time units
         shot_time_units = [[channel['wf_unit'] for channel in shot] for shot in shot_data]
 
         # finalize time units
         parse_error_log, channel_time_units, time_steps = \
-            infer_channel_time_units(database, model, parse_error_log,
+            infer_channel_time_units(database, model, dac_error, parse_error_log,
                                      shot_meta[0].index[0], shot_time_units,
                                      time_steps, INFER_SECONDS, channel_names)
-
-        # push progress for wizard polling to database
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Computing ...", 60.0])
 
         # construct remaining DAC variables
 
@@ -743,6 +724,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         # append [root] to root columns and [group] to group columns)
         meta_df = pd.DataFrame()
         for i in range(0, len(shot_meta)):
+
             # add rows and repeat
             meta_df = meta_df.append(shot_meta[i], sort=False)
 
@@ -765,14 +747,14 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
         # check that we still have enough digitizers
         if num_vars < MIN_CHANNELS:
-            parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                    "Total number of channels parsed less than " + str(MIN_CHANNELS) +
                                    " -- no data remaining.")
             meta_rows = []
 
         # if no parse errors then inform user
         if len(parse_error_log) == 1:
-            parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                                "No parse errors.")
 
         # summarize results for user
@@ -780,24 +762,20 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         parse_error_log.insert(1, "Total number of tests parsed: " + str(len(meta_rows)) + ".")
         parse_error_log.insert(2, "Each test has " + str(num_vars) + " digitizer time series.\n")
 
+        # push progress for wizard polling to database
+        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
+                                              ["Uploading ...", 70.0])
+
         # if no data then return failed result
         if len(meta_rows) == 0:
 
-            # record no data message in front of parser log
-            slycat.web.server.put_model_parameter(database, model, "dac-parse-log",
-                                                  ["No Data", "\n".join(parse_error_log)])
-
-            # done polling
-            slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                  ["Error", "no data could be imported (see Info > Parse Log for details)"])
-
-            # quit early
-            stop_event.set()
+            dac_error.quit_raise_exception(database, model, parse_error_log,
+                                           "All data discarded.")
 
         else:
 
             # upload model to slycat database
-            push.init_upload_model (database, model, parse_error_log,
+            push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
                                     variables, time_steps, var_dist)
@@ -807,8 +785,9 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
     except Exception as e:
 
-        # print error to cherrypy.log.error
-        cherrypy.log.error("[DAC] " + traceback.format_exc())
+        dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+
+        stop_event.set()
 
 
 def parse_tdms_zip(database, model, input, files, aids, **kwargs):
@@ -823,7 +802,11 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     :param kwargs:
     """
 
-    cherrypy.log.error("DAC TDMS zip parser started.")
+    # import error handling from source
+    dac_error = imp.load_source('dac_error_handling',
+                           os.path.join(os.path.dirname(__file__), 'py/dac_error_handling.py'))
+
+    dac_error.log_dac_msg("TDMS zip parser started.")
 
     # get user parameters
     MIN_TIME_STEPS = int(aids[0])
@@ -836,7 +819,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
-    parse_error_log = update_parse_log(database, model, [], "Progress", "Notes:")
+    parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
 
     # push progress for wizard polling to database
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
@@ -850,16 +833,8 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
     except Exception as e:
 
-        # couldn't open zip file, report to user
-        slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                              ["Error", "couldn't read .zip file (too large or corrupted)"])
-
-        # record no data message in front of parser log
-        parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                           "Error -- couldn't read .zip file (too large or corrupted).")
-
-        # print error to cherrypy.log.error
-        cherrypy.log.error("[DAC] " + traceback.format_exc())
+        dac_error.quit_raise_exception(database, model, parse_error_log,
+                             "Couldn't read .zip file (too large or corrupted).")
 
     # loop through zip files and look for tdms files matching suffix list
     file_list = []
@@ -890,34 +865,22 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
                 except Exception as e:
 
-                    # couldn't open tdms file, report to user
-                    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
-                                                          ["Error", "couldn't read .tdms file."])
-
-                    # record no data message in front of parser log
-                    parse_error_log = update_parse_log(database, model, parse_error_log, "No Data",
-                                                       "Error -- couldn't read .tmds file.")
-
-                    # print error to cherrypy.log.error
-                    cherrypy.log.error("[DAC] " + traceback.format_exc())
+                    dac_error.quit_raise_exception(database, model, parse_error_log,
+                                                   "Couldn't read .tdms file.")
 
     # log files to be parsed
     for file_to_parse in file_list:
-        parse_error_log = update_parse_log(database, model, parse_error_log, "Progress",
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                            'Found file to parse: "' + file_to_parse + '".')
 
     # launch thread to read actual tdms files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-                                                              MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE,
-                                                              TIME_STEP_TYPE,
-                                                              INFER_CHANNEL_UNITS, INFER_SECONDS,
-                                                              parse_error_log, stop_event))
+        MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
+        INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
     thread.start()
 
 
 def register_slycat_plugin(context):
     context.register_parser("dac-tdms-file-parser", ".tdms file(s)", ["dac-tdms-files"], parse_tdms)
     context.register_parser("dac-tdms-zip-file-parser", "TDMS .zip file", ["dac-tdms-files"], parse_tdms_zip)
-
-
