@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+var GitRevisionPlugin = require('git-revision-webpack-plugin');
 
 module.exports = {
   // mode is now specified in webpack.dev.js and webpack.prod.js
@@ -24,7 +25,7 @@ module.exports = {
   output: {
     // Use this to add the chunk hash into the filename. 
     // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
-    filename: '[name].[chunkhash].js',
+    filename: '[name].[chunkhash].git_[git-revision-hash].js',
     // If problems arise, remove chuckhash from the filename like so:
     // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
@@ -91,9 +92,13 @@ module.exports = {
       chunks: ['slycat_login'],
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
-    new CopyPlugin([
-      { from: 'docs/manual/html', to: 'docs' },
-    ], { copyUnmodified: true }),
+    new CopyPlugin(
+      [{ from: 'docs/manual/html', to: 'docs' },],
+      { copyUnmodified: true }
+    ),
+    new GitRevisionPlugin({
+      branch: true
+    }),
   ],
   module: {
     rules: [
