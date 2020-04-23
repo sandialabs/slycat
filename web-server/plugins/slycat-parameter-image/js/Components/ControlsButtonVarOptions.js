@@ -9,6 +9,7 @@ import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import VariableAliasLabels from "components/VariableAliasLabels";
+import ScatterplotOptions from "components/ScatterplotOptions";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
@@ -54,23 +55,38 @@ class ControlsButtonVarOptions extends React.Component {
         success: function(response) {
           $('#' + self.modalId).modal('hide');
         },
-        error: dialog.ajax_error("There was an error saving the variable alias labels."),
+        error: function(response) {
+          // We have a pointer to project data but can't save to it.
+          // Maybe it was deleted.
+          // Let's save to the model's artifact instead.
+          console.log("Oops, we have a pointer to project data but can't save to it. Let's save to the model's artifact instead.");
+          self.writeAliasesToModelArtifact();
+        },
       });
     }
     // Otherwise write to the model's artifact:variable_aliases attribute
     else
     {
-      client.put_model_parameter({
-        mid: this.props.model._id,
-        aid: "variable_aliases",
-        value: this.props.variable_aliases,
-        input: false,
-        success: function() {
-          $('#' + self.modalId).modal('hide');
-        },
-        error: dialog.ajax_error("There was an error saving the variable alias labels."),
-      });
+      self.writeAliasesToModelArtifact();
     }
+  }
+
+  writeAliasesToModelArtifact = () => {
+    let self = this;
+    client.put_model_parameter({
+      mid: this.props.model._id,
+      aid: "variable_aliases",
+      value: this.props.variable_aliases,
+      input: false,
+      success: function() {
+        $('#' + self.modalId).modal('hide');
+      },
+      error: function() {
+        console.log("Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog.");
+        $('#' + self.modalId).modal('hide');
+        dialog.ajax_error("There was an error saving the variable alias labels to the model's artifact.")();
+      }
+    });
   }
 
   render() {
@@ -163,6 +179,12 @@ class ControlsButtonVarOptions extends React.Component {
                       <h5 className='mb-0'>Variable Alias Labels</h5>
                     </a>
                   </li>
+                  <li className='nav-item'>
+                   <a className='nav-link' id='scatterplot-options-tab' data-toggle='tab' 
+                     href='#scatterplot-options-tab-content' role='tab' aria-controls='scatterplot-options-tab-content' aria-selected='false'>
+                     <h5 className='mb-0'>Point Formatting</h5>
+                   </a>
+                 </li>
                 </ul>
 
                 <div className='tab-content mt-4 mb-2 mx-3'>
@@ -205,6 +227,9 @@ class ControlsButtonVarOptions extends React.Component {
                       onChange={this.props.onVariableAliasLabelsChange}
                     />
                   </div>
+                  <div className='tab-pane' id='scatterplot-options-tab-content' role='tabpanel' aria-labelledby='scatterplot-options-tab'>
+                    <ScatterplotOptions />
+                 </div>
                 </div>
 
               </div>
