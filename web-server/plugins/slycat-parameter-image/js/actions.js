@@ -14,6 +14,10 @@ export const UPDATE_THREE_D_COLORBY = 'UPDATE_THREE_D_COLORBY'
 export const UPDATE_THREE_D_COLORBY_OPTIONS = 'UPDATE_THREE_D_COLORBY_OPTIONS'
 export const UPDATE_THREE_D_CAMERAS = 'UPDATE_THREE_D_CAMERAS'
 export const UPDATE_THREE_D_SYNC = 'UPDATE_THREE_D_SYNC'
+export const SET_UNSELECTED_POINT_SIZE = 'SET_UNSELECTED_POINT_SIZE'
+export const SET_UNSELECTED_BORDER_SIZE = 'SET_UNSELECTED_BORDER_SIZE'
+export const SET_SELECTED_POINT_SIZE = 'SET_SELECTED_POINT_SIZE'
+export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
 
 export function changeFontSize(size) {
   return { 
@@ -94,4 +98,20 @@ export function updateThreeDSync(threeD_sync) {
     type: UPDATE_THREE_D_SYNC, 
     threeD_sync: threeD_sync 
   }
+}
+
+export function setUnselectedPointSize(event) {
+  return { type: SET_UNSELECTED_POINT_SIZE, size: parseFloat(event.target.value) }
+}
+
+export function setUnselectedBorderSize(event) {
+  return { type: SET_UNSELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
+}
+
+export function setSelectedPointSize(event) {
+  return { type: SET_SELECTED_POINT_SIZE, size: parseFloat(event.target.value) }
+}
+
+export function setSelectedBorderSize(event) {
+  return { type: SET_SELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
 }

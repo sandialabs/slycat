@@ -34,7 +34,7 @@ class ControlsDropdown extends React.Component {
     let optionItems = this.props.items.map((item) =>
       (
         <a 
-          href="#" 
+          href='#' 
           key={item.key} 
           className={'dropdown-item' + (item.key == this.props.selected ? ' active' : '')}
           onClick={(e) => this.props.set_selected(item.key, this.props.state_label, this.props.trigger, e)}
@@ -47,14 +47,19 @@ class ControlsDropdown extends React.Component {
 
     let dropdown = 
       (<React.Fragment>
-        <button type="button" id={this.props.id} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" 
+        <button 
+          type='button' 
+          id={this.props.id} 
+          aria-haspopup='true' 
+          aria-expanded='false' 
+          data-toggle='dropdown'
           className={`btn dropdown-toggle btn-sm ${this.props.button_style}`}
           title={this.props.title}
           ref={this.dropdown_toggle}
         >
           {this.props.label}&nbsp;
         </button>
-        <div className="dropdown-menu" 
+        <div className='dropdown-menu'
           aria-labelledby={this.props.id}
           ref={this.dropdown_menu}
         >
@@ -65,7 +70,7 @@ class ControlsDropdown extends React.Component {
     return (
       <React.Fragment>
       {this.props.single != true ? (
-        <div className="btn-group">
+        <div className='btn-group'>
           {dropdown}
         </div>
       ) : (

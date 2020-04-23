@@ -417,9 +417,39 @@ $.widget("parameter_image.scatterplot",
       }
     };
 
+    const update_point_border_size = () => {
+      // console.log('update_point_border_size');
+      let unselected_point_size_changed = self.options.canvas_square_size != store.getState().unselected_point_size;
+      let unselected_border_size_changed = self.options.canvas_square_border_size != store.getState().unselected_border_size;
+      let selected_point_size_changed = self.options.canvas_selected_square_size != store.getState().selected_point_size;
+      let selected_border_size_changed = self.options.canvas_selected_square_border_size != store.getState().selected_border_size;
+
+      if(unselected_point_size_changed || unselected_border_size_changed)
+      {
+        self.options.canvas_square_size = store.getState().unselected_point_size;
+        self.options.canvas_square_border_size = store.getState().unselected_border_size;
+
+        self._schedule_update({
+          update_datum_width_height: true, 
+          render_data:true, 
+        });
+      }
+      if(selected_point_size_changed || selected_border_size_changed)
+      {
+        self.options.canvas_selected_square_size = store.getState().selected_point_size;
+        self.options.canvas_selected_square_border_size = store.getState().selected_border_size;
+
+        self._schedule_update({
+          update_selection_width_height: true, 
+          render_selection:true, 
+        });
+      }
+    };
+
     window.store.subscribe(update_axes_font_size);
     window.store.subscribe(update_axes_font_family);
     window.store.subscribe(update_axes_variables_scale);
+    window.store.subscribe(update_point_border_size);
   },
 
   set_x_y_v_axes_types: function()
@@ -826,6 +856,40 @@ $.widget("parameter_image.scatterplot",
     var xoffset = 0;
     var legend_width = 150;
 
+    if (self.updates.update_datum_width_height) {
+      let total_width = self.options.width;
+      let total_height = self.options.height;
+      let width_height = Math.min(total_width, total_height);
+      let width_offset = (total_width - width_height) / 2;
+      let height_offset = (total_height - width_height) / 2;
+      
+      d3.select(self.canvas_datum)
+        .style({
+          left : (width_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
+          top : (height_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
+        })
+        .attr("width", (width_height - (2 * self.options.border)) - xoffset + self.options.canvas_square_size)
+        .attr("height", (width_height - (2 * self.options.border)) - 40 + self.options.canvas_square_size)
+        ;
+    }
+
+    if (self.updates.update_selection_width_height) {
+      let total_width = self.options.width;
+      let total_height = self.options.height;
+      let width_height = Math.min(total_width, total_height);
+      let width_offset = (total_width - width_height) / 2;
+      let height_offset = (total_height - width_height) / 2;
+      
+      d3.select(self.canvas_selected)
+        .style({
+          left : (width_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
+          top : (height_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
+        })
+        .attr("width", (width_height - (2 * self.options.border)) - xoffset + self.options.canvas_selected_square_size)
+        .attr("height", (width_height - (2 * self.options.border)) - 40 + self.options.canvas_selected_square_size)
+        ;
+    }
+
     if (self.updates.update_width) {
       self.element.attr("width", self.options.width);
       self.svg.attr("width", self.options.width);
@@ -1036,7 +1100,10 @@ $.widget("parameter_image.scatterplot",
         if(isNaN(cx) || isNaN(cy))
           continue;
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
-        canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        if(border_width > 0)
+        {
+          canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        }
       }
       // Test point for checking position and border
       // canvas.fillStyle = "white";
@@ -1080,7 +1147,10 @@ $.widget("parameter_image.scatterplot",
         cx = Math.round(self.x_scale_canvas_format(x[index]));
         cy = Math.round(self.y_scale_canvas_format(y[index]));
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
-        canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        if(border_width > 0)
+        {
+          canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        }
       }
     }
 

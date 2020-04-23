@@ -1113,6 +1113,35 @@ def logout():
         raise cherrypy.HTTPError("400 Bad Request")
 
 @cherrypy.tools.json_out(on=True)
+def clean_project_data():
+  """
+  cleans out project data that is not being pointed at
+  by a parameter space model, and cleans up models that 
+  are not parameter space but point to project data
+  """
+  slycat.web.server.authentication.require_server_administrator()
+  couchdb = slycat.web.server.database.couchdb.connect()
+  # get a view list of all pd ids
+  for row in couchdb.view("slycat/project_datas"):
+      pd_doc = couchdb.get(type="project_data",id=row.id)
+      delete_pd = True
+      # go through model list in pd and start cleaning
+      for model_id in pd_doc['mid']:
+          model_doc = couchdb.get(type="model",id=model_id)
+          if model_doc["model-type"] == "parameter-image":
+              delete_pd = False
+          # clean up models that don't need pd
+          elif "project_data" in model_doc:
+              cherrypy.log.error("Removing PD from none parameter-space model")
+              del model_doc["project_data"]
+              couchdb.save(model_doc)
+      if delete_pd:
+          # delete the bad project data
+          couchdb.delete(pd_doc)
+          cherrypy.log.error("Deleting PD::: %s" % str(row.id))
+  return {"status":"ok"}
+
+@cherrypy.tools.json_out(on=True)
 def clear_ssh_sessions():
   """
   clears out of the ssh session for the current user

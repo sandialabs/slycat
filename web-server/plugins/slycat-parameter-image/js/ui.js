@@ -108,6 +108,11 @@ $(document).ready(function() {
   var axes_variables_scale = {};
   var variable_aliases = {};
 
+  var unselected_point_size = 8;
+  var unselected_border_size = 1;
+  var selected_point_size = 16;
+  var selected_border_size = 2;
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -231,14 +236,32 @@ $(document).ready(function() {
         if(project_data['artifact:variable_aliases']) {
           variable_aliases = project_data['artifact:variable_aliases'];
         }
-        // console.log('Set aliases from project_data');
+        console.log('Set aliases from project_data');
         resolve();
       }).catch(() => {
-            // eslint-disable-next-line no-alert
-            window.alert('Project data is missing: variable aliases will not be loaded');
-            resolve();
+          // Disabling this alert and replacing with log entry because it comes up every time user opens the model.
+          // Now I am writing to model's artifact if I can't get to the project data, 
+          // so we don't need this alert anymore.
+          // window.alert(
+          //   'Ooops, this model had project data in the past but it is no longer there. ' +
+          //   'Original variable aliases can not be loaded. ' +
+          //   'But we will try to load any aliases that were created after the project data disappeared. '
+          // );
+          console.log(
+            'Ooops, this model had project data in the past but it is no longer there. ' +
+            'Original variable aliases can not be loaded. ' +
+            'But we will try to load any aliases that were created after the project data disappeared.'
+          );
+          // Something went wrong. We have a pointer to project data, but can't retrieve it.
+          // Might have gotten deleted. So let's try to load aliases from the model's attributes 
+          // as a last-ditch effort.
+          if(model['artifact:variable_aliases'] !== undefined)
+          {
+            variable_aliases = model['artifact:variable_aliases'];
           }
-        );
+          resolve();
+        }
+      );
     }
     // Otherwise try to get the aliases from the model's attributes
     else if(model['artifact:variable_aliases'] !== undefined)
@@ -328,6 +351,10 @@ $(document).ready(function() {
           axesVariables: {},
           threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
           threeDColormap: vtkColorMaps.rgbPresetNames[0],
+          unselected_point_size: 8,
+          unselected_border_size: 1,
+          selected_point_size: 16,
+          selected_border_size: 2,
         }
         window.store = createStore(
           ps_reducer, 
@@ -368,6 +395,10 @@ $(document).ready(function() {
         axes_font_size = store.getState().fontSize;
         axes_font_family = store.getState().fontFamily;
         axes_variables_scale = store.getState().axesVariables;
+        unselected_point_size = store.getState().unselected_point_size;
+        unselected_border_size = store.getState().unselected_border_size;
+        selected_point_size = store.getState().selected_point_size;
+        selected_border_size = store.getState().selected_border_size;
 
         // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
         filter_manager.set_bookmark(bookmark);
@@ -804,6 +835,10 @@ $(document).ready(function() {
         axes_font_size : axes_font_size,
         axes_font_family : axes_font_family,
         axes_variables_scale : axes_variables_scale,
+        canvas_square_size : unselected_point_size,
+        canvas_square_border_size : unselected_border_size,
+        canvas_selected_square_size : selected_point_size,
+        canvas_selected_square_border_size : selected_border_size,
         });
 
       $("#scatterplot").bind("selection-changed", function(event, selection)
@@ -1761,6 +1796,14 @@ $(document).ready(function() {
     // We have no more filters, so revert to any manually hidden simulations
     else
     {
+      // Abort any remaining filter xhr calls since the last filter was closed
+      // and we don't want long calls to come back now and filter anything.
+      if(filterxhr)
+      {
+        filterxhr.abort();
+        console.debug('filter xhr aborted because last filter was closed');
+      }
+
       // Clear hidden_simulations
       while(hidden_simulations.length > 0) {
         hidden_simulations.pop();

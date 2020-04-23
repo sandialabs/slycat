@@ -8,7 +8,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const ExportNodeModules = require('webpack-node-modules-list');
 
 module.exports = merge(common, {
-  mode: 'production',
+  mode: 'development',
   devtool: 'source-map',
   plugins: [
     // Don't need to add UglifyJSPlugin here because production mode automatically does that

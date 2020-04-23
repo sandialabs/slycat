@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+var GitRevisionPlugin = require('git-revision-webpack-plugin');
 
 // importing vtk rules for for vtk.js package to work
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
@@ -27,7 +28,7 @@ module.exports = {
   output: {
     // Use this to add the chunk hash into the filename. 
     // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
-    filename: '[name].[chunkhash].js',
+    filename: '[name].[chunkhash].git_[git-revision-hash].js',
     // If problems arise, remove chuckhash from the filename like so:
     // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
@@ -94,9 +95,13 @@ module.exports = {
       chunks: ['slycat_login'],
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
-    new CopyPlugin([
-      { from: 'docs/manual/html', to: 'docs' },
-    ], { copyUnmodified: true }),
+    new CopyPlugin(
+      [{ from: 'docs/manual/html', to: 'docs' },],
+      { copyUnmodified: true }
+    ),
+    new GitRevisionPlugin({
+      branch: true
+    }),
   ],
   module: {
     rules: [
@@ -112,7 +117,15 @@ module.exports = {
       // This enables the style and css loaders, which are needed to load CSS files
       {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
+        use: [ 
+          'style-loader', 
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true,
+            },
+          },
+        ]
       },
       // This enabled the URL loader for loading images referenced in CSS files as url()
       {
@@ -150,7 +163,12 @@ module.exports = {
         test: /\.less$/,
         use: [ 
           'style-loader', // creates style nodes from JS strings
-          'css-loader', // translates CSS into CommonJS
+          {
+            loader: 'css-loader', // translates CSS into CommonJS modules
+            options: {
+              sourceMap: true,
+            },
+          },
           'less-loader' // compiles Less to CSS
         ]
       },
@@ -163,7 +181,10 @@ module.exports = {
           }, 
           {
             loader: 'css-loader', // translates CSS into CommonJS modules
-          }, 
+            options: {
+              sourceMap: true,
+            },
+          },
           {
             loader: 'postcss-loader', // Run post css actions
             options: {
@@ -176,8 +197,11 @@ module.exports = {
             }
           }, 
           {
-            loader: 'sass-loader' // compiles Sass to CSS
-          }
+            loader: 'sass-loader', // compiles Sass to CSS
+            options: {
+              sourceMap: true,
+            },
+          },
         ]
       },
     ]
