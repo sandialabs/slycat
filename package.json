@@ -5,7 +5,6 @@
     "dev": "node --max_old_space_size=4096 ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --config webpack.dev.js",
     "watch": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js --config webpack.watch.js --watch",
     "prod": "webpack --config webpack.prod.js",
-    "qual": "webpack --config webpack.qual.js",
     "test": "jest",
     "update-tests": "jest -u",
     "test-coverage": "jest --coverage",
