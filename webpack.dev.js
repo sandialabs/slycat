@@ -4,7 +4,7 @@ const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
   mode: 'development',
-  devtool: 'inline-cheap-module-source-map',
+  devtool: 'eval-source-map',
   devServer: {
     // Only compiles on refresh, not on file change. But does not work, complains of running webpack twice.
     // lazy: true,
@@ -36,7 +36,7 @@ module.exports = merge(common, {
         // If the URL begins with projects/ (note the trailing slash), serve up the single project page
         { from: /^\/projects\//, to: '/slycat_project.html' },
         // If the URL begins with projects (note no trailing slash), serve up the listing of all projects.
-        // This is for backwards compatibility, since we used to redirect unknows URLs to /projects to give the user
+        // This is for backwards compatibility, since we used to redirect unknown URLs to /projects to give the user
         // a projects listing.
         { from: /^\/projects/, to: '/slycat_projects.html' },
         { from: /^\/models/, to: '/slycat_model.html' },

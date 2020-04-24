@@ -19,14 +19,14 @@ path.root = None
 def create(array):
   "Create a new array in the data store, ready for writing."""
   array_path = path(array)
-  cherrypy.log.error("Creating file {}".format(array_path))
+  # cherrypy.log.error("Creating file {}".format(array_path))
   os.makedirs(os.path.dirname(array_path))
   return h5py.File(array_path, mode="w")
 
 def open(array, mode="r"):
   """Open an array from the data store for reading."""
   array_path = path(array)
-  cherrypy.log.error("Opening file {}".format(array_path))
+  # cherrypy.log.error("Opening file {}".format(array_path))
   return h5py.File(array_path, mode=mode)
 
 def delete(array):

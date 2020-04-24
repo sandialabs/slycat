@@ -87,7 +87,7 @@ for project_id in arguments.project_id:
     project_datas_ids = list(row["id"] for row in couchdb.view("slycat/project_datas", startkey=project_id, endkey=project_id))
     for project_datas_id in project_datas_ids:
       project_data = couchdb.get(project_datas_id, attachments=True)
-      json.dump(project_data, open(os.path.join(arguments.output_dir, "project-data-%s.json" % project_data["_id"]), "w"))
+      json.dump(project_data, open(os.path.join(arguments.output_dir, "projects-data-%s.json" % project_data["_id"]), "w"))
 
     project_arrays = set()
 

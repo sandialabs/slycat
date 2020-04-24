@@ -1,16 +1,19 @@
-import React from "react";
+import React from 'react';
 import { Provider } from 'react-redux';
-import ControlsPlayback from './controls-playback';
+import ControlsPlayback from './ControlsPlayback';
 import ControlsDropdown from './ControlsDropdown';
-import ControlsVideo from './controls-video';
-import ControlsSelection from './controls-selection';
+import ControlsVideo from './ControlsVideo';
+import ControlsThreeD from './ControlsThreeD';
+import ControlsSelection from './ControlsSelection';
 import ControlsGroup from 'components/ControlsGroup';
-import ControlsButtonToggle from './controls-button-toggle';
+import ControlsButtonToggle from './ControlsButtonToggle';
 import ControlsButton from 'components/ControlsButton';
-import FileSelector from './file-selector';
-import ControlsButtonUpdateTable from './update-table.jsx';
+import FileSelector from './FileSelector';
+import ControlsButtonUpdateTable from './ControlsButtonUpdateTable.jsx';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
-import VisibleVarOptions from './visible-var-options';
+import ControlsButtonVarOptions from './ControlsButtonVarOptions';
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import _ from 'lodash';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -18,12 +21,14 @@ class ControlsBar extends React.Component {
     this.state = {
       auto_scale: this.props.auto_scale,
       hidden_simulations: this.props.hidden_simulations,
+      // disable_hide_show is set to true when there are filters in use
       disable_hide_show: this.props.disable_hide_show,
       open_images: this.props.open_images,
       selection: this.props.selection,
       video_sync: this.props.video_sync,
       video_sync_time: this.props.video_sync_time,
       video_sync_time_value: this.props.video_sync_time,
+      threeD_sync: this.props.threeD_sync,
       var_settings: this.props.var_settings,
       variable_aliases: this.props.variable_aliases,
     };
@@ -31,28 +36,9 @@ class ControlsBar extends React.Component {
     {
       this.state[dropdown.state_label] = dropdown.selected;
     }
-    // This binding is necessary to make `this` work in the callback
-    this.set_selected = this.set_selected.bind(this);
-    this.set_auto_scale = this.set_auto_scale.bind(this);
-    this.set_video_sync = this.set_video_sync.bind(this);
-    this.set_video_sync_time = this.set_video_sync_time.bind(this);
-    this.set_video_sync_time_value = this.set_video_sync_time_value.bind(this);
-    this.trigger_show_all = this.trigger_show_all.bind(this);
-    this.trigger_close_all = this.trigger_close_all.bind(this);
-    this.trigger_hide_selection = this.trigger_hide_selection.bind(this);
-    this.trigger_hide_unselected = this.trigger_hide_unselected.bind(this);
-    this.trigger_show_unselected = this.trigger_show_unselected.bind(this);
-    this.trigger_show_selection = this.trigger_show_selection.bind(this);
-    this.trigger_pin_selection = this.trigger_pin_selection.bind(this);
-    this.trigger_jump_to_start = this.trigger_jump_to_start.bind(this);
-    this.trigger_frame_back = this.trigger_frame_back.bind(this);
-    this.trigger_play = this.trigger_play.bind(this);
-    this.trigger_pause = this.trigger_pause.bind(this);
-    this.trigger_frame_forward = this.trigger_frame_forward.bind(this);
-    this.trigger_jump_to_end = this.trigger_jump_to_end.bind(this);
   }
 
-  set_selected(state_label, key, trigger, e) {
+  set_selected = (state_label, key, trigger, e) => {
     // Do nothing if the state hasn't changed (e.g., user clicked on currently selected variable)
     if(key === this.state[state_label])
     {
@@ -68,7 +54,7 @@ class ControlsBar extends React.Component {
     this.props.element.trigger(trigger, key);
   }
 
-  set_auto_scale(e) {
+  set_auto_scale = (e) => {
     this.setState((prevState, props) => {
       const new_auto_scale = !prevState.auto_scale;
       this.props.element.trigger("auto-scale", new_auto_scale);
@@ -76,7 +62,7 @@ class ControlsBar extends React.Component {
     });
   }
 
-  set_video_sync(e) {
+  set_video_sync = (e) => {
     this.setState((prevState, props) => {
       const new_video_sync = !prevState.video_sync;
       this.props.element.trigger("video-sync", new_video_sync);
@@ -84,7 +70,7 @@ class ControlsBar extends React.Component {
     });
   }
 
-  set_video_sync_time(value) {
+  set_video_sync_time = (value) => {
     const new_video_sync_time = value;
     this.setState((prevState, props) => {
       this.props.element.trigger("video-sync-time", value);
@@ -97,22 +83,30 @@ class ControlsBar extends React.Component {
     });
   }
 
-  set_video_sync_time_value(e) {
+  set_video_sync_time_value = (e) => {
     const new_video_sync_time = e.target.value;
     this.setState((prevState, props) => {
       return {video_sync_time_value: new_video_sync_time};
     });
   }
 
-  trigger_show_all(e) {
+  set_threeD_sync = (e) => {
+    this.setState((prevState, props) => {
+      const new_threeD_sync = !prevState.threeD_sync;
+      this.props.element.trigger("threeD_sync", new_threeD_sync);
+      return {threeD_sync: new_threeD_sync};
+    });
+  }
+
+  trigger_show_all = (e) => {
     this.props.element.trigger("show-all");
   }
 
-  trigger_close_all(e) {
+  trigger_close_all = (e) => {
     this.props.element.trigger("close-all");
   }
 
-  trigger_hide_selection(e) {
+  trigger_hide_selection = (e) => {
     if(!this.state.disable_hide_show) {
       this.props.element.trigger("hide-selection", this.state.selection);
     }
@@ -126,7 +120,7 @@ class ControlsBar extends React.Component {
     // }
   }
 
-  trigger_hide_unselected(e) {
+  trigger_hide_unselected = (e) => {
     if(!this.state.disable_hide_show) {
       // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
       // https://api.jquery.com/trigger/
@@ -135,43 +129,47 @@ class ControlsBar extends React.Component {
     }
   }
 
-  trigger_show_unselected(e) {
+  trigger_show_unselected = (e) => {
     if(!this.state.disable_hide_show) {
       this.props.element.trigger("show-unselected", [this.state.selection]);
     }
   }
 
-  trigger_show_selection(e) {
+  trigger_show_selection = (e) => {
     if(!this.state.disable_hide_show) {
       this.props.element.trigger("show-selection", [this.state.selection]);
     }
   }
 
-  trigger_pin_selection(e) {
-      this.props.element.trigger("pin-selection", [this.state.selection]);
+  trigger_pin_selection = (e) => {
+    this.props.element.trigger("pin-selection", [this.state.selection]);
   }
 
-  trigger_jump_to_start(e) {
+  trigger_select_pinned = (e) => {
+    this.props.element.trigger("select-pinned", [this.state.open_images]);
+  }
+
+  trigger_jump_to_start = (e) => {
     this.props.element.trigger("jump-to-start");
   }
 
-  trigger_frame_back(e) {
+  trigger_frame_back = (e) => {
     this.props.element.trigger("frame-back");
   }
 
-  trigger_play(e) {
+  trigger_play = (e) => {
     this.props.element.trigger("play");
   }
 
-  trigger_pause(e) {
+  trigger_pause = (e) => {
     this.props.element.trigger("pause");
   }
 
-  trigger_frame_forward(e) {
+  trigger_frame_forward = (e) => {
     this.props.element.trigger("frame-forward");
   }
 
-  trigger_jump_to_end(e) {
+  trigger_jump_to_end = (e) => {
     this.props.element.trigger("jump-to-end");
   }
 
@@ -188,18 +186,16 @@ class ControlsBar extends React.Component {
   render() {
     // Define default button style
     const button_style = 'btn-outline-dark';
-    // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
-    const show_all_disabled = this.state.hidden_simulations.length == 0 || this.state.disable_hide_show;
-    const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
-    // Disable close all button when there are no open frames
-    const close_all_disabled = this.state.open_images.length == 0;
     // Completely hide the Pin functionality when the model has no media variables to choose from
     const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
     // Disable the Pin function when no media variable is selected
     // or if the current selection only contains hidden simulations
+    // of if the current selection is already pinned
     const no_media_variable_selected = !(this.state.media_variable && this.state.media_variable >= 0);
     const all_selection_hidden = _.difference(this.state.selection, this.state.hidden_simulations).length === 0;
-    const disable_pin = no_media_variable_selected || all_selection_hidden;
+    // To Do: figure out if the current selection is already pinned
+    const current_selection_pinned = false;
+    const disable_pin = no_media_variable_selected || all_selection_hidden || current_selection_pinned;
 
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
@@ -274,13 +270,33 @@ class ControlsBar extends React.Component {
     // This is used to decide if the play or the pause button is visible in the playback controls
     const playing = (this.state.video_sync && any_video_playing) || (!this.state.video_sync && current_frame_video_playing);
 
+    // 3D controls
+    let any_threeD_open = false;
+    let current_frame_threeD = false;
+    for(let open_media of this.state.open_images)
+    {
+      if(open_media.threeD){
+        any_threeD_open = true;
+        if(open_media.current_frame)
+        {
+          current_frame_threeD = true;
+        }
+      }
+      // No need to keep searching if we found a video and the current frame is also a video
+      if(any_threeD_open && current_frame_threeD)
+      {
+        break;
+      }
+    }
+
+
     return (
       <Provider store={window.store}>
         <React.Fragment>
         <React.StrictMode>
           <ControlsGroup id='scatterplot-controls' class='btn-group ml-3'>
             {dropdowns}
-            <VisibleVarOptions 
+            <ControlsButtonVarOptions 
               selection={this.state.selection} 
               hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} 
@@ -293,7 +309,7 @@ class ControlsBar extends React.Component {
             />
           </ControlsGroup>
           <ControlsGroup id='selection-controls' class='btn-group ml-3'>
-            <ControlsButtonToggle title='Auto Scale' icon='fa-external-link' active={this.state.auto_scale} 
+            <ControlsButtonToggle title='Auto Scale' icon={faExternalLinkAlt} active={this.state.auto_scale} 
               set_active_state={this.set_auto_scale} button_style={button_style} />
             <ControlsSelection
               trigger_hide_selection={this.trigger_hide_selection}
@@ -301,6 +317,9 @@ class ControlsBar extends React.Component {
               trigger_show_unselected={this.trigger_show_unselected}
               trigger_show_selection={this.trigger_show_selection}
               trigger_pin_selection={this.trigger_pin_selection}
+              trigger_close_all={this.trigger_close_all}
+              trigger_show_all={this.trigger_show_all}
+              trigger_select_pinned={this.trigger_select_pinned}
               disable_hide_show={this.state.disable_hide_show}
               disable_pin={disable_pin}
               hide_pin={hide_pin}
@@ -311,35 +330,38 @@ class ControlsBar extends React.Component {
               metadata={this.props.metadata}
               element={this.props.element}
               button_style={button_style}
+              open_images={this.state.open_images}
             />
-            <ControlsButton label='Show All' title={show_all_title} disabled={show_all_disabled} 
-              click={this.trigger_show_all} button_style={button_style} />
-            <ControlsButton label='Close All Pins' title='' disabled={close_all_disabled} 
-              click={this.trigger_close_all} button_style={button_style} />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
               indices={this.props.indices} button_style={button_style} />
-          </ControlsGroup>
-          <ControlsGroup id='file-selector' class='input-group input-group-sm ml-3'>
-            <ControlsButtonUpdateTable button_style={button_style} mid={this.props.mid} pid={this.props.pid} aliases={this.state.variable_aliases}/>
+            <ControlsButtonUpdateTable 
+              button_style={button_style} 
+              mid={this.props.mid}
+              pid={this.props.pid} 
+              aliases={this.state.variable_aliases} 
+            />
           </ControlsGroup>
           {any_video_open &&
-          <React.Fragment>
-          <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3'>
+          <ControlsGroup id='video-controls' class='input-group input-group-sm ml-3 playback-controls'>
             <ControlsVideo video_sync={this.state.video_sync} set_video_sync={this.set_video_sync} 
               video_sync_time_value={this.state.video_sync_time_value}
               set_video_sync_time_value={this.set_video_sync_time_value} set_video_sync_time={this.set_video_sync_time}
               any_video_open={any_video_open} button_style={button_style}
             />
-          </ControlsGroup>
-          <ControlsGroup id='playback-controls' class='btn-group ml-3'>
             <ControlsPlayback trigger_jump_to_start={this.trigger_jump_to_start} 
               trigger_frame_back={this.trigger_frame_back} trigger_play={this.trigger_play}
               trigger_pause={this.trigger_pause} trigger_frame_forward={this.trigger_frame_forward} trigger_jump_to_end={this.trigger_jump_to_end}
               any_video_open={any_video_open} disabled={disabled_playback} playing={playing} button_style={button_style}
             />
           </ControlsGroup>
-          </React.Fragment>
+          }
+          {any_threeD_open &&
+          <ControlsGroup id='threeD-controls' class='btn-group ml-3'>
+            <ControlsThreeD threeD_sync={this.state.threeD_sync} set_threeD_sync={this.set_threeD_sync} 
+              any_threeD_open={any_threeD_open} button_style={button_style}
+            />
+          </ControlsGroup>
           }
         </React.StrictMode>
         </React.Fragment>

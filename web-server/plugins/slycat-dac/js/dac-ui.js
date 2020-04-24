@@ -43,7 +43,7 @@ $(document).ready(function() {
     var MAX_TIME_POINTS = 500;
 
     // maximum number of plots (per selection)
-    var MAX_NUM_PLOTS = 50;
+    var MAX_NUM_PLOTS = 33;
 
     // animation threshold (overrides push script value)
     var MAX_POINTS_ANIMATE = 2500;
@@ -125,6 +125,9 @@ $(document).ready(function() {
                     $("#dac_processing_progress_bar").text("No Data Loaded (See Info > Parse Log)");
                     $("#dac_processing_progress_bar").width(100 + "%");
 
+                    // request error log
+                    update_error_log(user_scroll);
+
                 } else {
 
                     // update progress and output log
@@ -132,18 +135,7 @@ $(document).ready(function() {
                     $("#dac_processing_progress_bar").width(result[1] + "%");
 
                     // request error log
-                    $.when(request.get_parameters("dac-parse-log", mid)).then(
-                        function(error_log)
-                        {
-                            // update text box unless user has focused on it
-                            if (user_scroll == false) {
-                                // display text then scroll to bottom
-                                $("#dac_processing_textarea").text(error_log[1]);
-
-                                // scroll to bottom
-                                $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
-                            }
-                        });
+                    update_error_log(user_scroll);
 
                     // reset time out and continue
                     endTime = Number(new Date()) + ONE_MINUTE;
@@ -185,6 +177,23 @@ $(document).ready(function() {
             }
         });
     })();
+
+    // read and update error log
+    function update_error_log (user_scroll)
+    {
+        $.when(request.get_parameters("dac-parse-log", mid)).then(
+            function(error_log)
+            {
+                // update text box unless user has focused on it
+                if (user_scroll == false) {
+                    // display text then scroll to bottom
+                    $("#dac_processing_textarea").text(error_log[1]);
+
+                    // scroll to bottom
+                    $("#dac_processing_textarea").scrollTop($("#dac_processing_textarea")[0].scrollHeight);
+                }
+            });
+    }
 
     // check for preferences using bookmarks, and set up variables
     // note that we only set data independent bookmarks here, e.g. bookmarks
@@ -586,6 +595,12 @@ $(document).ready(function() {
                 // editable column event
                 document.body.addEventListener("DACEditableColChanged", editable_col_changed);
 
+                // table filter event
+                document.body.addEventListener("DACFilterChanged", filter_changed);
+
+                // filter button state event
+                document.body.addEventListener("DACFilterButtonState", filter_button_state);
+
                 // load all relevant data and set up panels
                 $.when(request.get_table_metadata("dac-variables-meta", mid),
 		   	           request.get_table("dac-variables-meta", mid),
@@ -597,6 +612,7 @@ $(document).ready(function() {
                                 // get number of variables, points and columns in table
                                 var num_vars = variables_meta[0]["row-count"];
                                 var num_cols = data_table_meta[0]["column-count"];
+                                var num_editable_cols = editable_columns.attributes.length;
                                 var num_points = data_table_meta[0]["row-count"];
 
                                 // check variables to be included
@@ -662,6 +678,13 @@ $(document).ready(function() {
                                 var init_zoom_extent = null;
                                 if ("dac-zoom-extent" in bookmark) {
                                     init_zoom_extent = bookmark["dac-zoom-extent"];
+
+                                    // check if button should be marked
+                                    if ("dac-zoom-flag" in bookmark) {
+                                        if (bookmark["dac-zoom-flag"] == false) {
+                                            init_zoom_extent = null;
+                                        }
+                                    }
                                 }
 
                                 // initialize subset center, if bookmarked
@@ -672,6 +695,7 @@ $(document).ready(function() {
 
                                 // initialize subset itself, if bookmarked
                                 var init_mds_subset = [];
+                                var init_subset_flag = false;
                                 for (var i = 0; i < num_points; i++ ) {
                                     init_mds_subset.push(1);
                                 }
@@ -684,11 +708,16 @@ $(document).ready(function() {
                                     if (book_mds_subset.length == num_points) {
                                         init_mds_subset = book_mds_subset;
                                     }
+
+                                    // get subset button status
+                                    if ("dac-subset-flag" in bookmark) {
+                                        init_subset_flag = bookmark["dac-subset-flag"];
+                                    }
                                 }
                                 selections.update_subset(init_mds_subset);
 
                                 // initialize difference button order and position
-                                var init_fisher_order = null;
+                                var init_fisher_order = [];
                                 var init_fisher_pos = null;
                                 if ("dac-fisher-order" in bookmark) {
 
@@ -699,7 +728,7 @@ $(document).ready(function() {
 
                                     // check that order is correct length
                                     if (init_fisher_order.length != num_vars) {
-                                        init_fisher_order = null;
+                                        init_fisher_order = [];
                                         init_fisher_pos = null;
                                     }
                                 }
@@ -755,9 +784,44 @@ $(document).ready(function() {
                                 var init_sort_order = null;
                                 var init_sort_col = null;
                                 if ("dac-table-order" in bookmark) {
-                                    init_sort_order = bookmark["dac-table-order"];
-                                    init_sort_col = bookmark["dac-table-sort-col"];
+
+                                    // check if sort col exists
+                                    if (bookmark["dac-table-sort-col"] < (num_cols + num_editable_cols)) {
+                                        init_sort_order = bookmark["dac-table-order"];
+                                        init_sort_col = bookmark["dac-table-sort-col"];
+                                    }
                                 }
+
+                                // initialize table column filters, if bookmarked
+                                var column_filters = [];
+                                for (var i = 0; i < (num_cols + num_editable_cols); i++) {
+                                    column_filters.push("");
+                                }
+                                if ("dac-table-filters" in bookmark) {
+
+                                    // check if column filters are in table
+                                    if (bookmark["dac-table-filters"].length == column_filters.length) {
+                                        column_filters = bookmark["dac-table-filters"];
+                                    }
+                                }
+
+                                // initialize filter button state and filter mask
+                                var init_filter_button = false;
+                                var init_filter_mask = [];
+                                for (var i = 0; i < num_points; i++) {
+                                    init_filter_mask.push(1.0);
+                                }
+                                if ("dac-filter-button-state" in bookmark) {
+                                    init_filter_button = bookmark["dac-filter-button-state"];
+
+                                    // check if filters is correct length
+                                    if (bookmark["dac-filter-mask"].length == num_points) {
+                                        init_filter_mask = bookmark["dac-filter-mask"];
+                                    }
+                                }
+
+                                // update filter mask/button in selections
+                                selections.update_filter(init_filter_mask, init_filter_button);
 
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
@@ -772,8 +836,8 @@ $(document).ready(function() {
 				                            MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
 				                            variables_meta, variables, var_include_columns,
 				                            data_table[0]["data"][0].length, init_plots_selected,
-				                            init_plots_displayed, init_plots_zoom_x,
-				                            init_plots_zoom_y, init_link_plots);
+				                            init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
+				                            init_link_plots);
 
 				                // set up the MDS scatter plot
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
@@ -782,13 +846,14 @@ $(document).ready(function() {
 					                MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
 					                data_table_meta[0], meta_include_columns, var_include_columns,
 					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_fisher_order, init_fisher_pos, init_diff_desired_state,
-					                editable_columns, model_origin);
+					                init_subset_flag, init_fisher_order, init_fisher_pos, init_diff_desired_state,
+					                init_filter_button, init_filter_mask, editable_columns, model_origin);
 
                                 // set up table with editable columns
                                 metadata_table.setup(data_table_meta, data_table, meta_include_columns,
                                                  editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col);
+                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                                                 column_filters);
 
 		   	                },
 		   	                function () {
@@ -980,7 +1045,8 @@ $(document).ready(function() {
 
         // bookmark subset data
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
-                                "dac-subset-center": new_subset.detail.subset_center});
+                                "dac-subset-center": new_subset.detail.subset_center,
+                                "dac-subset-flag": new_subset.detail.subset_flag});
 
     }
 
@@ -1010,7 +1076,8 @@ $(document).ready(function() {
     function zoom_changed (new_extent)
     {
         // bookmark new zoom extent
-        bookmarker.updateState({"dac-zoom-extent": new_extent.detail});
+        bookmarker.updateState({"dac-zoom-extent": new_extent.detail.extent,
+                                "dac-zoom-flag": new_extent.detail.zoom});
     }
 
     // event for zoom changes in time series plots
@@ -1042,6 +1109,24 @@ $(document).ready(function() {
         // change color in scatter plot if necessary
         scatter_plot.recolor_plot (col.detail);
 
+    }
+
+    // event for table filter change
+    function filter_changed (filter)
+    {
+        // if filter button is on, turn it off
+        scatter_plot.turn_off_filter_button();
+
+        // bookmark filter change
+        bookmarker.updateState({"dac-table-filters": filter.detail.columnFilters});
+    }
+
+    // event for scatter button filter state
+    function filter_button_state (state)
+    {
+        // bookmark filter button state
+        bookmarker.updateState({"dac-filter-button-state": state.detail.button_state,
+                                "dac-filter-mask": state.detail.filter_mask});
     }
 
 });

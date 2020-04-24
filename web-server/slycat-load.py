@@ -25,8 +25,10 @@ parser.add_argument("--marking", default=[], nargs="+",
                     help="Use --marking='<source>:<target>' to map <source> markings to <target> markings.  You may specify multiple maps, separated by whitespace.")
 arguments = parser.parse_args()
 
+logFile = '~/loadLog.txt'
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.FileHandler(logFile))
+#logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 # Sanity check input arguments ...
@@ -69,7 +71,7 @@ for source in glob.glob(os.path.join(arguments.input_dir, "array-set-*.hdf5")):
 
 # Load project data ...
 logging.info("Loading project datas")
-for source in glob.glob(os.path.join(arguments.input_dir, "project-data-*.json")):
+for source in glob.glob(os.path.join(arguments.input_dir, "projects-data-*.json")):
     logging.info("Loading project-data %s", source)
     reference = json.load(open(source))
     del reference["_rev"]

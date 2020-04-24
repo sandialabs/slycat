@@ -191,8 +191,15 @@ class Agent(agent.Agent):
     def checkjob(self, command):
         results = {
             "ok": True,
-            "jid": command["command"]
+            "jid": command["command"],
+            "logFile": "Log file is missing or empty"
         }
+        try:
+            with open(os.path.join(os.path.expanduser('~'), "slurm-%s.out"%command["command"]), "r") as f:
+                results["logFile"]=f.read()
+        except:
+            # something went wrong getting the log let just move on
+            pass
         try:
             results["output"], results["errors"] = self.run_shell_command("sacct -j %s --format=jobname,state" % results["jid"])
             myset = str(results["output"].decode()).split('\n')
@@ -250,8 +257,7 @@ class Agent(agent.Agent):
         f.write("#SBATCH --ntasks-per-node=%s\n" % ntasks_per_node)
         f.write("#SBATCH --time=%s:%s:%s\n" % (time_hours, time_minutes, time_seconds))
         f.write("module load %s\n" % module_name)
-        f.write("profile=slurm_${SLURM_JOB_ID}_$(hostname)\n")
-        f.write("echo \"Creating profile ${profile}\"\n")
+        f.write("profile=default \n")
         f.write("ipython profile create --parallel \n")
         f.write("echo \"Launching controller\"\n")
         f.write("ipcontroller --ip='*' &\n")

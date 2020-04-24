@@ -179,7 +179,7 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
       // updating them here based on what's in the redux store.
       self.update_variable_aliases();
 
-      // Can't trust that bookmark contains accurare categorical/numeric type information, so must verify here
+      // Can't trust that bookmark contains accurate categorical/numeric type information, so must verify here
       for(var i=self.allFilters().length-1; i >= 0; i--) 
       {
         var filter = self.allFilters()[i];

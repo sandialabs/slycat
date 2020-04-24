@@ -16,8 +16,6 @@ array."""
 import numpy as np
 import scipy
 
-import cherrypy
-
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D):
     """                                                                                      

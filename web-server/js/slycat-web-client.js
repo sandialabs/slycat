@@ -572,6 +572,16 @@ module.get_configuration_agent_functions = function(params) {
     }
   });
 };
+module.get_model_fetch = function(mid)
+{
+  return fetch(`${api_root}models/${mid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
+    }
+    return response.json();
+  });
+};
 
 module.get_model = function(params)
 {
@@ -676,7 +686,7 @@ module.get_model_command = function(params)
   });
 };
 
-module.get_model_command_fetch = function(params, successFunction, errorFunction)
+module.get_model_command_fetch = function(params, errorFunction)
 {
   return fetch(URI(api_root + "models/" + params.mid + "/commands/" + params.type + "/" + params.command).search(params.parameters || {}).toString(),
       {
@@ -688,12 +698,15 @@ module.get_model_command_fetch = function(params, successFunction, errorFunction
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
-    return response.json();
+    if (Object.keys(response).indexOf("json") > -1){
+      return response.json();
+    }
+    return {};
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
     }else{
-      console.log(error);
+      throw error;
     }
   });
 };
@@ -1263,6 +1276,18 @@ module.post_submit_batch = function(params) {
   });
 };
 
+module.get_checkjob_fetch = function(hostname, jid) {
+  return fetch(`${api_root}remotes/checkjob/${hostname}/${jid}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw new Error(`bad response with: ${response.status} :: ${response.statusText}`);
+    }
+    return response.json();
+  }).catch((error) => {
+      throw error;
+  });
+};
+
 module.get_checkjob = function(params) {
   $.ajax({
     contentType: 'application/json',
@@ -1347,35 +1372,6 @@ module.set_user_config = function(params) {
 };
 
 module.post_remote_command = function(params) {
-
-  // this is an example of the format that this function is expecting
-  // var test_script_json = {
-  //       "scripts": [
-  //           {
-  //               "name": "test",
-  //               "parameters": [
-  //                   {
-  //                       "name": "--number",
-  //                       "value": 2
-  //                   }
-  //               ]
-  //           }
-  //       ],
-  //       "hpc": {
-  //           "is_hpc_job": false,
-  //           "parameters": {
-  //               wckey : "test1",
-  //               nnodes : "1",
-  //               partition : "mypartition",
-  //               ntasks_per_node : "1",
-  //               time_hours : "01",
-  //               time_minutes : "30",
-  //               time_seconds : "30",
-  //               working_dir : "slycat"
-  //           }
-  //       }
-  // };
-  console.log("parsing " + JSON.stringify(params));
   $.ajax({
     contentType: 'application/json',
     data: JSON.stringify({"command": params.command}),

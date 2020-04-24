@@ -225,10 +225,12 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
         data = numpy.loadtxt("%s" % path, comments="End", skiprows=1, delimiter=t_delimiter)
         if t_add_index_column is True:
             data = numpy.insert(data, 0, list(range(len(data))), axis=1)
-
         timeseries_dir = os.path.join(arguments.output_directory, timeseries_name)
-        if not os.path.exists(timeseries_dir):
-            os.makedirs(timeseries_dir)
+        try:
+            if not os.path.exists(timeseries_dir):
+                os.makedirs(timeseries_dir)
+        except Exception as e:
+            pass
 
         hdf5_path = os.path.join(timeseries_dir, "timeseries-%s.hdf5" % timeseries_index)
         with log_lock:
@@ -244,7 +246,7 @@ def process_timeseries(timeseries_path, timeseries_name, timeseries_index, eval_
     except IOError as err:
         log.error("Failed reading %s: %s", path, err)
     except Exception as e:
-        log.error("Unexpected error reading %s \n msg%s" % (path, e.message))
+        log.error("Unexpected error reading %s \n msg%s" % (path, str(e)))
 
 def convert_timeseries(timeseries_index, eval_id, row):
     """
