@@ -10,6 +10,9 @@ import slick_default_theme_css from "slickgrid/slick-default-theme.css";
 import slick_headerbuttons_css from "slickgrid/plugins/slick.headerbuttons.css";
 import slick_slycat_theme_css from "css/slick-slycat-theme.css";
 import ui_css from "../css/ui.css";
+import React from "react";
+import ReactDOM from "react-dom";
+import LoadingPage from '../plugin-components/LoadingPage.tsx';
 
 import api_root from "js/slycat-api-root";
 import ko from "knockout";
@@ -31,7 +34,6 @@ import "jquery-ui";
 import "jquery-ui/ui/disable-selection";
 import "jquery-ui/ui/widgets/draggable";
 import "layout";
-import "js/slycat-job-checker";
 
 // Wait for document ready
 $(document).ready(function() {
@@ -142,11 +144,27 @@ $(document).ready(function() {
       }
     },
   });
-
+  const showLoadingPage = () => {
+    client.get_model_fetch(model._id).then((modelResponse) => {
+        ReactDOM.render(
+            <LoadingPage
+              modelId={modelResponse._id}
+              modelState={modelResponse["state"]}
+              jid={modelResponse['artifact:jid']}
+              hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
+            />,
+            document.querySelector('#timeseries-model')
+        );
+      }
+    ).catch((msg) => {
+          // eslint-disable-next-line no-alert
+          window.alert(`Error retrieving model: ${msg}`);
+    })
+  };
   //////////////////////////////////////////////////////////////////////////////////////////
   // Get the model
   //////////////////////////////////////////////////////////////////////////////////////////
-  function doPoll() {
+  function loadPage() {
     $.ajax(
     {
       type : "GET",
@@ -154,16 +172,15 @@ $(document).ready(function() {
       success : function(result)
       {
         model = result;
+        // If the model isn't ready or failed, we're done.
+        if(model["state"] === "waiting" || model["state"] === "running") {
+          showLoadingPage();
+          return;
+        }
         bookmarker = bookmark_manager.create(model.project, model._id);
         cluster_bin_count = model["artifact:cluster-bin-count"];
         cluster_bin_type = model["artifact:cluster-bin-type"];
         cluster_type = model["artifact:cluster-type"];
-        // If the model isn't ready or failed, we're done.
-        if(model["state"] === "waiting" || model["state"] === "running") {
-          show_checkjob();
-          setTimeout(doPoll, 15000);
-          return;
-        }
 
         // Check if model has the image-columns artifact and create one if it doesn't
         if(!model.hasOwnProperty("artifact:image-columns"))
@@ -197,8 +214,6 @@ $(document).ready(function() {
           image_columns = model["artifact:image-columns"];
         }
 
-        $('.slycat-job-checker').remove();
-
         if(model["state"] == "closed" && model["result"] === null)
           return;
         if(model["result"] == "failed")
@@ -211,9 +226,9 @@ $(document).ready(function() {
       }
     });
   }
-  //TODO remove this timeout when we convert to react as it is only here to let KO load
-  setTimeout(doPoll, 500);
 
+  // showLoadingPage();
+  loadPage()
   //////////////////////////////////////////////////////////////////////////////////////////
   // If the model is ready, start retrieving data, including bookmarked state.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -231,18 +246,6 @@ $(document).ready(function() {
     else
       return JSON.parse(s);
   }
-
-  var show_checkjob = function() {
-    var jc = $('#timeseries-model').children()[0];
-    var $jc = $(jc);
-    $jc.detach();
-
-    $($('#timeseries-model').children()).remove();
-    $('#timeseries-model').append($jc);
-
-    var vm = ko.dataFor($('.slycat-job-checker')[0]);
-    vm.set_jid(model['artifact:jid']);
-  };
 
   function setup_page()
   {

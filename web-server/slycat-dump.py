@@ -27,8 +27,10 @@ parser.add_argument("--project-id", default=[], action="append",
 arguments = parser.parse_args()
 
 
+logFile = '~/dumpLog.txt'
 logging.getLogger().setLevel(logging.INFO)
-logging.getLogger().addHandler(logging.StreamHandler())
+logging.getLogger().addHandler(logging.FileHandler(logFile))
+#logging.getLogger().addHandler(logging.StreamHandler())
 logging.getLogger().handlers[0].setFormatter(logging.Formatter("{} - %(levelname)s - %(message)s".format(sys.argv[0])))
 
 if arguments.force and os.path.exists(arguments.output_dir):
@@ -62,7 +64,12 @@ for project_id in arguments.project_id:
     logging.info("Dumping project %s", project_id)
     project = couchdb.get(project_id, attachments=True)
     json.dump(project, open(os.path.join(arguments.output_dir, "project-%s.json" % project["_id"]), "w"))
-
+    # dump project data
+    project_datas_ids = list(row["id"] for row in couchdb.view("slycat/project_datas", startkey=project_id, endkey=project_id))
+    for project_datas_id in project_datas_ids:
+      project_data = couchdb.get(project_datas_id, attachments=True)
+      json.dump(project_data, open(os.path.join(arguments.output_dir, "projects-data-%s.json" % project_data["_id"]), "w"))
+      
     project_arrays = set()
 
     for row in couchdb.view("slycat/project-models", startkey=project_id, endkey=project_id):

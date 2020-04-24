@@ -76,7 +76,8 @@
           session_exists:remote.session_exists,
           persistence_id:'timeseries-table-file',
           progress:remote.progress,
-          progress_status:remote.progress_status"></slycat-remote-browser>
+          progress_status:remote.progress_status,
+          reauth:reauth,"></slycat-remote-browser>
       </div>
     </div>
 
@@ -152,7 +153,8 @@
           session_exists:remote.session_exists,
           persistence_id:'timeseries-example-timeseries-file',
           progress:remote_timeseries.progress,
-          progress_status:remote_timeseries.progress_status"></slycat-remote-browser>
+          progress_status:remote_timeseries.progress_status,
+          reauth:reauth,"></slycat-remote-browser>
       </div>
     </div>
 
@@ -166,7 +168,8 @@
           selection:remote_hdf5.selection,
           path:remote_hdf5.path,
           session_exists:remote.session_exists,
-          persistence_id:'timeseries-hdf5-directory'"></slycat-remote-browser>
+          persistence_id:'timeseries-hdf5-directory',
+          reauth:reauth,"></slycat-remote-browser>
       </div>
     </div>
 

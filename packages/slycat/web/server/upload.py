@@ -225,7 +225,8 @@ class Session(object):
         else:
           slycat.web.server.plugin.manager.parsers[self._parser]["parse"](database, model, self._input,
                                                                           files, self._aids, **self._kwargs)
-        slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
+        if model["model-type"] == "parameter-image":
+          slycat.web.server.handlers.create_project_data(self._mid, self._aids, files)
       except Exception as e:
         cherrypy.log.error("Exception parsing posted files: %s" % e)
         import traceback

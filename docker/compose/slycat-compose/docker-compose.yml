@@ -16,6 +16,9 @@ services:
       - sly-net
     volumes:
       - ../../../:/usr/src/slycat/slycat
+      - web-data-store-volume:/var/lib/slycat
+      # optional data store on the metal
+      # - ~/slycat:/var/lib/slycat
     entrypoint:
       - bash
       - -c
@@ -90,4 +93,5 @@ services:
 networks:
   sly-net:
 volumes:
+  web-data-store-volume:
   couchdb-data-volume:

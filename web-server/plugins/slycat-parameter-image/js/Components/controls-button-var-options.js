@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import VariableAliasLabels from "components/VariableAliasLabels";
+import ScatterplotOptions from "components/ScatterplotOptions";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
@@ -42,23 +43,37 @@ export default function ControlsButtonVarOptions(props) {
         success: function(response) {
           $('#' + modalId).modal('hide');
         },
-        error: dialog.ajax_error("There was an error saving the variable alias labels."),
+        error: function(response) {
+          // dialog.ajax_error("There was an error saving the variable alias labels to project data.")();
+          // We have a pointer to project data but can't save to it.
+          // Maybe it was deleted.
+          // Let's save to the model's artifact instead.
+          writeAliasesToModelArtifact();
+        }
       });
     }
     // Otherwise write to the model's artifact:variable_aliases attribute
     else
     {
-      client.put_model_parameter({
-        mid: props.model._id,
-        aid: "variable_aliases",
-        value: props.variable_aliases,
-        input: false,
-        success: function() {
-          $('#' + modalId).modal('hide');
-        },
-        error: dialog.ajax_error("There was an error saving the variable alias labels."),
-      });
+      writeAliasesToModelArtifact();
     }
+  }
+
+  function writeAliasesToModelArtifact() {
+    client.put_model_parameter({
+      mid: props.model._id,
+      aid: "variable_aliases",
+      value: props.variable_aliases,
+      input: false,
+      success: function() {
+        $('#' + modalId).modal('hide');
+      },
+      error: function() {
+        console.log("Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog.");
+        $('#' + modalId).modal('hide');
+        dialog.ajax_error("There was an error saving the variable alias labels to the model's artifact.")();
+      }
+    });
   }
 
   let axes_variables = [];
@@ -150,6 +165,12 @@ export default function ControlsButtonVarOptions(props) {
                     <h5 className='mb-0'>Variable Alias Labels</h5>
                   </a>
                 </li>
+                <li className='nav-item'>
+                  <a className='nav-link' id='scatterplot-options-tab' data-toggle='tab' 
+                    href='#scatterplot-options-tab-content' role='tab' aria-controls='scatterplot-options-tab-content' aria-selected='false'>
+                    <h5 className='mb-0'>Point Formatting</h5>
+                  </a>
+                </li>
               </ul>
 
               <div className='tab-content mt-4 mb-2 mx-3'>
@@ -172,7 +193,7 @@ export default function ControlsButtonVarOptions(props) {
                         <label htmlFor='font-size'>Size</label>
                         <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
                           value={props.font_size} 
-                          onChange={() => props.changeFontSize(event.target.value)}
+                          onChange={props.onFontSizeChange}
                         />
                       </div>
                     </div>
@@ -190,6 +211,10 @@ export default function ControlsButtonVarOptions(props) {
                     variableAliases={props.variable_aliases}
                     metadata={props.metadata}
                     onChange={props.onVariableAliasLabelsChange}
+                  />
+                </div>
+                <div className='tab-pane' id='scatterplot-options-tab-content' role='tabpanel' aria-labelledby='scatterplot-options-tab'>
+                  <ScatterplotOptions
                   />
                 </div>
               </div>

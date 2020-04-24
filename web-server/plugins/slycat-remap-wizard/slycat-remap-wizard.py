@@ -102,7 +102,7 @@ def register_slycat_plugin(context):
 
     forest = {}
     for column in columns:
-      tmp_uris = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % column))
+      tmp_uris = next(iter(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % column)))
       update_forest(forest, tmp_uris, column)
 
     formatted_forest = format_forest(forest)
@@ -138,7 +138,7 @@ def register_slycat_plugin(context):
       raise cherrypy.HTTPError("400 Missing / invalid search parameter.")
 
     for attribute in columns:
-      before = next(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % attribute))
+      before = next(iter(slycat.web.server.get_model_arrayset_data(database, model, "data-table", "0/%s/..." % attribute)))
       #cherrypy.log.error("before: %s %s" % (type(before), before))
       after = numpy.array([search.sub(replace, value) for value in before])
       #cherrypy.log.error("after: %s" % after)

@@ -19,7 +19,6 @@ import d3 from "d3";
 import URI from "urijs";
 import * as chunker from "js/chunker";
 
-import "js/slycat-job-checker";
 import "./parameter-image-scatterplot";
 import "./parameter-controls";
 import "./parameter-image-dendrogram";
@@ -215,23 +214,12 @@ $(document).ready(function() {
   // Once the model has been loaded, retrieve metadata / bookmarked state
   //////////////////////////////////////////////////////////////////////////////////////////
 
-  var show_checkjob = function() {
-    var jc = $('#parameter-image-plus-layout').children()[0];
-    var $jc = $(jc);
-    $jc.detach();
-
-    $($('#parameter-image-plus-layout').children()).remove();
-    $('#parameter-image-plus-layout').append($jc);
-
-    var vm = ko.dataFor($('.slycat-job-checker')[0]);
-    vm.set_jid(model['artifact:jid']);
-  };
 
   function model_loaded()
   {
     // If the model isn't ready or failed, we're done.
     if(model["state"] == "waiting" || model["state"] == "running") {
-      show_checkjob();
+      console.log("should show new check job")
       return;
     }
     if(model["state"] == "closed" && model["result"] === null)

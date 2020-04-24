@@ -1006,6 +1006,9 @@ a {
     white-space: nowrap;
     margin-left: -7px;
 }
+.bootstrap-styles .dropdown-header.disabled {
+  color: #6c757d;
+}
 #controls-pane .bootstrap-styles .dropdown-menu
 {
   max-height: 500px;
@@ -1032,10 +1035,10 @@ a {
 #video-controls .video-sync-time {
   width: 75px;
 }
-#playback-controls .play-button,
-#playback-controls .pause-button
+.playback-controls .play-button,
+.playback-controls .pause-button
 {
-  width: 22px;
+  width: 30px;
 }
 .slick-cell.flashing {
   border-width: 0px !important;

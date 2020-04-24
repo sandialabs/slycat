@@ -52,10 +52,10 @@ export default class SlycatSelector extends React.Component<SlycatSelectorProps,
   public render () {
     return (
       <div className="form-group row">
-        <label className="col-sm-1 col-form-label">
+        <label className="col-sm-2 col-form-label">
           {this.props.label}
         </label>
-        <div className="col-sm-10">
+        <div className='col-sm-9'>
           <select className="form-control" onChange={(e)=>this.props.onSelectCallBack(e.target.value)}>
             {this.getOptions()}
           </select>

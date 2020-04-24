@@ -6,6 +6,7 @@
 
 import numbers
 import numpy
+import cherrypy
 import slycat.hyperchunks.grammar
 
 
@@ -20,7 +21,9 @@ def parse(string):
   -------
   hyperchunks: parsed representation of a hyperchunk.
   """
-  return slycat.hyperchunks.grammar.Hyperchunks(slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True).asList())
+  #cherrypy.log.error(string)
+  parsed_hyperchuncks = slycat.hyperchunks.grammar.hyperchunks_p.parseString(string, parseAll=True).asList()
+  return slycat.hyperchunks.grammar.Hyperchunks(parsed_hyperchuncks)
 
 def arrays(hyperchunks, array_count):
   """Iterate over the arrays in a set of hyperchunks."""

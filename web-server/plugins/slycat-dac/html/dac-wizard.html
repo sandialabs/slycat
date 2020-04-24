@@ -19,8 +19,9 @@ S. Martin
         <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: dac_format() == 'dac-gen'"><a class="nav-link">Locate Data</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: dac_format() == 'pts'"><a class="nav-link">Locate Data</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: dac_format() == 'tdms'"><a class="nav-link">Locate Data</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: dac_format() == 'tdms'"><a class="nav-link">Import Options</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 5}"><a class="nav-link">Name Model</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: dac_tdms_zip() == 'true'"><a class="nav-link">Select Suffixes</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: dac_format() == 'tdms'"><a class="nav-link">Import Options</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 6}"><a class="nav-link">Name Model</a></li>
     </ul>
 
     <!-- This tab lets the user select the file format to upload. -->
@@ -44,12 +45,6 @@ S. Martin
             Switchtube TDMS Format
         </label>
         </div>
-                <div class="form-check" style="margin-left: 15px;">
-        <label style="display:none">
-            <input type="radio" name="local-or-remote-radios" value="tdms-zip" data-bind="checked: dac_format">
-            Switchtube TDMS Zip Format
-        </label>
-        </div>
         <label id="dac-load-model-error" style="margin-top:20px; display:none" class="invalid-text small text-danger">
             Load model error.
         </label>
@@ -66,8 +61,8 @@ S. Martin
             progress:browser_dac_file.progress,
             progress_status:browser_dac_file.progress_status"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_dac_file,category:'dac-gen-zip-file'"></slycat-parser-controls>
-            <label class="dac-do-not-close-browser"
-                   style="display:none; color:red">Please wait for file to upload (do not close browser).</label>
+            <label class="dac-do-not-close-browser text-danger"
+                   style="display:none">Please wait for file to upload (do not close browser).</label>
              <label id="dac-gen-file-error" style="display: none" class="invalid-text small text-danger">
                 DAC file error.
             </label>
@@ -86,8 +81,8 @@ S. Martin
             progress:browser_zip_file.progress,
             progress_status:browser_zip_file.progress_status"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_zip_file,category:'dac-zip-file'"></slycat-parser-controls>
-            <label class="dac-do-not-close-browser"
-                   style="display:none; color:red">Please wait for file to upload (do not close browser).</label>
+            <label class="dac-do-not-close-browser text-danger"
+                   style="display:none">Please wait for file to upload (do not close browser).</label>
             <label id="dac-pts-file-error" style="display: none" class="invalid-text small text-danger">
                 DAC file error.
             </label>
@@ -121,14 +116,14 @@ S. Martin
     <div data-bind="visible:tab() == 3" class="form-horizontal">
 
         <div style="margin-top: 40px;">
-        <label>Select one or more switchtube .tdms files:</label>
+        <label>Select switchtube file(s):</label>
         <slycat-local-browser params="
             selection:browser_tdms_files.selection,
             multiple:true,
             progress:browser_tdms_files.progress"></slycat-local-browser>
         <slycat-parser-controls params="parser:parser_tdms_files,category:'dac-tdms-files'"></slycat-parser-controls>
-            <label class="dac-do-not-close-browser"
-                   style="display:none; color:red">Please wait for file(s) to upload (do not close browser).</label>
+            <label class="dac-do-not-close-browser text-danger"
+                   style="display:none">Please wait for file(s) to upload (do not close browser).</label>
             <label id="dac-tdms-file-error" style="display: none" class="invalid-text small text-danger">
             DAC file error.
         </label>
@@ -136,8 +131,24 @@ S. Martin
 
     </div>
 
-    <!-- TDMS load options. -->
+    <!-- TDMS .zip suffix selection -->
     <div data-bind="visible:tab() == 4" class="form-horizontal">
+
+        <label>Select file suffix types to process.
+            <i class="fa fa-question-circle inline-help" aria-hidden="true" title="To make multiple selections or de-selections, shift-click a range of names then click the include switch."></i>
+        </label>
+        <slycat-table-ingestion params="
+            variables: suffix_attributes,
+            properties: [{name: 'Include', type: 'bool'}]
+        "></slycat-table-ingestion>
+        <label id="dac-inc-suffix-error" style="display: none" class="invalid-text small text-danger">
+            Please select at least one suffix type to include in the analysis.
+        </label>
+
+    </div>
+
+    <!-- TDMS load options. -->
+    <div data-bind="visible:tab() == 5" class="form-horizontal">
 
         <div style="margin-top: 30px">
           <label>Minimum number of time points in a channel:
@@ -195,7 +206,7 @@ S. Martin
     </div>
 
     <!-- Inputs the name of the model (final tab). -->
-    <div data-bind="visible:tab() == 5">
+    <div data-bind="visible:tab() == 6">
         <form class="form-horizontal" role="form" onsubmit="return false">
             <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
         </form>
@@ -218,10 +229,12 @@ S. Martin
             data-bind="visible:tab() == 2,click:upload_pts_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary browser-continue"
             data-bind="visible:tab() == 3,click:upload_tdms_format"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-    <button class="btn btn-primary" data-bind="visible:tab() == 4, click:reset_defaults">Reset Defaults</button>
     <button class="btn btn-primary browser-continue"
-            data-bind="visible:tab() == 4,click:check_tdms_options"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+            data-bind="visible:tab() == 4,click:check_suffix_selection"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+    <button class="btn btn-primary" data-bind="visible:tab() == 5, click:reset_defaults">Reset Defaults</button>
+    <button class="btn btn-primary browser-continue"
+            data-bind="visible:tab() == 5,click:check_tdms_options"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
     <button class="btn btn-primary dac-launch-thread"
-            data-bind="visible:tab() == 5,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
+            data-bind="visible:tab() == 6,click:finish_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
 
 </div>

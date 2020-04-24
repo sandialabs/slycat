@@ -12,6 +12,8 @@ import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
 import "js/slycat-3d-viewer";
+import { load as geometryLoad, } from "./vtk-geometry-viewer";
+import { changeCurrentFrame } from './actions';
 
 var nodrag = d3.behavior.drag();
 
@@ -20,6 +22,12 @@ nodrag.on("dragstart", function() {
   // console.log("nodrag.on('dragstart'...");
   // d3.event.sourceEvent.stopPropagation();
 });
+
+// Events for vtk viewer
+var vtkselect_event = new Event('vtkselect');
+var vtkunselect_event = new Event('vtkunselect');
+var vtkresize_event = new Event('vtkresize');
+var vtkclose_event = new Event('vtkclose');
 
 $.widget("parameter_image.scatterplot",
 {
@@ -78,6 +86,7 @@ $.widget("parameter_image.scatterplot",
     "video-sync" : false,
     "video-sync-time" : 0,
     frameLength : 1/25,
+    threeD_sync : false,
     highest_z_index: 0,
     axes_font_size: 12,
     axes_font_family: "Arial",
@@ -408,9 +417,39 @@ $.widget("parameter_image.scatterplot",
       }
     };
 
+    const update_point_border_size = () => {
+      // console.log('update_point_border_size');
+      let unselected_point_size_changed = self.options.canvas_square_size != store.getState().unselected_point_size;
+      let unselected_border_size_changed = self.options.canvas_square_border_size != store.getState().unselected_border_size;
+      let selected_point_size_changed = self.options.canvas_selected_square_size != store.getState().selected_point_size;
+      let selected_border_size_changed = self.options.canvas_selected_square_border_size != store.getState().selected_border_size;
+
+      if(unselected_point_size_changed || unselected_border_size_changed)
+      {
+        self.options.canvas_square_size = store.getState().unselected_point_size;
+        self.options.canvas_square_border_size = store.getState().unselected_border_size;
+
+        self._schedule_update({
+          update_datum_width_height: true, 
+          render_data:true, 
+        });
+      }
+      if(selected_point_size_changed || selected_border_size_changed)
+      {
+        self.options.canvas_selected_square_size = store.getState().selected_point_size;
+        self.options.canvas_selected_square_border_size = store.getState().selected_border_size;
+
+        self._schedule_update({
+          update_selection_width_height: true, 
+          render_selection:true, 
+        });
+      }
+    };
+
     window.store.subscribe(update_axes_font_size);
     window.store.subscribe(update_axes_font_family);
     window.store.subscribe(update_axes_variables_scale);
+    window.store.subscribe(update_point_border_size);
   },
 
   set_x_y_v_axes_types: function()
@@ -763,6 +802,13 @@ $.widget("parameter_image.scatterplot",
         self._schedule_update({update_video_sync_time:true,});
       }
     }
+    else if(key == "threeD_sync")
+    {
+      if(self.options["threeD_sync"])
+      {
+        self._schedule_update({update_threeD_sync:true,});
+      }
+    }
   },
 
   update_color_scale_and_v: function(data)
@@ -809,6 +855,40 @@ $.widget("parameter_image.scatterplot",
 
     var xoffset = 0;
     var legend_width = 150;
+
+    if (self.updates.update_datum_width_height) {
+      let total_width = self.options.width;
+      let total_height = self.options.height;
+      let width_height = Math.min(total_width, total_height);
+      let width_offset = (total_width - width_height) / 2;
+      let height_offset = (total_height - width_height) / 2;
+      
+      d3.select(self.canvas_datum)
+        .style({
+          left : (width_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
+          top : (height_offset + self.options.border - (self.options.canvas_square_size / 2)) + "px",
+        })
+        .attr("width", (width_height - (2 * self.options.border)) - xoffset + self.options.canvas_square_size)
+        .attr("height", (width_height - (2 * self.options.border)) - 40 + self.options.canvas_square_size)
+        ;
+    }
+
+    if (self.updates.update_selection_width_height) {
+      let total_width = self.options.width;
+      let total_height = self.options.height;
+      let width_height = Math.min(total_width, total_height);
+      let width_offset = (total_width - width_height) / 2;
+      let height_offset = (total_height - width_height) / 2;
+      
+      d3.select(self.canvas_selected)
+        .style({
+          left : (width_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
+          top : (height_offset + self.options.border - (self.options.canvas_selected_square_size / 2)) + "px",
+        })
+        .attr("width", (width_height - (2 * self.options.border)) - xoffset + self.options.canvas_selected_square_size)
+        .attr("height", (width_height - (2 * self.options.border)) - 40 + self.options.canvas_selected_square_size)
+        ;
+    }
 
     if (self.updates.update_width) {
       self.element.attr("width", self.options.width);
@@ -1020,7 +1100,10 @@ $.widget("parameter_image.scatterplot",
         if(isNaN(cx) || isNaN(cy))
           continue;
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
-        canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        if(border_width > 0)
+        {
+          canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        }
       }
       // Test point for checking position and border
       // canvas.fillStyle = "white";
@@ -1064,7 +1147,10 @@ $.widget("parameter_image.scatterplot",
         cx = Math.round(self.x_scale_canvas_format(x[index]));
         cy = Math.round(self.y_scale_canvas_format(y[index]));
         canvas.fillRect(cx + border_width, cy + border_width, fillWidth, fillHeight);
-        canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        if(border_width > 0)
+        {
+          canvas.strokeRect(cx + half_border_width, cy + half_border_width, strokeWidth, strokeHeight);
+        }
       }
     }
 
@@ -1258,6 +1344,11 @@ $.widget("parameter_image.scatterplot",
     self._sync_open_images();
   },
 
+  _update_threeD_sync: function()
+  {
+    // Not sure what to do here yet.
+  },
+
   _sync_open_images: function()
   {
     var self = this;
@@ -1291,6 +1382,11 @@ $.widget("parameter_image.scatterplot",
           open_element["currentTime"] = currentTime;
           open_element["video"] = true;
           open_element["playing"] = self._is_video_playing(video);
+        }
+        var threeD = frame.find('.vtp')[0];
+        if(threeD != undefined)
+        {
+          open_element["threeD"] = true;
         }
         self.options.open_images.push(open_element);
       })
@@ -1432,7 +1528,6 @@ $.widget("parameter_image.scatterplot",
         .attr("class", img.image_class + " image-frame scaffolding html ")
         .classed("selected", img.current_frame)
         .attr("data-index", img.index)
-        .attr("data-uri", img.uri)
         .call(
           d3.behavior.drag()
             .on('drag', handlers["move"])
@@ -1622,6 +1717,12 @@ $.widget("parameter_image.scatterplot",
         self.state = "";
         self._sync_open_images();
         // d3.event.sourceEvent.stopPropagation();
+
+        // Fire a custom reize event to let vtk viewers know it was resized
+        if(this.closest('.image-frame').querySelector('.vtp'))
+        {
+          this.closest('.image-frame').querySelector('.vtp').dispatchEvent(vtkresize_event);
+        }
       },
 
       maximize: function() {
@@ -2184,6 +2285,41 @@ $.widget("parameter_image.scatterplot",
 
           $(window).trigger('resize');
         }
+        else if(image.uri.endsWith('.vtp'))
+        {
+          // This is a VTP file, so use the VTK 3d viewer
+          let vtk = frame_html
+            .append("div")
+            .attr('class', 'vtp')
+            .attr("width", "100%")
+            .attr("height", "100%")
+            ;
+          // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
+          // other media, but caused VTP frame to grow by 20px each time the page is refreshed. So this
+          // adjustment fixes that.
+          frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
+
+          // Listen for vtk start interaction event (dispatched by vtk-geometry-viewer)
+          // and move the frame to the front since mouse interaction in the vtk viewer
+          // does not propagate.
+          vtk.node().addEventListener('vtkstartinteraction', (e) => { 
+            // console.log('vtkstartinteraction');
+            self._move_frame_to_front(e.target.parentElement);
+          }, false);
+
+          // Convert the blob to an array buffer and pass it to the geometry loader
+          blob.arrayBuffer().then((buffer) => {
+            geometryLoad(
+              vtk.node(),
+              buffer,
+              image.uri
+            );
+            // dispatch vtk select event so we know which camera to sync
+            if(image.current_frame) {
+              frame_html.node().querySelector('.vtp').dispatchEvent(vtkselect_event);
+            }
+          })
+        }
         else {
           // We don't support this file type, so just create a download link for files
           // or a "open in new window" link for http or https URLs
@@ -2606,9 +2742,11 @@ $.widget("parameter_image.scatterplot",
   {
     // console.log("_move_frame_to_front");
     var self = this;
+    let frameNode = frame;
     frame = $(frame);
     if(!frame.hasClass("selected"))
     {
+      // console.log('frame is currently not selected, so will select it now.');
       // Detaching and appending (or insertAfter() or probably any other method of moving an element in the DOM) an element on mousedown
       // breaks other event listeners in Chrome and Safari by stopping propagation. It's as if it calls stopImmediatePropagation()
       // but probably what it's doing is thinking that since the element moved, there's no mouseup or click event fired after mousedown.
@@ -2622,10 +2760,27 @@ $.widget("parameter_image.scatterplot",
       self.options.highest_z_index++;
       frame.css("z-index", self.options.highest_z_index);
 
-      $(".open-image").removeClass("selected");
+      $(".open-image").each(function() {
+        $(this).removeClass("selected");
+        // If this is a 3d vtp viewer, let it know it's been unselected
+        if(this.querySelector('.vtp'))
+        {
+          this.querySelector('.vtp').dispatchEvent(vtkunselect_event);
+        }
+      });
       frame.addClass("selected");
 
       self.current_frame = Number(frame.data("index"));
+
+      // Fire a custom selected event to let vtk viewers know it was selected
+      if(frameNode.querySelector('.vtp'))
+      {
+        frameNode.querySelector('.vtp').dispatchEvent(vtkselect_event);
+      }
+
+      // Dispatch update to current frame to redux store
+      window.store.dispatch(changeCurrentFrame(frame.data("uri")));
+
       self._sync_open_images();
     }
   },
@@ -2636,12 +2791,20 @@ $.widget("parameter_image.scatterplot",
     var uri = frame_html.attr("data-uri");
     var index = frame_html.attr("data-index");
     var line = self.line_layer.select("line[data-uri='" + uri + "']");
+
+    // Let vtk viewer know it was closed
+    if(frame_html.node().querySelector('.vtp'))
+    {
+      frame_html.node().querySelector('.vtp').dispatchEvent(vtkclose_event);
+    }
     frame_html.remove();
     line.remove();
     // Remove this frame's index from current_frame if it was selected
     if(self.current_frame == index)
     {
       self.current_frame = null;
+      // Dispatch update to current frame to redux store
+      window.store.dispatch(changeCurrentFrame(null));
     }
   },
 

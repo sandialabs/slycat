@@ -189,7 +189,8 @@ class Agent(agent.Agent):
     def checkjob(self, command):
         results = {
             "ok": True,
-            "jid": command["command"]
+            "jid": command["command"],
+            "logFile": "No log file for PBS yet"
         }
         queryStdout = ""
         queryStderr = ""

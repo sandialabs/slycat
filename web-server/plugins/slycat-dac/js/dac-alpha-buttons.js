@@ -127,7 +127,7 @@ module.setup = function (num_sliders, INCLUDE_COLUMNS)
 		},
 		function ()
 		{
-			dialog.ajax_error("Server failure: could not alpha cluster values.")("","","");
+			dialog.ajax_error("Server failure: could not load alpha cluster values.")("","","");
 		}
 	);
 

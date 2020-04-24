@@ -5,7 +5,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "jquery-ui";
-import ControlsBar from './Components/controls-bar';
+import ControlsBar from './Components/PSControlsBar';
 import "bootstrap";
 import $ from 'jquery';
 
@@ -37,6 +37,7 @@ $.widget("parameter_image.controls",
     "open_images" : [],
     "video-sync" : false,
     "video-sync-time" : 0,
+    "threeD_sync": false,
   },
 
   _create: function()
@@ -87,7 +88,7 @@ $.widget("parameter_image.controls",
     const dropdowns = [
       {
         id: 'x-axis-dropdown',
-        label: 'X Axis',
+        label: 'X',
         title: 'Change X Axis Variable', 
         state_label:'x_variable',
         trigger: 'x-selection-changed',
@@ -96,7 +97,7 @@ $.widget("parameter_image.controls",
       },
       {
         id: 'y-axis-dropdown',
-        label: 'Y Axis',
+        label: 'Y',
         title: 'Change Y Axis Variable', 
         state_label:'y_variable',
         trigger: 'y-selection-changed',
@@ -114,7 +115,7 @@ $.widget("parameter_image.controls",
       },
       {
         id: 'image-dropdown',
-        label: 'Media Set',
+        label: 'Media',
         title: 'Change Media Set Variable', 
         state_label: 'media_variable',
         trigger: 'images-selection-changed',
@@ -144,6 +145,7 @@ $.widget("parameter_image.controls",
         rating_variables={self.options.rating_variables}
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}
+        threeD_sync={self.options.threeD_sync}
         variable_aliases={window.store.getState().derived.variableAliases}
       />)
     ;
@@ -166,7 +168,7 @@ $.widget("parameter_image.controls",
 
     // Set the state of ControlsBarComponent's variable_aliases to what's in the Redux state
     // each time the Redux state changes. This is a work around to be used only
-    // until we conver PS to React because it currently uses local state in the controls bar.
+    // until we convert PS to React because it currently uses local state in the controls bar.
     const update_variable_aliases = () => {
       self.ControlsBarComponent.setState({variable_aliases: window.store.getState().derived.variableAliases});
     };
@@ -177,7 +179,7 @@ $.widget("parameter_image.controls",
   {
     var self = this;
 
-    //console.log("sparameter_image.variableswitcher._setOption()", key, value);
+    //console.log("parameter_image.variableswitcher._setOption()", key, value);
     this.options[key] = value;
 
     if(key == "x-variable")
@@ -218,6 +220,10 @@ $.widget("parameter_image.controls",
         video_sync_time: self.options['video-sync-time'],
         video_sync_time_value: self.options['video-sync-time'],
       });
+    }
+    else if(key == 'threeD_sync')
+    {
+      self.ControlsBarComponent.setState({threeD_sync: self.options.threeD_sync});
     }
   },
 });

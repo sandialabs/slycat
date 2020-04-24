@@ -1,7 +1,6 @@
 import React from 'react';
 import { mount } from "enzyme";
-//import ControlsButtonUpdateTable from './update-table.jsx';
-import ControlsButtonUpdateTable, {ControlsButtonUpdateTableProps, ControlsButtonUpdateTableState} from '../plugins/slycat-parameter-image/js/Components/update-table.jsx';
+import ControlsButtonUpdateTable, {ControlsButtonUpdateTableProps, ControlsButtonUpdateTableState} from '../plugins/slycat-parameter-image/js/Components/ControlsButtonUpdateTable.jsx';
 interface GlobalAny extends NodeJS.Global {
     fetch: any
 }

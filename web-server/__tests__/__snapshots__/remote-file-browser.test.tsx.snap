@@ -4,16 +4,18 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
 <div
   className="slycat-remote-browser"
 >
-  <div
-    className="form-group path"
+  <label
+    className="font-weight-bold justify-content-start mb-2"
+    htmlFor="slycat-remote-browser-path"
   >
-    <label
-      className="col-sm-3"
-    >
-      string
-    </label>
+    string
+    :
+  </label>
+  <div
+    className="form-group row path mb-3"
+  >
     <div
-      className="col-sm-10"
+      className="col-sm-12"
     >
       <div
         className="input-group"
@@ -68,17 +70,24 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
     </div>
   </div>
   <div
+    className="mb-3"
     style={
       Object {
+        "border": "1px solid rgb(222, 226, 230)",
         "display": "block",
-        "height": "384px",
+        "height": "307.20000000000005px",
         "overflow": "auto",
         "position": "relative",
       }
     }
   >
     <table
-      className="table table-hover table-bordered"
+      className="table table-hover table-sm"
+      style={
+        Object {
+          "borderBottom": "1px solid rgb(222, 226, 230)",
+        }
+      }
     >
       <thead
         className="thead-light"
@@ -103,12 +112,12 @@ exports[`when we load the RemoteFileBrowser we expect the component to render 1`
     className="form-group row"
   >
     <label
-      className="col-sm-1 col-form-label"
+      className="col-sm-2 col-form-label"
     >
       Filetype
     </label>
     <div
-      className="col-sm-10"
+      className="col-sm-9"
     >
       <select
         className="form-control"

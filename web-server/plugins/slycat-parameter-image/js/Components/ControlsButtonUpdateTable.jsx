@@ -1,11 +1,10 @@
-'use strict';
 import React, { Component } from 'react';
 import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
 import ProgressBar from 'components/ProgressBar.tsx';
 import ModalLarge from 'components/ModalLarge.tsx';
 import ControlsButton from 'components/ControlsButton';
 import '../../css/controls-button-var-options.css';
-import { FileSelector } from './file-selector';
+import { FileSelector } from './FileSelector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
@@ -20,16 +19,19 @@ import checkColumns from "utils/check-columns.ts";
 let initialState = {};
 const localNavBar = ['Locate Data', 'Upload Table'];
 const remoteNavBar = ['Locate Data', 'Choose Host', 'Select Table'];
-const warningMessage = ['Warning: By using this feature, you run the risk of corrupting your models.\n',
-  'ADDING, REMOVING, OR CHANGING THE ORDER OF COLUMNS IS CURRENTLY NOT SUPPORTED.\n',
-  'IF YOU DO ANY OF THESE THINGS, IT WILL CORRUPT ALL MODELS USING THIS DATA TABLE.\n'];
+const warningMessage = 
+(<React.Fragment>
+  <h4 className='alert-heading'>By using this feature, you run the risk of corrupting your models.</h4>
+  <p className='mt-3'>Adding, removing, or changing the order of columns is currently not supported.</p>
+  <p className='mb-0'>If you do any of these things, it will corrupt all models using this data table.</p>
+</React.Fragment>);
 
 export default class ControlsButtonUpdateTable extends Component {
   constructor(props) {
     super(props);
     this.state = {
       modalId: "varUpdateTableModal",
-      title: "Update Table",
+      title: "Update Data Table",
       files: [new File([""], "filename")],
       disabled: true,
       progressBarHidden: true,
@@ -40,6 +42,7 @@ export default class ControlsButtonUpdateTable extends Component {
       selectedOption: "local",
       visible_tab: "0",
       sessionExists: null,
+      reauth: false,
       selected_path: "",
       loadingData: false,
       selectedNameIndex: 0,
@@ -116,10 +119,27 @@ export default class ControlsButtonUpdateTable extends Component {
       this.uploadRemoteFile();
   }
 
+  updateVariableAliases = (mid, variable_aliases) =>
+  {
+        return client.get_project_data_in_model_fetch({
+          mid: mid}).then((results) => {
+            client.put_project_data_parameter({
+              did: results[0],
+              aid: 'variable_aliases',
+              input: false,
+              value: variable_aliases,
+              success: function() {
+                location.reload();
+              }
+            });
+          });
+  }
+
   uploadLocalFile = () =>
   {
     let mid = this.props.mid;
     let pid = this.props.pid;
+    let variable_aliases = this.props.aliases;
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_model_command_fetch({mid:mid, type:"parameter-image",command: "delete-table"})
@@ -152,7 +172,12 @@ export default class ControlsButtonUpdateTable extends Component {
                 }).then(() => {
                 this.setState({progressBarProgress: 100});
                 //this.closeModal();
-                location.reload();
+                if(Object.keys(variable_aliases).length !== 0) {
+                  this.updateVariableAliases(mid, variable_aliases)
+                }
+                else {
+                  location.reload();
+                }
               });
             }
           };
@@ -169,6 +194,7 @@ export default class ControlsButtonUpdateTable extends Component {
   uploadRemoteFile = () => {
     let mid = this.props.mid;
     let pid = this.props.pid;
+    let variable_aliases = this.props.aliases;
     this.setState({progressBarHidden:false,disabled:true});
 
     client.get_remote_file_fetch({hostname:this.state.hostname, path:this.state.selected_path})
@@ -202,7 +228,12 @@ export default class ControlsButtonUpdateTable extends Component {
                   }).then(() => {
                     this.setState({progressBarProgress:100});
                     //this.closeModal();
-                    location.reload();
+                    if(Object.keys(variable_aliases).length !== 0) {
+                      this.updateVariableAliases(mid, variable_aliases)
+                    }
+                    else {
+                      location.reload();
+                    }
                   });
                 }
               };
@@ -232,10 +263,22 @@ export default class ControlsButtonUpdateTable extends Component {
     this.setState({parserType:type});
   }
 
+  onReauth = () => {
+    // console.log('onReauth');
+    // Session has been lost, so update state to reflect this.
+    this.setState({
+      sessionExists: false,
+      reauth: true,
+    });
+    // Switch to login controls
+    this.setState({visible_tab: "2", selectedNameIndex: 1});
+  }
+
   connectButtonCallBack = (sessionExists, loadingData) => {
     this.setState({
       sessionExists,
-      loadingData
+      loadingData,
+      reauth: false,
     },()=>{
       if(this.state.sessionExists){
         this.continue();
@@ -268,7 +311,7 @@ export default class ControlsButtonUpdateTable extends Component {
       footerJSX.push(            
         <ConnectButton
           key={3}
-          text="Continue"
+          text='Continue'
           loadingData={this.state.loadingData}
           hostname = {this.state.hostname}
           username = {this.state.username}
@@ -305,27 +348,25 @@ export default class ControlsButtonUpdateTable extends Component {
       <NavBar navNames ={localNavBar} selectedNameIndex={this.state.selectedNameIndex} />:
       <NavBar navNames ={remoteNavBar} selectedNameIndex={this.state.selectedNameIndex} />}
       {this.state.visible_tab === "0" ?
-        <form style={{marginLeft: '16px'}}>
+        <form className='ml-3'>
           <SlycatFormRadioCheckbox
             checked={this.state.selectedOption === 'local'}
             onChange={this.sourceSelect}
             value={'local'}
             text={'Local'}
-            style={{marginRight: '92%'}}
           />
           <SlycatFormRadioCheckbox
             checked={this.state.selectedOption === 'remote'}
             onChange={this.sourceSelect}
             value={'remote'}
             text={'Remote'}
-            style={{marginRight: '89.7%'}}
           />
         </form>
         :null}
 
       {this.state.visible_tab === "1"?
       <div className='tab-content'>
-        <div className="form-horizontal">
+        <div className='form-horizontal'>
           <FileSelector handleChange = {this.handleFileSelection} />
           <SlycatSelector
             onSelectCallBack={this.props.onSelectParserCallBack}
@@ -339,30 +380,41 @@ export default class ControlsButtonUpdateTable extends Component {
         <Warning warningMessage={this.state.failedColumnCheckMessage}/>
       :null}
 
-      {this.state.visible_tab === "2"?
-      <SlycatRemoteControls
-      loadingData={this.state.loadingData} 
-      callBack={this.controlsCallBack}
-      />
-      :null}
+      {this.state.visible_tab === "2" ? 
+        <SlycatRemoteControls
+          loadingData={this.state.loadingData} 
+          callBack={this.controlsCallBack}
+        />
+      : null}
 
+      {this.state.visible_tab === "2" && this.state.reauth ? 
+        <div className='alert alert-danger' role='alert'>
+          Oops, your session has disconnected. Please log in again.
+        </div>
+      : null}
+
+      {/* Hiding progress bar div when progress bar is also hidden,
+          otherwise it still takes up vertical space. */}
+      {!this.state.progressBarHidden ? 
       <div className='slycat-progress-bar'>
         <ProgressBar
           hidden={this.state.progressBarHidden}
           progress={this.state.progressBarProgress}
         />
       </div>
+      : null }
 
       {this.state.visible_tab === "3" ?
         <RemoteFileBrowser 
-        onSelectFileCallBack={this.onSelectFile}
-        onSelectParserCallBack={this.onSelectParser}
-        hostname={this.state.hostname} 
+          onSelectFileCallBack={this.onSelectFile}
+          onSelectParserCallBack={this.onSelectParser}
+          onReauthCallBack={this.onReauth}
+          hostname={this.state.hostname} 
         />:
       null}
 
       {this.state.visible_tab === "3" && this.state.passedColumnCheck === false ?
-      <Warning warningMessage={this.state.failedColumnCheckMessage}/>
+        <Warning warningMessage={this.state.failedColumnCheckMessage} />
       :null}
 
     </div>
@@ -370,7 +422,7 @@ export default class ControlsButtonUpdateTable extends Component {
   }
   render() {
     return (
-      <div>
+      <React.Fragment>
         <ModalLarge
           modalId = {this.state.modalId}
           closingCallBack = {this.cleanup}
@@ -379,13 +431,13 @@ export default class ControlsButtonUpdateTable extends Component {
           footer={this.getFooterJSX()}
         />
         <ControlsButton 
-          label='Update Table' 
+          icon="fa-upload"
           title={this.state.title} 
           data_toggle='modal' 
           data_target={'#' + this.state.modalId}
           button_style={this.props.button_style} id='controls-button-death'
         />
-      </div>
+      </React.Fragment>
     );
   }
 }

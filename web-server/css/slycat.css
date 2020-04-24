@@ -92,17 +92,20 @@ html#slycat-model-page body
 }
 .nav-bookmarks .bookmark-delete,
 .nav-bookmarks .bookmark-edit {
-  position: absolute;
+  /*position: absolute;*/
   padding: 0.15rem 0.4rem;
   font-size: 0.775rem;
   line-height: 1.4;
 }
+
+/*
 .nav-bookmarks .bookmark-delete {
   right: 20px;
 }
 .nav-bookmarks .bookmark-edit {
   right: 49px;
 }
+*/
 
 .bootstrap-styles .modal .jumbotron
 {
@@ -578,24 +581,26 @@ input,
 
 /* slycat-job-checker component */
 .slycat-job-checker {
-  padding: 10px;
-}
-
-#slycat-file-label {
-    align-items: left;
-    justify-content: left;
+  margin-left: 10%;
+  margin-right: 10%;
+  margin-top: 20px;
 }
 
 .slycat-job-checker-controls {
-  margin-bottom: 15px;
+  margin: 15px;
 }
 
 .slycat-job-checker-output {
+  margin-top: 25px;
   padding: 10px;
+  border-radius: 5px;
+  overflow-y: scroll;
+  max-height: 750px;
   white-space: pre-wrap;
   word-break: break-word;
   word-wrap: break-word;
 }
+
 .bottom-margin,
 label.bottom-margin 
 {
@@ -624,7 +629,22 @@ label.bottom-margin
   z-index: 3;
 }
 
-/* Needed to make bootstrap dropdowns scrollable when they become too long */
-.dropdown-menu {
+/* Needed to make bookmarks dropdown scrollable when it becomes too long */
+.dropdown-menu-bookmarks {
   overflow-y: scroll;
+  overflow-x: scroll;
+  max-height: 80vh;
+  max-width: 70vw;
+}
+
+.slycat-big-scrolling-alert
+{
+  max-height: 159px;
+  overflow-y: scroll;
+  white-space: pre-line;
+}
+
+/* Making sure that controls dropdowns scroll when contents are longer than the menu. */
+#controls .dropdown-menu {
+  overflow-y: auto;
 }

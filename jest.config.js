@@ -84,6 +84,8 @@ module.exports = {
     "^utils[/](.+)": "<rootDir>/web-server/utils/$1",
     "^templates[/](.+)": "<rootDir>/web-server/__mocks__/fileMock.js",
     // "^templates[/](.+)": "<rootDir>/web-server/templates/$1",
+    "^slycat-timeseries-model/plugin-components[/](.+)": "<rootDir>/web-server/plugins/slycat-timeseries-model/plugin-components/$1",
+
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|html)$": "<rootDir>/web-server/__mocks__/fileMock.js",
     "\\.(css|less)$": "<rootDir>/web-server/__mocks__/styleMock.js",
   },

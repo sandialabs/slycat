@@ -28,11 +28,12 @@ Object {
   "password": "",
   "progressBarHidden": true,
   "progressBarProgress": 0,
+  "reauth": false,
   "selectedNameIndex": 0,
   "selectedOption": "local",
   "selected_path": "",
   "sessionExists": null,
-  "title": "Update Table",
+  "title": "Update Data Table",
   "username": "",
   "visible_tab": "0",
 }

@@ -107,7 +107,7 @@
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Bookmarks
           </button>
-          <div class="dropdown-menu dropdown-menu-right">
+          <div class="dropdown-menu dropdown-menu-right dropdown-menu-bookmarks">
             <!-- ko foreach: model_bookmark_wizards -->
             <a class="dropdown-item bookmark-new" data-bind="click: $parent.run_wizard" href="#">
                 <!-- Alex commenting this out and instead using the line below because the Save As functionality is not ready yet. -->
@@ -121,7 +121,7 @@
             <a class="dropdown-item bookmark-link" data-bind="attr: {href:uri}" href="#">
                 <!-- Showing bookmark controls to writers and administrators, not to readers -->
                 <span data-bind="visible: $parent.relation() === 'writer' || $parent.relation() === 'administrator'">
-                  <button type="button" class="btn btn-sm btn-warning bookmark-edit" 
+                  <button type="button" class="btn btn-sm btn-warning bookmark-edit"
                     data-bind="click: $parent.edit_saved_bookmark">
                     <span class="fa fa-pencil"></span>
                   </button>
@@ -129,7 +129,7 @@
                     data-bind="click: $parent.delete_saved_bookmark">
                     <span class="fa fa-trash-o"></span>
                   </button>
-                </span>
+                </span> &nbsp
                 <strong>
                   <span data-bind="text:name"></span>
                 </strong>
@@ -151,12 +151,11 @@
                   data-bind="click: $parent.delete_saved_bookmark">
                   <span class="fa fa-trash-o"></span>
                 </button>
-              </span>
+              </span> &nbsp
               <span class="badge badge-secondary mr-1" data-bind="visible: model_type, text:$parent.model_names.translate_model_type(model_type) + ' model'"></span>
               <strong>
                 <span>
-                  <span data-bind="text:model_name"></span> 
-                  - 
+                  <span data-bind="text:model_name"></span>
                 </span>
                 <span data-bind="text:name"></span>
               </strong>

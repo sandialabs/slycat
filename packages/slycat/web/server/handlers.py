@@ -722,10 +722,11 @@ def delete_project_data(did, **kwargs):
 
     for model in database.scan("slycat/models"):
         updated = False
-        for index, model_did in enumerate(model["project_data"]):
-            if model_did == did:
-                updated = True
-                del model["project_data"][index]
+        if "project_data" in model:
+            for index, model_did in enumerate(model["project_data"]):
+                if model_did == did:
+                    updated = True
+                    del model["project_data"][index]
         if updated:
             database.save(model)
 
@@ -917,8 +918,8 @@ def post_model_files(mid, input=None, files=None, sids=None, paths=None, aids=No
     except Exception as e:
         cherrypy.log.error("handles Exception parsing posted files: %s" % e)
         cherrypy.log.error("slycat.web.server.handlers.py post_model_files",
-                                "cherrypy.HTTPError 400 %s" % e.message)
-        raise cherrypy.HTTPError("400 %s" % e.message)
+                                "cherrypy.HTTPError 400 %s" % str(e))
+        raise cherrypy.HTTPError("400 %s" % str(e))
 
 
 @cherrypy.tools.json_in(on=True)
@@ -1112,17 +1113,45 @@ def logout():
         raise cherrypy.HTTPError("400 Bad Request")
 
 @cherrypy.tools.json_out(on=True)
+def clean_project_data():
+  """
+  cleans out project data that is not being pointed at
+  by a parameter space model, and cleans up models that 
+  are not parameter space but point to project data
+  """
+  slycat.web.server.authentication.require_server_administrator()
+  couchdb = slycat.web.server.database.couchdb.connect()
+  # get a view list of all pd ids
+  for row in couchdb.view("slycat/project_datas"):
+      pd_doc = couchdb.get(type="project_data",id=row.id)
+      delete_pd = True
+      # go through model list in pd and start cleaning
+      for model_id in pd_doc['mid']:
+          model_doc = couchdb.get(type="model",id=model_id)
+          if model_doc["model-type"] == "parameter-image":
+              delete_pd = False
+          # clean up models that don't need pd
+          elif "project_data" in model_doc:
+              cherrypy.log.error("Removing PD from none parameter-space model")
+              del model_doc["project_data"]
+              couchdb.save(model_doc)
+      if delete_pd:
+          # delete the bad project data
+          couchdb.delete(pd_doc)
+          cherrypy.log.error("Deleting PD::: %s" % str(row.id))
+  return {"status":"ok"}
+
+@cherrypy.tools.json_out(on=True)
 def clear_ssh_sessions():
   """
   clears out of the ssh session for the current user
   """
-  pass
   try:
       if "slycatauth" in cherrypy.request.cookie:
           sid = cherrypy.request.cookie["slycatauth"].value
           couchdb = slycat.web.server.database.couchdb.connect()
           session = couchdb.get("session", sid)
-          cherrypy.log.error("session %s" % session)
+          cherrypy.log.error("ssh sessions cleared for user session: %s" % session)
           cherrypy.response.status = "200"
           if session is not None:
               for ssh_session in session["sessions"]:
@@ -1605,7 +1634,7 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
     cherrypy.log.error("GET arrayset metadata arrays:%s stats:%s unique:%s" % (arrays, statistics, unique))
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
-    cherrypy.log.error("GOT RESULTS")
+    #cherrypy.log.error("GOT RESULTS")
     if "unique" in results:
         #cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
         #cherrypy.log.error("type:")
@@ -1719,7 +1748,6 @@ def post_model_arrayset_data(mid, aid):
     hyperchunks = None
     byteorder = None
     require_json_parameter("hyperchunks")
-    #cherrypy.log.error("parsing post arrayset data")
     hyperchunks = cherrypy.request.json["hyperchunks"]
     try:
         byteorder = cherrypy.request.json["byteorder"]
