@@ -231,6 +231,7 @@ enzyme-to-jsonclient                               3.4.3
 eslintclient                                       6.8.0
 eslint-plugin-reactclient                          7.17.0
 file-loaderclient                                  6.0.0
+git-revision-webpack-plugin                        3.0.6
 html-loaderclient                                  1.1.0
 html-webpack-pluginclient                          4.2.0
 imports-loaderclient                               0.8.0
