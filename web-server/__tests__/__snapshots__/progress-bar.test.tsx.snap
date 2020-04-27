@@ -151,15 +151,10 @@ ProgressBar {
           "treeBaseDuration": 0,
           "type": null,
           "updateQueue": Object {
-            "baseState": null,
-            "firstCapturedEffect": null,
-            "firstCapturedUpdate": null,
-            "firstEffect": null,
-            "firstUpdate": Object {
+            "baseQueue": Object {
               "callback": null,
               "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
+              "next": [Circular],
               "payload": Object {
                 "element": <WrapperComponent
                   Component={[Function]}
@@ -178,31 +173,10 @@ ProgressBar {
               "suspenseConfig": null,
               "tag": 0,
             },
-            "lastCapturedEffect": null,
-            "lastCapturedUpdate": null,
-            "lastEffect": null,
-            "lastUpdate": Object {
-              "callback": null,
-              "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
-              "payload": Object {
-                "element": <WrapperComponent
-                  Component={[Function]}
-                  context={null}
-                  props={
-                    Object {
-                      "hidden": false,
-                      "progress": 10,
-                    }
-                  }
-                  refProp={null}
-                  wrappingComponentProps={null}
-                />,
-              },
-              "priority": 97,
-              "suspenseConfig": null,
-              "tag": 0,
+            "baseState": null,
+            "effects": null,
+            "shared": Object {
+              "pending": null,
             },
           },
         },
@@ -283,6 +257,7 @@ ProgressBar {
         "treeBaseDuration": 0,
         "type": null,
         "updateQueue": Object {
+          "baseQueue": null,
           "baseState": Object {
             "element": <WrapperComponent
               Component={[Function]}
@@ -297,14 +272,10 @@ ProgressBar {
               wrappingComponentProps={null}
             />,
           },
-          "firstCapturedEffect": null,
-          "firstCapturedUpdate": null,
-          "firstEffect": null,
-          "firstUpdate": null,
-          "lastCapturedEffect": null,
-          "lastCapturedUpdate": null,
-          "lastEffect": null,
-          "lastUpdate": null,
+          "effects": null,
+          "shared": Object {
+            "pending": null,
+          },
         },
       },
       "selfBaseDuration": 0,
@@ -343,7 +314,22 @@ ProgressBar {
       "tag": 1,
       "treeBaseDuration": 0,
       "type": [Function],
-      "updateQueue": null,
+      "updateQueue": Object {
+        "baseQueue": null,
+        "baseState": Object {
+          "context": null,
+          "mount": true,
+          "props": Object {
+            "hidden": false,
+            "progress": 10,
+          },
+          "wrappingComponentProps": null,
+        },
+        "effects": null,
+        "shared": Object {
+          "pending": null,
+        },
+      },
     },
     "_debugSource": null,
     "actualDuration": 0,
@@ -726,15 +712,10 @@ ProgressBar {
           "treeBaseDuration": 0,
           "type": null,
           "updateQueue": Object {
-            "baseState": null,
-            "firstCapturedEffect": null,
-            "firstCapturedUpdate": null,
-            "firstEffect": null,
-            "firstUpdate": Object {
+            "baseQueue": Object {
               "callback": null,
               "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
+              "next": [Circular],
               "payload": Object {
                 "element": <WrapperComponent
                   Component={[Function]}
@@ -753,31 +734,10 @@ ProgressBar {
               "suspenseConfig": null,
               "tag": 0,
             },
-            "lastCapturedEffect": null,
-            "lastCapturedUpdate": null,
-            "lastEffect": null,
-            "lastUpdate": Object {
-              "callback": null,
-              "expirationTime": 1073741823,
-              "next": null,
-              "nextEffect": null,
-              "payload": Object {
-                "element": <WrapperComponent
-                  Component={[Function]}
-                  context={null}
-                  props={
-                    Object {
-                      "hidden": false,
-                      "progress": 10,
-                    }
-                  }
-                  refProp={null}
-                  wrappingComponentProps={null}
-                />,
-              },
-              "priority": 97,
-              "suspenseConfig": null,
-              "tag": 0,
+            "baseState": null,
+            "effects": null,
+            "shared": Object {
+              "pending": null,
             },
           },
         },
@@ -858,6 +818,7 @@ ProgressBar {
         "treeBaseDuration": 0,
         "type": null,
         "updateQueue": Object {
+          "baseQueue": null,
           "baseState": Object {
             "element": <WrapperComponent
               Component={[Function]}
@@ -872,14 +833,10 @@ ProgressBar {
               wrappingComponentProps={null}
             />,
           },
-          "firstCapturedEffect": null,
-          "firstCapturedUpdate": null,
-          "firstEffect": null,
-          "firstUpdate": null,
-          "lastCapturedEffect": null,
-          "lastCapturedUpdate": null,
-          "lastEffect": null,
-          "lastUpdate": null,
+          "effects": null,
+          "shared": Object {
+            "pending": null,
+          },
         },
       },
       "selfBaseDuration": 0,
@@ -918,7 +875,22 @@ ProgressBar {
       "tag": 1,
       "treeBaseDuration": 0,
       "type": [Function],
-      "updateQueue": null,
+      "updateQueue": Object {
+        "baseQueue": null,
+        "baseState": Object {
+          "context": null,
+          "mount": true,
+          "props": Object {
+            "hidden": false,
+            "progress": 10,
+          },
+          "wrappingComponentProps": null,
+        },
+        "effects": null,
+        "shared": Object {
+          "pending": null,
+        },
+      },
     },
     "selfBaseDuration": 0,
     "sibling": null,
@@ -926,7 +898,14 @@ ProgressBar {
     "tag": 1,
     "treeBaseDuration": 0,
     "type": [Function],
-    "updateQueue": null,
+    "updateQueue": Object {
+      "baseQueue": null,
+      "baseState": Object {},
+      "effects": null,
+      "shared": Object {
+        "pending": null,
+      },
+    },
   },
   "_reactInternalInstance": Object {},
   "context": Object {},

@@ -21,6 +21,7 @@ import itertools
 import json
 import numpy
 import os
+import tarfile
 import scipy.cluster.hierarchy
 import scipy.spatial.distance
 import slycat.hdf5
@@ -68,7 +69,13 @@ try:
     pool = ipyparallel.Client(profile=arguments.profile)[:]
 except:
     raise Exception("A running IPython parallel cluster is required to run this script.")
-
+def tardir(path):
+    # ziph is zipfile handle
+    with tarfile.open(os.path.join(path, 'slycat-timeseries.tar.gz'), 'w:gz') as tarh:
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file != 'slycat-timeseries.tar.gz':
+                    tarh.add(os.path.join(root, file), arcname=file)
 # Compute the model.
 try:
     print("Examining and verifying data.")
@@ -385,9 +392,10 @@ try:
         with open(os.path.join(dirname, "waveform_%s_values.pickle" % name), "wb") as values_file:
             pickle.dump(waveform_values_array, values_file)
 
+
 except:
     import traceback
 
     print((traceback.format_exc()))
-
+tardir(dirname)
 print("done.")
