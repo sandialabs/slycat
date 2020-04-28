@@ -10,6 +10,7 @@ import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import VariableAliasLabels from "components/VariableAliasLabels";
 import ScatterplotOptions from "components/ScatterplotOptions";
+import VariableRanges from "components/VariableRanges";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
@@ -174,6 +175,12 @@ class ControlsButtonVarOptions extends React.Component {
                     </a>
                   </li>
                   <li className='nav-item'>
+                    <a className='nav-link' id='variable-ranges-tab' data-toggle='tab' 
+                      href='#variable-ranges-tab-content' role='tab' aria-controls='variable-ranges-tab-content' aria-selected='false'>
+                      <h5 className='mb-0'>Variable Ranges</h5>
+                    </a>
+                  </li>
+                  <li className='nav-item'>
                     <a className='nav-link' id='variable-alias-tab' data-toggle='tab' 
                       href='#variable-alias-tab-content' role='tab' aria-controls='variable-alias-tab-content' aria-selected='false'>
                       <h5 className='mb-0'>Variable Alias Labels</h5>
@@ -220,6 +227,13 @@ class ControlsButtonVarOptions extends React.Component {
                       onChange={this.props.onAxesVariableScaleChange}
                     />
                   </div>
+                  <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
+                    <VariableRanges 
+                      variableAliases={this.props.variable_aliases}
+                      metadata={this.props.metadata}
+                      table_statistics={this.props.table_statistics}
+                    />
+                  </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
                       variableAliases={this.props.variable_aliases}
@@ -229,7 +243,7 @@ class ControlsButtonVarOptions extends React.Component {
                   </div>
                   <div className='tab-pane' id='scatterplot-options-tab-content' role='tabpanel' aria-labelledby='scatterplot-options-tab'>
                     <ScatterplotOptions />
-                 </div>
+                  </div>
                 </div>
 
               </div>

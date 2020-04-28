@@ -317,7 +317,6 @@ $(document).ready(function() {
         table_metadata["column-types"].push("int64");
 
         filter_manager.set_table_metadata(table_metadata);
-        table_statistics = new Array();
         load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
           table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
           metadata_loaded();
@@ -907,6 +906,7 @@ $(document).ready(function() {
       && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
       && indices && (open_images !== null) & (video_sync !== null) && (video_sync_time !== null)
       && (threeD_sync !== null) && window.store !== undefined
+      && table_statistics
       )
     {
       controls_ready = true;
@@ -936,34 +936,35 @@ $(document).ready(function() {
       {
         color_variable = [bookmark["variable-selection"]];
       }
-
+      
       $("#controls").controls({
-        mid : model_id,
-        model: model,
-        model_name: window.model_name,
-        aid : "data-table",
-        metadata: table_metadata,
+        "mid" : model_id,
+        "model": model,
+        "model_name": window.model_name,
+        "aid" : "data-table",
+        "metadata": table_metadata,
+        "table_statistics": table_statistics,
         // clusters : clusters,
-        x_variables: axes_variables,
-        y_variables: axes_variables,
-        axes_variables: axes_variables,
-        image_variables: image_columns,
-        color_variables: color_variables,
-        rating_variables : rating_columns,
-        category_variables : category_columns,
-        selection : selected_simulations,
+        "x_variables": axes_variables,
+        "y_variables": axes_variables,
+        "axes_variables": axes_variables,
+        "image_variables": image_columns,
+        "color_variables": color_variables,
+        "rating_variables" : rating_columns,
+        "category_variables" : category_columns,
+        "selection" : selected_simulations,
         // cluster_index : cluster_index,
         "x-variable" : x_index,
         "y-variable" : y_index,
         "image-variable" : images_index,
         "color-variable" : color_variable,
         "auto-scale" : auto_scale,
-        hidden_simulations : hidden_simulations,
-        indices : indices,
-        open_images : open_images,
+        "hidden_simulations" : hidden_simulations,
+        "indices" : indices,
+        "open_images" : open_images,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
-        threeD_sync : threeD_sync,
+        "threeD_sync" : threeD_sync,
       });
 
       // Changing the x variable updates the controls ...
@@ -1644,6 +1645,10 @@ $(document).ready(function() {
       statistics: "0/" + columns.join("|"),
       success: function(metadata)
       {
+        if(table_statistics === null)
+        {
+          table_statistics = new Array();
+        }
         var statistics = metadata.statistics;
         for(var i = 0; i != statistics.length; ++i)
           table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};
