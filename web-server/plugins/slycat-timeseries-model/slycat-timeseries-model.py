@@ -128,14 +128,32 @@ def register_slycat_plugin(context):
         if sid is None:
             raise cherrypy.HTTPError("400 session is None value")
         return sid
+
     def helpGetFile(filename, use_tar, hostname, model, total_file_delta_time,calling_client, input_tar):
-            if use_tar:
-                return input_tar.extractfile(filename).read()
-            else:
-                return get_remote_file_server(hostname, model,
-                                              filename,
-                                              total_file_delta_time,
-                                              calling_client)
+        """
+        help determin how to get a file either through
+        extracting from a tar file or from grabbing the file remotely
+        
+        Arguments:
+            filename {[type]} -- file path
+            use_tar {[type]} -- flag for if it should use the tar
+            hostname {[type]} -- name of the host system
+            model {[type]} -- model from the DB
+            total_file_delta_time {[type]} -- array of file load times
+            calling_client {[type]} -- ip of the calling client
+            input_tar {[type]} -- tar file to read from 
+        
+        Returns:
+            file -- in memory file
+        """
+        if use_tar:
+            return input_tar.extractfile(filename).read()
+        else:
+            return get_remote_file_server(hostname, model,
+                                          filename,
+                                          total_file_delta_time,
+                                          calling_client)
+
     def compute(model_id, stop_event, calling_client):
         """
         Computes the Time Series model. It fetches the necessary files from a
@@ -248,7 +266,6 @@ def register_slycat_plugin(context):
                                     use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
                 waveform_values_array = pickle.loads(waveform_values_data)
 
-                # TODO this can become multi processored
                 for index in range(int(timeseries_count)):
                     try:
                         model = database.get("model", model["_id"])
