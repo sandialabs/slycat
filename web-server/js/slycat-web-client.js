@@ -698,10 +698,7 @@ module.get_model_command_fetch = function(params, errorFunction)
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
-    if (Object.keys(response).indexOf("json") > -1){
-      return response.json();
-    }
-    return {};
+    return response.json();
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
