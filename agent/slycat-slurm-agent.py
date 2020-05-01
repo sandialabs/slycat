@@ -94,6 +94,11 @@ class Agent(agent.Agent):
                     background_thread.start()
             except Exception as e:
                 output[0] = traceback.format_exc()
+        log_file_path = os.path.abspath(str(jid) + ".log")
+        if command["hpc"]["is_hpc_job"]:
+            split_output = str(output[0], 'utf-8').replace('\r', '').replace('\n', '').split(' ')
+            jid = split_output[len(split_output)-1]
+            log_file_path = os.path.join(os.getcwd(),'slurm-' + str(jid) + '.out')
         results = {
             "message": "ran the remote command",
             "ok": True,
@@ -101,7 +106,7 @@ class Agent(agent.Agent):
             "command": command,
             "output": output[0],
             "errors": output[1],
-            "log_file_path": os.path.abspath(str(jid) + ".log"),
+            "log_file_path": log_file_path,
             "available_scripts": [
                 {
                     "name": script["name"],
@@ -133,7 +138,7 @@ class Agent(agent.Agent):
             # execute script
             value1, value2 = p.communicate()
             if log_to_file:
-                log(str(value1))
+                log(str(value1,'utf-8'))
                 log("[RAN SCRIPT]")
                 return value1, value2
             else:
