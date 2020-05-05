@@ -9,4 +9,7 @@
   input.variable-alias {
     width: 100%;
   }
+  input.variable-alias.contains-user-input {
+    font-weight: bold;
+  }
 }
