@@ -194,7 +194,10 @@ stats                                   16   https://github.com/mrdoob/stats.js/
 3. Directly included in Slycat in slycat/web_server/plugins/slycat-parameter-image/js:
 stickies.core                        0.0.5   https://github.com/reesewill/stickies/blob/master/src/core.js
 
-4. Development dependencies from https://www.npmjs.com in slycat/node_modules. 
+4. Directly included in Slycat in  slycat/docs/manual/html/_static:
+jquery                               3.5.0   https://jquery.org/
+
+5. Development dependencies from https://www.npmjs.com in slycat/node_modules. 
 These are used to build Slycat but only one or two make it into the client code, 
 and those are included in #1 above.
 @babel/client                                      7.7.7
