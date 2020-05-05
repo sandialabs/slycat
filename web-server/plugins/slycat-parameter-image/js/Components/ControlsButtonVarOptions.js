@@ -26,20 +26,6 @@ class ControlsButtonVarOptions extends React.Component {
     this.title = 'Display Settings';
   }
 
-  aliasesValid = () => {
-    let aliasForm = document.getElementById('variable-alias-tab-content');
-    if(aliasForm)
-    {
-      let inputs = aliasForm.querySelectorAll('input');
-      for (const input of inputs) {
-        if(input.checkValidity() === false)
-        {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
 
   closeModal = (e) => {
     // Write variable aliases to database
@@ -161,7 +147,9 @@ class ControlsButtonVarOptions extends React.Component {
             <div className='modal-content'>
               <div className='modal-header'>
                 <h3 className='modal-title'>{this.title}</h3>
-                <button type='button' className='close' aria-label='Close' onClick={this.closeModal} disabled={!this.aliasesValid()}>
+                <button type='button' className='close' aria-label='Close' 
+                  onClick={this.closeModal} 
+                >
                   <span aria-hidden='true'>&times;</span>
                 </button>
               </div>
@@ -229,7 +217,6 @@ class ControlsButtonVarOptions extends React.Component {
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
                     <VariableRanges 
-                      variableAliases={this.props.variable_aliases}
                       metadata={this.props.metadata}
                       table_statistics={this.props.table_statistics}
                     />
@@ -249,7 +236,6 @@ class ControlsButtonVarOptions extends React.Component {
               </div>
               <div className='modal-footer'>
                 <button type='button' className='btn btn-primary' onClick={this.closeModal}
-                  disabled={!this.aliasesValid()}
                 >
                   Close
                 </button>
@@ -287,7 +273,7 @@ const mapDispatchToProps = dispatch => {
       dispatch(changeAxesVariableScale(event.target.name, event.target.value))
     },
     onVariableAliasLabelsChange: event => {
-      dispatch(changeVariableAliasLabels(event.target.name, event.target.value))
+      dispatch(changeVariableAliasLabels(event.currentTarget.name, event.currentTarget.value))
     }
   }
 }
