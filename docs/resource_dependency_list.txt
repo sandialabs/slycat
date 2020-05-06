@@ -260,7 +260,6 @@ webpack-client                                     3.3.10
 webpack-dev-serverclient                           3.10.1
 webpack-mergeclient                                4.2.2
 webpack-node-modules-listclient                    0.4.1
-webpack-visualizer-pluginclient                    0.1.11
 whatwg-fetchclient                                 3.0.0
 worker-loaderclient                                2.0.0
 
