@@ -1,0 +1,15 @@
+.slycat-variable-ranges {
+  thead th {
+    padding-bottom: 10px;
+  }
+  // Uncomment to make the first column as narrow as possible
+  // tbody th.variable-name {
+  //   width: 1%;
+  // }
+  input.variable-range.contains-user-input {
+    font-weight: bold;
+  }
+  input.variable-range[type=number]::-webkit-inner-spin-button {
+    display: none;
+  }
+}
