@@ -27,7 +27,7 @@ parser.add_argument("--project-id", default=[], action="append",
 arguments = parser.parse_args()
 
 
-logFile = '~/dumpLog.txt'
+logFile = 'dumpLog.txt'
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger().addHandler(logging.FileHandler(logFile))
 #logging.getLogger().addHandler(logging.StreamHandler())
