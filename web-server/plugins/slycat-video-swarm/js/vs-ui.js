@@ -83,9 +83,10 @@ var other_columns = null;
 // constants for polling timeouts
 var ONE_MINUTE = 60000;
 var ONE_SECOND = 1000;
+var TEN_SECOND = 10000;
 
 // polling interval is 1 second
-var interval = ONE_SECOND;
+var interval = TEN_SECOND;
 
 // waits 1 minute past last successful progress update
 var endTime = Number(new Date()) + ONE_MINUTE;
