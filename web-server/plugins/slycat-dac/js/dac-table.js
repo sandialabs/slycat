@@ -69,6 +69,8 @@ var grid_options = {
 
 // column filters
 var columnFilters = [];
+var columnFiltersRegExp = [];
+var columnFiltersRegExpValid = [];
 
 // model name for downloaded table
 var model_name = "";
@@ -233,8 +235,13 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
             prev_data_row = convert_row_ids([prev_row_selected])[0];
         }
 
-        // filter data
+        // save data filter
         columnFilters[columnId] = $.trim($(this).val());
+
+        // create regular expression
+        filter_reg_exp(columnId);
+
+        // filter data
         data_view.refresh();
 
         // convert previous row selected into new filtered order
@@ -257,9 +264,25 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
         // if not empty color filter orange to indicate use
         if (columnFilters[columnId] != "") {
-            $(this).addClass("bg-warning");
+
+            // color filter orange for valid regular expression
+            if (columnFiltersRegExpValid[columnId] == true) {
+                $(this).addClass("bg-warning");
+                $(this).removeClass("bg-danger");
+                $(this).removeClass("text-white");
+
+            // for invalid regular expression color red
+            } else {
+
+                $(this).addClass("bg-danger");
+                $(this).addClass("text-white");
+            }
         } else {
+
+            // empty filter, revert to normal
             $(this).removeClass("bg-warning");
+            $(this).removeClass("bg-danger");
+            $(this).removeClass("text-white");
         }
 
         // update bookmarks
@@ -274,11 +297,20 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
     grid_view.onHeaderRowCellRendered.subscribe(function(e, args) {
         $(args.node).empty();
 
+        // create regular expressions
+        filter_reg_exp(args.column.id);
+
         // check if column filter is empty
         var set_bg_warning = "";
+        var set_text_warning = "";
         if (columnFilters[args.column.id] !== "") {
-                set_bg_warning = "bg-warning";
+
+            set_bg_warning = "bg-warning";
+            if (columnFiltersRegExpValid[args.column.id] == false) {
+                set_bg_warning = "bg-danger";
+                set_text_warning = "text-white";
             }
+        }
 
         $('<input type="search" placeholder="Filter" class="form-control" ' +
           'title="Filter metadata table by ' + args.column.name +  '.">')
@@ -295,6 +327,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
                 // called when user hits the "x" clear button
                 columnFilters[args.column.id] = "";
                 $(this).removeClass("bg-warning");
+                $(this).removeClass("bg-danger");
                 data_view.refresh();
 
                 // update previously selected row
@@ -308,6 +341,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 
             })
             .addClass(set_bg_warning)
+            .addClass(set_text_warning)
             .appendTo(args.node);
     });
 
@@ -344,6 +378,20 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	    module.jump_to(selections.sel(1));
 	};
 
+}
+
+// make regular expression from filter string
+function filter_reg_exp (columnId)
+{
+    var regExpValid = true;
+    var filterRegExp = null;
+    try {
+        filterRegExp = new RegExp(columnFilters[columnId]);
+        columnFiltersRegExp[columnId] = filterRegExp;
+    } catch(e) {
+        regExpValid = false;
+    }
+    columnFiltersRegExpValid[columnId] = regExpValid;
 }
 
 // check if any column filters are active
@@ -849,11 +897,18 @@ function filter(item)
         // compare item to filter for that column
         var c = grid_view.getColumns()[grid_view.getColumnIndex(columnId)];
 
-        // check that item passes through filter
-        if (item[c.field].toString().toLowerCase().indexOf(columnFilters[columnId].toLowerCase()) == -1) {
-          return false;
-        }
+        // use regular expression if valid
+        if (columnFiltersRegExpValid[columnId]) {
+            if (item[c.field].toString().search(columnFiltersRegExp[columnId]) == -1) {
+                return false;
+            }
 
+        // otherwise use string search
+        } else {
+            if (item[c.field].toString().toLowerCase().indexOf(columnFilters[columnId].toLowerCase()) == -1) {
+                return false;
+            }
+        }
       }
     }
 
