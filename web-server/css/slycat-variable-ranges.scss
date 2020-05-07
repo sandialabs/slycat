@@ -9,7 +9,19 @@
   input.variable-range.contains-user-input {
     font-weight: bold;
   }
+  /* Remove number spinner controls from Chrome and Safari */
   input.variable-range[type=number]::-webkit-inner-spin-button {
     display: none;
   }
+  /* Remove number spinner controls from Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+  .lessThanValidationMessageCell {
+    width: 25px;
+  }
+  .lessThanValidationMessage.valid {
+    display: none;
+  }
+
 }

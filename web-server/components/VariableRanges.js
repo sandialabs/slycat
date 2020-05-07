@@ -1,8 +1,9 @@
 import React from "react";
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faLessThan } from '@fortawesome/free-solid-svg-icons'
 import css from "css/slycat-variable-ranges.scss";
+import $ from 'jquery';
 
 class VariableRanges extends React.Component {
   constructor(props) {
@@ -10,8 +11,8 @@ class VariableRanges extends React.Component {
 
     let inputsArray = props.numericVariables.map((variable, index) => {
       return {
-        [`min_${variable.index}`] : '',
-        [`max_${variable.index}`] : '',
+        [this.getName(variable.index, true)] : '',
+        [this.getName(variable.index, false)] : '',
       }
     });
 
@@ -24,6 +25,17 @@ class VariableRanges extends React.Component {
     this.width = '60px';
     this.text_align = 'text-center';
     this.class = 'slycat-variable-ranges';
+  }
+
+  componentDidMount() {
+    $(`.${this.class} .lessThanValidationMessage[data-toggle="popover"]`).popover({
+      template: `
+        <div class="popover" role="tooltip">
+          <div class="arrow"></div>
+          <h3 class="popover-header"></h3>
+          <div class="popover-body text-danger"></div>
+        </div>`
+    })
   }
 
   getName = (index, minBool) => {
@@ -39,25 +51,22 @@ class VariableRanges extends React.Component {
     return alias;
   }
 
-  clearLabel = (event) => {
-    let index = event.currentTarget.name;
-    let input = document.querySelector(`.${this.class} input[name='${index}'`);
-    input.value = '';
-    props.onChange(event);
-  }
-
   handleChange = (event) => {
     this.setState({
       [event.currentTarget.name]: event.currentTarget.value.trim()
     });
   }
 
-  validateMin = (index) => {
-    let inputMax = parseFloat(this.state[this.getName(index, false)]);
-    let dataMax  = parseFloat(this.props.table_statistics[index].max);
-    let compareMax = inputMax == '' || Number.isNaN(inputMax) ? dataMax : inputMax;
-    let inputString = this.state[this.getName(index, true)];
-    let inputMin = parseFloat(inputString);
+  validate = (name) => {
+    let index = name.slice(4);
+    let min = name.startsWith('min');
+    let oppositePrefix = min ? 'max' : 'min';
+    let oppositeName = `${oppositePrefix}${name.slice(3)}`;
+    let inputOpposite = parseFloat(this.state[oppositeName]);
+    let dataOpposite = parseFloat(this.props.table_statistics[index][oppositePrefix]);
+    let compare = inputOpposite == '' || Number.isNaN(inputOpposite) ? dataOpposite : inputOpposite;
+    let inputString = this.state[name];
+    let inputNum = parseFloat(inputString);
 
     // Empty field is always valid because the data value overrides it
     if(inputString == '')
@@ -65,11 +74,11 @@ class VariableRanges extends React.Component {
       return true;
     }
     // NaNs are invalid
-    else if(Number.isNaN(inputMin))
+    else if(Number.isNaN(inputNum))
     {
       return false;
     }
-    else if(inputMin < compareMax)
+    else if(min ? inputNum < compare : inputNum > compare)
     {
       return true;
     }
@@ -79,15 +88,16 @@ class VariableRanges extends React.Component {
   render() {
     return (
       <div className={`${this.class} ${this.props.uniqueID}`}>
-        <div className='alert alert-danger' role='alert'>
+        {/* <div className='alert alert-danger' role='alert'>
           Axis Min must be less than Axis Max.
-        </div>
+        </div> */}
         <table className='table table-striped table-hover table-sm table-borderless'>
           <thead>
             <tr>
               <th scope='col' className='align-top' />
               <th scope='col' className={`align-top ${this.text_align}`}>Data Min</th>
               <th scope='col' className={`align-top ${this.text_align}`}>Axis Min</th>
+              <th scope='col' className={`align-top ${this.text_align}`} />
               <th scope='col' className={`align-top ${this.text_align}`}>Axis Max</th>
               <th scope='col' className={`align-top ${this.text_align}`}>Data Max</th>
             </tr>
@@ -100,8 +110,8 @@ class VariableRanges extends React.Component {
               // Only show non-string variables
               // if (type != 'string')
               // {
-                let minName = `min_${variable.index}`;
-                let maxName = `max_${variable.index}`;
+                let minName = this.getName(variable.index, true);
+                let maxName = this.getName(variable.index, false);
                 let valueMin = variable.inputMin;
                 let valueMax = variable.inputMax;
 
@@ -117,7 +127,9 @@ class VariableRanges extends React.Component {
                       <div className='input-group input-group-sm'>
                         <input 
                           type='number' 
-                          className={`form-control form-control-sm variable-range axis-min ${this.validateMin(variable.index) ? '' : 'is-invalid'}`} 
+                          className={`form-control form-control-sm variable-range axis-min 
+                            ${this.validate(minName) ? '' : 'is-invalid'}
+                            ${this.state[minName] != '' ? 'contains-user-input' : ''}`} 
                           style={{width: this.width}}
                           name={minName}
                           placeholder={variable.dataMin}
@@ -139,13 +151,30 @@ class VariableRanges extends React.Component {
                       </div>
                     </td>
                     <td 
+                      className={`lessThanValidationMessageCell align-middle ${this.text_align}`}
+                    >
+                      <span 
+                        className={`text-danger font-weight-bold lessThanValidationMessage
+                          ${this.validate(minName) && this.validate(maxName) ? 'valid' : ''}
+                        `}
+                        data-toggle='popover' 
+                        data-trigger='hover'
+                        data-content='Axis Min must be less than Axis Max.'
+                        data-placement='bottom'
+                      >
+                        <FontAwesomeIcon icon={faLessThan} />
+                      </span>
+                    </td>
+                    <td 
                       className={`${this.text_align}`}
                       style={{position: 'relative'}}
                     >
                       <div className='input-group input-group-sm'>
                         <input 
                           type='number' 
-                          className='form-control form-control-sm variable-range axis-max is-invalid' 
+                            className={`form-control form-control-sm variable-range axis-max
+                            ${this.validate(maxName) ? '' : 'is-invalid'}
+                            ${this.state[maxName] != '' ? 'contains-user-input' : ''}`}
                           style={{width: this.width}}
                           name={maxName}
                           placeholder={variable.dataMax}
