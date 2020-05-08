@@ -101,13 +101,11 @@ def cmdscale(D):
 def create_job_logger(file_name):
     """
     returns a logging function with the jid.log as the file name
+    changed to print for compatibility for hpc
     :param jid: job id
     :return:
     """
-    log = logging.getLogger()
-    log.setLevel(logging.INFO)
-    log.addHandler(logging.FileHandler(str(file_name)))
-    return lambda msg: log.log(logging.INFO, msg)
+    return lambda msg: print(msg)
 
 
 # start of main script
