@@ -46,15 +46,6 @@ class VariableRanges extends React.Component {
     return `${minBool ? 'min' : 'max'}_${index}`;
   }
 
-  getVariableAlias = (index) => {
-    let alias = this.names[index];
-    if(this.props.variableAliases[index] !== undefined)
-    {
-      alias = this.props.variableAliases[index];
-    }
-    return alias;
-  }
-
   handleChange = (event) => {
     let name = event.currentTarget.name;
     let inputString = event.currentTarget.value.trim();
