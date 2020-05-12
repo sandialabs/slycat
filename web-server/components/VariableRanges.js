@@ -12,7 +12,9 @@ class VariableRanges extends React.Component {
     let inputsArray = props.numericVariables.map((variable, index) => {
       return {
         [this.getName(variable.index, true)] : '',
+        [`${this.getName(variable.index, true)}_valid`] : true,
         [this.getName(variable.index, false)] : '',
+        [`${this.getName(variable.index, false)}_valid`] : true,
       }
     });
 
@@ -28,7 +30,9 @@ class VariableRanges extends React.Component {
   }
 
   componentDidMount() {
+    // Enabling popover tooltips. Used for validation.
     $(`.${this.class} .lessThanValidationMessage[data-toggle="popover"]`).popover({
+      // Specifying custom popover template to make text red by adding text-danger class.
       template: `
         <div class="popover" role="tooltip">
           <div class="arrow"></div>
@@ -52,22 +56,38 @@ class VariableRanges extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({
-      [event.currentTarget.name]: event.currentTarget.value.trim()
-    });
+    let name = event.currentTarget.name;
+    let inputString = event.currentTarget.value.trim();
+    this.setState((previousState, props) => ({
+      [name]: inputString,
+      ...this.validateMinAndMax(name, inputString, previousState, props)
+    }));
   }
 
-  validate = (name) => {
+  validateMinAndMax = (name, inputString, previousState, props) => {
     let index = name.slice(4);
     let min = name.startsWith('min');
+    let inputNum = parseFloat(inputString);
+    let prefix = min ? 'min' : 'max';
     let oppositePrefix = min ? 'max' : 'min';
     let oppositeName = `${oppositePrefix}${name.slice(3)}`;
-    let inputOpposite = parseFloat(this.state[oppositeName]);
-    let dataOpposite = parseFloat(this.props.table_statistics[index][oppositePrefix]);
-    let compare = inputOpposite == '' || Number.isNaN(inputOpposite) ? dataOpposite : inputOpposite;
-    let inputString = this.state[name];
-    let inputNum = parseFloat(inputString);
+    let oppositeInput = previousState[oppositeName];
+    let oppositeNum = parseFloat(previousState[oppositeName]);
+    let data = parseFloat(props.table_statistics[index][oppositePrefix]);
+    let oppositeData = parseFloat(props.table_statistics[index][oppositePrefix]);
+    let compare = oppositeInput == '' || Number.isNaN(oppositeNum) ? oppositeData : oppositeNum;
+    let oppositeCompare = inputString == '' || Number.isNaN(inputNum) ? data : inputNum;
+    
+    // console.log(`opposite validity is: ${oppositeValidity}`);
 
+    return {
+      [`${name}_valid`]: this.validateMinOrMax(inputString, inputNum, min, compare),
+      [`${oppositeName}_valid`]: this.validateMinOrMax(oppositeInput, oppositeNum, !min, oppositeCompare)
+    };
+
+  }
+
+  validate = (inputString, inputNum, min, compare) => {
     // Empty field is always valid because the data value overrides it
     if(inputString == '')
     {
@@ -105,13 +125,10 @@ class VariableRanges extends React.Component {
           <tbody>
           {
             this.props.numericVariables.map((variable, index) => {
-              // let alias = this.getVariableAlias(index);
-              // let type = this.types[index];
-              // Only show non-string variables
-              // if (type != 'string')
-              // {
                 let minName = this.getName(variable.index, true);
                 let maxName = this.getName(variable.index, false);
+                let minNameValid = `${minName}_valid`;
+                let maxNameValid = `${maxName}_valid`;
                 let valueMin = variable.inputMin;
                 let valueMax = variable.inputMax;
 
@@ -128,7 +145,7 @@ class VariableRanges extends React.Component {
                         <input 
                           type='number' 
                           className={`form-control form-control-sm variable-range axis-min 
-                            ${this.validate(minName) ? '' : 'is-invalid'}
+                            ${this.state[minNameValid] ? '' : 'is-invalid'}
                             ${this.state[minName] != '' ? 'contains-user-input' : ''}`} 
                           style={{width: this.width}}
                           name={minName}
@@ -155,7 +172,7 @@ class VariableRanges extends React.Component {
                     >
                       <span 
                         className={`text-danger font-weight-bold lessThanValidationMessage
-                          ${this.validate(minName) && this.validate(maxName) ? 'valid' : ''}
+                          ${this.state[minNameValid] && this.state[maxNameValid] ? 'valid' : ''}
                         `}
                         data-toggle='popover' 
                         data-trigger='hover'
@@ -173,7 +190,7 @@ class VariableRanges extends React.Component {
                         <input 
                           type='number' 
                             className={`form-control form-control-sm variable-range axis-max
-                            ${this.validate(maxName) ? '' : 'is-invalid'}
+                            ${this.state[maxNameValid] ? '' : 'is-invalid'}
                             ${this.state[maxName] != '' ? 'contains-user-input' : ''}`}
                           style={{width: this.width}}
                           name={maxName}
