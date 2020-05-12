@@ -110,9 +110,16 @@ module.exports = {
         exclude: /node_modules/, 
         use: "babel-loader",
       },
-      // This enables the html-loader, needed to load knockout .html templates
+      // This enables the html-loader, needed to load knockout .html templates.
       { test: /\.html$/, 
-        use: 'html-loader' 
+        loader: 'html-loader',
+        options: {
+          minimize: {
+            // Disabling removing comments when minimizing html because it causes
+            // knockout to break, probably because it uses comments for binding.
+            removeComments: false,
+          }
+        },
       },
       // This enables the style and css loaders, which are needed to load CSS files
       {
