@@ -6,19 +6,91 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const ExportNodeModules = require('webpack-node-modules-list');
 
 module.exports = merge(common, {
+
+  // development mode config start
+  // mode: 'development',
+  // devtool: 'eval-source-map',
+  // cache: true,
+  // performance: {
+  //   hints: false
+  // },
+  // output: {
+  //   pathinfo: true
+  // },
+  // optimization: {
+  //   namedModules: true,
+  //   namedChunks: true,
+  //   nodeEnv: 'development',
+  //   flagIncludedChunks: false,
+  //   occurrenceOrder: false,
+  //   concatenateModules: false,
+  //   splitChunks: {
+  //     hidePathInfo: false,
+  //     minSize: 10000,
+  //     maxAsyncRequests: Infinity,
+  //     maxInitialRequests: Infinity,
+  //   },
+  //   noEmitOnErrors: false,
+  //   checkWasmTypes: false,
+  //   minimize: false,
+  //   removeAvailableModules: false,
+  // },
+  // plugins: [
+  //   new webpack.NamedModulesPlugin(),
+  //   new webpack.NamedChunksPlugin(),
+  //   new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("development") }),
+  // ],
+  // development mode config end
+
+  // production mode config start
   mode: 'production',
   devtool: 'source-map',
+  // performance: {
+  //   hints: 'warning'
+  // },
+  // output: {
+  //   pathinfo: false
+  // },
+  // optimization: {
+  //   namedModules: false,
+  //   namedChunks: false,
+  //   nodeEnv: 'production',
+  //   flagIncludedChunks: true,
+  //   occurrenceOrder: true,
+  //   concatenateModules: true,
+  //   splitChunks: {
+  //     hidePathInfo: true,
+  //     minSize: 30000,
+  //     maxAsyncRequests: 5,
+  //     maxInitialRequests: 3,
+  //   },
+  //   noEmitOnErrors: true,
+  //   checkWasmTypes: true,
+  //   minimize: true,
+  // },
+  // plugins: [
+  //   new TerserPlugin(/* ... */),
+  //   new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("production") }),
+  //   new webpack.optimize.ModuleConcatenationPlugin(),
+  //   new webpack.NoEmitOnErrorsPlugin()
+  // ]
+  // production mode config end
+
+  // Original config start
+  // mode: 'production',
+  // devtool: 'source-map',
   plugins: [
-    // Don't need to add UglifyJSPlugin here because production mode automatically does that
-    // new UglifyJSPlugin({
-    //   sourceMap: true
-    // }),
+  //   // Don't need to add UglifyJSPlugin here because production mode automatically does that
+  //   // new UglifyJSPlugin({
+  //   //   sourceMap: true
+  //   // }),
     // Deletes the web-server/dist folder so that old files don't remain there, only fresh ones from the last run.
     new CleanWebpackPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('production')
-    }),
+    // new webpack.DefinePlugin({
+    //   'process.env.NODE_ENV': JSON.stringify('development')
+    // }),
   ],
+  // Original config end
   devServer: {
     // Only compiles on refresh, not on file change. But does not work, complains of running webpack twice.
     // lazy: true,
