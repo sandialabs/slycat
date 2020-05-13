@@ -19,6 +19,8 @@ export const SET_UNSELECTED_POINT_SIZE = 'SET_UNSELECTED_POINT_SIZE'
 export const SET_UNSELECTED_BORDER_SIZE = 'SET_UNSELECTED_BORDER_SIZE'
 export const SET_SELECTED_POINT_SIZE = 'SET_SELECTED_POINT_SIZE'
 export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
+export const SET_VARIABLE_RANGE = 'SET_VARIABLE_RANGE'
+export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
 
 export function changeFontSize(size) {
   return { 
@@ -123,4 +125,12 @@ export function setSelectedPointSize(event) {
 
 export function setSelectedBorderSize(event) {
   return { type: SET_SELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
+}
+
+export function setVariableRange(index, value, minOrMax) {
+  return { type: SET_VARIABLE_RANGE, index: index, value: value, minOrMax: minOrMax }
+}
+
+export function clearVariableRange(index, minOrMax) {
+  return { type: CLEAR_VARIABLE_RANGE, index: index, minOrMax: minOrMax }
 }

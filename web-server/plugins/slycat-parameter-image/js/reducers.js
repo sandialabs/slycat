@@ -14,6 +14,8 @@ import {
   SET_UNSELECTED_BORDER_SIZE,
   SET_SELECTED_POINT_SIZE,
   SET_SELECTED_BORDER_SIZE,
+  SET_VARIABLE_RANGE,
+  CLEAR_VARIABLE_RANGE,
 } from './actions';
 
 import { 
@@ -217,6 +219,28 @@ export default function ps_reducer(state = initialState, action) {
       }
 
       return Object.assign({}, state, newSelectedBorderSizes)
+    
+    case SET_VARIABLE_RANGE:
+      return Object.assign({}, state, {
+        variableRanges: {
+          ...state.variableRanges,
+          [action.index]: {
+            ...state.variableRanges[action.index],
+            [action.minOrMax]: action.value
+          }
+        }
+      })
+    
+    case CLEAR_VARIABLE_RANGE:
+      let variableRangesClone = Object.assign({}, state.variableRanges);
+      if(variableRangesClone[action.index] != undefined)
+      {
+        delete variableRangesClone[action.index][action.minOrMax];
+      }
+
+      return Object.assign({}, state, {
+        variableRanges: variableRangesClone
+      })
 
     default:
       return state
