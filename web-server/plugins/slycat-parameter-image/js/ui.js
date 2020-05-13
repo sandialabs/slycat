@@ -354,13 +354,16 @@ $(document).ready(function() {
           unselected_border_size: 1,
           selected_point_size: 16,
           selected_border_size: 2,
+          variableRanges: {},
         }
         window.store = createStore(
           ps_reducer, 
           {
             ...state_tree, 
             ...bookmark.state, 
-            derived: {variableAliases: variable_aliases}
+            derived: {
+              variableAliases: variable_aliases,
+            }
           },
           applyMiddleware(
             thunkMiddleware, // Lets us dispatch() functions
