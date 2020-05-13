@@ -1,19 +1,26 @@
 import React from "react";
-import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faLessThan } from '@fortawesome/free-solid-svg-icons'
 import css from "css/slycat-variable-ranges.scss";
 import $ from 'jquery';
 
-class VariableRanges extends React.Component {
+export default class VariableRanges extends React.Component {
   constructor(props) {
     super(props);
 
     let inputsArray = props.numericVariables.map((variable, index) => {
+      let min = '';
+      let max = '';
+      let bookmark = this.props.variableRanges[variable.index];
+      if (bookmark) 
+      {
+        min = bookmark.min != undefined ? bookmark.min : '';
+        max = bookmark.max != undefined ? bookmark.max : '';
+      }
       return {
-        [this.getName(variable.index, true)] : '',
+        [this.getName(variable.index, true)] : min,
         [`${this.getName(variable.index, true)}_valid`] : true,
-        [this.getName(variable.index, false)] : '',
+        [this.getName(variable.index, false)] : max,
         [`${this.getName(variable.index, false)}_valid`] : true,
       }
     });
@@ -47,6 +54,7 @@ class VariableRanges extends React.Component {
   }
 
   handleChange = (event) => {
+    // console.log('handleChange');
     let name = event.currentTarget.name;
     let inputString = event.currentTarget.value.trim();
     this.setState((previousState, props) => ({
@@ -64,24 +72,27 @@ class VariableRanges extends React.Component {
     let oppositeName = `${oppositePrefix}${name.slice(3)}`;
     let oppositeInput = previousState[oppositeName];
     let oppositeNum = parseFloat(previousState[oppositeName]);
-    let data = parseFloat(props.table_statistics[index][oppositePrefix]);
+    let data = parseFloat(props.table_statistics[index][prefix]);
     let oppositeData = parseFloat(props.table_statistics[index][oppositePrefix]);
     let compare = oppositeInput == '' || Number.isNaN(oppositeNum) ? oppositeData : oppositeNum;
     let oppositeCompare = inputString == '' || Number.isNaN(inputNum) ? data : inputNum;
     
-    // console.log(`opposite validity is: ${oppositeValidity}`);
+    // console.log(`validateMinAndMax`);
 
     return {
-      [`${name}_valid`]: this.validateMinOrMax(inputString, inputNum, min, compare),
-      [`${oppositeName}_valid`]: this.validateMinOrMax(oppositeInput, oppositeNum, !min, oppositeCompare)
+      [`${name}_valid`]: this.validateMinOrMax(inputString, inputNum, min, compare, index),
+      [`${oppositeName}_valid`]: this.validateMinOrMax(oppositeInput, oppositeNum, !min, oppositeCompare, index)
     };
 
   }
 
-  validate = (inputString, inputNum, min, compare) => {
+  validateMinOrMax = (inputString, inputNum, min, compare, index) => {
+    // console.log('validateMinOrMax');
     // Empty field is always valid because the data value overrides it
     if(inputString == '')
     {
+      // Clear min or max in redux store since it's blank
+      this.props.clearVariableRange(index, min ? 'min' : 'max');
       return true;
     }
     // NaNs are invalid
@@ -91,8 +102,13 @@ class VariableRanges extends React.Component {
     }
     else if(min ? inputNum < compare : inputNum > compare)
     {
+      // Save min or max to redux store since it's valid
+      this.props.setVariableRange(index, inputNum, min ? 'min' : 'max');
       return true;
     }
+    // Clear min or max in redux store when invalid
+    this.props.clearVariableRange(index, min ? 'min' : 'max');
+
     return false;
   }
 
@@ -120,8 +136,6 @@ class VariableRanges extends React.Component {
                 let maxName = this.getName(variable.index, false);
                 let minNameValid = `${minName}_valid`;
                 let maxNameValid = `${maxName}_valid`;
-                let valueMin = variable.inputMin;
-                let valueMax = variable.inputMax;
 
                 return (
                   <tr key={index}>
@@ -218,49 +232,3 @@ class VariableRanges extends React.Component {
     );
   }
 }
-
-const mapStateToProps = (state, ownProps) => {
-
-  // state.derived.variableAliases.map((alias, index));
-  let names = ownProps.metadata['column-names'];
-  let variableAliases = state.derived.variableAliases;
-
-  let getVariableAlias = (index) => {
-    let alias = names[index];
-    if(variableAliases[index] !== undefined)
-    {
-      alias = variableAliases[index];
-    }
-    return alias;
-  }
-
-  let numericVariables = names
-    .flatMap((name, index) => {
-    if(ownProps.metadata['column-types'][index] != 'string')
-    {
-      return [{
-        index: index,
-        name: getVariableAlias(index),
-        dataMin: ownProps.table_statistics[index].min,
-        dataMax: ownProps.table_statistics[index].max,
-        inputMin: state.axisMinMax ? state.axisMinMax.inputMin : '',
-        inputMax: state.axisMinMax ? state.axisMinMax.inputMax : '',
-        inputMinValid: false,
-        inputMaxValid: false,
-      }];
-    }
-    return [];
-  });
-
-  return {
-    variableAliases: state.derived.variableAliases,
-    numericVariables: numericVariables,
-  }
-};
-
-export default connect(
-  mapStateToProps,
-  { 
-
-  }
-)(VariableRanges)

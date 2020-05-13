@@ -22,40 +22,40 @@ export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
 export const SET_VARIABLE_RANGE = 'SET_VARIABLE_RANGE'
 export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
 
-export function changeFontSize(size) {
+export function changeFontSize(event) {
   return { 
     type: CHANGE_FONT_SIZE, 
-    fontSize: size 
+    fontSize: event.target.value 
   }
 }
 
-export function changeFontFamily(family) {
+export function changeFontFamily(event) {
   return { 
     type: CHANGE_FONT_FAMILY, 
-    fontFamily: family 
+    fontFamily: event.target.innerText 
   }
 }
 
-export function changeAxesVariableScale(variable, scale) {
+export function changeAxesVariableScale(event) {
   return { 
     type: CHANGE_AXES_VARIABLE_SCALE, 
-    axesVariable: variable, 
-    axesScale: scale 
+    axesVariable: event.target.name,
+    axesScale: event.target.value,  
   }
 }
 
-export function changeVariableAliasLabels(variable, label) {
-  let labelTrimmed = label.trim();
+export function changeVariableAliasLabels(event) {
+  let labelTrimmed = event.currentTarget.value.trim();
   if(labelTrimmed == '')
   {
     return {
       type: REMOVE_VARIABLE_ALIAS_LABEL, 
-      aliasVariable: variable
+      aliasVariable: event.currentTarget.name
     }
   }
   return { 
     type: CHANGE_VARIABLE_ALIAS_LABEL, 
-    aliasVariable: variable, 
+    aliasVariable: event.currentTarget.name, 
     aliasLabel: labelTrimmed 
   }
 }

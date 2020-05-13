@@ -3,7 +3,9 @@ import {
   changeFontSize, 
   changeFontFamily, 
   changeAxesVariableScale,
-  changeVariableAliasLabels
+  changeVariableAliasLabels,
+  setVariableRange,
+  clearVariableRange,
 } from '../actions';
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
@@ -132,7 +134,7 @@ class ControlsButtonVarOptions extends React.Component {
 
     const fontItems = fonts.map((font, index) => (
       <a key={index} 
-        href='#' onClick={this.props.onFontFamilyChange}
+        href='#' onClick={this.props.changeFontFamily}
         style={{fontFamily: font.fontFamily}} 
         className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
       >
@@ -202,7 +204,7 @@ class ControlsButtonVarOptions extends React.Component {
                           <label htmlFor='font-size'>Size</label>
                           <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
                             value={this.props.font_size} 
-                            onChange={this.props.onFontSizeChange}
+                            onChange={this.props.changeFontSize}
                           />
                         </div>
                       </div>
@@ -212,20 +214,24 @@ class ControlsButtonVarOptions extends React.Component {
                       uniqueID='varOptions'
                       variables={axes_variables}
                       properties={axes_properties}
-                      onChange={this.props.onAxesVariableScaleChange}
+                      onChange={this.props.changeAxesVariableScale}
                     />
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
                     <VariableRanges 
                       metadata={this.props.metadata}
                       table_statistics={this.props.table_statistics}
+                      numericVariables={this.props.numericVariables}
+                      variableRanges={this.props.variableRanges}
+                      setVariableRange={this.props.setVariableRange}
+                      clearVariableRange={this.props.clearVariableRange}
                     />
                   </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
                       variableAliases={this.props.variable_aliases}
                       metadata={this.props.metadata}
-                      onChange={this.props.onVariableAliasLabelsChange}
+                      onChange={this.props.changeVariableAliasLabels}
                     />
                   </div>
                   <div className='tab-pane' id='scatterplot-options-tab-content' role='tabpanel' aria-labelledby='scatterplot-options-tab'>
@@ -253,32 +259,50 @@ class ControlsButtonVarOptions extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
+  let names = ownProps.metadata['column-names'];
+  let variableAliases = state.derived.variableAliases;
+
+  let getVariableAlias = (index) => {
+    let alias = names[index];
+    if(variableAliases[index] !== undefined)
+    {
+      alias = variableAliases[index];
+    }
+    return alias;
+  }
+
+  let numericVariables = names
+    .flatMap((name, index) => {
+    if(ownProps.metadata['column-types'][index] != 'string')
+    {
+      return [{
+        index: index,
+        name: getVariableAlias(index),
+        dataMin: ownProps.table_statistics[index].min,
+        dataMax: ownProps.table_statistics[index].max,
+      }];
+    }
+    return [];
+  });
+
   return {
     font_size: state.fontSize,
     font_family: state.fontFamily,
     axes_variables_scale: state.axesVariables,
     variable_aliases: state.derived.variableAliases,
-  }
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    onFontSizeChange: event => {
-      dispatch(changeFontSize(event.target.value))
-    },
-    onFontFamilyChange: event => {
-      dispatch(changeFontFamily(event.target.innerText))
-    },
-    onAxesVariableScaleChange: event => {
-      dispatch(changeAxesVariableScale(event.target.name, event.target.value))
-    },
-    onVariableAliasLabelsChange: event => {
-      dispatch(changeVariableAliasLabels(event.currentTarget.name, event.currentTarget.value))
-    }
+    numericVariables: numericVariables,
+    variableRanges: state.variableRanges,
   }
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    changeFontSize,
+    changeFontFamily,
+    changeAxesVariableScale,
+    changeVariableAliasLabels,
+    setVariableRange,
+    clearVariableRange,
+  }
 )(ControlsButtonVarOptions)
