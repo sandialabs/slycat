@@ -821,7 +821,7 @@ def create_single_sign_on_session(remote_ip, auth_user, secure=True):
         database = slycat.web.server.database.couchdb.connect()
         
         database.save({"_id": sid, "type": "session", "created": str(session["created"].isoformat()), "creator": str(session["creator"]),
-             'groups': groups, 'ip': remote_ip, "sessions": []})
+             'groups': groups, 'ip': remote_ip, "sessions": [], "last-active-time": str(session["created"].isoformat())})
 
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"
