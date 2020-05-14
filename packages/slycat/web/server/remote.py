@@ -737,7 +737,10 @@ class Session(object):
             content_type, encoding = slycat.mime_type.guess_type(path)
             if content_type is None:
                 content_type = "application/octet-stream"
-            content = self._sftp.file(path).read()
+
+            my_file = self._sftp.file(path)
+            my_file.prefetch()
+            content = my_file.read(my_file.stat().st_size)
 
             if cache == "project":
                 cache_object(project, key, content_type, content)

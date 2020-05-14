@@ -657,7 +657,7 @@ def ssh_connect(hostname=None, username=None, password=None):
             raise cherrypy.HTTPError("403 Remote authentication failed.")
     else:
         try:
-            ssh.connect(hostname=hostname, username=username, password=password)
+            ssh.connect(hostname=hostname, username=username, password=password, compress=True)
         except paramiko.AuthenticationException as e:
             cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (
                 username, hostname, str(e)))
