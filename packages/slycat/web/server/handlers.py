@@ -130,6 +130,24 @@ def require_integer_parameter(value, name):
                                 "cherrypy.HTTPError 400 '%s' parameter must be an integer." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
 
+@cherrypy.tools.json_out(on=True)
+def get_last_active_time():
+    """
+    Checks when the most recent session activity occured.
+    If it occured more than 10 minutes ago, returns true.
+    If less than 10 minutes ago, returns false.
+    """
+    most_recent_time = datetime.timedelta(days=999)
+    time_threshold = datetime.timedelta(minutes = 10)
+    database = slycat.web.server.database.couchdb.connect()
+    for session in database.view("slycat/sessions", include_docs=True):
+        if session.doc["creator"] not in cherrypy.request.app.config["slycat"]["server-admins"] and (datetime.datetime.utcnow() - datetime.datetime.strptime(str(session.doc["last-active-time"]), '%Y-%m-%dT%H:%M:%S.%f')) < most_recent_time:
+            most_recent_time = session.doc["last-active-time"]
+
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(str(most_recent_time), '%Y-%m-%dT%H:%M:%S.%f')) >= time_threshold:
+        return True
+    else:
+        return False
 
 @cherrypy.tools.json_out(on=True)
 def get_projects_list(_=None):
