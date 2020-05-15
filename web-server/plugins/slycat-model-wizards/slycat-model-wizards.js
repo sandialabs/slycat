@@ -7,7 +7,9 @@ import slycat_create_saved_bookmark from 'plugins/slycat-model-wizards/create-sa
 import slycat_create_template from 'plugins/slycat-model-wizards/create-template-ui';
 import slycat_info_model from 'plugins/slycat-model-wizards/info-ui';
 import slycat_reset_model from 'plugins/slycat-model-wizards/reset-ui';
+import slycat_edit_project from 'plugins/slycat-project-wizards/edit-project-ui';
 
+ko.components.register('slycat-edit-project', slycat_edit_project);
 ko.components.register('slycat-edit-model', slycat_edit_model);
 ko.components.register('slycat-delete-model', slycat_delete_model);
 ko.components.register('slycat-apply-template', slycat_apply_template);
