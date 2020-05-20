@@ -37,16 +37,38 @@ export default class VariableRanges extends React.Component {
   }
 
   componentDidMount() {
-    // Enabling popover tooltips. Used for validation.
-    $(`.${this.class} .lessThanValidationMessage[data-toggle="popover"]`).popover({
+    // Initializing popover tooltips. Used for validation.
+    $(`.${this.class} .validationPopover`).popover({
       // Specifying custom popover template to make text red by adding text-danger class.
       template: `
         <div class="popover" role="tooltip">
           <div class="arrow"></div>
           <h3 class="popover-header"></h3>
           <div class="popover-body text-danger"></div>
-        </div>`
-    })
+        </div>`,
+      placement: 'bottom',
+      trigger: 'hover',
+      content: 'Axis Min must be less than Axis Max.',
+    });
+    // Disabling popover tooltips for valid input fields.
+    $(`.${this.class} .validationPopover.valid`).popover('disable');
+
+  }
+
+  componentDidUpdate() {
+    // Disabling popover tooltips for valid input fields.
+    $(`.${this.class} .validationPopover.valid`).popover('disable');
+    // Enable popover tooltips for invalid input fields.
+    $(`.${this.class} .validationPopover.is-invalid`).popover('enable');
+
+
+    // Show any new validation popovers but only for the element that has focus, 
+    // since that's the one the user will be interacting with. We don't want
+    // popovers appearing all over the UI for all invalid input fields.
+    $(`.${this.class} .validationPopover`).filter(':focus').popover('show');
+    // Hide any open popovers when the state changes and the underlying input
+    // is now valid.
+    $(`.${this.class} .validationPopover.valid`).popover('hide');
   }
 
   getName = (index, minBool) => {
@@ -108,7 +130,6 @@ export default class VariableRanges extends React.Component {
     }
     // Clear min or max in redux store when invalid
     this.props.clearVariableRange(index, min ? 'min' : 'max');
-
     return false;
   }
 
@@ -149,8 +170,8 @@ export default class VariableRanges extends React.Component {
                       <div className='input-group input-group-sm'>
                         <input 
                           type='number' 
-                          className={`form-control form-control-sm variable-range axis-min 
-                            ${this.state[minNameValid] ? '' : 'is-invalid'}
+                          className={`form-control form-control-sm variable-range axis-min validationPopover
+                            ${this.state[minNameValid] ? 'valid' : 'is-invalid'}
                             ${this.state[minName] != '' ? 'contains-user-input' : ''}`} 
                           style={{width: this.width}}
                           name={minName}
@@ -176,13 +197,9 @@ export default class VariableRanges extends React.Component {
                       className={`lessThanValidationMessageCell align-middle ${this.text_align}`}
                     >
                       <span 
-                        className={`text-danger font-weight-bold lessThanValidationMessage
+                        className={`text-danger font-weight-bold lessThanValidationMessage validationPopover is-invalid
                           ${this.state[minNameValid] && this.state[maxNameValid] ? 'valid' : ''}
                         `}
-                        data-toggle='popover' 
-                        data-trigger='hover'
-                        data-content='Axis Min must be less than Axis Max.'
-                        data-placement='bottom'
                       >
                         <FontAwesomeIcon icon={faLessThan} />
                       </span>
@@ -194,8 +211,8 @@ export default class VariableRanges extends React.Component {
                       <div className='input-group input-group-sm'>
                         <input 
                           type='number' 
-                            className={`form-control form-control-sm variable-range axis-max
-                            ${this.state[maxNameValid] ? '' : 'is-invalid'}
+                            className={`form-control form-control-sm variable-range axis-max validationPopover
+                            ${this.state[maxNameValid] ? 'valid' : 'is-invalid'}
                             ${this.state[maxName] != '' ? 'contains-user-input' : ''}`}
                           style={{width: this.width}}
                           name={maxName}
