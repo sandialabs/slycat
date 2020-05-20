@@ -24,5 +24,11 @@
   .lessThanValidationMessage.valid {
     display: none;
   }
+  .variable-name,
+  .data-min,
+  .data-max
+  {
+    overflow-wrap: anywhere;
+  }
 
 }

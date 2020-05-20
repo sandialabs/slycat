@@ -160,13 +160,16 @@ export default class VariableRanges extends React.Component {
 
                 return (
                   <tr key={index}>
-                    <th scope='row' className='col-form-label-sm align-middle variable-name'>{variable.name}</th>
+                    <th scope='row' 
+                      className='col-form-label-sm align-middle variable-name'>
+                      {variable.name}
+                    </th>
                     <td 
-                      className={`align-middle ${this.text_align}`}
+                      className={`align-middle ${this.text_align} data-min`}
                     >
                       {variable.dataMin}
                     </td>
-                    <td className={`${this.text_align}`}>
+                    <td className={`align-middle ${this.text_align} axis-min`}>
                       <div className='input-group input-group-sm'>
                         <input 
                           type='number' 
@@ -205,7 +208,7 @@ export default class VariableRanges extends React.Component {
                       </span>
                     </td>
                     <td 
-                      className={`${this.text_align}`}
+                      className={`align-middle ${this.text_align} axis-max`}
                       style={{position: 'relative'}}
                     >
                       <div className='input-group input-group-sm'>
@@ -234,7 +237,7 @@ export default class VariableRanges extends React.Component {
                         </div>
                       </div>
                     </td>
-                    <td className={`align-middle ${this.text_align}`}>
+                    <td className={`align-middle ${this.text_align} data-max`}>
                       {variable.dataMax}
                     </td>
                   </tr>
