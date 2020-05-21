@@ -2312,10 +2312,10 @@ def get_model_statistics(mid):
             model["created"],
             "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
 
-    if "job_running_time" in model and "job_submit_time" in model:
+    if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
             datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-                model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     else:
         delta_queue_time = 0
 

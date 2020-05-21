@@ -375,7 +375,7 @@ def register_slycat_plugin(context):
             else:
                 slycat.web.server.update_model(database, model, progress=5, message="Job is in pending state")
             slycat.web.server.put_model_parameter(database, model, "computing", False)
-            if "job_running_time" not in model:
+            if "job_running_time" not in model and state == "RUNNING":
                 model = database.get("model", model["_id"])
                 model["job_running_time"] = datetime.datetime.utcnow().isoformat()
                 with slycat.web.server.get_model_lock(model["_id"]):
