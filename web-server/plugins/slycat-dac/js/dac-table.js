@@ -526,6 +526,7 @@ function convert_to_csv (rows_to_output)
 			for (var j = 0; j < (num_cols + num_editable_cols); j ++) {
 
                 var table_entry = String(item[j])
+
 				// check for commas for later warning
 				if (table_entry.indexOf(",") != -1) {
 					extra_commas_found = true;
