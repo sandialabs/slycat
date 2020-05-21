@@ -175,6 +175,8 @@ def register_slycat_plugin(context):
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", model_id)
             model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
+            with slycat.web.server.get_model_lock(model["_id"]):
+                database.save(model)
             slycat.web.server.update_model(database, model, state="waiting", message="starting data pull Timeseries")
             model = database.get("model", model_id)
             uid = slycat.web.server.get_model_parameter(database, model, "pickle_uid")
@@ -374,8 +376,10 @@ def register_slycat_plugin(context):
                 slycat.web.server.update_model(database, model, progress=5, message="Job is in pending state")
             slycat.web.server.put_model_parameter(database, model, "computing", False)
             if "job_running_time" not in model:
+                model = database.get("model", model["_id"])
                 model["job_running_time"] = datetime.datetime.utcnow().isoformat()
-                slycat.web.server.update_model(database, model)
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    database.save(model)
 
         if state in ["CANCELLED", "REMOVED", "VACATED"]:
             slycat.web.server.put_model_parameter(database, model, "computing", False)
@@ -384,11 +388,15 @@ def register_slycat_plugin(context):
         if state == "COMPLETED":
             slycat.web.server.update_model(database, model, progress=50, message="Job is in Completed state")
             if "job_running_time" not in model:
+                model = database.get("model", model["_id"])
                 model["job_running_time"] = datetime.datetime.utcnow().isoformat()
-                slycat.web.server.update_model(database, model)
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    database.save(model)
             if "job_completed_time" not in model:
+                model = database.get("model", model["_id"])
                 model["job_completed_time"] = datetime.datetime.utcnow().isoformat()
-                slycat.web.server.update_model(database, model)
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    database.save(model)
             """
             Callback for a successful remote job completion. It computes the model
             and successfully completes it.
