@@ -522,7 +522,7 @@ function openCSVSaveChoiceDialog(plot_id, curr_sel)
                   "the plots in the .csv file.";
 
     // construct options for point identifier pull down
-    var table_headers = metadata_table.get_headers(false);
+    var table_headers = metadata_table.get_headers(false, true);
 
     // buttons for dialog
 	var buttons_save = [
@@ -592,8 +592,9 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
     // use new table order for data
     var curr_sel_table_order = sel_col_commas[2];
 
-    // keep track of extra commas found
+    // keep track of extra commas/newlines found
     var extra_commas = sel_col_commas[3];
+    var extra_newlines = sel_col_commas[4];
 
     // table to return
     var csv_output = "Time,";
@@ -603,7 +604,14 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
     for (var i = 0; i < num_sel; i++) {
 
         // text is "ID Var (selection color)"
-        csv_output += sel_col_commas[0][i] + " " + plot_name[sel_plot_ind];
+
+        // if ID is present then add
+        if (sel_col_commas[0][i] != "") {
+            csv_output += sel_col_commas[0][i] + " ";
+        }
+
+        // add plot name
+        csv_output += plot_name[sel_plot_ind];
 
         // add selection color, if available
         if (sel_col_commas[1][i] != "") {
@@ -664,8 +672,8 @@ function convert_to_csv (curr_sel, plot_id, header_index, defaultFilename,
 	});
 
 	// produce warning if extra commas were detected
-	if (extra_commas) {
-		 dialog.ajax_error("Commas were detected in the table data " +
+	if (extra_commas || extra_newlines) {
+		 dialog.ajax_error("Commas and/or newlines were detected in the table data " +
 		    "text and will be removed in the .csv output file.")
 			("","","");
 	}
