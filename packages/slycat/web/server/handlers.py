@@ -2307,15 +2307,18 @@ def get_model_statistics(mid):
     slycat.web.server.authentication.require_project_reader(project)
 
     # amount of time it took to make the model
-    delta_creation_time = (
-        datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["created"],
-            "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    if "finished" in model and model["finished"] is not None:
+        delta_creation_time = (
+            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["created"],
+                "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    else:
+        delta_creation_time = 0
 
-    if "job_running_time" in model and "job_submit_time" in model:
+    if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
             datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-                model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     else:
         delta_queue_time = 0
 
