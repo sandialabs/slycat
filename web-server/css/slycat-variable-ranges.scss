@@ -6,6 +6,9 @@
   // tbody th.variable-name {
   //   width: 1%;
   // }
+  tbody th.variable-name {
+    border-right: 1px solid #DDD;
+  }
   input.variable-range.contains-user-input {
     font-weight: bold;
     color: black;

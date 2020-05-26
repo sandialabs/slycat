@@ -143,11 +143,11 @@ export default class VariableRanges extends React.Component {
           <thead>
             <tr>
               <th scope='col' className='align-top' />
-              <th scope='col' className={`align-top ${this.text_align}`}>Data Min</th>
-              <th scope='col' className={`align-top ${this.text_align}`}>Axis Min</th>
-              <th scope='col' className={`align-top ${this.text_align}`} />
-              <th scope='col' className={`align-top ${this.text_align}`}>Axis Max</th>
-              <th scope='col' className={`align-top ${this.text_align}`}>Data Max</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Min</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Axis Min</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`} />
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Axis Max</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Max</th>
             </tr>
           </thead>
           <tbody>
@@ -161,11 +161,11 @@ export default class VariableRanges extends React.Component {
                 return (
                   <tr key={index}>
                     <th scope='row' 
-                      className='col-form-label-sm align-middle variable-name'>
+                      className='col-form-label-sm align-middle variable-name px-2'>
                       {variable.name}
                     </th>
                     <td 
-                      className={`align-middle ${this.text_align} data-min`}
+                      className={`align-middle px-2 ${this.text_align} data-min`}
                     >
                       {variable.dataMin}
                     </td>
@@ -237,7 +237,7 @@ export default class VariableRanges extends React.Component {
                         </div>
                       </div>
                     </td>
-                    <td className={`align-middle ${this.text_align} data-max`}>
+                    <td className={`align-middle px-2 ${this.text_align} data-max`}>
                       {variable.dataMax}
                     </td>
                   </tr>
