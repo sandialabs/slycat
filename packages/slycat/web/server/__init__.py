@@ -657,7 +657,7 @@ def ssh_connect(hostname=None, username=None, password=None):
             raise cherrypy.HTTPError("403 Remote authentication failed.")
     else:
         try:
-            ssh.connect(hostname=hostname, username=username, password=password)
+            ssh.connect(hostname=hostname, username=username, password=password, compress=True)
         except paramiko.AuthenticationException as e:
             cherrypy.log.error("ssh_connect username/password method, authentication failed for %s@%s: %s" % (
                 username, hostname, str(e)))
@@ -821,7 +821,7 @@ def create_single_sign_on_session(remote_ip, auth_user, secure=True):
         database = slycat.web.server.database.couchdb.connect()
         
         database.save({"_id": sid, "type": "session", "created": str(session["created"].isoformat()), "creator": str(session["creator"]),
-             'groups': groups, 'ip': remote_ip, "sessions": []})
+             'groups': groups, 'ip': remote_ip, "sessions": [], "last-active-time": str(session["created"].isoformat())})
 
     cherrypy.response.cookie["slycatauth"] = sid
     cherrypy.response.cookie["slycatauth"]["path"] = "/"

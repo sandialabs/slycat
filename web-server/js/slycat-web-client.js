@@ -708,6 +708,17 @@ module.get_model_command_fetch = function(params, errorFunction)
   });
 };
 
+module.get_last_active_time_fetch = function()
+{
+  return fetch(`${api_root}server/last_active_time`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  });
+};
+
 module.post_model_command = function(params)
 {
   $.ajax(
