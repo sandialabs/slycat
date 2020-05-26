@@ -648,3 +648,10 @@ label.bottom-margin
 #controls .dropdown-menu {
   overflow-y: auto;
 }
+
+.no-wrap {
+  white-space: nowrap;
+}
+.force-wrap {
+  overflow-wrap: anywhere;
+}
