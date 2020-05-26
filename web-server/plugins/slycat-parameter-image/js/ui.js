@@ -48,6 +48,13 @@ import { updateThreeDSync } from './actions';
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import { setSyncCameras, } from './vtk-camera-synchronizer';
 
+import { 
+  DEFAULT_UNSELECTED_POINT_SIZE,
+  DEFAULT_UNSELECTED_BORDER_SIZE,
+  DEFAULT_SELECTED_POINT_SIZE,
+  DEFAULT_SELECTED_BORDER_SIZE,
+  } from 'components/ScatterplotOptions';
+
 // Wait for document ready
 $(document).ready(function() {
 
@@ -108,10 +115,10 @@ $(document).ready(function() {
   var axes_variables_scale = {};
   var variable_aliases = {};
 
-  var unselected_point_size = 8;
-  var unselected_border_size = 1;
-  var selected_point_size = 16;
-  var selected_border_size = 2;
+  var unselected_point_size = DEFAULT_UNSELECTED_POINT_SIZE;
+  var unselected_border_size = DEFAULT_UNSELECTED_BORDER_SIZE;
+  var selected_point_size = DEFAULT_SELECTED_POINT_SIZE;
+  var selected_border_size = DEFAULT_SELECTED_BORDER_SIZE;
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -350,10 +357,10 @@ $(document).ready(function() {
           axesVariables: {},
           threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
           threeDColormap: vtkColorMaps.rgbPresetNames[0],
-          unselected_point_size: 8,
-          unselected_border_size: 1,
-          selected_point_size: 16,
-          selected_border_size: 2,
+          unselected_point_size: unselected_point_size,
+          unselected_border_size: unselected_border_size,
+          selected_point_size: selected_point_size,
+          selected_border_size: selected_border_size,
           variableRanges: {},
         }
         window.store = createStore(

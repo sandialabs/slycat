@@ -6,17 +6,24 @@ import {
   setSelectedPointSize,
   setSelectedBorderSize,
   } from 'plugins/slycat-parameter-image/js/actions';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 import css from "css/slycat-scatterplot-options.scss";
+import { Raycaster } from "three";
 
+export const DEFAULT_UNSELECTED_POINT_SIZE = 8;
 export const MIN_UNSELECTED_POINT_SIZE = 1;
 export const MAX_UNSELECTED_POINT_SIZE = 40;
+export const DEFAULT_UNSELECTED_BORDER_SIZE = 1;
 export const MIN_UNSELECTED_BORDER_SIZE = 0;
 // Doesn't make sense for thicker border than half of point size 
 // because it's all border by then.
 export const MAX_UNSELECTED_BORDER_SIZE = (MAX_UNSELECTED_POINT_SIZE / 2) - 0.5;
 
+export const DEFAULT_SELECTED_POINT_SIZE = 16;
 export const MIN_SELECTED_POINT_SIZE = 2;
 export const MAX_SELECTED_POINT_SIZE = 80;
+export const DEFAULT_SELECTED_BORDER_SIZE = 2;
 export const MIN_SELECTED_BORDER_SIZE = 0;
 // Doesn't make sense for thicker border than half of point size 
 // because it's all border by then.
@@ -45,49 +52,80 @@ class ScatterplotOptions extends React.Component {
             <div className='col-3 font-weight-bold'>
               Unselected Points
             </div>
-            <div className='col-2 d-flex justify-content-center'>
-              <input type='number' className='form-control form-control-sm' id='unselected-point-size' style={{width: "70px"}}
-                min={MIN_UNSELECTED_POINT_SIZE}
-                max={MAX_UNSELECTED_POINT_SIZE} 
-                step={POINT_SIZE_STEP} 
-                value={this.props.unselected_point_size} 
-                onChange={this.props.setUnselectedPointSize}
-              />
-            </div>
-            <div className='col-2 d-flex justify-content-center'>
-              <input type='number' className='form-control form-control-sm' id='unselected-border-size' style={{width: "70px"}}
-                min={MIN_UNSELECTED_BORDER_SIZE}
-                max={MAX_UNSELECTED_BORDER_SIZE} 
-                step={BORDER_SIZE_STEP} 
-                value={this.props.unselected_border_size} 
-                onChange={this.props.setUnselectedBorderSize}
-              />
-            </div>
+            <PointFormat 
+              size={this.props.unselected_point_size}
+              default_size={DEFAULT_UNSELECTED_POINT_SIZE}
+              min_size={MIN_UNSELECTED_POINT_SIZE}
+              max_size={MAX_UNSELECTED_POINT_SIZE}
+              step={POINT_SIZE_STEP}
+              handle_change={this.props.setUnselectedPointSize}
+              title_reset='Reset size of unselected points.'
+            />
+            <PointFormat 
+              size={this.props.unselected_border_size}
+              default_size={DEFAULT_UNSELECTED_BORDER_SIZE}
+              min_size={MIN_UNSELECTED_BORDER_SIZE}
+              max_size={MAX_UNSELECTED_BORDER_SIZE}
+              step={BORDER_SIZE_STEP}
+              handle_change={this.props.setUnselectedBorderSize}
+              title_reset='Reset border width of unselected points.'
+            />
           </div>
           <div className='form-row'>
             <div className='col-3 font-weight-bold'>
               Selected Points
             </div>
-            <div className='col-2 d-flex justify-content-center'>
-              <input type='number' className='form-control form-control-sm' id='selected-point-size' style={{width: "70px"}}
-                min={MIN_SELECTED_POINT_SIZE}
-                max={MAX_SELECTED_POINT_SIZE} 
-                step={POINT_SIZE_STEP} 
-                value={this.props.selected_point_size} 
-                onChange={this.props.setSelectedPointSize}
-              />
-            </div>
-            <div className='col-2 d-flex justify-content-center'>
-              <input type='number' className='form-control form-control-sm' id='selected-border-size' style={{width: "70px"}}
-                min={MIN_SELECTED_BORDER_SIZE}
-                max={MAX_SELECTED_BORDER_SIZE} 
-                step={BORDER_SIZE_STEP} 
-                value={this.props.selected_border_size} 
-                onChange={this.props.setSelectedBorderSize}
-              />
-            </div>
+            <PointFormat 
+              size={this.props.selected_point_size}
+              default_size={DEFAULT_SELECTED_POINT_SIZE}
+              min_size={MIN_SELECTED_POINT_SIZE}
+              max_size={MAX_SELECTED_POINT_SIZE}
+              step={POINT_SIZE_STEP}
+              handle_change={this.props.setSelectedPointSize}
+              title_reset='Reset size of selected points.'
+            />
+            <PointFormat 
+              size={this.props.selected_border_size}
+              default_size={DEFAULT_SELECTED_BORDER_SIZE}
+              min_size={MIN_SELECTED_BORDER_SIZE}
+              max_size={MAX_SELECTED_BORDER_SIZE}
+              step={BORDER_SIZE_STEP}
+              handle_change={this.props.setSelectedBorderSize}
+              title_reset='Reset border width of selected points.'
+            />
           </div>
         </div>
+      </div>
+    );
+  }
+}
+
+class PointFormat extends React.Component {
+  render() {
+    return (
+      <div className='col-2 d-flex justify-content-center input-group input-group-sm'>
+        <input type='number' 
+          className={`form-control form-control-sm 
+            ${this.props.size != this.props.default_size ? 'edited' : ''}`
+          }
+          min={this.props.min}
+          max={this.props.max} 
+          step={this.props.step} 
+          value={this.props.size} 
+          onChange={this.props.handle_change}
+        />
+      <div className='input-group-append'>
+        <button 
+          className='btn btn-outline-secondary' 
+          type='button'
+          title={this.props.title_reset}
+          value={this.props.default_size}
+          disabled={this.props.size == this.props.default_size}
+          onClick={this.props.handle_change}
+        >
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
+      </div>
       </div>
     );
   }

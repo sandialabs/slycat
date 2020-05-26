@@ -25,22 +25,22 @@ export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
 export function changeFontSize(event) {
   return { 
     type: CHANGE_FONT_SIZE, 
-    fontSize: event.target.value 
+    fontSize: event.currentTarget.value 
   }
 }
 
 export function changeFontFamily(event) {
   return { 
     type: CHANGE_FONT_FAMILY, 
-    fontFamily: event.target.innerText 
+    fontFamily: event.currentTarget.innerText 
   }
 }
 
 export function changeAxesVariableScale(event) {
   return { 
     type: CHANGE_AXES_VARIABLE_SCALE, 
-    axesVariable: event.target.name,
-    axesScale: event.target.value,  
+    axesVariable: event.currentTarget.name,
+    axesScale: event.currentTarget.value,  
   }
 }
 
@@ -112,19 +112,19 @@ export function updateThreeDSync(threeD_sync) {
 }
 
 export function setUnselectedPointSize(event) {
-  return { type: SET_UNSELECTED_POINT_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_UNSELECTED_POINT_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setUnselectedBorderSize(event) {
-  return { type: SET_UNSELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_UNSELECTED_BORDER_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setSelectedPointSize(event) {
-  return { type: SET_SELECTED_POINT_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_SELECTED_POINT_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setSelectedBorderSize(event) {
-  return { type: SET_SELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_SELECTED_BORDER_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setVariableRange(index, value, minOrMax) {
