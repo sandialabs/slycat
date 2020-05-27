@@ -192,9 +192,9 @@ class ControlsButtonVarOptions extends React.Component {
                       <div className='form-inline'>
                         <div className='form-group'>
                           <label className='pr-2' htmlFor='font-family'>Font</label>
-                          <div className='input-group input-group-sm'>
-                            <div className='dropdown font-family-dropdown'>
-                              <button className='btn btn-sm btn-outline-dark dropdown-toggle' type='button' id='font-family' 
+                          <div className='btn-group btn-group-sm'>
+                            <div className='btn-group dropdown font-family-dropdown'>
+                              <button className='btn btn-sm border-secondary text-dark dropdown-toggle' type='button' id='font-family' 
                                 data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style={{fontFamily: this.props.font_family}}>
                                 {this.props.font_family}
                               </button>
@@ -202,24 +202,28 @@ class ControlsButtonVarOptions extends React.Component {
                                 {fontItems}
                               </div>
                             </div>
-                            <div className='input-group-append'>
-                              <button 
-                                className='btn btn-outline-secondary' 
-                                type='button'
-                                title='Reset font family to default.'
-                                value=''
-                                // disabled={!userInput}
-                                // onClick={clearLabel}
-                              >
-                                <FontAwesomeIcon icon={faTimes} />
-                              </button>
-                            </div>
+                            <button 
+                              className='btn btn-outline-secondary' 
+                              type='button'
+                              title='Reset font family to default.'
+                              value=''
+                              // disabled={!userInput}
+                              // onClick={clearLabel}
+                            >
+                              <FontAwesomeIcon icon={faTimes} />
+                            </button>
                           </div>
                         </div>
                         <div className='form-group'>
                           <label className='ml-5 pr-2' htmlFor='font-size'>Size</label>
                           <div className='input-group input-group-sm'>
-                            <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
+                            <input type='number' 
+                              className='form-control form-control-sm border border-secondary' 
+                              id='font-size' 
+                              max='40' 
+                              min='8' 
+                              step='1' 
+                              style={{width: "70px"}}
                               value={this.props.font_size} 
                               onChange={this.props.changeFontSize}
                             />
