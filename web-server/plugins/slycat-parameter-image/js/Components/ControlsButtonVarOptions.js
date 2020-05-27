@@ -22,6 +22,9 @@ import * as dialog from "js/slycat-dialog";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
+export const DEFAULT_FONT_SIZE = 15;
+export const DEFAULT_FONT_FAMILY = 'Arial';
+
 class ControlsButtonVarOptions extends React.Component {
   constructor(props) {
     super(props);

@@ -54,6 +54,10 @@ import {
   DEFAULT_SELECTED_POINT_SIZE,
   DEFAULT_SELECTED_BORDER_SIZE,
   } from 'components/ScatterplotOptions';
+import { 
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_FAMILY,
+  } from './Components/ControlsButtonVarOptions';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -110,8 +114,8 @@ $(document).ready(function() {
 
   var filterxhr = null;
 
-  var axes_font_size = 12;
-  var axes_font_family = "Arial";
+  var axes_font_size = null;
+  var axes_font_family = null;
   var axes_variables_scale = {};
   var variable_aliases = {};
 
@@ -352,8 +356,8 @@ $(document).ready(function() {
 
         // Create Redux store and set its state based on what's in the bookmark
         const state_tree = {
-          fontSize: 15,
-          fontFamily: "Arial",
+          fontSize: DEFAULT_FONT_SIZE,
+          fontFamily: DEFAULT_FONT_FAMILY,
           axesVariables: {},
           threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
           threeDColormap: vtkColorMaps.rgbPresetNames[0],

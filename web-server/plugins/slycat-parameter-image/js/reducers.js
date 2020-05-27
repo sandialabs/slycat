@@ -29,9 +29,14 @@ import {
   MAX_SELECTED_BORDER_SIZE
 } from "components/ScatterplotOptions";
 
+import { 
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_FAMILY,
+  } from './Components/ControlsButtonVarOptions';
+
 const initialState = {
-  fontSize: 15,
-  fontFamily: "Arial",
+  fontSize: DEFAULT_FONT_SIZE,
+  fontFamily: DEFAULT_FONT_FAMILY,
   axesVariables: {},
   currentFrame: null,
   threeD_sync: false,
