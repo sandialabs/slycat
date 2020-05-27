@@ -185,6 +185,7 @@ export default class VariableRanges extends React.Component {
                           <button 
                             className='btn btn-outline-secondary' 
                             type='button'
+                            title='Clear axis min.'
                             name={minName}
                             value=''
                             disabled={this.state[minName] == ''}
@@ -224,6 +225,7 @@ export default class VariableRanges extends React.Component {
                           <button 
                             className='btn btn-outline-secondary' 
                             type='button' 
+                            title='Clear axis max.'
                             name={maxName}
                             value=''
                             disabled={this.state[maxName] == ''}

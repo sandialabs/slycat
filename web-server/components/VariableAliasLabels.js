@@ -45,7 +45,7 @@ export default function VariableAliasLabels(props) {
                       <button 
                         className='btn btn-outline-secondary' 
                         type='button'
-                        title='Clear Label'
+                        title='Clear alias label.'
                         name={index}
                         value=''
                         disabled={!userInput}

@@ -19,6 +19,8 @@ import "../../css/controls-button-var-options.css";
 import $ from "jquery";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 class ControlsButtonVarOptions extends React.Component {
   constructor(props) {
@@ -189,23 +191,51 @@ class ControlsButtonVarOptions extends React.Component {
                     <div className='slycat-axes-font'>
                       <div className='form-inline'>
                         <div className='form-group'>
-                          <label htmlFor='font-family'>Font</label>
-                          <div className='dropdown font-family-dropdown'>
-                            <button className='btn btn-sm btn-outline-dark dropdown-toggle' type='button' id='font-family' 
-                              data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style={{fontFamily: this.props.font_family}}>
-                              {this.props.font_family}
-                            </button>
-                            <div className='dropdown-menu' aria-labelledby='dropdownMenu1'>
-                              {fontItems}
+                          <label className='pr-2' htmlFor='font-family'>Font</label>
+                          <div className='input-group input-group-sm'>
+                            <div className='dropdown font-family-dropdown'>
+                              <button className='btn btn-sm btn-outline-dark dropdown-toggle' type='button' id='font-family' 
+                                data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style={{fontFamily: this.props.font_family}}>
+                                {this.props.font_family}
+                              </button>
+                              <div className='dropdown-menu' aria-labelledby='dropdownMenu1'>
+                                {fontItems}
+                              </div>
+                            </div>
+                            <div className='input-group-append'>
+                              <button 
+                                className='btn btn-outline-secondary' 
+                                type='button'
+                                title='Reset font family to default.'
+                                value=''
+                                // disabled={!userInput}
+                                // onClick={clearLabel}
+                              >
+                                <FontAwesomeIcon icon={faTimes} />
+                              </button>
                             </div>
                           </div>
                         </div>
                         <div className='form-group'>
-                          <label htmlFor='font-size'>Size</label>
-                          <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
-                            value={this.props.font_size} 
-                            onChange={this.props.changeFontSize}
-                          />
+                          <label className='ml-5 pr-2' htmlFor='font-size'>Size</label>
+                          <div className='input-group input-group-sm'>
+                            <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
+                              value={this.props.font_size} 
+                              onChange={this.props.changeFontSize}
+                            />
+                            <div className='input-group-append'>
+                              <button 
+                                className='btn btn-outline-secondary' 
+                                type='button'
+                                title='Reset font size to default.'
+                                value=''
+                                // disabled={!userInput}
+                                // onClick={clearLabel}
+                              >
+                                <FontAwesomeIcon icon={faTimes} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -59,7 +59,7 @@ class ScatterplotOptions extends React.Component {
               max_size={MAX_UNSELECTED_POINT_SIZE}
               step={POINT_SIZE_STEP}
               handle_change={this.props.setUnselectedPointSize}
-              title_reset='Reset size of unselected points.'
+              title_reset='Reset size of unselected points to default.'
             />
             <PointFormat 
               size={this.props.unselected_border_size}
@@ -68,7 +68,7 @@ class ScatterplotOptions extends React.Component {
               max_size={MAX_UNSELECTED_BORDER_SIZE}
               step={BORDER_SIZE_STEP}
               handle_change={this.props.setUnselectedBorderSize}
-              title_reset='Reset border width of unselected points.'
+              title_reset='Reset border width of unselected points to default.'
             />
           </div>
           <div className='form-row'>
@@ -82,7 +82,7 @@ class ScatterplotOptions extends React.Component {
               max_size={MAX_SELECTED_POINT_SIZE}
               step={POINT_SIZE_STEP}
               handle_change={this.props.setSelectedPointSize}
-              title_reset='Reset size of selected points.'
+              title_reset='Reset size of selected points to default.'
             />
             <PointFormat 
               size={this.props.selected_border_size}
@@ -91,7 +91,7 @@ class ScatterplotOptions extends React.Component {
               max_size={MAX_SELECTED_BORDER_SIZE}
               step={BORDER_SIZE_STEP}
               handle_change={this.props.setSelectedBorderSize}
-              title_reset='Reset border width of selected points.'
+              title_reset='Reset border width of selected points to default.'
             />
           </div>
         </div>
