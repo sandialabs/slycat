@@ -9,6 +9,9 @@
   tbody th.variable-name {
     border-right: 1px solid #DDD;
   }
+  tbody td.axis-input {
+    white-space: nowrap;
+  }
   input.variable-range.contains-user-input {
     font-weight: bold;
     color: black;
@@ -20,6 +23,7 @@
   /* Remove number spinner controls from Firefox */
   input[type=number] {
     -moz-appearance: textfield;
+    max-width: 120px;
   }
   .lessThanValidationMessageCell {
     width: 25px;

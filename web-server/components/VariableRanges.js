@@ -31,7 +31,6 @@ export default class VariableRanges extends React.Component {
 
     this.names = props.metadata['column-names'];
     this.types = props.metadata['column-types'];
-    this.width = '60px';
     this.text_align = 'text-center';
     this.class = 'slycat-variable-ranges';
   }
@@ -169,14 +168,14 @@ export default class VariableRanges extends React.Component {
                     >
                       {variable.dataMin}
                     </td>
-                    <td className={`align-middle ${this.text_align} axis-min`}>
+                    <td className={`align-middle ${this.text_align} axis-min axis-input`}>
                       <div className='input-group input-group-sm'>
                         <input 
                           type='number' 
                           className={`form-control form-control-sm variable-range axis-min validationPopover
                             ${this.state[minNameValid] ? 'valid' : 'is-invalid'}
                             ${this.state[minName] != '' ? 'contains-user-input' : ''}`} 
-                          style={{width: this.width}}
+                          // style={{minWidth: this.width}}
                           name={minName}
                           placeholder={variable.dataMin}
                           value={this.state[minName]}
@@ -208,8 +207,7 @@ export default class VariableRanges extends React.Component {
                       </span>
                     </td>
                     <td 
-                      className={`align-middle ${this.text_align} axis-max`}
-                      style={{position: 'relative'}}
+                      className={`align-middle ${this.text_align} axis-max axis-input`}
                     >
                       <div className='input-group input-group-sm'>
                         <input 
@@ -217,7 +215,6 @@ export default class VariableRanges extends React.Component {
                             className={`form-control form-control-sm variable-range axis-max validationPopover
                             ${this.state[maxNameValid] ? 'valid' : 'is-invalid'}
                             ${this.state[maxName] != '' ? 'contains-user-input' : ''}`}
-                          style={{width: this.width}}
                           name={maxName}
                           placeholder={variable.dataMax}
                           value={this.state[maxName]}
