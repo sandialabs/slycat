@@ -160,7 +160,7 @@ export default class VariableRanges extends React.Component {
                 return (
                   <tr key={index}>
                     <th scope='row' 
-                      className='col-form-label-sm align-middle variable-name px-2'>
+                      className='align-middle variable-name px-2'>
                       {variable.name}
                     </th>
                     <td 

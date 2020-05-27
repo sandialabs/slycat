@@ -29,7 +29,7 @@ export default function VariableAliasLabels(props) {
             let userInput = props.variableAliases[index] != undefined;
             return (
               <tr key={index}>
-                <th scope='row' className='col-form-label-sm align-middle variable-name'>{variable}</th>
+                <th scope='row' className='align-middle variable-name'>{variable}</th>
                 <td>
                 <div className='input-group input-group-sm'>
                     <input type='text' 
