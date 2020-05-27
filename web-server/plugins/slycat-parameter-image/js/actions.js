@@ -30,9 +30,11 @@ export function changeFontSize(event) {
 }
 
 export function changeFontFamily(event) {
+  let fontFamily = event.currentTarget.value != undefined ? 
+    event.currentTarget.value : event.currentTarget.dataset.value;
   return { 
     type: CHANGE_FONT_FAMILY, 
-    fontFamily: event.currentTarget.innerText 
+    fontFamily: fontFamily
   }
 }
 

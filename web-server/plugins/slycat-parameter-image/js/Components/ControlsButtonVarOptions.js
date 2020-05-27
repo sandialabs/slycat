@@ -139,9 +139,11 @@ class ControlsButtonVarOptions extends React.Component {
 
     const fontItems = fonts.map((font, index) => (
       <a key={index} 
-        href='#' onClick={this.props.changeFontFamily}
+        href='#' 
+        onClick={this.props.changeFontFamily}
         style={{fontFamily: font.fontFamily}} 
         className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
+        data-value={font.name}
       >
         {font.name}
       </a>
@@ -197,8 +199,14 @@ class ControlsButtonVarOptions extends React.Component {
                           <label className='pr-2' htmlFor='font-family'>Font</label>
                           <div className='btn-group btn-group-sm'>
                             <div className='btn-group dropdown font-family-dropdown'>
-                              <button className='btn btn-sm border-secondary text-dark dropdown-toggle' type='button' id='font-family' 
-                                data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style={{fontFamily: this.props.font_family}}>
+                              <button 
+                                className='btn btn-sm border-secondary text-dark dropdown-toggle' 
+                                type='button' 
+                                id='font-family' 
+                                data-toggle='dropdown' 
+                                aria-haspopup='true' 
+                                aria-expanded='false' 
+                                style={{fontFamily: this.props.font_family}}>
                                 {this.props.font_family}
                               </button>
                               <div className='dropdown-menu' aria-labelledby='dropdownMenu1'>
@@ -209,9 +217,9 @@ class ControlsButtonVarOptions extends React.Component {
                               className='btn btn-outline-secondary' 
                               type='button'
                               title='Reset font family to default.'
-                              value=''
-                              // disabled={!userInput}
-                              // onClick={clearLabel}
+                              value={DEFAULT_FONT_FAMILY}
+                              onClick={this.props.changeFontFamily}
+                              disabled={this.props.font_family == DEFAULT_FONT_FAMILY}
                             >
                               <FontAwesomeIcon icon={faTimes} />
                             </button>
@@ -235,9 +243,9 @@ class ControlsButtonVarOptions extends React.Component {
                                 className='btn btn-outline-secondary' 
                                 type='button'
                                 title='Reset font size to default.'
-                                value=''
-                                // disabled={!userInput}
-                                // onClick={clearLabel}
+                                value={DEFAULT_FONT_SIZE}
+                                disabled={this.props.font_size == DEFAULT_FONT_SIZE}
+                                onClick={this.props.changeFontSize}
                               >
                                 <FontAwesomeIcon icon={faTimes} />
                               </button>
