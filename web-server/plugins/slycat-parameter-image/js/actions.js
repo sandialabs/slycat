@@ -9,6 +9,7 @@ export const CHANGE_FONT_FAMILY = 'CHANGE_FONT_FAMILY'
 export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'
 export const CHANGE_VARIABLE_ALIAS_LABEL = 'CHANGE_VARIABLE_ALIAS_LABEL'
 export const REMOVE_VARIABLE_ALIAS_LABEL = 'REMOVE_VARIABLE_ALIAS_LABEL'
+export const REMOVE_ALL_VARIABLE_ALIAS_LABELS = 'REMOVE_ALL_VARIABLE_ALIAS_LABELS'
 export const CHANGE_CURRENT_FRAME = 'CHANGE_CURRENT_FRAME'
 export const CHANGE_THREED_COLORMAP = 'CHANGE_THREED_COLORMAP'
 export const UPDATE_THREE_D_COLORBY = 'UPDATE_THREE_D_COLORBY'
@@ -21,6 +22,7 @@ export const SET_SELECTED_POINT_SIZE = 'SET_SELECTED_POINT_SIZE'
 export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
 export const SET_VARIABLE_RANGE = 'SET_VARIABLE_RANGE'
 export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
+export const CLEAR_ALL_VARIABLE_RANGES = 'CLEAR_ALL_VARIABLE_RANGES'
 
 export function changeFontSize(event) {
   return { 
@@ -47,8 +49,8 @@ export function changeAxesVariableScale(event) {
 }
 
 export function changeVariableAliasLabels(event) {
-  let labelTrimmed = event.currentTarget.value.trim();
-  if(labelTrimmed == '')
+  let label = event.currentTarget.value;
+  if(label == '')
   {
     return {
       type: REMOVE_VARIABLE_ALIAS_LABEL, 
@@ -58,8 +60,12 @@ export function changeVariableAliasLabels(event) {
   return { 
     type: CHANGE_VARIABLE_ALIAS_LABEL, 
     aliasVariable: event.currentTarget.name, 
-    aliasLabel: labelTrimmed 
+    aliasLabel: label 
   }
+}
+
+export function clearAllVariableAliasLabels(event) {
+  return { type: REMOVE_ALL_VARIABLE_ALIAS_LABELS }
 }
 
 export function changeCurrentFrame(frame) {
@@ -135,4 +141,8 @@ export function setVariableRange(index, value, minOrMax) {
 
 export function clearVariableRange(index, minOrMax) {
   return { type: CLEAR_VARIABLE_RANGE, index: index, minOrMax: minOrMax }
+}
+
+export function clearAllVariableRanges() {
+  return { type: CLEAR_ALL_VARIABLE_RANGES }
 }

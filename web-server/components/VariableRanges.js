@@ -70,6 +70,21 @@ export default class VariableRanges extends React.Component {
     $(`.${this.class} .validationPopover.valid`).popover('hide');
   }
 
+  clearAllVariableRanges = () => {
+    // Called by ControlsButtonVarOptions component using a reference
+    // to inform that all variable ranges have been cleared in the Redux store
+    // so we need to clear the local state too to update the UI.
+    let inputsArray = this.props.numericVariables.map((variable, index) => {
+      return {
+        [this.getName(variable.index, true)] : '',
+        [`${this.getName(variable.index, true)}_valid`] : true,
+        [this.getName(variable.index, false)] : '',
+        [`${this.getName(variable.index, false)}_valid`] : true,
+      }
+    });
+    this.setState(Object.assign(...inputsArray));
+  }
+
   getName = (index, minBool) => {
     return `${minBool ? 'min' : 'max'}_${index}`;
   }

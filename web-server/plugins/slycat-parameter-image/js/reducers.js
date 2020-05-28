@@ -4,6 +4,7 @@ import {
   CHANGE_AXES_VARIABLE_SCALE,
   CHANGE_VARIABLE_ALIAS_LABEL,
   REMOVE_VARIABLE_ALIAS_LABEL,
+  REMOVE_ALL_VARIABLE_ALIAS_LABELS,
   CHANGE_CURRENT_FRAME,
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
@@ -16,6 +17,7 @@ import {
   SET_SELECTED_BORDER_SIZE,
   SET_VARIABLE_RANGE,
   CLEAR_VARIABLE_RANGE,
+  CLEAR_ALL_VARIABLE_RANGES,
 } from './actions';
 
 import { 
@@ -79,6 +81,14 @@ export default function ps_reducer(state = initialState, action) {
         derived: {
           ...state.derived,
           variableAliases: variableAliasesClone
+        }
+      })
+    
+    case REMOVE_ALL_VARIABLE_ALIAS_LABELS:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          variableAliases: {}
         }
       })
 
@@ -241,10 +251,20 @@ export default function ps_reducer(state = initialState, action) {
       if(variableRangesClone[action.index] != undefined)
       {
         delete variableRangesClone[action.index][action.minOrMax];
+        // Delete the entire entry if there is no other value in it (min or max)
+        if(Object.keys(variableRangesClone[action.index]).length === 0)
+        {
+          delete variableRangesClone[action.index];
+        }
       }
 
       return Object.assign({}, state, {
         variableRanges: variableRangesClone
+      })
+    
+    case CLEAR_ALL_VARIABLE_RANGES:
+      return Object.assign({}, state, {
+        variableRanges: {}
       })
 
     default:

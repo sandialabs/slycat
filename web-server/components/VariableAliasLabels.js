@@ -38,7 +38,7 @@ export default function VariableAliasLabels(props) {
                       minLength='0' 
                       maxLength='256'
                       name={index}
-                      defaultValue={props.variableAliases[index]} 
+                      value={props.variableAliases[index] ? props.variableAliases[index] : ''} 
                       placeholder={variables[index]}
                       onChange={props.onChange} />
                     <div className='input-group-append'>

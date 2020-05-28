@@ -4,8 +4,10 @@ import {
   changeFontFamily, 
   changeAxesVariableScale,
   changeVariableAliasLabels,
+  clearAllVariableAliasLabels,
   setVariableRange,
   clearVariableRange,
+  clearAllVariableRanges,
 } from '../actions';
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
@@ -29,10 +31,25 @@ class ControlsButtonVarOptions extends React.Component {
   constructor(props) {
     super(props);
 
+    this.variableRangesRef = React.createRef();
+
     this.modalId = 'varOptionsModal';
     this.title = 'Display Settings';
   }
 
+  componentDidMount() {
+    // Showing and hiding Clear All buttons based on current tab
+    let thisModal = $(`#${this.modalId}`);
+    $(`a[data-toggle="tab"]`, thisModal).on('shown.bs.tab', function (e) {
+      // First let's hide all .tabDependent elements
+      $(`.tabDependent`, thisModal).addClass('d-none');
+      // Now let's show the appropirate elements based on the 
+      // newly activated tab's data-show attribute
+      let newTab = e.target; // newly activated tab
+      let previousTab = e.relatedTarget; // previous active tab
+      $(`.${newTab.getAttribute('aria-controls')}`, thisModal).removeClass('d-none');
+    });
+  }
 
   closeModal = (e) => {
     // Write variable aliases to database
@@ -81,6 +98,14 @@ class ControlsButtonVarOptions extends React.Component {
         dialog.ajax_error("There was an error saving the variable alias labels to the model's artifact.")();
       }
     });
+  }
+
+  clearAllVariableRanges = () => {
+    // First clear all variable ranges in Redux state;
+    this.props.clearAllVariableRanges();
+    // Then let VariableRanges component know this happened because it needs
+    // to update its local state accordingly. 
+    this.variableRangesRef.current.clearAllVariableRanges();
   }
 
   render() {
@@ -270,6 +295,7 @@ class ControlsButtonVarOptions extends React.Component {
                       variableRanges={this.props.variableRanges}
                       setVariableRange={this.props.setVariableRange}
                       clearVariableRange={this.props.clearVariableRange}
+                      ref={this.variableRangesRef}
                     />
                   </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
@@ -286,7 +312,25 @@ class ControlsButtonVarOptions extends React.Component {
 
               </div>
               <div className='modal-footer'>
-                <button type='button' className='btn btn-primary' onClick={this.closeModal}
+                <div className='mr-auto'>
+                  <button type='button' 
+                    className='btn btn-danger mr-2 tabDependent variable-ranges-tab-content d-none' 
+                    disabled={Object.keys(this.props.variableRanges).length === 0}
+                    onClick={this.clearAllVariableRanges}
+                  >
+                    Clear All Variable Ranges
+                  </button>
+                  <button type='button' 
+                    className='btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none'
+                    disabled={Object.keys(this.props.variable_aliases).length === 0}
+                    onClick={this.props.clearAllVariableAliasLabels}
+                  >
+                    Clear All Variable Alias Labels
+                  </button>
+                </div>
+                <button type='button' 
+                  className='btn btn-primary' 
+                  onClick={this.closeModal}
                 >
                   Close
                 </button>
@@ -347,7 +391,9 @@ export default connect(
     changeFontFamily,
     changeAxesVariableScale,
     changeVariableAliasLabels,
+    clearAllVariableAliasLabels,
     setVariableRange,
     clearVariableRange,
+    clearAllVariableRanges,
   }
 )(ControlsButtonVarOptions)
