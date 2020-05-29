@@ -27,7 +27,7 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons'
 export const DEFAULT_FONT_SIZE = 15;
 export const DEFAULT_FONT_FAMILY = 'Arial';
 
-class ControlsButtonVarOptions extends React.Component {
+class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
 
@@ -291,7 +291,7 @@ class ControlsButtonVarOptions extends React.Component {
                     <VariableRanges 
                       metadata={this.props.metadata}
                       table_statistics={this.props.table_statistics}
-                      numericVariables={this.props.numericVariables}
+                      variableAliases={this.props.variable_aliases}
                       variableRanges={this.props.variableRanges}
                       setVariableRange={this.props.setVariableRange}
                       clearVariableRange={this.props.clearVariableRange}
@@ -348,38 +348,11 @@ class ControlsButtonVarOptions extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
-  let names = ownProps.metadata['column-names'];
-  let variableAliases = state.derived.variableAliases;
-
-  let getVariableAlias = (index) => {
-    let alias = names[index];
-    if(variableAliases[index] !== undefined)
-    {
-      alias = variableAliases[index];
-    }
-    return alias;
-  }
-
-  let numericVariables = names
-    .flatMap((name, index) => {
-    if(ownProps.metadata['column-types'][index] != 'string')
-    {
-      return [{
-        index: index,
-        name: getVariableAlias(index),
-        dataMin: ownProps.table_statistics[index].min,
-        dataMax: ownProps.table_statistics[index].max,
-      }];
-    }
-    return [];
-  });
-
   return {
     font_size: state.fontSize,
     font_family: state.fontFamily,
     axes_variables_scale: state.axesVariables,
     variable_aliases: state.derived.variableAliases,
-    numericVariables: numericVariables,
     variableRanges: state.variableRanges,
   }
 }
