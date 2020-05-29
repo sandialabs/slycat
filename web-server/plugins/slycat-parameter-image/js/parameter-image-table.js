@@ -87,7 +87,7 @@ $.widget("parameter_image.table",
       let name;
       if(window.store.getState().derived.variableAliases[variable] !== undefined)
       {
-        name= window.store.getState().derived.variableAliases[variable];
+        name = window.store.getState().derived.variableAliases[variable];
       }
       else
       {
@@ -329,22 +329,35 @@ $.widget("parameter_image.table",
     table_helpers._set_selected_rows_no_trigger(self);
 
     const update_variable_aliases = () => {
-      let label;
-
-      for(const [index, element] of self.columns.entries())
+      // console.log('update_variable_aliases in parameter-image-table.js');
+      // Only do this if variableAliases changed
+      if(!_.isEqual(previousState.derived.variableAliases, window.store.getState().derived.variableAliases))
       {
-        let title = get_column_header_title(self.columns[index].id);
-        let tooltip = get_column_header_tooltip(self.columns[index].id);
-        // Update column name and tooltip if it has changed
-        if(label != self.columns[index].name)
+        // console.log('Looks like variableAliases changed, so will update.');
+        // const t0 = performance.now();
+        let label;
+  
+        for(const [index, element] of self.columns.entries())
         {
-          self.columns[index].name = title;
-          self.columns[index].tooltip = tooltip;
-          self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
+          let title = get_column_header_title(self.columns[index].id);
+          let tooltip = get_column_header_tooltip(self.columns[index].id);
+          // Update column name and tooltip if it has changed
+          if(label != self.columns[index].name)
+          {
+            self.columns[index].name = title;
+            self.columns[index].tooltip = tooltip;
+            self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
+          }
         }
+        // const t1 = performance.now();
+        // console.log(`Call to update_variable_aliases in parameter-image-table.js took ${t1 - t0} milliseconds.`);
       }
+      // Update previousState
+      previousState = window.store.getState();
     };
 
+    // Let's keep track of the previous state by saving it
+    let previousState = window.store.getState();
     window.store.subscribe(update_variable_aliases);
   },
 
