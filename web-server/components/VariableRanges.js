@@ -3,8 +3,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faLessThan } from '@fortawesome/free-solid-svg-icons'
 import css from "css/slycat-variable-ranges.scss";
 import $ from 'jquery';
+import _ from 'lodash';
 
-export default class VariableRanges extends React.PureComponent {
+export default class VariableRanges extends React.Component {
   constructor(props) {
     super(props);
 
@@ -65,6 +66,13 @@ export default class VariableRanges extends React.PureComponent {
     // Disabling popover tooltips for valid input fields.
     $(`.${this.class} .validationPopover.valid`).popover('disable');
 
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log('shouldComponentUpdate in VariableRanges');
+    let stateDifferent = !_.isEqual(this.state, nextState)
+    let propsDifferent = !_.isEqual(this.props.variableAliases, nextProps.variableAliases)
+    return stateDifferent || propsDifferent;
   }
 
   componentDidUpdate() {
