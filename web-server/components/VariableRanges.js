@@ -69,7 +69,7 @@ export default class VariableRanges extends React.Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldComponentUpdate in VariableRanges');
+    // console.log('shouldComponentUpdate in VariableRanges');
     let stateDifferent = !_.isEqual(this.state, nextState)
     let propsDifferent = !_.isEqual(this.props.variableAliases, nextProps.variableAliases)
     return stateDifferent || propsDifferent;
@@ -177,8 +177,8 @@ export default class VariableRanges extends React.Component {
   }
 
   render() {
-    console.log('render in VariableRanges');
-    const t0 = performance.now();
+    // console.log('render in VariableRanges');
+    // const t0 = performance.now();
 
     let result = (
       <div className={`${this.class} ${this.props.uniqueID}`}>
@@ -291,8 +291,8 @@ export default class VariableRanges extends React.Component {
       </div>
     );
 
-    const t1 = performance.now();
-    console.log(`Call to render VariableRanges took ${t1 - t0} milliseconds.`);
+    // const t1 = performance.now();
+    // console.log(`Call to render VariableRanges took ${t1 - t0} milliseconds.`);
 
     return result;
   }
