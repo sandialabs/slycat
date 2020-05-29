@@ -40,6 +40,7 @@ class ScatterplotOptions extends React.Component {
   }
 
   render() {
+    // console.log('ScatterplotOptions render');
     return (
       <div className={`slycat-scatterplot-options ${this.props.uniqueID}`}>
         <div className='slycat-point-size'>

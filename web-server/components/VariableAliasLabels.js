@@ -16,7 +16,7 @@ export default class VariableAliasLabels extends React.PureComponent {
   }
 
   render() {
-    console.log('VariableAliasLabels render');
+    // console.log('VariableAliasLabels render');
     return (
       <div className={`slycat-variable-alias-labels ${this.props.uniqueID}`}>
         <table className='table table-striped table-hover table-sm table-borderless'>
