@@ -202,87 +202,20 @@ export default class VariableRanges extends React.Component {
               let maxNameValid = `${maxName}_valid`;
 
               return (
-                <tr key={index}>
-                  <th scope='row' 
-                    className='align-middle variable-name px-2'>
-                    {this.getVariableAlias(variable.index)}
-                  </th>
-                  <td 
-                    className={`align-middle px-2 ${this.text_align} data-min`}
-                  >
-                    {variable.dataMin}
-                  </td>
-                  <td className={`align-middle ${this.text_align} axis-min axis-input`}>
-                    <div className='input-group input-group-sm'>
-                      <input 
-                        type='number' 
-                        className={`form-control form-control-sm variable-range axis-min validationPopover
-                          ${this.state[minNameValid] ? 'valid' : 'is-invalid'}
-                          ${this.state[minName] != '' ? 'contains-user-input' : ''}`} 
-                        name={minName}
-                        placeholder={variable.dataMin}
-                        value={this.state[minName]}
-                        onChange={this.handleChange}
-                      />
-                      <div className='input-group-append'>
-                        <button 
-                          className='btn btn-outline-secondary' 
-                          type='button'
-                          title='Clear axis min.'
-                          name={minName}
-                          value=''
-                          disabled={this.state[minName] == ''}
-                          onClick={this.handleChange}
-                        >
-                          <FontAwesomeIcon icon={faTimes} />
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                  <td 
-                    className={`lessThanValidationMessageCell align-middle ${this.text_align}`}
-                  >
-                    <span 
-                      className={`text-danger font-weight-bold lessThanValidationMessage validationPopover is-invalid
-                        ${this.state[minNameValid] && this.state[maxNameValid] ? 'valid' : ''}
-                      `}
-                    >
-                      <FontAwesomeIcon icon={faLessThan} />
-                    </span>
-                  </td>
-                  <td 
-                    className={`align-middle ${this.text_align} axis-max axis-input`}
-                  >
-                    <div className='input-group input-group-sm'>
-                      <input 
-                        type='number' 
-                          className={`form-control form-control-sm variable-range axis-max validationPopover
-                          ${this.state[maxNameValid] ? 'valid' : 'is-invalid'}
-                          ${this.state[maxName] != '' ? 'contains-user-input' : ''}`}
-                        name={maxName}
-                        placeholder={variable.dataMax}
-                        value={this.state[maxName]}
-                        onChange={this.handleChange}
-                      />
-                      <div className='input-group-append'>
-                        <button 
-                          className='btn btn-outline-secondary' 
-                          type='button' 
-                          title='Clear axis max.'
-                          name={maxName}
-                          value=''
-                          disabled={this.state[maxName] == ''}
-                          onClick={this.handleChange}
-                        >
-                          <FontAwesomeIcon icon={faTimes} />
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                  <td className={`align-middle px-2 ${this.text_align} data-max`}>
-                    {variable.dataMax}
-                  </td>
-                </tr>
+                <VariableRangesRow 
+                  key={index}
+                  alias={this.getVariableAlias(variable.index)}
+                  text_align={this.text_align}
+                  data_min={variable.dataMin}
+                  min_valid={this.state[minNameValid]}
+                  min_value={this.state[minName]}
+                  min_name={minName}
+                  data_max={variable.dataMax}
+                  max_valid={this.state[maxNameValid]}
+                  max_value={this.state[maxName]}
+                  max_name={maxName}
+                  handleChange={this.handleChange}
+                />
               )
             })
           }
@@ -295,5 +228,93 @@ export default class VariableRanges extends React.Component {
     // console.log(`Call to render VariableRanges took ${t1 - t0} milliseconds.`);
 
     return result;
+  }
+}
+
+class VariableRangesRow extends React.PureComponent {
+  render() {
+    return (
+      <tr key={this.props.index}>
+        <th scope='row' 
+          className='align-middle variable-name px-2'>
+          {this.props.alias}
+        </th>
+        <td 
+          className={`align-middle px-2 ${this.props.text_align} data-min`}
+        >
+          {this.props.data_min}
+        </td>
+        <td className={`align-middle ${this.props.text_align} axis-min axis-input`}>
+          <div className='input-group input-group-sm'>
+            <input 
+              type='number' 
+              className={`form-control form-control-sm variable-range axis-min validationPopover
+                ${this.props.min_valid ? 'valid' : 'is-invalid'}
+                ${this.props.min_value != '' ? 'contains-user-input' : ''}`} 
+              name={this.props.min_name}
+              placeholder={this.props.data_min}
+              value={this.props.min_value}
+              onChange={this.props.handleChange}
+            />
+            <div className='input-group-append'>
+              <button 
+                className='btn btn-outline-secondary' 
+                type='button'
+                title='Clear axis min.'
+                name={this.props.min_name}
+                value=''
+                disabled={this.props.min_value == ''}
+                onClick={this.props.handleChange}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+          </div>
+        </td>
+        <td 
+          className={`lessThanValidationMessageCell align-middle ${this.props.text_align}`}
+        >
+          <span 
+            className={`text-danger font-weight-bold lessThanValidationMessage validationPopover is-invalid
+              ${this.props.min_valid && this.props.max_valid ? 'valid' : ''}
+            `}
+          >
+            <FontAwesomeIcon icon={faLessThan} />
+          </span>
+        </td>
+        <td 
+          className={`align-middle ${this.props.text_align} axis-max axis-input`}
+        >
+          <div className='input-group input-group-sm'>
+            <input 
+              type='number' 
+                className={`form-control form-control-sm variable-range axis-max validationPopover
+                ${this.props.max_valid ? 'valid' : 'is-invalid'}
+                ${this.props.max_value != '' ? 'contains-user-input' : ''}`}
+              name={this.props.max_name}
+              placeholder={this.props.data_max}
+              value={this.props.max_value}
+              onChange={this.props.handleChange}
+            />
+            <div className='input-group-append'>
+              <button 
+                className='btn btn-outline-secondary' 
+                type='button' 
+                title='Clear axis max.'
+                name={this.props.max_name}
+                value=''
+                disabled={this.props.max_value == ''}
+                onClick={this.props.handleChange}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+          </div>
+        </td>
+        <td className={`align-middle px-2 ${this.props.text_align} data-max`}>
+          {this.props.data_max}
+        </td>
+      </tr>
+    );
   }
 }
