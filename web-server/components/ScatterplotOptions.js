@@ -32,7 +32,7 @@ export const MAX_SELECTED_BORDER_SIZE = (MAX_SELECTED_POINT_SIZE / 2) - 0.5;
 export const POINT_SIZE_STEP = 1;
 export const BORDER_SIZE_STEP = 0.1;
 
-class ScatterplotOptions extends React.Component {
+class ScatterplotOptions extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
