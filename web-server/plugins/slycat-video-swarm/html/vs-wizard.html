@@ -154,6 +154,9 @@ S. Martin
       <div class="invalid-feedback">
         Please enter a working directory.
       </div>
+      <div>
+        <input type="checkbox" style="margin-top:10px" data-bind="checked: delete_workdir"> Delete working directory when computations are complete.</input>
+      </div>
 
       <label style="margin-top:30px">Movie Directory
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
@@ -162,10 +165,8 @@ S. Martin
       </label>
       <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
       <div class="invalid-feedback">
-        Please enter a working directory.
+        Please enter a movie directory.
       </div>
-
-      <input type="checkbox" style="margin-top:10px" data-bind="checked: delete_workdir"> Delete working directory when computations are complete.</input>
       <br>
 
       <label style="margin-top:30px">Video Frame Rate
