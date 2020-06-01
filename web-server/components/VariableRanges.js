@@ -141,8 +141,8 @@ export default class VariableRanges extends React.Component {
     let oppositeNum = parseFloat(previousState[oppositeName]);
     let data = parseFloat(props.table_statistics[index][prefix]);
     let oppositeData = parseFloat(props.table_statistics[index][oppositePrefix]);
-    let compare = oppositeInput == '' || Number.isNaN(oppositeNum) ? oppositeData : oppositeNum;
-    let oppositeCompare = inputString == '' || Number.isNaN(inputNum) ? data : inputNum;
+    let compare = oppositeInput === '' || Number.isNaN(oppositeNum) ? oppositeData : oppositeNum;
+    let oppositeCompare = inputString === '' || Number.isNaN(inputNum) ? data : inputNum;
     
     return {
       [`${name}_valid`]: this.validateMinOrMax(inputString, inputNum, min, compare, index),
@@ -154,7 +154,7 @@ export default class VariableRanges extends React.Component {
   validateMinOrMax = (inputString, inputNum, min, compare, index) => {
     // console.log('validateMinOrMax');
     // Empty field is always valid because the data value overrides it
-    if(inputString == '')
+    if(inputString === '')
     {
       // Clear min or max in redux store since it's blank
       this.props.clearVariableRange(index, min ? 'min' : 'max');
@@ -250,7 +250,7 @@ class VariableRangesRow extends React.PureComponent {
               type='number' 
               className={`form-control form-control-sm variable-range axis-min validationPopover
                 ${this.props.min_valid ? 'valid' : 'is-invalid'}
-                ${this.props.min_value != '' ? 'contains-user-input' : ''}`} 
+                ${this.props.min_value !== '' ? 'contains-user-input' : ''}`} 
               name={this.props.min_name}
               placeholder={this.props.data_min}
               value={this.props.min_value}
@@ -263,7 +263,7 @@ class VariableRangesRow extends React.PureComponent {
                 title='Clear axis min.'
                 name={this.props.min_name}
                 value=''
-                disabled={this.props.min_value == ''}
+                disabled={this.props.min_value === ''}
                 onClick={this.props.handleChange}
               >
                 <FontAwesomeIcon icon={faTimes} />
@@ -290,7 +290,7 @@ class VariableRangesRow extends React.PureComponent {
               type='number' 
                 className={`form-control form-control-sm variable-range axis-max validationPopover
                 ${this.props.max_valid ? 'valid' : 'is-invalid'}
-                ${this.props.max_value != '' ? 'contains-user-input' : ''}`}
+                ${this.props.max_value !== '' ? 'contains-user-input' : ''}`}
               name={this.props.max_name}
               placeholder={this.props.data_max}
               value={this.props.max_value}
@@ -303,7 +303,7 @@ class VariableRangesRow extends React.PureComponent {
                 title='Clear axis max.'
                 name={this.props.max_name}
                 value=''
-                disabled={this.props.max_value == ''}
+                disabled={this.props.max_value === ''}
                 onClick={this.props.handleChange}
               >
                 <FontAwesomeIcon icon={faTimes} />
