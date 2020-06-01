@@ -130,6 +130,24 @@ def require_integer_parameter(value, name):
                                 "cherrypy.HTTPError 400 '%s' parameter must be an integer." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
 
+@cherrypy.tools.json_out(on=True)
+def get_last_active_time():
+    """
+    Checks when the most recent session activity occured.
+    If it occured more than 10 minutes ago, returns true.
+    If less than 10 minutes ago, returns false.
+    """
+    most_recent_time = datetime.timedelta(days=999)
+    time_threshold = datetime.timedelta(minutes = 10)
+    database = slycat.web.server.database.couchdb.connect()
+    for session in database.view("slycat/sessions", include_docs=True):
+        if session.doc["creator"] not in cherrypy.request.app.config["slycat"]["server-admins"] and (datetime.datetime.utcnow() - datetime.datetime.strptime(str(session.doc["last-active-time"]), '%Y-%m-%dT%H:%M:%S.%f')) < most_recent_time:
+            most_recent_time = session.doc["last-active-time"]
+
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(str(most_recent_time), '%Y-%m-%dT%H:%M:%S.%f')) >= time_threshold:
+        return True
+    else:
+        return False
 
 @cherrypy.tools.json_out(on=True)
 def get_projects_list(_=None):
@@ -2289,15 +2307,18 @@ def get_model_statistics(mid):
     slycat.web.server.authentication.require_project_reader(project)
 
     # amount of time it took to make the model
-    delta_creation_time = (
-        datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["created"],
-            "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    if "finished" in model and model["finished"] is not None:
+        delta_creation_time = (
+            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["created"],
+                "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    else:
+        delta_creation_time = 0
 
-    if "job_running_time" in model and "job_submit_time" in model:
+    if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
             datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-                model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     else:
         delta_queue_time = 0
 

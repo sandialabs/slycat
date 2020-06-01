@@ -3,6 +3,12 @@ import {
   CHANGE_FONT_FAMILY,
   CHANGE_AXES_VARIABLE_SCALE,
   CHANGE_VARIABLE_ALIAS_LABEL,
+  CHANGE_CURRENT_FRAME,
+  CHANGE_THREED_COLORMAP,
+  UPDATE_THREE_D_COLORBY,
+  UPDATE_THREE_D_COLORBY_OPTIONS,
+  UPDATE_THREE_D_CAMERAS,
+  UPDATE_THREE_D_SYNC,
   SET_UNSELECTED_POINT_SIZE,
   SET_UNSELECTED_BORDER_SIZE,
   SET_SELECTED_POINT_SIZE,
@@ -24,9 +30,12 @@ const initialState = {
   fontSize: 15,
   fontFamily: "Arial",
   axesVariables: {},
+  currentFrame: null,
+  threeD_sync: false,
+  three_d_colormaps: {},
 }
 
-export default function slycat(state = initialState, action) {
+export default function ps_reducer(state = initialState, action) {
   switch (action.type) {
     case CHANGE_FONT_SIZE:
       return Object.assign({}, state, {
@@ -52,6 +61,62 @@ export default function slycat(state = initialState, action) {
             [action.aliasVariable]: action.aliasLabel
           }
         }
+      })
+
+    case CHANGE_CURRENT_FRAME:
+      return Object.assign({}, state, {
+        currentFrame: action.currentFrame
+      })
+
+    case CHANGE_THREED_COLORMAP:
+      return Object.assign({}, state, {
+        threeDColormap: action.threeDColormap
+      })
+
+    case UPDATE_THREE_D_COLORBY:
+      return Object.assign({}, state, {
+        three_d_colorvars: {
+          ...state.three_d_colorvars,
+          // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
+          [action.uri]: action.colorBy
+        }
+      })
+
+    case UPDATE_THREE_D_COLORBY_OPTIONS:
+      // console.log('UPDATE_THREE_D_COLORBY_OPTIONS');
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          three_d_colorby_options: {
+            ...state.derived.three_d_colorby_options,
+            [action.uri]: action.options
+          }
+        }
+      })
+      
+    case UPDATE_THREE_D_CAMERAS:
+      let newCameras = {};
+      for(let camera of action.cameras)
+      {
+        newCameras[camera.uri] = {
+          position: camera.camera.getPosition(),
+          focalPoint: camera.camera.getFocalPoint(),
+          viewUp: camera.camera.getViewUp(),
+        }
+      }
+
+      return Object.assign({}, state, {
+        three_d_cameras: {
+          ...state.three_d_cameras,
+          // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
+          // [action.uri]: action.camera
+          ...newCameras
+        }
+      })
+    
+    case UPDATE_THREE_D_SYNC:
+      return Object.assign({}, state, {
+        threeD_sync: action.threeD_sync
       })
 
     case SET_UNSELECTED_POINT_SIZE:

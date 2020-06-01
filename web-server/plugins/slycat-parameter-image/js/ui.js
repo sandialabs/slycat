@@ -26,6 +26,7 @@ import "./parameter-image-scatterplot";
 import "./parameter-controls";
 import "./parameter-image-table";
 import "./color-switcher";
+import $ from "jquery";
 import "jquery-ui";
 // disable-selection and draggable required for jquery.layout resizing functionality
 import "jquery-ui/ui/disable-selection";
@@ -37,8 +38,15 @@ import "layout";
 import "js/slycat-range-slider"; 
 import "./category-select";
 
-import { createStore } from 'redux';
-import slycat from './reducers';
+import { createStore, applyMiddleware } from 'redux';
+import thunkMiddleware from 'redux-thunk';
+import { createLogger } from 'redux-logger';
+import throttle from "redux-throttle";
+import ps_reducer from './reducers';
+import { updateThreeDSync } from './actions';
+
+import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import { setSyncCameras, } from './vtk-camera-synchronizer';
 
 // Wait for document ready
 $(document).ready(function() {
@@ -68,7 +76,7 @@ $(document).ready(function() {
   var x_index = null;
   var y_index = null;
   var v_index = null;
-  var images_index = null;
+  var images_index = null; // Currently selected media column
   var x = null;
   var y = null;
   var v = null;
@@ -83,6 +91,8 @@ $(document).ready(function() {
   var open_images = null;
   var video_sync = null;
   var video_sync_time = null;
+
+  var threeD_sync = null;
 
   var table_ready = false;
   var scatterplot_ready = false;
@@ -323,17 +333,45 @@ $(document).ready(function() {
       
       let variable_aliases_promise = new Promise(get_variable_aliases);
       variable_aliases_promise.then(() => {
+        // Create logger for redux
+        const loggerMiddleware = createLogger();
+
+        // Create throttle for redux
+        const defaultWait = 500
+        const defaultThrottleOption = { // https://lodash.com/docs#throttle
+          leading: true,
+          trailing: true
+        }
+        const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
+
         // Create Redux store and set its state based on what's in the bookmark
         const state_tree = {
           fontSize: 15,
           fontFamily: "Arial",
           axesVariables: {},
+          threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
+          threeDColormap: vtkColorMaps.rgbPresetNames[0],
           unselected_point_size: 8,
           unselected_border_size: 1,
           selected_point_size: 16,
           selected_border_size: 2,
         }
-        window.store = createStore(slycat, {...state_tree, ...bookmark.state, derived: {variableAliases: variable_aliases}});
+        window.store = createStore(
+          ps_reducer, 
+          {
+            ...state_tree, 
+            ...bookmark.state, 
+            derived: {variableAliases: variable_aliases}
+          },
+          applyMiddleware(
+            thunkMiddleware, // Lets us dispatch() functions
+            loggerMiddleware, // Neat middleware that logs actions. 
+                              // Logger must be the last middleware in chain, 
+                              // otherwise it will log thunk and promise, 
+                              // not actual actions.
+            throttleMiddleware, // Allows throttling of actions
+          )
+        );
 
         // Save Redux state to bookmark whenever it changes
         const bookmarkReduxStateTree = () => {
@@ -477,6 +515,13 @@ $(document).ready(function() {
       {
         video_sync_time = bookmark["video-sync-time"];
       }
+
+      threeD_sync = false;
+      if("threeD_sync" in bookmark)
+      {
+        threeD_sync = bookmark["threeD_sync"];
+      }
+      setSyncCameras(threeD_sync);
 
       // Set state of selected and hidden simulations
       selected_simulations = [];
@@ -692,8 +737,8 @@ $(document).ready(function() {
           temp.push(selection[i]);
 
         selected_simulations_changed(temp);
-        $("#scatterplot").scatterplot("option", "selection",  temp);
-        $("#controls").controls("option", "selection",  temp);
+        $("#scatterplot").scatterplot("option", "selection", temp);
+        $("#controls").controls("option", "selection", temp);
       });
 
       // Changing the scatterplot selection updates the table row selection and controls ..
@@ -748,7 +793,7 @@ $(document).ready(function() {
     // Setup the scatterplot ...
     if(!scatterplot_ready && bookmark && indices && x && y && v && images !== null && colorscale
       && (selected_simulations != null) && (hidden_simulations != null) && auto_scale != null
-      && (open_images !== null) && (video_sync !== null) && (video_sync_time !== null)
+      && (open_images !== null) && (video_sync !== null) && (video_sync_time !== null) && (threeD_sync !== null)
       && window.store !== undefined
       )
     {
@@ -786,6 +831,7 @@ $(document).ready(function() {
         "auto-scale" : auto_scale,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
+        threeD_sync : threeD_sync,
         axes_font_size : axes_font_size,
         axes_font_family : axes_font_family,
         axes_variables_scale : axes_variables_scale,
@@ -860,7 +906,7 @@ $(document).ready(function() {
       && (category_columns != null) && (x_index != null) && (y_index != null) && auto_scale != null
       && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
       && indices && (open_images !== null) & (video_sync !== null) && (video_sync_time !== null)
-      && window.store !== undefined
+      && (threeD_sync !== null) && window.store !== undefined
       )
     {
       controls_ready = true;
@@ -917,6 +963,7 @@ $(document).ready(function() {
         open_images : open_images,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
+        threeD_sync : threeD_sync,
       });
 
       // Changing the x variable updates the controls ...
@@ -1021,6 +1068,12 @@ $(document).ready(function() {
       $("#controls").bind("video-sync", function(event, video_sync)
       {
         video_sync_option_changed(video_sync);
+      });
+
+      // Changing the 3d sync option updates the scatterplot and logs it ...
+      $("#controls").bind("threeD_sync", function(event, threeD_sync)
+      {
+        threeD_sync_option_changed(threeD_sync);
       });
 
       // Changing the video sync time updates the scatterplot and logs it ...
@@ -1145,6 +1198,29 @@ $(document).ready(function() {
           }
         }
         $("#scatterplot").scatterplot("pin", simulations_to_pin);
+      });
+
+      // Log changes to selection ...
+      $("#controls").bind("select-pinned", function(event, open_images_to_select)
+      {
+        let pinned_simulations = [];
+
+        for(const open_image of open_images_to_select)
+        {
+          // Removing any hidden simulations from those that will be selected
+          if(!hidden_simulations.includes(open_image.index))
+          {
+            pinned_simulations.push(open_image.index);
+          }
+        }
+
+        // Merging unhidden pinned simulations with currently selected simulations
+        let to_select = _.union(pinned_simulations, selected_simulations);
+
+        selected_simulations_changed(to_select);
+        $("#scatterplot").scatterplot("option", "selection", to_select);
+        $("#controls").controls("option", "selection", to_select);
+        $("#table").table("option", "row-selection", to_select);
       });
 
       // Log changes to hidden selection ...
@@ -1381,6 +1457,7 @@ $(document).ready(function() {
 
   function selected_simulations_changed(selection)
   {
+    // console.log("selected_simulations_changed");
     // Logging every selected item is too slow, so just log the count instead.
     $.ajax(
     {
@@ -1456,6 +1533,21 @@ $(document).ready(function() {
       url : api_root + "events/models/" + model_id + "/video-sync-time/" + video_sync_time
     });
     bookmarker.updateState( {"video-sync-time" : video_sync_time} );
+  }
+
+  function threeD_sync_option_changed(threeD_sync_value)
+  {
+    threeD_sync = threeD_sync_value;
+    $("#scatterplot").scatterplot("option", "threeD_sync", threeD_sync);
+    setSyncCameras(threeD_sync);
+    // Update Redux state
+    window.store.dispatch(updateThreeDSync(threeD_sync_value));
+    $.ajax(
+    {
+      type : "POST",
+      url : api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync
+    });
+    bookmarker.updateState( {"threeD_sync" : threeD_sync} );
   }
 
   function open_images_changed(selection)
@@ -1596,13 +1688,13 @@ $(document).ready(function() {
       });
     }
 
-    $("#controls").controls("option", "disable_hide_show",  filter_manager.active_filters().length > 0);
+    $("#controls").controls("option", "disable_hide_show", filter_manager.active_filters().length > 0);
 
     filter_manager.active_filters.subscribe(function(newValue) {
       filters_changed(newValue);
       if($("#controls").data("parameter_image-controls"))
       {
-        $("#controls").controls("option", "disable_hide_show",  newValue.length > 0);
+        $("#controls").controls("option", "disable_hide_show", newValue.length > 0);
       }
     });
   }
@@ -1704,6 +1796,14 @@ $(document).ready(function() {
     // We have no more filters, so revert to any manually hidden simulations
     else
     {
+      // Abort any remaining filter xhr calls since the last filter was closed
+      // and we don't want long calls to come back now and filter anything.
+      if(filterxhr)
+      {
+        filterxhr.abort();
+        console.debug('filter xhr aborted because last filter was closed');
+      }
+
       // Clear hidden_simulations
       while(hidden_simulations.length > 0) {
         hidden_simulations.pop();

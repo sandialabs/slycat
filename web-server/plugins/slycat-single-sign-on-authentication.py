@@ -78,6 +78,8 @@ def register_slycat_plugin(context):
                     session = None
                 # set the auth user to the one sent in by apache
                 cherrypy.request.login = auth_user
+                session["last-active-time"] = str(datetime.datetime.utcnow().isoformat())
+                couchdb.save(session)
                 # Apply (optional) authentication rules.
             except Exception as e:
                 cherrypy.log.error("@%s: could not get db session from cookie for %s" % (e, remote_ip))

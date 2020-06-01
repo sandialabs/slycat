@@ -698,16 +698,24 @@ module.get_model_command_fetch = function(params, errorFunction)
     if (!response.ok) {
         throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
-    if (Object.keys(response).indexOf("json") > -1){
-      return response.json();
-    }
-    return {};
+    return response.json();
   }).catch((error) => {
     if (errorFunction) {
       errorFunction(error)
     }else{
       throw error;
     }
+  });
+};
+
+module.get_last_active_time_fetch = function()
+{
+  return fetch(`${api_root}server/last_active_time`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
   });
 };
 

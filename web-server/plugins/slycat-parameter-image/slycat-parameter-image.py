@@ -102,7 +102,6 @@ def register_slycat_plugin(context):
     Returns:
       [json] -- {"success": "success changed linked models"}
     """
-
         linked_models = kwargs["linked_models"]
         if len(linked_models) <= 0:
             response = {"success": "success nothing to change"}
@@ -111,6 +110,7 @@ def register_slycat_plugin(context):
         project_data = database.get("project_data", did)
         attachment = database.get_attachment(project_data, "content")
         file_attachment = attachment.read()
+        file_attachment = file_attachment.decode('utf-8')
         models = [model for model in
                   database.scan("slycat/project-models", startkey=model["project"], endkey=model["project"])]
         for model in models:
@@ -123,8 +123,7 @@ def register_slycat_plugin(context):
                         project_data["mid"].append(model["_id"])
                         database.save(project_data)
                         database.save(model)
-                    slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [file_attachment], model,
-                                                          "data-table")
+                    slycat.web.server.parse_existing_file(database, "slycat-csv-parser", True, [file_attachment], model, "data-table")
         response = {"success": "success changed linked models"}
         return json.dumps(response)
 

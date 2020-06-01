@@ -53,6 +53,8 @@ def register_slycat_plugin(context):
                     cherrypy.response.cookie["slycatauth"]['expires'] = 0
                     session = None
                 cherrypy.request.login = 'user_name'
+                session["last-active-time"] = str(datetime.datetime.utcnow().isoformat())
+                couchdb.save(session)
                 # Apply (optional) authentication rules.
             except Exception as e:
                 slycat.web.server.create_single_sign_on_session(remote_ip, 'user_name', secure=False)

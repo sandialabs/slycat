@@ -1,6 +1,6 @@
 'use strict';
 import * as React from 'react';
-import uuidv1 from 'uuid/v1';
+import { v1 as uuidv1 } from 'uuid';
 
 /**
  */

@@ -4,7 +4,7 @@ import ProgressBar from 'components/ProgressBar.tsx';
 import ModalLarge from 'components/ModalLarge.tsx';
 import ControlsButton from 'components/ControlsButton';
 import '../../css/controls-button-var-options.css';
-import { FileSelector } from './file-selector';
+import { FileSelector } from './FileSelector';
 import client from "js/slycat-web-client";
 import fileUploader from "js/slycat-file-uploader-factory";
 import SlycatRemoteControls from 'components/SlycatRemoteControls.jsx';
@@ -31,7 +31,7 @@ export default class ControlsButtonUpdateTable extends Component {
     super(props);
     this.state = {
       modalId: "varUpdateTableModal",
-      title: "Update Table",
+      title: "Update Data Table",
       files: [new File([""], "filename")],
       disabled: true,
       progressBarHidden: true,
@@ -422,7 +422,7 @@ export default class ControlsButtonUpdateTable extends Component {
   }
   render() {
     return (
-      <div>
+      <React.Fragment>
         <ModalLarge
           modalId = {this.state.modalId}
           closingCallBack = {this.cleanup}
@@ -431,13 +431,13 @@ export default class ControlsButtonUpdateTable extends Component {
           footer={this.getFooterJSX()}
         />
         <ControlsButton 
-          label='Update Table' 
+          icon="fa-upload"
           title={this.state.title} 
           data_toggle='modal' 
           data_target={'#' + this.state.modalId}
           button_style={this.props.button_style} id='controls-button-death'
         />
-      </div>
+      </React.Fragment>
     );
   }
 }
