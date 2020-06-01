@@ -520,27 +520,38 @@ $.widget("parameter_image.scatterplot",
     return clone;
   },
 
-  _createScale: function(string, values, range, reverse, type)
+  _createScale: function(string, values, range, reverse, type, variable_index)
   {
     // console.log("_createScale: " + type);
+    // Check to see if we have a custom range for min or max
+    const variableRanges = window.store.getState().variableRanges[variable_index];
+    const customMin = variableRanges != undefined && variableRanges.min != undefined;
+    const customMax = variableRanges != undefined && variableRanges.max != undefined;
+
     // Make a time scale for 'Date & Time' variable types
     if(type == 'Date & Time')
     {
       let dates = [];
-      let date = NaN;
       for(let date of values)
       {
         // Make sure Date is valid before adding it to array, so we get a scale with usable min and max
         date = new Date(date.toString())
         if(!isNaN(date))
+        {
           dates.push(date);
+        }
       }
       // console.log("unsorted dates: " + dates);
       dates.sort(function(a, b){
         return a - b;
       });
       // console.log('sorted dates: ' + dates);
-      var domain = [dates[0], dates[dates.length-1]];
+
+      // Use custom range for min or max if we have one
+      const min = customMin && !isNaN(new Date(variableRanges.min.toString())) ? new Date(variableRanges.min.toString()) : dates[0];
+      const max = customMax && !isNaN(new Date(variableRanges.max.toString())) ? new Date(variableRanges.max.toString()) : dates[dates.length-1];
+
+      let domain = [min, max];
       // console.log('domain: ' + domain);
       if(reverse === true)
       {
@@ -554,46 +565,39 @@ $.widget("parameter_image.scatterplot",
     // For numeric variables
     else if(!string)
     {
+      // Use custom range for min or max if we have one
+      const min = customMin ? variableRanges.min : d3.min(values);
+      const max = customMax ? variableRanges.max : d3.max(values);
+
+      let domain = [min, max];
+      if(reverse === true)
+      {
+        domain.reverse();
+      }
       // Log scale if 'Log' variable types
       if(type == 'Log')
       {
-        var domain = [d3.min(values), d3.max(values)];
-        if(reverse === true)
-        {
-          domain.reverse();
-        }
         return d3.scale.log()
           .domain(domain)
           .range(range)
           ;
       }
       // Linear scale otherwise
-      else 
-      {
-        var domain = [d3.min(values), d3.max(values)];
-        if(reverse === true)
-        {
-          domain.reverse();
-        }
-        return d3.scale.linear()
-          .domain(domain)
-          .range(range)
-          ;
-      }
-    }
-    // For string variables, make an ordinal scale
-    else
-    {
-      var uniqueValues = d3.set(values).values().sort();
-      if(reverse === true)
-      {
-        uniqueValues.reverse();
-      }
-      return d3.scale.ordinal()
-        .domain(uniqueValues)
-        .rangePoints(range)
+      return d3.scale.linear()
+        .domain(domain)
+        .range(range)
         ;
     }
+    // For string variables, make an ordinal scale
+    var uniqueValues = d3.set(values).values().sort();
+    if(reverse === true)
+    {
+      uniqueValues.reverse();
+    }
+    return d3.scale.ordinal()
+      .domain(uniqueValues)
+      .rangePoints(range)
+      ;
   },
 
   _getDefaultXPosition: function(imageIndex, imageWidth)
@@ -946,8 +950,22 @@ $.widget("parameter_image.scatterplot",
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
       var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false, self.options.x_axis_type);
-      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false, self.options.x_axis_type);
+      self.x_scale = self._createScale(
+        self.options.x_string, 
+        self.options.scale_x, 
+        range, 
+        false, 
+        self.options.x_axis_type, 
+        self.options.x_index,
+      );
+      self.x_scale_canvas = self._createScale(
+        self.options.x_string, 
+        self.options.scale_x, 
+        range_canvas, 
+        false, 
+        self.options.x_axis_type, 
+        self.options.x_index,
+      );
 
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
@@ -989,8 +1007,22 @@ $.widget("parameter_image.scatterplot",
       var range_canvas = [height - (2 * self.options.border) - 40, 0];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false, self.options.y_axis_type);
-      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false, self.options.y_axis_type);
+      self.y_scale = self._createScale(
+        self.options.y_string, 
+        self.options.scale_y, 
+        range, 
+        false, 
+        self.options.y_axis_type,
+        self.options.y_index,
+      );
+      self.y_scale_canvas = self._createScale(
+        self.options.y_string, 
+        self.options.scale_y, 
+        range_canvas, 
+        false, 
+        self.options.y_axis_type,
+        self.options.y_index,
+      );
 
       self.y_axis = d3.svg.axis()
         .scale(self.y_scale)
