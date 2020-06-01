@@ -29,6 +29,7 @@ dbus                          1.13.12    https://anaconda.org
 decorator                     4.4.1      https://anaconda.org
 expat                         2.2.6      https://anaconda.org
 ffmpeg                        4          https://anaconda.org
+ffmpy                         0.2.2      https://pypi.org
 fontconfig                    2.13.0     https://anaconda.org
 freeglut                      3.0.0      https://anaconda.org
 freetype                      2.9.1      https://anaconda.org
