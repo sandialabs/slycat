@@ -377,6 +377,7 @@ $.widget("parameter_image.table",
 
   _setOption: function(key, value)
   {
+    // console.log("_setOption in parameter-image-table");
     var self = this;
 
     if(key == "row-selection")

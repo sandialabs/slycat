@@ -59,6 +59,18 @@ import {
   DEFAULT_FONT_FAMILY,
   } from './Components/ControlsButtonVarOptions';
 
+let table_metadata = null;
+
+export function get_variable_label(variable)
+{
+  if(window.store.getState().derived.variableAliases[variable] !== undefined)
+  {
+    return window.store.getState().derived.variableAliases[variable];
+  }
+  
+  return table_metadata["column-names"][variable]
+}
+
 // Wait for document ready
 $(document).ready(function() {
 
@@ -81,7 +93,6 @@ $(document).ready(function() {
   var filter_manager = null;
   var filter_expression = null;
 
-  var table_metadata = null;
   var table_statistics = null;
   var indices = null;
   var x_index = null;
@@ -401,8 +412,6 @@ $(document).ready(function() {
           });
         };
         window.store.subscribe(bookmarkReduxStateTree);
-
-        window.store.subscribe(update_scatterplot_labels);
 
         // Set local variables based on Redux store
         axes_font_size = store.getState().fontSize;
@@ -1603,30 +1612,11 @@ $(document).ready(function() {
           x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
           x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          x_label:get_variable_label(variable),
+          x_label: get_variable_label(variable),
         });
       },
       error : artifact_missing
     });
-  }
-
-  function update_scatterplot_labels()
-  {
-    $("#scatterplot").scatterplot("option", {
-      x_label: get_variable_label(x_index),
-      y_label: get_variable_label(y_index),
-      v_label: get_variable_label(v_index),
-    });
-  }
-
-  function get_variable_label(variable)
-  {
-    if(window.store.getState().derived.variableAliases[variable] !== undefined)
-    {
-      return window.store.getState().derived.variableAliases[variable];
-    }
-    
-    return table_metadata["column-names"][variable]
   }
 
   function update_scatterplot_y(variable)

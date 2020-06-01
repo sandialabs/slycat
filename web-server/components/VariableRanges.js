@@ -120,7 +120,7 @@ export default class VariableRanges extends React.Component {
   }
 
   handleChange = (event) => {
-    console.log('handleChange');
+    // console.log('handleChange');
     let name = event.currentTarget.name;
     let inputString = event.currentTarget.value.trim();
     this.setState((previousState, props) => ({
@@ -130,7 +130,7 @@ export default class VariableRanges extends React.Component {
   }
 
   validateMinAndMax = (name, inputString, previousState, props) => {
-    console.log('validateMinAndMax');
+    // console.log('validateMinAndMax');
     let index = name.slice(4);
     let min = name.startsWith('min');
     let inputNum = parseFloat(inputString);

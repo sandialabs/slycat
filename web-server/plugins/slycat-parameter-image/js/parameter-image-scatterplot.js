@@ -14,6 +14,7 @@ import "js/slycat-login-controls";
 import "js/slycat-3d-viewer";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
 import { changeCurrentFrame } from './actions';
+import { get_variable_label } from './ui';
 
 var nodrag = d3.behavior.drag();
 
@@ -100,6 +101,7 @@ $.widget("parameter_image.scatterplot",
   pausing_videos : [],
   playing_videos : [],
   current_frame : null,
+  previousState : null,
 
   _create: function()
   {
@@ -364,6 +366,7 @@ $.widget("parameter_image.scatterplot",
     self._filterIndices();
 
     const update_axes_font_size = () => {
+      // console.log('1 update_axes_font_size');
       if(self.options.axes_font_size != store.getState().fontSize)
       {
         self.options.axes_font_size = store.getState().fontSize;
@@ -382,6 +385,7 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_axes_font_family = () => {
+      // console.log('2 update_axes_font_family');
       if(self.options.axes_font_family != store.getState().fontFamily)
       {
         self.options.axes_font_family = store.getState().fontFamily;
@@ -400,6 +404,7 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_axes_variables_scale = () => {
+      // console.log('3 update_axes_variables_scale');
       if(self.options.axes_variables_scale != store.getState().axesVariables)
       {
         self.options.axes_variables_scale = store.getState().axesVariables;
@@ -418,7 +423,7 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_point_border_size = () => {
-      // console.log('update_point_border_size');
+      console.log('4 update_point_border_size');
       let unselected_point_size_changed = self.options.canvas_square_size != store.getState().unselected_point_size;
       let unselected_border_size_changed = self.options.canvas_square_border_size != store.getState().unselected_border_size;
       let selected_point_size_changed = self.options.canvas_selected_square_size != store.getState().selected_point_size;
@@ -446,10 +451,45 @@ $.widget("parameter_image.scatterplot",
       }
     };
 
+    const update_scatterplot_labels = () => {
+      // console.log('5 update_scatterplot_labels');
+      const x_label_changed = self.options.x_label != get_variable_label(self.options.x_index);
+      const y_label_changed = self.options.y_label != get_variable_label(self.options.y_index);
+      const v_label_changed = self.options.v_label != get_variable_label(self.options.v_index);
+      // console.log('x_label_changed: ' + x_label_changed);
+
+      if(x_label_changed)
+      {
+        self.options.x_label = get_variable_label(self.options.x_index);
+        self._schedule_update({update_x_label:true});
+      }
+      if(y_label_changed)
+      {
+        self.options.y_label = get_variable_label(self.options.y_index);
+        self._schedule_update({update_y_label:true});
+      }
+      if(v_label_changed)
+      {
+        self.options.v_label = get_variable_label(self.options.v_index);
+        self._schedule_update({update_v_label:true});
+      }
+    }
+
+    const update_previous_state = () => {
+      console.log('LAST update_previous_state');
+      self.previousState = window.store.getState();
+    }
+
+    update_previous_state();
     window.store.subscribe(update_axes_font_size);
     window.store.subscribe(update_axes_font_family);
     window.store.subscribe(update_axes_variables_scale);
     window.store.subscribe(update_point_border_size);
+    window.store.subscribe(update_scatterplot_labels);
+    // This update_previous_state needs to be the last window.store.subscribe
+    // since the other callbacks rely on the previous state not being updated
+    // until they are finished.
+    window.store.subscribe(update_previous_state);
   },
 
   set_x_y_v_axes_types: function()
@@ -640,7 +680,7 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
-    //console.log("parameter_image.scatterplot._setOption()", key, value);
+    console.log("parameter_image.scatterplot._setOption()", key, value);
     self.options[key] = value;
 
     // This "indices" key never seems to be used, so Alex is commenting it out for now.
