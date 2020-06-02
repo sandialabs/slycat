@@ -102,6 +102,20 @@ $.widget("parameter_image.scatterplot",
   playing_videos : [],
   current_frame : null,
   previousState : null,
+  custom_axes_ranges : {
+    x: {
+      min: undefined,
+      max: undefined
+    },
+    y: {
+      min: undefined,
+      max: undefined
+    },
+    v: {
+      min: undefined,
+      max: undefined
+    }
+  },
 
   _create: function()
   {
@@ -137,6 +151,7 @@ $.widget("parameter_image.scatterplot",
     self.login_open = false;
 
     self.set_x_y_v_axes_types();
+    self.set_custom_axes_ranges();
 
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
@@ -423,7 +438,7 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_point_border_size = () => {
-      console.log('4 update_point_border_size');
+      // console.log('4 update_point_border_size');
       let unselected_point_size_changed = self.options.canvas_square_size != store.getState().unselected_point_size;
       let unselected_border_size_changed = self.options.canvas_square_border_size != store.getState().unselected_border_size;
       let selected_point_size_changed = self.options.canvas_selected_square_size != store.getState().selected_point_size;
@@ -476,7 +491,7 @@ $.widget("parameter_image.scatterplot",
     }
 
     const update_previous_state = () => {
-      console.log('LAST update_previous_state');
+      // console.log('LAST update_previous_state');
       self.previousState = window.store.getState();
     }
 
@@ -492,12 +507,42 @@ $.widget("parameter_image.scatterplot",
     window.store.subscribe(update_previous_state);
   },
 
+  update_axes_ranges: function()
+  {
+    // console.log('update_axes_scales');
+    let self = this;
+    // Make a copy of current custom axes ranges
+    let previous_custom_axes_ranges = _.cloneDeep(self.custom_axes_ranges);
+    self.set_custom_axes_ranges();
+    for(const axis of ['x','y','v'])
+    {
+      if(!_.isEqual(previous_custom_axes_ranges[axis], self.custom_axes_ranges[axis]))
+      {
+        // console.log(`update_axes_scales updating ${axis}`);
+        self._schedule_update({[`update_${axis}`]:true, update_leaders:true, render_data:true, render_selection:true});
+      }
+    }
+  },
+
   set_x_y_v_axes_types: function()
   {
     var self = this;
     self.options.x_axis_type = self.options.axes_variables_scale[self.options.x_index] != undefined ? self.options.axes_variables_scale[self.options.x_index] : 'Linear';
     self.options.y_axis_type = self.options.axes_variables_scale[self.options.y_index] != undefined ? self.options.axes_variables_scale[self.options.y_index] : 'Linear';
     self.options.v_axis_type = self.options.axes_variables_scale[self.options.v_index] != undefined ? self.options.axes_variables_scale[self.options.v_index] : 'Linear';
+  },
+
+  set_custom_axes_ranges: function()
+  {
+    var self = this;
+    for(const axis of ['x','y','v'])
+    {
+      const variableRanges = window.store.getState().variableRanges[self.options[`${axis}_index`]];
+      const customMin = variableRanges != undefined ? variableRanges.min : undefined;
+      const customMax = variableRanges != undefined ? variableRanges.max : undefined;
+      self.custom_axes_ranges[axis].min = customMin;
+      self.custom_axes_ranges[axis].max = customMax;
+    }
   },
 
   _filterIndices: function()
@@ -560,13 +605,12 @@ $.widget("parameter_image.scatterplot",
     return clone;
   },
 
-  _createScale: function(string, values, range, reverse, type, variable_index)
+  _createScale: function(string, values, range, reverse, type, axis)
   {
+    let self = this;
     // console.log("_createScale: " + type);
-    // Check to see if we have a custom range for min or max
-    const variableRanges = window.store.getState().variableRanges[variable_index];
-    const customMin = variableRanges != undefined && variableRanges.min != undefined;
-    const customMax = variableRanges != undefined && variableRanges.max != undefined;
+    const customMin = self.custom_axes_ranges[axis].min;
+    const customMax = self.custom_axes_ranges[axis].max;
 
     // Make a time scale for 'Date & Time' variable types
     if(type == 'Date & Time')
@@ -588,8 +632,8 @@ $.widget("parameter_image.scatterplot",
       // console.log('sorted dates: ' + dates);
 
       // Use custom range for min or max if we have one
-      const min = customMin && !isNaN(new Date(variableRanges.min.toString())) ? new Date(variableRanges.min.toString()) : dates[0];
-      const max = customMax && !isNaN(new Date(variableRanges.max.toString())) ? new Date(variableRanges.max.toString()) : dates[dates.length-1];
+      const min = customMin != undefined && !isNaN(new Date(customMin.toString())) ? new Date(customMin.toString()) : dates[0];
+      const max = customMax != undefined && !isNaN(new Date(customMax.toString())) ? new Date(customMax.toString()) : dates[dates.length-1];
 
       let domain = [min, max];
       // console.log('domain: ' + domain);
@@ -606,8 +650,8 @@ $.widget("parameter_image.scatterplot",
     else if(!string)
     {
       // Use custom range for min or max if we have one
-      const min = customMin ? variableRanges.min : d3.min(values);
-      const max = customMax ? variableRanges.max : d3.max(values);
+      const min = customMin != undefined ? customMin : d3.min(values);
+      const max = customMax != undefined ? customMax : d3.max(values);
 
       let domain = [min, max];
       if(reverse === true)
@@ -990,13 +1034,14 @@ $.widget("parameter_image.scatterplot",
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
       var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
+      self.set_custom_axes_ranges();
       self.x_scale = self._createScale(
         self.options.x_string, 
         self.options.scale_x, 
         range, 
         false, 
         self.options.x_axis_type, 
-        self.options.x_index,
+        'x'
       );
       self.x_scale_canvas = self._createScale(
         self.options.x_string, 
@@ -1004,7 +1049,7 @@ $.widget("parameter_image.scatterplot",
         range_canvas, 
         false, 
         self.options.x_axis_type, 
-        self.options.x_index,
+        'x'
       );
 
       var height = Math.min(self.options.width, self.options.height);
@@ -1047,13 +1092,14 @@ $.widget("parameter_image.scatterplot",
       var range_canvas = [height - (2 * self.options.border) - 40, 0];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
+      self.set_custom_axes_ranges();
       self.y_scale = self._createScale(
         self.options.y_string, 
         self.options.scale_y, 
         range, 
         false, 
         self.options.y_axis_type,
-        self.options.y_index,
+        'y'
       );
       self.y_scale_canvas = self._createScale(
         self.options.y_string, 
@@ -1061,7 +1107,7 @@ $.widget("parameter_image.scatterplot",
         range_canvas, 
         false, 
         self.options.y_axis_type,
-        self.options.y_index,
+        'y'
       );
 
       self.y_axis = d3.svg.axis()
@@ -1350,10 +1396,18 @@ $.widget("parameter_image.scatterplot",
     if(self.updates["update_legend_axis"])
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
+      self.set_custom_axes_ranges();
 
       // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
       // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
-      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
+      self.legend_scale = self._createScale(
+        self.options.v_string, 
+        self.options.scale_v, 
+        range, 
+        true,
+        null,
+        'v'
+      );
 
       self.legend_axis = d3.svg.axis()
         .scale(self.legend_scale)

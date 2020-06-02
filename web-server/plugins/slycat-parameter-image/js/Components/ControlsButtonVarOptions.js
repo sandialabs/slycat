@@ -64,6 +64,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
         input: false,
         value: this.props.variable_aliases,
         success: function(response) {
+          // console.log('wrote aliases to project_data');
           $('#' + self.modalId).modal('hide');
         },
         error: function(response) {
@@ -80,6 +81,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
     {
       self.writeAliasesToModelArtifact();
     }
+    // Alert scatterplot that it might need to update its axes
+    $("#scatterplot").scatterplot("update_axes_ranges");
   }
 
   writeAliasesToModelArtifact = () => {
