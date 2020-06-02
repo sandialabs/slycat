@@ -381,9 +381,9 @@ $.widget("parameter_image.scatterplot",
     self._filterIndices();
 
     const update_axes_font_size = () => {
-      // console.log('1 update_axes_font_size');
       if(self.options.axes_font_size != store.getState().fontSize)
       {
+        // console.log('1 update_axes_font_size');
         self.options.axes_font_size = store.getState().fontSize;
         self.x_axis_layer.selectAll("text")
           .style("font-size", self.options.axes_font_size + 'px')
@@ -400,9 +400,9 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_axes_font_family = () => {
-      // console.log('2 update_axes_font_family');
       if(self.options.axes_font_family != store.getState().fontFamily)
       {
+        // console.log('2 update_axes_font_family');
         self.options.axes_font_family = store.getState().fontFamily;
         self.x_axis_layer.selectAll("text")
           .style("font-family", self.options.axes_font_family)
@@ -419,10 +419,10 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_axes_variables_scale = () => {
-      // console.log('3 update_axes_variables_scale');
-      if(self.options.axes_variables_scale != store.getState().axesVariables)
+      if(!_.isEqual(self.options.axes_variables_scale, store.getState().axesVariables))
       {
-        self.options.axes_variables_scale = store.getState().axesVariables;
+        // console.log('3 update_axes_variables_scale');
+        self.options.axes_variables_scale = _.cloneDeep(store.getState().axesVariables);
         self.set_x_y_v_axes_types();
         self._schedule_update({
           update_x:true, 
@@ -438,17 +438,17 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_point_border_size = () => {
-      // console.log('4 update_point_border_size');
       let unselected_point_size_changed = self.options.canvas_square_size != store.getState().unselected_point_size;
       let unselected_border_size_changed = self.options.canvas_square_border_size != store.getState().unselected_border_size;
       let selected_point_size_changed = self.options.canvas_selected_square_size != store.getState().selected_point_size;
       let selected_border_size_changed = self.options.canvas_selected_square_border_size != store.getState().selected_border_size;
-
+      
       if(unselected_point_size_changed || unselected_border_size_changed)
       {
+        // console.log('4 update_point_border_size');
         self.options.canvas_square_size = store.getState().unselected_point_size;
         self.options.canvas_square_border_size = store.getState().unselected_border_size;
-
+        
         self._schedule_update({
           update_datum_width_height: true, 
           render_data:true, 
@@ -456,6 +456,7 @@ $.widget("parameter_image.scatterplot",
       }
       if(selected_point_size_changed || selected_border_size_changed)
       {
+        // console.log('4 update_point_border_size');
         self.options.canvas_selected_square_size = store.getState().selected_point_size;
         self.options.canvas_selected_square_border_size = store.getState().selected_border_size;
 
@@ -467,24 +468,26 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_scatterplot_labels = () => {
-      // console.log('5 update_scatterplot_labels');
       const x_label_changed = self.options.x_label != get_variable_label(self.options.x_index);
       const y_label_changed = self.options.y_label != get_variable_label(self.options.y_index);
       const v_label_changed = self.options.v_label != get_variable_label(self.options.v_index);
       // console.log('x_label_changed: ' + x_label_changed);
-
+      
       if(x_label_changed)
       {
+        // console.log('5 update_scatterplot_labels');
         self.options.x_label = get_variable_label(self.options.x_index);
         self._schedule_update({update_x_label:true});
       }
       if(y_label_changed)
       {
+        // console.log('5 update_scatterplot_labels');
         self.options.y_label = get_variable_label(self.options.y_index);
         self._schedule_update({update_y_label:true});
       }
       if(v_label_changed)
       {
+        // console.log('5 update_scatterplot_labels');
         self.options.v_label = get_variable_label(self.options.v_index);
         self._schedule_update({update_v_label:true});
       }
@@ -724,7 +727,7 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
-    console.log("parameter_image.scatterplot._setOption()", key, value);
+    // console.log("parameter_image.scatterplot._setOption()", key, value);
     self.options[key] = value;
 
     // This "indices" key never seems to be used, so Alex is commenting it out for now.
