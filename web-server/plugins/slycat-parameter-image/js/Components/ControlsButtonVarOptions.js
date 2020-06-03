@@ -104,11 +104,35 @@ class ControlsButtonVarOptions extends React.PureComponent {
   }
 
   clearAllVariableRanges = () => {
-    // First clear all variable ranges in Redux state;
-    this.props.clearAllVariableRanges();
-    // Then let VariableRanges component know this happened because it needs
-    // to update its local state accordingly. 
-    this.variableRangesRef.current.clearAllVariableRanges();
+    const self = this;
+    dialog.confirm({
+      title: 'Clear All Variable Ranges',
+      message: 'This will erase all Axis Min and Axis Max values that have been entered.',
+      ok: function(){
+        // First clear all variable ranges in Redux state;
+        self.props.clearAllVariableRanges();
+        // Then let VariableRanges component know this happened because it needs
+        // to update its local state accordingly. 
+        self.variableRangesRef.current.clearAllVariableRanges();
+      },
+      cancel: function(){
+        // Do nothing if cancel. The confirmation dialog will just close.
+      }
+    });
+  }
+
+  clearAllVariableAliasLabels = () => {
+    const self = this;
+    dialog.confirm({
+      title: 'Clear All Variable Alias Labels',
+      message: 'This will erase all labels that have been entered.',
+      ok: function(){
+        self.props.clearAllVariableAliasLabels();
+      },
+      cancel: function(){
+        // Do nothing if cancel. The confirmation dialog will just close.
+      }
+    });
   }
 
   render() {
@@ -326,7 +350,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                   <button type='button' 
                     className='btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none'
                     disabled={Object.keys(this.props.variable_aliases).length === 0}
-                    onClick={this.props.clearAllVariableAliasLabels}
+                    onClick={this.clearAllVariableAliasLabels}
                   >
                     Clear All Variable Alias Labels
                   </button>
