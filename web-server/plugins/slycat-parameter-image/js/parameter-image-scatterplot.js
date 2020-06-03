@@ -522,7 +522,13 @@ $.widget("parameter_image.scatterplot",
       if(!_.isEqual(previous_custom_axes_ranges[axis], self.custom_axes_ranges[axis]))
       {
         // console.log(`update_axes_scales updating ${axis}`);
-        self._schedule_update({[`update_${axis}`]:true, update_leaders:true, render_data:true, render_selection:true});
+        self._schedule_update({
+          [`update_${axis}`]:true, 
+          update_leaders:true, 
+          render_data:true, 
+          render_selection:true,
+          update_legend_axis: axis == 'v' ? true : false,
+        });
       }
     }
     self._close_hidden_simulations();
