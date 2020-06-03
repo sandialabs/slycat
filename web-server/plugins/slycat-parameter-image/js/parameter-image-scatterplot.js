@@ -525,6 +525,9 @@ $.widget("parameter_image.scatterplot",
         self._schedule_update({[`update_${axis}`]:true, update_leaders:true, render_data:true, render_selection:true});
       }
     }
+    self._close_hidden_simulations();
+    self._open_shown_simulations();
+    self._sync_open_images();
   },
 
   set_x_y_v_axes_types: function()
@@ -2617,11 +2620,28 @@ $.widget("parameter_image.scatterplot",
     xhr.send();
   },
 
+  _is_off_axes: function(index) {
+    let self = this;
+    const x_value = self.options.x[index];
+    const y_value = self.options.y[index];
+
+    // console.log(`x: ${x_value}, y: ${y_value}`);
+
+    const off_x_axis = self.custom_axes_ranges.x.min > x_value || self.custom_axes_ranges.x.max < x_value;
+    const off_y_axis = self.custom_axes_ranges.y.min > y_value || self.custom_axes_ranges.y.max < y_value;
+
+    const off_axes = off_x_axis || off_y_axis;
+    return off_axes;
+  },
+
   _close_hidden_simulations: function() {
     var self = this;
     $(".media-layer div.image-frame")
       .filter(function(){
-        return $.inArray($(this).data("index"), self.options.filtered_indices) == -1
+        const index = $(this).data("index");
+        const filtered = $.inArray(index, self.options.filtered_indices) == -1;
+        const off_axes = self._is_off_axes(index);
+        return filtered || off_axes;
       })
       .each(function(){
         self._remove_image_and_leader_line(d3.select(this));
@@ -2643,7 +2663,13 @@ $.widget("parameter_image.scatterplot",
     self.options.open_images.forEach(function(image, index)
     {
       // Making sure we have an index and uri before attempting to open an image
-      if( image.index != null && image.uri != undefined && self.options.filtered_indices.indexOf(image.index) != -1 && areOpen.indexOf(image.index) == -1 )
+      if (
+        image.index != null 
+        && image.uri != undefined 
+        && self.options.filtered_indices.indexOf(image.index) != -1 
+        && areOpen.indexOf(image.index) == -1 
+        && !self._is_off_axes(image.index)
+      )
       {
         images.push({
           index : image.index,
