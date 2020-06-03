@@ -81,8 +81,8 @@ class ControlsButtonVarOptions extends React.PureComponent {
     {
       self.writeAliasesToModelArtifact();
     }
-    // Alert scatterplot that it might need to update its axes
-    $("#scatterplot").scatterplot("update_axes_ranges");
+    // Alert other components that axes ranges might have updated
+    this.props.element.trigger("update_axes_ranges");
   }
 
   writeAliasesToModelArtifact = () => {

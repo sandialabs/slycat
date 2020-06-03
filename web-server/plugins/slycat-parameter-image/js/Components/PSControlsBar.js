@@ -307,6 +307,7 @@ class ControlsBar extends React.Component {
               indices={this.props.indices} 
               axes_variables={this.props.axes_variables}
               button_style={button_style}
+              element={this.props.element}
             />
           </ControlsGroup>
           <ControlsGroup id='selection-controls' class='btn-group ml-3'>

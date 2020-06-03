@@ -135,6 +135,11 @@ $(document).ready(function() {
   var selected_point_size = DEFAULT_SELECTED_POINT_SIZE;
   var selected_border_size = DEFAULT_SELECTED_BORDER_SIZE;
 
+  var custom_color_variable_range = {
+    min: undefined,
+    max: undefined
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
   //////////////////////////////////////////////////////////////////////////////////////////
@@ -1008,6 +1013,17 @@ $(document).ready(function() {
         $("#controls").controls("option", "image-variable", variable);
       });
 
+      $("#controls").bind("update_axes_ranges", function()
+      {
+        // console.log(`variable-ranges-changed`);
+        // Alert scatterplot that it might need to update its axes
+        $("#scatterplot").scatterplot("update_axes_ranges");
+        // Update the color scale
+        update_current_colorscale();
+        $("#table").table("option", "colorscale", colorscale);
+        $("#scatterplot").scatterplot("option", "colorscale", colorscale);
+      })
+
       // Changing the value of a variable updates the database, table, and scatterplot ...
       $("#controls").bind("set-value", function(event, props)
       {
@@ -1418,18 +1434,37 @@ $(document).ready(function() {
       $("#controls").controls("option", "hidden_simulations", hidden_simulations);
   }
 
+  function set_custom_color_variable_range()
+  {
+    // console.log(`set_custom_color_variable_range`);
+    const variableRanges = window.store.getState().variableRanges[v_index];
+    custom_color_variable_range.min = variableRanges != undefined ? variableRanges.min : undefined;
+    custom_color_variable_range.max = variableRanges != undefined ? variableRanges.max : undefined;
+  }
+
   function update_current_colorscale()
   {
+    set_custom_color_variable_range();
     // Check if numeric or string variable
     var v_type = table_metadata["column-types"][v_index];
     if(auto_scale)
+    {
       filtered_v = filterValues(v);
+    }
     else
+    {
       filtered_v = v;
+    }
 
     if(v_type != "string")
     {
-      colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, d3.min(filtered_v), d3.max(filtered_v));
+      // console.log(`update_current_colorscale for not strings`);
+      colorscale = $("#color-switcher").colorswitcher(
+        "get_color_scale", 
+        undefined, 
+        custom_color_variable_range.min != undefined ? custom_color_variable_range.min : d3.min(filtered_v), 
+        custom_color_variable_range.max != undefined ? custom_color_variable_range.max : d3.max(filtered_v),
+      );
     }
     else
     {
