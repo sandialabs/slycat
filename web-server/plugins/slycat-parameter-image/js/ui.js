@@ -1288,6 +1288,9 @@ $(document).ready(function() {
 
   function selected_colormap_changed(colormap)
   {
+    // Update color switcher with new colormap
+    $("#color-switcher").colorswitcher("option", "colormap", colormap);
+
     update_current_colorscale();
 
     // Changing the color map updates the table with a new color scale ...
