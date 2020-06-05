@@ -15,6 +15,7 @@ import "js/slycat-3d-viewer";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
 import { changeCurrentFrame } from './actions';
 import { get_variable_label } from './ui';
+import { isValueInColorscaleDomain } from './color-switcher';
 
 var nodrag = d3.behavior.drag();
 
@@ -1221,6 +1222,8 @@ $.widget("parameter_image.scatterplot",
         var value = v[index];
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
+        else if(!isValueInColorscaleDomain(value, self.options.colorscale))
+          color = $("#color-switcher").colorswitcher("get_outofdomain_color");
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
@@ -1271,6 +1274,8 @@ $.widget("parameter_image.scatterplot",
         var value = v[index];
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
+        else if(!isValueInColorscaleDomain(value, self.options.colorscale))
+          color = $("#color-switcher").colorswitcher("get_outofdomain_color");
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
