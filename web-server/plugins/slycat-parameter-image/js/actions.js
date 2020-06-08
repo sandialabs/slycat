@@ -23,6 +23,9 @@ export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
 export const SET_VARIABLE_RANGE = 'SET_VARIABLE_RANGE'
 export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
 export const CLEAR_ALL_VARIABLE_RANGES = 'CLEAR_ALL_VARIABLE_RANGES'
+export const SET_X_VALUES = 'SET_X_VALUES'
+export const SET_Y_VALUES = 'SET_Y_VALUES'
+export const SET_V_VALUES = 'SET_V_VALUES'
 
 export function changeFontSize(event) {
   return { 
@@ -145,4 +148,16 @@ export function clearVariableRange(index, minOrMax) {
 
 export function clearAllVariableRanges() {
   return { type: CLEAR_ALL_VARIABLE_RANGES }
+}
+
+export function setXValues(values) {
+  return { type: SET_X_VALUES, values: values, }
+}
+
+export function setYValues(values) {
+  return { type: SET_Y_VALUES, values: values, }
+}
+
+export function setVValues(values) {
+  return { type: SET_V_VALUES, values: values, }
 }

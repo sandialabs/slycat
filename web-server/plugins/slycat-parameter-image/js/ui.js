@@ -43,7 +43,12 @@ import thunkMiddleware from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 import throttle from "redux-throttle";
 import ps_reducer from './reducers';
-import { updateThreeDSync } from './actions';
+import { 
+  updateThreeDSync,
+  setXValues,
+  setYValues,
+  setVValues,
+} from './actions';
 
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import { setSyncCameras, } from './vtk-camera-synchronizer';
@@ -574,6 +579,8 @@ $(document).ready(function() {
           {
             x = x[0];
           }
+          // Dispatch update to x values in Redux
+          window.store.dispatch(setXValues(x));
           setup_scatterplot();
           setup_table();
         },
@@ -593,6 +600,8 @@ $(document).ready(function() {
           {
             y = y[0];
           }
+          // Dispatch update to y values in Redux
+          window.store.dispatch(setYValues(y));
           setup_scatterplot();
           setup_table();
         },
@@ -609,6 +618,8 @@ $(document).ready(function() {
         v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           v[i] = i;
+        // Dispatch update to v values in Redux
+        window.store.dispatch(setVValues(v));
         update_current_colorscale();
         setup_scatterplot();
         setup_table();
@@ -628,6 +639,8 @@ $(document).ready(function() {
             {
               v = v[0];
             }
+            // Dispatch update to v values in Redux
+            window.store.dispatch(setVValues(v));
             update_current_colorscale();
             setup_scatterplot();
             setup_table();
@@ -1393,6 +1406,8 @@ $(document).ready(function() {
         {
           v = v[0];
         }
+        // Dispatch update to v values in Redux
+        window.store.dispatch(setVValues(v));
         update_widgets_after_color_variable_change();
       },
       error : artifact_missing
@@ -1646,10 +1661,13 @@ $(document).ready(function() {
       attribute : variable,
       success : function(result)
       {
+        const x = table_metadata["column-types"][variable]=="string" ? result[0] : result;
+        // Dispatch update to x values in Redux
+        window.store.dispatch(setXValues(x));
         $("#scatterplot").scatterplot("option", {
           x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
-          x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+          x: x, 
           x_label: get_variable_label(variable),
         });
       },
@@ -1667,10 +1685,13 @@ $(document).ready(function() {
       attribute : variable,
       success : function(result)
       {
+        const y = table_metadata["column-types"][variable]=="string" ? result[0] : result;
+        // Dispatch update to y values in Redux
+        window.store.dispatch(setYValues(y));
         $("#scatterplot").scatterplot("option", {
           y_index: variable,
           y_string: table_metadata["column-types"][variable]=="string", 
-          y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+          y: y, 
           y_label:get_variable_label(variable),
         });
       },

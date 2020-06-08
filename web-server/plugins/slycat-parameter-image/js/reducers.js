@@ -18,6 +18,9 @@ import {
   SET_VARIABLE_RANGE,
   CLEAR_VARIABLE_RANGE,
   CLEAR_ALL_VARIABLE_RANGES,
+  SET_X_VALUES,
+  SET_Y_VALUES,
+  SET_V_VALUES,
 } from './actions';
 
 import { 
@@ -35,6 +38,7 @@ import {
   DEFAULT_FONT_SIZE,
   DEFAULT_FONT_FAMILY,
   } from './Components/ControlsButtonVarOptions';
+import { AnimationActionLoopStyles } from 'three';
 
 const initialState = {
   fontSize: DEFAULT_FONT_SIZE,
@@ -265,6 +269,30 @@ export default function ps_reducer(state = initialState, action) {
     case CLEAR_ALL_VARIABLE_RANGES:
       return Object.assign({}, state, {
         variableRanges: {}
+      })
+
+    case SET_X_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          xValues: action.values
+        }
+      })
+
+    case SET_Y_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          yValues: action.values
+        }
+      })
+      
+    case SET_V_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          vValues: action.values
+        }
       })
 
     default:
