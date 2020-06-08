@@ -1218,8 +1218,13 @@ $.widget("parameter_image.scatterplot",
       canvas.lineWidth = border_width;
 
       while (++i < n) {
-        var index = filtered_indices[i];
-        var value = v[index];
+        let index = filtered_indices[i];
+        if(self._is_off_axes(index))
+        {
+          // console.log(`this point is off axes, so skipping: ${index}`);
+          continue;
+        }
+        let value = v[index];
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
         else if(!isValueInColorscaleDomain(value, self.options.colorscale))
@@ -1270,8 +1275,13 @@ $.widget("parameter_image.scatterplot",
       canvas.lineWidth = border_width;
 
       while (++i < n) {
-        var index = filtered_selection[i];
-        var value = v[index];
+        let index = filtered_selection[i];
+        if(self._is_off_axes(index))
+        {
+          // console.log(`this point is off axes, so skipping: ${index}`);
+          continue;
+        }
+        let value = v[index];
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
         else if(!isValueInColorscaleDomain(value, self.options.colorscale))
