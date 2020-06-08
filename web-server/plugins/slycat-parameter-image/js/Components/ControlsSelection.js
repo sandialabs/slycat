@@ -64,6 +64,7 @@ const ControlsSelection = (props) => {
   const unselected = _.difference(props.indices, props.selection);
   const no_visible_unselected = _.difference(unselected, props.hidden_simulations).length === 0;
 
+  // Make an array of all open image indexes
   const open_images_indexes = props.open_images.map(open_image => open_image.index);
   const all_open_hidden = _.difference(open_images_indexes, props.hidden_simulations).length === 0;
   const all_open_selected = _.difference(open_images_indexes, props.selection).length === 0;
@@ -80,7 +81,18 @@ const ControlsSelection = (props) => {
   const show_unselected_disabled = props.disable_hide_show || no_hidden_unselected;
   const unselected_items_header_disabled = hide_unselected_disabled && show_unselected_disabled;
 
-  const pin_selected_disabled = props.disable_pin;
+  // Completely hide the Pin functionality when the model has no media variables to choose from
+  const hide_pin = !(props.media_variables && props.media_variables.length > 0);
+  // Disable the Pin function when no media variable is selected
+  // or if the current selection only contains hidden simulations
+  // of if the current selection is already pinned
+  const no_media_variable_selected = !(props.media_variable && props.media_variable >= 0);
+  const all_selection_hidden = _.difference(props.selection, props.hidden_simulations).length === 0;
+  // console.log(`all_selection_hidden is ${all_selection_hidden}`);
+  // Check if the current selection is already pinned
+  const current_selection_pinned = _.difference(props.selection, open_images_indexes).length === 0;
+  // console.log(`current_selection_pinned is ${current_selection_pinned}`);
+  const pin_selected_disabled = no_media_variable_selected || all_selection_hidden || current_selection_pinned;
   const add_pins_to_selection_disabled = (props.open_images.length == 0) || all_open_hidden || all_open_selected;
   // Disabling close all only if there are no open images or all open images are hidden.
   const close_all_disabled = (props.open_images.length == 0) || all_open_hidden;
@@ -89,12 +101,23 @@ const ControlsSelection = (props) => {
   // Determine when the entire dropdown should be disabled
   const dropdown_disabled = show_all_disabled &&
                             hide_disabled &&
-                            props.disable_pin &&
+                            pin_selected_disabled &&
                             show_disabled &&
                             hide_unselected_disabled &&
                             show_unselected_disabled &&
                             add_pins_to_selection_disabled
                             ;
+
+  // console.log(`ControlsSelection rendered`);
+
+
+  
+
+  
+
+
+
+
 
   return (
     <div className='btn-group'>
@@ -145,7 +168,7 @@ const ControlsSelection = (props) => {
         </a>
 
         {/* // Completely hide the Pin functionality when the model has no media variables to choose from */
-        !props.hide_pin &&
+        !hide_pin &&
         <React.Fragment>
         {divider}
 

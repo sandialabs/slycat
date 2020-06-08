@@ -186,22 +186,6 @@ class ControlsBar extends React.Component {
   render() {
     // Define default button style
     const button_style = 'btn-outline-dark';
-    // Make an array of all open images
-    const open_images_indexes = this.state.open_images.map((open_image) => {
-      return open_image.index;
-    });
-    // Completely hide the Pin functionality when the model has no media variables to choose from
-    const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
-    // Disable the Pin function when no media variable is selected
-    // or if the current selection only contains hidden simulations
-    // of if the current selection is already pinned
-    const no_media_variable_selected = !(this.state.media_variable && this.state.media_variable >= 0);
-    const all_selection_hidden = _.difference(this.state.selection, this.state.hidden_simulations).length === 0;
-    // console.log(`all_selection_hidden is ${all_selection_hidden}`);
-    // Check if the current selection is already pinned
-    const current_selection_pinned = _.difference(this.state.selection, open_images_indexes).length === 0;
-    // console.log(`current_selection_pinned is ${current_selection_pinned}`);
-    const disable_pin = no_media_variable_selected || all_selection_hidden || current_selection_pinned;
 
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
@@ -329,8 +313,6 @@ class ControlsBar extends React.Component {
               trigger_show_all={this.trigger_show_all}
               trigger_select_pinned={this.trigger_select_pinned}
               disable_hide_show={this.state.disable_hide_show}
-              disable_pin={disable_pin}
-              hide_pin={hide_pin}
               selection={this.state.selection}
               hidden_simulations={this.state.hidden_simulations}
               indices={this.props.indices}
@@ -339,6 +321,8 @@ class ControlsBar extends React.Component {
               element={this.props.element}
               button_style={button_style}
               open_images={this.state.open_images}
+              media_variables={this.props.media_variables}
+              media_variable={this.state.media_variable}
             />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
