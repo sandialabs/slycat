@@ -82,7 +82,8 @@ const ControlsSelection = (props) => {
 
   const pin_selected_disabled = props.disable_pin;
   const add_pins_to_selection_disabled = (props.open_images.length == 0) || all_open_hidden || all_open_selected;
-  const close_all_disabled = add_pins_to_selection_disabled;
+  // Disabling close all only if there are no open images or all open images are hidden.
+  const close_all_disabled = (props.open_images.length == 0) || all_open_hidden;
   const pins_header_disabled = pin_selected_disabled && add_pins_to_selection_disabled && close_all_disabled;
 
   // Determine when the entire dropdown should be disabled
