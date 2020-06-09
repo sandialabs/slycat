@@ -310,6 +310,8 @@ $(document).ready(function() {
     }
   }
 
+  var createReduxStorePromise;
+
   function model_loaded()
   {
     // If the model isn't ready or failed, we're done.
@@ -323,125 +325,128 @@ $(document).ready(function() {
     $(".load-status").text("Loading data.");
 
     // Load data table metadata.
-    $.ajax({
-      url : api_root + "models/" + model_id + "/arraysets/data-table/metadata?arrays=0",
-      contentType : "application/json",
-      success: function(metadata)
-      {
-        var raw_metadata = metadata.arrays[0];
-        // Mapping data from new metadata format to old table_metadata format
-        table_metadata = {};
-        table_metadata["row-count"] = raw_metadata.shape[0];
-
-        // This is going to be one short for now since there is no index. Perhaps just add one for now?
-        table_metadata["column-count"] = raw_metadata.attributes.length + 1;
-
-        table_metadata["column-names"] = [];
-        table_metadata["column-types"] = [];
-        for(var i = 0; i < raw_metadata.attributes.length; i++)
+    createReduxStorePromise = new Promise((resolve, reject) => {
+      $.ajax({
+        url : api_root + "models/" + model_id + "/arraysets/data-table/metadata?arrays=0",
+        contentType : "application/json",
+        success: function(metadata)
         {
-          table_metadata["column-names"].push(raw_metadata.attributes[i].name);
-          table_metadata["column-types"].push(raw_metadata.attributes[i].type);
-        }
+          var raw_metadata = metadata.arrays[0];
+          // Mapping data from new metadata format to old table_metadata format
+          table_metadata = {};
+          table_metadata["row-count"] = raw_metadata.shape[0];
 
-        // Adding Index column
-        table_metadata["column-names"].push("Index");
-        table_metadata["column-types"].push("int64");
+          // This is going to be one short for now since there is no index. Perhaps just add one for now?
+          table_metadata["column-count"] = raw_metadata.attributes.length + 1;
 
-        filter_manager.set_table_metadata(table_metadata);
-        load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
-          table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+          table_metadata["column-names"] = [];
+          table_metadata["column-types"] = [];
+          for(var i = 0; i < raw_metadata.attributes.length; i++)
+          {
+            table_metadata["column-names"].push(raw_metadata.attributes[i].name);
+            table_metadata["column-types"].push(raw_metadata.attributes[i].type);
+          }
+
+          // Adding Index column
+          table_metadata["column-names"].push("Index");
+          table_metadata["column-types"].push("int64");
+
+          filter_manager.set_table_metadata(table_metadata);
+          load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
+            table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+            metadata_loaded();
+          });
+        },
+        error: artifact_missing
+      });
+
+      // Retrieve bookmarked state information ...
+      bookmarker.getState(function(state)
+      {
+        bookmark = state;
+        
+        let variable_aliases_promise = new Promise(get_variable_aliases);
+        variable_aliases_promise.then(() => {
+          // Create logger for redux
+          const loggerMiddleware = createLogger();
+
+          // Create throttle for redux
+          const defaultWait = 500
+          const defaultThrottleOption = { // https://lodash.com/docs#throttle
+            leading: true,
+            trailing: true
+          }
+          const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
+
+          // Create Redux store and set its state based on what's in the bookmark
+          const state_tree = {
+            fontSize: DEFAULT_FONT_SIZE,
+            fontFamily: DEFAULT_FONT_FAMILY,
+            axesVariables: {},
+            threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
+            threeDColormap: vtkColorMaps.rgbPresetNames[0],
+            unselected_point_size: unselected_point_size,
+            unselected_border_size: unselected_border_size,
+            selected_point_size: selected_point_size,
+            selected_border_size: selected_border_size,
+            variableRanges: {},
+          }
+          window.store = createStore(
+            ps_reducer, 
+            {
+              ...state_tree, 
+              ...bookmark.state, 
+              derived: {
+                variableAliases: variable_aliases,
+              }
+            },
+            applyMiddleware(
+              thunkMiddleware, // Lets us dispatch() functions
+              loggerMiddleware, // Neat middleware that logs actions. 
+                                // Logger must be the last middleware in chain, 
+                                // otherwise it will log thunk and promise, 
+                                // not actual actions.
+              throttleMiddleware, // Allows throttling of actions
+            )
+          );
+
+          // Save Redux state to bookmark whenever it changes
+          const bookmarkReduxStateTree = () => {
+            bookmarker.updateState({
+              state: 
+              // Remove derived property from state tree because it should be computed
+              // from model data each time the model is loaded. Otherwise it has the 
+              // potential of becoming huge. Plus we shouldn't be storing model data
+              // in the bookmark, just UI state.
+              // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+              // sets it to null, so I think it's better to remove it entirely.
+              // eslint-disable-next-line no-undefined
+              { ...window.store.getState(), derived: undefined }
+            });
+          };
+          window.store.subscribe(bookmarkReduxStateTree);
+
+          // Set local variables based on Redux store
+          axes_font_size = store.getState().fontSize;
+          axes_font_family = store.getState().fontFamily;
+          axes_variables_scale = store.getState().axesVariables;
+          unselected_point_size = store.getState().unselected_point_size;
+          unselected_border_size = store.getState().unselected_border_size;
+          selected_point_size = store.getState().selected_point_size;
+          selected_border_size = store.getState().selected_border_size;
+
+          // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
+          filter_manager.set_bookmark(bookmark);
+          filter_manager.notify_store_ready();
+          resolve();
+          setup_controls();
+          setup_colorswitcher();
           metadata_loaded();
         });
-      },
-      error: artifact_missing
-    });
-
-    // Retrieve bookmarked state information ...
-    bookmarker.getState(function(state)
-    {
-      bookmark = state;
-      
-      let variable_aliases_promise = new Promise(get_variable_aliases);
-      variable_aliases_promise.then(() => {
-        // Create logger for redux
-        const loggerMiddleware = createLogger();
-
-        // Create throttle for redux
-        const defaultWait = 500
-        const defaultThrottleOption = { // https://lodash.com/docs#throttle
-          leading: true,
-          trailing: true
-        }
-        const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
-
-        // Create Redux store and set its state based on what's in the bookmark
-        const state_tree = {
-          fontSize: DEFAULT_FONT_SIZE,
-          fontFamily: DEFAULT_FONT_FAMILY,
-          axesVariables: {},
-          threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
-          threeDColormap: vtkColorMaps.rgbPresetNames[0],
-          unselected_point_size: unselected_point_size,
-          unselected_border_size: unselected_border_size,
-          selected_point_size: selected_point_size,
-          selected_border_size: selected_border_size,
-          variableRanges: {},
-        }
-        window.store = createStore(
-          ps_reducer, 
-          {
-            ...state_tree, 
-            ...bookmark.state, 
-            derived: {
-              variableAliases: variable_aliases,
-            }
-          },
-          applyMiddleware(
-            thunkMiddleware, // Lets us dispatch() functions
-            loggerMiddleware, // Neat middleware that logs actions. 
-                              // Logger must be the last middleware in chain, 
-                              // otherwise it will log thunk and promise, 
-                              // not actual actions.
-            throttleMiddleware, // Allows throttling of actions
-          )
-        );
-
-        // Save Redux state to bookmark whenever it changes
-        const bookmarkReduxStateTree = () => {
-          bookmarker.updateState({
-            state: 
-            // Remove derived property from state tree because it should be computed
-            // from model data each time the model is loaded. Otherwise it has the 
-            // potential of becoming huge. Plus we shouldn't be storing model data
-            // in the bookmark, just UI state.
-            // Passing 'undefined' removes it from bookmark. Passing 'null' actually
-            // sets it to null, so I think it's better to remove it entirely.
-            // eslint-disable-next-line no-undefined
-            { ...window.store.getState(), derived: undefined }
-          });
-        };
-        window.store.subscribe(bookmarkReduxStateTree);
-
-        // Set local variables based on Redux store
-        axes_font_size = store.getState().fontSize;
-        axes_font_family = store.getState().fontFamily;
-        axes_variables_scale = store.getState().axesVariables;
-        unselected_point_size = store.getState().unselected_point_size;
-        unselected_border_size = store.getState().unselected_border_size;
-        selected_point_size = store.getState().selected_point_size;
-        selected_border_size = store.getState().selected_border_size;
-
-        // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
-        filter_manager.set_bookmark(bookmark);
-        filter_manager.notify_store_ready();
-        setup_controls();
-        setup_colorswitcher();
-        metadata_loaded();
+        
+        // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
+        note_manager = new NoteManager(model_id, bookmarker, bookmark);
       });
-      
-      // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
-      note_manager = new NoteManager(model_id, bookmarker, bookmark);
     });
   }
 
@@ -579,10 +584,13 @@ $(document).ready(function() {
           {
             x = x[0];
           }
-          // Dispatch update to x values in Redux
-          window.store.dispatch(setXValues(x));
-          setup_scatterplot();
-          setup_table();
+          // Wait until the redux store has been created
+          createReduxStorePromise.then(() => {
+            // Dispatch update to x values in Redux
+            window.store.dispatch(setXValues(x));
+            setup_scatterplot();
+            setup_table();
+          });
         },
         error : artifact_missing
       });
@@ -600,10 +608,13 @@ $(document).ready(function() {
           {
             y = y[0];
           }
-          // Dispatch update to y values in Redux
-          window.store.dispatch(setYValues(y));
-          setup_scatterplot();
-          setup_table();
+          // Wait until the redux store has been created
+          createReduxStorePromise.then(() => {
+            // Dispatch update to y values in Redux
+            window.store.dispatch(setYValues(y));
+            setup_scatterplot();
+            setup_table();
+          });
         },
         error : artifact_missing
       });
@@ -611,18 +622,23 @@ $(document).ready(function() {
       v_index = table_metadata["column-count"] - 1;
       if("variable-selection" in bookmark)
         v_index = Number(bookmark["variable-selection"]);
-
       if(v_index == table_metadata["column-count"] - 1)
       {
         var count = table_metadata["row-count"];
         v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           v[i] = i;
-        // Dispatch update to v values in Redux
-        window.store.dispatch(setVValues(v));
-        update_current_colorscale();
-        setup_scatterplot();
-        setup_table();
+
+        // Wait until the redux store has been created
+        createReduxStorePromise.then(() => {
+          // Dispatch update to v values in Redux
+          window.store.dispatch(setVValues(v));
+          // console.log(`window.store.dispatch(setVValues(v));`);
+          update_current_colorscale();
+          setup_scatterplot();
+          setup_table();
+        });
+        
       }
       else
       {
@@ -639,11 +655,14 @@ $(document).ready(function() {
             {
               v = v[0];
             }
-            // Dispatch update to v values in Redux
-            window.store.dispatch(setVValues(v));
-            update_current_colorscale();
-            setup_scatterplot();
-            setup_table();
+            // Wait until the redux store has been created
+            createReduxStorePromise.then(() => {
+              // Dispatch update to v values in Redux
+              window.store.dispatch(setVValues(v));
+              update_current_colorscale();
+              setup_scatterplot();
+              setup_table();
+            });
           },
           error : artifact_missing
         });
