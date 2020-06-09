@@ -24,7 +24,7 @@ function FilterManager(model_id, bookmarker, layout, input_columns, output_colum
   self.sliders_ready = false;
   self.slidersPaneHeight = ko.observable();
   self.controls_ready = false;
-  self.allFilters = null;
+  self.allFilters = ko.observableArray();
   self.active_filters = null;
   self.active_filters_ready = ko.observable(false);
   self.foundMismatches = false;
@@ -107,7 +107,6 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
       }
     }
 
-    self.allFilters = ko.observableArray();
     var numericFilters, categoryFilters, activeFilters;
 
     // have to be built after allFilters is assigned, and it's reassigned from bookmark,
