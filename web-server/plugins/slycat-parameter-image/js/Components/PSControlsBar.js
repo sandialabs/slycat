@@ -323,6 +323,8 @@ class ControlsBar extends React.Component {
               open_images={this.state.open_images}
               media_variables={this.props.media_variables}
               media_variable={this.state.media_variable}
+              x_variable={this.state.x_variable}
+              y_variable={this.state.y_variable}
             />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}

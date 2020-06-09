@@ -398,6 +398,8 @@ $(document).ready(function() {
               ...bookmark.state, 
               derived: {
                 variableAliases: variable_aliases,
+                xValues: [],
+                yValues: [],
               }
             },
             applyMiddleware(

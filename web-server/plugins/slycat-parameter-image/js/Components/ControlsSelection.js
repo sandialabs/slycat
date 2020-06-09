@@ -1,10 +1,13 @@
 import * as dialog from "js/slycat-dialog";
+import { connect } from 'react-redux';
 import React from "react";
 import _ from "lodash";
 
 class ControlsSelection extends React.PureComponent {
 
   set_value = (variable, variableIndex, value, alert) => {
+    let self = this;
+
     dialog.prompt({
       title: "Set Values",
       message: "Set values for " + variable + ":",
@@ -19,14 +22,14 @@ class ControlsSelection extends React.PureComponent {
         if(button.label === "Apply")
         {
           let userValue = valueIn().trim();
-          let numeric = this.props.metadata["column-types"][variableIndex] !== "string";
+          let numeric = self.props.metadata["column-types"][variableIndex] !== "string";
           let valueValid = userValue.length > 0;
           if( valueValid && numeric && isNaN(Number(userValue)) ) {
             valueValid = false;
           }
           if(valueValid) {
-            this.props.element.trigger("set-value", {
-              selection : this.props.selection,
+            self.props.element.trigger("set-value", {
+              selection : self.props.selection,
               variable : variableIndex,
               value : numeric ? userValue : '"' + userValue + '"',
             });
@@ -36,7 +39,7 @@ class ControlsSelection extends React.PureComponent {
             {
               alertText = "Please enter a numeric value.";
             }
-            set_value(variable, variableIndex, userValue, alertText);
+            self.set_value(variable, variableIndex, userValue, alertText);
           }
         }
       },
@@ -44,20 +47,48 @@ class ControlsSelection extends React.PureComponent {
   }
 
   _is_off_axes = (index) => {
-    const x_value = self.options.x[index];
-    const y_value = self.options.y[index];
+    const x_value = this.props.xValues[index];
+    const y_value = this.props.yValues[index];
+
+    // If we don't have an x or y value, the point is off the axes
+    if(x_value === undefined || y_value === undefined)
+    {
+      return true;
+    }
+
+    let custom_axes_ranges = {
+      x: {
+        min: undefined,
+        max: undefined
+      },
+      y: {
+        min: undefined,
+        max: undefined
+      },
+    };
+
+    for(const axis of ['x','y'])
+    {
+      const variableRanges = this.props.variableRanges[this.props[`${axis}_variable`]];
+      const customMin = variableRanges != undefined ? variableRanges.min : undefined;
+      const customMax = variableRanges != undefined ? variableRanges.max : undefined;
+      custom_axes_ranges[axis].min = customMin;
+      custom_axes_ranges[axis].max = customMax;
+    }
 
     // console.log(`x: ${x_value}, y: ${y_value}`);
 
-    const off_x_axis = self.custom_axes_ranges.x.min > x_value || self.custom_axes_ranges.x.max < x_value;
-    const off_y_axis = self.custom_axes_ranges.y.min > y_value || self.custom_axes_ranges.y.max < y_value;
+    const off_x_axis = custom_axes_ranges.x.min > x_value || custom_axes_ranges.x.max < x_value;
+    const off_y_axis = custom_axes_ranges.y.min > y_value || custom_axes_ranges.y.max < y_value;
 
     const off_axes = off_x_axis || off_y_axis;
     return off_axes;
   }
   
   render() {
-    // console.log(`ControlsSelection rendered`);
+    // console.log(`ControlsSelection rendered with xValues ${this.props.xValues}`);
+    // console.log(`ControlsSelection rendered with x_variable ${this.props.x_variable}`);
+    // console.log(`ControlsSelection rendered with y_variable ${this.props.y_variable}`);
   
     let display_dividers = true;
     let divider = display_dividers ? (<div className='dropdown-divider' />) : null;
@@ -67,7 +98,7 @@ class ControlsSelection extends React.PureComponent {
       <React.Fragment key={rating_variable}>
         <a href='#' 
           className={`dropdown-item ${nothing_selected ? 'disabled' : ''}`}
-          onClick={(e) => set_value(this.props.metadata['column-names'][rating_variable], rating_variable, e)}>
+          onClick={(e) => this.set_value(this.props.metadata['column-names'][rating_variable], rating_variable, e)}>
           {this.props.metadata['column-names'][rating_variable]}
         </a>
       </React.Fragment>
@@ -110,8 +141,12 @@ class ControlsSelection extends React.PureComponent {
     // console.log(`unpineed_selection is ${unpinned_selection}`);
     const current_selection_pinned = unpinned_selection.length === 0;
     // console.log(`current_selection_pinned is ${current_selection_pinned}`);
-    // To Do: find the unpinned items in the current selection and check if they are all off axes.
-    const unpinned_selection_off_axes = false;
+    // Find the unpinned items in the current selection that are visible (i.e, not off axes).
+    const unpinned_selection_not_off_axes = unpinned_selection.filter(unpinned_selected_item => !this._is_off_axes(unpinned_selected_item));
+    // console.log(`unpinned_selection_not_off_axes is ${unpinned_selection_not_off_axes}`);
+    // Check if entire unpinned selection is off axes, because we will be 
+    // disabling the "Pin Selected" functionality if this is the case.
+    const unpinned_selection_off_axes = unpinned_selection_not_off_axes.length == 0;
     const pin_selected_disabled = no_media_variable_selected || all_selection_hidden || current_selection_pinned || unpinned_selection_off_axes;
     const add_pins_to_selection_disabled = (this.props.open_images.length == 0) || all_open_hidden || all_open_selected;
     // Disabling close all only if there are no open images or all open images are hidden.
@@ -220,4 +255,17 @@ class ControlsSelection extends React.PureComponent {
   }
 };
 
-export default ControlsSelection
+const mapStateToProps = (state, ownProps) => {
+  return {
+    xValues: state.derived.xValues,
+    yValues: state.derived.yValues,
+    variableRanges: state.variableRanges,
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  {
+    
+  }
+)(ControlsSelection)
