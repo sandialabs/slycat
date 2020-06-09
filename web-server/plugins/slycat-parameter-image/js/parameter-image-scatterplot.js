@@ -2757,6 +2757,14 @@ $.widget("parameter_image.scatterplot",
         yvalues = self.options.y;
     for(var i = indices.length-1; i > -1; i-- ) {
       let index = indices[i];
+
+      // Disable hovering on points that are off axes
+      if(self._is_off_axes(index))
+      {
+        // console.log(`_open_first_match _is_off_axes`);
+        continue;
+      }
+      
       let x1 = Math.round( self.x_scale_format( xvalues[index] ) ) - shift;
       let y1 = Math.round( self.y_scale_format( yvalues[index] ) ) - shift;
       let x2 = x1 + size;
