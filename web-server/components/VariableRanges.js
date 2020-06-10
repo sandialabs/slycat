@@ -65,7 +65,6 @@ export default class VariableRanges extends React.Component {
     });
     // Disabling popover tooltips for valid input fields.
     $(`.${this.class} .validationPopover.valid`).popover('disable');
-
   }
 
   shouldComponentUpdate(nextProps, nextState) {

@@ -36,6 +36,44 @@ class ControlsBar extends React.Component {
     {
       this.state[dropdown.state_label] = dropdown.selected;
     }
+    this.scatterplot_id = 'scatterplot-controls';
+    this.selection_id = 'selection-controls';
+    this.autoScaleId = 'auto-scale';
+    this.autoScalePopoverSelector = `#${this.selection_id} #auto-scale`;
+  }
+
+  componentDidMount() {
+    this.setAutoScaleTooptip();
+  }
+
+  componentDidUpdate() {
+    // this.setAutoScaleTooptip();
+  }
+
+  setAutoScaleTooptip = (auto_scale_status) => {
+    // console.log(`Initializing popover tooltips. Used for auto scale button.`);
+
+    const status = auto_scale_status !== undefined ? auto_scale_status : this.state.auto_scale;
+    const status_text = status ? 'On' : 'Off';
+
+    const content_text = 'Auto scale is enabled for all current axes.';
+
+    const content_class = 'text-danger';
+
+    $(this.autoScalePopoverSelector).popover('dispose');
+    $(this.autoScalePopoverSelector).popover({
+      // Specifying custom popover template to make text red by adding text-danger class.
+      template: `
+        <div class="popover" role="tooltip">
+          <div class="arrow"></div>
+          <h3 class="popover-header"></h3>
+          <div class="popover-body ${content_class}"></div>
+        </div>`,
+      placement: 'bottom',
+      trigger: 'hover',
+      title: `Auto Scale ${status_text}`,
+      content: content_text,
+    });
   }
 
   set_selected = (state_label, key, trigger, e) => {
@@ -58,6 +96,8 @@ class ControlsBar extends React.Component {
     this.setState((prevState, props) => {
       const new_auto_scale = !prevState.auto_scale;
       this.props.element.trigger("auto-scale", new_auto_scale);
+      this.setAutoScaleTooptip(new_auto_scale);
+      $(this.autoScalePopoverSelector).popover('show');
       return {auto_scale: new_auto_scale};
     });
   }
@@ -279,12 +319,11 @@ class ControlsBar extends React.Component {
       }
     }
 
-
     return (
       <Provider store={window.store}>
         <React.Fragment>
         <React.StrictMode>
-          <ControlsGroup id='scatterplot-controls' class='btn-group ml-3'>
+          <ControlsGroup id={this.scatterplot_id} class='btn-group ml-3'>
             {dropdowns}
             <ControlsButtonVarOptions 
               selection={this.state.selection} 
@@ -300,9 +339,14 @@ class ControlsBar extends React.Component {
               element={this.props.element}
             />
           </ControlsGroup>
-          <ControlsGroup id='selection-controls' class='btn-group ml-3'>
-            <ControlsButtonToggle title='Auto Scale' icon={faExternalLinkAlt} active={this.state.auto_scale} 
-              set_active_state={this.set_auto_scale} button_style={button_style} />
+          <ControlsGroup id={this.selection_id} class='btn-group ml-3'>
+            <ControlsButtonToggle 
+              icon={faExternalLinkAlt} 
+              active={this.state.auto_scale} 
+              set_active_state={this.set_auto_scale} 
+              button_style={button_style} 
+              id={this.autoScaleId}
+            />
             <ControlsSelection
               trigger_hide_selection={this.trigger_hide_selection}
               trigger_hide_unselected={this.trigger_hide_unselected}
