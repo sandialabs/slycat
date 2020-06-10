@@ -2076,6 +2076,12 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
+    // Don't open images for off axes simulations
+    if(self._is_off_axes(image.index)) {
+      self._open_images(images.slice(1));
+      return;
+    }
+
     // Don't open image if it's already open
     if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
       self._open_images(images.slice(1));
