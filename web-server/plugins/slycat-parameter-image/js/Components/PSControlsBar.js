@@ -1,5 +1,5 @@
 import React from 'react';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import ControlsPlayback from './ControlsPlayback';
 import ControlsDropdown from './ControlsDropdown';
 import ControlsVideo from './ControlsVideo';
@@ -408,4 +408,20 @@ class ControlsBar extends React.Component {
   }
 }
 
-export default ControlsBar
+const mapStateToProps = (state, ownProps) => {
+  return {
+    variableRanges: state.variableRanges,
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  {
+  },
+  null,
+  // Before fully convering to React and Redux, we need a reference to this 
+  // ControlsBar component so we can set its state from outside React. This option makes it so that
+  // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
+  // https://react-redux.js.org/api/connect#forwardref-boolean
+  {forwardRef : true}
+)(ControlsBar)
