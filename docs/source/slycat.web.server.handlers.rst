@@ -1,7 +1,7 @@
-slycat.web.server.template
+slycat.web.server.handlers
 ==========================
 
-.. automodule:: slycat.web.server.template
+.. automodule:: slycat.web.server.handlers
     :members:
     :undoc-members:
     :show-inheritance:

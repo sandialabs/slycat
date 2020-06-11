@@ -46,16 +46,15 @@ any programming language or library that supports HTTP requests.
   POST-Model-Command.rst
   POST-Model-Finish.rst
   POST-Project-Bookmark.rst
+  POST-Project-Data.rst
   POST-Project-Models.rst
   POST-Projects.rst
   POST-Remote-Browse.rst
   POST-Remote-Launch.rst
-  POST-Remote-Videos.rst
   POST-Remotes.rst
   POST-Submit-Batch.rst
   POST-Uploads.rst
   POST-Upload-Finished.rst
-  POST-Project-Data.rst
   PUT-Model-Arrayset-Array.rst
   PUT-Model-Arrayset-Data.rst
   PUT-Model-Arrayset.rst

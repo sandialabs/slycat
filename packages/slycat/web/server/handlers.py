@@ -2262,15 +2262,16 @@ def get_user(uid, time):
     Retrieve directory information for a given user.
     
     Arguments:
-        uid {string} -- users id
-        time {int} -- time int to prevent caching
+      uid {string} -- users id
+      time {int} -- time int to prevent caching
     
     Raises:
-        cherrypy.HTTPError: 404 user not found
+      cherrypy.HTTPError: 404 user not found
     
     Returns:
-        json -- user info
+      json -- user info
     """
+
     if uid == "-":
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
@@ -2286,17 +2287,23 @@ def get_user(uid, time):
 @cherrypy.tools.json_out(on=True)
 def get_model_statistics(mid):
     """
-    returns statistics on the model
-    :param mid: model ID
-    :return json: {
-      "mid":mid,
-      "hdf5_file_size":hdf5_file_size,
-      "total_server_data_size": total_server_data_size,
-      "hdf5_store_size":total_hdf5_server_size,
-      "model":model,
-      "delta_creation_time":delta_creation_time,
-      "couchdb_doc_size": sys.getsizeof(model)
-    }
+    gets statistics on the model
+    
+    Arguments:
+      mid {string} -- model ID
+      time {int} -- time int to prevent caching
+    
+    Raises:
+      cherrypy.HTTPError: 404 user not found
+    
+    Returns:
+      mid {string} -- mid
+      hdf5_file_size {float} -- hdf5_file_size
+      total_server_data_size {float} -- total_server_data_size
+      hdf5_store_size {float} -- total_hdf5_server_size
+      model {string} -- model
+      delta_creation_time {float} -- delta_creation_time
+      couchdb_doc_size {float} -- sys.getsizeof(model)
     """
     database = slycat.web.server.database.couchdb.connect()
     try:

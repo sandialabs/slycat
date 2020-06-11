@@ -1,0 +1,156 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Dendrogram Expansion/Contraction &#8212; Slycat User Manual 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Dendrogram Visibility Filtering" href="DendrogramFiltering.html" />
+    <link rel="prev" title="Dendrogram View" href="Dendrogram.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="dendrogram-expansion-contraction">
+<h1>Dendrogram Expansion/Contraction<a class="headerlink" href="#dendrogram-expansion-contraction" title="Permalink to this headline">¶</a></h1>
+<p>The expansion or contraction of each node is individually controlled through the ‘+’ or ‘-‘ icons that appear to the left of
+each node, respectively above or below the line connecting the node to its parent.  In Figure 57, the subtree with 58 nodes
+in Figure 56 has been expanded by clicking the ‘+’.  Each expansion adds two levels of the tree to the dendrogram.  Note that
+leaf-level nodes are drawn as dots.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="_images/Figure57.png"><img alt="_images/Figure57.png" src="_images/Figure57.png" style="width: 1032.0px; height: 646.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 57: Expansion of second subtree from the top (previously shown as the subtree with 58 nodes in Figure 56).  Each expansion adds two additional levels.</strong></span></p>
+</div>
+<p>To expand a subtree all the way down to the leaves in a single action, click on the subtree triangle itself.   In Figure 58,
+the subtree with 9 nodes at the top of the dendrogram in Figure 56 has been expanded to the leaf level with this one-click
+operation.  Caution should be exercised when doing a full subtree expansion for subtrees over 20 or so nodes, since the
+dendrogram can become cluttered and largely unintelligible.   Figure 59 demonstrates the results of clicking on the subtree
+with 110 nodes at the bottom of the dendrogram in Figure 56.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="_images/Figure58.png"><img alt="_images/Figure58.png" src="_images/Figure58.png" style="width: 1034.0px; height: 648.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 58: Subtree with 9 nodes expanded to leaf level by clicking triangular subtree icon.</strong></span></p>
+</div>
+<div class="figure align-center" id="id3">
+<a class="reference internal image-reference" href="_images/Figure59.png"><img alt="_images/Figure59.png" src="_images/Figure59.png" style="width: 1035.0px; height: 647.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 59: One-click expansion of subtree with 110 nodes.</strong></span></p>
+</div>
+<p>The operation of collapsing nodes reduces all of the nodes below the designated node (the node whose ‘-‘ icon is clicked)
+into a single subtree, regardless of the number of levels that are currently visible.  In Figure 60, the bottom half of
+the dendrogram in Figure 57 has been collapsed into a single subtree with 166 nodes.  This ability to expand and contract
+sections of the dendrogram controls the level of detail, maximizing the rendered portion of the tree around areas of
+interest.</p>
+<div class="figure align-center" id="id4">
+<a class="reference internal image-reference" href="_images/Figure60.png"><img alt="_images/Figure60.png" src="_images/Figure60.png" style="width: 1033.0px; height: 649.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 60: Collapsed subtree that combines the 4 subtrees from the lower half of the dendrogram in Figure 57.</strong></span></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="user-manual.html">Slycat User Manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="TimeSeriesData.html">Time Series Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="CreatingTSModel.html">Creating a Time Series Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="TSModelVis.html">Time Series Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="user-manual.html">Documentation overview</a><ul>
+  <li><a href="timeseries.model.html">Timeseries Model</a><ul>
+  <li><a href="TSModelVis.html">Time Series Model Visualization</a><ul>
+  <li><a href="Dendrogram.html">Dendrogram View</a><ul>
+      <li>Previous: <a href="Dendrogram.html" title="previous chapter">Dendrogram View</a></li>
+      <li>Next: <a href="DendrogramFiltering.html" title="next chapter">Dendrogram Visibility Filtering</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Patricia Crossno.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/DendrogramControl.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
