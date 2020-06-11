@@ -2308,7 +2308,7 @@ $.widget("parameter_image.scatterplot",
           }, false);
 
           // Convert the blob to an array buffer and pass it to the geometry loader
-          blob.arrayBuffer().then((buffer) => {
+          function passToGeometryLoaded(buffer) {
             geometryLoad(
               vtk.node(),
               buffer,
@@ -2318,7 +2318,24 @@ $.widget("parameter_image.scatterplot",
             if(image.current_frame) {
               frame_html.node().querySelector('.vtp').dispatchEvent(vtkselect_event);
             }
-          })
+          }
+          // For newer browser, let's use the promise based Blob.arrayBuffer() function
+          if(blob.arrayBuffer)
+          {
+            // console.log(`using blob.arrayBuffer`);
+            blob.arrayBuffer().then((buffer) => {
+              passToGeometryLoaded(buffer);
+            });
+          }
+          // For older browser, we can't use blob.arrayBuffer(), so we'll use FileReader.readAsArrayBuffer() instead
+          else {
+            // console.log(`using FileReader`);
+            const reader = new FileReader();
+            reader.onload = function onLoad(e) {
+              passToGeometryLoaded(reader.result);
+            };
+            reader.readAsArrayBuffer(blob);
+          }
         }
         else {
           // We don't support this file type, so just create a download link for files
