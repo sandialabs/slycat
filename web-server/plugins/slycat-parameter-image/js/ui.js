@@ -48,6 +48,9 @@ import {
   setXValues,
   setYValues,
   setVValues,
+  setXIndex,
+  setYIndex,
+  setVIndex,
 } from './actions';
 
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
@@ -539,6 +542,14 @@ $(document).ready(function() {
         x_index = Number(bookmark["x-selection"]);
       if("y-selection" in bookmark)
         y_index = Number(bookmark["y-selection"]);
+      
+      // Wait until the redux store has been created
+      createReduxStorePromise.then(() => {
+        // Dispatch update to x and y indexex in Redux
+        window.store.dispatch(setXIndex(x_index));
+        window.store.dispatch(setYIndex(y_index));
+      });
+
       auto_scale = true;
       if("auto-scale" in bookmark)
       {
@@ -623,7 +634,16 @@ $(document).ready(function() {
 
       v_index = table_metadata["column-count"] - 1;
       if("variable-selection" in bookmark)
+      {
         v_index = Number(bookmark["variable-selection"]);
+      }
+
+      // Wait until the redux store has been created
+      createReduxStorePromise.then(() => {
+        // Dispatch update to v index in Redux
+        window.store.dispatch(setVIndex(v_index));
+      });
+
       if(v_index == table_metadata["column-count"] - 1)
       {
         var count = table_metadata["row-count"];
@@ -1369,6 +1389,9 @@ $(document).ready(function() {
     });
 
     bookmarker.updateState({"variable-selection" : variable});
+
+    // Dispatch update to v indexe in Redux
+    window.store.dispatch(setVIndex(v_index));
   }
 
   function handle_image_variable_change(variable)
@@ -1575,6 +1598,9 @@ $(document).ready(function() {
     });
     bookmarker.updateState( {"x-selection" : variable} );
     x_index = Number(variable);
+
+    // Dispatch update to x index in Redux
+    window.store.dispatch(setXIndex(x_index));
   }
 
   function y_selection_changed(variable)
@@ -1586,6 +1612,9 @@ $(document).ready(function() {
     });
     bookmarker.updateState( {"y-selection" : variable} );
     y_index = Number(variable);
+
+    // Dispatch update to y index in Redux
+    window.store.dispatch(setYIndex(y_index));
   }
 
   function auto_scale_option_changed(auto_scale_value)

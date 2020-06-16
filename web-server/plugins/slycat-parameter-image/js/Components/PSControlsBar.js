@@ -14,6 +14,7 @@ import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDa
 import ControlsButtonVarOptions from './ControlsButtonVarOptions';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import _ from 'lodash';
+import $ from 'jquery';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -42,12 +43,14 @@ class ControlsBar extends React.Component {
     this.autoScalePopoverSelector = `#${this.selection_id} #auto-scale`;
   }
 
+  button_style_auto_scale = 'btn-outline-dark'
+
   componentDidMount() {
     this.setAutoScaleTooptip();
   }
 
   componentDidUpdate() {
-    // this.setAutoScaleTooptip();
+    this.setAutoScaleTooptip();
   }
 
   setAutoScaleTooptip = (auto_scale_status) => {
@@ -55,12 +58,51 @@ class ControlsBar extends React.Component {
 
     const status = auto_scale_status !== undefined ? auto_scale_status : this.state.auto_scale;
     const status_text = status ? 'On' : 'Off';
+    let content_text = 'Auto scale is disabled. Click to turn it on.';
+    let content_class = '';
+    this.button_style_auto_scale = 'btn-outline-dark';
 
-    const enabled_for_all_axes = true;
+    if(status)
+    {
+      // Find any currently active axes limits
+      let active_axes_limits = [];
+  
+      for(const axis of ['x','y','v'])
+      {
+        const variableRanges = this.props.variableRanges[this.props[`${axis}_index`]];
+        if(variableRanges !== undefined)
+        {
+          for(const direction in variableRanges)
+          {
+            if (variableRanges.hasOwnProperty(direction)) {
+              active_axes_limits.push({
+                axis: axis,
+                direction: direction,
+                value: variableRanges[direction],
+              });
+            }
+          }
+        }
+      }
+    
+      const enabled_for_all_axes = active_axes_limits.length === 0;
 
-    const content_text = 'Auto scale is enabled for all current axes.';
-
-    const content_class = enabled_for_all_axes ? '' : 'text-danger';
+      this.button_style_auto_scale = enabled_for_all_axes ? 'btn-outline-dark' : 'btn-warning';
+  
+      content_text = enabled_for_all_axes ? 
+        'Auto scale is enabled for all current axes.' :
+        'Variable ranges are overriding auto scale:';
+      
+      for(const limit of active_axes_limits)
+      {
+        content_text += `
+          <br />
+          &bull; ${limit.axis.toUpperCase()} axis ${limit.direction} is set to ${limit.value}
+        `;
+      }
+  
+      content_class = enabled_for_all_axes ? '' : 'bg-warning';
+    }
 
     $(this.autoScalePopoverSelector).popover('dispose');
     $(this.autoScalePopoverSelector).popover({
@@ -75,7 +117,12 @@ class ControlsBar extends React.Component {
       trigger: 'hover',
       title: `Auto Scale ${status_text}`,
       content: content_text,
+      html: true,
     });
+    // Open the popover immediately if the cursor is already over the button
+    if ($(`${this.autoScalePopoverSelector}:hover`).length != 0) {
+      $(this.autoScalePopoverSelector).popover('show');
+    }
   }
 
   set_selected = (state_label, key, trigger, e) => {
@@ -99,7 +146,6 @@ class ControlsBar extends React.Component {
       const new_auto_scale = !prevState.auto_scale;
       this.props.element.trigger("auto-scale", new_auto_scale);
       this.setAutoScaleTooptip(new_auto_scale);
-      $(this.autoScalePopoverSelector).popover('show');
       return {auto_scale: new_auto_scale};
     });
   }
@@ -346,7 +392,7 @@ class ControlsBar extends React.Component {
               icon={faExternalLinkAlt} 
               active={this.state.auto_scale} 
               set_active_state={this.set_auto_scale} 
-              button_style={button_style} 
+              button_style={this.button_style_auto_scale} 
               id={this.autoScaleId}
             />
             <ControlsSelection
@@ -413,7 +459,9 @@ class ControlsBar extends React.Component {
 const mapStateToProps = (state, ownProps) => {
   return {
     variableRanges: state.variableRanges,
-    
+    x_index: state.x_index,
+    y_index: state.y_index,
+    v_index: state.v_index,
   }
 }
 

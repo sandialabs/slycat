@@ -1073,6 +1073,9 @@ $.widget("parameter_image.scatterplot",
         .orient("bottom")
         // Set number of ticks based on width of axis.
         .ticks(range_canvas[1]/85)
+        // Forces ticks at min and max axis values, but sometimes they collide
+        // with other ticks and sometimes they get rounded.
+        // .tickValues( self.x_scale.ticks( range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
         // .tickSize(15)
         ;
       self.x_axis_layer
@@ -1128,6 +1131,9 @@ $.widget("parameter_image.scatterplot",
         .orient("left")
         // Set number of ticks based on height of axis.
         .ticks(range_canvas[0]/50)
+        // Forces ticks at min and max axis values, but sometimes they collide
+        // with other ticks and sometimes they get rounded.
+        // .tickValues( self.y_scale.ticks( range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
         ;
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
@@ -1440,6 +1446,9 @@ $.widget("parameter_image.scatterplot",
         .scale(self.legend_scale)
         .orient("right")
         .ticks(range[1]/50)
+        // Forces ticks at min and max axis values, but sometimes they collide
+        // with other ticks and sometimes they get rounded.
+        // .tickValues( self.legend_scale.ticks( range[1]/50 ).concat( self.legend_scale.domain() ) )
         ;
       self.legend_axis_layer
         .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")

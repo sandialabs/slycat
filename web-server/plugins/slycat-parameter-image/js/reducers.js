@@ -21,6 +21,9 @@ import {
   SET_X_VALUES,
   SET_Y_VALUES,
   SET_V_VALUES,
+  SET_X_INDEX,
+  SET_Y_INDEX,
+  SET_V_INDEX,
 } from './actions';
 
 import { 
@@ -293,6 +296,21 @@ export default function ps_reducer(state = initialState, action) {
           ...state.derived,
           vValues: action.values
         }
+      })
+      
+    case SET_X_INDEX:
+      return Object.assign({}, state, {
+        x_index: action.index
+      })
+      
+    case SET_Y_INDEX:
+      return Object.assign({}, state, {
+        y_index: action.index
+      })
+      
+    case SET_V_INDEX:
+      return Object.assign({}, state, {
+        v_index: action.index
       })
 
     default:

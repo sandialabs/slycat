@@ -26,6 +26,9 @@ export const CLEAR_ALL_VARIABLE_RANGES = 'CLEAR_ALL_VARIABLE_RANGES'
 export const SET_X_VALUES = 'SET_X_VALUES'
 export const SET_Y_VALUES = 'SET_Y_VALUES'
 export const SET_V_VALUES = 'SET_V_VALUES'
+export const SET_X_INDEX = 'SET_X_INDEX'
+export const SET_Y_INDEX = 'SET_Y_INDEX'
+export const SET_V_INDEX = 'SET_V_INDEX'
 
 export function changeFontSize(event) {
   return { 
@@ -160,4 +163,16 @@ export function setYValues(values) {
 
 export function setVValues(values) {
   return { type: SET_V_VALUES, values: values, }
+}
+
+export function setXIndex(index) {
+  return { type: SET_X_INDEX, index: index, }
+}
+
+export function setYIndex(index) {
+  return { type: SET_Y_INDEX, index: index, }
+}
+
+export function setVIndex(index) {
+  return { type: SET_V_INDEX, index: index, }
 }
