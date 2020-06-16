@@ -7,7 +7,7 @@ import {
   setSelectedBorderSize,
   } from 'plugins/slycat-parameter-image/js/actions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import css from "css/slycat-scatterplot-options.scss";
 import { Raycaster } from "three";
 
@@ -60,7 +60,7 @@ class ScatterplotOptions extends React.PureComponent {
               max_size={MAX_UNSELECTED_POINT_SIZE}
               step={POINT_SIZE_STEP}
               handle_change={this.props.setUnselectedPointSize}
-              title_reset='Reset size of unselected points to default.'
+              title_reset='Reset size of unselected points to default'
             />
             <PointFormat 
               size={this.props.unselected_border_size}
@@ -69,7 +69,7 @@ class ScatterplotOptions extends React.PureComponent {
               max_size={MAX_UNSELECTED_BORDER_SIZE}
               step={BORDER_SIZE_STEP}
               handle_change={this.props.setUnselectedBorderSize}
-              title_reset='Reset border width of unselected points to default.'
+              title_reset='Reset border width of unselected points to default'
             />
           </div>
           <div className='form-row'>
@@ -83,7 +83,7 @@ class ScatterplotOptions extends React.PureComponent {
               max_size={MAX_SELECTED_POINT_SIZE}
               step={POINT_SIZE_STEP}
               handle_change={this.props.setSelectedPointSize}
-              title_reset='Reset size of selected points to default.'
+              title_reset='Reset size of selected points to default'
             />
             <PointFormat 
               size={this.props.selected_border_size}
@@ -92,7 +92,7 @@ class ScatterplotOptions extends React.PureComponent {
               max_size={MAX_SELECTED_BORDER_SIZE}
               step={BORDER_SIZE_STEP}
               handle_change={this.props.setSelectedBorderSize}
-              title_reset='Reset border width of selected points to default.'
+              title_reset='Reset border width of selected points to default'
             />
           </div>
         </div>
@@ -124,7 +124,7 @@ class PointFormat extends React.Component {
           disabled={this.props.size == this.props.default_size}
           onClick={this.props.handle_change}
         >
-          <FontAwesomeIcon icon={faTimes} />
+          <FontAwesomeIcon icon={faUndo} />
         </button>
       </div>
       </div>

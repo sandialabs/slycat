@@ -22,7 +22,7 @@ import $ from "jquery";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faUndo } from '@fortawesome/free-solid-svg-icons'
 
 export const DEFAULT_FONT_SIZE = 15;
 export const DEFAULT_FONT_FAMILY = 'Arial';
@@ -268,12 +268,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
                             <button 
                               className='btn btn-outline-secondary' 
                               type='button'
-                              title='Reset font family to default.'
+                              title='Reset font family to default'
                               value={DEFAULT_FONT_FAMILY}
                               onClick={this.props.changeFontFamily}
                               disabled={this.props.font_family == DEFAULT_FONT_FAMILY}
                             >
-                              <FontAwesomeIcon icon={faTimes} />
+                              <FontAwesomeIcon icon={faUndo} />
                             </button>
                           </div>
                         </div>
@@ -294,12 +294,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               <button 
                                 className='btn btn-outline-secondary' 
                                 type='button'
-                                title='Reset font size to default.'
+                                title='Reset font size to default'
                                 value={DEFAULT_FONT_SIZE}
                                 disabled={this.props.font_size == DEFAULT_FONT_SIZE}
                                 onClick={this.props.changeFontSize}
                               >
-                                <FontAwesomeIcon icon={faTimes} />
+                                <FontAwesomeIcon icon={faUndo} />
                               </button>
                             </div>
                           </div>

@@ -56,9 +56,11 @@ class ControlsBar extends React.Component {
     const status = auto_scale_status !== undefined ? auto_scale_status : this.state.auto_scale;
     const status_text = status ? 'On' : 'Off';
 
+    const enabled_for_all_axes = true;
+
     const content_text = 'Auto scale is enabled for all current axes.';
 
-    const content_class = 'text-danger';
+    const content_class = enabled_for_all_axes ? '' : 'text-danger';
 
     $(this.autoScalePopoverSelector).popover('dispose');
     $(this.autoScalePopoverSelector).popover({
@@ -411,6 +413,7 @@ class ControlsBar extends React.Component {
 const mapStateToProps = (state, ownProps) => {
   return {
     variableRanges: state.variableRanges,
+    
   }
 }
 

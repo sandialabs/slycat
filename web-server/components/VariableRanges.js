@@ -259,7 +259,7 @@ class VariableRangesRow extends React.PureComponent {
               <button 
                 className='btn btn-outline-secondary' 
                 type='button'
-                title='Clear axis min.'
+                title='Clear axis min'
                 name={this.props.min_name}
                 value=''
                 disabled={this.props.min_value === ''}
@@ -299,7 +299,7 @@ class VariableRangesRow extends React.PureComponent {
               <button 
                 className='btn btn-outline-secondary' 
                 type='button' 
-                title='Clear axis max.'
+                title='Clear axis max'
                 name={this.props.max_name}
                 value=''
                 disabled={this.props.max_value === ''}

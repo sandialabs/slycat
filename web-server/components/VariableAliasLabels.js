@@ -71,7 +71,7 @@ class VariableAliasLabelsRow extends React.PureComponent {
               <button 
                 className='btn btn-outline-secondary' 
                 type='button'
-                title='Clear alias label.'
+                title='Clear alias label'
                 name={this.props.index}
                 value=''
                 disabled={!this.props.userInput}
