@@ -1,12 +1,12 @@
 GET Remote Video
 ================
 
-.. http:get:: /api/remotes/(sid)/videos/(vsid)
+.. http:get:: /api/remotes/(hostname)/videos/(vsid)
 
   Uses an existing remote session to retrieve a remote video.  The session must
-  have been created successfully using :http:post:`/remotes` and video creation must have been
-  started using :http:post:`/remotes/(sid)/videos`.  The caller should not attempt retrieving
-  a video until a call to :http:get:`/remotes/(sid)/videos/(vsid)/status` indicates that video
+  have been created successfully using :http:post:`/api/remotes` and video creation must have been
+  started using :http:post:`/api/remotes/(hostname)/videos`.  The caller should not attempt retrieving
+  a video until a call to :http:get:`/api/remotes/(hostname)/videos/(vsid)/status` indicates that video
   creation is complete.
   The returned file may be optionally cached on the server and retrieved
   using :http:get:`/projects/(pid)/cache/(key)`.
@@ -26,7 +26,7 @@ GET Remote Video
   :status 400: "Agent required" This call requires a remote agent, but the current session isn't running an agent.
   :status 404: The session doesn't exist or has timed-out.
 
-  :responseheader Content-Type: video/mp4 or video/webm, depending on the original :http:post:`/remotes/(sid)/videos` request.
+  :responseheader Content-Type: video/mp4 or video/webm, depending on the original :http:post:`/api/remotes/(hostname)/videos` request.
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
   :responseheader X-Slycat-Hint: For errors, contains an optional description of how to fix the problem.
 
@@ -34,11 +34,11 @@ GET Remote Video
 
   .. sourcecode:: http
 
-    GET /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/videos/431d0e463d5ed4a32bb6b0fe9a000a37
+    GET /api/remotes/505d0e463d5ed4a32bb6b0fe9a000d36/videos/431d0e463d5ed4a32bb6b0fe9a000a37
 
 See Also
 --------
 
-* :http:get:`/remotes/(sid)/file(path)`
-* :http:get:`/remotes/(sid)/image(path)`
+* :http:get:`/api/remotes/(hostname)/file(path)`
+* :http:get:`/api/remotes/(hostname)/image(path)`
 

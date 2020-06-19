@@ -1,10 +1,10 @@
 POST Submit Batch
 =================
 
-.. http:post:: /remotes/submit-batch
+.. http:post:: /api/remotes/submit-batch
 
   Uses an existing remote sessions to submit a batch file to start a job on a cluster running SLURM.
-  The session must have been created successfully using :http:post:`/remotes`.
+  The session must have been created successfully using :http:post:`/api/remotes`.
 
   :<json string sid: Unique remote session identifier.
   :<json string filename: Name for the batch file.
@@ -44,8 +44,8 @@ POST Submit Batch
 See Also
 --------
 
-* :http:post:`/remotes/cancel-job`
-* :http:post:`/remotes/checkjob`
-* :http:post:`/remotes/get-job-output`
-* :http:post:`/remotes/launch`
-* :http:post:`/remotes/run-agent-function`
+* :http:post:`/api/remotes/cancel-job`
+* :http:post:`/api/remotes/checkjob`
+* :http:post:`/api/remotes/get-job-output`
+* :http:post:`/api/remotes/launch`
+* :http:post:`/api/remotes/run-agent-function`

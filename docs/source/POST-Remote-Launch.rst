@@ -1,10 +1,10 @@
 POST Remote Launch
 ==================
 
-.. http:post:: /remotes/launch
+.. http:post:: /api/remotes/launch
 
   Uses an existing remote session to submit a command.
-  The session must have been created successfully using :http:post:`/remotes`.
+  The session must have been created successfully using :http:post:`/api/remotes`.
 
   :<json string sid: Unique remote session identifier.
   :<json string command: command to be ran on the remote system.
@@ -24,7 +24,7 @@ POST Remote Launch
 
   .. sourcecode:: http
 
-    POST /remotes/launch
+    POST /api/remotes/launch
 
     {
       sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
@@ -44,8 +44,8 @@ POST Remote Launch
 See Also
 --------
 
-* :http:post:`/remotes/cancel-job`
-* :http:post:`/remotes/checkjob`
-* :http:post:`/remotes/get-job-output`
-* :http:post:`/remotes/run-agent-function`
-* :http:post:`/remotes/submit-batch`
+* :http:post:`/api/remotes/cancel-job`
+* :http:post:`/api/remotes/checkjob`
+* :http:post:`/api/remotes/get-job-output`
+* :http:post:`/api/remotes/run-agent-function`
+* :http:post:`/api/remotes/submit-batch`

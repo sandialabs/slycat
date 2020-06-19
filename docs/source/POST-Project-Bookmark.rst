@@ -1,7 +1,7 @@
 POST Project Bookmark
 =====================
 
-.. http:post:: /projects/(pid)/bookmarks
+.. http:post:: /api/projects/(pid)/bookmarks
 
   Stores a bookmark - an arbitrary JSON object that captures client-side
   state - returning a unique identifier that can be used to retrieve that
@@ -59,5 +59,5 @@ POST Project Bookmark
 See Also
 --------
 
--  :http:get:`/bookmarks/(bid)`
+-  :http:get:`/api/bookmarks/(bid)`
 

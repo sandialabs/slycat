@@ -51,6 +51,6 @@ GET Model Command
 See Also
 --------
 
-- :http:post:`/models/(mid)/commands/(type)/(command)`
+- :http:post:`/api/models/(mid)/commands/(type)/(command)`
 - :http:put:`/api/models/(mid)/commands/(type)/(command)`
 

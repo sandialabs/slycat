@@ -1,7 +1,7 @@
 PUT Model Inputs
 ================
 
-.. http:put:: /models/(mid)/inputs
+.. http:put:: /api/models/(mid)/inputs
 
   Copies the input artifacts from one model to another.
   Both models must be part of the same project.  By default,

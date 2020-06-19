@@ -53,5 +53,5 @@ See Also
 
 - :http:delete:`/api/projects/(pid)/cache/(key)`
 - :http:get:`/api/remotes/(hostname)/file(path)`
-- :http:get:`/api/remotes/(sid)/image(path)`
-- :http:get:`/api/remotes/(sid)/videos/(vsid)`
+- :http:get:`/api/remotes/(hostname)/image(path)`
+- :http:get:`/api/remotes/(hostname)/videos/(vsid)`

@@ -1,7 +1,7 @@
 POST Model Arrayset Data
 ========================
 
-.. http:get:: /models/(mid)/arraysets/(aid)/data
+.. http:get:: /api/models/(mid)/arraysets/(aid)/data
 
   Retrieve data stored in arrayset darray attributes.  The caller may request
   data stored using any combination of arrays, attributes, and hyperslices.
@@ -74,5 +74,5 @@ See Also
 --------
 
 - :ref:`hyperchunks`
-- :http:get:`/models/(mid)/arraysets/(aid)/metadata`
-- :http:put:`/models/(mid)/arraysets/(aid)/data`
+- :http:get:`/api/models/(mid)/arraysets/(aid)/metadata`
+- :http:put:`/api/models/(mid)/arraysets/(aid)/data`

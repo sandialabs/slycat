@@ -1,10 +1,10 @@
 POST Check Job
 ==============
 
-.. http:post:: /remotes/checkjob
+.. http:post:: /api/remotes/checkjob
 
   Uses an existing remote session to query the status of submitted SLURM job on a cluster.
-  The session must have been created successfully using :http:post:`/remotes`.
+  The session must have been created successfully using :http:post:`/api/remotes`.
 
   :<json string sid: Unique remote session identifier.
   :<json string jid: Job ID.
@@ -26,7 +26,7 @@ POST Check Job
 
   .. sourcecode:: http
 
-    POST /remotes/checkjob
+    POST /api/remotes/checkjob
 
     {
       sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
@@ -46,8 +46,8 @@ POST Check Job
 See Also
 --------
 
-* :http:post:`/remotes/cancel-job`
-* :http:post:`/remotes/get-job-output`
-* :http:post:`/remotes/launch`
-* :http:post:`/remotes/run-agent-function`
-* :http:post:`/remotes/submit-batch`
+* :http:post:`/api/remotes/cancel-job`
+* :http:post:`/api/remotes/get-job-output`
+* :http:post:`/api/remotes/launch`
+* :http:post:`/api/remotes/run-agent-function`
+* :http:post:`/api/remotes/submit-batch`

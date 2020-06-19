@@ -1,7 +1,7 @@
 PUT Model Parameter
 ===================
 
-.. http:put:: /models/(mid)/parameters/(aid)
+.. http:put:: /api/models/(mid)/parameters/(aid)
 
   Stores a model parameter (name / value pair) artifact. The value is a
   JSON expression and may be arbitrarily complex.
@@ -48,6 +48,6 @@ PUT Model Parameter
 See Also
 --------
 
--  :http:get:`/models/(mid)/parameters/(aid)`
+-  :http:get:`/api/models/(mid)/parameters/(aid)`
 
 

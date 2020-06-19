@@ -1,7 +1,7 @@
 PUT Model
 =========
 
-.. http:put:: /models/(mid)
+.. http:put:: /api/models/(mid)
 
   Modifies a model. Callers may change the model name, description, state,
   result status, progress, and message.
@@ -20,7 +20,7 @@ PUT Model
 See Also
 --------
 
-- :http:get:`/models/(mid)`
-- :http:post:`/models/(mid)/finish`
-- :http:delete:`/models/(mid)`
+- :http:get:`/api/models/(mid)`
+- :http:post:`/api/models/(mid)/finish`
+- :http:delete:`/api/models/(mid)`
 

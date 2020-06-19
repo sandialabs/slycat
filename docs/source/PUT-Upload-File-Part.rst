@@ -1,10 +1,10 @@
 PUT Upload File Part
 ====================
 
-.. http:put:: /uploads/(uid)/files/(fid)/parts/(pid)
+.. http:put:: /api/uploads/(uid)/files/(fid)/parts/(pid)
 
     Upload a file (or part of a file) as part of an upload session created with
-    :http:post:`/uploads`.
+    :http:post:`/api/uploads`.
 
     Use the "pid" and "fid" parameters to specify that the data being uploaded
     is for part :math:`M` of file :math:`N`.  To upload a file from the client,
@@ -30,6 +30,6 @@ PUT Upload File Part
 See Also
 --------
 
-* :http:post:`/uploads`
-* :http:post:`/uploads/(uid)/finished`
+* :http:post:`/api/uploads`
+* :http:post:`/api/uploads/(uid)/finished`
 

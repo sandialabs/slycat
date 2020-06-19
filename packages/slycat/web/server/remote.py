@@ -12,7 +12,7 @@ functionality is used in a variety of ways:
 
 * Web clients can browse the filesystem of a remote host.
 * Web clients can create a Slycat model using data stored on a remote host.
-* Web clients can retrieve images on a remote host (an essential part of the :ref:`parameter-image-model`).
+* Web clients can retrieve images on a remote host (an essential part of the parameter-image-model).
 * Web clients can retrieve video compressed from still images on a remote host.
 
 When a remote session is created, a connection to the remote host over ssh is
@@ -363,26 +363,31 @@ class Session(object):
         script or batch job or something as simple as moving files.
         the only requirement is that the script is in our list of 
         trusted scripts.
-        
         this_func()->calls agent_command_func()->which runs_shell_command()
         -> which launches_script()-> sends_response_to_agent()->sends_response_to_server()
         ->sends_status_response_to_client()
-        
-        :param self: 
-        :param command: json form of a command to be run
+
+        Parameters
+        ----------
+        command: json
+        form of a command to be run
         {
-            "scripts": //pre defined scripts that are registerd with the server
-            [{
-                "script_name":"script_name", // key for the script lookup 
-                "parameters": [{key:value},...] // params that are fed to the script
-            },...]
-            "hpc": // these are the hpc commands that may be add for thing such as slurm
-            {
-                "is_hpc_job":bol, // determins if this should be run as an hpc job
-                "parameters":[{key:value},...] // things such as number of nodes
-            }
+        "scripts": //pre defined scripts that are registerd with the server
+        [{
+        "script_name":"script_name", // key for the script lookup 
+        "parameters": [{key:value},...] // params that are fed to the script
+        },...]
+        "hpc": // these are the hpc commands that may be add for thing such as slurm
+        {
+        "is_hpc_job":bol, // determins if this should be run as an hpc job
+        "parameters":[{key:value},...] // things such as number of nodes
         }
-        :return: {"msg":"message from the agent", "error": boolean}
+        }
+
+        Returns
+        ----------
+        obj:
+        {"msg":"message from the agent", "error": boolean}
         """
         # check for an agent if none available die
         if self._agent is None:

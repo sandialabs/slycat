@@ -1,7 +1,7 @@
 POST Model Command
 ==================
 
-.. http:post:: /models/(mid)/commands/(type)/(command)
+.. http:post:: /api/models/(mid)/commands/(type)/(command)
 
   Execute a custom model command.
 
@@ -51,6 +51,6 @@ POST Model Command
 See Also
 --------
 
-- :http:get:`/models/(mid)/commands/(type)/(command)`
-- :http:put:`/models/(mid)/commands/(type)/(command)`
+- :http:get:`/api/models/(mid)/commands/(type)/(command)`
+- :http:put:`/api/models/(mid)/commands/(type)/(command)`
 

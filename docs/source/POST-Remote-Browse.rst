@@ -1,7 +1,7 @@
 POST Remote Browse
 ==================
 
-.. http:post:: /remotes/(sid)/browse(path)
+.. http:post:: /api/remotes/(hostname)/browse(path)
 
   Uses an existing remote session to retrieve remote filesystem information.
   The session must have been created successfully using :http:post:`/remotes`.
@@ -74,8 +74,8 @@ POST Remote Browse
 See Also
 --------
 
-* :http:post:`/remotes`
-* :http:get:`/remotes/(sid)/file(path)`
-* :http:get:`/remotes/(sid)/image(path)`
-* :http:post:`/remotes/(sid)/videos`
+* :http:post:`/api/remotes`
+* :http:get:`/api/remotes/(hostname)/file(path)`
+* :http:get:`/api/remotes/(hostname)/image(path)`
+* :http:post:`/api/remotes/(hostname)/videos`
 

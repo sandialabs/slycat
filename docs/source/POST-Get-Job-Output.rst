@@ -1,10 +1,10 @@
 POST Get Job Output
 ===================
 
-.. http:post:: /remotes/get-job-output
+.. http:post:: /api/remotes/get-job-output
 
   Uses an existing remote sessions to fetch the content of a SLURM output file on a cluster.
-  The session must have been created successfully using :http:post:`/remotes`
+  The session must have been created successfully using :http:post:`/api/remotes`
 
   :<json string sid: Unique remote session identifier.
   :<json string jid: Job ID.
@@ -28,7 +28,7 @@ POST Get Job Output
 
   .. sourcecode:: http
 
-    POST /remotes/get-job-output
+    POST /api/remotes/get-job-output
 
     {
       sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
@@ -48,9 +48,9 @@ POST Get Job Output
 See Also
 --------
 
-* :http:post:`/remotes/cancel-job`
-* :http:post:`/remotes/checkjob`
-* :http:post:`/remotes/launch`
-* :http:post:`/remotes/run-agent-function`
-* :http:post:`/remotes/submit-batch`
+* :http:post:`/api/remotes/cancel-job`
+* :http:post:`/api/remotes/checkjob`
+* :http:post:`/api/remotes/launch`
+* :http:post:`/api/remotes/run-agent-function`
+* :http:post:`/api/remotes/submit-batch`
 

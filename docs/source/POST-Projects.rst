@@ -1,7 +1,7 @@
 POST Projects
 =============
 
-.. http:post:: /projects
+.. http:post:: /api/projects
 
   Creates a new project. The caller *must* supply a human-readable project
   name. The caller *may* supply a human readable project description
@@ -53,5 +53,5 @@ POST Projects
 See Also
 --------
 
-- :http:get:`/projects`
+- :http:get:`/api/projects`
 

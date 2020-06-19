@@ -1,7 +1,7 @@
 POST Model Files
 ================
 
-.. http:post:: /models/(mid)/files
+.. http:post:: /api/models/(mid)/files
 
   Upload files for addition to a model, either from the client to the server or
   a remote host to the server using a remote session. To upload files from the
@@ -38,5 +38,5 @@ POST Model Files
 See Also
 --------
 
--  :http:post:`/remotes/(sid)/browse(path)`
+-  :http:post:`/api/remotes/(hostname)/browse(path)`
 

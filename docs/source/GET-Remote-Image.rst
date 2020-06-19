@@ -1,11 +1,11 @@
 GET Remote Image
 ================
 
-.. http:get:: /api/remotes/(sid)/image(path)
+.. http:get:: /api/remotes/(hostname)/image(path)
 
   Uses an existing remote session to retrieve a remote image.  The remote
-  session must have been created using :http:post:`/remotes`, and the session
-  must have a running agent.  Use :http:post:`/remotes/(sid)/browse(path)` to
+  session must have been created using :http:post:`/api/remotes`, and the session
+  must have a running agent.  Use :http:post:`/api/remotes/(hostname)/browse(path)` to
   lookup remote file paths.
   The returned file may be optionally cached on the server and retrieved
   using :http:get:`/api/projects/(pid)/cache/(key)`.
@@ -51,5 +51,5 @@ See Also
 --------
 
 * :http:get:`/api/remotes/(hostname)/file(path)`
-* :http:get:`/api/remotes/(sid)/videos/(vsid)`
+* :http:get:`/api/remotes/(hostname)/videos/(vsid)`
 

@@ -1,7 +1,7 @@
 POST Project Data
 ===================
 
-.. http:post:: /projects/data/(pid)
+.. http:post:: /api/projects/data/(pid)
 
     Creates a project level data object from a project ID. This data object can
     be used to create new models in the current project.

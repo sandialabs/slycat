@@ -66,5 +66,5 @@ GET Projects
 See Also
 --------
 
--  :http:post:`/projects`
+-  :http:post:`/api/projects`
 

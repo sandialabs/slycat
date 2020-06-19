@@ -1,7 +1,7 @@
 PUT Project
 ===========
 
-.. http:put:: /projects/(pid)
+.. http:put:: /api/projects/(pid)
 
   Modifies a project. Callers may use PUT to specify a new name,
   description, or access control list (ACL) for the project.
@@ -47,5 +47,5 @@ PUT Project
 See Also
 --------
 
-- :http:get:`/projects/(pid)`
-- :http:delete:`/projects/(pid)`
+- :http:get:`/api/projects/(pid)`
+- :http:delete:`/api/projects/(pid)`

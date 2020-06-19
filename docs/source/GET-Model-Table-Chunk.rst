@@ -71,7 +71,7 @@ GET Model Table Chunk
 
   .. sourcecode:: http
 
-    GET /api/models/(mid)/tables/(aid)/arrays/(array)chunk?rows=0-10,15,16,17&columns=2-5,8
+    GET /api/models/(mid)/tables/(aid)/arrays/(array)chunk?rows=0-10,15,16,17&columns=2-5,8 HTTP/1.1
 
 See Also
 --------

@@ -1,7 +1,7 @@
 POST Remotes
 ============
 
-.. http:post:: /remotes
+.. http:post:: /api/remotes
 
   Creates a new remote connection from the Slycat server to another host.
   The caller *must* supply a remote hostname, username, and password.
@@ -58,6 +58,6 @@ POST Remotes
 See Also
 --------
 
-- :http:delete:`/remotes/(sid)`
-- :http:post:`/remotes/(sid)/browse(path)`
+- :http:delete:`/api/remotes/(sid)`
+- :http:post:`/api/remotes/(sid)/browse(path)`
 

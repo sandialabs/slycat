@@ -1,7 +1,7 @@
 PUT Model Arrayset
 ==================
 
-.. http:put:: /models/(mid)/arraysets/(aid)
+.. http:put:: /api/models/(mid)/arraysets/(aid)
 
   Initialize an arrayset, a collection of zero-to-many arrays.
 
@@ -43,6 +43,6 @@ PUT Model Arrayset
 See Also
 --------
 
-- :http:put:`/models/(mid)/arraysets/(aid)/arrays/(array)`
-- :http:put:`/models/(mid)/arraysets/(aid)/data`
+- :http:put:`/api/models/(mid)/arraysets/(aid)/arrays/(array)`
+- :http:put:`/api/models/(mid)/arraysets/(aid)/data`
 

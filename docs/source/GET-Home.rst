@@ -5,7 +5,7 @@ GET Home
 
   Returns a redirect to /projects.
 
-  :status 303: Redirect to :http:get:`/projects`.
+  :status 303: Redirect to :http:get:`/api/projects`.
 
 See Also
 --------

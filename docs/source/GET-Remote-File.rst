@@ -9,7 +9,7 @@ GET Remote File
   The returned file may be optionally cached on the server and retrieved
   using :http:get:`/api/projects/(pid)/cache/(key)`.
 
-  :param hostname: Unique hostname returned from :http:post:`/remotes`.
+  :param hostname: Unique hostname returned from :http:post:`/api/remotes`.
   :type hostname: string
 
   :param path: Remote filesystem path (must be absolute).

@@ -3,7 +3,7 @@ DELETE Remote
 
 .. http:delete:: /api/remotes/(sid)
 
-  Deletes a remote session created with :http:post:`/remotes`. Deprecated
+  Deletes a remote session created with :http:post:`/api/remotes`. Deprecated
 
   :param sid: Unique session identifier.
   :type mid: string

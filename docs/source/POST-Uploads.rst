@@ -1,7 +1,7 @@
 POST Uploads
 ============
 
-.. http:post:: /uploads
+.. http:post:: /api/uploads
 
     Create an upload session used to upload files for storage as model
     artifacts. Once an upload session has been created, use
@@ -42,5 +42,5 @@ POST Uploads
 
 See Also
 --------
-* :http:put:`/uploads/(uid)/files/(fid)/parts/(pid)`
+* :http:put:`/api/uploads/(uid)/files/(fid)/parts/(pid)`
 

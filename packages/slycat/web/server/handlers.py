@@ -223,24 +223,38 @@ def get_remote_host_dict():
 def put_project(pid):
     """
     Takes json in the format of 
-    {
-      'acl':{
-      'administrators': [{'user':'username'}]
-      'writers': [{'user':'username'}]
-      'readers': [{'user':'username'}]
-      },
-      'name': 'name of the project',
-      'description': 'description of the project',
-    }
+    acl:
+
+    administrators: list of object 
+    user:username
+
+    writers: list of object
+    user:username
+
+    readers: list of object
+    user:username
+
+    name: string
+    name of the project
+
+    description: string
+    description of the project, 
     and updates the project json from this object.
     all top order fields are optional
-    Arguments:
-      pid {string} -- uui for project
-    
-    Raises:
-      cherrypy.HTTPError -- 400 missing administrators
-      cherrypy.HTTPError -- 400 missing writers
-      cherrypy.HTTPError -- 400 missing readers
+
+    Parameters
+    ----------
+      pid: string
+           uui for project
+
+    Raises
+    ------
+      cherrypy.HTTPError
+        400 missing administrators
+      cherrypy.HTTPError
+        400 missing writers
+      cherrypy.HTTPError
+        400 missing readers
     """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
@@ -2580,23 +2594,34 @@ def post_remote_command(hostname):
     """
     run a remote command from the list of pre-registered commands
     that are located on a remote agent.
-    :param hostname: name of the hpc host
-    :return: {
-        "message": a message that is supplied by the agent,
-        "command": an echo of the command 
-        that was sent to the server and the agent,
-        "error": boolean describing if there was an agent error,
-        "available_scripts": [{                    
-            "name": script_name,
-            "description": script_description,
-            "parameters": [{
-                "name": parameter_name as string,
-                "description": description of the param string,
-                "example":example usage string,
-                "type": field type eg string, int...
-            }]
-        }]list of available scripts from the agent
-    }
+    Parameters
+    ----------
+    hostname: str
+    name of the hpc host
+    Returns
+    ------- 
+    json
+      message: string
+      a message that is supplied by the agent
+      command: string
+      an echo of the command that was sent to the server and the agent,
+      error: bool
+      boolean describing if there was an agent error,
+      available_scripts:  list
+      list of available scripts from the agent
+      name: string
+      script_name
+      description: string
+      script_description
+      parameters: list
+      name: string
+      parameter_name as string,
+      description: string
+      description of the param string,
+      example: string
+      example usage string
+      type: string
+      field type eg string, int...
     """
     sid = get_sid(hostname)
     command = cherrypy.request.json["command"]

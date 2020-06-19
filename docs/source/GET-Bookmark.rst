@@ -1,7 +1,7 @@
 GET Bookmark
 ============
 
-.. http:get:: /bookmarks/(bid)
+.. http:get:: /api/bookmarks/(bid)
 
   Retrieves a bookmark - an arbitrary collection of client state.
 
@@ -46,5 +46,5 @@ GET Bookmark
 See Also
 --------
 
--  :http:post:`/projects/(pid)/bookmarks`
+-  :http:post:`/api/projects/(pid)/bookmarks`
 

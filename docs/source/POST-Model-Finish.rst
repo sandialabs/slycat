@@ -1,7 +1,7 @@
 POST Model Finish
 =================
 
-.. http:post:: /models/(mid)/finish
+.. http:post:: /api/models/(mid)/finish
 
   Finish (internally compute) a waiting model.  The model must be in the waiting state.
 
@@ -11,7 +11,7 @@ POST Model Finish
 See Also
 --------
 
-- :http:get:`/models/(mid)`
-- :http:put:`/models/(mid)`
-- :http:delete:`/models/(mid)`
+- :http:get:`/api/models/(mid)`
+- :http:put:`/api/models/(mid)`
+- :http:delete:`/api/models/(mid)`
 

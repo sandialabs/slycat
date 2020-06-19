@@ -26,6 +26,6 @@ GET Model Table Unsorted Indices
 See Also
 --------
 
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/chunk`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/metadata`
-- :http:get:`/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/chunk`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/metadata`
+- :http:get:`/api/models/(mid)/tables/(aid)/arrays/(array)/sorted-indices`

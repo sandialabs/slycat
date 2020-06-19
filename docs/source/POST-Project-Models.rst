@@ -1,7 +1,7 @@
 POST Project Models
 ===================
 
-.. http:post:: /projects/(pid)/models
+.. http:post:: /api/projects/(pid)/models
 
   Adds a new, empty model to a project.
 
@@ -49,7 +49,7 @@ POST Project Models
 See Also
 --------
 
-- :http:get:`/models/(mid)`
-- :http:put:`/models/(mid)`
-- :http:delete:`/models/(mid)`
+- :http:get:`/api/models/(mid)`
+- :http:put:`/api/models/(mid)`
+- :http:delete:`/api/models/(mid)`
 
