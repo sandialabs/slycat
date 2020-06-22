@@ -260,7 +260,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     data: sequence of numpy.ndarray data chunks.
     See Also
     --------
-    :http:get:`/models/(mid)/arraysets/(aid)/data`
+    :http:get:`/api/models/(mid)/arraysets/(aid)/data`
     """
     if isinstance(hyperchunks, str):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)

@@ -24,7 +24,7 @@ POST Remote Launch
 
   .. sourcecode:: http
 
-    POST /api/remotes/launch
+    POST /api/remotes/launch HTTP/1.1
 
     {
       sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
@@ -34,6 +34,8 @@ POST Remote Launch
   **Sample Response**
 
   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
 
     {
       "command": "echo test",
@@ -47,5 +49,4 @@ See Also
 * :http:post:`/api/remotes/cancel-job`
 * :http:post:`/api/remotes/checkjob`
 * :http:post:`/api/remotes/get-job-output`
-* :http:post:`/api/remotes/run-agent-function`
 * :http:post:`/api/remotes/submit-batch`

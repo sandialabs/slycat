@@ -21,7 +21,7 @@ PUT Model Parameter
 
   .. sourcecode:: http
 
-    PUT /models/1385a75dd2eb4faba884cefdd0b94a56/parameters/baz HTTP/1.1
+    PUT /api/models/1385a75dd2eb4faba884cefdd0b94a56/parameters/baz HTTP/1.1
     Host: localhost:8093
     Content-Length: 20
     Accept-Encoding: gzip, deflate, compress

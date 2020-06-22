@@ -58,6 +58,6 @@ POST Remotes
 See Also
 --------
 
-- :http:delete:`/api/remotes/(sid)`
-- :http:post:`/api/remotes/(sid)/browse(path)`
+- :http:delete:`/api/remotes/(hostname)`
+- :http:post:`/api/remotes/(hostname)/browse(path)`
 

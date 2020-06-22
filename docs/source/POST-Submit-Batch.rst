@@ -24,7 +24,7 @@ POST Submit Batch
 
   .. sourcecode:: http
 
-    POST /remotes/submit-batch
+    POST /remotes/submit-batch HTTP/1.1
 
     {
       sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
@@ -34,6 +34,8 @@ POST Submit Batch
   **Sample Response**
 
   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
 
     {
       "filename": "/home/jdoe/batch.test.bash",
@@ -48,4 +50,3 @@ See Also
 * :http:post:`/api/remotes/checkjob`
 * :http:post:`/api/remotes/get-job-output`
 * :http:post:`/api/remotes/launch`
-* :http:post:`/api/remotes/run-agent-function`

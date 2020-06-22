@@ -19,7 +19,7 @@ PUT Model Arrayset
 
   .. sourcecode:: http
 
-    PUT /models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set HTTP/1.1
+    PUT /api/models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set HTTP/1.1
     Host: localhost:8093
     Content-Length: 2
     Accept-Encoding: gzip, deflate, compress

@@ -162,9 +162,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:delete:`/models/(mid)`
+    :http:delete:`/api/models/(mid)`
     """
-    self.request("DELETE", "/models/%s" % (mid))
+    self.request("DELETE", "/api/models/%s" % (mid))
 
   def delete_project(self, pid):
     """Delete an existing project.
@@ -176,9 +176,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:delete:`/projects/(pid)`
+    :http:delete:`/api/projects/(pid)`
     """
-    self.request("DELETE", "/projects/%s" % (pid))
+    self.request("DELETE", "/api/projects/%s" % (pid))
 
   def delete_project_cache_object(self, pid, key):
     """Delete an existing project cache object.
@@ -192,9 +192,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:delete:`/projects/(pid)/cache/(key)`
+    :http:delete:`/api/projects/(pid)/cache/(key)`
     """
-    self.request("DELETE", "/projects/%s/cache/%s" % (pid, key))
+    self.request("DELETE", "/api/projects/%s/cache/%s" % (pid, key))
 
   def delete_reference(self, rid):
     """Delete an existing reference.
@@ -206,7 +206,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:delete:`/references/(rid)`
+    :http:delete:`/api/references/(rid)`
     """
     self.request("DELETE", "/references/%s" % (rid))
 
@@ -220,9 +220,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:delete:`/remotes/(sid)`
+    :http:delete:`/api/remotes/(hostname)`
     """
-    self.request("DELETE", "/remotes/%s" % (sid))
+    self.request("DELETE", "/api/remotes/%s" % (sid))
 
   def get_bookmark(self, bid):
     """Retrieve an existing bookmark.
@@ -240,7 +240,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/bookmarks/(bid)`
+    :http:get:`/api/bookmarks/(bid)`
     """
     return self.request("GET", "/bookmarks/%s" % (bid))
 
@@ -253,7 +253,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/configuration/markings`
+    :http:get:`/api/configuration/markings`
     """
     return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
 
@@ -266,9 +266,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/configuration/parsers`
+    :http:get:`/api/configuration/parsers`
     """
-    return self.request("GET", "/configuration/parsers", headers={"accept":"application/json"})
+    return self.request("GET", "/api/configuration/parsers", headers={"accept":"application/json"})
 
   def get_configuration_remote_hosts(self):
     """Retrieve remote host information from the server.
@@ -279,9 +279,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/configuration/remote-hosts`
+    :http:get:`/api/configuration/remote-hosts`
     """
-    return self.request("GET", "/configuration/remote-hosts", headers={"accept":"application/json"})
+    return self.request("GET", "/api/configuration/remote-hosts", headers={"accept":"application/json"})
 
   def get_configuration_support_email(self):
     """Retrieve support email information from the server.
@@ -292,9 +292,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/configuration/support-email`
+    :http:get:`/api/configuration/support-email`
     """
-    return self.request("GET", "/configuration/support-email", headers={"accept":"application/json"})
+    return self.request("GET", "/api/configuration/support-email", headers={"accept":"application/json"})
 
   def get_configuration_version(self):
     """Retrieve version information from the server.
@@ -305,9 +305,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/configuration/version`
+    :http:get:`/api/configuration/version`
     """
-    return self.request("GET", "/configuration/version", headers={"accept":"application/json"})
+    return self.request("GET", "/api/configuration/version", headers={"accept":"application/json"})
 
   def get_configuration_wizards(self):
     """Retrieve wizard plugin information from the server.
@@ -318,9 +318,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/configuration/wizards`
+    :http:get:`/api/configuration/wizards`
     """
-    return self.request("GET", "/configuration/wizards", headers={"accept":"application/json"})
+    return self.request("GET", "/api/configuration/wizards", headers={"accept":"application/json"})
 
   def get_global_resource(self, resource):
     return self.request("GET", "/resources/global/%s" % resource)
@@ -347,9 +347,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/models/(mid)`
+    :http:get:`/api/models/(mid)`
     """
-    return self.request("GET", "/models/%s" % mid, headers={"accept":"application/json"})
+    return self.request("GET", "/api/models/%s" % mid, headers={"accept":"application/json"})
 
   def get_model_arrayset_metadata(self, mid, aid, arrays=None, statistics=None, unique=None):
     """Retrieve metadata describing an existing model arrayset artifact.
@@ -375,7 +375,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/models/(mid)/arraysets/(aid)/metadata`
+    :http:get:`/api/models/(mid)/arraysets/(aid)/metadata`
     """
     params = dict()
     if arrays is not None:
@@ -384,10 +384,10 @@ class Connection(object):
       params["statistics"] = statistics
     if unique is not None:
       params["unique"] = unique
-    return self.request("GET", "/models/%s/arraysets/%s/metadata" % (mid, aid), params=params, headers={"accept":"application/json"})
+    return self.request("GET", "/api/models/%s/arraysets/%s/metadata" % (mid, aid), params=params, headers={"accept":"application/json"})
 
   def get_model_file(self, mid, aid):
-    return self.request("GET", "/models/%s/files/%s" % (mid, aid))
+    return self.request("GET", "/api/models/%s/files/%s" % (mid, aid))
 
   def get_model_parameter(self, mid, aid):
     """Retrieve a model parameter artifact.
@@ -409,17 +409,17 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/parameters/(aid)`
+    :http:put:`/api/models/(mid)/parameters/(aid)`
     """
-    return self.request("GET", "/models/%s/parameters/%s" % (mid, aid), headers={"accept":"application/json"})
+    return self.request("GET", "/api/models/%s/parameters/%s" % (mid, aid), headers={"accept":"application/json"})
 
   def get_project_models(self, pid):
     """Returns every model in a project."""
-    return self.request("GET", "/projects/%s/models" % pid, headers={"accept":"application/json"})
+    return self.request("GET", "/api/projects/%s/models" % pid, headers={"accept":"application/json"})
 
   def get_project_references(self, pid):
     """Returns every reference in a project."""
-    return self.request("GET", "/projects/%s/references" % pid, headers={"accept":"application/json"})
+    return self.request("GET", "/api/projects/%s/references" % pid, headers={"accept":"application/json"})
 
   def get_project(self, pid):
     """Retrieve an existing project.
@@ -435,9 +435,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/projects/(pid)`
+    :http:get:`/api/projects/(pid)`
     """
-    return self.request("GET", "/projects/%s" % pid, headers={"accept":"application/json"})
+    return self.request("GET", "/api/projects/%s" % pid, headers={"accept":"application/json"})
 
   def get_project_cache_object(self, pid, key):
     """Retrieve an object from a project cache.
@@ -455,9 +455,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/projects/(pid)/cache/(key)`
+    :http:get:`/api/projects/(pid)/cache/(key)`
     """
-    return self.request("GET", "/projects/%s/cache/%s" % (pid, key))
+    return self.request("GET", "/api/projects/%s/cache/%s" % (pid, key))
 
   def get_projects(self):
     """Retrieve all projects.
@@ -468,9 +468,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/projects`
+    :http:get:`/api/projects`
     """
-    return self.request("GET", "/projects_list", headers={"accept":"application/json"})
+    return self.request("GET", "/api/projects_list", headers={"accept":"application/json"})
 
   def get_remote_file(self, sid, path, cache=None, project=None, key=None):
     """Retrieve a file using a remote session.
@@ -494,9 +494,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/remotes/(sid)/file(path)`
+    :http:get:`/api/remotes/(hostname)/file(path)`
     """
-    return self.request("GET", "/remotes/%s/file%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
+    return self.request("GET", "/api/remotes/%s/file%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
 
   def get_remote_image(self, sid, path, cache=None, project=None, key=None):
     """Retrieve an image using a remote session.
@@ -520,9 +520,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/remotes/(sid)/image(path)`
+    :http:get:`/api/remotes/(hostname)/image(path)`
     """
-    return self.request("GET", "/remotes/%s/image%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
+    return self.request("GET", "/api/remotes/%s/image%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
 
   def get_user(self, uid=None):
     """Retrieve directory information about an existing user.
@@ -538,7 +538,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/users/(uid)`
+    :http:get:`/api/users/(uid)`
     """
     return self.request("GET", "/users/%s" % ("-" if uid is None else uid), headers={"accept":"application/json"})
 
@@ -557,7 +557,7 @@ class Connection(object):
 
     files = [("files", ("blob", file)) for file in files]
 
-    self.request("POST", "/models/%s/files" % mid, data=data, files=files)
+    self.request("POST", "/api/models/%s/files" % mid, data=data, files=files)
 
   def post_model_finish(self, mid):
     """Notify the server that a model is fully initialized.
@@ -572,9 +572,9 @@ class Connection(object):
 
     See Also
     --------
-    :http:post:`/models/(mid)/finish`
+    :http:post:`/api/models/(mid)/finish`
     """
-    self.request("POST", "/models/%s/finish" % (mid))
+    self.request("POST", "/api/models/%s/finish" % (mid))
 
   def post_project_bookmarks(self, pid, bookmark):
     """Store a bookmark.
@@ -593,13 +593,13 @@ class Connection(object):
 
     See Also
     --------
-    :http:post:`/projects/(pid)/bookmarks`
+    :http:post:`/api/projects/(pid)/bookmarks`
     """
-    return self.request("POST", "/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
+    return self.request("POST", "/api/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
   def post_project_models(self, pid, mtype, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
-    return self.request("POST", "/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
+    return self.request("POST", "/api/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
 
   def post_project_references(self, pid, name, mtype=None, mid=None, bid=None):
     """Store a project reference.
@@ -624,16 +624,16 @@ class Connection(object):
 
     See Also
     --------
-    :http:post:`/projects/(pid)/references`
+    :http:post:`/api/projects/(pid)/references`
     """
-    return self.request("POST", "/projects/%s/references" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
+    return self.request("POST", "/api/projects/%s/references" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
 
   def post_projects(self, name, description=""):
     """Creates a new project, returning the project ID."""
-    return self.request("POST", "/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
+    return self.request("POST", "/api/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
 
   def post_remotes(self, hostname, username, password, agent=None):
-    return self.request("POST", "/remotes", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password, "agent": agent}))["sid"]
+    return self.request("POST", "/api/remotes", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password, "agent": agent}))["sid"]
 
   def post_remote_browse(self, sid, path, file_reject=None, file_allow=None, directory_allow=None, directory_reject=None):
     body = {}
@@ -645,10 +645,10 @@ class Connection(object):
       body["directory-reject"] = directory_reject
     if directory_allow is not None:
       body["directory-allow"] = directory_allow
-    return self.request("POST", "/remotes/" + sid + "/browse" + path, headers={"content-type":"application/json"}, data=json.dumps(body))
+    return self.request("POST", "/api/remotes/" + sid + "/browse" + path, headers={"content-type":"application/json"}, data=json.dumps(body))
 
   def put_model(self, mid, model):
-    self.request("PUT", "/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
+    self.request("PUT", "/api/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
 
   def put_model_arrayset_data(self, mid, aid, hyperchunks, data, force_json=False):
     """Write data to an arrayset artifact on the server.
@@ -669,7 +669,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/arraysets/(aid)/data`
+    :http:put:`/api/models/(mid)/arraysets/(aid)/data`
     """
     # Sanity check arguments
     if not isinstance(mid, str):
@@ -703,19 +703,19 @@ class Connection(object):
       request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
-    self.request("PUT", "/models/%s/arraysets/%s/data" % (mid, aid), data=request_data, files={"data":request_buffer.getvalue()})
+    self.request("PUT", "/api/models/%s/arraysets/%s/data" % (mid, aid), data=request_data, files={"data":request_buffer.getvalue()})
 
   def put_model_arrayset_array(self, mid, aid, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
     stub = slycat.darray.Stub(dimensions, attributes)
-    self.request("PUT", "/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
+    self.request("PUT", "/api/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
   def put_model_arrayset(self, mid, aid, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/models/%s/arraysets/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+    self.request("PUT", "/api/models/%s/arraysets/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_inputs(self, source, target):
-    self.request("PUT", "/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
+    self.request("PUT", "/api/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
   def put_model_parameter(self, mid, aid, value, input=True):
     """Store a model parameter artifact.
@@ -741,13 +741,13 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/models/(mid)/parameters/(aid)`
+    :http:put:`/api/models/(mid)/parameters/(aid)`
     """
-    self.request("PUT", "/models/%s/parameters/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+    self.request("PUT", "/api/models/%s/parameters/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
     """Modifies a project."""
-    return self.request("PUT", "/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+    return self.request("PUT", "/api/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
 
   ###########################################################################################################
   # Convenience functions that layer additional functionality atop the RESTful API
@@ -860,7 +860,7 @@ class Connection(object):
     :func:`post_model_finish`
     """
     while True:
-      model = self.request("GET", "/models/%s" % (mid), headers={"accept":"application/json"})
+      model = self.request("GET", "/api/models/%s" % (mid), headers={"accept":"application/json"})
       if "state" in model and model["state"] not in ["waiting", "running"]:
         return
       time.sleep(1.0)

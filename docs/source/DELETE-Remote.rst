@@ -1,7 +1,7 @@
 DELETE Remote
 =============
 
-.. http:delete:: /api/remotes/(sid)
+.. http:delete:: /api/remotes/(hostname)
 
   Deletes a remote session created with :http:post:`/api/remotes`. Deprecated
 

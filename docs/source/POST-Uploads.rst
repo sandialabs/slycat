@@ -5,7 +5,7 @@ POST Uploads
 
     Create an upload session used to upload files for storage as model
     artifacts. Once an upload session has been created, use
-    :http:put:`/uploads/(uid)/files/(fid)/parts/(pid)` to upload files directly from the client to the
+    :http:put:`/api/uploads/(uid)/files/(fid)/parts/(pid)` to upload files directly from the client to the
     server or from a remote host to the server using a remote session.
 
     In either case this call must include the id of the model to receive new
