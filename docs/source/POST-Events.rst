@@ -20,9 +20,21 @@ POST Events
 
   .. sourcecode:: http
 
-      POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/select/component/3
-      POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/select/variable/1
-      POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/sort/variable/2
-      POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/pan?dx=34&dy=2
-      POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/zoom?factor=2.3
+    POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/select/component/3 HTTP/1.1
+
+  .. sourcecode:: http
+
+    POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/select/variable/1 HTTP/1.1
+
+  .. sourcecode:: http
+
+    POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/sort/variable/2 HTTP/1.1
+
+  .. sourcecode:: http
+
+    POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/pan?dx=34&dy=2 HTTP/1.1
+
+  .. sourcecode:: http
+
+    POST /api/events/models/0bfb94cba9654faf904b6fe8b2aab603/zoom?factor=2.3 HTTP/1.1
 

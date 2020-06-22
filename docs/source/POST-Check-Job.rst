@@ -26,7 +26,7 @@ POST Check Job
 
   .. sourcecode:: http
 
-    POST /api/remotes/checkjob
+    POST /api/remotes/checkjob  HTTP/1.1
 
     {
       sid: "505d0e463d5ed4a32bb6b0fe9a000d36",
@@ -36,6 +36,8 @@ POST Check Job
   **Sample Response**
 
   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
 
     {
       "jid": 123456,
@@ -49,5 +51,4 @@ See Also
 * :http:post:`/api/remotes/cancel-job`
 * :http:post:`/api/remotes/get-job-output`
 * :http:post:`/api/remotes/launch`
-* :http:post:`/api/remotes/run-agent-function`
 * :http:post:`/api/remotes/submit-batch`

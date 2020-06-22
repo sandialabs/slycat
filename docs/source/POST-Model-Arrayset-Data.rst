@@ -46,7 +46,7 @@ POST Model Arrayset Data
 
   .. sourcecode:: http
 
-    POST /models/6706e78890884845b6c709572a140681/arraysets/foo/dataH TTP/1.1
+    POST /models/6706e78890884845b6c709572a140681/arraysets/foo/dataH HTTP/1.1
     Host: localhost:8093
     Authorization: Basic c2x5Y2F0OnNseWNhdA==
     Accept-Encoding: gzip, deflate, compress

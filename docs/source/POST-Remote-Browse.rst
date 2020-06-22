@@ -4,7 +4,7 @@ POST Remote Browse
 .. http:post:: /api/remotes/(hostname)/browse(path)
 
   Uses an existing remote session to retrieve remote filesystem information.
-  The session must have been created successfully using :http:post:`/remotes`.
+  The session must have been created successfully using :http:post:`/api/remotes`.
   The caller *may* supply additional parameters to filter directories and files
   in the results, based on regular expressions.
 
@@ -52,7 +52,7 @@ POST Remote Browse
 
   .. sourcecode:: http
 
-    POST /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred
+    POST /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/browse/home/fred HTTP/1.1
 
     {
       file-reject: "[.]jpg$"
@@ -61,6 +61,8 @@ POST Remote Browse
   Sample Response
 
   .. sourcecode:: http
+
+    HTTP/1.1 200 OK
 
     {
       "path" : "/home/fred",
@@ -77,5 +79,4 @@ See Also
 * :http:post:`/api/remotes`
 * :http:get:`/api/remotes/(hostname)/file(path)`
 * :http:get:`/api/remotes/(hostname)/image(path)`
-* :http:post:`/api/remotes/(hostname)/videos`
 

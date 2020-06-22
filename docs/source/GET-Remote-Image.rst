@@ -45,7 +45,7 @@ GET Remote Image
 
   .. sourcecode:: http
 
-    GET /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/image/home/fred/avatar.png?content-type=image/jpeg&max-width=64
+    GET /remotes/505d0e463d5ed4a32bb6b0fe9a000d36/image/home/fred/avatar.png?content-type=image/jpeg&max-width=64 HTTP/1.1
 
 See Also
 --------
