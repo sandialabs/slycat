@@ -4,12 +4,9 @@ GET Remote Video
 .. http:get:: /api/remotes/(hostname)/videos/(vsid)
 
   Uses an existing remote session to retrieve a remote video.  The session must
-  have been created successfully using :http:post:`/api/remotes` and video creation must have been
-  started using :http:post:`/api/remotes/(hostname)/videos`.  The caller should not attempt retrieving
-  a video until a call to :http:get:`/api/remotes/(hostname)/videos/(vsid)/status` indicates that video
-  creation is complete.
+  have been created successfully using :http:post:`/api/remotes`.
   The returned file may be optionally cached on the server and retrieved
-  using :http:get:`/projects/(pid)/cache/(key)`.
+  using :http:get:`/api/projects/(pid)/cache/(key)`.
 
   :param sid: Unique remote session identifier.
   :type sid: string
@@ -26,7 +23,7 @@ GET Remote Video
   :status 400: "Agent required" This call requires a remote agent, but the current session isn't running an agent.
   :status 404: The session doesn't exist or has timed-out.
 
-  :responseheader Content-Type: video/mp4 or video/webm, depending on the original :http:post:`/api/remotes/(hostname)/videos` request.
+  :responseheader Content-Type: video/mp4 or video/webm, depending on the original request.
   :responseheader X-Slycat-Message: For errors, contains a human-readable description of the problem.
   :responseheader X-Slycat-Hint: For errors, contains an optional description of how to fix the problem.
 
@@ -34,7 +31,7 @@ GET Remote Video
 
   .. sourcecode:: http
 
-    GET /api/remotes/505d0e463d5ed4a32bb6b0fe9a000d36/videos/431d0e463d5ed4a32bb6b0fe9a000a37
+    GET /api/remotes/505d0e463d5ed4a32bb6b0fe9a000d36/videos/431d0e463d5ed4a32bb6b0fe9a000a37 HTTP/1.1
 
 See Also
 --------
