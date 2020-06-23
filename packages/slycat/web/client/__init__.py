@@ -206,7 +206,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:delete:`/api/references/(rid)`
+    `/api/references/(rid)`
     """
     self.request("DELETE", "/references/%s" % (rid))
 
@@ -253,7 +253,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/api/configuration/markings`
+    `/api/configuration/markings`
     """
     return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
 
@@ -266,7 +266,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/api/configuration/parsers`
+    `/api/configuration/parsers`
     """
     return self.request("GET", "/api/configuration/parsers", headers={"accept":"application/json"})
 
@@ -279,7 +279,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/api/configuration/remote-hosts`
+    `/api/configuration/remote-hosts`
     """
     return self.request("GET", "/api/configuration/remote-hosts", headers={"accept":"application/json"})
 
@@ -292,7 +292,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/api/configuration/support-email`
+    `/api/configuration/support-email`
     """
     return self.request("GET", "/api/configuration/support-email", headers={"accept":"application/json"})
 
@@ -305,7 +305,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/api/configuration/version`
+    `/api/configuration/version`
     """
     return self.request("GET", "/api/configuration/version", headers={"accept":"application/json"})
 
@@ -318,7 +318,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:get:`/api/configuration/wizards`
+    `/api/configuration/wizards`
     """
     return self.request("GET", "/api/configuration/wizards", headers={"accept":"application/json"})
 
@@ -624,7 +624,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:post:`/api/projects/(pid)/references`
+    `/api/projects/(pid)/references`
     """
     return self.request("POST", "/api/projects/%s/references" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
 
@@ -669,7 +669,7 @@ class Connection(object):
 
     See Also
     --------
-    :http:put:`/api/models/(mid)/arraysets/(aid)/data`
+    `/api/models/(mid)/arraysets/(aid)/data`
     """
     # Sanity check arguments
     if not isinstance(mid, str):

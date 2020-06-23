@@ -20,13 +20,6 @@ PUT Model Arrayset
   .. sourcecode:: http
 
     PUT /api/models/6f48db3de2b6416091d31e93814a22ae/arraysets/test-array-set HTTP/1.1
-    Host: localhost:8093
-    Content-Length: 2
-    Accept-Encoding: gzip, deflate, compress
-    Accept: */*
-    User-Agent: python-requests/1.2.3 CPython/2.7.5 Linux/2.6.32-358.23.2.el6.x86_64
-    content-type: application/json
-    Authorization: Basic c2x5Y2F0OnNseWNhdA==
 
     { input : true }
 
