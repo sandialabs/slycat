@@ -96,7 +96,7 @@ module.exports = {
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
     new CopyPlugin(
-      [{ from: 'docs/manual/html', to: 'docs' },],
+      [{ from: 'docs/html', to: 'docs' },],
       { copyUnmodified: true }
     ),
     new GitRevisionPlugin({

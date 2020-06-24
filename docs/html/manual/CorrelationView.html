@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Correlation View &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simulation View" href="SimulationView.html" />
+    <link rel="prev" title="CCA Model Visualization" href="CCAModelVis.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="CarsExample.html"><em>Cars</em> Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingCCAModel.html">Creating a CCA Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="CCAModelVis.html">CCA Model Visualization</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Correlation View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SimulationView.html">Simulation View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="VariableTable.html">Variable Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="cca.model.html">Canonical Correlation Analysis Model</a> &raquo;</li>
+        
+          <li><a href="CCAModelVis.html">CCA Model Visualization</a> &raquo;</li>
+        
+      <li>Correlation View</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/CorrelationView.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="correlation-view">
+<h1>Correlation View<a class="headerlink" href="#correlation-view" title="Permalink to this headline">¶</a></h1>
+<p>The <em>Correlation View</em> displays the relationships found between variables when the ensemble is viewed holistically.  Each column
+of the <em>Correlation View</em>’s bar chart represents a different canonical component.  These orthogonal components are ordered from
+left to right in decreasing importance, as shown by the decreasing <em>R</em><sup>2</sup> and increasing <em>p</em>-values in the first two rows
+of each component column.  Variable names are shown along the left edge with rows for input variables colored in green, and rows
+for output variables colored in lavender.  The number of components returned by CCA is equal to the minimum of the number of
+inputs versus the number of outputs.  So, for the example in Figure 23, where there are four inputs and three outputs, CCA will
+return three canonical components.</p>
+<div class="figure align-center" id="id1">
+<img alt="../_images/Figure23.png" src="../_images/Figure23.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 23: CCA model of cars data set displaying the first canonical component.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>In the bar chart, only one canonical component is expanded at a time (e.g. in Figure 23, <em>CCA1</em> is expanded, while in Figure 24,
+<em>CCA1</em> is collapsed and <em>CCA2</em> is expanded).  Clicking on a CCA column name changes the selected canonical component.  This
+collapses the bar chart from the previously selected component and expands that of the new component.</p>
+<div class="figure align-center" id="id2">
+<img alt="../_images/Figure24.png" src="../_images/Figure24.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 24: CCA model of Cars data set displaying the second canonical component.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>The horizontal bars in the expanded bar chart visually encode the relationships between variables, both in terms of the
+magnitude of the structure coefficients, and in terms of the correlation type (positive or negative).  Numeric values for the
+coefficients are displayed in the center of each column.  Positive values are drawn as red bars extending towards the right.
+Negative values are drawn in blue extending to the left.  The orientation combined with the color-coding acts to visually
+reinforce the relationship information.  At a glance, you can see correlative relationships between variables and their
+strength by comparing the color, direction, and length of the bars.  Positively correlated variables will display the same color
+and bar orientation, while negatively correlated variables will be opposed.</p>
+<p>The bar chart rows can be sorted by variable strength.  To the right of the CCA column name is a small triangular icon.
+Clicking on this icon sorts the columns by the unsigned magnitudes of the structure coefficients in the expanded column,
+though all columns will reflect the order returned by this sorting operation (i.e. the rows are sorted using this column as
+the key).  The initial sort is descending and the orientation of the triangle reflects this by rendering the triangle with the
+wide edge at the top and the point at the bottom (e.g. <em>CCA1</em> in Figure 23).  The sorting order is reversed if you click the
+triangle again.  Ascending sorts are signified by rendering the triangle with the point at the top.   Inputs and outputs are
+sorted independently.  For long lists of variables, the input and output variable sets are independently scrollable.  Note
+that in Figure 24, although <em>CCA2</em> is selected, the decreasing sort order from <em>CCA1</em> is still maintained.  Sorting column is
+independent of component selection.  Hovering over any of the CCA column headers, the sorting icon for that column becomes
+visible and can be clicked without needing to expand the component.</p>
+<p>Clicking on a row in the bar chart selects that variable for color-coding the points in the <em>Simulation View</em> (i.e. each
+simulation point is color-coded according to its value for that variable).  The variable row is highlighted by darkening the
+background color and changing the font color to white.  The color palette, shown in the <em>Legend</em> alongside the value range for
+the color-coding variable, corresponds to the currently selected theme (see <a class="reference internal" href="Models.html#color-themes"><span class="std std-ref">Color Themes</span></a>).  This same color-coding is
+applied to the cell backgrounds of this column of the <em>Variable Table</em>, as is demonstrated by the <em>Weight</em> column in both
+Figure 23 and Figure 24.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="SimulationView.html" class="btn btn-neutral float-right" title="Simulation View" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="CCAModelVis.html" class="btn btn-neutral float-left" title="CCA Model Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

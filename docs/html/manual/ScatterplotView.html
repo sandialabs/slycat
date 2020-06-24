@@ -1,0 +1,277 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Scatterplot View &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Filtering" href="Filter.html" />
+    <link rel="prev" title="Parameter Space Model Visualization" href="PSModelVis.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingPSModel.html">Creating a Parameter Space Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Scatterplot View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PSVariableTable.html">Variable Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="parameter.space.model.html">Parameter Space Model</a> &raquo;</li>
+        
+          <li><a href="PSModelVis.html">Parameter Space Model Visualization</a> &raquo;</li>
+        
+      <li>Scatterplot View</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/ScatterplotView.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scatterplot-view">
+<h1>Scatterplot View<a class="headerlink" href="#scatterplot-view" title="Permalink to this headline">¶</a></h1>
+<p>The <em>Scatterplot View</em> represents each ensemble member as a point in a two-dimensional plot, where the variables that are used
+for the x-axis, y-axis, and point color-coding are interactively selected.  As with the CCA Model, when individual points or
+groups of points are selected within the plot (see Selecting Points), corresponding rows in the <em>Variable Table</em> are
+simultaneously selected, and vice versa.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/Figure27B.PNG"><img alt="../_images/Figure27B.PNG" src="../_images/Figure27B.PNG" style="width: 1202.0px; height: 703.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 27: Parameter Space Model visualization of the Cars data set.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>However, the Parameter Space Model’s <em>Scatterplot View</em> possesses additional capabilities that the CCA Model’s <em>Simulation View</em>
+lacks.  If the <em>Variable Table</em> contains media columns (URIs for images, videos, time series tables, or STLs), hovering over a
+point with the mouse can be used to retrieve media items from remote HPC systems.  The media variable to be retrieved is selected
+through a <em>Media Set</em> dropdown list, which only appears in the controls (as shown in Figure 28) when media columns are present in
+the table.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/Figure28.png"><img alt="../_images/Figure28.png" src="../_images/Figure28.png" style="width: 732.0px; height: 26.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 28: Full set of Parameter Space model-specific controls.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>Another key feature in the <em>Scatterplot View</em> is the ability to reduce the number of visible points through filtering or point
+hiding.  This is important for interacting with large ensembles, since point overlap and occlusion increase with ensemble size.
+Additionally, the <em>Scatterplot View</em> enables the inclusion of points with missing data.  Although a point still requires values
+to exist in both axis variables to define its coordinates, none of the other variables need to have a value for the point to be
+displayed.  The points colored dark gray in Figure 27 are examples of rows with missing values for <em>Horsepower</em>.  One of these
+is row 133, which is highlighted in both the scatterplot (enlarged point) and the table (darkened row).</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Filter.html">Filtering</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="CategoricalFilters.html">Categorical Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ContinuousFilters.html">Continuous Filters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="MissingValues.html">Missing Values</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Axes.html">Axis Controls</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PointColor.html">Point Color</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MediaSet.html">Media Set</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="MediaSet.html#video-source-files">Video Source Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AutoScale.html">Automatic Scaling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SelectionAction.html">Selection Action</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ShowAll.html">Show All</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CloseAllPins.html">Close All Pins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="VideoSynch.html">Video Synchronization </a></li>
+<li class="toctree-l1"><a class="reference internal" href="AddingText.html">Adding Text </a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Filter.html" class="btn btn-neutral float-right" title="Filtering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="PSModelVis.html" class="btn btn-neutral float-left" title="Parameter Space Model Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,277 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Time Series Data &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Creating a Time Series Model" href="CreatingTSModel.html" />
+    <link rel="prev" title="Timeseries Model" href="timeseries.model.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Time Series Data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#xyce-format-file-structure">Xyce Format File Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#csv-format-file-structure">CSV Format File Structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#time-series-files">Time Series Files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hdf5-intermediary-format">HDF5 Intermediary Format</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingTSModel.html">Creating a Time Series Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="TSModelVis.html">Time Series Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="timeseries.model.html">Timeseries Model</a> &raquo;</li>
+        
+      <li>Time Series Data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/TimeSeriesData.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="time-series-data">
+<h1>Time Series Data<a class="headerlink" href="#time-series-data" title="Permalink to this headline">¶</a></h1>
+<p>Slycat™ accepts two different time series data formats, which we will call <em>Xyce</em> and <em>CSV</em>.  Each input format consists of
+two parts, a table file describing the entire ensemble, and a time series data file for each simulation in the ensemble.  Like
+the CCA and Parameter Space models, the table is at the heart of the model.  For each simulation (for each row in the data
+table), there must be a file with time series data.  Within each of these time series files are sequences of values, sampling
+one or more output variables over the course of the simulation.   It is not necessary that each simulation write the same
+number of samples into their time series files, but it is required that each simulation have a corresponding data file with
+matching output variables that cover the same time range.</p>
+<div class="section" id="xyce-format-file-structure">
+<h2>Xyce Format File Structure<a class="headerlink" href="#xyce-format-file-structure" title="Permalink to this headline">¶</a></h2>
+<p>The <em>Xyce</em> format consists of Xyce-generated time series files stored within a fixed directory hierarchy.  The hierarchy is
+rooted within a single high-level directory where there must be a <em>dakota_tabular.dat</em> file (providing the data table).  It is
+not that the file must be named <em>dakota_tabular.dat</em>, but rather the file format must correspond to the <em>dakota_tabular.dat</em>
+files generated by Dakota.  Additionally, a set of subdirectories (one per run) must be located in the same directory as the
+<em>dakota_tabular</em> file.  These subdirectories should all be named using a template like <em>workdir.n</em>, where <em>n</em> is the simulation
+number.  Within each subdirectory, there must be a time series file generated by Xyce that is formatted as a <em>.prn</em> file.  The
+time series files must all be named identically (the subdirectory defines which simulation generated them), and each file must
+contain a shared set of time series variables (columns with matching headers within each of the <em>.prn</em> files).</p>
+</div>
+<div class="section" id="csv-format-file-structure">
+<h2>CSV Format File Structure<a class="headerlink" href="#csv-format-file-structure" title="Permalink to this headline">¶</a></h2>
+<p>The <em>CSV</em> format (such as <em>heartbeat.dat</em> files produced by Sierra, or <em>.csv</em> outputs from Catalyst), is less structured than
+the <em>Xyce</em> format.  The individual time series files need not be stored in the same directory hierarchy as the data table, nor
+does the directory structure need to follow any structure or naming conventions.  Instead, the data table is a <em>CSV</em> file,
+which contains a column of URIs providing full paths to each of the time series files, which must also be <em>CSV</em> files (no
+<em>.prn</em> files).  Each URI must have the format: <a class="reference external" href="file://machine/absolute_directory_path/timeseries_filename.csv">file://machine/absolute_directory_path/timeseries_filename.csv</a>.</p>
+</div>
+<div class="section" id="time-series-files">
+<h2>Time Series Files<a class="headerlink" href="#time-series-files" title="Permalink to this headline">¶</a></h2>
+<p>Whether we are using <em>.prn</em> files or <em>CSV</em> files, both formats are essentially tables in which each column is a separate
+variable and each row is a set of concurrent samples for each of the variable columns.  The first line of a time series file
+contains headers, which provide the names of the time series output variables.  Note that in a <em>CSV</em> file, we expect to see
+only a single row of header information consisting of the column names (some physics codes output two rows of header
+information, with the variable names in the first row and the units in the second row – this is not a legal <em>CSV</em> format).
+At least one column must be a time value (typically the first column).</p>
+<p>If your data is not currently in one of these two formats, Excel can be used to create <em>CSV</em> files from most common table
+formats.  Note that if output metrics have been created separately in a post-processing step, they will need to be
+integrated with the inputs to form a single file prior to model creation.</p>
+</div>
+<div class="section" id="hdf5-intermediary-format">
+<h2>HDF5 Intermediary Format<a class="headerlink" href="#hdf5-intermediary-format" title="Permalink to this headline">¶</a></h2>
+<p>In the time series creation wizard, both formats are rewritten as <em>HDF5</em> files in a temporary Slycat™ directory (we have
+found that this significantly speeds up our processing compared to working with the originally-formatted files).  If you
+opt to keep these <em>HDF5</em> files, they constitute a third data format that the wizard will accept, though be aware that
+<em>HDF5</em> files created through other means are not interchangeable since their internal structures will be different.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="CreatingTSModel.html" class="btn btn-neutral float-right" title="Creating a Time Series Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="timeseries.model.html" class="btn btn-neutral float-left" title="Timeseries Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
