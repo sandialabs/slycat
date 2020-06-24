@@ -72,7 +72,7 @@ class ControlsBar extends React.Component {
         const variableRanges = this.props.variableRanges[this.props[`${axis}_index`]];
         if(variableRanges !== undefined)
         {
-          for(const direction in variableRanges)
+          for(const direction of ['min', 'max'])
           {
             if (variableRanges.hasOwnProperty(direction)) {
               active_axes_limits.push({
@@ -95,9 +95,10 @@ class ControlsBar extends React.Component {
       
       for(const limit of active_axes_limits)
       {
+        const axis = limit.axis == 'v' ? 'Point color' : `${limit.axis.toUpperCase()} axis`;
         content_text += `
           <br />
-          &bull; ${limit.axis.toUpperCase()} axis ${limit.direction} is set to ${limit.value}
+          &bull; ${axis} ${limit.direction} is set to ${limit.value}
         `;
       }
   
