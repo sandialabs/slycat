@@ -3,6 +3,8 @@ import {
   CHANGE_FONT_FAMILY,
   CHANGE_AXES_VARIABLE_SCALE,
   CHANGE_VARIABLE_ALIAS_LABEL,
+  REMOVE_VARIABLE_ALIAS_LABEL,
+  REMOVE_ALL_VARIABLE_ALIAS_LABELS,
   CHANGE_CURRENT_FRAME,
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
@@ -13,6 +15,15 @@ import {
   SET_UNSELECTED_BORDER_SIZE,
   SET_SELECTED_POINT_SIZE,
   SET_SELECTED_BORDER_SIZE,
+  SET_VARIABLE_RANGE,
+  CLEAR_VARIABLE_RANGE,
+  CLEAR_ALL_VARIABLE_RANGES,
+  SET_X_VALUES,
+  SET_Y_VALUES,
+  SET_V_VALUES,
+  SET_X_INDEX,
+  SET_Y_INDEX,
+  SET_V_INDEX,
 } from './actions';
 
 import { 
@@ -26,9 +37,15 @@ import {
   MAX_SELECTED_BORDER_SIZE
 } from "components/ScatterplotOptions";
 
+import { 
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_FAMILY,
+  } from './Components/ControlsButtonVarOptions';
+import { AnimationActionLoopStyles } from 'three';
+
 const initialState = {
-  fontSize: 15,
-  fontFamily: "Arial",
+  fontSize: DEFAULT_FONT_SIZE,
+  fontFamily: DEFAULT_FONT_FAMILY,
   axesVariables: {},
   currentFrame: null,
   threeD_sync: false,
@@ -60,6 +77,25 @@ export default function ps_reducer(state = initialState, action) {
             ...state.derived.variableAliases,
             [action.aliasVariable]: action.aliasLabel
           }
+        }
+      })
+    
+    case REMOVE_VARIABLE_ALIAS_LABEL:
+      let variableAliasesClone = Object.assign({}, state.derived.variableAliases);
+      delete variableAliasesClone[action.aliasVariable];
+
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          variableAliases: variableAliasesClone
+        }
+      })
+    
+    case REMOVE_ALL_VARIABLE_ALIAS_LABELS:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          variableAliases: {}
         }
       })
 
@@ -205,6 +241,77 @@ export default function ps_reducer(state = initialState, action) {
       }
 
       return Object.assign({}, state, newSelectedBorderSizes)
+    
+    case SET_VARIABLE_RANGE:
+      return Object.assign({}, state, {
+        variableRanges: {
+          ...state.variableRanges,
+          [action.index]: {
+            ...state.variableRanges[action.index],
+            [action.minOrMax]: action.value
+          }
+        }
+      })
+    
+    case CLEAR_VARIABLE_RANGE:
+      let variableRangesClone = Object.assign({}, state.variableRanges);
+      if(variableRangesClone[action.index] != undefined)
+      {
+        delete variableRangesClone[action.index][action.minOrMax];
+        // Delete the entire entry if there is no other value in it (min or max)
+        if(Object.keys(variableRangesClone[action.index]).length === 0)
+        {
+          delete variableRangesClone[action.index];
+        }
+      }
+
+      return Object.assign({}, state, {
+        variableRanges: variableRangesClone
+      })
+    
+    case CLEAR_ALL_VARIABLE_RANGES:
+      return Object.assign({}, state, {
+        variableRanges: {}
+      })
+
+    case SET_X_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          xValues: action.values
+        }
+      })
+
+    case SET_Y_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          yValues: action.values
+        }
+      })
+      
+    case SET_V_VALUES:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          vValues: action.values
+        }
+      })
+      
+    case SET_X_INDEX:
+      return Object.assign({}, state, {
+        x_index: action.index
+      })
+      
+    case SET_Y_INDEX:
+      return Object.assign({}, state, {
+        y_index: action.index
+      })
+      
+    case SET_V_INDEX:
+      return Object.assign({}, state, {
+        v_index: action.index
+      })
 
     default:
       return state

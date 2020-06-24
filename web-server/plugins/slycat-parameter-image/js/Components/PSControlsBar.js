@@ -1,5 +1,5 @@
 import React from 'react';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
 import ControlsPlayback from './ControlsPlayback';
 import ControlsDropdown from './ControlsDropdown';
 import ControlsVideo from './ControlsVideo';
@@ -14,6 +14,7 @@ import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDa
 import ControlsButtonVarOptions from './ControlsButtonVarOptions';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import _ from 'lodash';
+import $ from 'jquery';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -35,6 +36,93 @@ class ControlsBar extends React.Component {
     for(let dropdown of this.props.dropdowns)
     {
       this.state[dropdown.state_label] = dropdown.selected;
+    }
+    this.scatterplot_id = 'scatterplot-controls';
+    this.selection_id = 'selection-controls';
+    this.autoScaleId = 'auto-scale';
+    this.autoScalePopoverSelector = `#${this.selection_id} #auto-scale`;
+  }
+
+  button_style_auto_scale = ''
+
+  componentDidMount() {
+    this.setAutoScaleTooptip();
+  }
+
+  componentDidUpdate() {
+    this.setAutoScaleTooptip();
+  }
+
+  setAutoScaleTooptip = (auto_scale_status) => {
+    // console.log(`Initializing popover tooltips. Used for auto scale button.`);
+
+    const status = auto_scale_status !== undefined ? auto_scale_status : this.state.auto_scale;
+    const status_text = status ? 'On' : 'Off';
+    let content_text = 'Auto scale is disabled. Click to turn it on.';
+    let content_class = '';
+    this.button_style_auto_scale = '';
+
+    if(status)
+    {
+      // Find any currently active axes limits
+      let active_axes_limits = [];
+  
+      for(const axis of ['x','y','v'])
+      {
+        const variableRanges = this.props.variableRanges[this.props[`${axis}_index`]];
+        if(variableRanges !== undefined)
+        {
+          for(const direction of ['min', 'max'])
+          {
+            if (variableRanges.hasOwnProperty(direction)) {
+              active_axes_limits.push({
+                axis: axis,
+                direction: direction,
+                value: variableRanges[direction],
+              });
+            }
+          }
+        }
+      }
+    
+      const enabled_for_all_axes = active_axes_limits.length === 0;
+
+      this.button_style_auto_scale = enabled_for_all_axes ? '' : 'text-warning';
+  
+      content_text = enabled_for_all_axes ? 
+        'Auto scale is enabled for all current axes.' :
+        'Variable ranges are overriding auto scale:';
+      
+      for(const limit of active_axes_limits)
+      {
+        const axis = limit.axis == 'v' ? 'Point color' : `${limit.axis.toUpperCase()} axis`;
+        content_text += `
+          <br />
+          &bull; ${axis} ${limit.direction} is set to ${limit.value}
+        `;
+      }
+  
+      content_class = enabled_for_all_axes ? '' : 'bg-warning';
+    }
+
+    $(this.autoScalePopoverSelector).popover('dispose');
+    $(this.autoScalePopoverSelector).popover({
+      // Specifying custom popover template to make text red by adding text-danger class.
+      template: `
+        <div class="popover" role="tooltip">
+          <div class="arrow"></div>
+          <h3 class="popover-header"></h3>
+          <div class="popover-body ${content_class}"></div>
+        </div>`,
+      placement: 'bottom',
+      trigger: 'hover',
+      title: `Auto Scale ${status_text}`,
+      content: content_text,
+      html: true,
+    });
+    // Open the popover immediately if the cursor is already over the button
+    if ($(`${this.autoScalePopoverSelector}:hover`).length != 0) {
+      $(this.autoScalePopoverSelector).popover('show');
     }
   }
 
@@ -58,6 +146,7 @@ class ControlsBar extends React.Component {
     this.setState((prevState, props) => {
       const new_auto_scale = !prevState.auto_scale;
       this.props.element.trigger("auto-scale", new_auto_scale);
+      this.setAutoScaleTooptip(new_auto_scale);
       return {auto_scale: new_auto_scale};
     });
   }
@@ -186,16 +275,6 @@ class ControlsBar extends React.Component {
   render() {
     // Define default button style
     const button_style = 'btn-outline-dark';
-    // Completely hide the Pin functionality when the model has no media variables to choose from
-    const hide_pin = !(this.props.media_variables && this.props.media_variables.length > 0);
-    // Disable the Pin function when no media variable is selected
-    // or if the current selection only contains hidden simulations
-    // of if the current selection is already pinned
-    const no_media_variable_selected = !(this.state.media_variable && this.state.media_variable >= 0);
-    const all_selection_hidden = _.difference(this.state.selection, this.state.hidden_simulations).length === 0;
-    // To Do: figure out if the current selection is already pinned
-    const current_selection_pinned = false;
-    const disable_pin = no_media_variable_selected || all_selection_hidden || current_selection_pinned;
 
     // Update dropdowns with variable aliases when they exist
     const aliased_dropdowns = this.props.dropdowns.map((dropdown) => {
@@ -289,12 +368,11 @@ class ControlsBar extends React.Component {
       }
     }
 
-
     return (
       <Provider store={window.store}>
         <React.Fragment>
         <React.StrictMode>
-          <ControlsGroup id='scatterplot-controls' class='btn-group ml-3'>
+          <ControlsGroup id={this.scatterplot_id} class='btn-group ml-3'>
             {dropdowns}
             <ControlsButtonVarOptions 
               selection={this.state.selection} 
@@ -303,14 +381,21 @@ class ControlsBar extends React.Component {
               model={this.props.model}
               model_name={this.props.model_name} 
               metadata={this.props.metadata}
+              table_statistics={this.props.table_statistics}
               indices={this.props.indices} 
               axes_variables={this.props.axes_variables}
               button_style={button_style}
+              element={this.props.element}
             />
           </ControlsGroup>
-          <ControlsGroup id='selection-controls' class='btn-group ml-3'>
-            <ControlsButtonToggle title='Auto Scale' icon={faExternalLinkAlt} active={this.state.auto_scale} 
-              set_active_state={this.set_auto_scale} button_style={button_style} />
+          <ControlsGroup id={this.selection_id} class='btn-group ml-3'>
+            <ControlsButtonToggle 
+              icon={faExternalLinkAlt} 
+              active={this.state.auto_scale} 
+              set_active_state={this.set_auto_scale} 
+              button_style={`${button_style} ${this.button_style_auto_scale}`} 
+              id={this.autoScaleId}
+            />
             <ControlsSelection
               trigger_hide_selection={this.trigger_hide_selection}
               trigger_hide_unselected={this.trigger_hide_unselected}
@@ -321,8 +406,6 @@ class ControlsBar extends React.Component {
               trigger_show_all={this.trigger_show_all}
               trigger_select_pinned={this.trigger_select_pinned}
               disable_hide_show={this.state.disable_hide_show}
-              disable_pin={disable_pin}
-              hide_pin={hide_pin}
               selection={this.state.selection}
               hidden_simulations={this.state.hidden_simulations}
               indices={this.props.indices}
@@ -331,6 +414,10 @@ class ControlsBar extends React.Component {
               element={this.props.element}
               button_style={button_style}
               open_images={this.state.open_images}
+              media_variables={this.props.media_variables}
+              media_variable={this.state.media_variable}
+              x_variable={this.state.x_variable}
+              y_variable={this.state.y_variable}
             />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
@@ -370,4 +457,23 @@ class ControlsBar extends React.Component {
   }
 }
 
-export default ControlsBar
+const mapStateToProps = (state, ownProps) => {
+  return {
+    variableRanges: state.variableRanges,
+    x_index: state.x_index,
+    y_index: state.y_index,
+    v_index: state.v_index,
+  }
+}
+
+export default connect(
+  mapStateToProps,
+  {
+  },
+  null,
+  // Before fully convering to React and Redux, we need a reference to this 
+  // ControlsBar component so we can set its state from outside React. This option makes it so that
+  // adding a ref to the connected wrapper component will actually return the instance of the wrapped component.
+  // https://react-redux.js.org/api/connect#forwardref-boolean
+  {forwardRef : true}
+)(ControlsBar)
