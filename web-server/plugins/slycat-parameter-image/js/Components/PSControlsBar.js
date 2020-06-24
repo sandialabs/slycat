@@ -43,7 +43,7 @@ class ControlsBar extends React.Component {
     this.autoScalePopoverSelector = `#${this.selection_id} #auto-scale`;
   }
 
-  button_style_auto_scale = 'btn-outline-dark'
+  button_style_auto_scale = ''
 
   componentDidMount() {
     this.setAutoScaleTooptip();
@@ -60,7 +60,7 @@ class ControlsBar extends React.Component {
     const status_text = status ? 'On' : 'Off';
     let content_text = 'Auto scale is disabled. Click to turn it on.';
     let content_class = '';
-    this.button_style_auto_scale = 'btn-outline-dark';
+    this.button_style_auto_scale = '';
 
     if(status)
     {
@@ -87,7 +87,7 @@ class ControlsBar extends React.Component {
     
       const enabled_for_all_axes = active_axes_limits.length === 0;
 
-      this.button_style_auto_scale = enabled_for_all_axes ? 'btn-outline-dark' : 'btn-warning';
+      this.button_style_auto_scale = enabled_for_all_axes ? '' : 'text-warning';
   
       content_text = enabled_for_all_axes ? 
         'Auto scale is enabled for all current axes.' :
@@ -393,7 +393,7 @@ class ControlsBar extends React.Component {
               icon={faExternalLinkAlt} 
               active={this.state.auto_scale} 
               set_active_state={this.set_auto_scale} 
-              button_style={this.button_style_auto_scale} 
+              button_style={`${button_style} ${this.button_style_auto_scale}`} 
               id={this.autoScaleId}
             />
             <ControlsSelection
