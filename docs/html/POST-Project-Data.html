@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>POST Project Data &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="POST Projects" href="POST-Projects.html" />
+    <link rel="prev" title="POST Project Models" href="POST-Project-Models.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="hyperchunks.html">Hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-logout.html">DELETE Logout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Model.html">DELETE Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project.html">DELETE Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Cache-Object.html">DELETE Project Cache Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Remote.html">DELETE Remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Upload.html">DELETE Upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Bookmark.html">GET Bookmark</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Home.html">GET Home</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Arrayset-Data.html">GET Model Arrayset Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Arrayset-Metadata.html">GET Model Arrayset Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Command.html">GET Model Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-File.html">GET Model File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Parameter.html">GET Model Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Chunk.html">GET Model Table Chunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Metadata.html">GET Model Table Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Sorted-Indices.html">GET Model Table Sorted Indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Unsorted-Indices.html">GET Model Table Unsorted Indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model.html">GET Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Project-Cache-Object.html">GET Project Cache Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Project-Models.html">GET Project Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Project.html">GET Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Projects.html">GET Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Remote-File.html">GET Remote File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Remote-Image.html">GET Remote Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Remote-Video.html">GET Remote Video</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-User.html">GET User</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Cancel-Job.html">POST Cancel Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Check-Job.html">POST Check Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Events.html">POST Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Get-Job-Output.html">POST Get Job Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-login.html">POST Login</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Arrayset-Data.html">POST Model Arrayset Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Command.html">POST Model Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Files.html">POST Model Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Finish.html">POST Model Finish</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Project-Bookmark.html">POST Project Bookmark</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Project-Models.html">POST Project Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">POST Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Projects.html">POST Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Remote-Browse.html">POST Remote Browse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Remote-Launch.html">POST Remote Launch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Remotes.html">POST Remotes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Submit-Batch.html">POST Submit Batch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Uploads.html">POST Uploads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Upload-Finished.html">POST Upload Finished</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">POST Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Arrayset-Array.html">PUT Model Arrayset Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Arrayset-Data.html">PUT Model Arrayset Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Arrayset.html">PUT Model Arrayset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Command.html">PUT Model Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Inputs.html">PUT Model Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Parameter.html">PUT Model Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model.html">PUT Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Project.html">PUT Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Upload-File-Part.html">PUT Upload File Part</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="rest-api.html">REST API</a> &raquo;</li>
+        
+      <li>POST Project Data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/POST-Project-Data.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="post-project-data">
+<h1>POST Project Data<a class="headerlink" href="#post-project-data" title="Permalink to this headline">¶</a></h1>
+<dl class="http post">
+<dt id="post--api-projects-data-(pid)">
+<code class="sig-name descname">POST </code><code class="sig-name descname">/api/projects/data/</code><span class="sig-paren">(</span><em class="sig-param">pid</em><span class="sig-paren">)</span><a class="headerlink" href="#post--api-projects-data-(pid)" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a project level data object from a project ID. This data object can
+be used to create new models in the current project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pid</strong> (<em>string</em>) – Unique project identifier.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Request Headers</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://tools.ietf.org/html/rfc7231#section-3.1.1.5">Content-Type</a> – multipart/form-data</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Form Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – (Required) CSV file to be uploaded. Must have the .csv extension.</p></li>
+<li><p><strong>file_name</strong> – (Required) Name of the CSV being uploaded.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="POST-Projects.html" class="btn btn-neutral float-right" title="POST Projects" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="POST-Project-Models.html" class="btn btn-neutral float-left" title="POST Project Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

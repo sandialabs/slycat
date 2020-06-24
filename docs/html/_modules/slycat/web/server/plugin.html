@@ -1,0 +1,612 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>slycat.web.server.plugin &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../server.html">slycat.web.server</a> &raquo;</li>
+        
+      <li>slycat.web.server.plugin</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for slycat.web.server.plugin</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract</span>
+<span class="c1"># DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government</span>
+<span class="c1"># retains certain rights in this software.</span>
+
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">imp</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+
+<div class="viewcode-block" id="Manager"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager">[docs]</a><span class="k">class</span> <span class="nc">Manager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Manages server plugin modules.&quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">directories</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">markings</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model_commands</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">page_bundles</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pages</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">page_resources</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parsers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">password_checks</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tools</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wizard_resources</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wizards</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">utilities</span> <span class="o">=</span> <span class="p">{}</span>
+
+  <span class="k">def</span> <span class="nf">_load_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugin_directory</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Loading plugin modules from directory &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">plugin_directory</span><span class="p">)</span>
+      <span class="n">plugin_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">plugin_directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">)]</span>
+      <span class="k">for</span> <span class="n">plugin_path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">plugin_paths</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_module</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">plugin_directory</span><span class="p">,</span> <span class="n">plugin_path</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+
+  <span class="k">def</span> <span class="nf">_load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugin_path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Loading plugin &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">plugin_path</span><span class="p">)</span>
+      <span class="n">plugin_directory</span><span class="p">,</span> <span class="n">plugin_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">plugin_path</span><span class="p">)</span>
+      <span class="n">module_fp</span><span class="p">,</span> <span class="n">module_pathname</span><span class="p">,</span> <span class="n">module_description</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">find_module</span><span class="p">(</span><span class="n">plugin_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="n">plugin_directory</span><span class="p">])</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">plugin_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="n">imp</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">plugin_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="n">module_fp</span><span class="p">,</span> <span class="n">module_pathname</span><span class="p">,</span> <span class="n">module_description</span><span class="p">)))</span>
+      <span class="n">module_fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+
+<div class="viewcode-block" id="Manager.load"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.load">[docs]</a>  <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugin_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load plugin modules from a filesystem.</span>
+
+<span class="sd">    If the the given path is a directory, loads all .py files in the directory</span>
+<span class="sd">    (non-recursive).  Otherwise, assumes the path is a module and loads it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">plugin_path</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py load&quot;</span><span class="p">,</span> <span class="s2">&quot;Plugin module path must be absolute: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">plugin_path</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Plugin module path must be absolute: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">plugin_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">plugin_path</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_load_directory</span><span class="p">(</span><span class="n">plugin_path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_load_module</span><span class="p">(</span><span class="n">plugin_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_plugins"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_plugins">[docs]</a>  <span class="k">def</span> <span class="nf">register_plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Called to register plugins after all plugin modules have been loaded.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_modules</span><span class="p">):</span>
+      <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;register_slycat_plugin&quot;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+          <span class="n">module</span><span class="o">.</span><span class="n">register_slycat_plugin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+          <span class="kn">import</span> <span class="nn">traceback</span>
+          <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span></div>
+    
+
+<div class="viewcode-block" id="Manager.register_directory"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_directory">[docs]</a>  <span class="k">def</span> <span class="nf">register_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new directory type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the new directory type.</span>
+<span class="sd">    init: callable, required</span>
+<span class="sd">      Called with parameters specified by an adminstrator in the server</span>
+<span class="sd">      config.ini to initialize the directory.</span>
+<span class="sd">    user: callable, required</span>
+<span class="sd">      Called with a username to retrieve information about a user.  Must return</span>
+<span class="sd">      a dictionary containing user metadata.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">directories</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;Directory type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Directory type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">directories</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;init&quot;</span><span class="p">:</span><span class="n">init</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span><span class="n">user</span><span class="p">}</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered directory &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_marking"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_marking">[docs]</a>  <span class="k">def</span> <span class="nf">register_marking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">badge</span><span class="p">,</span> <span class="n">page_before</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">page_after</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new marking type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the new marking type.</span>
+<span class="sd">    label: string, required</span>
+<span class="sd">      Human-readable string used to represent the marking in the user interface.</span>
+<span class="sd">    badge: string, required</span>
+<span class="sd">      HTML representation used to display the marking as a &quot;badge&quot;.  The HTML</span>
+<span class="sd">      must contain everything needed to properly format the marking, including</span>
+<span class="sd">      inline CSS styles.</span>
+<span class="sd">    page_before: string, optional</span>
+<span class="sd">      HTML representation used to display the marking at the top of an HTML page.</span>
+<span class="sd">      If left unspecified, the badge representation will be used instead.</span>
+<span class="sd">    page_after: string, optional</span>
+<span class="sd">      HTML representation used to display the marking at the bottom of an HTML page.</span>
+<span class="sd">      If left unspecified, the badge representation will be used instead.</span>
+
+<span class="sd">    Note that the page_before and page_after markup need not be self-contained, i.e. they</span>
+<span class="sd">    may be used together to define a &quot;container&quot; that encloses the page markup.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">markings</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_marking&quot;</span><span class="p">,</span> <span class="s2">&quot;Marking type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Marking type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">markings</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span><span class="n">label</span><span class="p">,</span> <span class="s2">&quot;badge&quot;</span><span class="p">:</span><span class="n">badge</span><span class="p">,</span> <span class="s2">&quot;page-before&quot;</span><span class="p">:</span><span class="n">page_before</span><span class="p">,</span> <span class="s2">&quot;page-after&quot;</span><span class="p">:</span> <span class="n">page_after</span><span class="p">}</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered marking &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_page_bundle"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_page_bundle">[docs]</a>  <span class="k">def</span> <span class="nf">register_page_bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="n">paths</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_marking&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown page type: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown page type: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_bundles</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">page_bundles</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Bundled page &#39;</span><span class="si">%s</span><span class="s2">&#39; resources&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+
+    <span class="n">key_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
+    <span class="n">key_hash</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">content_type</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+      <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_page_bundle&quot;</span><span class="p">,</span> <span class="s2">&quot;Bundle file &#39;</span><span class="si">%s</span><span class="s2">&#39; must be an absolute path.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Bundle file &#39;</span><span class="si">%s</span><span class="s2">&#39; must be an absolute path.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">))</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">autoreload</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+      <span class="n">resource_content</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+      <span class="n">key_hash</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resource_content</span><span class="p">)</span>
+      <span class="n">content</span> <span class="o">+=</span> <span class="n">resource_content</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">key_hash</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">page_bundles</span><span class="p">[</span><span class="nb">type</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">content_type</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  as /resources/pages/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">key</span></div>
+
+<div class="viewcode-block" id="Manager.register_utility"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_utility">[docs]</a>  <span class="k">def</span> <span class="nf">register_utility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a server utility handler.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    command: string, required</span>
+<span class="sd">      Unique command name.</span>
+<span class="sd">    handler: callable, required</span>
+<span class="sd">      Input args vary with utility.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">command</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">utilities</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Utility command &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="n">command</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">utilities</span><span class="p">[</span><span class="n">command</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered server utility &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="n">command</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="Manager.register_model_command"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_model_command">[docs]</a>  <span class="k">def</span> <span class="nf">register_model_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verb</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a custom request handler.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    verb: string, required</span>
+<span class="sd">      The HTTP verb for the command, &quot;GET&quot;, &quot;POST&quot;, or &quot;PUT&quot;.</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      Unique category for the command.  Typically, this would be a model, parser, or wizard type.</span>
+<span class="sd">    command: string, required</span>
+<span class="sd">      Unique command name.</span>
+<span class="sd">    handler: callable, required</span>
+<span class="sd">      Called with the database, model, verb, type, command, and optional keyword parameters to handle a matching client request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">verb</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;PUT&quot;</span><span class="p">]:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_model_command&quot;</span><span class="p">,</span> <span class="s2">&quot;Not an allowed HTTP verb: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">verb</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not an allowed HTTP verb: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">verb</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">verb</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_commands</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_model_command&quot;</span><span class="p">,</span> <span class="s2">&quot;Command &#39;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">verb</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">command</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Command &#39;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">verb</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">command</span><span class="p">))</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">model_commands</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered custom command &#39;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">verb</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">command</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Manager.register_page_resource"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_page_resource">[docs]</a>  <span class="k">def</span> <span class="nf">register_page_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a custom resource associated with a page type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      Unique identifier of an already-registered page type.</span>
+<span class="sd">    resource: string, required</span>
+<span class="sd">      Server endpoint to retrieve the resource.</span>
+<span class="sd">    path: string, required</span>
+<span class="sd">      Absolute filesystem path of the resource to be retrieved.</span>
+<span class="sd">      The resource may be a single file, or a directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_page_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown page type: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown page type: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_resources</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">page_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">resource</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">]:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_page_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered with page &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered with page &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_page_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; must have an absolute path.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; must have an absolute path.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_page_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered page &#39;</span><span class="si">%s</span><span class="s2">&#39; resources&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
+        <span class="n">resource_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">page_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">][</span><span class="n">resource_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_path</span>
+        <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">file_path</span><span class="p">)</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  under /resources/pages/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">resource</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">page_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">][</span><span class="n">resource</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered page &#39;</span><span class="si">%s</span><span class="s2">&#39; resource&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  as /resources/pages/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">resource</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Manager.register_model"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_model">[docs]</a>  <span class="k">def</span> <span class="nf">register_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">finish</span><span class="p">,</span> <span class="n">ptype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new model type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the new model type.</span>
+<span class="sd">    finish: callable, required</span>
+<span class="sd">      Called to finish (perform computation on) a new instance of the model.</span>
+<span class="sd">    ptype: string, optional</span>
+<span class="sd">      A unique page type identifier to be used as the default interface when</span>
+<span class="sd">      viewing the model.  Defaults to the same string as the model type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_model&quot;</span><span class="p">,</span> <span class="s2">&quot;Model type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Model type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ptype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">ptype</span> <span class="o">=</span> <span class="nb">type</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ptype</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_model&quot;</span><span class="p">,</span> <span class="s2">&quot;Page type &#39;</span><span class="si">%s</span><span class="s2">&#39; must be a string.&quot;</span> <span class="o">%</span> <span class="n">ptype</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Page type &#39;</span><span class="si">%s</span><span class="s2">&#39; must be a string.&quot;</span> <span class="o">%</span> <span class="n">ptype</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;finish&quot;</span><span class="p">:</span> <span class="n">finish</span><span class="p">,</span> <span class="s2">&quot;ptype&quot;</span><span class="p">:</span> <span class="n">ptype</span><span class="p">}</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered model &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_page"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_page">[docs]</a>  <span class="k">def</span> <span class="nf">register_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">html</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new page type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the new page type.</span>
+<span class="sd">    html: callable, required</span>
+<span class="sd">      Called to generate an HTML representation of the page.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_page&quot;</span><span class="p">,</span> <span class="s2">&quot;Page type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Page type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">pages</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;html&quot;</span><span class="p">:</span> <span class="n">html</span><span class="p">}</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered page &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_parser"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_parser">[docs]</a>  <span class="k">def</span> <span class="nf">register_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">categories</span><span class="p">,</span> <span class="n">parse</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new parser type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the new parser type.</span>
+<span class="sd">    label: string, required</span>
+<span class="sd">      Human readable label describing the parser.</span>
+<span class="sd">    categories: list, required</span>
+<span class="sd">      List of string categories describing the type of data this parser produces, for example &quot;table&quot;.</span>
+<span class="sd">    parse: callable, required</span>
+<span class="sd">      Called with a database, model, input flag, list of file objects, list of</span>
+<span class="sd">      artifact names, and optional keyword arguments.  Must parse the file and</span>
+<span class="sd">      insert its data into the model as artifacts, returning True if</span>
+<span class="sd">      successful, otherwise False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsers</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_parser&quot;</span><span class="p">,</span> <span class="s2">&quot;Parser type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been regiitered.&quot;</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Parser type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">parsers</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span> <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="n">categories</span><span class="p">,</span> <span class="s2">&quot;parse&quot;</span><span class="p">:</span> <span class="n">parse</span><span class="p">}</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered parser &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_password_check"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_password_check">[docs]</a>  <span class="k">def</span> <span class="nf">register_password_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">check</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new password check function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the new check type.</span>
+<span class="sd">    check: callable, required</span>
+<span class="sd">      Called with a realm, username, and password plus optional keyword</span>
+<span class="sd">      arguments. Must return a (success, groups) tuple, where success is True</span>
+<span class="sd">      if authentication succeeded, and groups is a (possibly empty) list of</span>
+<span class="sd">      groups to which the user belongs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">password_checks</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_password_check&quot;</span><span class="p">,</span> <span class="s2">&quot;Password check type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Password check type &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">password_checks</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="n">check</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered password_check &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Manager.register_tool"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_tool">[docs]</a>  <span class="k">def</span> <span class="nf">register_tool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">hook_point</span><span class="p">,</span> <span class="n">callable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a new cherrypy tool.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name: string, required</span>
+<span class="sd">      A unique identifier for the new tool.</span>
+<span class="sd">    hook_point: string, required</span>
+<span class="sd">      CherryPy hook point where the tool will be installed.</span>
+<span class="sd">    callable: callable object, required</span>
+<span class="sd">      Called for every client request.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_tool&quot;</span><span class="p">,</span> <span class="s2">&quot;Tool &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Tool &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">hook_point</span><span class="p">,</span> <span class="n">callable</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">cherrypy</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">Tool</span><span class="p">(</span><span class="n">hook_point</span><span class="p">,</span> <span class="n">callable</span><span class="p">))</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered tool &#39;</span><span class="si">%s</span><span class="s2">&#39; for &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">hook_point</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Manager.register_wizard_resource"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_wizard_resource">[docs]</a>  <span class="k">def</span> <span class="nf">register_wizard_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a custom resource associated with a wizard.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      Unique identifier of an already-registered wizard.</span>
+<span class="sd">    resource: string, required</span>
+<span class="sd">      Server endpoint to retrieve the resource.</span>
+<span class="sd">    path: string, required</span>
+<span class="sd">      Absolute filesystem path of the resource to be retrieved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wizards</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown wizard type: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown wizard type: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wizard_resources</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">wizard_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">resource</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wizard_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">]:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered with wizard &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered with wizard &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; must have an absolute path.&quot;</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; must have an absolute path.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard_resource&quot;</span><span class="p">,</span> <span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Resource &#39;</span><span class="si">%s</span><span class="s2">&#39; does not exist.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wizard_resources</span><span class="p">[</span><span class="nb">type</span><span class="p">][</span><span class="n">resource</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; resource&quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">path</span><span class="p">)</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  as /resources/wizards/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">resource</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Manager.register_wizard"><a class="viewcode-back" href="../../../../slycat.web.server.plugin.html#slycat.web.server.plugin.Manager.register_wizard">[docs]</a>  <span class="k">def</span> <span class="nf">register_wizard</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">require</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Register a wizard for creating new entities.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    type: string, required</span>
+<span class="sd">      A unique identifier for the wizard.</span>
+<span class="sd">    label: string, required</span>
+<span class="sd">      Human-readable name for the wizard, displayed in the UI.</span>
+<span class="sd">    require: dict, required</span>
+<span class="sd">      Requirements in order to use the wizard.  Supported requirements</span>
+<span class="sd">      include:</span>
+
+<span class="sd">      * &quot;action&quot;: &quot;create&quot; - the wizard will be used to create new objects.</span>
+<span class="sd">      * &quot;action&quot;: &quot;edit&quot; - the wizard will be used to edit existing objects.</span>
+<span class="sd">      * &quot;action&quot;: &quot;delete&quot; - the wizard will be used to delete existing objects.</span>
+<span class="sd">      * &quot;context&quot;: &quot;global&quot; - the wizard does not require any resources to run.</span>
+<span class="sd">      * &quot;context&quot;: &quot;project&quot; - the wizard requires a project to run.</span>
+<span class="sd">      * &quot;context&quot;: &quot;model&quot; - the wizard requires a model to run.</span>
+<span class="sd">      * &quot;model-type&quot;:[list of model types] - a model matching one of the given types is required to run the wizard.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wizards</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard&quot;</span><span class="p">,</span> <span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; has already been registered.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+    <span class="k">if</span> <span class="s2">&quot;action&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">require</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard&quot;</span><span class="p">,</span> <span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; must specify an action.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; must specify an action.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">require</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;create&quot;</span><span class="p">,</span> <span class="s2">&quot;edit&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;delete&quot;</span><span class="p">]:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard&quot;</span><span class="p">,</span> <span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown action: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">require</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown action: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">require</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="s2">&quot;context&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">require</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard&quot;</span><span class="p">,</span> <span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; must specify a context.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; must specify a context.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">require</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;global&quot;</span><span class="p">,</span> <span class="s2">&quot;project&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">]:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;slycat.web.server.plugin.py register_wizard&quot;</span><span class="p">,</span> <span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown context: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">require</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]))</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Wizard &#39;</span><span class="si">%s</span><span class="s2">&#39; unknown context: </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">require</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">]))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wizards</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span> <span class="s2">&quot;require&quot;</span><span class="p">:</span> <span class="n">require</span><span class="p">}</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Registered wizard &#39;</span><span class="si">%s</span><span class="s2">&#39;.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">))</span></div></div>
+
+<span class="c1"># Create a new, singleton instance of slycat.web.server.plugin.Manager()</span>
+<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

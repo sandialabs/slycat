@@ -260,7 +260,7 @@ def get_model_arrayset_data(database, model, aid, hyperchunks):
     data: sequence of numpy.ndarray data chunks.
     See Also
     --------
-    :http:get:`/models/(mid)/arraysets/(aid)/data`
+    `/api/models/(mid)/arraysets/(aid)/data`
     """
     if isinstance(hyperchunks, str):
         hyperchunks = slycat.hyperchunks.parse(hyperchunks)
@@ -352,7 +352,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
 
   See Also
   --------
-  :http:put:`/models/(mid)/arraysets/(aid)/data`
+  :http:put:`/api/models/(mid)/arraysets/(aid)/data`
   """
     # cherrypy.log.error("put_model_arrayset_data called with: {}".format(aid))
     if isinstance(hyperchunks, str):

@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>slycat.hdf5 &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>slycat.hdf5</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for slycat.hdf5</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract</span>
+<span class="c1"># DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government</span>
+<span class="c1"># retains certain rights in this software.</span>
+
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">slycat.darray</span>
+
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+
+<div class="viewcode-block" id="DArray"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.DArray">[docs]</a><span class="k">class</span> <span class="nc">DArray</span><span class="p">(</span><span class="n">slycat</span><span class="o">.</span><span class="n">darray</span><span class="o">.</span><span class="n">Prototype</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Slycat darray implementation that stores data in an HDF5 file.&quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">storage</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">attrs</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="kc">None</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the number of dimensions in the darray.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ndim: integer</span>
+<span class="sd">      The number of dimensions in the darray.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-names&quot;</span><span class="p">])</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the darray shape (its size along each dimension).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    shape: tuple of integers</span>
+<span class="sd">      The size of the darray along each dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">end</span> <span class="o">-</span> <span class="n">begin</span> <span class="k">for</span> <span class="n">begin</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-begin&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-end&quot;</span><span class="p">])])</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the darray size (total number of elements stored in the darray).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    size: integer</span>
+<span class="sd">      The total number of elements stored in the darray.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span> <span class="nf">dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return metadata describing the darray dimensions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dimensions: list of dicts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">,</span> <span class="n">begin</span><span class="o">=</span><span class="n">begin</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">begin</span><span class="p">,</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-names&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-types&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-begin&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-end&quot;</span><span class="p">])]</span>
+
+  <span class="nd">@property</span>
+  <span class="k">def</span> <span class="nf">attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return metadata describing the darray attributes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    attributes: list of dicts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="nb">type</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-names&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">])]</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+
+  <span class="k">def</span> <span class="nf">_update_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute_index</span><span class="p">):</span>
+    <span class="n">attribute_key</span> <span class="o">=</span> <span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute_index</span>
+    <span class="n">unique_key</span> <span class="o">=</span> <span class="s2">&quot;unique/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute_index</span>
+
+    <span class="n">attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">attribute_key</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">&quot;min&quot;</span> <span class="ow">in</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">and</span> <span class="s2">&quot;max&quot;</span> <span class="ow">in</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">and</span> <span class="s2">&quot;unique&quot;</span> <span class="ow">in</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span> <span class="ow">and</span> <span class="n">unique_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">:</span>
+      <span class="k">return</span>
+
+    <span class="n">attribute_min</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">attribute_max</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">attribute_unique</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="k">for</span> <span class="n">begin</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">attribute</span><span class="p">),</span> <span class="n">chunk_size</span><span class="p">):</span>
+      <span class="nb">slice</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="n">begin</span> <span class="p">:</span> <span class="n">begin</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">]</span>
+      <span class="k">if</span> <span class="n">attribute</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;O&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">]:</span>
+        <span class="n">data_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">slice</span><span class="p">)</span>
+        <span class="n">data_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">slice</span><span class="p">)</span>
+        <span class="n">data_unique</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="nb">slice</span><span class="p">)</span>
+        <span class="n">attribute_min</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_min</span><span class="p">)</span> <span class="k">if</span> <span class="n">attribute_min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">data_min</span><span class="p">,</span> <span class="n">attribute_min</span><span class="p">))</span>
+        <span class="n">attribute_max</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">data_max</span><span class="p">)</span> <span class="k">if</span> <span class="n">attribute_max</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">data_max</span><span class="p">,</span> <span class="n">attribute_max</span><span class="p">))</span>
+        <span class="n">attribute_unique</span> <span class="o">=</span> <span class="n">data_unique</span> <span class="k">if</span> <span class="n">attribute_unique</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">data_unique</span><span class="p">,</span> <span class="n">attribute_unique</span><span class="p">)))</span>
+      <span class="k">else</span><span class="p">:</span>
+        <span class="nb">slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="nb">slice</span><span class="p">))]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">slice</span><span class="p">):</span>
+          <span class="n">data_min</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asscalar</span><span class="p">(</span><span class="nb">slice</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+          <span class="n">data_max</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asscalar</span><span class="p">(</span><span class="nb">slice</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+          <span class="n">data_unique</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="nb">slice</span><span class="p">)</span>
+          <span class="n">attribute_min</span> <span class="o">=</span> <span class="n">data_min</span> <span class="k">if</span> <span class="n">attribute_min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="n">data_min</span><span class="p">,</span> <span class="n">attribute_min</span><span class="p">)</span>
+          <span class="n">attribute_max</span> <span class="o">=</span> <span class="n">data_max</span> <span class="k">if</span> <span class="n">attribute_max</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">data_max</span><span class="p">,</span> <span class="n">attribute_max</span><span class="p">)</span>
+          <span class="n">attribute_unique</span> <span class="o">=</span> <span class="n">data_unique</span> <span class="k">if</span> <span class="n">attribute_unique</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">data_unique</span><span class="p">,</span> <span class="n">attribute_unique</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">attribute_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_min</span>
+    <span class="k">if</span> <span class="n">attribute_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_max</span>
+    <span class="k">if</span> <span class="n">attribute_unique</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+      <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">attribute_unique</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">unique_key</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">attribute_unique</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">][</span><span class="n">attribute_index</span><span class="p">]))</span>
+
+<div class="viewcode-block" id="DArray.get_statistics"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.DArray.get_statistics">[docs]</a>  <span class="k">def</span> <span class="nf">get_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_update_cache</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="n">attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+      <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+      <span class="s2">&quot;unique&quot;</span><span class="p">:</span> <span class="n">attribute</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;unique&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+      <span class="p">}</span></div>
+
+<div class="viewcode-block" id="DArray.get_unique"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.DArray.get_unique">[docs]</a>  <span class="k">def</span> <span class="nf">get_unique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">hyperslice</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_update_cache</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+      <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;unique/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">][</span><span class="n">hyperslice</span><span class="p">]</span>
+      <span class="p">}</span></div>
+
+<div class="viewcode-block" id="DArray.get_data"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.DArray.get_data">[docs]</a>  <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a reference to the data storage for a darray attribute.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    attribute: integer, optional</span>
+<span class="sd">      The integer index of the attribute data to retrieve.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data: reference to a numpy-array-like object.</span>
+<span class="sd">      An object implementing a subset of the :class:`numpy.ndarray` interface</span>
+<span class="sd">      that contains the attribute data.  Note that the returned object only</span>
+<span class="sd">      `references` the underlying data - data is not retrieved from the file</span>
+<span class="sd">      until you access it using the `[]` operator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">StorageWrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;Ensures that the dtype of data retrieved from the file matches what was put in.&quot;&quot;&quot;</span>
+      <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span>
+          <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="s1">&#39;unicode&#39;</span>
+
+      <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">StorageWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">][</span><span class="n">attribute</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DArray.set_data"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.DArray.set_data">[docs]</a>  <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">hyperslice</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Overwrite the contents of a darray attribute.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    attribute : integer</span>
+<span class="sd">      The zero-based integer index of the attribute to be overwritten.</span>
+<span class="sd">    hyperslice : integer, :class:`slice`, :class:`Ellipsis`, or tuple containing one or more integer, :class:`slice`, and :class:`Ellipsis` instances.</span>
+<span class="sd">      Defines the attribute region to be overwritten.</span>
+<span class="sd">    data : numpy.ndarray</span>
+<span class="sd">      Data to be written to the attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">attribute</span> <span class="ow">and</span> <span class="n">attribute</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">)):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py set_data&quot;</span><span class="p">,</span> <span class="s2">&quot;Attribute index </span><span class="si">%s</span><span class="s2"> out-of-range.&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Attribute index </span><span class="si">%s</span><span class="s2"> out-of-range.&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hyperslice</span><span class="p">,</span> <span class="p">(</span><span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">Ellipsis</span><span class="p">))):</span>
+      <span class="k">pass</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hyperslice</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">hyperslice</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">Ellipsis</span><span class="p">))):</span>
+          <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py set_data&quot;</span><span class="p">,</span> <span class="s2">&quot;Unsupported hyperslice type.&quot;</span><span class="p">)</span>
+          <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported hyperslice type.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py set_data&quot;</span><span class="p">,</span> <span class="s2">&quot;Unsupported hyperslice type.&quot;</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported hyperslice type.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Store the data.</span>
+    <span class="n">attribute_storage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span><span class="p">]</span>
+    <span class="n">attribute_storage</span><span class="p">[</span><span class="n">hyperslice</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="c1"># Flush cached sort indices.</span>
+    <span class="n">index_key</span> <span class="o">=</span> <span class="s2">&quot;index/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span>
+    <span class="k">if</span> <span class="n">index_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">:</span>
+      <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">index_key</span><span class="p">]</span>
+
+    <span class="c1"># Flush cached unique values.</span>
+    <span class="n">unique_key</span> <span class="o">=</span> <span class="s2">&quot;unique/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">attribute</span>
+    <span class="k">if</span> <span class="n">unique_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">:</span>
+      <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">unique_key</span><span class="p">]</span>
+
+    <span class="c1"># Flush cached statistics.</span>
+    <span class="k">if</span> <span class="s2">&quot;min&quot;</span> <span class="ow">in</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+      <span class="k">del</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">&quot;max&quot;</span> <span class="ow">in</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+      <span class="k">del</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">&quot;unique&quot;</span> <span class="ow">in</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">:</span>
+      <span class="k">del</span> <span class="n">attribute_storage</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;unique&quot;</span><span class="p">]</span></div></div>
+
+<div class="viewcode-block" id="ArraySet"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.ArraySet">[docs]</a><span class="k">class</span> <span class="nc">ArraySet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Wraps an instance of :class:`h5py.File` to implement a Slycat arrayset.&quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span> <span class="o">=</span> <span class="n">file</span>
+
+  <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">])</span>
+
+  <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ArraySet.keys"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.ArraySet.keys">[docs]</a>  <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span></div>
+
+<div class="viewcode-block" id="ArraySet.array_count"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.ArraySet.array_count">[docs]</a>  <span class="k">def</span> <span class="nf">array_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Note: this assumes that array indices are contiguous, which we don&#39;t explicitly enforce.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="ArraySet.start_array"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.ArraySet.start_array">[docs]</a>  <span class="k">def</span> <span class="nf">start_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add an uninitialized darray to the arrayset.</span>
+
+<span class="sd">    An existing array with the same index will be overwritten.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array_index : integer, required.</span>
+<span class="sd">      Zero-based index of the array to create.</span>
+<span class="sd">    dimensions : list of dicts, required.</span>
+<span class="sd">      Description of the new array dimensions.</span>
+<span class="sd">    attributes : list of dicts, required.</span>
+<span class="sd">      Description of the new array attributes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array : :class:`slycat.hdf5.DArray`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># cherrypy.log.error(&quot;building start_array for put_model_array&quot;)</span>
+    <span class="n">stub</span> <span class="o">=</span> <span class="n">slycat</span><span class="o">.</span><span class="n">darray</span><span class="o">.</span><span class="n">Stub</span><span class="p">(</span><span class="n">dimensions</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;begin&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">dimensions</span><span class="p">]</span>
+    <span class="n">stored_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">dtype</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">attributes</span><span class="p">]</span>
+
+    <span class="c1"># cherrypy.log.error(&quot;allocating space for start_array for put_model_array&quot;)</span>
+    <span class="k">try</span><span class="p">:</span>
+      <span class="c1"># Allocate space for the coming data ...</span>
+      <span class="n">array_key</span> <span class="o">=</span> <span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">array_index</span>
+      <span class="k">if</span> <span class="n">array_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">:</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">array_key</span><span class="p">]</span>
+      <span class="k">for</span> <span class="n">attribute_index</span><span class="p">,</span> <span class="n">stored_type</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stored_types</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">/attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">array_index</span><span class="p">,</span> <span class="n">attribute_index</span><span class="p">),</span> <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">stored_type</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+      <span class="k">pass</span>
+
+    <span class="c1"># cherrypy.log.error(&quot;storing metadata for start_array for put_model_array&quot;)</span>
+    <span class="c1"># Store array metadata ...</span>
+    <span class="n">array_metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">array_key</span><span class="p">]</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">)</span>
+    <span class="n">array_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">attributes</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+    <span class="n">array_metadata</span><span class="p">[</span><span class="s2">&quot;attribute-types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">attributes</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+    <span class="n">array_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-names&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">dimensions</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+    <span class="n">array_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">dimensions</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+    <span class="n">array_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-begin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;begin&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">dimensions</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+    <span class="n">array_metadata</span><span class="p">[</span><span class="s2">&quot;dimension-end&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">stub</span><span class="o">.</span><span class="n">dimensions</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int64&quot;</span><span class="p">)</span>
+
+    <span class="c1"># cherrypy.log.error(&quot;returning Darray for start_array for put_model_array&quot;)</span>
+    <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">array_key</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ArraySet.store_array"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.ArraySet.store_array">[docs]</a>  <span class="k">def</span> <span class="nf">store_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">array_index</span><span class="p">,</span> <span class="n">array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Store a :class:`slycat.darray.Prototype` in the arrayset.</span>
+
+<span class="sd">    An existing array with the same index will be overwritten.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array_index : integer, required.</span>
+<span class="sd">      The index of the array to be created / overwritten.</span>
+<span class="sd">    array : :class:`slycat.darray.Prototype`, required.</span>
+<span class="sd">      Existing darray to be stored.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array : :class:`slycat.hdf5.DArray`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">slycat</span><span class="o">.</span><span class="n">darray</span><span class="o">.</span><span class="n">Prototype</span><span class="p">):</span>
+      <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py store_array&quot;</span><span class="p">,</span> <span class="s2">&quot;A slycat.darray is required.&quot;</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A slycat.darray is required.&quot;</span><span class="p">)</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;begin&quot;</span><span class="p">],</span> <span class="n">dimension</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">array</span><span class="o">.</span><span class="n">dimensions</span><span class="p">])</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">start_array</span><span class="p">(</span><span class="n">array_index</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="n">array</span><span class="o">.</span><span class="n">attributes</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">attribute_index</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">attributes</span><span class="p">):</span>
+      <span class="n">stored_type</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span>
+      <span class="n">data</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span><span class="n">attribute_index</span><span class="p">)</span>
+
+      <span class="c1"># Store the data ...</span>
+      <span class="n">attribute_key</span> <span class="o">=</span> <span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">/attribute/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">array_index</span><span class="p">,</span> <span class="n">attribute_index</span><span class="p">)</span>
+      <span class="n">hdf5_attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="n">attribute_key</span><span class="p">]</span>
+      <span class="n">hdf5_attribute</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">return</span> <span class="n">DArray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage</span><span class="p">[</span><span class="s2">&quot;array/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">array_index</span><span class="p">])</span></div></div>
+
+<div class="viewcode-block" id="start_arrayset"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.start_arrayset">[docs]</a><span class="k">def</span> <span class="nf">start_arrayset</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Create a new array set using an open hdf5 file.</span>
+
+<span class="sd">  Parameters</span>
+<span class="sd">  ----------</span>
+<span class="sd">  file : :class:`h5py.File`, required.</span>
+<span class="sd">    An hdf5 file open for writing.</span>
+
+<span class="sd">  Returns</span>
+<span class="sd">  -------</span>
+<span class="sd">  arrayset : :class:`slycat.hdf5.ArraySet`</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">):</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py start_arrayset&quot;</span><span class="p">,</span> <span class="s2">&quot;An open h5py.File is required.&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;An open h5py.File is required.&quot;</span><span class="p">)</span>
+  <span class="n">file</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s2">&quot;array&quot;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">ArraySet</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+
+<span class="c1">################################################################################################################################################</span>
+<span class="c1"># Legacy functionality - don&#39;t use these in new code.</span>
+
+<div class="viewcode-block" id="dtype"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.dtype">[docs]</a><span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Convert a string attribute type into a dtype suitable for use with h5py.&quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dtype</span><span class="o">.</span><span class="n">type_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;hdf5.py dtype&quot;</span><span class="p">,</span> <span class="s2">&quot;Unsupported type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unsupported type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">dtype</span><span class="o">.</span><span class="n">type_map</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span></div>
+<span class="n">dtype</span><span class="o">.</span><span class="n">type_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;int8&quot;</span><span class="p">:</span><span class="s2">&quot;int8&quot;</span><span class="p">,</span> <span class="s2">&quot;int16&quot;</span><span class="p">:</span><span class="s2">&quot;int16&quot;</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">:</span><span class="s2">&quot;int32&quot;</span><span class="p">,</span> <span class="s2">&quot;int64&quot;</span><span class="p">:</span><span class="s2">&quot;int64&quot;</span><span class="p">,</span> <span class="s2">&quot;uint8&quot;</span><span class="p">:</span><span class="s2">&quot;uint8&quot;</span><span class="p">,</span> <span class="s2">&quot;uint16&quot;</span><span class="p">:</span><span class="s2">&quot;uint16&quot;</span><span class="p">,</span> <span class="s2">&quot;uint32&quot;</span><span class="p">:</span><span class="s2">&quot;uint32&quot;</span><span class="p">,</span> <span class="s2">&quot;uint64&quot;</span><span class="p">:</span><span class="s2">&quot;uint64&quot;</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">:</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;float64&quot;</span><span class="p">:</span><span class="s2">&quot;float64&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">:</span><span class="n">h5py</span><span class="o">.</span><span class="n">special_dtype</span><span class="p">(</span><span class="n">vlen</span><span class="o">=</span><span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;double&quot;</span><span class="p">:</span><span class="s2">&quot;float64&quot;</span><span class="p">}</span>
+
+<div class="viewcode-block" id="path"><a class="viewcode-back" href="../../slycat.hdf5.html#slycat.hdf5.path">[docs]</a><span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="n">array</span> <span class="o">+</span> <span class="s2">&quot;.hdf5&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
