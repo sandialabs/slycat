@@ -3,10 +3,10 @@ GET Bookmark
 
 .. http:get:: /api/bookmarks/(bid)
 
-  Retrieves a bookmark - an arbitrary collection of client state.
+  Retrieves a bookmark - an arbitrary collection of client state as.
 
   :param bid: Unique bookmark identifier.
-  :type bid: string
+  :type bid: json string
 
   :responseheader Content-Type: application/json
 
