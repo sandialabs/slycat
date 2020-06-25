@@ -2,6 +2,7 @@ build
 .cover
 .coverage
 docs/_build
+docs/source/_build
 .DS_Store
 .ipynb_checkpoints
 packages/cherrypy/test/access.log
