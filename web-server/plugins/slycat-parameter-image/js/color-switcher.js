@@ -14,6 +14,14 @@ import ReactDOM from 'react-dom';
 import ControlsDropdownColor from './Components/ControlsDropdownColor';
 import COLOR_MAP from './Components/color-map.js';
 
+export function isValueInColorscaleDomain(value, colorscale)
+{
+  let domain = colorscale.domain();
+  let min = domain[0];
+  let max = domain[domain.length-1];
+  return min <= value && value <= max;
+}
+
 $.widget("slycat.colorswitcher",
 {
   options:
@@ -47,6 +55,9 @@ $.widget("slycat.colorswitcher",
 
   _setOption: function(key, value)
   {
+    let self = this;
+    // console.log(`_setOption in color-switcher.js`);
+    self.options[key] = value;
 
     if(key === "color")
     {
@@ -71,6 +82,15 @@ $.widget("slycat.colorswitcher",
     if(name === undefined)
       name = this.options.colormap;
     return this.color_maps[name]["null_color"];
+  },
+
+  // Return the out of domain color value for the given color map.
+  get_outofdomain_color: function(name)
+  {
+    // console.log(`get_outofdomain_color for ${this.options.colormap}`);
+    if(name === undefined)
+      name = this.options.colormap;
+    return this.color_maps[name]["outofdomain_color"];
   },
 
   // Return the suggested opacity value for the given color map.
@@ -154,7 +174,5 @@ $.widget("slycat.colorswitcher",
     {
       columns[j].colorMap = this.get_color_scale(name, columns[j].columnMin, columns[j].columnMax);
     }
-  }
-
-
+  },
 });

@@ -1,0 +1,457 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>slycat.web.server.plugin &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="slycat.web.server.remote" href="slycat.web.server.remote.html" />
+    <link rel="prev" title="slycat.web.server.hdf5" href="slycat.web.server.hdf5.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rest-api.html">REST API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="python-api.html">Python API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.darray.html">slycat.darray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hdf5.html">slycat.hdf5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.hyperchunks.html">slycat.hyperchunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.uri.html">slycat.uri</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.client.html">slycat.web.client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.html">slycat.web.server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.authentication.html">slycat.web.server.authentication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.database.couchdb.html">slycat.web.server.database.couchdb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.engine.html">slycat.web.server.engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.handlers.html">slycat.web.server.handlers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.hdf5.html">slycat.web.server.hdf5</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">slycat.web.server.plugin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="slycat.web.server.remote.html">slycat.web.server.remote</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="python-api.html">Python API</a> &raquo;</li>
+        
+      <li>slycat.web.server.plugin</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/slycat.web.server.plugin.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-slycat.web.server.plugin">
+<span id="slycat-web-server-plugin"></span><h1>slycat.web.server.plugin<a class="headerlink" href="#module-slycat.web.server.plugin" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="slycat.web.server.plugin.Manager">
+<em class="property">class </em><code class="sig-prename descclassname">slycat.web.server.plugin.</code><code class="sig-name descname">Manager</code><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manages server plugin modules.</p>
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plugin_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load plugin modules from a filesystem.</p>
+<p>If the the given path is a directory, loads all .py files in the directory
+(non-recursive).  Otherwise, assumes the path is a module and loads it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_directory">
+<code class="sig-name descname">register_directory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">init</span></em>, <em class="sig-param"><span class="n">user</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new directory type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new directory type.</p></li>
+<li><p><strong>init</strong> (<em>callable</em><em>, </em><em>required</em>) – Called with parameters specified by an adminstrator in the server
+config.ini to initialize the directory.</p></li>
+<li><p><strong>user</strong> (<em>callable</em><em>, </em><em>required</em>) – Called with a username to retrieve information about a user.  Must return
+a dictionary containing user metadata.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_marking">
+<code class="sig-name descname">register_marking</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">badge</span></em>, <em class="sig-param"><span class="n">page_before</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">page_after</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_marking"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_marking" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new marking type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new marking type.</p></li>
+<li><p><strong>label</strong> (<em>string</em><em>, </em><em>required</em>) – Human-readable string used to represent the marking in the user interface.</p></li>
+<li><p><strong>badge</strong> (<em>string</em><em>, </em><em>required</em>) – HTML representation used to display the marking as a “badge”.  The HTML
+must contain everything needed to properly format the marking, including
+inline CSS styles.</p></li>
+<li><p><strong>page_before</strong> (<em>string</em><em>, </em><em>optional</em>) – HTML representation used to display the marking at the top of an HTML page.
+If left unspecified, the badge representation will be used instead.</p></li>
+<li><p><strong>page_after</strong> (<em>string</em><em>, </em><em>optional</em>) – HTML representation used to display the marking at the bottom of an HTML page.
+If left unspecified, the badge representation will be used instead.</p></li>
+<li><p><strong>that the page_before and page_after markup need not be self-contained</strong><strong>, </strong><strong>i.e. they</strong> (<em>Note</em>) – </p></li>
+<li><p><strong>be used together to define a &quot;container&quot; that encloses the page markup.</strong> (<em>may</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_model">
+<code class="sig-name descname">register_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">finish</span></em>, <em class="sig-param"><span class="n">ptype</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new model type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new model type.</p></li>
+<li><p><strong>finish</strong> (<em>callable</em><em>, </em><em>required</em>) – Called to finish (perform computation on) a new instance of the model.</p></li>
+<li><p><strong>ptype</strong> (<em>string</em><em>, </em><em>optional</em>) – A unique page type identifier to be used as the default interface when
+viewing the model.  Defaults to the same string as the model type.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_model_command">
+<code class="sig-name descname">register_model_command</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verb</span></em>, <em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">command</span></em>, <em class="sig-param"><span class="n">handler</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_model_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_model_command" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a custom request handler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>verb</strong> (<em>string</em><em>, </em><em>required</em>) – The HTTP verb for the command, “GET”, “POST”, or “PUT”.</p></li>
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – Unique category for the command.  Typically, this would be a model, parser, or wizard type.</p></li>
+<li><p><strong>command</strong> (<em>string</em><em>, </em><em>required</em>) – Unique command name.</p></li>
+<li><p><strong>handler</strong> (<em>callable</em><em>, </em><em>required</em>) – Called with the database, model, verb, type, command, and optional keyword parameters to handle a matching client request.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_page">
+<code class="sig-name descname">register_page</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">html</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_page"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new page type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new page type.</p></li>
+<li><p><strong>html</strong> (<em>callable</em><em>, </em><em>required</em>) – Called to generate an HTML representation of the page.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_page_bundle">
+<code class="sig-name descname">register_page_bundle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">content_type</span></em>, <em class="sig-param"><span class="n">paths</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_page_bundle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page_bundle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_page_resource">
+<code class="sig-name descname">register_page_resource</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">resource</span></em>, <em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_page_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_page_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a custom resource associated with a page type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – Unique identifier of an already-registered page type.</p></li>
+<li><p><strong>resource</strong> (<em>string</em><em>, </em><em>required</em>) – Server endpoint to retrieve the resource.</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – Absolute filesystem path of the resource to be retrieved.
+The resource may be a single file, or a directory.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_parser">
+<code class="sig-name descname">register_parser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">categories</span></em>, <em class="sig-param"><span class="n">parse</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new parser type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new parser type.</p></li>
+<li><p><strong>label</strong> (<em>string</em><em>, </em><em>required</em>) – Human readable label describing the parser.</p></li>
+<li><p><strong>categories</strong> (<em>list</em><em>, </em><em>required</em>) – List of string categories describing the type of data this parser produces, for example “table”.</p></li>
+<li><p><strong>parse</strong> (<em>callable</em><em>, </em><em>required</em>) – Called with a database, model, input flag, list of file objects, list of
+artifact names, and optional keyword arguments.  Must parse the file and
+insert its data into the model as artifacts, returning True if
+successful, otherwise False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_password_check">
+<code class="sig-name descname">register_password_check</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">check</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_password_check"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_password_check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new password check function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new check type.</p></li>
+<li><p><strong>check</strong> (<em>callable</em><em>, </em><em>required</em>) – Called with a realm, username, and password plus optional keyword
+arguments. Must return a (success, groups) tuple, where success is True
+if authentication succeeded, and groups is a (possibly empty) list of
+groups to which the user belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_plugins">
+<code class="sig-name descname">register_plugins</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_plugins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_plugins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to register plugins after all plugin modules have been loaded.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_tool">
+<code class="sig-name descname">register_tool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">hook_point</span></em>, <em class="sig-param"><span class="n">callable</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_tool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_tool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new cherrypy tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the new tool.</p></li>
+<li><p><strong>hook_point</strong> (<em>string</em><em>, </em><em>required</em>) – CherryPy hook point where the tool will be installed.</p></li>
+<li><p><strong>callable</strong> (<em>callable object</em><em>, </em><em>required</em>) – Called for every client request.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_utility">
+<code class="sig-name descname">register_utility</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">command</span></em>, <em class="sig-param"><span class="n">handler</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_utility"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_utility" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a server utility handler.
+:param command: Unique command name.
+:type command: string, required
+:param handler: Input args vary with utility.
+:type handler: callable, required</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_wizard">
+<code class="sig-name descname">register_wizard</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">require</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_wizard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_wizard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a wizard for creating new entities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – A unique identifier for the wizard.</p></li>
+<li><p><strong>label</strong> (<em>string</em><em>, </em><em>required</em>) – Human-readable name for the wizard, displayed in the UI.</p></li>
+<li><p><strong>require</strong> (<em>dict</em><em>, </em><em>required</em>) – <p>Requirements in order to use the wizard.  Supported requirements
+include:</p>
+<ul>
+<li><p>”action”: “create” - the wizard will be used to create new objects.</p></li>
+<li><p>”action”: “edit” - the wizard will be used to edit existing objects.</p></li>
+<li><p>”action”: “delete” - the wizard will be used to delete existing objects.</p></li>
+<li><p>”context”: “global” - the wizard does not require any resources to run.</p></li>
+<li><p>”context”: “project” - the wizard requires a project to run.</p></li>
+<li><p>”context”: “model” - the wizard requires a model to run.</p></li>
+<li><p>”model-type”:[list of model types] - a model matching one of the given types is required to run the wizard.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slycat.web.server.plugin.Manager.register_wizard_resource">
+<code class="sig-name descname">register_wizard_resource</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">resource</span></em>, <em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slycat/web/server/plugin.html#Manager.register_wizard_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slycat.web.server.plugin.Manager.register_wizard_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a custom resource associated with a wizard.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em><em>, </em><em>required</em>) – Unique identifier of an already-registered wizard.</p></li>
+<li><p><strong>resource</strong> (<em>string</em><em>, </em><em>required</em>) – Server endpoint to retrieve the resource.</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>required</em>) – Absolute filesystem path of the resource to be retrieved.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="slycat.web.server.remote.html" class="btn btn-neutral float-right" title="slycat.web.server.remote" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="slycat.web.server.hdf5.html" class="btn btn-neutral float-left" title="slycat.web.server.hdf5" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

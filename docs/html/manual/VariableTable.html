@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Variable Table &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Parameter Space Model" href="parameter.space.model.html" />
+    <link rel="prev" title="Simulation View" href="SimulationView.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="CarsExample.html"><em>Cars</em> Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingCCAModel.html">Creating a CCA Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="CCAModelVis.html">CCA Model Visualization</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="CorrelationView.html">Correlation View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="SimulationView.html">Simulation View</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Variable Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="cca.model.html">Canonical Correlation Analysis Model</a> &raquo;</li>
+        
+          <li><a href="CCAModelVis.html">CCA Model Visualization</a> &raquo;</li>
+        
+      <li>Variable Table</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/VariableTable.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="variable-table">
+<h1>Variable Table<a class="headerlink" href="#variable-table" title="Permalink to this headline">¶</a></h1>
+<p>The <em>Variable Table</em> at the bottom of Figure 23 provides access to the original numeric variable values for each simulation
+run.  It is essentially an interactive version of the original table data, where each column represents a single variable
+and each row contains the variable values for a single ensemble member.  Within the table, the cell backgrounds take on one
+of four color-encodings: input variables are green, outputs are lavender, non-designated variables are white, and the elements
+of the selected variable are individually colored by their value using the current color map (see Color Themes).  Coloring
+table elements by value highlights the selected color-coding variable, while concurrently providing color correspondence
+between rows and scatterplot points.  The interactive capabilities of the table include: sorting within columns, column
+(variable) selection, and row (simulation) selection.</p>
+<div class="figure align-center" id="id1">
+<img alt="../_images/Figure23.png" src="../_images/Figure23.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 23: CCA model of cars data set displaying the first canonical component.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>Rows that have not been used in the CCA analysis have white backgrounds.  CCA requires that all rows have values for each of
+the columns that are included in the analysis.  As shown in Figure 24, the cars in rows 382 and 10 are missing values for
+<em>Horsepower</em> and <em>MPG</em>, respectively.  The missing data are shown with no numeric value and a hatched gray background in the
+table.  Since the columns with missing values were declared as outputs during model creation, rows 382 and 10 have been
+entirely excluded from the analysis and are drawn in white.  If CCA is later rerun, and if <em>Horsepower</em> and <em>MPG</em> are removed
+from the analysis (if the columns are marked as <em>Neither</em> when creating the new model), then these rows will be included in the
+calculation and will be color-coded.</p>
+<div class="figure align-center" id="id2">
+<img alt="../_images/Figure24.png" src="../_images/Figure24.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 24: CCA model of Cars data set displaying the second canonical component.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="sorting">
+<h2>Sorting<a class="headerlink" href="#sorting" title="Permalink to this headline">¶</a></h2>
+<p>Sorting allows rapid identification of simulations whose variable values are extrema.  Additionally, sorting facilitates
+comparison between simulations whose values are similar within one variable, but whose values for other variables might differ
+significantly.  For instance, in Figure 23 and Figure 24 the tables are sorted by weight.  The highlighted row appears adjacent
+to cars having similar weights, yet the selected car is notable because it gets much better gas mileage.</p>
+<p>Although the sorting order is defined by values within a single column, the full row moves in the reordering.  To sort on a
+variable, left-click the small triangular icon in the column header.  The initial sort is ascending and the orientation of
+the triangle reflects this by rendering the triangle with the tip at the top and the wide edge at the bottom.  If you click
+the triangle again, the sorting order is reversed to be descending and the triangle is redrawn with the point at the bottom.
+The sorting column is independent of variable selection (see Color-Coding Points).  Hovering over any of the column headers,
+the sorting icon for that column becomes visible and may be clicked to initiate sorting on that variable.</p>
+</div>
+<div class="section" id="variable-selection">
+<h2>Variable Selection<a class="headerlink" href="#variable-selection" title="Permalink to this headline">¶</a></h2>
+<p>Left-clicking the variable name in a column header selects that variable to color-code the scatterplot points in the
+<em>Simulation View</em>, to color the cell backgrounds in its associated table column, and to highlight that variable’s row in
+the <em>Correlation View</em>.</p>
+</div>
+<div class="section" id="simulation-selection">
+<h2>Simulation Selection<a class="headerlink" href="#simulation-selection" title="Permalink to this headline">¶</a></h2>
+<p>Left-clicking within a table row selects that simulation, which is then highlighted in both the table and the scatterplot.
+Multiple row selection, as is commonly performed on lists, consists of clicking on a starting row, then using shift-click to
+select the ending row (either above or below the starting row).  This selects both the starting and ending rows along with
+all rows in between.  Individual rows may be added to an existing selection by clicking on them while pressing the control-key.
+Selected rows are highlighted in the table by increasing the saturation of cell backgrounds, except for cells in the
+color-coding column (see Variable Table).  Selected scatterplot points are highlighted by being redrawn with an increased
+radius.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="parameter.space.model.html" class="btn btn-neutral float-right" title="Parameter Space Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="SimulationView.html" class="btn btn-neutral float-left" title="Simulation View" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

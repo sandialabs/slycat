@@ -87,7 +87,7 @@ export default function SlycatTableIngestion(props) {
     if(property.type == 'bool')
     {
       return (
-        <th className='bool property-start property-end'
+        <th className='bool property-start property-end no-wrap px-2 py-2'
           key={indexProps} 
         >
           <span>{property.name}</span>
@@ -104,7 +104,9 @@ export default function SlycatTableIngestion(props) {
         property.values.map((value, indexVals, array) => 
           ( 
             <th 
-              className={`select ${indexVals==0 ? "property-start" : ""} ${indexVals==array.length-1 ? "property-end" : ""}`} 
+              className={`select no-wrap px-2 py-2
+                ${indexVals==0 ? "property-start" : ""} 
+                ${indexVals==array.length-1 ? "property-end" : ""}`} 
               key={indexVals}
             >
               <span>{value}</span>
@@ -128,7 +130,8 @@ export default function SlycatTableIngestion(props) {
       style={{display: variable.hidden ? 'none' : ''}}
       className={`${selected[indexVars] ? 'selected' : ''} ${lastSelected == indexVars ? 'lastSelected' : ''} ${variable.disabled ? 'disabled' : ''}`}
     >
-      <th onClick={(event) => select(event, indexVars)}>
+      <th className='force-wrap px-2 py-1' 
+        onClick={(event) => select(event, indexVars)}>
         {variable.name}
       </th>
       {
@@ -137,10 +140,10 @@ export default function SlycatTableIngestion(props) {
           {
             return (
               <td 
-                className="bool property-start property-end"
+                className='bool property-start property-end align-middle px-2 py-1'
                 key={property.name + indexProps}
               >
-                <input type="checkbox"
+                <input type='checkbox'
                   name={indexVars}
                   value='true'
                   disabled={variable.disabled ? 'disabled' : false}
@@ -155,7 +158,9 @@ export default function SlycatTableIngestion(props) {
               property.values.map((value, indexVals, arrayVals) => 
                 (
                   <td 
-                    className={`select ${indexVals == 0 ? 'property-start' : ''} ${indexVals == arrayVals.length-1 ? 'property-end' : ''}`}
+                    className={`select align-middle px-2 py-1
+                      ${indexVals == 0 ? 'property-start' : ''} 
+                      ${indexVals == arrayVals.length-1 ? 'property-end' : ''}`}
                     key={property.name + indexProps + value + indexVals}
                   >
                     <input 

@@ -18,6 +18,7 @@ $.widget("parameter_image.controls",
     "model" : null,
     "aid" : null,
     "metadata" : null,
+    "table_statistics": null,
     "x-variable" : null,
     "y-variable" : null,
     "image-variable" : null,
@@ -124,8 +125,12 @@ $.widget("parameter_image.controls",
       },
     ];
 
+    const controls_bar_ref = React.createRef();
+
     const controls_bar = 
       (<ControlsBar 
+        ref={controls_bar_ref}
+        store={window.store}
         element={self.element} 
         dropdowns={dropdowns}
         axes_variables={axes_items}
@@ -140,6 +145,7 @@ $.widget("parameter_image.controls",
         model={self.options.model}
         model_name={self.options.model_name}
         metadata={self.options.metadata}
+        table_statistics={self.options.table_statistics}
         indices={self.options.indices}
         media_variables={self.options.image_variables}
         rating_variables={self.options.rating_variables}
@@ -149,11 +155,13 @@ $.widget("parameter_image.controls",
         variable_aliases={window.store.getState().derived.variableAliases}
       />)
     ;
-
-    self.ControlsBarComponent = ReactDOM.render(
+    
+    ReactDOM.render(
       controls_bar,
       document.getElementById('react-controls')
     );
+
+    self.ControlsBarComponent = controls_bar_ref.current;
 
     $('#controls-pane').on('show.bs.dropdown', function (event) {
       // Get all dropdown menus inside this element

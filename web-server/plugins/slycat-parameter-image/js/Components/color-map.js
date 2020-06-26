@@ -3,16 +3,17 @@
 import d3 from "d3";
 
 const COLOR_MAP = {
-    "night":
+    night:
     {
-        "label": "Night",
-        "background": d3.rgb(128, 128, 128),
-        "null_color": "rgb(75,75,75)",
-        "opacity": "0.5",
-        "colors":
+        label: "Night",
+        background: d3.rgb(128, 128, 128),
+        null_color: "rgb(75,75,75)",
+        outofdomain_color: "black",
+        opacity: "0.5",
+        colors:
         [
-            d3.rgb( 59,  76, 192),
-            d3.rgb( 68,  90, 204),
+            d3.rgb( 59, 76, 192),
+            d3.rgb( 68, 90, 204),
             d3.rgb( 77, 104, 215),
             d3.rgb( 87, 117, 225),
             d3.rgb( 98, 130, 234),
@@ -37,22 +38,23 @@ const COLOR_MAP = {
             d3.rgb(247, 166, 135),
             d3.rgb(244, 154, 123),
             d3.rgb(241, 141, 111),
-            d3.rgb(236, 127,  99),
-            d3.rgb(229, 112,  88),
-            d3.rgb(222,  96,  77),
-            d3.rgb(213,  80,  66),
-            d3.rgb(203,  62,  56),
-            d3.rgb(192,  40,  47),
-            d3.rgb(180,   4,  38),
+            d3.rgb(236, 127, 99),
+            d3.rgb(229, 112, 88),
+            d3.rgb(222, 96, 77),
+            d3.rgb(213, 80, 66),
+            d3.rgb(203, 62, 56),
+            d3.rgb(192, 40, 47),
+            d3.rgb(180, 4, 38),
         ]
     },
-    "day":
+    day:
     {
-        "label": "Day",
-        "background": d3.rgb(255, 255, 255),
-        "null_color": "gray",
-        "opacity": "0.7",
-        "colors":
+        label: "Day",
+        background: d3.rgb(255, 255, 255),
+        null_color: "gray",
+        outofdomain_color: "black",
+        opacity: "0.7",
+        colors:
         [
             d3.rgb(100, 108, 234),
             d3.rgb(115, 118, 240),
@@ -84,18 +86,19 @@ const COLOR_MAP = {
             d3.rgb(253, 129, 123),
             d3.rgb(250, 117, 112),
             d3.rgb(246, 105, 101),
-            d3.rgb(240,  91,  90),
-            d3.rgb(233,  75,  78),
-            d3.rgb(225,  57,  66),
+            d3.rgb(240, 91, 90),
+            d3.rgb(233, 75, 78),
+            d3.rgb(225, 57, 66),
         ]
     },
-    "rainbow":
+    rainbow:
     {
-        "label": "Rainbow Night",
-        "background": d3.rgb(128, 128, 128),
-        "null_color": "rgb(75,75,75)",
-        "opacity": "0.6",
-        "colors":
+        label: "Rainbow Night",
+        background: d3.rgb(128, 128, 128),
+        null_color: "rgb(75,75,75)",
+        outofdomain_color: "black",
+        opacity: "0.6",
+        colors:
         [
             d3.rgb(0, 0, 255),
             d3.rgb(0, 255, 255),
@@ -103,13 +106,14 @@ const COLOR_MAP = {
             d3.rgb(255, 0, 0),
         ]
     },
-    "rainbow_day":
+    rainbow_day:
     {
-        "label": "Rainbow Day",
-        "background": d3.rgb(255, 255, 255),
-        "null_color": "gray",
-        "opacity": "0.7",
-        "colors":
+        label: "Rainbow Day",
+        background: d3.rgb(255, 255, 255),
+        null_color: "gray",
+        outofdomain_color: "black",
+        opacity: "0.7",
+        colors:
         [
             d3.rgb(0, 0, 255),
             d3.rgb(0, 255, 255),

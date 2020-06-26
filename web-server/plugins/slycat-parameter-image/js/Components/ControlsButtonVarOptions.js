@@ -3,41 +3,52 @@ import {
   changeFontSize, 
   changeFontFamily, 
   changeAxesVariableScale,
-  changeVariableAliasLabels
+  changeVariableAliasLabels,
+  clearAllVariableAliasLabels,
+  setVariableRange,
+  clearVariableRange,
+  clearAllVariableRanges,
 } from '../actions';
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
 import SlycatTableIngestion from "js/slycat-table-ingestion-react";
 import VariableAliasLabels from "components/VariableAliasLabels";
 import ScatterplotOptions from "components/ScatterplotOptions";
+import VariableRanges from "components/VariableRanges";
 import "js/slycat-table-ingestion";
 import ko from "knockout";
 import "../../css/controls-button-var-options.css";
 import $ from "jquery";
 import client from "js/slycat-web-client";
 import * as dialog from "js/slycat-dialog";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUndo } from '@fortawesome/free-solid-svg-icons'
 
-class ControlsButtonVarOptions extends React.Component {
+export const DEFAULT_FONT_SIZE = 15;
+export const DEFAULT_FONT_FAMILY = 'Arial';
+
+class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
+
+    this.variableRangesRef = React.createRef();
 
     this.modalId = 'varOptionsModal';
     this.title = 'Display Settings';
   }
 
-  aliasesValid = () => {
-    let aliasForm = document.getElementById('variable-alias-tab-content');
-    if(aliasForm)
-    {
-      let inputs = aliasForm.querySelectorAll('input');
-      for (const input of inputs) {
-        if(input.checkValidity() === false)
-        {
-          return false;
-        }
-      }
-    }
-    return true;
+  componentDidMount() {
+    // Showing and hiding Clear All buttons based on current tab
+    let thisModal = $(`#${this.modalId}`);
+    $(`a[data-toggle="tab"]`, thisModal).on('shown.bs.tab', function (e) {
+      // First let's hide all .tabDependent elements
+      $(`.tabDependent`, thisModal).addClass('d-none');
+      // Now let's show the appropirate elements based on the 
+      // newly activated tab's data-show attribute
+      let newTab = e.target; // newly activated tab
+      let previousTab = e.relatedTarget; // previous active tab
+      $(`.${newTab.getAttribute('aria-controls')}`, thisModal).removeClass('d-none');
+    });
   }
 
   closeModal = (e) => {
@@ -53,6 +64,7 @@ class ControlsButtonVarOptions extends React.Component {
         input: false,
         value: this.props.variable_aliases,
         success: function(response) {
+          // console.log('wrote aliases to project_data');
           $('#' + self.modalId).modal('hide');
         },
         error: function(response) {
@@ -69,6 +81,8 @@ class ControlsButtonVarOptions extends React.Component {
     {
       self.writeAliasesToModelArtifact();
     }
+    // Alert other components that axes ranges might have updated
+    this.props.element.trigger("update_axes_ranges");
   }
 
   writeAliasesToModelArtifact = () => {
@@ -85,6 +99,38 @@ class ControlsButtonVarOptions extends React.Component {
         console.log("Oops, can't even write aliases to model artifact. Closing dialog and popping up error dialog.");
         $('#' + self.modalId).modal('hide');
         dialog.ajax_error("There was an error saving the variable alias labels to the model's artifact.")();
+      }
+    });
+  }
+
+  clearAllVariableRanges = () => {
+    const self = this;
+    dialog.confirm({
+      title: 'Clear All Variable Ranges',
+      message: 'This will erase all Axis Min and Axis Max values that have been entered.',
+      ok: function(){
+        // First clear all variable ranges in Redux state;
+        self.props.clearAllVariableRanges();
+        // Then let VariableRanges component know this happened because it needs
+        // to update its local state accordingly. 
+        self.variableRangesRef.current.clearAllVariableRanges();
+      },
+      cancel: function(){
+        // Do nothing if cancel. The confirmation dialog will just close.
+      }
+    });
+  }
+
+  clearAllVariableAliasLabels = () => {
+    const self = this;
+    dialog.confirm({
+      title: 'Clear All Variable Alias Labels',
+      message: 'This will erase all labels that have been entered.',
+      ok: function(){
+        self.props.clearAllVariableAliasLabels();
+      },
+      cancel: function(){
+        // Do nothing if cancel. The confirmation dialog will just close.
       }
     });
   }
@@ -145,9 +191,11 @@ class ControlsButtonVarOptions extends React.Component {
 
     const fontItems = fonts.map((font, index) => (
       <a key={index} 
-        href='#' onClick={this.props.onFontFamilyChange}
+        href='#' 
+        onClick={this.props.changeFontFamily}
         style={{fontFamily: font.fontFamily}} 
         className={`dropdown-item {font.fontFamily == this.props.font_family ? 'active' : 'notactive'}`}
+        data-value={font.name}
       >
         {font.name}
       </a>
@@ -160,7 +208,9 @@ class ControlsButtonVarOptions extends React.Component {
             <div className='modal-content'>
               <div className='modal-header'>
                 <h3 className='modal-title'>{this.title}</h3>
-                <button type='button' className='close' aria-label='Close' onClick={this.closeModal} disabled={!this.aliasesValid()}>
+                <button type='button' className='close' aria-label='Close' 
+                  onClick={this.closeModal} 
+                >
                   <span aria-hidden='true'>&times;</span>
                 </button>
               </div>
@@ -171,6 +221,12 @@ class ControlsButtonVarOptions extends React.Component {
                     <a className='nav-link active' id='axes-scales-tab' data-toggle='tab' 
                       href='#axes-scales-tab-content' role='tab' aria-controls='axes-scales-tab-content' aria-selected='true'>
                       <h5 className='mb-0'>Axes Scales</h5>
+                    </a>
+                  </li>
+                  <li className='nav-item'>
+                    <a className='nav-link' id='variable-ranges-tab' data-toggle='tab' 
+                      href='#variable-ranges-tab-content' role='tab' aria-controls='variable-ranges-tab-content' aria-selected='false'>
+                      <h5 className='mb-0'>Variable Ranges</h5>
                     </a>
                   </li>
                   <li className='nav-item'>
@@ -192,23 +248,61 @@ class ControlsButtonVarOptions extends React.Component {
                     <div className='slycat-axes-font'>
                       <div className='form-inline'>
                         <div className='form-group'>
-                          <label htmlFor='font-family'>Font</label>
-                          <div className='dropdown font-family-dropdown'>
-                            <button className='btn btn-sm btn-outline-dark dropdown-toggle' type='button' id='font-family' 
-                              data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style={{fontFamily: this.props.font_family}}>
-                              {this.props.font_family}
-                            </button>
-                            <div className='dropdown-menu' aria-labelledby='dropdownMenu1'>
-                              {fontItems}
+                          <label className='pr-2' htmlFor='font-family'>Font</label>
+                          <div className='btn-group btn-group-sm'>
+                            <div className='btn-group dropdown font-family-dropdown'>
+                              <button 
+                                className='btn btn-sm border-secondary text-dark dropdown-toggle' 
+                                type='button' 
+                                id='font-family' 
+                                data-toggle='dropdown' 
+                                aria-haspopup='true' 
+                                aria-expanded='false' 
+                                style={{fontFamily: this.props.font_family}}>
+                                {this.props.font_family}
+                              </button>
+                              <div className='dropdown-menu' aria-labelledby='dropdownMenu1'>
+                                {fontItems}
+                              </div>
                             </div>
+                            <button 
+                              className='btn btn-outline-secondary' 
+                              type='button'
+                              title='Reset font family to default'
+                              value={DEFAULT_FONT_FAMILY}
+                              onClick={this.props.changeFontFamily}
+                              disabled={this.props.font_family == DEFAULT_FONT_FAMILY}
+                            >
+                              <FontAwesomeIcon icon={faUndo} />
+                            </button>
                           </div>
                         </div>
                         <div className='form-group'>
-                          <label htmlFor='font-size'>Size</label>
-                          <input type='number' className='form-control form-control-sm' id='font-size' max='40' min='8' step='1' style={{width: "70px"}}
-                            value={this.props.font_size} 
-                            onChange={this.props.onFontSizeChange}
-                          />
+                          <label className='ml-5 pr-2' htmlFor='font-size'>Size</label>
+                          <div className='input-group input-group-sm'>
+                            <input type='number' 
+                              className='form-control form-control-sm border border-secondary' 
+                              id='font-size' 
+                              max='40' 
+                              min='8' 
+                              step='1' 
+                              style={{width: "70px"}}
+                              value={this.props.font_size} 
+                              onChange={this.props.changeFontSize}
+                            />
+                            <div className='input-group-append'>
+                              <button 
+                                className='btn btn-outline-secondary' 
+                                type='button'
+                                title='Reset font size to default'
+                                value={DEFAULT_FONT_SIZE}
+                                disabled={this.props.font_size == DEFAULT_FONT_SIZE}
+                                onClick={this.props.changeFontSize}
+                              >
+                                <FontAwesomeIcon icon={faUndo} />
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -217,25 +311,53 @@ class ControlsButtonVarOptions extends React.Component {
                       uniqueID='varOptions'
                       variables={axes_variables}
                       properties={axes_properties}
-                      onChange={this.props.onAxesVariableScaleChange}
+                      onChange={this.props.changeAxesVariableScale}
+                    />
+                  </div>
+                  <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
+                    <VariableRanges 
+                      metadata={this.props.metadata}
+                      table_statistics={this.props.table_statistics}
+                      variableAliases={this.props.variable_aliases}
+                      variableRanges={this.props.variableRanges}
+                      setVariableRange={this.props.setVariableRange}
+                      clearVariableRange={this.props.clearVariableRange}
+                      ref={this.variableRangesRef}
                     />
                   </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
                       variableAliases={this.props.variable_aliases}
                       metadata={this.props.metadata}
-                      onChange={this.props.onVariableAliasLabelsChange}
+                      onChange={this.props.changeVariableAliasLabels}
                     />
                   </div>
                   <div className='tab-pane' id='scatterplot-options-tab-content' role='tabpanel' aria-labelledby='scatterplot-options-tab'>
                     <ScatterplotOptions />
-                 </div>
+                  </div>
                 </div>
 
               </div>
               <div className='modal-footer'>
-                <button type='button' className='btn btn-primary' onClick={this.closeModal}
-                  disabled={!this.aliasesValid()}
+                <div className='mr-auto'>
+                  <button type='button' 
+                    className='btn btn-danger mr-2 tabDependent variable-ranges-tab-content d-none' 
+                    disabled={Object.keys(this.props.variableRanges).length === 0}
+                    onClick={this.clearAllVariableRanges}
+                  >
+                    Clear All Variable Ranges
+                  </button>
+                  <button type='button' 
+                    className='btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none'
+                    disabled={Object.keys(this.props.variable_aliases).length === 0}
+                    onClick={this.clearAllVariableAliasLabels}
+                  >
+                    Clear All Variable Alias Labels
+                  </button>
+                </div>
+                <button type='button' 
+                  className='btn btn-primary' 
+                  onClick={this.closeModal}
                 >
                   Close
                 </button>
@@ -258,27 +380,20 @@ const mapStateToProps = (state, ownProps) => {
     font_family: state.fontFamily,
     axes_variables_scale: state.axesVariables,
     variable_aliases: state.derived.variableAliases,
-  }
-}
-
-const mapDispatchToProps = dispatch => {
-  return {
-    onFontSizeChange: event => {
-      dispatch(changeFontSize(event.target.value))
-    },
-    onFontFamilyChange: event => {
-      dispatch(changeFontFamily(event.target.innerText))
-    },
-    onAxesVariableScaleChange: event => {
-      dispatch(changeAxesVariableScale(event.target.name, event.target.value))
-    },
-    onVariableAliasLabelsChange: event => {
-      dispatch(changeVariableAliasLabels(event.target.name, event.target.value))
-    }
+    variableRanges: state.variableRanges,
   }
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    changeFontSize,
+    changeFontFamily,
+    changeAxesVariableScale,
+    changeVariableAliasLabels,
+    clearAllVariableAliasLabels,
+    setVariableRange,
+    clearVariableRange,
+    clearAllVariableRanges,
+  }
 )(ControlsButtonVarOptions)

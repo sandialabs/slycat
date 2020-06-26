@@ -648,3 +648,20 @@ label.bottom-margin
 #controls .dropdown-menu {
   overflow-y: auto;
 }
+/* Making sure that controls dropdowns don't become wider than the screen. */
+#controls .dropdown-menu,
+#controls .dropdown-menu .dropdown-item 
+{
+  max-width: 70vw;
+}
+/* Attempting to force long menu items to wrap, but doesn't seem to be working. */
+#controls .dropdown-menu .dropdown-item {
+  overflow-wrap: anywhere;
+}
+
+.no-wrap {
+  white-space: nowrap;
+}
+.force-wrap {
+  overflow-wrap: anywhere;
+}

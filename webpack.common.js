@@ -29,7 +29,7 @@ module.exports = {
     // Use this to add the chunk hash into the filename. 
     // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
     filename: '[name].[chunkhash].git_[git-revision-hash].js',
-    // If problems arise, remove chuckhash from the filename like so:
+    // If problems arise, remove chunkhash from the filename like so:
     // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
     // Public URL of js bundle files. We want them available at the root URL.
@@ -96,7 +96,7 @@ module.exports = {
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
     new CopyPlugin(
-      [{ from: 'docs/manual/html', to: 'docs' },],
+      [{ from: 'docs/html', to: 'docs' },],
       { copyUnmodified: true }
     ),
     new GitRevisionPlugin({

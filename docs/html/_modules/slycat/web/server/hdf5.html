@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>slycat.web.server.hdf5 &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+          <li><a href="../server.html">slycat.web.server</a> &raquo;</li>
+        
+      <li>slycat.web.server.hdf5</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for slycat.web.server.hdf5</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract</span>
+<span class="c1"># DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government</span>
+<span class="c1"># retains certain rights in this software.</span>
+
+<span class="kn">import</span> <span class="nn">cherrypy</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">slycat.hdf5</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">types</span>
+
+<div class="viewcode-block" id="path"><a class="viewcode-back" href="../../../../slycat.web.server.hdf5.html#slycat.web.server.hdf5.path">[docs]</a><span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Convert an array identifier to a data store filesystem path.&quot;&quot;&quot;</span>
+  <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="n">cherrypy</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">apps</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;slycat-web-server&quot;</span><span class="p">][</span><span class="s2">&quot;data-store&quot;</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">slycat</span><span class="o">.</span><span class="n">hdf5</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">path</span><span class="o">.</span><span class="n">root</span><span class="p">)</span></div>
+<span class="n">path</span><span class="o">.</span><span class="n">root</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../../slycat.web.server.hdf5.html#slycat.web.server.hdf5.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+  <span class="s2">&quot;Create a new array in the data store, ready for writing.&quot;&quot;&quot;</span>
+  <span class="n">array_path</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+  <span class="c1"># cherrypy.log.error(&quot;Creating file {}&quot;.format(array_path))</span>
+  <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">array_path</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">array_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="open"><a class="viewcode-back" href="../../../../slycat.web.server.hdf5.html#slycat.web.server.hdf5.open">[docs]</a><span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Open an array from the data store for reading.&quot;&quot;&quot;</span>
+  <span class="n">array_path</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+  <span class="c1"># cherrypy.log.error(&quot;Opening file {}&quot;.format(array_path))</span>
+  <span class="k">return</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">array_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="delete"><a class="viewcode-back" href="../../../../slycat.web.server.hdf5.html#slycat.web.server.hdf5.delete">[docs]</a><span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="n">array</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Remove an array from the data store.&quot;&quot;&quot;</span>
+  <span class="n">array_path</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">array_path</span><span class="p">):</span>
+    <span class="n">cherrypy</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Deleting file </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">array_path</span><span class="p">))</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">array_path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="null_lock"><a class="viewcode-back" href="../../../../slycat.web.server.hdf5.html#slycat.web.server.hdf5.null_lock">[docs]</a><span class="k">class</span> <span class="nc">null_lock</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Do-nothing replacement for a thread lock, useful for debugging threading problems with h5py.&quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">pass</span>
+  <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<span class="c1">#lock = null_lock()</span>
+<span class="n">lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

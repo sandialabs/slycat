@@ -51,7 +51,7 @@ export function addCamera(camera, container, interactor, uri) {
     camera.setFocalPoint(...cameras[0].camera.getFocalPoint());
     camera.setViewUp(...cameras[0].camera.getViewUp());
     interactor.render();
-    console.log('Hurray, we set up this camera like the first one of the existing ones!!!');
+    // console.log('Hurray, we set up this camera like the first one of the existing ones!!!');
   }
 
 
@@ -81,7 +81,7 @@ export function addCamera(camera, container, interactor, uri) {
 
   // Listen for the close event and remove the camera from the array of all cameras
   container.addEventListener('vtkclose', (e) => {
-    console.log('removing camera due to frame being closed.');
+    // console.log('removing camera due to frame being closed.');
     removeCamera(camera);
   }, false);
 
