@@ -269,10 +269,12 @@ for i in range(0, num_rows):
         ff = ffmpy.FFmpeg(
             inputs={None: ['-pattern_type', 'glob'],
                 movie_input: None},
-            outputs={None: ['-force_key_frames', '0.0,0.04,0.08'],
+            outputs={None: ['-force_key_frames', '0.0,0.04,0.08', '-vcodec', 'libx264', '-acodec', 'aac'],
             movie_output: None}
         )
         ff.run()
+
+    log("[VS-LOG] Creating movie %d" % (i))
 
     # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')

@@ -637,28 +637,9 @@ component.upload_vs_frames_links = function () {
         var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
         link_column = media_columns_inds[link_selected_ind];
 
-        // extract links on server
-        client.get_model_command({
-            mid: component.model._id(),
-            type: "VS",
-            command: "extract-links",
-            parameters: [link_column],
-            success: function(result) {
-
-                // name model and launch remote job
-                launch_remote_job = true;
-                component.tab(6)
-            },
-            error: function() {
-
-                // server error extracting video links
-                $("#VS-video-frame-links-error").text("Server error during video link extraction.")
-                $("#VS-video-frame-links-error").show();
-            }
-        });
-
+        launch_remote_job = true;
+        component.tab(6)
     }
-
 };
 
 // upload remaining matrix files

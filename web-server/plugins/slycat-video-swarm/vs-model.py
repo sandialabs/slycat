@@ -185,30 +185,50 @@ def register_slycat_plugin(context):
         return json.dumps({"error": False,
                            "error_message": "none."})
 
-
     # extract links column and put it into movies.links artifact
     def extract_links(database, model, verb, type, command, **kwargs):
 
         # column to extract
-        links_col = int(kwargs["0"])
+        workdir = kwargs["0"]
+        hostname = kwargs["1"]
 
-        # load table data
-        data = slycat.web.server.get_model_arrayset_data(database, model, "movies.meta", "0/.../...")
+        filename = workdir + '/movies.csv'
 
-        # get links column
-        links_col_data = data[links_col]
+        sid = None
+        session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+        for host_session in session["sessions"]:
+            if host_session["hostname"] == hostname:
+                sid = host_session["sid"]
+                break
+        
+        # Get movies.csv so that the movie links can be extracted
+        csv_file = slycat.web.server.get_remote_file(sid, filename)
+        csv_file = csv_file.decode('utf-8')
+        rows = csv_file.split('\n')
+
+        # Extract movie links
+        movie_column = []
+        for i in range(0, (len(rows) - 1)):
+            if i > 0:
+                split_column = rows[i].split(',')
+
+                movie_path = split_column[len(split_column) - 1]
+                if '\r' in movie_path:
+                    movie_path = movie_path.split('\r')[0]
+                movie_column.append(movie_path)
+
+        movie_column = numpy.asarray(movie_column)
 
         # set up links as an artifact
         attributes = [dict(name="value", type="string")]
-        dimensions = [dict(name="row", end=len(links_col_data))]
+        dimensions = [dict(name="row", end=len(movie_column))]
 
         # push to "movies.links" artifact in database
         slycat.web.server.put_model_arrayset(database, model, "movies.links", input)
         slycat.web.server.put_model_array(database, model, "movies.links", 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, "movies.links", "0/.../...", [links_col_data])
+        slycat.web.server.put_model_arrayset_data(database, model, "movies.links", "0/.../...", [movie_column])
 
         return json.dumps("Extracted video links.")
-
 
     def finish(database, model):
         slycat.web.server.update_model(database, model, state="finished",
