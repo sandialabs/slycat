@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-docs_dir = os.path.join(root_dir, "docs")
+docs_dir = os.path.join(root_dir, "docs/source")
 build_dir = os.path.join(docs_dir, "_build")
 
 # Always build the documentation from scratch.
