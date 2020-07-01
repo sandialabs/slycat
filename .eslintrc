@@ -46,9 +46,10 @@
     //
     // The following rules point out areas where you might have made mistakes.
     //
+    "quotemark": [true, "double", "avoid-escape"],
     "comma-dangle": 0, // disallow or enforce trailing commas
     "no-cond-assign": 2, // disallow assignment in conditional expressions
-    "no-console": ["error", { allow: ["warn", "error", "log"] }], // disallow use of console (off by default in the node environment)
+    "no-console": ["error", { "allow": ["warn", "error", "log"] }], // disallow use of console (off by default in the node environment)
     "no-constant-condition": 2, // disallow use of constant expressions in conditions
     "no-control-regex": 2, // disallow control characters in regular expressions
     "no-debugger": 2, // disallow use of debugger
@@ -239,7 +240,7 @@
     "react/no-unknown-property": 2, // Prevent usage of unknown DOM property    
     "react/react-in-jsx-scope": 2, // Prevent missing React when using JSX
     "react/self-closing-comp": 2, // Prevent extra closing tags for components without children
-    "react/jsx-wrap-multilines": 2, // Prevent missing parentheses around multilines JSX
+    "react/jsx-wrap-multilines": 2 // Prevent missing parentheses around multilines JSX
     //"react/prop-types": 2, // Prevent missing props validation in a React component definition
   }
 }

@@ -3,7 +3,9 @@ DELETE Logout
 
 .. http:delete:: /api/logout
 
-  :synopsis: Deletes a session and its browser cookie.
+  :synopsis: 
+  Deletes a session from the Couchdb `slycat` database
+  and it expires the sessions browser cookie.
 
   **Sample Request**:
 
