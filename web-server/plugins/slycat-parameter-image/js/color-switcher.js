@@ -14,12 +14,11 @@ import ReactDOM from 'react-dom';
 import ControlsDropdownColor from './Components/ControlsDropdownColor';
 import COLOR_MAP from './Components/color-map.js';
 
-export function isValueInColorscaleDomain(value, colorscale)
+let rangeMin, rangeMax;
+
+export function isValueInColorscaleRange(value, colorscale)
 {
-  let domain = colorscale.domain();
-  let min = domain[0];
-  let max = domain[domain.length-1];
-  return min <= value && value <= max;
+  return rangeMin <= value && value <= rangeMax;
 }
 
 $.widget("slycat.colorswitcher",
@@ -105,20 +104,17 @@ $.widget("slycat.colorswitcher",
   // Callers should modify the domain by passing a min and max to suit their own needs.  
   get_color_scale: function(name, min, max)
   {
-    name = this.color_bar.get_selected_colormap();
-    if(name === undefined)
-      name = this.options.colormap;
-    if(min === undefined)
-      min = 0.0;
-    if(max === undefined)
-      max = 1.0;
+    rangeMin = min === undefined ? 0.0 : min;
+    rangeMax = max === undefined ? 1.0 : max;
+    let colorMapName = name === undefined ? this.options.colormap : this.color_bar.get_selected_colormap();
+
     let domain = [];
     let domain_scale = d3.scale.linear()
-          .domain([0, this.color_maps[name].colors.length - 1])
-          .range([min, max]);
-    for(let i in this.color_maps[name].colors)
+          .domain([0, this.color_maps[colorMapName].colors.length - 1])
+          .range([rangeMin, rangeMax]);
+    for(let i in this.color_maps[colorMapName].colors)
       domain.push(domain_scale(i));
-    return d3.scale.linear().domain(domain).range(this.color_maps[name].colors);
+    return d3.scale.linear().domain(domain).range(this.color_maps[colorMapName].colors);
   },
 
   // Deprecated
@@ -126,6 +122,28 @@ $.widget("slycat.colorswitcher",
   {
     return this.get_color_scale(name, min, max);
   },
+
+  // Return a d3 log color scale with the current color map for the domain [0, 1].
+  // Callers should modify the domain by passing a min and max to suit their own needs.  
+  get_color_scale_log: function(name, min, max)
+  {
+    rangeMin = min === undefined ? 0.0 : min;
+    rangeMax = max === undefined ? 1.0 : max;
+    let colorMapName = name === undefined ? this.options.colormap : this.color_bar.get_selected_colormap();
+
+    let domain = [];
+    let domain_scale = d3.scale
+      .log()
+      .domain([rangeMin, rangeMax])
+      .range([1, this.color_maps[colorMapName].colors.length])
+      ;
+    for(const index of this.color_maps[colorMapName].colors.keys())
+    {
+      domain.push(domain_scale.invert(index+1));
+    }
+    return d3.scale.log().domain(domain).range(this.color_maps[colorMapName].colors);
+  },
+
 
   // Return a d3 ordinal color scale with the current color map for the domain [0, 1].
   // Callers should modify the domain by passing an array of values to suit their own needs. 
