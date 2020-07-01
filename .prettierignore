@@ -7,5 +7,6 @@ node_modules
 packages
 travis-ci
 web-client
-__tests__
+__snapshots__
 __mocks__
+*.min.js
