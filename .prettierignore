@@ -1,0 +1,11 @@
+agent
+artwork
+docker
+docs
+docs-old
+node_modules
+packages
+travis-ci
+web-client
+__tests__
+__mocks__
