@@ -1,3 +1,5 @@
+.. _PTS-CSV-MetaFormat:
+
 PTS CSV/META Zip Format
 =======================
 

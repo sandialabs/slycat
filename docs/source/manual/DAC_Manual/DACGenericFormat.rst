@@ -1,3 +1,5 @@
+.. _DACGenericFormat:
+
 Dial-A-Cluster Generic Format
 =============================
 
@@ -13,6 +15,7 @@ variable_2.var, …, variable_n.var.  In addition, the *var* directory must cont
 directory structure is shown in Figure 2.
 
 .. figure:: figures/dac-gen-zip-file-structure.png
+   :scale: 55 %
    :align: center
 
    **Figure 2: The directory structure for the DAC generic input format, using a dataset with only three data points.**

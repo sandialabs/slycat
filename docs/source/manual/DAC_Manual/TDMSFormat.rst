@@ -1,3 +1,5 @@
+.. _TDMSFormat:
+
 TDMS Format
 ===========
 
