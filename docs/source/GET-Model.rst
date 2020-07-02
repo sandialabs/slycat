@@ -3,12 +3,12 @@ GET Model
 
 .. http:get:: /api/models/(mid)
 
-  Returns a model.
+  Returns a model as json.
 
   :param mid: Unique model identifier.
   :type mid: string
 
-  :responseheader Content-Type: text/html, application/json
+  :responseheader Content-Type: application/json
 
   **Sample Request**
 
