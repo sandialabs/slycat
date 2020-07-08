@@ -90,6 +90,7 @@ exports[`Timeseries LoadingPage we have expected props on initial load 2`] = `
         </button>
         <button
           className="btn btn btn-outline-primary"
+          disabled={true}
           id="pullbtn"
           onClick={[Function]}
           title="load data"

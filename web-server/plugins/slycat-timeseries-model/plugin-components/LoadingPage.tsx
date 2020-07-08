@@ -231,9 +231,9 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           id={"pullbtn"}
           type="button"
           title={"load data"}
-          // disabled={
-          //   !this.state.jobStatus.includes("PENDING") || !this.state.jobStatus.includes("RUNNING")
-          // }
+          disabled={
+            !this.state.jobStatus.includes("PENDING") || !this.state.jobStatus.includes("RUNNING")
+          }
           onClick={() => this.cancelJob()}
         >
           {"cancel job"}
