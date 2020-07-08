@@ -55,48 +55,74 @@ exports[`Timeseries LoadingPage we have expected props on initial load 2`] = `
           false
         </b>
       </div>
+    </div>
+    <div
+      className="row"
+    >
       <div
-        className="col-2"
+        className="btn-group col-8"
+        role="group"
       >
-        <div>
-          <ConnectModal
-            callBack={[Function]}
-            hostname="hostname"
-            modalId="ConnectModal"
-          />
-          <button
-            className="btn btn-md btn-primary"
-            disabled={true}
-            id="pullbtn"
-            onClick={[Function]}
-            title="load data"
-            type="button"
-          >
-            load
-          </button>
-        </div>
+        <button
+          aria-controls="collapseJobCodes"
+          aria-expanded="false"
+          className="btn btn-outline-primary"
+          data-target="#collapseJobCodes"
+          data-toggle="collapse"
+          type="button"
+        >
+          Show job status meanings
+        </button>
+        <ConnectModal
+          callBack={[Function]}
+          hostname="hostname"
+          modalId="ConnectModal"
+        />
+        <button
+          className="btn btn btn-outline-primary"
+          disabled={true}
+          id="pullbtn"
+          onClick={[Function]}
+          title="load data"
+          type="button"
+        >
+          load
+        </button>
+        <button
+          className="btn btn btn-outline-primary"
+          disabled={true}
+          id="pullbtn"
+          onClick={[Function]}
+          title="load data"
+          type="button"
+        >
+          cancel job
+        </button>
       </div>
     </div>
     <div
       className="row"
     >
-      <button
-        aria-controls="collapseExample"
-        aria-expanded="false"
-        className="btn btn-primary"
-        data-target="#collapseExample"
-        data-toggle="collapse"
-        type="button"
+      <div
+        className="collapse col-12"
+        id="collapseJobCodes"
       >
-        Show job status meanings
-      </button>
-      <JobCodes />
+        <div
+          className="card card-body"
+        >
+          <JobCodes />
+        </div>
+      </div>
     </div>
   </div>
   <div
-    className="slycat-job-checker-output text-white bg-secondary"
+    className="col-lg-12"
   >
-    <Spinner />
+    <div
+      className="slycat-job-checker-output text-white bg-secondary"
+    >
+      <Spinner />
+    </div>
   </div>
 </div>
 `;
