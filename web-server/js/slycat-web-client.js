@@ -1327,7 +1327,23 @@ module.delete_job = function(params) {
     }
   });
 };
-
+module.delete_job_fetch = function(hostname, jid) {
+  return fetch(`${api_root}remotes/delete-job/${hostname}/${jid}`,
+  {
+    method: "DELETE",
+    credentials: "same-origin",
+    cache: "no-store",
+  })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response;
+  }).catch((error) => {
+      console.log('error calling delete-job:',error);
+      return error;
+  });
+}
 module.get_job_output = function(params) {
   $.ajax({
     contentType: 'application/json',
