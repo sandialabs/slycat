@@ -13,91 +13,44 @@ exports[`Timeseries LoadingPage we have expected props on initial load 2`] = `
 <div
   className="slycat-job-checker bootstrap-styles"
 >
-  <div>
-    <ProgressBar
-      hidden={false}
-      progress={0}
-    />
-  </div>
   <div
     className="slycat-job-checker-controls"
   >
+    <InfoBar
+      hostname="hostname"
+      jid="1234"
+      sessionExists={false}
+    />
     <div
-      className="row"
+      style={
+        Object {
+          "paddingBottom": "15px",
+          "paddingTop": "15px",
+        }
+      }
     >
-      <div
-        className="col-3"
-      >
-        Updated 
-        NaN-NaN-NaN NaN:NaN:NaN
-      </div>
-      <div
-        className="col-2"
-      >
-        Job id: 
-        <b>
-          1234
-        </b>
-      </div>
-      <div
-        className="col-3"
-      >
-        Remote host: 
-        <b>
-          hostname
-        </b>
-      </div>
-      <div
-        className="col-2"
-      >
-        Session: 
-        <b>
-          false
-        </b>
-      </div>
+      <ProgressBar
+        hidden={false}
+        progress={0}
+      />
     </div>
     <div
-      className="row"
+      className="row justify-content-center"
     >
       <div
         className="btn-group col-8"
         role="group"
       >
-        <button
-          aria-controls="collapseJobCodes"
-          aria-expanded="false"
-          className="btn btn-outline-primary"
-          data-target="#collapseJobCodes"
-          data-toggle="collapse"
-          type="button"
-        >
-          Show job status meanings
-        </button>
-        <ConnectModal
-          callBack={[Function]}
+        <LoadingPageButtons
+          cancelJob={[Function]}
+          connectModalCallBack={[Function]}
           hostname="hostname"
+          jobStatus="Job Status Unknown"
           modalId="ConnectModal"
+          modelShow={false}
+          pullHPCData={[Function]}
+          sessionExists={false}
         />
-        <button
-          className="btn btn btn-outline-primary"
-          disabled={true}
-          id="pullbtn"
-          onClick={[Function]}
-          title="load data"
-          type="button"
-        >
-          load
-        </button>
-        <button
-          className="btn btn btn-outline-primary"
-          disabled={true}
-          id="pullbtn"
-          onClick={[Function]}
-          title="load data"
-          type="button"
-        >
-          cancel job
-        </button>
       </div>
     </div>
     <div
@@ -121,7 +74,23 @@ exports[`Timeseries LoadingPage we have expected props on initial load 2`] = `
     <div
       className="slycat-job-checker-output text-white bg-secondary"
     >
-      <Spinner />
+      <LogList
+        jobStatus="Job Status Unknown"
+        log={
+          Object {
+            "logLineArray": Array [],
+          }
+        }
+        modalId="ConnectModal"
+        modelId="modelID"
+        modelMessage=""
+        modelShow={false}
+        modelState="waiting"
+        progressBarHidden={false}
+        progressBarProgress={0}
+        pullCalled={0}
+        sessionExists={false}
+      />
     </div>
   </div>
 </div>

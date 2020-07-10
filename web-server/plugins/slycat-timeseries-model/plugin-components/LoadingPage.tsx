@@ -1,12 +1,11 @@
-"use strict";
 import * as React from "react";
 import client from "../../../js/slycat-web-client";
 import ProgressBar from "components/ProgressBar.tsx";
 import { LoadingPageProps, LoadingPageState } from "./types";
-import ConnectModal from "components/ConnectModal.tsx";
-import ControlsButton from "components/ControlsButton";
-import Spinner from "components/Spinner.tsx";
 import { JobCodes } from "./JobCodes.tsx";
+import LogList from "./LogList.tsx";
+import LoadingPageButtons from "./LoadingPageButtons.tsx";
+import InfoBar from "./InfoBar.tsx";
 /**
  * react component used to create a loading page
  *
@@ -84,7 +83,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
    * @private
    * @memberof LoadingPage
    */
-  private connectModalCallBack = (sessionExists: boolean, loadingData: boolean): void => {
+  private connectModalCallBack = (sessionExists: boolean): void => {
     this.setState({ sessionExists }, () => {
       if (this.state.sessionExists) {
         this.checkRemoteJob();
@@ -191,136 +190,33 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
     });
   };
 
-  /**
-   * Creates the connectModal and buttons for pulling data and
-   * connecting back to the remote servers
-   *
-   * @private
-   * @memberof LoadingPage
-   */
-  private loginModal = (): JSX.Element => {
-    return (
-      <React.Fragment>
-        <ConnectModal
-          hostname={this.props.hostname}
-          modalId={this.state.modalId}
-          callBack={this.connectModalCallBack}
-        />
-        {this.state.modelShow && !this.state.sessionExists && (
-          <ControlsButton
-            label="Connect"
-            title={"Connect button"}
-            data_toggle="modal"
-            data_target={"#" + this.state.modalId}
-            button_style={"btn btn-outline-primary"}
-            id="controls-button-death"
-          />
-        )}
-        <button
-          className={`btn btn btn-outline-primary`}
-          id={"pullbtn"}
-          type="button"
-          title={"load data"}
-          disabled={!this.state.jobStatus.includes("COMPLETED")}
-          onClick={() => this.pullHPCData()}
-        >
-          {"load"}
-        </button>
-        <button
-          className={`btn btn btn-outline-primary`}
-          id={"pullbtn"}
-          type="button"
-          title={"load data"}
-          disabled={
-            !this.state.jobStatus.includes("PENDING") || !this.state.jobStatus.includes("RUNNING")
-          }
-          onClick={() => this.cancelJob()}
-        >
-          {"cancel job"}
-        </button>
-      </React.Fragment>
-    );
-  };
-
-  /**
-   * Take items from the log and builds out dd elements
-   *
-   * @private
-   * @memberof LoadingPage
-   */
-  private logBuilder = (itemList: [string]): JSX.Element[] => {
-    return itemList.map((item, index) => <dd key={index.toString()}>{JSON.stringify(item)}</dd>);
-  };
-
-  /**
-   * Creates the JSX for the log list
-   *
-   * @private
-   * @memberof LoadingPage
-   */
-  private getLog = (): JSX.Element => {
-    let items: JSX.Element[] = this.logBuilder(this.state.log.logLineArray);
-    return this.state.sessionExists ? (
-      <dl>
-        <dt>`&gt;` {this.state.jobStatus}</dt>
-        <dt>`&gt;` Slurm run Log:</dt>
-        {items.length >= 1 ? items : <Spinner />}
-      </dl>
-    ) : (
-      <Spinner />
-    );
-  };
-  private getFormattedDateTime = (): string => {
-    const d = new Date();
-    return (
-      d.getDate() +
-      "-" +
-      (d.getMonth() + 1) +
-      "-" +
-      d.getFullYear() +
-      " " +
-      d.getHours() +
-      ":" +
-      d.getMinutes() +
-      ":" +
-      d.getSeconds()
-    );
-  };
   public render() {
     return (
       <div className="slycat-job-checker bootstrap-styles">
-        <div>
-          <ProgressBar
-            hidden={this.state.progressBarHidden}
-            progress={this.state.progressBarProgress}
-          />
-        </div>
         <div className="slycat-job-checker-controls">
-          <div className="row">
-            <div className="col-3">Updated {this.getFormattedDateTime()}</div>
-            <div className="col-2">
-              Job id: <b>{this.props.jid}</b>
-            </div>
-            <div className="col-3">
-              Remote host: <b>{this.props.hostname}</b>
-            </div>
-            <div className="col-2">
-              Session: <b>{this.state.sessionExists ? "true" : "false"}</b>
-            </div>
+          <InfoBar
+            jid={this.props.jid}
+            hostname={this.props.hostname}
+            sessionExists={this.state.sessionExists}
+          />
+          <div style={{ paddingTop: "15px", paddingBottom: "15px" }}>
+            <ProgressBar
+              hidden={this.state.progressBarHidden}
+              progress={this.state.progressBarProgress}
+            />
           </div>
-          <div className="row">
+          <div className="row justify-content-center">
             <div className="btn-group col-8" role="group">
-              <button
-                className="btn btn-outline-primary"
-                type="button"
-                data-toggle="collapse"
-                data-target="#collapseJobCodes"
-                aria-expanded="false"
-                aria-controls="collapseJobCodes"
-              >
-                Show job status meanings
-              </button>
-              {this.loginModal()}
+              <LoadingPageButtons
+                hostname={this.props.hostname}
+                modalId={this.state.modalId}
+                connectModalCallBack={this.connectModalCallBack}
+                jobStatus={this.state.jobStatus}
+                cancelJob={this.cancelJob}
+                pullHPCData={this.pullHPCData}
+                modelShow={this.state.modelShow}
+                sessionExists={this.state.sessionExists}
+              />
             </div>
           </div>
           <div className="row">
@@ -332,7 +228,9 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
           </div>
         </div>
         <div className="col-lg-12">
-          <div className="slycat-job-checker-output text-white bg-secondary">{this.getLog()}</div>
+          <div className="slycat-job-checker-output text-white bg-secondary">
+            <LogList {...this.state} />
+          </div>
         </div>
       </div>
     );
