@@ -1432,24 +1432,25 @@ def delete_model_in_project_data(mid, did):
 
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
-    model = couchdb.get("model", mid)
-    project = couchdb.get("project", model["project"])
-    slycat.web.server.authentication.require_project_writer(project)
+    try:
+        model = couchdb.get("model", mid)
+        project = couchdb.get("project", model["project"])
+        slycat.web.server.authentication.require_project_writer(project)
 
-    for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
-        updated = False
-        with slycat.web.server.get_project_data_lock(project_data["_id"]):
-            for index, pd_mid in enumerate(project_data["mid"]):
-                if pd_mid == mid:
-                    updated = True
-                    del project_data["mid"][index]
-            if updated:
-                couchdb.save(project_data)
+        for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
+            updated = False
+            with slycat.web.server.get_project_data_lock(project_data["_id"]):
+                for index, pd_mid in enumerate(project_data["mid"]):
+                    if pd_mid == mid:
+                        updated = True
+                        del project_data["mid"][index]
+                if updated:
+                    couchdb.save(project_data)
 
-    couchdb.delete(model)
+        couchdb.delete(model)
+    except Exception as e:
+        cherrypy.log.error('exception raised in delete model: %s' % str(e))
     slycat.web.server.cleanup.arrays()
-
-
     cherrypy.response.status = "204 Model deleted."
 
 
