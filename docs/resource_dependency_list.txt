@@ -164,7 +164,7 @@ jquery-ui                           1.12.1   https://jqueryui.com
 knockout                             3.5.1   http://knockoutjs.com
 knockout.mapping                     2.6.0   https://github.com/SteveSanderson/knockout.mapping
 layout                             1.7.0.2   https://github.com/GedMarc/layout.git
-lodash                             4.17.15   https://lodash.com/
+lodash                             4.17.19   https://lodash.com/
 papaparse                            5.2.0   https://github.com/mholt/PapaParse
 popper.js                           1.16.1   https://popper.js.org
 react                              16.13.1   https://reactjs.org
