@@ -69,6 +69,15 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
           data_target={"#" + props.modalId}
           button_style={"btn btn-outline-primary"}
           id="controls-button-death"
+          tooltip={(
+            <i
+            style={{ paddingLeft: "5px" }}
+            className="fa fa-info-circle"
+            data-toggle="tooltip"
+            data-placement="bottom"
+            title="Connect to HPC"
+          />
+          )}
         />
       )}
     </React.Fragment>
