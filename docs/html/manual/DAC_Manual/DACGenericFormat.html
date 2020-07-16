@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Dial-A-Cluster Generic Format &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="PTS CSV/META Zip Format" href="PTS_CSV_MetaFormat.html" />
+    <link rel="prev" title="Data Formats" href="DACData.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="DACData.html">Data Formats</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Dial-A-Cluster Generic Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PTS_CSV_MetaFormat.html">PTS CSV/META Zip Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TDMSFormat.html">TDMS Format</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="dac.model.html">Dial-A-Cluster Model</a> &raquo;</li>
+        
+          <li><a href="DACData.html">Data Formats</a> &raquo;</li>
+        
+      <li>Dial-A-Cluster Generic Format</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/manual/DAC_Manual/DACGenericFormat.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dial-a-cluster-generic-format">
+<span id="dacgenericformat"></span><h1>Dial-A-Cluster Generic Format<a class="headerlink" href="#dial-a-cluster-generic-format" title="Permalink to this headline">¶</a></h1>
+<p>This is a multi-file format consisting of a zipped set of directories and comma separated value (CSV) files, where
+each directory provides a different type of information.  The CSV files are grouped using a naming convention that
+relies on file extensions to differentiate the data types: .dac, .meta, .var, .time, and .dist.  Other than the .dac
+file, which can have any name so long as it has a .dac extension, the names of the directories and all of the other
+files are fixed.  At the top level, there is the .dac file and three directories named <em>dist</em>, <em>time</em>, and <em>var</em>.
+The <em>dist</em> directory contains files named sequentially as variable_1.dist, variable_2.dist, …, variable_n.dist, where
+<em>n</em> is the number of time series variables for each datapoint in the ensemble.  The <em>time</em> directory contains files
+variable_1.time, variable_2.time, …, variable_n.time; and the <em>var</em> directory contains files variable_1.var,
+variable_2.var, …, variable_n.var.  In addition, the <em>var</em> directory must contain the variables.meta file.  The
+directory structure is shown in Figure 2.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../../_images/dac-gen-zip-file-structure.png"><img alt="../../_images/dac-gen-zip-file-structure.png" src="../../_images/dac-gen-zip-file-structure.png" style="width: 550.0px; height: 325.6px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 2: The directory structure for the DAC generic input format, using a dataset with only three data points.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<div class="section" id="dac">
+<h2>.dac<a class="headerlink" href="#dac" title="Permalink to this headline">¶</a></h2>
+<p>Scalar data for the <em>Metadata Table</em> is contained in a single file with the .dac extension.  The first row contains
+header information (variable names) for the table columns.  The remaining rows are the values for these variables
+for each ensemble member.  Each row is comma separated and ends with a new line (a CSV file).  This file is at the
+same level as the directories <em>dist</em>, <em>time</em>, and <em>var</em>.</p>
+</div>
+<div class="section" id="dist">
+<h2>.dist<a class="headerlink" href="#dist" title="Permalink to this headline">¶</a></h2>
+<p>In the <em>dist</em> folder, there are variable_1.dist, variable_2.dist, …, variable_n.dist files.  Each .dist file contains
+the all-to-all distance matrix comparing every ensemble member to each of the others, calculated using the correspond
+time series variable.  These matrices are used to compute the visualization in the <em>Scatterplot</em> pane.  The file
+variable_1.dist is the distance matrix calculated using the first variable defined in variables.meta.  The .dist
+files have no header row.  Given <em>k</em> ensemble members, the file will consist of <em>k</em> rows, each with <em>k</em> comma-delimited
+distance values.  The rows and columns in these matrices are ordered according to order of the data points in the .dac file.</p>
+</div>
+<div class="section" id="time">
+<h2>.time<a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h2>
+<p>In the <em>time</em> folder, there are variable_1.time, variable_2.time, …, variable_n.time files.  These files contain the
+times when the corresponding temporal variables were sampled.  For example the file variable_1.time contains the
+x-axis values for graphing the time sequence associated with the first variable in the variables.meta file.  These
+files have no header row, consisting of just a single row of comma delimited values.  The temporal units for these
+values are defined in the .meta file in the “Time Units” column.</p>
+</div>
+<div class="section" id="var">
+<h2>.var<a class="headerlink" href="#var" title="Permalink to this headline">¶</a></h2>
+<p>In the <em>var</em> folder, there are variable_1.var, variable_2.var, …, variable_n.var files.  Here, the file variable_1.var
+contains the values (amplitudes in the <em>Time Series Plot</em>) for the first variable in the variables.meta.  The .var
+files have no header row, containing a single row with comma delimited values for each data point, ordered according
+to the order given in the .dac fille.  The units for these values are defined in the .meta file in the “Units” column.</p>
+</div>
+<div class="section" id="meta">
+<h2>.meta<a class="headerlink" href="#meta" title="Permalink to this headline">¶</a></h2>
+<p>The <em>var</em> folder also contains a file variables.meta, which defines the time series variable names shown in the
+<em>Slider</em> panel.  The first row should consist of the headers: “Name,Time Units,Units,Plot Type”.  The remaining
+rows define each of the time series variables (one per row), providing variable name, units for labeling the x
+and y axes in the time series plots, and the type of plot.  “Curve” is the only option currently available for
+“Plot Type”.</p>
+</div>
+<div class="section" id="archiving-in-windows">
+<span id="archiving-windows"></span><h2>Archiving in Windows<a class="headerlink" href="#archiving-in-windows" title="Permalink to this headline">¶</a></h2>
+<p>The files and subdirectories described above must be archived in a .zip file before import into the DAC model
+creation wizard.  When creating the .zip file on Windows, do not zip from the level of an enclosing directory,
+but instead perform the zip with the three directories and the .dac file as the input elements.  Also note that
+all time sequences for a given temporal variable MUST contain an identical number of samples.  (Different time
+variables can have different number of samples, but the number of samples cannot vary within a specific variable.)
+The correct method for creating the archive is shown in Figure 3.</p>
+<div class="figure align-center" id="id2">
+<img alt="../../_images/compression-windows.png" src="../../_images/compression-windows.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 3: Archiving a DAC Generic Format directory into a .zip file on Windows.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="archiving-on-mac">
+<span id="archiving-mac"></span><h2>Archiving on Mac<a class="headerlink" href="#archiving-on-mac" title="Permalink to this headline">¶</a></h2>
+<p>On a Mac, it is easiest to archive the files from the command line.  This avoids the inclusion of the Mac OS files
+.DS_store and __MACOSX, which will trigger errors when importing into the DAC model creation wizard.  From the
+directory containing the .dac file and the <em>dist</em>, <em>time</em>, and <em>var</em> folders, use the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zip -r weather-dac-gen.zip . -x &quot;.*&quot; -x &quot;__MACOSX&quot;
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="PTS_CSV_MetaFormat.html" class="btn btn-neutral float-right" title="PTS CSV/META Zip Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="DACData.html" class="btn btn-neutral float-left" title="Data Formats" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

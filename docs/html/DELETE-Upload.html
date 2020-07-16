@@ -91,7 +91,12 @@
 <li class="toctree-l2"><a class="reference internal" href="DELETE-logout.html">DELETE Logout</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DELETE-Model.html">DELETE Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DELETE-Project.html">DELETE Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Cache.html">DELETE Project Cache</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Cache-Object.html">DELETE Project Cache Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Data.html">DELETE Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Data-In-Model.html">DELETE Project Data In Model Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Model-In-Project-Data.html">DELETE Model In Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-reference.html">DELETE Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="DELETE-Remote.html">DELETE Remote</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">DELETE Upload</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#see-also">See Also</a></li>
@@ -220,26 +225,23 @@
 <dl class="http delete">
 <dt id="delete--api-uploads-(uid)">
 <code class="sig-name descname">DELETE </code><code class="sig-name descname">/api/uploads/</code><span class="sig-paren">(</span><em class="sig-param">uid</em><span class="sig-paren">)</span><a class="headerlink" href="#delete--api-uploads-(uid)" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>Delete an upload session used to upload files for storage as model artifacts.
+<dd><p>Delete an upload session used to upload files for storage as model artifacts.
 This function must be called once the client no longer needs the session, whether
 the upload(s) have been completed successfully or the client is cancelling an
 incomplete session.</p>
 <dl class="field-list simple">
-<dt class="field-odd">param uid</dt>
-<dd class="field-odd"><p>Unique upload session identifier.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uid</strong> (<em>string</em>) – Unique upload session identifier.</p></li>
+</ul>
 </dd>
-<dt class="field-even">type uid</dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">status 204</dt>
-<dd class="field-odd"><p>The upload session and any temporary storage have been deleted.</p>
-</dd>
-<dt class="field-even">status 409</dt>
-<dd class="field-even"><p>The upload session cannot be deleted, because parsing is in progress.  Try again later.</p>
+<dt class="field-even">Status Codes</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5">204 No Content</a> – The upload session and any temporary storage have been deleted.</p></li>
+<li><p><a class="reference external" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.10">409 Conflict</a> – The upload session cannot be deleted, because parsing is in progress.  Try again later.</p></li>
+</ul>
 </dd>
 </dl>
-</div></blockquote>
 <p><strong>Sample Request</strong></p>
 <div class="highlight-http notranslate"><div class="highlight"><pre><span></span><span class="nf">DELETE</span> <span class="nn">/api/uploads/f2856ac3535f4bb58956a06f72e25c96</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
 <span class="na">Host</span><span class="o">:</span> <span class="l">localhost:9000</span>
