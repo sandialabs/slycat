@@ -1,9 +1,3 @@
-import ControlsDropdownColor from "components/ControlsDropdownColor"
-
-/*
- * action types
- */
-
 export const CHANGE_FONT_SIZE = 'CHANGE_FONT_SIZE'
 export const CHANGE_FONT_FAMILY = 'CHANGE_FONT_FAMILY'
 export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'

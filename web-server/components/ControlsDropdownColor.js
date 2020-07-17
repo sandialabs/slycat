@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from 'react-redux';
 import { setColormap, } from 'components/actionsColor';
 import ControlsDropdown from 'components/ControlsDropdown';
-import slycat_color_maps from "js/slycat-color-maps";
 
 class ControlsDropdownColor extends React.Component {
   constructor(props) {
@@ -10,12 +9,12 @@ class ControlsDropdownColor extends React.Component {
   }
 
   render() {
-    const colormaps = slycat_color_maps.color_maps;
+    const colormaps = this.props.colormaps.color_maps;
     const items = Object.keys(colormaps).map((key, index) => {
       let colormap = colormaps[key];
 
       // Create CSS styles for rendering a preview of each colomap in the dropdown
-      let gradient_data = slycat_color_maps.get_gradient_data(key);
+      let gradient_data = this.props.colormaps.get_gradient_data(key);
       let color_stops = [];
       for (var i = 0; i < gradient_data.length; i++) {
           color_stops.push(gradient_data[i].color + " "

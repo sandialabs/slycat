@@ -5,6 +5,7 @@ import ControlsDropdown from 'components/ControlsDropdown';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
 import ControlsDropdownColor from 'components/ControlsDropdownColor';
+import slycat_color_maps from "js/slycat-color-maps";
 
 class CCAControlsBar extends React.Component {
   constructor(props) {
@@ -44,6 +45,7 @@ class CCAControlsBar extends React.Component {
           <ControlsGroup id='color-switcher' class='btn-group ml-3'>
             <ControlsDropdownColor 
               button_style={button_style}
+              colormaps={slycat_color_maps}
             />
           </ControlsGroup>
         </React.StrictMode>
