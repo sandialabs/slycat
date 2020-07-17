@@ -6,6 +6,8 @@ import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsDropdown from "./ControlsDropdown";
 import vtkColorMaps from "vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
+import ControlsDropdownColor from 'components/ControlsDropdownColor';
+import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 
 class ControlsThreeD extends React.Component {
   constructor(props) {
@@ -45,6 +47,17 @@ class ControlsThreeD extends React.Component {
           single={false}
           set_selected={this.props.changeThreeDColormap}
           button_style={this.props.button_style}
+        />
+        <ControlsDropdownColor 
+          button_style={this.props.button_style}
+          colormaps={slycat_threeD_color_maps}
+          key='threeD_color-switcher'
+          id='threeD_color-switcher'
+          label='3D Color'
+          title='Change 3D color'
+          state_label='threeD_color'
+          // trigger='colormap-changed'
+          single={false} 
         />
         {showColorBy && (
           <ControlsDropdown

@@ -46,6 +46,13 @@ class CCAControlsBar extends React.Component {
             <ControlsDropdownColor 
               button_style={button_style}
               colormaps={slycat_color_maps}
+              key='color-switcher'
+              id='color-switcher'
+              label='Color'
+              title='Change color scheme'
+              state_label='color'
+              trigger='colormap-changed'
+              single={true} 
             />
           </ControlsGroup>
         </React.StrictMode>

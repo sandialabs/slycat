@@ -40,15 +40,15 @@ class ControlsDropdownColor extends React.Component {
 
     return (
       <ControlsDropdown 
-        key='color-switcher'
-        id='color-switcher'
-        label='Color'
-        title='Change color scheme'
-        state_label='color'
-        trigger='colormap-changed'
+        key={this.props.key}
+        id={this.props.id}
+        label={this.props.label}
+        title={this.props.title}
+        state_label={this.props.state_label}
+        trigger={this.props.trigger}
         items={items}
         selected={this.props.colormap} 
-        single={true} 
+        single={this.props.single}
         set_selected={this.props.setColormap}
         button_style={this.props.button_style}
       />
@@ -56,7 +56,7 @@ class ControlsDropdownColor extends React.Component {
   }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state, ownProps) => {
   return {
     colormap: state.colormap,
   }
