@@ -161,10 +161,11 @@
 <span id="id1"></span><h1>Colophon<a class="headerlink" href="#colophon" title="Permalink to this headline">¶</a></h1>
 <p>The following are needed to generate this documentation:</p>
 <ul class="simple">
-<li><p>Sphinx - documentation builder - <a class="reference external" href="http://sphinx-doc.org">http://sphinx-doc.org</a></p></li>
+<li><p>Sphinx &gt;= version 3.0 - documentation builder - <a class="reference external" href="http://sphinx-doc.org">http://sphinx-doc.org</a></p></li>
 <li><p>Sphinx readthedocs theme - <a class="reference external" href="https://github.com/snide/sphinx_rtd_theme">https://github.com/snide/sphinx_rtd_theme</a></p></li>
 <li><p>napoleon - <a class="reference external" href="http://sphinxcontrib-napoleon.readthedocs.org/en/latest/">http://sphinxcontrib-napoleon.readthedocs.org/en/latest/</a></p></li>
 <li><p>httpdomain - <a class="reference external" href="http://pythonhosted.org/sphinxcontrib-httpdomain/">http://pythonhosted.org/sphinxcontrib-httpdomain/</a></p></li>
+<li><p>python 3</p></li>
 </ul>
 <div class="section" id="writing-the-documentation">
 <h2>Writing the Documentation<a class="headerlink" href="#writing-the-documentation" title="Permalink to this headline">¶</a></h2>
@@ -172,17 +173,17 @@
 embedded in the Slycat source code itself.  When writing docstrings,
 strictly follow the guidelines at <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard">https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard</a></p>
 <p>The remainder of the documentation is contained in <cite>*.rst</cite> files in
-the <cite>slycat/docs</cite> directory.</p>
+the <cite>slycat/docs/source</cite> directory.</p>
 </div>
 <div class="section" id="building-the-documentation">
 <h2>Building the Documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
 <p>To build the documentation, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd slycat/docs
-$ python setup.py
+$ make html
 </pre></div>
 </div>
 <p>Once the documentation is built, you can view it by opening
-<cite>slycat/docs/_build/html/index.html</cite> in a web browser.</p>
+<cite>slycat/docs/source/_build/html/index.html</cite> in a web browser.</p>
 </div>
 <div class="section" id="deploying-the-documentation">
 <h2>Deploying the Documentation<a class="headerlink" href="#deploying-the-documentation" title="Permalink to this headline">¶</a></h2>

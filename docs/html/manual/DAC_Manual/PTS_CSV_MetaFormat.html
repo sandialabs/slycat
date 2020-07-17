@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PTS CSV/META Zip Format &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="TDMS Format" href="TDMSFormat.html" />
+    <link rel="prev" title="Dial-A-Cluster Generic Format" href="DACGenericFormat.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="DACData.html">Data Formats</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="DACGenericFormat.html">Dial-A-Cluster Generic Format</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">PTS CSV/META Zip Format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TDMSFormat.html">TDMS Format</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="dac.model.html">Dial-A-Cluster Model</a> &raquo;</li>
+        
+          <li><a href="DACData.html">Data Formats</a> &raquo;</li>
+        
+      <li>PTS CSV/META Zip Format</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/manual/DAC_Manual/PTS_CSV_MetaFormat.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pts-csv-meta-zip-format">
+<span id="pts-csv-metaformat"></span><h1>PTS CSV/META Zip Format<a class="headerlink" href="#pts-csv-meta-zip-format" title="Permalink to this headline">¶</a></h1>
+<p>This data format is designed to facilitate ingestion from a Sandia-specific project.  Constructing this format is complex
+and contains redundant copies of the same information.  Consequently, it is not recommended for general use.  However, we
+document it here for completeness.  The format consists of a zip file containing two subdirectories named CSV and META.</p>
+<p>Within the CSV subdirectory are a set of .csv files, where each .csv contains a single time series.  Within the META
+subdirectory are corresponding sets of .ini files, where each .ini file contains the metadata for a single temporal
+variable for a single ensemble member (one of the .csv files in the other directory).  Given that there are <em>n</em> temporal
+variables and <em>k</em> ensemble members, both directories will contain <em>n × k</em> files.  There is no naming convention for these
+files, beyond the fact that each .csv file must have a corresponding .ini file.  However, it is convenient to use a
+naming convention such as &lt;member descriptor&gt; &lt;member index&gt; &lt;underscore&gt; &lt;variable descriptor&gt; &lt;variable index&gt;.  The
+index for the ensemble member should vary between 1 and <em>n</em>.  The index for the temporal variable should vary between 1
+and <em>k</em>.</p>
+<p>So, for example, if we had data sampled at 10 cities (our ensemble members) and 20 temporal variables per city, we could
+name the timeseries for the 10th temporal variable for the second city as city2_temp10.csv.  We would then need to name
+the corresponding meta variable file as city2_temp10.ini.  Or instead, we could have named them more abstractly, t2_d10.csv
+and t2_d10.ini, respectively.</p>
+<div class="section" id="csv">
+<h2>.csv<a class="headerlink" href="#csv" title="Permalink to this headline">¶</a></h2>
+<p>Each time series file has four columns, named “SampleNum”, “Raw”, “X”, and “Y”, respectively.  SampleNum is a one-based
+index of the time samples in the file.  Raw contains the raw data values for the quantity being sampled.  X is the temporal
+value for the sample that will be used as the x-coordinate in the Time Series Plot.  Y is the sampled value that will be
+plotted (either the original raw value or a scaled/modified value).</p>
+</div>
+<div class="section" id="ini">
+<h2>.ini<a class="headerlink" href="#ini" title="Permalink to this headline">¶</a></h2>
+<p>These files contain the metadata for each temporal variable for each sample.  They also contain the scalar metadata for
+each sample, which is repeated for each temporal variable (since there is a file per temporal variable per sample).  The
+metadata is described using key-value pairs in an ASCII text file.  An example from our weather data set for the city of
+New York for the first temporal variable, Max Temperature, would look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>; Fake PTS Weather data
+; S. Martin 6/23/2017
+
+[test]
+City=&quot;New York&quot;
+State=&quot;New York&quot;
+Time Zone=&quot;Eastern&quot;
+Population=&quot;8213839&quot;
+Latitude=&quot;40.7833&quot;
+Longitude=&quot;72.0333&quot;
+Average Temperature (F)=&quot;52.3166&quot;
+Average Humidity (%)=”62.4648”
+Annual Precipitation (In)=&quot;57.02&quot;
+Average Windspeed (MPH)=&quot;11.5126&quot;
+Average Visibility (Miles)=&quot;9.1206&quot;
+Average Cloud Cover (Okta)=&quot;5.27889&quot;
+
+[operation]
+test_op_inst_id=1
+
+[waveform]
+WF_DIG_ID=&quot;1&quot;
+WF_DIG_LABEL=&quot;Max Temperature&quot;
+WF_X_UNITS=&quot;Day&quot;
+WF_Y_UNITS=&quot;F&quot;
+</pre></div>
+</div>
+<p>Comments are lines beginning with a ‘;’.  The bracketed text, <em>[test]</em>, <em>[operation]</em>, and <em>[waveform]</em> are required.  The
+key-value pairs in the <em>[test]</em> section are used in the <em>Metadata Table</em>.  They can be any set of variables and values, so long
+as they are consistent across the samples (inconsistent values will generate warnings and/or errors during model creation –
+see Model Parse Log).  The table values are in quotes.  Under <em>[operation]</em>, the <em>test_op_inst_id</em> variable provides the ensemble
+member number.  The <em>test_op_inst_id</em> is also typically encoded in the file name, but this is optional.  Under <em>[waveform]</em>, the
+<em>WF_DIG_ID</em> variable provides the temporal variable index.  Unlike the variable names in the <em>[test]</em> section, the variable names
+in the <em>[waveform]</em> section cannot be changed.  Only the values for those waveform variables can be modified to describe the time
+series quantities.</p>
+<p>The two most important fields in the .ini file are <em>test_op_inst_id</em>, which identifies the member of the ensemble, and <em>WF_DIG_ID</em>,
+which identifies the variable for that member.  These two fields uniquely identify the time series, regardless of the file name
+provided.</p>
+<p>These CSV and META directories must then be archived using the .zip format as described in <a class="reference internal" href="DACGenericFormat.html#archiving-windows"><span class="std std-ref">Archiving in Windows</span></a> and
+<a class="reference internal" href="DACGenericFormat.html#archiving-mac"><span class="std std-ref">Archiving on Mac</span></a>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="TDMSFormat.html" class="btn btn-neutral float-right" title="TDMS Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="DACGenericFormat.html" class="btn btn-neutral float-left" title="Dial-A-Cluster Generic Format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

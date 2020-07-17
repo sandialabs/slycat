@@ -8,3 +8,5 @@ Coding Guidelines
   exception: we use two spaces for indentation instead of four.
   We have lots of code that predates those guidelines, but are actively
   updating it as we go along.
+
+* Javascript (and Typescript) files should follow google `JS coding guidelines <https://google.github.io/styleguide/jsguide.html>`_

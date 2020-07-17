@@ -19,13 +19,7 @@ const ControlsButton = (props) => {
     >
       {props.icon && <span className={"fa " + props.icon} aria-hidden="true" />}
       {props.label}
-      <i
-        style={{ paddingLeft: "5px" }}
-        className="fa fa-info-circle"
-        data-toggle="tooltip"
-        data-placement="bottom"
-        title="Connect to HPC"
-      />
+      {props.tooltip !== null && props.tooltip}
     </button>
   );
 };

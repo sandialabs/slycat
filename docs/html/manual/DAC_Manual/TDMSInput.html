@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Switchtube TDMS Input &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Name Model" href="NameModel.html" />
+    <link rel="prev" title="PTS CSV/META Zip Input" href="PTS_CSV_MetaInput.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACData.html">Data Formats</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="DACInputFormats.html">DAC Input Formats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="NameModel.html">Name Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="LoadData.html">Loading Data and Progress Indicators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="dac.model.html">Dial-A-Cluster Model</a> &raquo;</li>
+        
+          <li><a href="CreatingDACModel.html">Model Creation</a> &raquo;</li>
+        
+          <li><a href="DACInputFormats.html">DAC Input Formats</a> &raquo;</li>
+        
+      <li>Switchtube TDMS Input</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/manual/DAC_Manual/TDMSInput.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="switchtube-tdms-input">
+<h1>Switchtube TDMS Input<a class="headerlink" href="#switchtube-tdms-input" title="Permalink to this headline">¶</a></h1>
+<p>For the TDMS format, there are two file types available from the drop down, as shown in Figure 8.  To select one
+or more .tdms files directly use the “.tdms file(s)” option.  To select an archive containing TDMS files select the
+“TMDS .zip file” option.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../../_images/tdms-file-types.png"><img alt="../../_images/tdms-file-types.png" src="../../_images/tdms-file-types.png" style="width: 633.6px; height: 310.40000000000003px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 8: The TDMS file type pulldown allows the user to select either .tdms files directly, or a .zip file containing TDMS files.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>In addition to the <em>Locate Data</em> tab, the TDMS format uses two additional tabs.  In the case of a TDMS .zip file
+selection, a <em>Select Suffixes</em> tab is displayed, as shown in Figure 9.  In the <em>Select Suffixes</em> tab, you have the
+option of filtering the TDMS files by a file suffix, which is used to tag a TDMS file of the form <em>_suffix.tdms.
+The user then has the option to include only TDMS files with specific suffixes.  After selecting the TDMS format,
+the *Continue</em> button advances to the <em>Import Options</em> tab.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../../_images/tdms-suffixes.png"><img alt="../../_images/tdms-suffixes.png" src="../../_images/tdms-suffixes.png" style="width: 631.2px; height: 376.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 9: The Select Suffixes tab of the TDMS import wizard displayed when importing a TDMS .zip file.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>For both TDMS formats, an <em>Import Options</em> tab is next displayed, as shown in Figure 10.  The <em>Import Options</em> tab
+provides parameters that DAC can use to import incomplete or expected types of data.  These options are similar to
+the options in the PTS <em>Locate Data</em> tab.  The “Minimum number of time points in a channel” tells DAC to ignore any
+time series that have less than the specified number of time points.  The “Minimum number of channels in a test”
+tells DAC to ignore any tests (ensemble members) that do not have at least a certain number of channels (variables)
+available.  These values have defaults of 10 and 2, respectively.</p>
+<div class="figure align-center" id="id3">
+<a class="reference internal image-reference" href="../../_images/tdms-options.png"><img alt="../../_images/tdms-options.png" src="../../_images/tdms-options.png" style="width: 633.6px; height: 462.40000000000003px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 10: Options for importing DAC TDMS files.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>The type of time series expected can be specified as “General”, “Overvoltage”, or “Sprytron”.  The default is “General”.
+These options provide information about the number and type of time series expected in the TDMS files.  For TDMS files,
+unlike DAC Generic Files, time points do not have to match across tests.  If they don’t match, the time series can still
+be combined using the “Intersection” or “Union” options.  The “Intersection” option will intersect time points to obtain
+a common set of time steps, while the “Union” option will extend early or late starting time series using the first or
+last time series values to match longer channels.  Finally, channel units and/or time steps units will be inferred from
+the data type (“General”, “Overvoltage”, or “Sprytron”) and/or default values generally expected from TDMS data.</p>
+<p><em>Continue</em> advances to the <em>Name Model</em> tab.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="NameModel.html" class="btn btn-neutral float-right" title="Name Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="PTS_CSV_MetaInput.html" class="btn btn-neutral float-left" title="PTS CSV/META Zip Input" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
