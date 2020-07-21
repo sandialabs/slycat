@@ -413,7 +413,7 @@ export function renderNavBar() {
 
       component.open_documentation = function()
       {
-        window.open("/docs/user-manual.html");
+        window.open("/docs/index.html");
       }
 
       var references = mapping.fromJS([]);

@@ -28,34 +28,21 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
         data-target="#collapseJobCodes"
         aria-expanded="false"
         aria-controls="collapseJobCodes"
+        title="Job status will be in the grey info block below after loading from HPC"
       >
         Job status meanings
-        <i
-          style={{ paddingLeft: "5px" }}
-          className="fa fa-info-circle"
-          data-toggle="tooltip"
-          data-placement="bottom"
-          title="Job status will be in the grey info block below after loading from HPC"
-        />
       </button>
       <button
         className={`btn btn btn-outline-primary`}
         id={"pullbtn"}
         type="button"
-        title={"load data"}
+        title={"Send command to the HPC to cancel the current job if the status is pending or running"}
         disabled={
-          !props.jobStatus.includes("PENDING") || !props.jobStatus.includes("RUNNING")
+          !props.jobStatus.includes("PENDING") && !props.jobStatus.includes("RUNNING")
         }
         onClick={() => props.cancelJob()}
       >
         {"Cancel job"}
-        <i
-          style={{ paddingLeft: "5px" }}
-          className="fa fa-info-circle"
-          data-toggle="tooltip"
-          data-placement="bottom"
-          title="Send command to the HPC to cancel the current job if the status is pending or running"
-        />
       </button>
       <LoadButton
         disabled={!props.jobStatus.includes("COMPLETED")}
@@ -64,20 +51,11 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
       {props.modelShow && !props.sessionExists && (
         <ControlsButton
           label="Connect"
-          title={"Connect button"}
+          title={"Connect to HPC"}
           data_toggle="modal"
           data_target={"#" + props.modalId}
           button_style={"btn btn-outline-primary"}
           id="controls-button-death"
-          tooltip={(
-            <i
-            style={{ paddingLeft: "5px" }}
-            className="fa fa-info-circle"
-            data-toggle="tooltip"
-            data-placement="bottom"
-            title="Connect to HPC"
-          />
-          )}
         />
       )}
     </React.Fragment>

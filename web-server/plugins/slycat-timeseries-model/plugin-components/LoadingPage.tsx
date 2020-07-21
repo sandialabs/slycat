@@ -141,7 +141,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
   private appendLog = (resJson: any) => {
     this.state.log.logLineArray = resJson.logFile.split("\n");
     this.setState({
-      jobStatus: `Job Status: ${resJson.status.state}`,
+      jobStatus: `${resJson.status.state}`,
       log: this.state.log,
     });
     switch (resJson.status.state) {
