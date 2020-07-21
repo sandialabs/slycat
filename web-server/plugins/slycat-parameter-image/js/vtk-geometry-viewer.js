@@ -9,7 +9,7 @@ import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
 import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
 import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
 import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
-import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import {
   ColorMode,
   ScalarMode,
@@ -64,7 +64,7 @@ export function load(container, buffer, uri) {
 
   function applyPreset() {
     // console.log('setting color to: ' + window.store.getState().threeDColormap);
-    colormap = vtkColorMaps.getPresetByName(window.store.getState().threeDColormap);
+    colormap = slycat_threeD_color_maps.vtk_color_maps[window.store.getState().threeDColormap];
     lookupTable.applyColorMap(colormap);
     lookupTable.setMappingRange(dataRange[0], dataRange[1]);
     lookupTable.updateRange();
@@ -74,7 +74,7 @@ export function load(container, buffer, uri) {
   }
 
   function applyPresetIfChanged() {
-    if(vtkColorMaps.getPresetByName(window.store.getState().threeDColormap) != colormap)
+    if(slycat_threeD_color_maps.vtk_color_maps[window.store.getState().threeDColormap] != colormap)
     {
       // console.log("Colormap changed, so applying the new one.");
       applyPreset();
