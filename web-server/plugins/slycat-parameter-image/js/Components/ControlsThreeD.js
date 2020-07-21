@@ -42,6 +42,7 @@ class ControlsThreeD extends React.Component {
           state_label='threeD_color'
           single={false} 
           setColormap={this.props.changeThreeDColormap}
+          background={this.props.threeDBackground}
         />
         {showColorBy && (
           <ControlsDropdown
@@ -132,6 +133,7 @@ const mapStateToProps = (state) => {
     color_by_items: color_by_items,
     currentFrame: state.currentFrame,
     threeDColorBy: threeDColorBy,
+    threeDBackground: 'black', // Replace this with the 3D background color from state once it's implemented
   };
 };
 

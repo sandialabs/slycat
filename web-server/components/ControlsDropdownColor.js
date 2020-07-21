@@ -21,6 +21,10 @@ export default class ControlsDropdownColor extends React.Component {
               + gradient_data[i].offset + "%");
       }
       let background_color = colormap.background;
+      if(background_color === undefined)
+      {
+        background_color = this.props.background;
+      }
       let style = {
         backgroundImage: "linear-gradient(to bottom, "
             + color_stops.join(", ") + "), linear-gradient(to bottom, "

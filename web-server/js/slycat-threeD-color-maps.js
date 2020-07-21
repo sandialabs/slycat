@@ -50,7 +50,6 @@ vtkColorMaps
     }
     slycat_color_maps[p.Name] = {
       label: p.Name,
-      background: d3.rgb(128, 128, 128),
       null_color: "rgb(75,75,75)",
       opacity: "0.5",
       colors: colors,
