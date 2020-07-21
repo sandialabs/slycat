@@ -4,7 +4,6 @@ import { changeThreeDColormap, updateThreeDColorBy } from "../actions";
 import ControlsGroup from "components/ControlsGroup";
 import ControlsButtonToggle from "./ControlsButtonToggle";
 import ControlsDropdown from "./ControlsDropdown";
-import vtkColorMaps from "vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import ControlsDropdownColor from 'components/ControlsDropdownColor';
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -19,10 +18,6 @@ class ControlsThreeD extends React.Component {
   };
 
   render() {
-    let color_map_items = vtkColorMaps.rgbPresetNames.map((name) => {
-      return { key: name, name: name };
-    });
-
     // Only show Color By control if we have more than 1 item in it,
     // otherwise there's nothing to choose between.
     let showColorBy = this.props.color_by_items && this.props.color_by_items.length > 1;
@@ -36,32 +31,22 @@ class ControlsThreeD extends React.Component {
           set_active_state={this.props.set_threeD_sync}
           button_style={this.props.button_style}
         />
-        <ControlsDropdown
-          key="threeD-color-dropdown"
-          id="threeD-color-dropdown"
-          label="3D Color"
-          title="Change 3D color"
-          state_label="threeD_color"
-          items={color_map_items}
-          selected={this.props.threeDColormap}
-          single={false}
-          set_selected={this.props.changeThreeDColormap}
-          button_style={this.props.button_style}
-        />
         <ControlsDropdownColor 
           button_style={this.props.button_style}
           colormaps={slycat_threeD_color_maps}
-          key='threeD_color-switcher'
-          id='threeD_color-switcher'
+          colormap={this.props.threeDColormap}
+          key_id='threeD-color-dropdown'
+          id='threeD-color-dropdown'
           label='3D Color'
           title='Change 3D color'
           state_label='threeD_color'
-          // trigger='colormap-changed'
           single={false} 
+          setColormap={this.props.changeThreeDColormap}
         />
         {showColorBy && (
           <ControlsDropdown
-            key="threeD-colorBy-dropdown"
+            button_style={this.props.button_style}
+            key_id="threeD-colorBy-dropdown"
             id="threeD-colorBy-dropdown"
             label="Color By"
             title="Change 3D color by"
@@ -70,7 +55,6 @@ class ControlsThreeD extends React.Component {
             selected={this.props.threeDColorBy}
             single={false}
             set_selected={this.changeThreeDColorBy}
-            button_style={this.props.button_style}
           />
         )}
       </React.Fragment>

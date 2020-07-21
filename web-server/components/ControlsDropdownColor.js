@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { setColormap, } from 'components/actionsColor';
 import ControlsDropdown from 'components/ControlsDropdown';
 
-class ControlsDropdownColor extends React.Component {
+export default class ControlsDropdownColor extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -40,7 +40,7 @@ class ControlsDropdownColor extends React.Component {
 
     return (
       <ControlsDropdown 
-        key={this.props.key}
+        key={this.props.key_id}
         id={this.props.id}
         label={this.props.label}
         title={this.props.title}
@@ -55,16 +55,3 @@ class ControlsDropdownColor extends React.Component {
     );
   }
 }
-
-const mapStateToProps = (state, ownProps) => {
-  return {
-    colormap: state.colormap,
-  }
-};
-
-export default connect(
-  mapStateToProps,
-  {
-    setColormap,
-  }
-)(ControlsDropdownColor)

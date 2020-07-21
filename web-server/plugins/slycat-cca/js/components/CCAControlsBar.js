@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from 'react-redux';
 import { setVariableSelected, } from '../actions';
+import { setColormap, } from 'components/actionsColor';
 import ControlsDropdown from 'components/ControlsDropdown';
 import ControlsGroup from 'components/ControlsGroup';
 import ControlsButtonDownloadDataTable from 'components/ControlsButtonDownloadDataTable';
@@ -46,13 +47,15 @@ class CCAControlsBar extends React.Component {
             <ControlsDropdownColor 
               button_style={button_style}
               colormaps={slycat_color_maps}
-              key='color-switcher'
+              colormap={this.props.colormap}
+              key_id='color-switcher'
               id='color-switcher'
               label='Color'
               title='Change color scheme'
               state_label='color'
               trigger='colormap-changed'
               single={true} 
+              setColormap={this.props.setColormap}
             />
           </ControlsGroup>
         </React.StrictMode>
@@ -69,6 +72,7 @@ const mapStateToProps = state => {
     metadata: state.derived.table_metadata,
     indices: state.derived.indices,
     model_name: state.derived.model.name,
+    colormap: state.colormap,
   }
 };
 
@@ -76,5 +80,6 @@ export default connect(
   mapStateToProps,
   { 
     setVariableSelected,
+    setColormap,
   }
 )(CCAControlsBar)

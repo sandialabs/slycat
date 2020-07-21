@@ -75,7 +75,7 @@ export function changeCurrentFrame(frame) {
   }
 }
 
-export function changeThreeDColormap(label, key) {
+export function changeThreeDColormap(key, label) {
   return { 
     type: CHANGE_THREED_COLORMAP, 
     threeDColormap: key 
