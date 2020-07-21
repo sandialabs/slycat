@@ -1,8 +1,281 @@
-# Change Log
+# Changelog
+
+## [v3.1](https://github.com/sandialabs/slycat/tree/v3.1) (2020-07-16)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/3.0.1...v3.1)
+
+**Implemented enhancements:**
+
+- Support log scale for color axis [\#964](https://github.com/sandialabs/slycat/issues/964)
+- Change timeseries to use tarball instead of pulling each file individually [\#951](https://github.com/sandialabs/slycat/issues/951)
+- axes [\#928](https://github.com/sandialabs/slycat/issues/928)
+- Send a message to display on the client that the files are being transferred. [\#760](https://github.com/sandialabs/slycat/issues/760)
+-  tar or zip the pickle files to speed up transfer timeseries. [\#758](https://github.com/sandialabs/slycat/issues/758)
+- Model should reload once timeseries is finished computing/ imporove timeseries display [\#754](https://github.com/sandialabs/slycat/issues/754)
+- REST endpoint to check if the server can be restarted [\#722](https://github.com/sandialabs/slycat/issues/722)
+- Allow project information to be edited at the model level [\#643](https://github.com/sandialabs/slycat/issues/643)
+- Add a slycat multiprocessor queue for calculating meta data [\#636](https://github.com/sandialabs/slycat/issues/636)
+- Make a requirements.txt file for slycat [\#634](https://github.com/sandialabs/slycat/issues/634)
+- Create universally runnable end to end tests [\#533](https://github.com/sandialabs/slycat/issues/533)
+- Need to be able to delete or overwrite cached images/videos [\#400](https://github.com/sandialabs/slycat/issues/400)
+- Slycat documentation [\#974](https://github.com/sandialabs/slycat/pull/974) ([Mletter1](https://github.com/Mletter1))
+
+**Fixed bugs:**
+
+- 404 Error Deleting Failed Timeseries Models [\#968](https://github.com/sandialabs/slycat/issues/968)
+- fix prod build [\#952](https://github.com/sandialabs/slycat/issues/952)
+- Change log for VS to hpc safe log [\#950](https://github.com/sandialabs/slycat/issues/950)
+- fix linked model bug [\#949](https://github.com/sandialabs/slycat/issues/949)
+- Login tab in VS wizard not providing feedback [\#917](https://github.com/sandialabs/slycat/issues/917)
+- slow down from proxy [\#898](https://github.com/sandialabs/slycat/issues/898)
+- Input Metavariable Label Misaligned [\#871](https://github.com/sandialabs/slycat/issues/871)
+- Remap wizard is broken [\#818](https://github.com/sandialabs/slycat/issues/818)
+- Xyce input table file wrong - Time series wizard [\#702](https://github.com/sandialabs/slycat/issues/702)
+- set utf8 encoding [\#590](https://github.com/sandialabs/slycat/issues/590)
+- member list does not wrap within text box [\#470](https://github.com/sandialabs/slycat/issues/470)
+
+**Closed issues:**
+
+- Add ability to end remote job  [\#973](https://github.com/sandialabs/slycat/issues/973)
+- slycat build failing for documentation [\#967](https://github.com/sandialabs/slycat/issues/967)
+- Timeseries no longer shows statistics [\#958](https://github.com/sandialabs/slycat/issues/958)
+- 'Reconnect' button failure [\#953](https://github.com/sandialabs/slycat/issues/953)
+- Implement "undo" with back button [\#934](https://github.com/sandialabs/slycat/issues/934)
+- Cross Browser / Cross Machine Session Handling [\#847](https://github.com/sandialabs/slycat/issues/847)
+- get\_remote\_file doesn't update cached files [\#823](https://github.com/sandialabs/slycat/issues/823)
+- resource conflict on put\_model\_parameter [\#822](https://github.com/sandialabs/slycat/issues/822)
+- remove https enforcement in slycat cherrypy [\#766](https://github.com/sandialabs/slycat/issues/766)
+- Slycat requires https [\#755](https://github.com/sandialabs/slycat/issues/755)
+
+**Merged pull requests:**
+
+- improved the loading ui [\#977](https://github.com/sandialabs/slycat/pull/977) ([Mletter1](https://github.com/Mletter1))
+- Job cancel button [\#976](https://github.com/sandialabs/slycat/pull/976) ([Mletter1](https://github.com/Mletter1))
+- Slycat documentation [\#975](https://github.com/sandialabs/slycat/pull/975) ([Mletter1](https://github.com/Mletter1))
+- Slycat documentation [\#966](https://github.com/sandialabs/slycat/pull/966) ([Mletter1](https://github.com/Mletter1))
+- Fix timeseries stats \#958 [\#959](https://github.com/sandialabs/slycat/pull/959) ([Mletter1](https://github.com/Mletter1))
+- fixing reconnect button closes \#587 [\#955](https://github.com/sandialabs/slycat/pull/955) ([Mletter1](https://github.com/Mletter1))
+- Feature \#722 \#643 [\#954](https://github.com/sandialabs/slycat/pull/954) ([Mletter1](https://github.com/Mletter1))
+- Bugfix [\#948](https://github.com/sandialabs/slycat/pull/948) ([Spurs20](https://github.com/Spurs20))
+
+## [3.0.1](https://github.com/sandialabs/slycat/tree/3.0.1) (2020-04-21)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v3.0...3.0.1)
+
+**Implemented enhancements:**
+
+- Redo Selection Action menu [\#940](https://github.com/sandialabs/slycat/issues/940)
+- Add Interface for variable alias labels to Edit Axes  [\#907](https://github.com/sandialabs/slycat/issues/907)
+- Pin Actions Dropdown Menu [\#816](https://github.com/sandialabs/slycat/issues/816)
+- Improve error reporting in remote file browser [\#483](https://github.com/sandialabs/slycat/issues/483)
+
+**Fixed bugs:**
+
+- Removing last filter sometimes leaves scatterplot points and table rows hidden [\#946](https://github.com/sandialabs/slycat/issues/946)
+- Drop down scrolling gone \(OSX Firefox\) [\#945](https://github.com/sandialabs/slycat/issues/945)
+- Update table rejects new table data incorrectly [\#939](https://github.com/sandialabs/slycat/issues/939)
+- dakota\_tabular.dat parser broken in Parameter Space & CCA models [\#938](https://github.com/sandialabs/slycat/issues/938)
+- Edit bookmark comes up blank [\#931](https://github.com/sandialabs/slycat/issues/931)
+- Pin Selection Action Disabled When Filters Are Present \(Windows/Firefox\) [\#930](https://github.com/sandialabs/slycat/issues/930)
+- In 'Selection Action' only Selected points can be restored [\#924](https://github.com/sandialabs/slycat/issues/924)
+- Point color lost when redrawing CCA model [\#922](https://github.com/sandialabs/slycat/issues/922)
+- Remote browser host name gets cut off if too long [\#918](https://github.com/sandialabs/slycat/issues/918)
+- Relabel axes names lost during update table \(firefox and Windows\) [\#916](https://github.com/sandialabs/slycat/issues/916)
+- Bookmark in CCA loses color-coding variable \(new React/Python 3\) [\#913](https://github.com/sandialabs/slycat/issues/913)
+
+**Closed issues:**
+
+- Changing axes font size is broken [\#935](https://github.com/sandialabs/slycat/issues/935)
+- No media column selected for new models that contain media columns [\#933](https://github.com/sandialabs/slycat/issues/933)
+- JS error when closing bookmark dialogs using X button [\#932](https://github.com/sandialabs/slycat/issues/932)
+- Project data not being deleted on 'Back' in Parameter Space wizard [\#920](https://github.com/sandialabs/slycat/issues/920)
+
+**Merged pull requests:**
+
+- Timeseries loading page [\#944](https://github.com/sandialabs/slycat/pull/944) ([Mletter1](https://github.com/Mletter1))
+
+## [v3.0](https://github.com/sandialabs/slycat/tree/v3.0) (2019-12-19)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v2.2...v3.0)
+
+**Implemented enhancements:**
+
+- Update/Create new docker image [\#891](https://github.com/sandialabs/slycat/issues/891)
+
+**Fixed bugs:**
+
+- Disallow deletion of all project members [\#899](https://github.com/sandialabs/slycat/issues/899)
+
+**Merged pull requests:**
+
+- Agent fixes for timeseries [\#929](https://github.com/sandialabs/slycat/pull/929) ([Mletter1](https://github.com/Mletter1))
+- Agent fixes [\#927](https://github.com/sandialabs/slycat/pull/927) ([Mletter1](https://github.com/Mletter1))
+- Agent fix [\#926](https://github.com/sandialabs/slycat/pull/926) ([Mletter1](https://github.com/Mletter1))
+- Access control bugs [\#925](https://github.com/sandialabs/slycat/pull/925) ([Spurs20](https://github.com/Spurs20))
+- Error messaging enhancement [\#921](https://github.com/sandialabs/slycat/pull/921) ([Spurs20](https://github.com/Spurs20))
+- Error messaging enhancement [\#919](https://github.com/sandialabs/slycat/pull/919) ([Spurs20](https://github.com/Spurs20))
+- Python3 [\#912](https://github.com/sandialabs/slycat/pull/912) ([Mletter1](https://github.com/Mletter1))
+
+## [v2.2](https://github.com/sandialabs/slycat/tree/v2.2) (2019-09-18)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/2.2...v2.2)
+
+## [2.2](https://github.com/sandialabs/slycat/tree/2.2) (2019-09-18)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v2.1...2.2)
+
+**Merged pull requests:**
+
+- Dac couch changes [\#911](https://github.com/sandialabs/slycat/pull/911) ([Spurs20](https://github.com/Spurs20))
+
+## [v2.1](https://github.com/sandialabs/slycat/tree/v2.1) (2019-07-31)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/2019.07.17...v2.1)
+
+**Fixed bugs:**
+
+- First Render After Model Creation is Sized Wrong in CCA [\#906](https://github.com/sandialabs/slycat/issues/906)
+- CCA Pointcolor dropdown list lacks slider [\#905](https://github.com/sandialabs/slycat/issues/905)
+- Selection Action 'Set' Doesn't Change Values \(both Firefox & chrome on Windows\) [\#904](https://github.com/sandialabs/slycat/issues/904)
+- Marking not displayed on model page [\#903](https://github.com/sandialabs/slycat/issues/903)
+- Cannot delete bookmarks [\#902](https://github.com/sandialabs/slycat/issues/902)
+- Cannot add members to project [\#901](https://github.com/sandialabs/slycat/issues/901)
+- CCA and PS table display cuts off bottom row \(Firefox & Chrome on Windows\) [\#900](https://github.com/sandialabs/slycat/issues/900)
+- Documentation not found [\#865](https://github.com/sandialabs/slycat/issues/865)
+
+## [2019.07.17](https://github.com/sandialabs/slycat/tree/2019.07.17) (2019-07-10)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v2.0.0...2019.07.17)
+
+**Implemented enhancements:**
+
+- Add filter field to projects and models listings [\#878](https://github.com/sandialabs/slycat/issues/878)
+- Remove unused login code [\#876](https://github.com/sandialabs/slycat/issues/876)
+- Add max and min functionality to PDF viewer [\#838](https://github.com/sandialabs/slycat/issues/838)
+- Dates as a data type [\#831](https://github.com/sandialabs/slycat/issues/831)
+- Replace slickGrid with a component that is still being maintained [\#821](https://github.com/sandialabs/slycat/issues/821)
+- Consider new front end frameworks / libraries [\#708](https://github.com/sandialabs/slycat/issues/708)
+
+**Fixed bugs:**
+
+- Documentation link broken [\#896](https://github.com/sandialabs/slycat/issues/896)
+- Slycat needs to be reconfigured for running Video Swarm from its own repo [\#895](https://github.com/sandialabs/slycat/issues/895)
+- Markings not showing up when call to get them returns after page is rendered [\#894](https://github.com/sandialabs/slycat/issues/894)
+- Save Visible option broken when downloading data table in PS [\#890](https://github.com/sandialabs/slycat/issues/890)
+- Parameter Space dropdown lists for filter, x, y, point color lack sliders [\#889](https://github.com/sandialabs/slycat/issues/889)
+- Parameter Space Variable Dialog Lacks Scrollbar, Can't Click Continue at Bottom \(Firefox on Windows 10\) [\#888](https://github.com/sandialabs/slycat/issues/888)
+- Clicking a table row fails to select corresponding point [\#884](https://github.com/sandialabs/slycat/issues/884)
+- Projects, models, bookmarks, and templates can be created with blank names and edited to have blank names [\#882](https://github.com/sandialabs/slycat/issues/882)
+- Selection Action Doesn't Pin or Hide Points \(firefox on Windows\) for Test Server [\#875](https://github.com/sandialabs/slycat/issues/875)
+- Moving a media preview does not "pin" it [\#874](https://github.com/sandialabs/slycat/issues/874)
+- Hover not pulling media files from cluster \(Firefox & Chrome on Windows\) [\#872](https://github.com/sandialabs/slycat/issues/872)
+- Parameter Space Edit Choice - Select Columns - Hangs [\#870](https://github.com/sandialabs/slycat/issues/870)
+- Edit Axes Scales has unneccessary scrollbar [\#869](https://github.com/sandialabs/slycat/issues/869)
+- JavaScript layout errors on Parameter Image Model load [\#867](https://github.com/sandialabs/slycat/issues/867)
+- Overlapping file list and buttons in Time Series Wizard [\#866](https://github.com/sandialabs/slycat/issues/866)
+- Saved Bookmarks Cannot Be Edited [\#864](https://github.com/sandialabs/slycat/issues/864)
+- Table Wraps Headers \(Windows and Firefox, but not Chrome\) [\#862](https://github.com/sandialabs/slycat/issues/862)
+- Back Button for Data-centric source in Parameter Space Model Wizard is Incorrect [\#859](https://github.com/sandialabs/slycat/issues/859)
+- Text annotation not working [\#858](https://github.com/sandialabs/slycat/issues/858)
+- Filter list empty in Data-centric source Parameter Space model [\#857](https://github.com/sandialabs/slycat/issues/857)
+- Filter removal not recognized [\#856](https://github.com/sandialabs/slycat/issues/856)
+- Color-coding by clicking on Table Column Header Broken [\#855](https://github.com/sandialabs/slycat/issues/855)
+- Buttons Missing in Parameter Space Tool Bar [\#854](https://github.com/sandialabs/slycat/issues/854)
+- Table Column Sort Loses Sorted Column and Columns to Right of It  [\#853](https://github.com/sandialabs/slycat/issues/853)
+- Hover over project name no longer shows team members/description [\#852](https://github.com/sandialabs/slycat/issues/852)
+- Timeseries Ingestion Fails for Space Delimited Inputs [\#850](https://github.com/sandialabs/slycat/issues/850)
+- Adjusting column widths in tables stopped working [\#849](https://github.com/sandialabs/slycat/issues/849)
+- Hide/Show Selection Or Adding Filter Erases X Axis Label [\#848](https://github.com/sandialabs/slycat/issues/848)
+- Log scale axes are not log values [\#846](https://github.com/sandialabs/slycat/issues/846)
+- Arial font choice for Firefox on OS X is not Arial [\#845](https://github.com/sandialabs/slycat/issues/845)
+- X Axis Label Lost with Log Selection [\#844](https://github.com/sandialabs/slycat/issues/844)
+- Two copies of color theme button in Firefox on windows 10 [\#834](https://github.com/sandialabs/slycat/issues/834)
+- Markings not displaying on React branch [\#826](https://github.com/sandialabs/slycat/issues/826)
+- Chrome produces vertical scrollbar in Video Swarm [\#820](https://github.com/sandialabs/slycat/issues/820)
+
+**Closed issues:**
+
+- Pdfs not pinned by maximize  [\#883](https://github.com/sandialabs/slycat/issues/883)
+- jQuery Migrate plugin no longer needed [\#868](https://github.com/sandialabs/slycat/issues/868)
+- Superscript on R^2 needs to be moved in. [\#863](https://github.com/sandialabs/slycat/issues/863)
+- Upgrade jquery-ui to version 1.12.0 or newer [\#843](https://github.com/sandialabs/slycat/issues/843)
+- Upgrade jQuery to version 3.0.0 or newer [\#842](https://github.com/sandialabs/slycat/issues/842)
+- Upgrade Bootstrap to version 4.1.2 or later [\#841](https://github.com/sandialabs/slycat/issues/841)
+- Cinema rgb image source in Parameter Space [\#833](https://github.com/sandialabs/slycat/issues/833)
+- Cinema rgb image source into VideoSwarm [\#832](https://github.com/sandialabs/slycat/issues/832)
+
+**Merged pull requests:**
+
+- Fixing documentation link [\#897](https://github.com/sandialabs/slycat/pull/897) ([Mletter1](https://github.com/Mletter1))
+- Update table [\#892](https://github.com/sandialabs/slycat/pull/892) ([Mletter1](https://github.com/Mletter1))
+
+## [v2.0.0](https://github.com/sandialabs/slycat/tree/v2.0.0) (2018-12-04)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.5.3...v2.0.0)
+
+**Implemented enhancements:**
+
+- Rearchitect plugins to work under webpack [\#829](https://github.com/sandialabs/slycat/issues/829)
+
+**Fixed bugs:**
+
+- Ability to set value for editable column is broken [\#837](https://github.com/sandialabs/slycat/issues/837)
+- Timeseries job checker not rendering under Webpack [\#836](https://github.com/sandialabs/slycat/issues/836)
+- Selection Action 'Set' Does Nothing Firefox on Windows 10 [\#835](https://github.com/sandialabs/slycat/issues/835)
+- Login API not working under webpack [\#828](https://github.com/sandialabs/slycat/issues/828)
+- "Pages" API not working on react branch [\#827](https://github.com/sandialabs/slycat/issues/827)
+
+**Closed issues:**
+
+- Implement webpack [\#819](https://github.com/sandialabs/slycat/issues/819)
+- Move JS libraries to global load if used in more than one plugin [\#806](https://github.com/sandialabs/slycat/issues/806)
+
+**Merged pull requests:**
+
+- React [\#839](https://github.com/sandialabs/slycat/pull/839) ([Mletter1](https://github.com/Mletter1))
+
+## [v1.5.3](https://github.com/sandialabs/slycat/tree/v1.5.3) (2018-08-09)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/1.5.2...v1.5.3)
+
+**Implemented enhancements:**
+
+- Write a job launching api [\#786](https://github.com/sandialabs/slycat/issues/786)
+- Add PDF support to the parameter space model [\#150](https://github.com/sandialabs/slycat/issues/150)
+
+**Closed issues:**
+
+- Colors dropdown regression in new react component [\#824](https://github.com/sandialabs/slycat/issues/824)
+- Add external demo website based on public docker image [\#718](https://github.com/sandialabs/slycat/issues/718)
+- Remap Wizard is broken [\#706](https://github.com/sandialabs/slycat/issues/706)
+
+## [1.5.2](https://github.com/sandialabs/slycat/tree/1.5.2) (2018-05-01)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.5.0...1.5.2)
+
+**Implemented enhancements:**
+
+- Add capability to recover data to Time Series Wizard [\#675](https://github.com/sandialabs/slycat/issues/675)
+
+**Fixed bugs:**
+
+- Remove media from waveform color list [\#637](https://github.com/sandialabs/slycat/issues/637)
+
+**Closed issues:**
+
+- Allow embedding web links in PS pins [\#812](https://github.com/sandialabs/slycat/issues/812)
+- add boomarks to database dumps and loads [\#811](https://github.com/sandialabs/slycat/issues/811)
+- Self signed certificate uses outdated signing algorithm [\#810](https://github.com/sandialabs/slycat/issues/810)
+- Create new open source docker image that integrates dial-a-cluster and new docker release upgrades [\#808](https://github.com/sandialabs/slycat/issues/808)
+- Changing timeseries sort order back to dendrogram order prevents model from reloading [\#805](https://github.com/sandialabs/slycat/issues/805)
+- Hyperchunks not working [\#797](https://github.com/sandialabs/slycat/issues/797)
+- add dial-a-cluster to docker myslycat.com [\#765](https://github.com/sandialabs/slycat/issues/765)
+- Add label for output variable to dendrogram [\#728](https://github.com/sandialabs/slycat/issues/728)
+- Rainbow color map has 2 green regions [\#695](https://github.com/sandialabs/slycat/issues/695)
 
 ## [v1.5.0](https://github.com/sandialabs/slycat/tree/v1.5.0) (2018-02-07)
-[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.4.0...v1.5.0)
 
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v1.4.0...v1.5.0)
 
 **Implemented enhancements:**
 
@@ -104,7 +377,6 @@
 - timeseries databases are passed to too many functions [\#769](https://github.com/sandialabs/slycat/issues/769)
 - directory.type is no the correct name for the engine [\#768](https://github.com/sandialabs/slycat/issues/768)
 - Terminate the loop on the agent for timeseries. [\#762](https://github.com/sandialabs/slycat/issues/762)
-- Update travis build to use docker image and or script [\#753](https://github.com/sandialabs/slycat/issues/753)
 - fix read the docs build failure [\#752](https://github.com/sandialabs/slycat/issues/752)
 -  After completing the time series wizard the model does not update when it is done computing [\#748](https://github.com/sandialabs/slycat/issues/748)
 - After completing the param space wizard the model does not update when it is done computing  [\#747](https://github.com/sandialabs/slycat/issues/747)
@@ -119,7 +391,6 @@
 - In timeseries, downloading table does not take into consideration selected node when no rows are highlighted [\#707](https://github.com/sandialabs/slycat/issues/707)
 - Wizard Continue button does nothing when file not selected in local browser [\#705](https://github.com/sandialabs/slycat/issues/705)
 - Chrome websocket connection fails in Single sign-on \(Mac & Windows\) [\#704](https://github.com/sandialabs/slycat/issues/704)
-- Select HDF5 Directory - Need feedback when to stop [\#701](https://github.com/sandialabs/slycat/issues/701)
 - Images revert to original size when moved \(windows/firefox\) [\#698](https://github.com/sandialabs/slycat/issues/698)
 - Parameter image wizard hangs [\#697](https://github.com/sandialabs/slycat/issues/697)
 - Video Synch Button Error [\#694](https://github.com/sandialabs/slycat/issues/694)
@@ -130,9 +401,7 @@
 - No need to select table when dealing with hdf5 data [\#680](https://github.com/sandialabs/slycat/issues/680)
 - "Delete HDF5 Input Files" confirmation dialog pops up when switching type of data [\#679](https://github.com/sandialabs/slycat/issues/679)
 - Rename field in Timeseries Wizard from 'Timeseries Name' [\#672](https://github.com/sandialabs/slycat/issues/672)
-- Provide better feedback in remote browser [\#669](https://github.com/sandialabs/slycat/issues/669)
 - Fix problem with navigating out of directories that contains dot in name [\#668](https://github.com/sandialabs/slycat/issues/668)
-- Improve time series wizard UI [\#666](https://github.com/sandialabs/slycat/issues/666)
 - Timeseries Push Scripts - First Model View Has Error Message [\#665](https://github.com/sandialabs/slycat/issues/665)
 - Timeseries Model Wizard Time Estimate Entry Allows Negative Time [\#664](https://github.com/sandialabs/slycat/issues/664)
 - Time series model media path missing last character [\#638](https://github.com/sandialabs/slycat/issues/638)
@@ -143,7 +412,6 @@
 - Long list of variables cuts off bottom choices in Waveform Color drop down [\#619](https://github.com/sandialabs/slycat/issues/619)
 - Parameter Image ingestion fails \(Firefox & Chrome on Windows 7 and OSX\) [\#614](https://github.com/sandialabs/slycat/issues/614)
 - Wrap arguments with quotes for agent functions [\#599](https://github.com/sandialabs/slycat/issues/599)
-- Model Name Component [\#593](https://github.com/sandialabs/slycat/issues/593)
 - Halting retrieval of model list \(Chrome on Windows and OS X\) [\#583](https://github.com/sandialabs/slycat/issues/583)
 - Models drawn twice \(Chrome and Firefox on Windows\) [\#582](https://github.com/sandialabs/slycat/issues/582)
 - Timeseries color coding broken with string columns [\#522](https://github.com/sandialabs/slycat/issues/522)
@@ -180,12 +448,9 @@
 **Merged pull requests:**
 
 - Merge branch 'master' into data-centric-models [\#737](https://github.com/sandialabs/slycat/pull/737) ([Mletter1](https://github.com/Mletter1))
-- Wsgi merge to master [\#711](https://github.com/sandialabs/slycat/pull/711) ([Mletter1](https://github.com/Mletter1))
-- Bookmarking and restoring last paused and seeked place in pinned movies. Closes \#685 [\#686](https://github.com/sandialabs/slycat/pull/686) ([Mletter1](https://github.com/Mletter1))
-- SID to user migration branch [\#661](https://github.com/sandialabs/slycat/pull/661) ([Mletter1](https://github.com/Mletter1))
-- Server cache [\#617](https://github.com/sandialabs/slycat/pull/617) ([Mletter1](https://github.com/Mletter1))
 
 ## [v1.4.0](https://github.com/sandialabs/slycat/tree/v1.4.0) (2016-04-07)
+
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.3.0...v1.4.0)
 
 **Implemented enhancements:**
@@ -228,6 +493,7 @@
 - Adjust test cases for Travis CI [\#586](https://github.com/sandialabs/slycat/issues/586)
 
 ## [v1.3.0](https://github.com/sandialabs/slycat/tree/v1.3.0) (2016-02-03)
+
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.2.0...v1.3.0)
 
 **Implemented enhancements:**
@@ -261,7 +527,6 @@
 - undefined value in param image rest call [\#556](https://github.com/sandialabs/slycat/issues/556)
 - Table Column Sort Slow [\#545](https://github.com/sandialabs/slycat/issues/545)
 - SLURM popup form Firefox issue [\#544](https://github.com/sandialabs/slycat/issues/544)
-- Need logout mechanism [\#542](https://github.com/sandialabs/slycat/issues/542)
 - Behave /features/steps/rest-api.py tests are opening a connection incorrectly [\#541](https://github.com/sandialabs/slycat/issues/541)
 - Make slycat-agent-create-image-distance-matrix.py globally available on remote systems [\#539](https://github.com/sandialabs/slycat/issues/539)
 - Issue with Slycat Agent distance matrix script [\#538](https://github.com/sandialabs/slycat/issues/538)
@@ -276,11 +541,8 @@
 - Gracefully handle corrupted bookmarks [\#572](https://github.com/sandialabs/slycat/issues/572)
 - Expand the remote distance matrix computation to compute for all image columns [\#523](https://github.com/sandialabs/slycat/issues/523)
 
-**Merged pull requests:**
-
-- Custom auth branch [\#557](https://github.com/sandialabs/slycat/pull/557) ([Mletter1](https://github.com/Mletter1))
-
 ## [v1.2.0](https://github.com/sandialabs/slycat/tree/v1.2.0) (2015-12-08)
+
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.1.0...v1.2.0)
 
 **Implemented enhancements:**
@@ -435,7 +697,6 @@
 - CCA error handling for too few rows [\#503](https://github.com/sandialabs/slycat/issues/503)
 - Categorical filter buttons gone \(Firefox and Chrome on Windows and OS X\) [\#496](https://github.com/sandialabs/slycat/issues/496)
 - Bring CentOS to the point that all the behave tests can be run in the container [\#492](https://github.com/sandialabs/slycat/issues/492)
-- Travis ci Failing codec\\_name check [\#490](https://github.com/sandialabs/slycat/issues/490)
 - Pin icon missing on hover image [\#482](https://github.com/sandialabs/slycat/issues/482)
 - Parameter Space Ingestion Dialog always labeled "Remote" [\#480](https://github.com/sandialabs/slycat/issues/480)
 - Delete associated bookmarks when deleting model [\#478](https://github.com/sandialabs/slycat/issues/478)
@@ -523,7 +784,6 @@
 - Remote session not reporting access denied to end users [\#260](https://github.com/sandialabs/slycat/issues/260)
 - No images during hover \(Firefox on both Windows and Mac OSX\) [\#259](https://github.com/sandialabs/slycat/issues/259)
 - Mouse cursor icon disappears in graph interior \(Firefox and Chrome\) [\#258](https://github.com/sandialabs/slycat/issues/258)
-- Remote browsing interface difficult to use [\#256](https://github.com/sandialabs/slycat/issues/256)
 - Draggable select box erroneously persists when making selection in different plot [\#255](https://github.com/sandialabs/slycat/issues/255)
 - PIM scatterplot legend position is wrong when auto-scale is off [\#254](https://github.com/sandialabs/slycat/issues/254)
 - Hover on column labels does not work [\#253](https://github.com/sandialabs/slycat/issues/253)
@@ -655,6 +915,7 @@
 - added base code for the eos model plugin \#486 [\#491](https://github.com/sandialabs/slycat/pull/491) ([Mletter1](https://github.com/Mletter1))
 
 ## [v1.1.0](https://github.com/sandialabs/slycat/tree/v1.1.0) (2014-05-21)
+
 [Full Changelog](https://github.com/sandialabs/slycat/compare/v1.0...v1.1.0)
 
 **Implemented enhancements:**
@@ -774,5 +1035,8 @@
 
 ## [v1.0](https://github.com/sandialabs/slycat/tree/v1.0) (2013-07-12)
 
+[Full Changelog](https://github.com/sandialabs/slycat/compare/7a07f6e56f0a0706de1866a662fd6878318a25b1...v1.0)
 
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
