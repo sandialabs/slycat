@@ -8,7 +8,7 @@ const ControlsButton = (props) => {
   })
   return props.hidden ? null : (
     <button
-      className={`${props.button_style} ${props.class}`}
+      className={`btn ${props.button_type || 'btn-sm'} ${props.button_style}`}
       id={props.id}
       type="button"
       title={props.title}

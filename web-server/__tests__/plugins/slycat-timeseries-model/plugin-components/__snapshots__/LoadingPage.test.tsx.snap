@@ -37,6 +37,11 @@ exports[`Timeseries LoadingPage we have expected props on initial load 2`] = `
     <div
       className="row justify-content-center"
     >
+      <ConnectModal
+        callBack={[Function]}
+        hostname="hostname"
+        modalId="ConnectModal"
+      />
       <div
         className="btn-group col-8"
         role="group"

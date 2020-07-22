@@ -6,7 +6,7 @@ import { LoadButtonProps } from "./types.ts";
  */
 const LoadButton: React.FC<LoadButtonProps> = (props) => (
   <button
-    className={`btn btn btn-outline-primary`}
+    className={`btn btn-outline-primary`}
     id={"pullbtn"}
     type="button"
     title={"Send a command to try manually pulling the data from the HPC and loading it the server"}

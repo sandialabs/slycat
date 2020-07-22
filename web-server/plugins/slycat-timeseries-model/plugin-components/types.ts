@@ -60,9 +60,7 @@ export interface InfoBarProps {
 }
 
 export interface LoadingPageButtonsProps {
-  hostname: string
   modalId: string
-  connectModalCallBack: (sessionExists: boolean, loadingData: boolean) => void
   jobStatus: string
   cancelJob: () => void
   pullHPCData: () => void
