@@ -30,7 +30,8 @@ export function load(container, buffer, uri) {
   const renderWindow = vtkRenderWindow.newInstance();
   const renderer = vtkRenderer.newInstance({
     // Set the background to black
-    background: [0, 0, 0] 
+    background: [0.7, 0.7, 0.7],
+    // background: [0, 0, 0] 
   });
   renderWindow.addRenderer(renderer);
 
