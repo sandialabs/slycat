@@ -7,6 +7,7 @@ import ControlsDropdown from "./ControlsDropdown";
 import { faCubes } from "@fortawesome/free-solid-svg-icons";
 import ControlsDropdownColor from 'components/ControlsDropdownColor';
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
+import d3 from "d3";
 
 class ControlsThreeD extends React.Component {
   constructor(props) {
@@ -133,7 +134,11 @@ const mapStateToProps = (state) => {
     color_by_items: color_by_items,
     currentFrame: state.currentFrame,
     threeDColorBy: threeDColorBy,
-    threeDBackground: 'black', // Replace this with the 3D background color from state once it's implemented
+    threeDBackground: d3.rgb(
+      state.threeD_background_color[0],
+      state.threeD_background_color[1],
+      state.threeD_background_color[2],
+    ),
   };
 };
 

@@ -389,6 +389,7 @@ $(document).ready(function() {
             axesVariables: {},
             threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
             threeDColormap: vtkColorMaps.rgbPresetNames[0],
+            threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
             unselected_point_size: unselected_point_size,
             unselected_border_size: unselected_border_size,
             selected_point_size: selected_point_size,

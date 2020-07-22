@@ -28,10 +28,15 @@ export function load(container, buffer, uri) {
   // ----------------------------------------------------------------------------
 
   const renderWindow = vtkRenderWindow.newInstance();
+
+  const rgb = window.store.getState().threeD_background_color;
   const renderer = vtkRenderer.newInstance({
-    // Set the background to black
-    background: [0.7, 0.7, 0.7],
-    // background: [0, 0, 0] 
+    // Set the background color
+    background: [
+      rgb[0]/255, 
+      rgb[1]/255, 
+      rgb[2]/255,
+    ],
   });
   renderWindow.addRenderer(renderer);
 
