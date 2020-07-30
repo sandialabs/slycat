@@ -27,6 +27,7 @@ import sys
 
 # video processing
 import cv2
+import ipyparallel
 
 # computing distance matrices and coordinates
 import numpy
@@ -175,7 +176,6 @@ else:
         print(msg)
 
 # check to see if mandatory arguments are present
-
 if args.csv_file == None:
     log("[VS_LOG] Error: .csv file not specified.")
     sys.exit()
@@ -191,6 +191,13 @@ if args.frame_col == None:
 if args.output_dir == None:
     log("[VS-LOG] Error: output directory not specified.")
     sys.exit()
+
+# set up ipython processor pool
+try:
+    pool = ipyparallel.Client(profile='default')[:]
+except Exception as e:
+    print(str(e))
+    raise Exception("A running IPython parallel cluster is required to run this script.")
 
 # check limits on number dimensions
 num_dim = int(float(args.num_dim))
