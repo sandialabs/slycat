@@ -197,7 +197,7 @@ if args.output_dir == None:
 try:
     pool = ipyparallel.Client(profile='default')[:]
 except Exception as e:
-    print(str(e))
+    log(str(e))
     raise Exception("A running IPython parallel cluster is required to run this script.")
 
 # check limits on number dimensions
@@ -450,10 +450,9 @@ all_curr_coords = pool.map_sync(compute, frame_numbers, list_num_movies, list_al
 for frame_index in range(len(frame_numbers)):
     # rotate to previous coordinates
     if frame_numbers[frame_index] == num_frames-1:
-        old_coords = all_curr_coords[frame_index]
+        old_coords = all_curr_coords[frame_index]# curr_coords
 
     else:
-
         # do Kabsch algorithm
         A = all_curr_coords[frame_index].transpose().dot(old_coords)
         U, S, V = numpy.linalg.svd(A)
