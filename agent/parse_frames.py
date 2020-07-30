@@ -36,6 +36,7 @@ from sklearn.metrics.pairwise import euclidean_distances
 # estimating time to complete
 import time
 import logging
+import itertools
 
 
 # subroutines
@@ -325,84 +326,159 @@ ycoords = numpy.ones((num_frames, num_movies))
 # estimate time for entire run
 start_time = time.time()
 
-# truncated coordinates are ordered from last to first
-for i in range(num_frames-1, -1, -1):
+def compute(frame_number, input_num_movies, input_all_frame_files, input_frames, input_use_energy, input_num_dim, input_num_pixels):
+    import sys
+    import cv2
+    from sklearn.metrics.pairwise import euclidean_distances
+    import numpy
+    msg=''
+    # cmdscale translation from Matlab by Francis Song
+    # modified to be more robust in low dimensions/singular conditions
+    def cmdscale(D):
+        """                                                                                      
+        Classical multidimensional scaling (MDS)                                                 
 
+        Parameters                                                                               
+        ----------                                                                               
+        D : (n, n) array                                                                         
+            Symmetric distance matrix.                                                           
+
+        Returns                                                                                  
+        -------                                                                                  
+        Y : (n, p) array                                                                         
+            Configuration matrix. Each column represents a dimension. Only the                   
+            p dimensions corresponding to positive eigenvalues of B are returned.                
+            Note that each dimension is only determined up to an overall sign,                   
+            corresponding to a reflection.                                                       
+
+        e : (n,) array                                                                           
+            Eigenvalues of B.                                                                                                                                                       
+        """
+
+        # Number of points
+        n = len(D)
+
+        # Centering matrix
+        H = numpy.eye(n) - numpy.ones((n, n)) / n
+
+        # YY^T
+        B = -H.dot(D ** 2).dot(H) / 2
+
+        # Diagonalize
+        evals, evecs = numpy.linalg.eigh(B)
+
+        # Sort by eigenvalue in descending order
+        idx = numpy.argsort(evals)[::-1]
+        evals = evals[idx]
+        evecs = evecs[:, idx]
+
+        # Compute the coordinates using positive-eigenvalued components only
+        w, = numpy.where(evals >= 0)
+        L = numpy.diag(numpy.sqrt(evals[w]))
+        V = evecs[:, w]
+        Y = V.dot(L)
+
+        # if only one coordinate then add two columns of zeros
+        if len(w) == 1:
+            Y = numpy.append(numpy.reshape(Y, (Y.shape[0], 1)),
+                            numpy.zeros((Y.shape[0], 2)), axis=1)
+
+        # if only two coordinates then add one column of zeros
+        if len(w) == 2:
+            Y = numpy.append(Y, numpy.zeros((Y.shape[0], 1)), axis=1)
+
+        return Y, evals
     # read in one frame for all movies with openCV
-    for j in range(0, num_movies):
+    for j in range(0, input_num_movies):
 
         # get frame i
         try:
-            frame_i = cv2.imread(all_frame_files[j][i])
-        except:
-            log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
-            sys.exit()
+            frame_i = cv2.imread(input_all_frame_files[j][frame_number])
+        except Exception as e:
+            msg=str(e)
+            return msg
+            # log("[VS-LOG] Error: could not read frame " + str(input_all_frame_files[0][0]))
+            # sys.exit()
 
         # check for empty image file
         if frame_i is None:
-            log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
-            sys.exit()
+            msg = 'frame_i is None'
+            return msg
+            # log("[VS-LOG] Error: could not read frame " + str(input_all_frame_files[0][0]))
+            # sys.exit()
 
         # save frame pixels
-        frames[j, :] = frame_i.astype(float).reshape(num_pixels)
+        input_frames[j, :] = frame_i.astype(float).reshape(input_num_pixels)
 
     # now compute distance for frame i
-    dist_mat = euclidean_distances(frames) / 255.0
+    dist_mat = euclidean_distances(input_frames) / 255.0
 
     # now compute MDS for frame i
     mds_coords, evals = cmdscale(dist_mat)
 
     # re-compute num_dim on first pass if energy is specified
-    if (use_energy and (i == num_frames-1)):
+    if (input_use_energy and (i == num_frames-1)):
 
         # set num_dims according to percent
         energy_evals = numpy.cumsum(evals) / numpy.sum(evals)
         energy_dim = numpy.where(energy_evals >= energy/100)
         if len(energy_dim[0]) == 0:
-            num_dim = len(energy_evals)
+            input_num_dim = len(energy_evals)
 
         else:
-            num_dim = max(1,numpy.amin(energy_dim)) + 1
+            input_num_dim = max(1,numpy.amin(energy_dim)) + 1
 
     # truncate mds coords
-    if mds_coords.shape[1] >= num_dim:
-        curr_coords = mds_coords[:,0:num_dim]
+    if mds_coords.shape[1] >= input_num_dim:
+        curr_coords = mds_coords[:,0:input_num_dim]
 
     else:
         curr_coords = numpy.concatenate((mds_coords, \
-                      numpy.zeros((num_movies, num_dim - mds_coords.shape[1]))), axis=1)
+                      numpy.zeros((input_num_movies, input_num_dim - mds_coords.shape[1]))), axis=1)
+    return curr_coords
 
+# truncated coordinates are ordered from last to first
+frame_numbers = [frame_number for frame_number in range(num_frames-1, -1, -1)]
+list_num_movies = list(itertools.repeat(num_movies, len(frame_numbers)))
+list_all_frame_files = list(itertools.repeat(all_frame_files, len(frame_numbers)))
+list_frames = list(itertools.repeat(frames, len(frame_numbers)))
+list_use_energy = list(itertools.repeat(use_energy, len(frame_numbers)))
+list_num_dim = list(itertools.repeat(num_dim, len(frame_numbers)))
+list_num_pixels = list(itertools.repeat(num_pixels, len(frame_numbers)))
+all_curr_coords = pool.map_sync(compute, frame_numbers, list_num_movies, list_all_frame_files, list_frames, list_use_energy, list_num_dim, list_num_pixels)
+
+for frame_index in range(len(frame_numbers)):
     # rotate to previous coordinates
-    if i == num_frames-1:
-        old_coords = curr_coords
+    if frame_numbers[frame_index] == num_frames-1:
+        old_coords = all_curr_coords[frame_index]
 
     else:
 
         # do Kabsch algorithm
-        A = curr_coords.transpose().dot(old_coords)
+        A = all_curr_coords[frame_index].transpose().dot(old_coords)
         U, S, V = numpy.linalg.svd(A)
         rot_mat = (V.transpose()).dot(U.transpose())
 
         # rotate to get new coordinates
-        curr_coords = curr_coords.dot(rot_mat.transpose())
+        all_curr_coords[frame_index] = all_curr_coords[frame_index].dot(rot_mat.transpose())
 
         # update old coords
-        old_coords = curr_coords
+        old_coords = all_curr_coords[frame_index]
 
     # update x,y coords
-    xcoords[i, :] = curr_coords[:, 0]
-    ycoords[i, :] = curr_coords[:, 1]
+    xcoords[frame_numbers[frame_index], :] = all_curr_coords[frame_index][:, 0]
+    ycoords[frame_numbers[frame_index], :] = all_curr_coords[frame_index][:, 1]
 
     # time elapsed for one frame
     end_time = time.time()
 
     # estimated time remaining
     time_elapsed = end_time - start_time
-    est_total_time = num_frames / ((num_frames-1-i) + 1.0) * time_elapsed
+    est_total_time = num_frames / ((num_frames-1-frame_numbers[frame_index]) + 1.0) * time_elapsed
     time_remaining_seconds = est_total_time - time_elapsed
     time_remaining_hours = int(numpy.floor(time_remaining_seconds / 3600.0))
     time_remaining_minutes = int(numpy.round(time_remaining_seconds / 60.0) - time_remaining_hours * 60.0)
-    log("[VS-LOG] Computing frame " + str(i) + " -- estimated time remaining: " + str(time_remaining_hours) + " hour(s), " +
+    log("[VS-LOG] Computing frame " + str(frame_numbers[frame_index]) + " -- estimated time remaining: " + str(time_remaining_hours) + " hour(s), " +
         str(time_remaining_minutes) + " minute(s).")
 
     # estimated percentage complete
@@ -416,6 +492,7 @@ for i in range(num_frames-1, -1, -1):
 
     # record into log for polling code
     log("[VS-PROGRESS] " + str(progress))
+    i = i + 1
 
 # scale coords for VideoSwarm interface
 #######################################
