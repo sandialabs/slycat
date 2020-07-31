@@ -38,67 +38,6 @@ import time
 import logging
 import itertools
 
-
-# subroutines
-#############
-
-# cmdscale translation from Matlab by Francis Song
-# modified to be more robust in low dimensions/singular conditions
-def cmdscale(D):
-    """                                                                                      
-    Classical multidimensional scaling (MDS)                                                 
-
-    Parameters                                                                               
-    ----------                                                                               
-    D : (n, n) array                                                                         
-        Symmetric distance matrix.                                                           
-
-    Returns                                                                                  
-    -------                                                                                  
-    Y : (n, p) array                                                                         
-        Configuration matrix. Each column represents a dimension. Only the                   
-        p dimensions corresponding to positive eigenvalues of B are returned.                
-        Note that each dimension is only determined up to an overall sign,                   
-        corresponding to a reflection.                                                       
-
-    e : (n,) array                                                                           
-        Eigenvalues of B.                                                                                                                                                       
-    """
-
-    # Number of points
-    n = len(D)
-
-    # Centering matrix
-    H = numpy.eye(n) - numpy.ones((n, n)) / n
-
-    # YY^T
-    B = -H.dot(D ** 2).dot(H) / 2
-
-    # Diagonalize
-    evals, evecs = numpy.linalg.eigh(B)
-
-    # Sort by eigenvalue in descending order
-    idx = numpy.argsort(evals)[::-1]
-    evals = evals[idx]
-    evecs = evecs[:, idx]
-
-    # Compute the coordinates using positive-eigenvalued components only
-    w, = numpy.where(evals >= 0)
-    L = numpy.diag(numpy.sqrt(evals[w]))
-    V = evecs[:, w]
-    Y = V.dot(L)
-
-    # if only one coordinate then add two columns of zeros
-    if len(w) == 1:
-        Y = numpy.append(numpy.reshape(Y, (Y.shape[0], 1)),
-                         numpy.zeros((Y.shape[0], 2)), axis=1)
-
-    # if only two coordinates then add one column of zeros
-    if len(w) == 2:
-        Y = numpy.append(Y, numpy.zeros((Y.shape[0], 1)), axis=1)
-
-    return Y, evals
-
 # log file handler
 def create_job_logger(file_name):
     """
@@ -195,7 +134,8 @@ if args.output_dir == None:
 
 # set up ipython processor pool
 try:
-    pool = ipyparallel.Client(profile='default')[:]
+    pool = ipyparallel.Client(profile='default')
+    pool = pool.direct_view()
 except Exception as e:
     log(str(e))
     raise Exception("A running IPython parallel cluster is required to run this script.")
@@ -397,15 +337,11 @@ def compute(frame_number, input_num_movies, input_all_frame_files, input_frames,
         except Exception as e:
             msg=str(e)
             return msg
-            # log("[VS-LOG] Error: could not read frame " + str(input_all_frame_files[0][0]))
-            # sys.exit()
 
         # check for empty image file
         if frame_i is None:
             msg = 'frame_i is None'
             return msg
-            # log("[VS-LOG] Error: could not read frame " + str(input_all_frame_files[0][0]))
-            # sys.exit()
 
         # save frame pixels
         input_frames[j, :] = frame_i.astype(float).reshape(input_num_pixels)
@@ -445,8 +381,15 @@ list_frames = list(itertools.repeat(frames, len(frame_numbers)))
 list_use_energy = list(itertools.repeat(use_energy, len(frame_numbers)))
 list_num_dim = list(itertools.repeat(num_dim, len(frame_numbers)))
 list_num_pixels = list(itertools.repeat(num_pixels, len(frame_numbers)))
+log("[VS-PROGRESS] " + str(25.0))
+log("[VS-LOG] Sending compute jobs to nodes, this may take a while depending on job size...")
 all_curr_coords = pool.map_sync(compute, frame_numbers, list_num_movies, list_all_frame_files, list_frames, list_use_energy, list_num_dim, list_num_pixels)
+log("[VS-PROGRESS] " + str(100.0))
+# keeping a linear calculation example here
+# all_curr_coords = [compute(frame_number, num_movies, all_frame_files, frames, use_energy, num_dim, num_pixels) for frame_number in frame_numbers]
 
+time_elapsed = time.time() - start_time
+print("[VS-LOG] total compute time %s"%time_elapsed)
 for frame_index in range(len(frame_numbers)):
     # rotate to previous coordinates
     if frame_numbers[frame_index] == num_frames-1:
@@ -467,31 +410,6 @@ for frame_index in range(len(frame_numbers)):
     # update x,y coords
     xcoords[frame_numbers[frame_index], :] = all_curr_coords[frame_index][:, 0]
     ycoords[frame_numbers[frame_index], :] = all_curr_coords[frame_index][:, 1]
-
-    # time elapsed for one frame
-    end_time = time.time()
-
-    # estimated time remaining
-    time_elapsed = end_time - start_time
-    est_total_time = num_frames / ((num_frames-1-frame_numbers[frame_index]) + 1.0) * time_elapsed
-    time_remaining_seconds = est_total_time - time_elapsed
-    time_remaining_hours = int(numpy.floor(time_remaining_seconds / 3600.0))
-    time_remaining_minutes = int(numpy.round(time_remaining_seconds / 60.0) - time_remaining_hours * 60.0)
-    log("[VS-LOG] Computing frame " + str(frame_numbers[frame_index]) + " -- estimated time remaining: " + str(time_remaining_hours) + " hour(s), " +
-        str(time_remaining_minutes) + " minute(s).")
-
-    # estimated percentage complete
-    progress = 100.0 - round(time_remaining_seconds / est_total_time * 100.0)
-
-    # make sure it's a number between 0 and 100
-    if progress > 100.0:
-        progress = 100.0
-    if progress < 0.0:
-        progress = 0.0
-
-    # record into log for polling code
-    log("[VS-PROGRESS] " + str(progress))
-    i = i + 1
 
 # scale coords for VideoSwarm interface
 #######################################
