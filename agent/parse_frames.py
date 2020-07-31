@@ -134,7 +134,7 @@ if args.output_dir == None:
 
 # set up ipython processor pool
 try:
-    pool = ipyparallel.Client(profile='default')
+    pool = ipyparallel.Client(profile=None)
     pool = pool.direct_view()
 except Exception as e:
     log(str(e))
