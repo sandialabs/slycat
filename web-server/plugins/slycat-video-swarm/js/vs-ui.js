@@ -148,7 +148,7 @@ $("#vs-reconnect-button").on("click", reconnect);
 
 // poll database for artifact "vs-loading-progress"
 function poll() {
-
+    
     client.get_model_parameter(
     {
         mid: model._id,
@@ -166,6 +166,8 @@ function poll() {
                 logFileName = result[1];
                 logHostName = result[2];
                 workDir = result[3];
+
+                // get_movie_links();
 
                 // call web server to read log file
                 client.get_model_command({
@@ -208,7 +210,7 @@ function poll() {
                             $("#vs_processing_textarea").scrollTop($("#vs_processing_textarea")[0].scrollHeight);
 
                             // done computing, go upload the model
-                            read_csv_file();
+                            get_movie_links();
 
                         }
                     },
@@ -284,6 +286,16 @@ function poll() {
 }
 // initialize poll
 poll();
+
+function get_movie_links()
+{
+  var link_column = 0;
+    client.get_model_command_fetch({mid:model._id, type:"VS", command: "extract-links", parameters: [workDir, logHostName]})
+    .then(() => { 
+      console.log("Movie links extracted."); 
+      read_csv_file();
+    });
+}
 
 // read in csv file
 function read_csv_file()
