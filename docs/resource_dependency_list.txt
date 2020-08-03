@@ -1,6 +1,6 @@
 Slycat software resource and dependency list
 
-Software dependencies for:  Slycat Release 3.0
+Software dependencies for:  Slycat Release 3.1
 
 -Python-
 Miniconda                     4.7.12    https://docs.conda.io/en/latest/miniconda.html

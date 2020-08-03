@@ -22,3 +22,4 @@ wizard’s popup window.
   DACInputFormats.rst
   NameModel.rst
   LoadData.rst
+  ModelParseLog.rst
