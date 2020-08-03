@@ -38,4 +38,4 @@ See Also
 --------
 
 - :http:get:`/api/projects/(pid)/cache/(key)`
-
+- :http:delete:`/api/projects/(pid)/delete-cache`

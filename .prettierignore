@@ -1,0 +1,12 @@
+agent
+artwork
+docker
+docs
+docs-old
+node_modules
+packages
+travis-ci
+web-client
+__snapshots__
+__mocks__
+*.min.js

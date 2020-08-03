@@ -14,7 +14,12 @@ any programming language or library that supports HTTP requests.
   DELETE-logout.rst
   DELETE-Model.rst
   DELETE-Project.rst
+  DELETE-Project-Cache.rst
   DELETE-Project-Cache-Object.rst
+  DELETE-Project-Data.rst
+  DELETE-Project-Data-In-Model.rst
+  DELETE-Model-In-Project-Data.rst
+  DELETE-reference.rst
   DELETE-Remote.rst
   DELETE-Upload.rst
   GET-Bookmark.rst

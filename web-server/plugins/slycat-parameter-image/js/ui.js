@@ -66,6 +66,7 @@ import {
   DEFAULT_FONT_SIZE,
   DEFAULT_FONT_FAMILY,
   } from './Components/ControlsButtonVarOptions';
+import d3 from 'd3';
 
 let table_metadata = null;
 
@@ -1520,9 +1521,14 @@ $(document).ready(function() {
 
     if(v_type != "string")
     {
+      let axes_variables = store.getState().axesVariables[v_index];
+      let v_axis_type = axes_variables != undefined ? axes_variables : 'Linear';
+      let get_color_scale_function = v_axis_type == 'Log' ? 'get_color_scale_log' : 'get_color_scale';
+      // console.log(`v_axis_type is ${v_axis_type}`);
+
       // console.log(`update_current_colorscale for not strings`);
       colorscale = $("#color-switcher").colorswitcher(
-        "get_color_scale", 
+        get_color_scale_function, 
         undefined, 
         custom_color_variable_range.min != undefined ? custom_color_variable_range.min : d3.min(filtered_v), 
         custom_color_variable_range.max != undefined ? custom_color_variable_range.max : d3.max(filtered_v),
