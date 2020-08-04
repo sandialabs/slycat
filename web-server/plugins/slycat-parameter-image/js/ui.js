@@ -53,7 +53,8 @@ import {
   setVIndex,
 } from './actions';
 
-import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
+
 import { setSyncCameras, } from './vtk-camera-synchronizer';
 
 import { 
@@ -388,7 +389,8 @@ $(document).ready(function() {
             fontFamily: DEFAULT_FONT_FAMILY,
             axesVariables: {},
             threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
-            threeDColormap: vtkColorMaps.rgbPresetNames[0],
+            // First colormap is default
+            threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
             threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
             unselected_point_size: unselected_point_size,
             unselected_border_size: unselected_border_size,

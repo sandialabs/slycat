@@ -21,6 +21,7 @@ import React from 'react';
 import ReactDOM from "react-dom";
 import { Provider, connect } from 'react-redux';
 import ScatterplotLegend from './Components/ScatterplotLegend'; 
+import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 
 var nodrag = d3.behavior.drag();
 
@@ -506,7 +507,7 @@ $.widget("parameter_image.scatterplot",
     const mapStateToProps = (state, ownProps) => {
       let threeDLegendLabel = "";
       let pointOrCell = false;
-      let three_d_colorvar = state.three_d_colorvars[state.currentFrame];
+      const three_d_colorvar = state.three_d_colorvars[state.currentFrame];
       // If we have a 3D color variable, create a label for the legend
       if(three_d_colorvar)
       {
@@ -516,13 +517,15 @@ $.widget("parameter_image.scatterplot",
         let component = split[2];
         threeDLegendLabel = `${variable}${component ? `: Component ${component}` : ''}`;
       }
+      const gradient_data = slycat_threeD_color_maps.get_gradient_data(state.threeDColormap);
       
       return {
         // only render if we have a color variable and it's a point or cell variable (not just solid color)
         render: three_d_colorvar && pointOrCell,
         fontSize: state.fontSize,
         fontFamily: state.fontFamily,
-        threeDLegendLabel: threeDLegendLabel,
+        label: threeDLegendLabel,
+        gradient_data: gradient_data,
       }
     }
 
@@ -1420,10 +1423,16 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_legend"])
     {
-      var gradient = self.legend_layer.append("defs").append("linearGradient");
-      gradient.attr("id", "color-gradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%")
+      var gradient = self.legend_layer
+        .append("defs")
+        .append("linearGradient")
+        ;
+      gradient
+        .attr("id", "color-gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%")
         ;
 
       var colorbar = self.legend_layer.append("rect")
