@@ -1069,3 +1069,8 @@ slycat-3d-viewer .header-bar {
 button#controls-button-var-options {
   margin-left: -1px;
 }
+
+.legend text.label {
+  text-anchor: middle; 
+  font-weight: bold; 
+}

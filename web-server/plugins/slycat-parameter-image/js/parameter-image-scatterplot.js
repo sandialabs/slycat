@@ -17,6 +17,10 @@ import { changeCurrentFrame } from './actions';
 import { get_variable_label } from './ui';
 import { isValueInColorscaleRange } from './color-switcher';
 import $ from 'jquery';
+import React from 'react';
+import ReactDOM from "react-dom";
+import { Provider, connect } from 'react-redux';
+import ScatterplotLegend from './Components/ScatterplotLegend'; 
 
 var nodrag = d3.behavior.drag();
 
@@ -175,6 +179,10 @@ $.widget("parameter_image.scatterplot",
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
+    self.threeD_legend_layer = self.svg.append("g")
+      .attr("class", "legend")
+      .attr("id", "threeD_legend")
+      ;
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.canvas_datum = d3.select(self.element.get(0)).append("canvas")
       .style({'position':'absolute'}).node()
@@ -494,6 +502,46 @@ $.widget("parameter_image.scatterplot",
         self._schedule_update({update_v_label:true});
       }
     }
+
+    const mapStateToProps = (state, ownProps) => {
+      let threeDLegendLabel = "";
+      let pointOrCell = false;
+      let three_d_colorvar = state.three_d_colorvars[state.currentFrame];
+      // If we have a 3D color variable, create a label for the legend
+      if(three_d_colorvar)
+      {
+        let split = three_d_colorvar.split(':');
+        pointOrCell = split[0];
+        let variable = split[1];
+        let component = split[2];
+        threeDLegendLabel = `${variable}${component ? `: Component ${component}` : ''}`;
+      }
+      
+      return {
+        // only render if we have a color variable and it's a point or cell variable (not just solid color)
+        render: three_d_colorvar && pointOrCell,
+        fontSize: state.fontSize,
+        fontFamily: state.fontFamily,
+        threeDLegendLabel: threeDLegendLabel,
+      }
+    }
+
+    let ConnectedScatterplotLegend = connect(
+      mapStateToProps,
+      {
+      },
+    )(ScatterplotLegend)
+
+    const scatterplot_legend_render = 
+      (<Provider store={window.store}>
+        <ConnectedScatterplotLegend />
+      </Provider>)
+    ;
+
+    ReactDOM.render(
+      scatterplot_legend_render,
+      document.getElementById('threeD_legend')
+    );
 
     const update_previous_state = () => {
       // console.log('LAST update_previous_state');
@@ -1413,8 +1461,8 @@ $.widget("parameter_image.scatterplot",
 
       if( self.legend_layer.attr("data-status") != "moved" )
       {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
+        const transx = parseInt(y_axis_layer_width - 75 + width_offset);
+        const transy = parseInt((total_height/2)-(rectHeight/2));
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
@@ -1425,6 +1473,17 @@ $.widget("parameter_image.scatterplot",
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
         ;
+      
+      if( self.threeD_legend_layer.attr("data-status") != "moved" )
+      {
+        const transx = parseInt(y_axis_layer_width + width_offset + 75);
+        const transy = parseInt((total_height/2)-(rectHeight/2));
+         self.threeD_legend_layer
+          .attr("transform", "translate(" + transx + "," + transy + ")")
+          .attr("data-transx", transx)
+          .attr("data-transy", transy)
+          ;
+      }
     }
 
     if(self.updates["update_legend_axis"])
@@ -1473,8 +1532,6 @@ $.widget("parameter_image.scatterplot",
         .attr("x", x)
         .attr("y", y)
         .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + 'px')
         .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label)
