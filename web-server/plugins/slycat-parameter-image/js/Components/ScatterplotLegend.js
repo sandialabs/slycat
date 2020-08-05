@@ -2,6 +2,7 @@ import React from "react";
 import { connect } from 'react-redux';
 import { v1 as uuidv1 } from 'uuid';
 import d3 from 'd3';
+import _ from 'lodash';
 
 export default class ScatterplotLegend extends React.PureComponent {
   constructor(props) {
@@ -20,8 +21,7 @@ export default class ScatterplotLegend extends React.PureComponent {
   createAxis = () => {
     if(this.props.render)
     {
-      // Domain is reversed to match up with color scale
-      let domain = this.props.domain.reverse();
+      let domain = _.sortBy(this.props.domain).reverse();
       let scale = d3.scale.linear()
         .domain(domain)
         .range([0, this.props.height])
