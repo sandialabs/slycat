@@ -519,7 +519,7 @@ $.widget("parameter_image.scatterplot",
         pointOrCell = split[0];
         let variable = split[1];
         let component = split[2];
-        threeDLegendLabel = `${variable}${component ? `: Component ${component}` : ''}`;
+        threeDLegendLabel = `${variable}${component ? ` [${parseInt(component, 10) + 1}]` : ''}`;
         try {
           domain = state.derived.three_d_colorby_range[state.currentFrame][three_d_colorvar];
         }
