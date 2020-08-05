@@ -9,6 +9,7 @@ import {
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
   UPDATE_THREE_D_COLORBY_OPTIONS,
+  SET_THREE_D_COLORBY_RANGE,
   UPDATE_THREE_D_CAMERAS,
   UPDATE_THREE_D_SYNC,
   SET_UNSELECTED_POINT_SIZE,
@@ -126,6 +127,20 @@ export default function ps_reducer(state = initialState, action) {
           three_d_colorby_options: {
             ...state.derived.three_d_colorby_options,
             [action.uri]: action.options
+          }
+        }
+      })
+    
+    case SET_THREE_D_COLORBY_RANGE:
+      // console.log('SET_THREE_D_COLORBY_RANGE');
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          three_d_colorby_range: {
+            ...state.derived.three_d_colorby_range,
+            [action.uri]: {
+              [action.colorBy]: action.range
+            }
           }
         }
       })

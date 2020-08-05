@@ -17,7 +17,10 @@ import {
 
 import { addCamera, } from './vtk-camera-synchronizer';
 
-import { updateThreeDColorByOptions } from './actions';
+import { 
+  updateThreeDColorByOptions,
+  setThreeDColorByRange,
+} from './actions';
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
@@ -186,6 +189,9 @@ export function load(container, buffer, uri) {
           lut.setVectorModeToMagnitude();
         }
       }
+      // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
+      // Dispatch update to color by range to redux store
+      window.store.dispatch(setThreeDColorByRange(uri, colorBy, dataRange));
     }
 
     mapper.set({

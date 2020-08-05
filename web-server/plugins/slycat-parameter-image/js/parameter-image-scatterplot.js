@@ -218,8 +218,8 @@ $.widget("parameter_image.scatterplot",
       update_v_label:true,
     });
 
-    self.legend_layer
-      .call(
+    let setup_legend_drag = (legend) => {
+      legend.call(
         d3.behavior.drag()
           .on('drag', function(){
             // Make sure mouse is inside svg element
@@ -243,8 +243,11 @@ $.widget("parameter_image.scatterplot",
             // self._sync_open_images();
             d3.select(this).attr("data-status", "moved");
           })
-      )
-      ;
+      );
+    }
+
+    setup_legend_drag(self.legend_layer);
+    setup_legend_drag(self.threeD_legend_layer);
 
     // self.element is div#scatterplot here
     self.element.mousedown(function(e)
@@ -507,6 +510,7 @@ $.widget("parameter_image.scatterplot",
     const mapStateToProps = (state, ownProps) => {
       let threeDLegendLabel = "";
       let pointOrCell = false;
+      let domain = null;
       const three_d_colorvar = state.three_d_colorvars[state.currentFrame];
       // If we have a 3D color variable, create a label for the legend
       if(three_d_colorvar)
@@ -516,16 +520,27 @@ $.widget("parameter_image.scatterplot",
         let variable = split[1];
         let component = split[2];
         threeDLegendLabel = `${variable}${component ? `: Component ${component}` : ''}`;
+        try {
+          domain = state.derived.three_d_colorby_range[state.currentFrame][three_d_colorvar];
+        }
+        catch (e) {
+          // No need to do anything. With no domain, the legend just won't render.
+          // console.log(`don't have enough state to get range`);
+        }
       }
       const gradient_data = slycat_threeD_color_maps.get_gradient_data(state.threeDColormap);
       
       return {
         // only render if we have a color variable and it's a point or cell variable (not just solid color)
-        render: three_d_colorvar && pointOrCell,
+        // and we have a range
+        render: three_d_colorvar && pointOrCell && domain,
         fontSize: state.fontSize,
         fontFamily: state.fontFamily,
         label: threeDLegendLabel,
         gradient_data: gradient_data,
+        domain: domain,
+        height: 400,
+        width: 10,
       }
     }
 
@@ -1500,7 +1515,6 @@ $.widget("parameter_image.scatterplot",
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
       self.set_custom_axes_ranges();
 
-      // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
       // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
       self.legend_scale = self._createScale(
         self.options.v_string, 
