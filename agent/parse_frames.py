@@ -445,7 +445,7 @@ log("[VS-PROGRESS] " + str(100.0))
 # all_curr_coords = [compute(frame_number, num_movies, all_frame_files, use_energy, num_dim, num_pixels) for frame_number in frame_numbers]
 
 time_elapsed = time.time() - start_time
-print("[VS-LOG] total compute time %s"%time_elapsed)
+log("[VS-LOG] total compute time %s"%time_elapsed)
 for frame_index in range(len(frame_numbers)):
     # rotate to previous coordinates
     if frame_numbers[frame_index] == num_frames-1:
