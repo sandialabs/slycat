@@ -399,12 +399,14 @@ log("[VS-LOG] Sending compute jobs to nodes, this may take a while depending on 
 start = 0
 step = 0
 all_curr_coords = []
+progress = 0
 # batching algorithm
 while step <= len(frame_numbers):
     step = step + BATCH_SIZE
     start = step - BATCH_SIZE
     stop = step
     temp_curr_coords = None
+    # run the batch for the last set of frames smaller than the batch size
     if step >= len(frame_numbers):
         remainder = len(frame_numbers)%BATCH_SIZE
         stop = remainder + start
@@ -415,6 +417,7 @@ while step <= len(frame_numbers):
                                          list_use_energy[0:remainder],
                                          list_num_dim[0:remainder],
                                          list_num_pixels[0:remainder])
+    # run the batch for the current batch size of frames
     else:
         temp_curr_coords = pool.map_sync(compute,
                                          frame_numbers[start:stop],
@@ -423,9 +426,20 @@ while step <= len(frame_numbers):
                                          list_use_energy,
                                          list_num_dim,
                                          list_num_pixels)
+        log("[VS-LOG] %s/%s frames computed"%(stop, len(frame_numbers)))
     if temp_curr_coords is not None:
         for coord in temp_curr_coords:
             all_curr_coords.append(coord)
+    # estimated percentage complete
+    progress = progress + round(BATCH_SIZE/len(frame_numbers) * 100.0)
+    # make sure it's a number between 0 and 100
+    if progress > 100.0:
+        progress = 100.0
+    if progress < 0.0:
+        progress = 0.0
+
+    # record into log for polling code
+    log("[VS-PROGRESS] " + str(progress))
 log("[VS-PROGRESS] " + str(100.0))
 # keeping a linear calculation example here
 # all_curr_coords = [compute(frame_number, num_movies, all_frame_files, use_energy, num_dim, num_pixels) for frame_number in frame_numbers]
