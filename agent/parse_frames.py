@@ -266,11 +266,13 @@ ycoords = numpy.ones((num_frames, num_movies))
 # estimate time for entire run
 start_time = time.time()
 
-def compute(frame_number, input_num_movies, input_all_frame_files, input_frames, input_use_energy, input_num_dim, input_num_pixels):
+def compute(frame_number, input_num_movies, input_frame_files, input_use_energy, input_num_dim, input_num_pixels):
     import sys
     import cv2
     from sklearn.metrics.pairwise import euclidean_distances
     import numpy
+    import traceback
+    input_frames = numpy.ones((input_num_movies, input_num_pixels))
     msg=''
     # cmdscale translation from Matlab by Francis Song
     # modified to be more robust in low dimensions/singular conditions
@@ -328,65 +330,105 @@ def compute(frame_number, input_num_movies, input_all_frame_files, input_frames,
             Y = numpy.append(Y, numpy.zeros((Y.shape[0], 1)), axis=1)
 
         return Y, evals
-    # read in one frame for all movies with openCV
-    for j in range(0, input_num_movies):
+    try:
+        # read in one frame for all movies with openCV
+        for j in range(0, input_num_movies):
 
-        # get frame i
-        try:
-            frame_i = cv2.imread(input_all_frame_files[j][frame_number])
-        except Exception as e:
-            msg=str(e)
-            return msg
+            # get frame i
+            try:
+                frame_i = cv2.imread(input_frame_files[j])
+            except Exception as e:
+                msg=str(e)
+                return msg
 
-        # check for empty image file
-        if frame_i is None:
-            msg = 'frame_i is None'
-            return msg
+            # check for empty image file
+            if frame_i is None:
+                msg = 'frame_i is None'
+                return msg
 
-        # save frame pixels
-        input_frames[j, :] = frame_i.astype(float).reshape(input_num_pixels)
+            # save frame pixels
+            input_frames[j, :] = frame_i.astype(float).reshape(input_num_pixels)
 
-    # now compute distance for frame i
-    dist_mat = euclidean_distances(input_frames) / 255.0
+        # now compute distance for frame i
+        dist_mat = euclidean_distances(input_frames) / 255.0
 
-    # now compute MDS for frame i
-    mds_coords, evals = cmdscale(dist_mat)
+        # now compute MDS for frame i
+        mds_coords, evals = cmdscale(dist_mat)
 
-    # re-compute num_dim on first pass if energy is specified
-    if (input_use_energy and (i == num_frames-1)):
+        # re-compute num_dim on first pass if energy is specified
+        if (input_use_energy and (i == num_frames-1)):
 
-        # set num_dims according to percent
-        energy_evals = numpy.cumsum(evals) / numpy.sum(evals)
-        energy_dim = numpy.where(energy_evals >= energy/100)
-        if len(energy_dim[0]) == 0:
-            input_num_dim = len(energy_evals)
+            # set num_dims according to percent
+            energy_evals = numpy.cumsum(evals) / numpy.sum(evals)
+            energy_dim = numpy.where(energy_evals >= energy/100)
+            if len(energy_dim[0]) == 0:
+                input_num_dim = len(energy_evals)
+
+            else:
+                input_num_dim = max(1,numpy.amin(energy_dim)) + 1
+
+        # truncate mds coords
+        if mds_coords.shape[1] >= input_num_dim:
+            curr_coords = mds_coords[:,0:input_num_dim]
 
         else:
-            input_num_dim = max(1,numpy.amin(energy_dim)) + 1
+            curr_coords = numpy.concatenate((mds_coords, \
+                          numpy.zeros((input_num_movies, input_num_dim - mds_coords.shape[1]))), axis=1)
+        return curr_coords
+    except Exception as e:
+        msg = str(e)
+        return traceback.format_exc()
 
-    # truncate mds coords
-    if mds_coords.shape[1] >= input_num_dim:
-        curr_coords = mds_coords[:,0:input_num_dim]
-
-    else:
-        curr_coords = numpy.concatenate((mds_coords, \
-                      numpy.zeros((input_num_movies, input_num_dim - mds_coords.shape[1]))), axis=1)
-    return curr_coords
-
+BATCH_SIZE=50
 # truncated coordinates are ordered from last to first
 frame_numbers = [frame_number for frame_number in range(num_frames-1, -1, -1)]
-list_num_movies = list(itertools.repeat(num_movies, len(frame_numbers)))
-list_all_frame_files = list(itertools.repeat(all_frame_files, len(frame_numbers)))
-list_frames = list(itertools.repeat(frames, len(frame_numbers)))
-list_use_energy = list(itertools.repeat(use_energy, len(frame_numbers)))
-list_num_dim = list(itertools.repeat(num_dim, len(frame_numbers)))
-list_num_pixels = list(itertools.repeat(num_pixels, len(frame_numbers)))
+list_num_movies = list(itertools.repeat(num_movies, BATCH_SIZE))
+#organize the frame file for parallel
+list_frame_files = []
+for frame_number in frame_numbers:
+    accumulator = []
+    for j in range(0, num_movies):
+        accumulator.append(all_frame_files[j][frame_number])
+    list_frame_files.append(accumulator)
+list_frames = list(itertools.repeat(frames, BATCH_SIZE))
+list_use_energy = list(itertools.repeat(use_energy, BATCH_SIZE))
+list_num_dim = list(itertools.repeat(num_dim, BATCH_SIZE))
+list_num_pixels = list(itertools.repeat(num_pixels, BATCH_SIZE))
 log("[VS-PROGRESS] " + str(25.0))
 log("[VS-LOG] Sending compute jobs to nodes, this may take a while depending on job size...")
-all_curr_coords = pool.map_sync(compute, frame_numbers, list_num_movies, list_all_frame_files, list_frames, list_use_energy, list_num_dim, list_num_pixels)
+start = 0
+step = 0
+all_curr_coords = []
+# batching algorithm
+while step <= len(frame_numbers):
+    step = step + BATCH_SIZE
+    start = step - BATCH_SIZE
+    stop = step
+    temp_curr_coords = None
+    if step >= len(frame_numbers):
+        remainder = len(frame_numbers)%BATCH_SIZE
+        stop = remainder + start
+        temp_curr_coords = pool.map_sync(compute,
+                                         frame_numbers[start:stop],
+                                         list_num_movies[0:remainder],
+                                         list_frame_files[start:stop],
+                                         list_use_energy[0:remainder],
+                                         list_num_dim[0:remainder],
+                                         list_num_pixels[0:remainder])
+    else:
+        temp_curr_coords = pool.map_sync(compute,
+                                         frame_numbers[start:stop],
+                                         list_num_movies,
+                                         list_frame_files[start:stop],
+                                         list_use_energy,
+                                         list_num_dim,
+                                         list_num_pixels)
+    if temp_curr_coords is not None:
+        for coord in temp_curr_coords:
+            all_curr_coords.append(coord)
 log("[VS-PROGRESS] " + str(100.0))
 # keeping a linear calculation example here
-# all_curr_coords = [compute(frame_number, num_movies, all_frame_files, frames, use_energy, num_dim, num_pixels) for frame_number in frame_numbers]
+# all_curr_coords = [compute(frame_number, num_movies, all_frame_files, use_energy, num_dim, num_pixels) for frame_number in frame_numbers]
 
 time_elapsed = time.time() - start_time
 print("[VS-LOG] total compute time %s"%time_elapsed)
