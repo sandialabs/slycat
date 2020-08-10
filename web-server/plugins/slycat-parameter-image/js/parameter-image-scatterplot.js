@@ -11,7 +11,6 @@ import _ from "lodash";
 import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
-import "js/slycat-3d-viewer";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
 import { changeCurrentFrame } from './actions';
 import { get_variable_label } from './ui';
@@ -81,8 +80,6 @@ $.widget("parameter_image.scatterplot",
     canvas_selected_square_border_size : 2,
     pinned_width : 200,
     pinned_height : 200,
-    pinned_stl_width: 200,
-    pinned_stl_height: 200,
     hover_time : 250,
     image_cache : {},
     video_file_extensions : [
@@ -511,7 +508,8 @@ $.widget("parameter_image.scatterplot",
       let threeDLegendLabel = "";
       let pointOrCell = false;
       let domain = null;
-      const three_d_colorvar = state.three_d_colorvars[state.currentFrame];
+      const three_d_colorvars = state.three_d_colorvars;
+      const three_d_colorvar = three_d_colorvars ? three_d_colorvars[state.currentFrame] : undefined;
       // If we have a 3D color variable, create a label for the legend
       if(three_d_colorvar)
       {
@@ -1646,7 +1644,7 @@ $.widget("parameter_image.scatterplot",
     return playing;
   },
 
-  _open_images: function(images, is_stl_return)
+  _open_images: function(images)
   {
     var self = this;
     // If the list of images is empty, we're done.
@@ -1654,7 +1652,8 @@ $.widget("parameter_image.scatterplot",
     var image = images[0];
 
     var fileUriArr = image.uri.split('/');
-    var isStl = fileUriArr[fileUriArr.length - 1].indexOf('.stl') !== -1 ? true : false;
+    const isVtp = image.uri.endsWith('.vtp');
+    const isStl = image.uri.endsWith('.stl');
 
     var frame_html = null;
 
@@ -1888,12 +1887,6 @@ $.widget("parameter_image.scatterplot",
         {
           return;
         }
-        // Something special happens for STLs
-        if (target.classed('slycat-3d-btn-settings')) {
-          d3.select('#slycat-3d-modal')
-            .on('.drag', null)
-            .call(nodrag);
-        }
         // Move the frame to the front.
         self._move_frame_to_front(this);
       },
@@ -2091,8 +2084,8 @@ $.widget("parameter_image.scatterplot",
         // Remove maximized class from frame
         frame.classed("maximized", false);
 
-        imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
-        imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
+        imageWidth = self.options.pinned_width;
+        imageHeight = self.options.pinned_height;
 
         var $svg = $('#scatterplot svg');
         var svgw = $svg.height();
@@ -2123,9 +2116,6 @@ $.widget("parameter_image.scatterplot",
             height: target_height + "px",
           })
           ;
-
-        if (isStl)
-          frame.style('height', (imageHeight + 20) + 'px');
 
         self._adjust_leader_line(frame);
         self._sync_open_images();
@@ -2515,28 +2505,9 @@ $.widget("parameter_image.scatterplot",
             ;
 
         }
-        else if(isStl)
+        else if(isVtp || isStl)
         {
-          var container = frame_html[0][0];
-          var viewer = document.createElement('slycat-3d-viewer');
-
-          var ps = document.createAttribute('params')
-          // var stl_uri = api_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
-          var stl_uri = image_url;
-          ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
-          var s = document.createAttribute('style');
-          s.value = 'width: 100%; height: 100%;';
-          viewer.setAttributeNode(ps);
-          viewer.setAttributeNode(s);
-
-          container.appendChild(viewer);
-          ko.applyBindings({}, container);
-
-          $(window).trigger('resize');
-        }
-        else if(image.uri.endsWith('.vtp'))
-        {
-          // This is a VTP file, so use the VTK 3d viewer
+          // This is a VTP or STL file, so use the VTK 3d viewer
           let vtk = frame_html
             .append("div")
             .attr('class', 'vtp')
@@ -2561,7 +2532,8 @@ $.widget("parameter_image.scatterplot",
             geometryLoad(
               vtk.node(),
               buffer,
-              image.uri
+              image.uri,
+              isStl ? 'stl' : 'vtp'
             );
             // dispatch vtk select event so we know which camera to sync
             if(image.current_frame) {
