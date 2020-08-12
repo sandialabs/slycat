@@ -95,10 +95,11 @@ module.exports = {
       chunks: ['slycat_login'],
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
-    new CopyPlugin(
-      [{ from: 'docs/html', to: 'docs' },],
-      { copyUnmodified: true }
-    ),
+    new CopyPlugin({
+      patterns: [
+        { from: 'docs/html', to: 'docs' },
+      ],
+    }),
     new GitRevisionPlugin({
       branch: true
     }),
