@@ -87,6 +87,10 @@ export function renderNavBar() {
       component.project_id = ko.observable(params.project_id);
       component.project = ko.observableArray();
       component.project_models = mapping.fromJS([]);
+      // Setting git version, branch, and commit hash from globals created in webpack.common.js with DefinePlugin
+      component.GIT_SLYCAT_VERSION = GIT_SLYCAT_VERSION;
+      component.GIT_SLYCAT_BRANCH = GIT_SLYCAT_BRANCH;
+      component.GIT_SLYCAT_COMMITHASH = GIT_SLYCAT_COMMITHASH;
 
       // Retrieve current project, if any.
       if(component.project_id())
