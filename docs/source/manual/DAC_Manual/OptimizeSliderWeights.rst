@@ -4,13 +4,11 @@ Optimize Slider Weights |Optimize|
 .. |Optimize| image:: icons/optimize.png
 
 .. figure:: figures/color-by-pulldown-context.png
-   :scale: 60 %
+   :scale: 50 %
    :align: center
 
    **Figure 20: Weather data scalar variables for color-coding Scatterplot points.  The default is 'Do Not Color'.**
 
-To provide some sense of what this function does, here is an example of the results for optimizing the point projection and 
-slider values against the *Annual Precipitation* variable.  Figure 21 shows the *Scatterplot* where all temporal variables are 
 You may want to explore the relationships between temporal variables and one of the scalar variables in a column of the 
 *Metadata Table*.  First, select a *Metadata Table* column header for the comparison from the dropdown list shown in Figure 20.  
 This dropdown is above the *Scatterplot* in the upper right.  Then click the |Optimize| icon, which will adjust the slider weights 
