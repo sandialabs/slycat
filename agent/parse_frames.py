@@ -46,7 +46,7 @@ def create_job_logger(file_name):
     :param jid: job id
     :return:
     """
-    return lambda msg: print(msg)
+    return lambda msg: print(msg, flush = True)
 
 
 # start of main script
@@ -113,7 +113,7 @@ if args.log_file:
     log = create_job_logger(args.log_file)
 else:
     def log(msg):
-        print(msg)
+        print(msg, flush = True)
 
 # check to see if mandatory arguments are present
 if args.csv_file == None:
@@ -379,10 +379,10 @@ def compute(frame_number, input_num_movies, input_frame_files, input_use_energy,
         msg = str(e)
         return traceback.format_exc()
 
-BATCH_SIZE=50
+GROUP_SIZE=50
 # truncated coordinates are ordered from last to first
 frame_numbers = [frame_number for frame_number in range(num_frames-1, -1, -1)]
-list_num_movies = list(itertools.repeat(num_movies, BATCH_SIZE))
+list_num_movies = list(itertools.repeat(num_movies, GROUP_SIZE))
 #organize the frame file for parallel
 list_frame_files = []
 for frame_number in frame_numbers:
@@ -390,25 +390,25 @@ for frame_number in frame_numbers:
     for j in range(0, num_movies):
         accumulator.append(all_frame_files[j][frame_number])
     list_frame_files.append(accumulator)
-list_frames = list(itertools.repeat(frames, BATCH_SIZE))
-list_use_energy = list(itertools.repeat(use_energy, BATCH_SIZE))
-list_num_dim = list(itertools.repeat(num_dim, BATCH_SIZE))
-list_num_pixels = list(itertools.repeat(num_pixels, BATCH_SIZE))
-log("[VS-PROGRESS] " + str(25.0))
+list_frames = list(itertools.repeat(frames, GROUP_SIZE))
+list_use_energy = list(itertools.repeat(use_energy, GROUP_SIZE))
+list_num_dim = list(itertools.repeat(num_dim, GROUP_SIZE))
+list_num_pixels = list(itertools.repeat(num_pixels, GROUP_SIZE))
+log("[VS-PROGRESS] " + str(5.0))
 log("[VS-LOG] Sending compute jobs to nodes, this may take a while depending on job size...")
 start = 0
 step = 0
 all_curr_coords = []
 progress = 0
-# batching algorithm
+# GROUPing algorithm
 while step <= len(frame_numbers):
-    step = step + BATCH_SIZE
-    start = step - BATCH_SIZE
+    step = step + GROUP_SIZE
+    start = step - GROUP_SIZE
     stop = step
     temp_curr_coords = None
-    # run the batch for the last set of frames smaller than the batch size
+    # run the GROUP for the last set of frames smaller than the GROUP size
     if step >= len(frame_numbers):
-        remainder = len(frame_numbers)%BATCH_SIZE
+        remainder = len(frame_numbers)%GROUP_SIZE
         stop = remainder + start
         temp_curr_coords = pool.map_sync(compute,
                                          frame_numbers[start:stop],
@@ -417,7 +417,7 @@ while step <= len(frame_numbers):
                                          list_use_energy[0:remainder],
                                          list_num_dim[0:remainder],
                                          list_num_pixels[0:remainder])
-    # run the batch for the current batch size of frames
+    # run the GROUP for the current GROUP size of frames
     else:
         temp_curr_coords = pool.map_sync(compute,
                                          frame_numbers[start:stop],
@@ -431,7 +431,7 @@ while step <= len(frame_numbers):
         for coord in temp_curr_coords:
             all_curr_coords.append(coord)
     # estimated percentage complete
-    progress = progress + round(BATCH_SIZE/len(frame_numbers) * 100.0)
+    progress = progress + round(GROUP_SIZE/len(frame_numbers) * 100.0)
     # make sure it's a number between 0 and 100
     if progress > 100.0:
         progress = 100.0
