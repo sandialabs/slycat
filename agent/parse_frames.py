@@ -38,6 +38,14 @@ import time
 import logging
 import itertools
 
+# create movies
+import ffmpy
+from os import listdir
+
+
+# subroutines
+#############
+
 # log file handler
 def create_job_logger(file_name):
     """
@@ -74,9 +82,8 @@ parser.add_argument("--log_file", default=None,
                     help="log file for job status (optional)")
 
 # mandatory argument for column of movies
-parser.add_argument("--movie_col",
-                    help="column number (indexed by 1) with the movie files "
-                         "to be processed")
+parser.add_argument("--movie_dir",
+                    help="directory to write movies to.")
 
 # madatory argument for column of frames
 parser.add_argument("--frame_col",
@@ -120,9 +127,9 @@ if args.csv_file == None:
     log("[VS_LOG] Error: .csv file not specified.")
     sys.exit()
 
-if args.movie_col == None:
-    log("[VS-LOG] Error: movie column must be specified.")
-    sys.exit()
+# if args.movie_col == None:
+#     log("[VS-LOG] Error: movie column must be specified.")
+#     sys.exit()
 
 if args.frame_col == None:
     log("[VS-LOG] Error: frame column must be specified.")
@@ -131,6 +138,13 @@ if args.frame_col == None:
 if args.output_dir == None:
     log("[VS-LOG] Error: output directory not specified.")
     sys.exit()
+
+if args.movie_dir == None:
+    log("[VS-LOG] Error: movie directory not specified.")
+    sys.exit()
+
+if not os.path.exists(args.movie_dir):
+    os.makedirs(args.movie_dir)
 
 # set up ipython processor pool
 try:
@@ -167,9 +181,12 @@ csv_file = open(args.csv_file)
 meta_data = list(csv.reader(csv_file))
 csv_file.close()
 
+num_rows = len(meta_data) - 1
+num_movies = num_rows
 # get file names of movies
-movie_files = [movie_file[int(args.movie_col) - 1] for movie_file in meta_data]
-movie_files = movie_files[1:]
+
+# movie_files = [movie_file[int(10) - 1] for movie_file in meta_data]
+# movie_files = movie_files[1:]
 
 # get file names of frames
 frame_files = [frame_file[int(args.frame_col) - 1] for frame_file in meta_data]
@@ -177,14 +194,42 @@ frame_files = frame_files[1:]
 
 # identify all frame files and order them by frame number
 log("[VS-LOG] Locating and ordering frame files ...")
-num_movies = len(movie_files)
+
+movies_exist = False
+for fname in os.listdir(args.movie_dir):
+    if fname.endswith('.mp4'):
+        movies_exist = True
+        log("[VS-LOG] MP4 files located. Skipping movie creation.")
+        break
+
+
 num_frames = 0
 all_frame_files = []
-for i in range(0, num_movies):
-
+all_movies = []
+all_movies.append("movie_files")
+for i in range(0, num_rows):
     # isolate first frame file
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
+
+    split_path = frame_files[i].split(frame_file_path)
+    file_location = split_path[0]
+
+    movie_output = args.movie_dir + 'movie_%d.mp4' % (i+1)
+    all_movies.append(file_location + movie_output)
+    movie_input = frame_file_path + '/*.jpg'
+
+    if not movies_exist:
+        #create the movie
+        ff = ffmpy.FFmpeg(
+            inputs={None: ['-pattern_type', 'glob'],
+                movie_input: None},
+            outputs={None: ['-force_key_frames', '0.0,0.04,0.08', '-vcodec', 'libx264', '-acodec', 'aac'],
+            movie_output: None}
+        )
+        ff.run()
+
+    log("[VS-LOG] Creating movie %d" % (i))
 
     # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')
@@ -229,12 +274,12 @@ for i in range(0, num_movies):
     # order frames in path by frame number
     all_frame_files.append([os.path.join(frame_file_path, frames_in_path[j])
                             for j in numpy.argsort(frame_nums_in_path)])
-
     # check that all movie have same number of frames
     if i == 0:
         num_frames = len(all_frame_files[i])
     elif num_frames != len(all_frame_files[i]):
-        log("[VS-LOG] Error: inconsistent number of frames for video " + str(movie_files[i]))
+        # log("[VS-LOG] Error: inconsistent number of frames for video " + str(movie_files[i]))
+        log("[VS-LOG] Error: inconsistent number of frames for video")
         sys.exit()
 
 # try to read image
@@ -259,9 +304,9 @@ log("[VS-LOG] Estimated video duration is: " + str(vid_duration) + " seconds.")
 ##################################
 
 # create a list of numpy arrays for distance matrices between frames
-frames = numpy.ones((num_movies, num_pixels))
-xcoords = numpy.ones((num_frames, num_movies))
-ycoords = numpy.ones((num_frames, num_movies))
+frames = numpy.ones((num_rows, num_pixels))
+xcoords = numpy.ones((num_frames, num_rows))
+ycoords = numpy.ones((num_frames, num_rows))
 
 # estimate time for entire run
 start_time = time.time()
@@ -504,6 +549,15 @@ if not os.path.exists(args.output_dir):
 
 # write out movies.meta (the .csv file)
 log("[VS-LOG] Writing movies.csv file ...")
+
+# add a column to the end of the csv with created movie files
+for i in range(0, (len(meta_data))):
+    if i == 0:
+        meta_data[i].append("movie_files")
+    else:
+        meta_data[i].append(all_movies[i])
+
+
 meta_file = open(os.path.join(args.output_dir, 'movies.csv'), 'w')
 csv_meta_file = csv.writer(meta_file)
 csv_meta_file.writerows(meta_data)
@@ -527,7 +581,7 @@ ycoords_file.close()
 
 # add time to first row of xcoords to make trajectories
 time_row = numpy.linspace(0, vid_duration, num=num_frames)
-traj = numpy.ones((num_movies + 1, num_frames))
+traj = numpy.ones((num_rows + 1, num_frames))
 traj[0, :] = time_row
 traj[1:, :] = xcoords.transpose()
 

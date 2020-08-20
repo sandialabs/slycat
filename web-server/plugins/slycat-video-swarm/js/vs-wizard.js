@@ -62,6 +62,9 @@ var vs_table_num_rows = null;
 localStorage["VS_WORKDIR"] ? component.workdir = ko.observable(localStorage["VS_WORKDIR"]) : component.workdir = ko.observable('');
 component.delete_workdir = ko.observable(false);
 
+// movie write directory
+localStorage["VS_MOVIEDIR"] ? component.moviedir = ko.observable(localStorage["VS_MOVIEDIR"]) : component.moviedir = ko.observable('');
+
 // video frame rate (defaults to 25)
 component.frame_rate = ko.observable(25);
 
@@ -499,7 +502,7 @@ var start_remote_job = function () {
         {"scripts":[{"name":"parse_frames","parameters":[
         {"name":"--csv_file","value": component.table_browser.selection()[0]},
         {"name":"--frame_col","value": frame_column + 1},
-        {"name":"--movie_col","value": link_column + 1},
+        {"name":"--movie_dir","value": component.moviedir()},
         {"name":"--output_dir","value": component.workdir()},
         {"name":"--fps","value": component.frame_rate()}]}],
         "hpc":{"is_hpc_job": component.HPC_Job(),
@@ -634,28 +637,9 @@ component.upload_vs_frames_links = function () {
         var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
         link_column = media_columns_inds[link_selected_ind];
 
-        // extract links on server
-        client.get_model_command({
-            mid: component.model._id(),
-            type: "VS",
-            command: "extract-links",
-            parameters: [link_column],
-            success: function(result) {
-
-                // name model and launch remote job
-                launch_remote_job = true;
-                component.tab(6)
-            },
-            error: function() {
-
-                // server error extracting video links
-                $("#VS-video-frame-links-error").text("Server error during video link extraction.")
-                $("#VS-video-frame-links-error").show();
-            }
-        });
-
+        launch_remote_job = true;
+        component.tab(6)
     }
-
 };
 
 // upload remaining matrix files

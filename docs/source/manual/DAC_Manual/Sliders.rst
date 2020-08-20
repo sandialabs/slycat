@@ -28,6 +28,12 @@ following functions:
 
    **Figure 18: Slider controls are (1) download table, (2) set all sliders to 0, (3) set all sliders to 1, and (4) optimize sliders for selected Metadata Table column.**
 
+.. figure:: figures/color-by-pulldown-context.png
+   :scale: 50 %
+   :align: center
+
+   **Figure 20: Weather data scalar variables for color-coding Scatterplot points.  The default is 'Do Not Color'.**
+
 .. toctree::
    :maxdepth: 3
 

@@ -16,7 +16,6 @@ information about which files in your ensemble were not imported, what data migh
 the Weather data is shown in Figure 16.
 
 .. figure:: figures/parse-log.png
-   :scale: 50 %
    :align: center
 
    **Figure 16: Model Parse Log for DAC Generic Zip Format containing the Weather data.**

@@ -5,7 +5,7 @@ There are currently three data formats accepted by DAC, the Dial-A-Cluster Gener
 and a National Instruments (http://www.ni.com) LabView based TDMS format.
 
 .. toctree::
-  :maxdepth: 3
+  :maxdepth: 1
 
   DACGenericFormat.rst
   PTS_CSV_MetaFormat.rst
