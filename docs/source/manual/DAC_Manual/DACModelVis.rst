@@ -20,7 +20,7 @@ Initially, points are not color-coded (drawn with *white* interiors) and do not 
 borders), as shown in Figure 14. 
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    Scatterplot.rst
    TimeSeriesPlots.rst
