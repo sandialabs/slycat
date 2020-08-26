@@ -1,9 +1,8 @@
 import * as dialog from "js/slycat-dialog";
-import { connect } from 'react-redux';
 import React from "react";
 import _ from "lodash";
 
-class ControlsSelection extends React.PureComponent {
+export default class ControlsSelection extends React.PureComponent {
 
   set_value = (variable, variableIndex, value, alert) => {
     let self = this;
@@ -112,9 +111,9 @@ class ControlsSelection extends React.PureComponent {
     const no_visible_unselected = _.difference(unselected, this.props.hidden_simulations).length === 0;
   
     // Make an array of all open image indexes
-    const open_images_indexes = this.props.open_images.map(open_image => open_image.index);
-    const all_open_hidden = _.difference(open_images_indexes, this.props.hidden_simulations).length === 0;
-    const all_open_selected = _.difference(open_images_indexes, this.props.selection).length === 0;
+    const open_media_indexes = this.props.open_media.map(open_image => open_image.index);
+    const all_open_hidden = _.difference(open_media_indexes, this.props.hidden_simulations).length === 0;
+    const all_open_selected = _.difference(open_media_indexes, this.props.selection).length === 0;
     
     // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
     const show_all_disabled = this.props.hidden_simulations.length == 0 || this.props.disable_hide_show;
@@ -137,7 +136,7 @@ class ControlsSelection extends React.PureComponent {
     const all_selection_hidden = _.difference(this.props.selection, this.props.hidden_simulations).length === 0;
     // console.log(`all_selection_hidden is ${all_selection_hidden}`);
     // Check if the current selection is already pinned
-    const unpinned_selection = _.difference(this.props.selection, open_images_indexes);
+    const unpinned_selection = _.difference(this.props.selection, open_media_indexes);
     // console.log(`unpineed_selection is ${unpinned_selection}`);
     const current_selection_pinned = unpinned_selection.length === 0;
     // console.log(`current_selection_pinned is ${current_selection_pinned}`);
@@ -148,9 +147,9 @@ class ControlsSelection extends React.PureComponent {
     // disabling the "Pin Selected" functionality if this is the case.
     const unpinned_selection_off_axes = unpinned_selection_not_off_axes.length == 0;
     const pin_selected_disabled = no_media_variable_selected || all_selection_hidden || current_selection_pinned || unpinned_selection_off_axes;
-    const add_pins_to_selection_disabled = (this.props.open_images.length == 0) || all_open_hidden || all_open_selected;
+    const add_pins_to_selection_disabled = (this.props.open_media.length == 0) || all_open_hidden || all_open_selected;
     // Disabling close all only if there are no open images or all open images are hidden.
-    const close_all_disabled = (this.props.open_images.length == 0) || all_open_hidden;
+    const close_all_disabled = (this.props.open_media.length == 0) || all_open_hidden;
     const pins_header_disabled = pin_selected_disabled && add_pins_to_selection_disabled && close_all_disabled;
   
     // Determine when the entire dropdown should be disabled
@@ -254,18 +253,3 @@ class ControlsSelection extends React.PureComponent {
     );
   }
 };
-
-const mapStateToProps = (state, ownProps) => {
-  return {
-    xValues: state.derived.xValues,
-    yValues: state.derived.yValues,
-    variableRanges: state.variableRanges,
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  {
-    
-  }
-)(ControlsSelection)

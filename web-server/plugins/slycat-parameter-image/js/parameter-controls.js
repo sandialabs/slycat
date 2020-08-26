@@ -137,7 +137,6 @@ $.widget("parameter_image.controls",
         auto_scale={self.options["auto-scale"]} 
         hidden_simulations={self.options.hidden_simulations}
         disable_hide_show={self.options.disable_hide_show}
-        open_images={self.options.open_images}
         selection={self.options.selection}
         pid={self.options.pid}
         mid={self.options.mid}
@@ -152,7 +151,6 @@ $.widget("parameter_image.controls",
         video_sync={self.options["video-sync"]}
         video_sync_time={self.options["video-sync-time"]}
         threeD_sync={self.options.threeD_sync}
-        variable_aliases={window.store.getState().derived.variableAliases}
       />)
     ;
     
@@ -173,14 +171,6 @@ $.widget("parameter_image.controls",
       // them to be scrollable when they are too long.
       menus.css('max-height', (container.height() - 70) + 'px');
     });
-
-    // Set the state of ControlsBarComponent's variable_aliases to what's in the Redux state
-    // each time the Redux state changes. This is a work around to be used only
-    // until we convert PS to React because it currently uses local state in the controls bar.
-    const update_variable_aliases = () => {
-      self.ControlsBarComponent.setState({variable_aliases: window.store.getState().derived.variableAliases});
-    };
-    window.store.subscribe(update_variable_aliases);
   },
 
   _setOption: function(key, value)

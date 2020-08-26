@@ -24,14 +24,12 @@ class ControlsBar extends React.Component {
       hidden_simulations: this.props.hidden_simulations,
       // disable_hide_show is set to true when there are filters in use
       disable_hide_show: this.props.disable_hide_show,
-      open_images: this.props.open_images,
       selection: this.props.selection,
       video_sync: this.props.video_sync,
       video_sync_time: this.props.video_sync_time,
       video_sync_time_value: this.props.video_sync_time,
       threeD_sync: this.props.threeD_sync,
       var_settings: this.props.var_settings,
-      variable_aliases: this.props.variable_aliases,
     };
     for(let dropdown of this.props.dropdowns)
     {
@@ -235,7 +233,7 @@ class ControlsBar extends React.Component {
   }
 
   trigger_select_pinned = (e) => {
-    this.props.element.trigger("select-pinned", [this.state.open_images]);
+    this.props.element.trigger("select-pinned", [this.props.open_media]);
   }
 
   trigger_jump_to_start = (e) => {
@@ -264,9 +262,9 @@ class ControlsBar extends React.Component {
 
   get_variable_label(variable)
   {
-    if(this.state.variable_aliases[variable] !== undefined)
+    if(this.props.variable_aliases[variable] !== undefined)
     {
-      return this.state.variable_aliases[variable];
+      return this.props.variable_aliases[variable];
     }
     
     return this.props.metadata["column-names"][variable]
@@ -318,7 +316,7 @@ class ControlsBar extends React.Component {
     let any_video_playing = false;
     let current_frame_video = false;
     let current_frame_video_playing = false;
-    for(let open_media of this.state.open_images)
+    for(let open_media of this.props.open_media)
     {
       if(open_media.video){
         any_video_open = true;
@@ -352,7 +350,7 @@ class ControlsBar extends React.Component {
     // 3D controls
     let any_threeD_open = false;
     let current_frame_threeD = false;
-    for(let open_media of this.state.open_images)
+    for(let open_media of this.props.open_media)
     {
       if(open_media.threeD){
         any_threeD_open = true;
@@ -413,11 +411,14 @@ class ControlsBar extends React.Component {
               metadata={this.props.metadata}
               element={this.props.element}
               button_style={button_style}
-              open_images={this.state.open_images}
+              open_media={this.props.open_media}
               media_variables={this.props.media_variables}
               media_variable={this.state.media_variable}
               x_variable={this.state.x_variable}
               y_variable={this.state.y_variable}
+              variableRanges={this.props.variableRanges}
+              xValues={this.props.xValues}
+              yValues={this.props.yValues}
             />
             <ControlsButtonDownloadDataTable selection={this.state.selection} hidden_simulations={this.state.hidden_simulations}
               aid={this.props.aid} mid={this.props.mid} model_name={this.props.model_name} metadata={this.props.metadata}
@@ -426,7 +427,7 @@ class ControlsBar extends React.Component {
               button_style={button_style} 
               mid={this.props.mid}
               pid={this.props.pid} 
-              aliases={this.state.variable_aliases} 
+              aliases={this.props.variable_aliases} 
             />
           </ControlsGroup>
           {any_video_open &&
@@ -463,6 +464,10 @@ const mapStateToProps = (state, ownProps) => {
     x_index: state.x_index,
     y_index: state.y_index,
     v_index: state.v_index,
+    open_media: state.open_media,
+    xValues: state.derived.xValues,
+    yValues: state.derived.yValues,
+    variable_aliases: state.derived.variableAliases,
   }
 }
 
