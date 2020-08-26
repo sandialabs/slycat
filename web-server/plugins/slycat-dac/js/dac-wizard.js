@@ -400,7 +400,7 @@ function constructor(params)
                     $(".browser-continue").prop("disabled", true);
 
                     // read .zip file contents
-                    file.arrayBuffer().then(function(data) {
+                    try { file.arrayBuffer().then(function(data) {
 
                         data = new Uint8Array(data);
                         var entries = ZipInfo.getEntries(data);
@@ -475,7 +475,20 @@ function constructor(params)
                             component.tab(tabs['suffix-selection']);
                         }
 
-                    });
+                    }); }
+                    
+                    // .arrayBuffer() doesn't work with Sandia's default browser (Firefox 68)
+                    catch {
+
+                        // display error
+                        $("#dac-tdms-file-error").text("Your browser may be out of date.  Please use Chrome or Firefox version 69 or higher.")
+                        $("#dac-tdms-file-error").show();
+
+                        // turn off continue button
+                        $(".browser-continue").toggleClass("disabled", false);
+                        $(".browser-continue").prop("disabled", false);
+
+                    }
 
                 } else {
 
