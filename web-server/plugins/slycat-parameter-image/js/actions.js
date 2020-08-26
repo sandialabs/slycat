@@ -24,6 +24,8 @@ export const SET_V_VALUES = 'SET_V_VALUES'
 export const SET_X_INDEX = 'SET_X_INDEX'
 export const SET_Y_INDEX = 'SET_Y_INDEX'
 export const SET_V_INDEX = 'SET_V_INDEX'
+export const SET_OPEN_MEDIA = 'SET_OPEN_MEDIA'
+
 
 export function changeFontSize(event) {
   return { 
@@ -65,46 +67,46 @@ export function changeVariableAliasLabels(event) {
   }
 }
 
-export function clearAllVariableAliasLabels(event) {
+export function clearAllVariableAliasLabels() {
   return { type: REMOVE_ALL_VARIABLE_ALIAS_LABELS }
 }
 
-export function changeCurrentFrame(frame) {
+export function changeCurrentFrame(currentFrame) {
   return { 
     type: CHANGE_CURRENT_FRAME, 
-    currentFrame: frame 
+    currentFrame 
   }
 }
 
-export function changeThreeDColormap(key, label) {
+export function changeThreeDColormap(threeDColormap) {
   return { 
     type: CHANGE_THREED_COLORMAP, 
-    threeDColormap: key 
+    threeDColormap 
   }
 }
 
 export function updateThreeDColorBy(uri, colorBy) {
   return { 
     type: UPDATE_THREE_D_COLORBY, 
-    uri: uri, 
-    colorBy: colorBy,
+    uri, 
+    colorBy,
   }
 }
 
 export function updateThreeDColorByOptions(uri, options) {
   return {
     type: UPDATE_THREE_D_COLORBY_OPTIONS,
-    uri: uri,
-    options: options,
+    uri,
+    options,
   }
 }
 
 export function setThreeDColorByRange(uri, colorBy, range) {
   return {
     type: SET_THREE_D_COLORBY_RANGE,
-    uri: uri,
-    colorBy: colorBy,
-    range: range,
+    uri,
+    colorBy,
+    range,
   }
 }
 
@@ -125,7 +127,7 @@ export function updateThreeDCameras(cameras) {
 export function updateThreeDSync(threeD_sync) {
   return { 
     type: UPDATE_THREE_D_SYNC, 
-    threeD_sync: threeD_sync 
+    threeD_sync 
   }
 }
 
@@ -158,25 +160,29 @@ export function clearAllVariableRanges() {
 }
 
 export function setXValues(values) {
-  return { type: SET_X_VALUES, values: values, }
+  return { type: SET_X_VALUES, values }
 }
 
 export function setYValues(values) {
-  return { type: SET_Y_VALUES, values: values, }
+  return { type: SET_Y_VALUES, values }
 }
 
 export function setVValues(values) {
-  return { type: SET_V_VALUES, values: values, }
+  return { type: SET_V_VALUES, values }
 }
 
 export function setXIndex(index) {
-  return { type: SET_X_INDEX, index: index, }
+  return { type: SET_X_INDEX, index }
 }
 
 export function setYIndex(index) {
-  return { type: SET_Y_INDEX, index: index, }
+  return { type: SET_Y_INDEX, index }
 }
 
 export function setVIndex(index) {
-  return { type: SET_V_INDEX, index: index, }
+  return { type: SET_V_INDEX, index }
+}
+
+export function setOpenMedia(open_media) {
+  return { type: SET_OPEN_MEDIA, open_media }
 }

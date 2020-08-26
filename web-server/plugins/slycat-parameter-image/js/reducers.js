@@ -25,6 +25,7 @@ import {
   SET_X_INDEX,
   SET_Y_INDEX,
   SET_V_INDEX,
+  SET_OPEN_MEDIA,
 } from './actions';
 
 import { 
@@ -51,6 +52,7 @@ const initialState = {
   currentFrame: null,
   threeD_sync: false,
   three_d_colormaps: {},
+  open_media: [],
 }
 
 export default function ps_reducer(state = initialState, action) {
@@ -326,6 +328,11 @@ export default function ps_reducer(state = initialState, action) {
     case SET_V_INDEX:
       return Object.assign({}, state, {
         v_index: action.index
+      })
+      
+    case SET_OPEN_MEDIA:
+      return Object.assign({}, state, {
+        open_media: action.open_media
       })
 
     default:
