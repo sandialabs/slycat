@@ -35,7 +35,6 @@ $.widget("parameter_image.controls",
     "hidden_simulations" : [],
     "indices" : [],
     "disable_hide_show" : false,
-    "open_images" : [],
     "video-sync" : false,
     "video-sync-time" : 0,
     "threeD_sync": false,
@@ -203,10 +202,6 @@ $.widget("parameter_image.controls",
     else if(key == 'hidden_simulations')
     {
       self.ControlsBarComponent.setState({hidden_simulations: self.options.hidden_simulations.slice()});
-    }
-    else if(key == 'open_images')
-    {
-      self.ControlsBarComponent.setState({open_images: self.options.open_images.slice()});
     }
     else if(key == 'disable_hide_show')
     {

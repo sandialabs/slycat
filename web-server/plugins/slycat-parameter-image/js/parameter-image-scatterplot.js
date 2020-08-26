@@ -12,7 +12,10 @@ import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
-import { changeCurrentFrame } from './actions';
+import { 
+  changeCurrentFrame,
+  setOpenMedia,
+} from './actions';
 import { get_variable_label } from './ui';
 import { isValueInColorscaleRange } from './color-switcher';
 import $ from 'jquery';
@@ -237,7 +240,7 @@ $.widget("parameter_image.scatterplot",
           })
           .on("dragend", function() {
             self.state = "";
-            // self._sync_open_images();
+            // self._sync_open_media();
             d3.select(this).attr("data-status", "moved");
           })
       );
@@ -599,7 +602,7 @@ $.widget("parameter_image.scatterplot",
     }
     self._close_hidden_simulations();
     self._open_shown_simulations();
-    self._sync_open_images();
+    self._sync_open_media();
   },
 
   set_x_y_v_axes_types: function()
@@ -1582,7 +1585,7 @@ $.widget("parameter_image.scatterplot",
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
       }
     });
-    self._sync_open_images();
+    self._sync_open_media();
   },
 
   _update_threeD_sync: function()
@@ -1590,7 +1593,7 @@ $.widget("parameter_image.scatterplot",
     // Not sure what to do here yet.
   },
 
-  _sync_open_images: function()
+  _sync_open_media: function()
   {
     var self = this;
 
@@ -1633,7 +1636,7 @@ $.widget("parameter_image.scatterplot",
       })
       ;
 
-    self.element.trigger("open-images-changed", [self.options.open_images]);
+    window.store.dispatch(setOpenMedia(self.options.open_images));
   },
 
   _is_video_playing: function(video)
@@ -1871,13 +1874,13 @@ $.widget("parameter_image.scatterplot",
         $(".mouseEventOverlay", this.closest(".image-frame")).hide();
 
         self.state = "";
-        self._sync_open_images();
+        self._sync_open_media();
       },
       close: function() {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
         self._remove_image_and_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
       },
       frame_mousedown: function(){
         // console.log("frame_mousedown");
@@ -1951,7 +1954,7 @@ $.widget("parameter_image.scatterplot",
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
-        self._sync_open_images();
+        self._sync_open_media();
         // d3.event.sourceEvent.stopPropagation();
 
         // Fire a custom reize event to let vtk viewers know it was resized
@@ -2037,7 +2040,7 @@ $.widget("parameter_image.scatterplot",
         frame.classed("maximized", true);
 
         self._adjust_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
 
         $(window).trigger('resize');
       },
@@ -2070,7 +2073,7 @@ $.widget("parameter_image.scatterplot",
           ;
 
         self._adjust_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
 
         $(window).trigger('resize');
       },
@@ -2118,7 +2121,7 @@ $.widget("parameter_image.scatterplot",
           ;
 
         self._adjust_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
 
         $(window).trigger('resize');
       },
@@ -2147,7 +2150,7 @@ $.widget("parameter_image.scatterplot",
         self._schedule_update({update_video_sync_time:true,});
       }
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-      self._sync_open_images();
+      self._sync_open_media();
     }
 
     // Don't open images for hidden simulations
@@ -2316,7 +2319,7 @@ $.widget("parameter_image.scatterplot",
             })
             .on("playing", function(){
               // console.log("onplaying");
-              self._sync_open_images();
+              self._sync_open_media();
             })
             .on("pause", function(){
               // console.log("onpause");
@@ -2606,7 +2609,7 @@ $.widget("parameter_image.scatterplot",
       add_jump_button(footer, image.index);
 
       if(!image.no_sync)
-        self._sync_open_images();
+        self._sync_open_media();
 
       self._open_images(images.slice(1), true);
 
@@ -2800,7 +2803,7 @@ $.widget("parameter_image.scatterplot",
         self._remove_image_and_leader_line(d3.select(this));
       })
       ;
-    self._sync_open_images();
+    self._sync_open_media();
   },
 
   _schedule_hover_canvas: function(e) {
@@ -3050,7 +3053,7 @@ $.widget("parameter_image.scatterplot",
       // Dispatch update to current frame to redux store
       window.store.dispatch(changeCurrentFrame(frame.data("uri")));
 
-      self._sync_open_images();
+      self._sync_open_media();
     }
   },
 
@@ -3327,7 +3330,7 @@ $.widget("parameter_image.scatterplot",
         self.syncing_videos.push(videoIndex);
         video.currentTime = self.options["video-sync-time"];
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-        self._sync_open_images();
+        self._sync_open_media();
       }
     }
   },
@@ -3342,7 +3345,7 @@ $.widget("parameter_image.scatterplot",
       video.currentTime = time;
       self.options["video-sync-time"] = time;
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-      self._sync_open_images();
+      self._sync_open_media();
     }
   },
 
