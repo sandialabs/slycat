@@ -13,6 +13,9 @@ retains certain rights in this software.
 import api_root from "js/slycat-api-root";
 import * as remotes from "js/slycat-remotes";
 import client from "js/slycat-web-client";
+import React from "react";
+import ReactDOM from "react-dom";
+import TestReact from "../plugin-components/TestReact"
 import * as dialog from "js/slycat-dialog";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import ko from "knockout";
@@ -247,8 +250,30 @@ function poll() {
     },
   });
 }
+const showLoadingPage = () => {
+  ReactDOM.render(
+    <TestReact/>,
+    document.querySelector('#vs-react')
+  );
+  // client.get_model_fetch(model._id).then((modelResponse) => {
+  //     ReactDOM.render(
+  //         <LoadingPage
+  //           modelId={modelResponse._id}
+  //           modelState={modelResponse["state"]}
+  //           jid={modelResponse['artifact:jid']}
+  //           hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
+  //         />,
+  //         document.querySelector('#timeseries-model')
+  //     );
+  //   }
+  // ).catch((msg) => {
+  //       // eslint-disable-next-line no-alert
+  //       window.alert(`Error retrieving model: ${msg}`);
+  // })
+};
 // initialize poll
-poll();
+// poll();
+showLoadingPage();
 
 function get_movie_links() {
   var link_column = 0;
