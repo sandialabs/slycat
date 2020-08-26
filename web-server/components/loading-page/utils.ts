@@ -1,4 +1,4 @@
-export const  getFormattedDateTime = (): string => {
+export const getFormattedDateTime = (): string => {
   const d = new Date();
   return (
     d.getDate() +

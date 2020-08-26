@@ -2,7 +2,7 @@
 import React from 'react';
 import {
   JobCodes
-} from "slycat-timeseries-model/plugin-components/JobCodes.tsx";
+} from "components/loading-page/JobCodes";
 import { mount } from "enzyme";
 
 
