@@ -1,3 +1,5 @@
+.. _DataFormats:
+
 Data Formats
 ============
 

@@ -42,6 +42,10 @@ values from shared scalar variables (columns) for individual ensemble members (r
   DACData.rst
   CreatingDACModel.rst
   DACModelVis.rst
+  DerivedModels.rst
+  ModelPreferences.rst
+  BookmarksTemplates.rst
+  Acknowledgements.rst
 
 .. rubric:: Footnotes
 

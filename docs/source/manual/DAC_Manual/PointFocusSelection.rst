@@ -1,3 +1,5 @@
+.. _PointFocusSelection:
+
 Point Focus Selection
 =====================
 

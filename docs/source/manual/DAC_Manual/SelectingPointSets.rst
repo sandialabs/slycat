@@ -1,3 +1,5 @@
+.. _SelectingPointSets:
+
 Selecting Point Sets |SelectSet|
 ================================
 
