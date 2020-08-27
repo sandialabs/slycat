@@ -3,23 +3,27 @@ import client from "../../../js/slycat-web-client";
 import ProgressBar from "components/ProgressBar";
 // import { LoadingPageProps, LoadingPageState } from "./types";
 import { JobCodes } from "components/loading-page/JobCodes";
-import LogList from "components/loading-page/LogList";
+// import LogList from "components/loading-page/LogList";
 // import LoadingPageButtons from "./LoadingPageButtons";
+import VSLoadingPageButtons from "./VSLoadingPageButtons";
 import InfoBar from "components/loading-page/InfoBar";
+// import { faJedi } from "@fortawesome/free-solid-svg-icons";
 // import ConnectModal from "components/ConnectModal";
-
-export default class LoadingPage extends React.Component<any, any> {
+interface LoadingPageProps {
+  modelId: any
+}
+export default class VSLoadingPage extends React.Component< LoadingPageProps, any> {
   timer: any; //NodeJS.Timeout
   progressTimer: any;
   TIMER_MS: number = 10000;
   public constructor(props: any) {
     super(props);
     this.state = {
-      model: this.props.model,
+      jid: '',
       sessionExists: false,
       progressBarHidden: false,
       modalId: "ConnectModal",
-      progressBarProgress: 0,
+      progressBarProgress: 10,
       modelMessage: "",
       modelShow: false,
       pullCalled: 0,
@@ -27,13 +31,24 @@ export default class LoadingPage extends React.Component<any, any> {
       log: {
         logLineArray: [] as any, // [string]
       },
-      modelId: props.modelId,
     };
   }
   /**
    * method runs after the component output has been rendered to the DOM
    */
   componentDidMount() {
+    console.log(this.props.modelId);
+    client.get_model_parameter_fetch({mid: this.props.modelId, aid: "jid"})
+      .then( jid =>
+        this.setState({jid}, () => 
+          client.get_model_parameter_fetch({mid: this.props.modelId, aid: "hostname"})
+            .then(hostname =>this.setState({hostname}))
+        )
+      );
+    // client.get_model_parameter({
+    //   mid: this.props.modelId,
+    //   aid: "jid",
+    //   success: function (result: any) {} });
     // this.checkRemoteStatus().then(() => {
     //   if (this.state.sessionExists) {
     //     this.checkRemoteJob();
@@ -100,31 +115,31 @@ export default class LoadingPage extends React.Component<any, any> {
    * @async
    * @memberof SlycatRemoteControls
    */
-  private checkRemoteStatus = async (): Promise<any> => {
-    return client.get_remotes_fetch(this.props.hostname).then((json: any) => {
-      this.setState(
-        {
-          sessionExists: json.status,
-        },
-        () => {
-          if (!this.state.sessionExists) {
-            this.setState({ modelShow: true });
-            ($(`#${this.state.modalId}`) as any).modal("show");
-          } else if (this.state.progressBarProgress < 50) {
-            // this.checkRemoteJob();
-          }
-        }
-      );
-    });
-  };
+  // private checkRemoteStatus = async (): Promise<any> => {
+  //   return client.get_remotes_fetch(this.props.hostname).then((json: any) => {
+  //     this.setState(
+  //       {
+  //         sessionExists: json.status,
+  //       },
+  //       () => {
+  //         if (!this.state.sessionExists) {
+  //           this.setState({ modelShow: true });
+  //           ($(`#${this.state.modalId}`) as any).modal("show");
+  //         } else if (this.state.progressBarProgress < 50) {
+  //           // this.checkRemoteJob();
+  //         }
+  //       }
+  //     );
+  //   });
+  // };
 
   public render() {
     return (
       <div className="slycat-job-checker bootstrap-styles">
         <div className="slycat-job-checker-controls">
           <InfoBar
-            jid={"jid"}
-            hostname={"hostname"}
+            jid={this.state.jid}
+            hostname={this.state.hostname}
             sessionExists={"this.state.sessionExists" ? true : false}
           />
           <div style={{ paddingTop: "15px", paddingBottom: "15px" }}>
@@ -141,7 +156,13 @@ export default class LoadingPage extends React.Component<any, any> {
               callBack={this.connectModalCallBack}
             /> */}
             <div className="btn-group col-8" role="group">
-              buttons go here
+              <VSLoadingPageButtons
+                modalId={"modalID"}
+                jobStatus={"status"}
+                cancelJob={()=> console.log("cancel job called")}
+                modelShow={true}
+                sessionExists={false}
+              />
             </div>
           </div>
           <div className="row">
@@ -154,6 +175,7 @@ export default class LoadingPage extends React.Component<any, any> {
         </div>
         <div className="col-lg-12">
           <div className="slycat-job-checker-output text-white bg-secondary">
+            this is the log
             {/* <LogList {...this.state} /> */}
           </div>
         </div>

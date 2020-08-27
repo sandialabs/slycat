@@ -1,13 +1,13 @@
 import * as React from "react";
 import ControlsButton from "components/ControlsButton.js";
-import LoadButton from "./LoadButton";
+// import LoadButton from "./LoadButton";
 import { LoadingPageButtonsProps } from "./types";
 
 /**
  *  loads the buttons for the loading page for timeseries model
  * @param props
  */
-const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
+const VSLoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
   // wait until all the jquery stuff is loaded
   $(document).ready(function ($) {
     // enable tooltips
@@ -38,10 +38,6 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
       >
         {"Cancel job"}
       </button>
-      <LoadButton
-        disabled={!props.jobStatus.includes("COMPLETED")}
-        onClick={() => props.pullHPCData()}
-      />
       {props.modelShow && !props.sessionExists && (
         <ControlsButton
           label="Connect"
@@ -56,4 +52,4 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
   );
 };
 
-export default LoadingPageButtons;
+export default VSLoadingPageButtons;

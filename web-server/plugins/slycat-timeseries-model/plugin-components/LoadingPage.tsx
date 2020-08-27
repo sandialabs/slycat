@@ -214,9 +214,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
             />
             <div className="btn-group col-8" role="group">
               <LoadingPageButtons
-                hostname={this.props.hostname}
                 modalId={this.state.modalId}
-                connectModalCallBack={this.connectModalCallBack}
                 jobStatus={this.state.jobStatus}
                 cancelJob={this.cancelJob}
                 pullHPCData={this.pullHPCData}

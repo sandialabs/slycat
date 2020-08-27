@@ -15,7 +15,8 @@ import * as remotes from "js/slycat-remotes";
 import client from "js/slycat-web-client";
 import React from "react";
 import ReactDOM from "react-dom";
-import TestReact from "../plugin-components/TestReact"
+// import TestReact from "../plugin-components/TestReact"
+import VSLoadingPage from "../plugin-components/VSLoadingPage"
 import * as dialog from "js/slycat-dialog";
 import bookmark_manager from "js/slycat-bookmark-manager";
 import ko from "knockout";
@@ -252,7 +253,9 @@ function poll() {
 }
 const showLoadingPage = () => {
   ReactDOM.render(
-    <TestReact/>,
+    <VSLoadingPage
+      modelId={model._id}
+    />,
     document.querySelector('#vs-react')
   );
   // client.get_model_fetch(model._id).then((modelResponse) => {
