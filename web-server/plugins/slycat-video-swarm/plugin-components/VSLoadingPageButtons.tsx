@@ -1,6 +1,4 @@
 import * as React from "react";
-import ControlsButton from "components/ControlsButton.js";
-// import LoadButton from "./LoadButton";
 import { LoadingPageButtonsProps } from "./types";
 
 /**
@@ -38,16 +36,6 @@ const VSLoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
       >
         {"Cancel job"}
       </button>
-      {props.modelShow && !props.sessionExists && (
-        <ControlsButton
-          label="Connect"
-          title={"Connect to HPC"}
-          data_toggle="modal"
-          data_target={"#" + props.modalId}
-          button_type={"btn-outline-primary"}
-          id="controls-button-death"
-        />
-      )}
     </React.Fragment>
   );
 };

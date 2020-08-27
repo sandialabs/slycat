@@ -52,7 +52,4 @@ export interface LoadingPageButtonsProps {
   modalId: string
   jobStatus: string
   cancelJob: () => void
-  // pullHPCData: () => void
-  modelShow: boolean
-  sessionExists: boolean
 }

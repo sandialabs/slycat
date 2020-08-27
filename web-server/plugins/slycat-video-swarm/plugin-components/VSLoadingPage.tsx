@@ -8,18 +8,18 @@ import { JobCodes } from "components/loading-page/JobCodes";
 import VSLoadingPageButtons from "./VSLoadingPageButtons";
 import InfoBar from "components/loading-page/InfoBar";
 // import { faJedi } from "@fortawesome/free-solid-svg-icons";
-// import ConnectModal from "components/ConnectModal";
+import ConnectModal from "components/ConnectModal";
 interface LoadingPageProps {
-  modelId: any
+  modelId: any;
 }
-export default class VSLoadingPage extends React.Component< LoadingPageProps, any> {
+export default class VSLoadingPage extends React.Component<LoadingPageProps, any> {
   timer: any; //NodeJS.Timeout
   progressTimer: any;
   TIMER_MS: number = 10000;
   public constructor(props: any) {
     super(props);
     this.state = {
-      jid: '',
+      jid: "",
       sessionExists: false,
       progressBarHidden: false,
       modalId: "ConnectModal",
@@ -38,23 +38,22 @@ export default class VSLoadingPage extends React.Component< LoadingPageProps, an
    */
   componentDidMount() {
     console.log(this.props.modelId);
-    client.get_model_parameter_fetch({mid: this.props.modelId, aid: "jid"})
-      .then( jid =>
-        this.setState({jid}, () => 
-          client.get_model_parameter_fetch({mid: this.props.modelId, aid: "hostname"})
-            .then(hostname =>this.setState({hostname}))
-        )
-      );
-    // client.get_model_parameter({
-    //   mid: this.props.modelId,
-    //   aid: "jid",
-    //   success: function (result: any) {} });
-    // this.checkRemoteStatus().then(() => {
-    //   if (this.state.sessionExists) {
-    //     this.checkRemoteJob();
-    //   }
-    // });
-    // this.timer = setInterval(() => this.checkRemoteStatus(), this.TIMER_MS);
+    client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "jid" }).then((jid) =>
+      this.setState({ jid }, () =>
+        client
+          .get_model_parameter_fetch({ mid: this.props.modelId, aid: "hostname" })
+          .then((hostname) =>
+            this.setState({ hostname }, () =>
+              this.checkRemoteStatus().then(() => {
+                // if (this.state.sessionExists) {
+                //   this.checkRemoteJob();
+                // }
+              })
+            )
+          )
+      )
+    );
+    this.timer = setInterval(() => this.checkRemoteStatus(), this.TIMER_MS);
     // this.progressTimer = setInterval(() => this.updateProgress(), 3000);
   }
 
@@ -115,23 +114,24 @@ export default class VSLoadingPage extends React.Component< LoadingPageProps, an
    * @async
    * @memberof SlycatRemoteControls
    */
-  // private checkRemoteStatus = async (): Promise<any> => {
-  //   return client.get_remotes_fetch(this.props.hostname).then((json: any) => {
-  //     this.setState(
-  //       {
-  //         sessionExists: json.status,
-  //       },
-  //       () => {
-  //         if (!this.state.sessionExists) {
-  //           this.setState({ modelShow: true });
-  //           ($(`#${this.state.modalId}`) as any).modal("show");
-  //         } else if (this.state.progressBarProgress < 50) {
-  //           // this.checkRemoteJob();
-  //         }
-  //       }
-  //     );
-  //   });
-  // };
+  private checkRemoteStatus = async (): Promise<any> => {
+    return client.get_remotes_fetch(this.state.hostname).then((json: any) => {
+      this.setState(
+        {
+          sessionExists: json.status,
+        },
+        () => {
+          if (!this.state.sessionExists) {
+            console.log("session", json.status);
+            this.setState({ modelShow: true });
+            ($(`#${this.state.modalId}`) as any).modal("show");
+          } else if (this.state.progressBarProgress < 50) {
+            // this.checkRemoteJob();
+          }
+        }
+      );
+    });
+  };
 
   public render() {
     return (
@@ -140,7 +140,7 @@ export default class VSLoadingPage extends React.Component< LoadingPageProps, an
           <InfoBar
             jid={this.state.jid}
             hostname={this.state.hostname}
-            sessionExists={"this.state.sessionExists" ? true : false}
+            sessionExists={this.state.sessionExists}
           />
           <div style={{ paddingTop: "15px", paddingBottom: "15px" }}>
             <ProgressBar
@@ -149,19 +149,18 @@ export default class VSLoadingPage extends React.Component< LoadingPageProps, an
             />
           </div>
           <div className="row justify-content-center">
-            connect modal
-            {/* <ConnectModal
-              hostname={this.props.hostname}
+            <ConnectModal
+              hostname={this.state.hostname}
               modalId={this.state.modalId}
-              callBack={this.connectModalCallBack}
-            /> */}
+              callBack={(arg1: any, arg2: any) =>
+                console.log("connect modal callback called", arg1, arg2)
+              }
+            />
             <div className="btn-group col-8" role="group">
               <VSLoadingPageButtons
                 modalId={"modalID"}
                 jobStatus={"status"}
-                cancelJob={()=> console.log("cancel job called")}
-                modelShow={true}
-                sessionExists={false}
+                cancelJob={() => console.log("cancel job called")}
               />
             </div>
           </div>
