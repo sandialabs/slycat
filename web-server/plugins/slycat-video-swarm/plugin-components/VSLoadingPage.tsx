@@ -3,7 +3,7 @@ import client from "../../../js/slycat-web-client";
 import ProgressBar from "components/ProgressBar";
 // import { LoadingPageProps, LoadingPageState } from "./types";
 import { JobCodes } from "components/loading-page/JobCodes";
-// import LogList from "components/loading-page/LogList";
+import LogList from "components/loading-page/LogList";
 // import LoadingPageButtons from "./LoadingPageButtons";
 import VSLoadingPageButtons from "./VSLoadingPageButtons";
 import InfoBar from "components/loading-page/InfoBar";
@@ -174,8 +174,12 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
         </div>
         <div className="col-lg-12">
           <div className="slycat-job-checker-output text-white bg-secondary">
-            this is the log
-            {/* <LogList {...this.state} /> */}
+          
+            <LogList 
+            sessionExists={true}
+            jobStatus={"job status"}
+            log={{logLineArray:["test"]}}
+            />
           </div>
         </div>
       </div>
