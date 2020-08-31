@@ -24,6 +24,7 @@ import ReactDOM from "react-dom";
 import { Provider, connect } from 'react-redux';
 import ScatterplotLegend from './Components/ScatterplotLegend'; 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
+import { v4 as uuidv4 } from 'uuid';
 
 var nodrag = d3.behavior.drag();
 
@@ -1400,6 +1401,7 @@ $.widget("parameter_image.scatterplot",
           images.push({
             index : image.index,
             uri : image.uri.trim(),
+            uid : image.uid,
             image_class : "open-image",
             x : width * image.relx,
             y : height * image.rely,
@@ -1613,6 +1615,7 @@ $.widget("parameter_image.scatterplot",
         var open_element = {
           index : Number(frame.attr("data-index")),
           uri : frame.attr("data-uri"),
+          uid : frame.attr("data-uid"),
           relx : Number(frame.attr("data-transx")) / width,
           rely : Number(frame.attr("data-transy")) / height,
           width : frame.outerWidth(),
@@ -1654,7 +1657,6 @@ $.widget("parameter_image.scatterplot",
     if(images.length == 0) return;
     var image = images[0];
 
-    var fileUriArr = image.uri.split('/');
     const isVtp = image.uri.endsWith('.vtp');
     const isStl = image.uri.endsWith('.stl');
 
@@ -1763,6 +1765,7 @@ $.widget("parameter_image.scatterplot",
         .attr("data-uri", img.uri)
         .attr("data-transx", img.x)
         .attr("data-transy", img.y)
+        .attr("data-uid", img.uid)
         .style({
           "left": img.x + "px",
           "top": img.y + "px",
@@ -2174,6 +2177,11 @@ $.widget("parameter_image.scatterplot",
     // If image is hover and we are no longer loading this image, we're done.
     if( image.image_class == "hover-image" && self.opening_image != image.index) {
       return;
+    }
+
+    // Add a UID if there isn't one already.
+    if(image.uid === undefined) {
+      image.uid = uuidv4();
     }
 
     // Create scaffolding and status indicator if we already don't have one
