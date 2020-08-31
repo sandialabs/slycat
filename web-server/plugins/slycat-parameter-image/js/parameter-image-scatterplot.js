@@ -1741,6 +1741,16 @@ $.widget("parameter_image.scatterplot",
         ;
     };
 
+    var add_clone_button = function(fh) {
+      // console.log(`Adding clone button for 3D media...`);
+      fh.append("i")
+        .attr('class', 'clone-button frame-button fa fa-clone')
+        .attr('title', 'Clone')
+        .attr('aria-hidden', 'true')
+        .on('click', handlers["clone"])
+        ;
+    }
+
     var build_frame_html = function(img) {
       // Define a default size for every image.
       if(!img.width)
@@ -2142,6 +2152,23 @@ $.widget("parameter_image.scatterplot",
         var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
         self.element.trigger("jump_to_simulation", index);
       },
+
+      clone: function(){
+        // console.log(`About to clone this frame...`);
+        const frame = d3.select(d3.event.target.closest(".image-frame"));
+        const width = frame.node().offsetWidth;
+        const height = frame.node().offsetHeight;
+        self._open_images([{
+          index : frame.attr("data-index"),
+          uri : frame.attr("data-uri"),
+          image_class : "open-image",
+          x : +frame.attr("data-transx") + width,
+          y : +frame.attr("data-transy"),
+          width : width,
+          height : height,
+          clone: true,
+        }]);
+      }
     }
 
     function video_sync_time_changed(self_passed)
@@ -2168,9 +2195,10 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
-    // Don't open image if it's already open
-    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
+    // Don't open image if it's already open, except if we are cloning
+    if(!image.clone &&  $(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
       self._open_images(images.slice(1));
+      // console.log(`Skipped opening media at ${image.uri} because it's already open.`);
       return;
     }
 
@@ -2184,8 +2212,15 @@ $.widget("parameter_image.scatterplot",
       image.uid = uuidv4();
     }
 
-    // Create scaffolding and status indicator if we already don't have one
-    if ( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ) {
+    // Create scaffolding and status indicator if we already don't have one or if we are cloning
+    if( 
+      self.media_layer
+        .select("div[data-uri='" + image.uri + "']")
+        .filter("." + image.image_class + ",.open-image")
+        .empty() ||
+      image.clone
+    )
+    {
       frame_html = build_frame_html(image);
     }
 
@@ -2213,7 +2248,9 @@ $.widget("parameter_image.scatterplot",
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
-      var frame_html = self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']");
+      var frame_html = self.media_layer
+        .select(`div.${image.image_class}[data-uri='${image.uri}'][data-uid='${image.uid}']`)
+        ;
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
 
@@ -2616,6 +2653,12 @@ $.widget("parameter_image.scatterplot",
       // Create jump control
       add_jump_button(footer, image.index);
 
+      // Create clone button for 3D media ... 
+      if(isVtp)
+      {
+        add_clone_button(footer, image.uri);
+      }
+
       if(!image.no_sync)
         self._sync_open_media();
 
@@ -2669,10 +2712,24 @@ $.widget("parameter_image.scatterplot",
                 .on("click", (function(img, frame){
                   return function(){
                     var hostname = URI(img.uri).hostname();
-                    var images = $(this).closest(".media-layer").children(".scaffolding").filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == hostname; })
-                    var loading_image = d3.selectAll(images).append("div").attr("class", "loading-image");
+                    var images = $(this)
+                      .closest(".media-layer")
+                      .children(".scaffolding")
+                      .filter(function(_,x){ 
+                        return URI($(x).attr("data-uri")).hostname() == hostname; 
+                      })
+                      ;
+                    var loading_image = d3.selectAll(images)
+                      .append("div")
+                      .attr("class", "loading-image")
+                      ;
                     images.find(".reload-button").remove();
-                    self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
+                    self._open_images(images.map(function(_,x){ 
+                      return {
+                        uri: $(x).attr("data-uri"), 
+                        image_class: image.image_class
+                      }; 
+                      }));
                   }})(image, frame));
               self.login_open = false;
             },
