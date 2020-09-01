@@ -1412,6 +1412,7 @@ $.widget("parameter_image.scatterplot",
             video : image.video,
             currentTime : image.currentTime,
             current_frame : image.current_frame,
+            initial : true,
             });
         }
         if(image.current_frame)
@@ -1812,6 +1813,7 @@ $.widget("parameter_image.scatterplot",
       {
         self.line_layer.append("line")
           .attr("data-uri", img.uri)
+          .attr("data-uid", img.uid)
           .attr("class", "leader")
           .attr("x1", img.x + (img.width / 2))
           .attr("y1", img.y + (img.height / 2))
@@ -2158,15 +2160,20 @@ $.widget("parameter_image.scatterplot",
         const frame = d3.select(d3.event.target.closest(".image-frame"));
         const width = frame.node().offsetWidth;
         const height = frame.node().offsetHeight;
+        const index = frame.attr("data-index");
+        const x = +frame.attr("data-transx") + width;
+        const y = frame.attr("data-transy");
         self._open_images([{
-          index : frame.attr("data-index"),
+          index : index,
           uri : frame.attr("data-uri"),
           image_class : "open-image",
-          x : +frame.attr("data-transx") + width,
-          y : +frame.attr("data-transy"),
+          x : x,
+          y : y,
+          target_x : self.x_scale_format(self.options.x[index]),
+          target_y : self.y_scale_format(self.options.y[index]),
           width : width,
           height : height,
-          clone: true,
+          clone : true,
         }]);
       }
     }
@@ -2195,8 +2202,13 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
-    // Don't open image if it's already open, except if we are cloning
-    if(!image.clone &&  $(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
+    // Don't open media if it's already open, unless we are cloning or it's the initial set
+    if(
+      !image.initial
+      && !image.clone
+      && $(`.open-image[data-uri='${image.uri}']:not(.scaffolding)`).length > 0
+    )
+    {
       self._open_images(images.slice(1));
       // console.log(`Skipped opening media at ${image.uri} because it's already open.`);
       return;
@@ -2212,13 +2224,12 @@ $.widget("parameter_image.scatterplot",
       image.uid = uuidv4();
     }
 
-    // Create scaffolding and status indicator if we already don't have one or if we are cloning
+    // Create scaffolding and status indicator if we already don't have one 
     if( 
       self.media_layer
-        .select("div[data-uri='" + image.uri + "']")
-        .filter("." + image.image_class + ",.open-image")
-        .empty() ||
-      image.clone
+        .select(`div[data-uri='${image.uri}'][data-uid='${image.uid}']`)
+        .filter(`.${image.image_class},.open-image`)
+        .empty()
     )
     {
       frame_html = build_frame_html(image);
@@ -3061,13 +3072,14 @@ $.widget("parameter_image.scatterplot",
   _adjust_leader_line: function(frame_html)
   {
     var self = this;
-    var width = $(frame_html.node()).width();
-    var height = $(frame_html.node()).height();
-    var uri = frame_html.attr("data-uri");
-    var x1 = Number(frame_html.attr("data-transx")) + (width / 2);
-    var y1 = Number(frame_html.attr("data-transy")) + (height / 2);
-    var line = self.line_layer
-      .select("line[data-uri='" + uri + "']")
+    const width = $(frame_html.node()).width();
+    const height = $(frame_html.node()).height();
+    const uri = frame_html.attr("data-uri");
+    const uid = frame_html.attr("data-uid");
+    const x1 = Number(frame_html.attr("data-transx")) + (width / 2);
+    const y1 = Number(frame_html.attr("data-transy")) + (height / 2);
+    self.line_layer
+      .select(`line[data-uri='${uri}'][data-uid='${uid}']`)
       .attr("x1", x1)
       .attr("y1", y1)
       ;
@@ -3125,9 +3137,9 @@ $.widget("parameter_image.scatterplot",
   _remove_image_and_leader_line: function(frame_html)
   {
     var self = this;
-    var uri = frame_html.attr("data-uri");
+    var uid = frame_html.attr("data-uid");
     var index = frame_html.attr("data-index");
-    var line = self.line_layer.select("line[data-uri='" + uri + "']");
+    var line = self.line_layer.select("line[data-uid='" + uid + "']");
 
     // Let vtk viewer know it was closed
     if(frame_html.node().querySelector('.vtp'))
