@@ -111,7 +111,7 @@ export default class ControlsSelection extends React.PureComponent {
     const no_visible_unselected = _.difference(unselected, this.props.hidden_simulations).length === 0;
   
     // Make an array of all open image indexes
-    const open_media_indexes = this.props.open_media.map(open_image => open_image.index);
+    const open_media_indexes = this.props.open_media.map(media => media.index);
     const all_open_hidden = _.difference(open_media_indexes, this.props.hidden_simulations).length === 0;
     const all_open_selected = _.difference(open_media_indexes, this.props.selection).length === 0;
     
@@ -135,7 +135,12 @@ export default class ControlsSelection extends React.PureComponent {
     const no_media_variable_selected = !(this.props.media_variable && this.props.media_variable >= 0);
     const all_selection_hidden = _.difference(this.props.selection, this.props.hidden_simulations).length === 0;
     // console.log(`all_selection_hidden is ${all_selection_hidden}`);
-    // Check if the current selection is already pinned
+    // Check if the current selection is already pinned.
+    // Note that this only checks if there is any pin for the current selection,
+    // does not check if the pin matches the currently selected media column.
+    // In the future, we should improve this because it should check if the pins
+    // match the current column so users can select a new column and have the 
+    // menu item to pin available again.
     const unpinned_selection = _.difference(this.props.selection, open_media_indexes);
     // console.log(`unpineed_selection is ${unpinned_selection}`);
     const current_selection_pinned = unpinned_selection.length === 0;
