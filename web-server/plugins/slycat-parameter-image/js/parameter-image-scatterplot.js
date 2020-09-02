@@ -1430,8 +1430,8 @@ $.widget("parameter_image.scatterplot",
       {
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
-        var uri = frame.attr("data-uri");
-        self.line_layer.select("line[data-uri='" + uri + "']")
+        var uid = frame.attr("data-uid");
+        self.line_layer.select("line[data-uid='" + uid + "']")
           .attr("x2", self.x_scale_format(self.options.x[image_index]) )
           .attr("y2", self.y_scale_format(self.options.y[image_index]) )
           .attr("data-targetx", self.x_scale_format(self.options.x[image_index]))
@@ -1774,9 +1774,9 @@ $.widget("parameter_image.scatterplot",
 
       var frame_html = self.media_layer.append("div")
         .attr("data-uri", img.uri)
+        .attr("data-uid", img.uid)
         .attr("data-transx", img.x)
         .attr("data-transy", img.y)
-        .attr("data-uid", img.uid)
         .style({
           "left": img.x + "px",
           "top": img.y + "px",
@@ -2227,7 +2227,7 @@ $.widget("parameter_image.scatterplot",
     // Create scaffolding and status indicator if we already don't have one 
     if( 
       self.media_layer
-        .select(`div[data-uri='${image.uri}'][data-uid='${image.uid}']`)
+        .select(`div[data-uid='${image.uid}']`)
         .filter(`.${image.image_class},.open-image`)
         .empty()
     )
@@ -2260,7 +2260,7 @@ $.widget("parameter_image.scatterplot",
       }
 
       var frame_html = self.media_layer
-        .select(`div.${image.image_class}[data-uri='${image.uri}'][data-uid='${image.uid}']`)
+        .select(`div.${image.image_class}[data-uid='${image.uid}']`)
         ;
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
@@ -2286,7 +2286,7 @@ $.widget("parameter_image.scatterplot",
 
       // Otherwise if the image is already in the cache, display it.
       else if (already_cached) {
-        console.log("Displaying image " + image.uri + " from cache...");
+        // console.log("Displaying image " + image.uri + " from cache...");
         var url_creator = window.URL || window.webkitURL;
         var blob = self.options.image_cache[image.uri];
         var image_url = url_creator.createObjectURL(blob);
@@ -2334,6 +2334,7 @@ $.widget("parameter_image.scatterplot",
           var video = frame_html
             .append("video")
             .attr("data-uri", image.uri)
+            .attr("data-uid", image.uid)
             .attr("src", image_url)
             .attr("controls", true)
             .attr("loop", true)
@@ -2517,12 +2518,14 @@ $.widget("parameter_image.scatterplot",
             .attr("data-ratio", 8.5/11)
             .append("object")
             .attr("data-uri", image.uri)
+            .attr("data-uid", image.uid)
             .attr("data", image_url)
             .attr("type", "application/pdf")
             .attr("width", "100%")
             .attr("height", "100%")
             .append("iframe")
             .attr("data-uri", image.uri)
+            .attr("data-uid", image.uid)
             .attr("src", image_url)
             // .attr("type", "application/pdf")
             .attr("width", "100%")
@@ -2706,12 +2709,20 @@ $.widget("parameter_image.scatterplot",
             title: "Login to " + uri.hostname(),
             message: "Loading " + uri.pathname(),
             cancel: function() {
-              var jFrame = $(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
+              var jFrame = $(".scaffolding." + image.image_class + "[data-uid=\"" + image.uid + "\"]");
               var frame = d3.select(jFrame[0]);
-              var related_frames = jFrame.closest('.media-layer').children('.scaffolding').filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == uri.hostname(); });
+              var related_frames = jFrame
+                .closest('.media-layer')
+                .children('.scaffolding')
+                .filter(function(_,x){ 
+                  return URI($(x).attr("data-uri")).hostname() == uri.hostname(); 
+                });
+              debugger;
               related_frames.find(".loading-image").remove();
 
-              var reload_button = d3.selectAll(related_frames.filter(":not(:has(>.reload-button))")).append("span")
+              var reload_button = d3
+                .selectAll(related_frames.filter(":not(:has(>.reload-button))"))
+                .append("span")
                 .attr("class", "fa fa-refresh reload-button")
                 .attr("title", "Could not load image. Click to reconnect.")
                 .each(function(){
@@ -2738,6 +2749,7 @@ $.widget("parameter_image.scatterplot",
                     self._open_images(images.map(function(_,x){ 
                       return {
                         uri: $(x).attr("data-uri"), 
+                        uid: $(x).attr("data-uid"),
                         image_class: image.image_class
                       }; 
                       }));
@@ -3074,12 +3086,11 @@ $.widget("parameter_image.scatterplot",
     var self = this;
     const width = $(frame_html.node()).width();
     const height = $(frame_html.node()).height();
-    const uri = frame_html.attr("data-uri");
     const uid = frame_html.attr("data-uid");
     const x1 = Number(frame_html.attr("data-transx")) + (width / 2);
     const y1 = Number(frame_html.attr("data-transy")) + (height / 2);
     self.line_layer
-      .select(`line[data-uri='${uri}'][data-uid='${uid}']`)
+      .select(`line[data-uid='${uid}']`)
       .attr("x1", x1)
       .attr("y1", y1)
       ;

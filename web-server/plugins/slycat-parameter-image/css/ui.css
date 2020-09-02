@@ -472,6 +472,7 @@
 }
 .frame-button.clone-button {
   padding-top: 4px;
+  font-weight: bold;
 }
 .frame-button.table-index {
   padding: 0px 0px 0px 2px;
