@@ -23,10 +23,10 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
       sessionExists: false,
       progressBarHidden: false,
       modalId: "ConnectModal",
-      progressBarProgress: 10,
+      progressBarProgress: 20,
       modelMessage: "",
       modelShow: false,
-      pullCalled: 0,
+      hostname: '',
       jobStatus: "Job Status Unknown",
       log: {
         logLineArray: [] as any, // [string]
@@ -44,11 +44,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
           .get_model_parameter_fetch({ mid: this.props.modelId, aid: "hostname" })
           .then((hostname) =>
             this.setState({ hostname }, () =>
-              this.checkRemoteStatus().then(() => {
-                // if (this.state.sessionExists) {
-                //   this.checkRemoteJob();
-                // }
-              })
+              this.checkRemoteStatus()
             )
           )
       )
@@ -107,7 +103,31 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
   //     console.log("response", response);
   //   });
   // };
-
+  /**
+   * function used to test if we have an ssh connection to the hostname
+   * @param hostname name of the host we want to connect to
+   * @async
+   * @memberof SlycatRemoteControls
+   */
+  private checkRemoteJob = async () => {
+    return client.get_checkjob_fetch(this.state.hostname, this.state.jid).then((json: any) => {
+      this.appendLog(json);
+    });
+  };
+  private appendLog = (resJson: any) => {
+    this.setState({
+      jobStatus: `${resJson.status.state}`,
+      log: { logLineArray: resJson.logFile.split("\n") },
+    });
+  }
+  /**
+   * cancel the current running job on the hpc
+   */
+  private cancelJob = async (): Promise<any> => {
+    return client.delete_job_fetch(this.state.hostname, this.state.jid).then((response: any) => {
+      console.log("response", response);
+    });
+  };
   /**
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
@@ -125,9 +145,8 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
             console.log("session", json.status);
             this.setState({ modelShow: true });
             ($(`#${this.state.modalId}`) as any).modal("show");
-          } else if (this.state.progressBarProgress < 50) {
-            // this.checkRemoteJob();
           }
+          this.checkRemoteJob();
         }
       );
     });
@@ -160,7 +179,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
               <VSLoadingPageButtons
                 modalId={"modalID"}
                 jobStatus={"status"}
-                cancelJob={() => console.log("cancel job called")}
+                cancelJob={this.cancelJob}
               />
             </div>
           </div>
@@ -174,11 +193,11 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
         </div>
         <div className="col-lg-12">
           <div className="slycat-job-checker-output text-white bg-secondary">
-          
-            <LogList 
-            sessionExists={true}
-            jobStatus={"job status"}
-            log={{logLineArray:["test"]}}
+
+            <LogList
+              sessionExists={this.state.sessionExists}
+              jobStatus={this.state.jobStatus}
+              log={this.state.log}
             />
           </div>
         </div>
