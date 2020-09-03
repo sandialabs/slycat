@@ -141,6 +141,7 @@ export default function ps_reducer(state = initialState, action) {
           three_d_colorby_range: {
             ...state.derived.three_d_colorby_range,
             [action.uri]: {
+              ...state.derived.three_d_colorby_range[action.uri],
               [action.colorBy]: action.range
             }
           }

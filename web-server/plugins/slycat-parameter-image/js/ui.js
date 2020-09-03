@@ -420,6 +420,7 @@ $(document).ready(function() {
                 variableAliases: variable_aliases,
                 xValues: [],
                 yValues: [],
+                three_d_colorby_range: {},
               }
             },
             applyMiddleware(
