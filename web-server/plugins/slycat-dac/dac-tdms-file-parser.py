@@ -28,6 +28,7 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
+import cherrypy
 
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
@@ -45,15 +46,15 @@ def filter_shots (database, model, dac_error, parse_error_log, tdms_ref,
     for tdms_file in tdms_ref:
 
         # get root meta data properties, same for every row of table
-        root_properties = pd.DataFrame(tdms_file.object().properties, index=[0]).add_suffix(' [Root]')
+        root_properties = pd.DataFrame(tdms_file.properties, index=[0]).add_suffix(' [Root]')
 
         for group in tdms_file.groups():
 
             # name shot/channel for potential errors
-            shot_name = str(tdms_file.object().properties['name']) + '_' + group
+            shot_name = str(tdms_file.properties['name']) + '_' + group.name
 
             # get channels for group
-            group_channels = tdms_file.group_channels(group)
+            group_channels = tdms_file[group.name].channels()
 
             # compile channel data in a list
             channel_data = []
@@ -70,7 +71,7 @@ def filter_shots (database, model, dac_error, parse_error_log, tdms_ref,
                 channel['wf_unit'] = channel_object.properties.get('wf_unit', None)
 
                 # get channel name
-                channel['name'] = channel_object.channel
+                channel['name'] = channel_object.name
 
                 # get channel unit
                 channel['unit'] = channel_object.properties.get('Unit', None)
@@ -114,13 +115,13 @@ def filter_shots (database, model, dac_error, parse_error_log, tdms_ref,
             # gather meta data:
 
             # get group meta data properties, different for each row of table
-            group_properties = pd.DataFrame(tdms_file.object(group).properties, index=[0]).add_suffix(' [Group]')
+            group_properties = pd.DataFrame(tdms_file[group.name].properties, index=[0]).add_suffix(' [Group]')
 
             # combine root and group properties
             group_root_properties = group_properties.join(root_properties, sort=False)
 
             # add shot index
-            shot = pd.DataFrame([group], index=[0], columns=['Group'])
+            shot = pd.DataFrame([group.name], index=[0], columns=['Group'])
             group_root_shot_properties = group_root_properties.join(shot, sort=False)
 
             # make unique index to row from name and group number (shot)

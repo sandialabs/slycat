@@ -1,0 +1,41 @@
+.slycat-variable-ranges {
+  thead th {
+    padding-bottom: 10px;
+  }
+  // Uncomment to make the first column as narrow as possible
+  // tbody th.variable-name {
+  //   width: 1%;
+  // }
+  tbody th.variable-name {
+    border-right: 1px solid #DDD;
+  }
+  tbody td.axis-input {
+    white-space: nowrap;
+  }
+  input.variable-range.contains-user-input {
+    font-weight: bold;
+    color: black;
+  }
+  /* Remove number spinner controls from Chrome and Safari */
+  input.variable-range[type=number]::-webkit-inner-spin-button {
+    display: none;
+  }
+  /* Remove number spinner controls from Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+    max-width: 120px;
+  }
+  .lessThanValidationMessageCell {
+    width: 25px;
+  }
+  .lessThanValidationMessage.valid {
+    display: none;
+  }
+  .variable-name,
+  .data-min,
+  .data-max
+  {
+    overflow-wrap: anywhere;
+  }
+
+}

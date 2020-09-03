@@ -1,5 +1,14 @@
 .slycat-scatterplot-options {
   label[for="unselected-border-size"] {
-      margin-left: 20px;
+    margin-left: 20px;
+  }
+  .slycat-point-size {
+    input {
+      width: 70px;
     }
+    input.edited {
+      font-weight: bold;
+      color: black;
+    }
+  }
 }

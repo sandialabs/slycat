@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Filtering &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Categorical Filters" href="CategoricalFilters.html" />
+    <link rel="prev" title="Scatterplot View" href="ScatterplotView.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingPSModel.html">Creating a Parameter Space Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="ScatterplotView.html">Scatterplot View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PSVariableTable.html">Variable Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="parameter.space.model.html">Parameter Space Model</a> &raquo;</li>
+        
+          <li><a href="PSModelVis.html">Parameter Space Model Visualization</a> &raquo;</li>
+        
+          <li><a href="ScatterplotView.html">Scatterplot View</a> &raquo;</li>
+        
+      <li>Filtering</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/Filter.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="filtering">
+<span id="id1"></span><h1>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h1>
+<p>There are two mutually exclusive mechanisms in the Parameter Space scatterplot for removing points from the view, filtering and
+hiding selected points.  Once a filter is present, point hiding operations in the <em>Selection Action</em> dropdown are disabled.  If
+points had previously been hidden using point hiding, they immediately become visible again as soon as any filter is selected.
+This ensures that during filtering, visible points only reflect the filtering choices.  We did this because we wanted
+screenshots of the model that included filters to be self-documenting as to which values were retained and which had been
+removed.  This is useful for interpreting slides or figures outside of the Slycat™ interface.</p>
+<p>However, sometimes manually removing points through selection is the only way to define a set of points matching criteria that
+are not achievable through filtering.  Since multiple selections may be required to construct this set, we want to avoid
+discarding it unintentionally.  Consequently, the last visibility state is saved when filters are enabled.  Once all filters
+have been removed, the scatterplot returns to its previous state of visibility (i.e. any points that were previously hidden
+through the selection mechanism will return to being hidden).  To explicitly return to a state of total point visibility, click
+the <em>Show All</em> button.</p>
+<p>Similarly, filter states are saved, so if you remove a filter and then reinstate it, the filter will resume with its previous
+settings (button states or slider range).  This way, if you accidentally remove a filter and don’t remember the settings, you
+can instantly restore your state.</p>
+<div class="figure align-center" id="id2">
+<img alt="../_images/Figure29.png" src="../_images/Figure29.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 29: Filter dropdown variable list for cars data.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>To add a filter, click on the <em>Filter</em> button to drop down a list of variables, such as those for the cars data shown in
+Figure 29.  Selecting a variable from the list displays a filter consisting of either a set of buttons for categorical variables
+(see Creating a Parameter Space Model for how to define a categorical variable), or a slider for continuous variables (Figure 30
+shows examples of each).  To remove a filter, click the <img alt="DeleteIcon" src="../_images/DeleteIcon.png" /> icon in the upper left corner of the filter.  In both types
+of filters, blue coloration of the buttons or the slider range indicates values that are visible, whereas gray is used for
+values that are not visible.  As filters are changed to remove values, corresponding points are removed from the scatterplot and
+their rows in the table are grayed out.  Conversely, as filters add values back into the visible set, corresponding points will
+reappear in the plot and their table rows will be re-colored.</p>
+<div class="figure align-center" id="id3">
+<img alt="../_images/Figure30.png" src="../_images/Figure30.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 30: Examples of both a categorical and a continuous filter.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="CategoricalFilters.html">Categorical Filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ContinuousFilters.html">Continuous Filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MissingValues.html">Missing Values</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="CategoricalFilters.html" class="btn btn-neutral float-right" title="Categorical Filters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ScatterplotView.html" class="btn btn-neutral float-left" title="Scatterplot View" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

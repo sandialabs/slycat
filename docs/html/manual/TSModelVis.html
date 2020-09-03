@@ -1,0 +1,276 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Time Series Model Visualization &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Dendrogram View" href="Dendrogram.html" />
+    <link rel="prev" title="High Performance Computing Parameters Dialog" href="HPCParams.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="TimeSeriesData.html">Time Series Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingTSModel.html">Creating a Time Series Model</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Time Series Model Visualization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="Dendrogram.html">Dendrogram View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TSSimView.html">Time Series Simulation View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TSVariableTable.html">Time Series Variable Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="timeseries.model.html">Timeseries Model</a> &raquo;</li>
+        
+      <li>Time Series Model Visualization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/TSModelVis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="time-series-model-visualization">
+<h1>Time Series Model Visualization<a class="headerlink" href="#time-series-model-visualization" title="Permalink to this headline">¶</a></h1>
+<p>Our examples in this section come from an ensemble of 250 electrical circuit simulations, where our time series outputs are
+current and voltage variables sampled over time.  A Time Series model of this ensemble is shown in Figure 54.  The model
+provides three linked views, each providing a different level of abstraction.  The <em>Dendrogram View</em> in the upper left provides
+a high-level view that groups waveforms by similarity.  In the upper right, the <em>Simulation View</em> displays a line plot for each
+ensemble member.  The plots are superimposed in a shared coordinate space to facilitate comparisons. The lowest level view is
+the <em>Variable Table</em>, which provides the raw data values from the original table file.  It is drawn across the bottom of the
+display and may be scrolled both vertically and horizontally if the number of rows or columns exceeds the available space.
+Although the <em>Variable Table</em> may contain columns with scalar output metrics, or columns of file URIs that would be categorized
+as being neither input nor output, the ingestion wizard assumes all table columns are inputs and colors them green.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/Figure54.png"><img alt="../_images/Figure54.png" src="../_images/Figure54.png" style="width: 1184.0px; height: 692.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 54: Time Series model with Dendrogram View in upper left, Simulation View in upper right, and Variable Table below.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>The <em>Dendrogram View</em> controls visibility of ensemble members in both the <em>Simulation View</em> and the <em>Variable Table</em>.
+Selections can be made in any one of the views, after which they are propagated to the other two.  Color-encoding is shared
+by all views.</p>
+<p>The model specific controls for a Time Series model are shown in Figure 55.  Within each time series file, multiple output
+variables may be present.  Each variable is input as a column of values, and each row provides the values for all variables
+at a single instant in time.  Each time series variable generates a distinctly different dendrogram and has a set of unique
+plots.  The <em>Outputs</em> dropdown provides a list of the time series variables so you can select which one is currently being
+displayed in the <em>Dendrogram View</em> and the <em>Simulation View</em>.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../_images/Figure55.png"><img alt="../_images/Figure55.png" src="../_images/Figure55.png" style="width: 236.0px; height: 28.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 55: Time Series model specific controls.  The Outputs dropdown switches the views between different time series variables.  Line Color selects from the scalar input variables for color-coding the lines.  The Download Table icon enables download of the entire Variable Table or subsets thereof.  Colors selects the color theme.  The latter two functions are shared by all model types.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>To facilitate discovering relationships between input parameters and groups of output plots, it is often useful to color-code
+the lines by input variable values.  Select a color-coding variable either through the <em>Line Color</em> dropdown or by clicking on
+a table column header (see Color-Coding Lines below).</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Dendrogram.html">Dendrogram View</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="DendrogramControl.html">Dendrogram Expansion/Contraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DendrogramFiltering.html">Dendrogram Visibility Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Sparklines.html">Sparklines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TSSimView.html">Time Series Simulation View</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="TSSimView.html#color-coding-lines">Color-Coding Lines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TSSimView.html#legend">Legend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="TSVariableTable.html">Time Series Variable Table</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Dendrogram.html" class="btn btn-neutral float-right" title="Dendrogram View" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="HPCParams.html" class="btn btn-neutral float-left" title="High Performance Computing Parameters Dialog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

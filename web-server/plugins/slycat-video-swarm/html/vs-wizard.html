@@ -141,9 +141,9 @@ S. Martin
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-frames-selector">
       </select>
 
-      <label style="margin-top:30px">Please choose column of CSV file with links to video files.</label>
+      <!-- <label style="margin-top:30px">Please choose column of CSV file with links to video files.</label>
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-videos-selector">
-      </select>
+      </select> -->
 
       <label style="margin-top:30px">Working Directory
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
@@ -154,8 +154,19 @@ S. Martin
       <div class="invalid-feedback">
         Please enter a working directory.
       </div>
+      <div>
+        <input type="checkbox" style="margin-top:10px" data-bind="checked: delete_workdir"> Delete working directory when computations are complete.</input>
+      </div>
 
-      <input type="checkbox" style="margin-top:10px" data-bind="checked: delete_workdir"> Delete working directory when computations are complete.</input>
+      <label style="margin-top:30px">Movie Directory
+        <i class="fa fa-question-circle inline-help" aria-hidden="true"
+           title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
+        ></i>
+      </label>
+      <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
+      <div class="invalid-feedback">
+        Please enter a movie directory.
+      </div>
       <br>
 
       <label style="margin-top:30px">Video Frame Rate
@@ -239,7 +250,7 @@ S. Martin
             <div class="col-sm-12">
               <input id="VS-nminutes" class="form-control slycat-remote-interface-prebuilt-field" type="number" min="0" placeholder="minutes" data-bind="value: time_minutes, enable: HPC_Job">
               <div class="invalid-feedback">
-                Must be >= 0 and < 60 (> 0 if hours = 0).
+                Must be &gt;= 0 and &lt; 60 (&gt; 0 if hours = 0).
               </div>
             minutes
             </div>

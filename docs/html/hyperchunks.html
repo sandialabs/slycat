@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Hyperchunks &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="DELETE Logout" href="DELETE-logout.html" />
+    <link rel="prev" title="REST API" href="rest-api.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="manual/user-manual.html">Slycat User Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="colophon.html">Colophon</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="rest-api.html">REST API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Hyperchunks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-hql">Basic HQL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-hql">Advanced HQL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hql-context">HQL Context</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-logout.html">DELETE Logout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Model.html">DELETE Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project.html">DELETE Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Cache.html">DELETE Project Cache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Cache-Object.html">DELETE Project Cache Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Data.html">DELETE Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Project-Data-In-Model.html">DELETE Project Data In Model Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Model-In-Project-Data.html">DELETE Model In Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-reference.html">DELETE Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Remote.html">DELETE Remote</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DELETE-Upload.html">DELETE Upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Bookmark.html">GET Bookmark</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Home.html">GET Home</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Arrayset-Data.html">GET Model Arrayset Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Arrayset-Metadata.html">GET Model Arrayset Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Command.html">GET Model Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-File.html">GET Model File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Parameter.html">GET Model Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Chunk.html">GET Model Table Chunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Metadata.html">GET Model Table Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Sorted-Indices.html">GET Model Table Sorted Indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model-Table-Unsorted-Indices.html">GET Model Table Unsorted Indices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Model.html">GET Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Project-Cache-Object.html">GET Project Cache Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Project-Models.html">GET Project Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Project.html">GET Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Projects.html">GET Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Remote-File.html">GET Remote File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Remote-Image.html">GET Remote Image</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-Remote-Video.html">GET Remote Video</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GET-User.html">GET User</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Cancel-Job.html">POST Cancel Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Check-Job.html">POST Check Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Events.html">POST Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Get-Job-Output.html">POST Get Job Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-login.html">POST Login</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Arrayset-Data.html">POST Model Arrayset Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Command.html">POST Model Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Files.html">POST Model Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Model-Finish.html">POST Model Finish</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Project-Bookmark.html">POST Project Bookmark</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Project-Models.html">POST Project Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Project-Data.html">POST Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Projects.html">POST Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Remote-Browse.html">POST Remote Browse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Remote-Launch.html">POST Remote Launch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Remotes.html">POST Remotes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Submit-Batch.html">POST Submit Batch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Uploads.html">POST Uploads</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Upload-Finished.html">POST Upload Finished</a></li>
+<li class="toctree-l2"><a class="reference internal" href="POST-Project-Data.html">POST Project Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Arrayset-Array.html">PUT Model Arrayset Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Arrayset-Data.html">PUT Model Arrayset Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Arrayset.html">PUT Model Arrayset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Command.html">PUT Model Command</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Inputs.html">PUT Model Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model-Parameter.html">PUT Model Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Model.html">PUT Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Project.html">PUT Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="PUT-Upload-File-Part.html">PUT Upload File Part</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="rest-api.html">REST API</a> &raquo;</li>
+        
+      <li>Hyperchunks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/hyperchunks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="hyperchunks">
+<span id="id1"></span><h1>Hyperchunks<a class="headerlink" href="#hyperchunks" title="Permalink to this headline">¶</a></h1>
+<p>To meet a wide variety of needs for incremental and interactive data ingestion
+and retrieval, Slycat has evolved a complex data storage hierarchy.  At the top
+of the hierarchy are <em>projects</em>, which provide administrative and access
+controls, grouping together related analytical results.  <em>Models</em> are owned by
+projects, and represent instances of specific analysis types.  Models contain
+data <em>artifacts</em>, whose layout and structure are dictated by the model type.
+Each artifact in a model is identified by name, which can be an arbitrary
+string.  There are three types of artifacts: <em>parameters</em> are JSON objects of
+arbitrary complexity, intended for storage of small quantities of metadata.
+<em>Files</em> are opaque binary objects that can store large quantities of data,
+along with an explicitly stored MIME type.  The final and most widely used type
+of artifact is an <em>arrayset</em>, which is a one-dimensional array of <em>darrays</em>.  A
+darray is a dense, multi-dimensional multi-attribute array, and an arrayset
+stores <span class="math notranslate nohighlight">\(n\)</span> darrays that can be accessed by integer indices in the range
+<span class="math notranslate nohighlight">\([0, n)\)</span>.  In-turn, each <em>attribute</em> in a darray can be accessed by its
+integer index, and the elements in each attribute can be identified using a
+<em>hyperslice</em>, which includes a <em>slice</em> of element indices for each dimension of
+the darray.</p>
+<p>The bulk of the data in a Slycat model is stored in arraysets, and each time a
+client reads or writes data to an arrayset, it must specify all of the
+parameters mentioned above.  To make this process simpler, while allowing for a
+wide variety of data access patterns, we group this information into
+<em>hyperchunks</em>, and have developed the <cite>Hyperchunk Query Language</cite> or <cite>HQL</cite> to
+serve as a compact specification for a set of hyperchunks.  Using HQL, a client
+can read and write data that spans the arrays and attributes in an arrayset,
+including computed attributes and arbitrary expressions.</p>
+<div class="section" id="basic-hql">
+<h2>Basic HQL<a class="headerlink" href="#basic-hql" title="Permalink to this headline">¶</a></h2>
+<p>To begin, the most basic building-block in HQL is a <em>slice</em> expression, which
+follows the same syntactic rules as slicing in the Python language:  At its
+most general a slice takes the form “start:stop:skip”, which specifies every
+<span class="math notranslate nohighlight">\(skip\)</span>-th element in the half-open range <span class="math notranslate nohighlight">\([start, stop)\)</span>.  If start
+is omitted, it defaults to zero.  If stop is omitted, it defaults to the length
+of the available range.  If skip is omitted it defaults to one.  If start or
+stop are negative, they represent indices counted backwards from the end of the
+available range.  Start, stop, and skip may be omitted or used in any
+combination desired:</p>
+<ul class="simple">
+<li><p>“10:20:2” - every other index in the range <span class="math notranslate nohighlight">\([10, 20)\)</span>.</p></li>
+<li><p>“10:20” - every index in the range <span class="math notranslate nohighlight">\([10, 20)\)</span>.</p></li>
+<li><p>“10:” - every index from 10 through the end of the available range.</p></li>
+<li><p>“:20” - every index in the range <span class="math notranslate nohighlight">\([0, 20)\)</span>.</p></li>
+<li><p>“…” - every index in the available range.</p></li>
+<li><p>“:” - every index in the available range.</p></li>
+<li><p>“::” - every index in the available range.</p></li>
+<li><p>“::2” - every other index in the available range, starting with zero: <span class="math notranslate nohighlight">\(0, 2, 4, ...\)</span>.</p></li>
+<li><p>“1::2” - every other index in the available range, starting with one: <span class="math notranslate nohighlight">\(1, 3, 5, ...\)</span>.</p></li>
+<li><p>“10” - index 10.</p></li>
+<li><p>“-1” - last index in the available range.</p></li>
+<li><p>“-10:” - last ten indices in the available range.</p></li>
+</ul>
+<p>Recall that a slice is a range of indices along a single dimension, while
+darrays are multi-dimensional.  Thus, to retrieve data from a darray with more
+than one dimension, we need to specify <em>hyperslice</em> expressions.  To do this,
+HQL uses slice expressions separated by commas.  For example:</p>
+<ul class="simple">
+<li><p>“1” - index 1 of a vector.</p></li>
+<li><p>“1,2” - row 1, column 2 of a matrix.</p></li>
+<li><p>“3,…” - row 3 of a matrix.</p></li>
+<li><p>“…,4” - column 4 of a matrix.</p></li>
+<li><p>“50:60,7” - rows <span class="math notranslate nohighlight">\([50, 60)\)</span> from column 7 in a matrix.</p></li>
+<li><p>“50:60,7:10” - rows <span class="math notranslate nohighlight">\([50, 60)\)</span> from columns <span class="math notranslate nohighlight">\([7, 10)\)</span> in a matrix.</p></li>
+</ul>
+<p>Additionally, HQL allows us to combine multiple hyperslice expressions,
+separated by vertical bars.  This means we can specify irregular sets of data
+that can’t be specified with the normal slice syntax alone:</p>
+<ul class="simple">
+<li><p>“1|3|4” - indices 1, 3, and 4 of a vector.</p></li>
+<li><p>“10:20|77” - indices <span class="math notranslate nohighlight">\([10, 20)\)</span> and 77 from a vector.</p></li>
+<li><p>“1,2|33,4” - cells 1,2 and 33,4 from a matrix.</p></li>
+</ul>
+<p>With all this in mind, we can begin putting the pieces together into
+hyperchunks.  A typical HQL expression includes three pieces of
+information, separated with forward slashes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">array</span> <span class="n">expression</span> <span class="o">/</span> <span class="n">attribute</span> <span class="n">expression</span> <span class="o">/</span> <span class="n">hyperslice</span> <span class="n">expression</span>
+</pre></div>
+</div>
+<p>Since an arrayset is a one-dimensional set of darrays, an HQL array expression
+is a set of one-or-more one-dimensional hyperslice expressions.  Similarly,
+array attributes are accessed by their one-dimensional attribute indices, so
+basic HQL attribute attribute expressions are also one-dimensional hyperslices.
+Finally, the subset of each attribute to retrieve is specified using
+one-or-more multi-dimensional hyperslices, which must match the dimensionality
+of the underlying array.  Here are some simple examples:</p>
+<ul class="simple">
+<li><p>“1/2/10” - array 1, attribute 2, element 10</p></li>
+<li><p>“1/2/10:20” - array 1, attribute 2, elements <span class="math notranslate nohighlight">\([10, 20)\)</span>.</p></li>
+<li><p>“1/2/…” - the entire contents of array 1, attribute 2</p></li>
+<li><p>“1/2:4/…” - the entire contents of array 1, attributes 2 and 3</p></li>
+<li><p>“…/2/…” - the entire contents of attribute 2 for every array in the arrayset.</p></li>
+<li><p>“…/…/…” - everything in the entire arrayset.</p></li>
+</ul>
+<p>The preceding examples assume one-dimensional darrays.  Here are some examples
+of working with matrices:</p>
+<ul class="simple">
+<li><p>“1/2/10:20,30:40” - a ten-by-ten subset of the matrix stored in array 1, attribute 2.</p></li>
+<li><p>“1/2/:,3” - column 3 of the matrix stored in array 1, attribute 2.</p></li>
+<li><p>“1/2/3,…” - row 3 of the matrix stored in array 1, attribute 2.</p></li>
+</ul>
+<p>And here are examples using multiple hyperslices:</p>
+<ul class="simple">
+<li><p>“1|3|4/…/…” - the entire contents of arrays 1, 3, and 4.</p></li>
+<li><p>“1/3|7|8/…” - the entire contents of array 1, attributes 3, 7, and 8.</p></li>
+<li><p>“1/2/:,0|:,3|:10” - columns 0, 3, and 10 from the matrix stored in array 1, attribute 2.</p></li>
+</ul>
+<p>Note that when you use HQL to specify the locations for reading and writing
+data, the data will contain the cartesian product of the specified arrays,
+attributes, and hyperslices, in array-attribute-hyperslice order.  For example,
+retrieving the hyperchunk “0:2/4:6/10:20|30:40” will return, in-order:</p>
+<ul class="simple">
+<li><p>Array 0, attribute 4, elements 10:20</p></li>
+<li><p>Array 0, attribute 4, elements 30:40</p></li>
+<li><p>Array 0, attribute 5, elements 10:20</p></li>
+<li><p>Array 0, attribute 5, elements 30:40</p></li>
+<li><p>Array 1, attribute 4, elements 10:20</p></li>
+<li><p>Array 1, attribute 4, elements 30:40</p></li>
+<li><p>Array 1, attribute 5, elements 10:20</p></li>
+<li><p>Array 1, attribute 5, elements 30:40</p></li>
+</ul>
+<p>All of the APIs that work with hyperchunks take a set of hyperchunks,
+rather than a single hyperchunk, as their parameter.  You can combine multiple
+hyperchunks by separating them with semicolons:</p>
+<ul class="simple">
+<li><p>“1/2/…;3/4/…” - the entire contents of array 1 attribute 2 and array 3 attribute 4.</p></li>
+</ul>
+</div>
+<div class="section" id="advanced-hql">
+<h2>Advanced HQL<a class="headerlink" href="#advanced-hql" title="Permalink to this headline">¶</a></h2>
+<p>In addition to slices specifying attribute indices, HQL attribute expressions can include
+computed expressions that generate attribute data “on the fly”.  Attribute expressions
+currently include function execution and a full set of boolean expressions, including set
+operations:</p>
+<ul class="simple">
+<li><p>“0/1|index(0)/…” - The entire contents of array 0, attribute 1, plus coordinate indices along dimension 0.</p></li>
+<li><p>“0/1|rank(a1,”asc”)/…” - The entire contents of array 0, attribute 1, plus the rank of each attribute 1 element in ascending order.</p></li>
+<li><p>“0/1|a1 &gt; 5/…” - Return the entire contents of array 0, attribute 1, and whether each attribute 1 element is greater than five.</p></li>
+<li><p>“0/1|a1 &gt; 5 and a1 &lt; 13/…” - Return the entire contents of array 0, attribute 1, and whether each attribute 1 element is between five and thirteen.</p></li>
+<li><p>“0/1|a1 in [“red”, “cinnamon”]/…” - Return the entire contents of array 0, attribute 1, and whether each attribute 1 element matches “red” or “cinnamon”.</p></li>
+</ul>
+<p>HQL provides a full set of boolean operators: <cite>&lt;</cite>, <cite>&gt;</cite>, <cite>&lt;=</cite>, <cite>&gt;=</cite>, <cite>==</cite>, and
+<cite>!=</cite>, along with <cite>in</cite> and <cite>not in</cite> for testing set membership, plus <cite>and</cite> and
+<cite>or</cite> for logical comparisons.  You may use parentheses to control the
+precedence of complex expressions.  Of course, you can specify as many computed
+attribute expressions as you like, using vertical pipes as a separator.</p>
+<p>HQL also allows an optional fourth type of expression, an “order” expression,
+used to sort the data to be returned.  The order expression should return an
+integer rank for each element in the data to be returned and appears between
+the attribute expression and the hyperslices expression:</p>
+<ul class="simple">
+<li><p>0/1/order:rank(a1,”asc”)/… - The entire contents of array 0, attribute 1, sorted in ascending order.</p></li>
+<li><p>0/1/order:rank(a2, “desc”)/… - The entire contents of array 0, attribute 1, sorted in descending order of attribute 2</p></li>
+<li><p>0/1/order:rank(a1,”asc”)/0:10 - Array 0, attribute 1, first ten elements in ascending order.</p></li>
+</ul>
+<p>Note that the hyperslice in the final example retrieves the first ten elements
+of the sorted data, rather than the first ten elements of the attribute.</p>
+</div>
+<div class="section" id="hql-context">
+<h2>HQL Context<a class="headerlink" href="#hql-context" title="Permalink to this headline">¶</a></h2>
+<p>Depending on the context, not all APIs allow every HQL feature.  For example,
+APIs that write data don’t allow computed attribute expressions; some APIs only
+allow array expressions; others allow only array and attribute expressions.
+For those situations, you may omit the other parts of the HQL.  For example:</p>
+<ul class="simple">
+<li><p>“10:20;35” - arrays <span class="math notranslate nohighlight">\([10, 20)\)</span> plus array 35.</p></li>
+<li><p>“3/4;5/7” - array 3 attribute 4, plus array 5 attribute 7.</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="DELETE-logout.html" class="btn btn-neutral float-right" title="DELETE Logout" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="rest-api.html" class="btn btn-neutral float-left" title="REST API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

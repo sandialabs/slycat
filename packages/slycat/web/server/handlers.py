@@ -130,6 +130,24 @@ def require_integer_parameter(value, name):
                                 "cherrypy.HTTPError 400 '%s' parameter must be an integer." % name)
         raise cherrypy.HTTPError("400 '%s' parameter must be an integer." % name)
 
+@cherrypy.tools.json_out(on=True)
+def get_last_active_time():
+    """
+    Checks when the most recent session activity occured.
+    If it occured more than 10 minutes ago, returns true.
+    If less than 10 minutes ago, returns false.
+    """
+    most_recent_time = datetime.timedelta(days=999)
+    time_threshold = datetime.timedelta(minutes = 10)
+    database = slycat.web.server.database.couchdb.connect()
+    for session in database.view("slycat/sessions", include_docs=True):
+        if session.doc["creator"] not in cherrypy.request.app.config["slycat"]["server-admins"] and (datetime.datetime.utcnow() - datetime.datetime.strptime(str(session.doc["last-active-time"]), '%Y-%m-%dT%H:%M:%S.%f')) < most_recent_time:
+            most_recent_time = session.doc["last-active-time"]
+
+    if (datetime.datetime.utcnow() - datetime.datetime.strptime(str(most_recent_time), '%Y-%m-%dT%H:%M:%S.%f')) >= time_threshold:
+        return True
+    else:
+        return False
 
 @cherrypy.tools.json_out(on=True)
 def get_projects_list(_=None):
@@ -205,24 +223,38 @@ def get_remote_host_dict():
 def put_project(pid):
     """
     Takes json in the format of 
-    {
-      'acl':{
-      'administrators': [{'user':'username'}]
-      'writers': [{'user':'username'}]
-      'readers': [{'user':'username'}]
-      },
-      'name': 'name of the project',
-      'description': 'description of the project',
-    }
+    acl:
+
+    administrators: list of object 
+    user:username
+
+    writers: list of object
+    user:username
+
+    readers: list of object
+    user:username
+
+    name: string
+    name of the project
+
+    description: string
+    description of the project, 
     and updates the project json from this object.
     all top order fields are optional
-    Arguments:
-      pid {string} -- uui for project
-    
-    Raises:
-      cherrypy.HTTPError -- 400 missing administrators
-      cherrypy.HTTPError -- 400 missing writers
-      cherrypy.HTTPError -- 400 missing readers
+
+    Parameters
+    ----------
+      pid: string
+           uui for project
+
+    Raises
+    ------
+      cherrypy.HTTPError
+        400 missing administrators
+      cherrypy.HTTPError
+        400 missing writers
+      cherrypy.HTTPError
+        400 missing readers
     """
     database = slycat.web.server.database.couchdb.connect()
     project = database.get("project", pid)
@@ -1400,24 +1432,25 @@ def delete_model_in_project_data(mid, did):
 
 def delete_model(mid):
     couchdb = slycat.web.server.database.couchdb.connect()
-    model = couchdb.get("model", mid)
-    project = couchdb.get("project", model["project"])
-    slycat.web.server.authentication.require_project_writer(project)
+    try:
+        model = couchdb.get("model", mid)
+        project = couchdb.get("project", model["project"])
+        slycat.web.server.authentication.require_project_writer(project)
 
-    for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
-        updated = False
-        with slycat.web.server.get_project_data_lock(project_data["_id"]):
-            for index, pd_mid in enumerate(project_data["mid"]):
-                if pd_mid == mid:
-                    updated = True
-                    del project_data["mid"][index]
-            if updated:
-                couchdb.save(project_data)
+        for project_data in couchdb.scan("slycat/project_datas", startkey=model["project"], endkey=model["project"]):
+            updated = False
+            with slycat.web.server.get_project_data_lock(project_data["_id"]):
+                for index, pd_mid in enumerate(project_data["mid"]):
+                    if pd_mid == mid:
+                        updated = True
+                        del project_data["mid"][index]
+                if updated:
+                    couchdb.save(project_data)
 
-    couchdb.delete(model)
+        couchdb.delete(model)
+    except Exception as e:
+        cherrypy.log.error('exception raised in delete model: %s' % str(e))
     slycat.web.server.cleanup.arrays()
-
-
     cherrypy.response.status = "204 Model deleted."
 
 
@@ -2244,15 +2277,16 @@ def get_user(uid, time):
     Retrieve directory information for a given user.
     
     Arguments:
-        uid {string} -- users id
-        time {int} -- time int to prevent caching
+      uid {string} -- users id
+      time {int} -- time int to prevent caching
     
     Raises:
-        cherrypy.HTTPError: 404 user not found
+      cherrypy.HTTPError: 404 user not found
     
     Returns:
-        json -- user info
+      json -- user info
     """
+
     if uid == "-":
         uid = cherrypy.request.login
     user = cherrypy.request.app.config["slycat-web-server"]["directory"](uid)
@@ -2268,17 +2302,23 @@ def get_user(uid, time):
 @cherrypy.tools.json_out(on=True)
 def get_model_statistics(mid):
     """
-    returns statistics on the model
-    :param mid: model ID
-    :return json: {
-      "mid":mid,
-      "hdf5_file_size":hdf5_file_size,
-      "total_server_data_size": total_server_data_size,
-      "hdf5_store_size":total_hdf5_server_size,
-      "model":model,
-      "delta_creation_time":delta_creation_time,
-      "couchdb_doc_size": sys.getsizeof(model)
-    }
+    gets statistics on the model
+    
+    Arguments:
+      mid {string} -- model ID
+      time {int} -- time int to prevent caching
+    
+    Raises:
+      cherrypy.HTTPError: 404 user not found
+    
+    Returns:
+      mid {string} -- mid
+      hdf5_file_size {float} -- hdf5_file_size
+      total_server_data_size {float} -- total_server_data_size
+      hdf5_store_size {float} -- total_hdf5_server_size
+      model {string} -- model
+      delta_creation_time {float} -- delta_creation_time
+      couchdb_doc_size {float} -- sys.getsizeof(model)
     """
     database = slycat.web.server.database.couchdb.connect()
     try:
@@ -2289,15 +2329,18 @@ def get_model_statistics(mid):
     slycat.web.server.authentication.require_project_reader(project)
 
     # amount of time it took to make the model
-    delta_creation_time = (
-        datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-            model["created"],
-            "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    if "finished" in model and model["finished"] is not None:
+        delta_creation_time = (
+            datetime.datetime.strptime(model["finished"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
+                model["created"],
+                "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+    else:
+        delta_creation_time = 0
 
-    if "job_running_time" in model and "job_submit_time" in model:
+    if "job_running_time" in model and "artifact:job_submit_time" in model:
         delta_queue_time = (
             datetime.datetime.strptime(model["job_running_time"], "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
-                model["job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
+                model["artifact:job_submit_time"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
     else:
         delta_queue_time = 0
 
@@ -2552,23 +2595,34 @@ def post_remote_command(hostname):
     """
     run a remote command from the list of pre-registered commands
     that are located on a remote agent.
-    :param hostname: name of the hpc host
-    :return: {
-        "message": a message that is supplied by the agent,
-        "command": an echo of the command 
-        that was sent to the server and the agent,
-        "error": boolean describing if there was an agent error,
-        "available_scripts": [{                    
-            "name": script_name,
-            "description": script_description,
-            "parameters": [{
-                "name": parameter_name as string,
-                "description": description of the param string,
-                "example":example usage string,
-                "type": field type eg string, int...
-            }]
-        }]list of available scripts from the agent
-    }
+    Parameters
+    ----------
+    hostname: str
+    name of the hpc host
+    Returns
+    ------- 
+    json
+      message: string
+      a message that is supplied by the agent
+      command: string
+      an echo of the command that was sent to the server and the agent,
+      error: bool
+      boolean describing if there was an agent error,
+      available_scripts:  list
+      list of available scripts from the agent
+      name: string
+      script_name
+      description: string
+      script_description
+      parameters: list
+      name: string
+      parameter_name as string,
+      description: string
+      description of the param string,
+      example: string
+      example usage string
+      type: string
+      field type eg string, int...
     """
     sid = get_sid(hostname)
     command = cherrypy.request.json["command"]
@@ -2601,32 +2655,45 @@ def post_remote_browse(hostname, path):
 
 def get_remote_file(hostname, path, **kwargs):
     """
-    Uses an existing remote session to retrieve a remote file.  The remote
-    session must have been created using :http:post:`/api/remotes`.  Use
-    :http:post:`/api/remotes/(hostname)/browse(path)` to lookup remote file paths.
-    The returned file may be optionally cached on the server and retrieved
-    using :http:get:`/api/projects/(pid)/cache/(key)`.
+      Uses an existing remote session to retrieve a remote file.  The remote
+      session must have been created using :http:post:`/api/remotes`.  Use
+      :http:post:`/api/remotes/(hostname)/browse(path)` to lookup remote file paths.
+      The returned file may be optionally cached on the server and retrieved
+      using :http:get:`/api/projects/(pid)/cache/(key)`.
 
-    :param hostname: connection host name
-    :param path: path to file
-    :param kwargs:
+      Parameters
+      ----------
+      hostname: string
+                connection host name
+      path: string
+            path to file
+      kwargs: json
+        cache: – 
+          Optional cache identifier. 
+          Set to project to store the retrieved file in a project cache.
+        project: uuid
+                 Project identifier. Required when cache is set to project.
+        key: uuid
+             Cached object key. Must be specified when cache is set to project.
+      Returns
+      ------- 
+      file: binary
+            the file that was asked for
 
-    Query Parameters
-    :param cache: – Optional cache identifier. 
-      Set to project to store the retrieved file in a project cache.
-    :param project: – Project identifier. Required when cache is set to project.
-    :param key: – Cached object key. Must be specified when cache is set to project.
-    :return: file
-
-    Status Codes
-    200 OK – The requested file is returned in the body of the response.
-    404 Not Found – The session doesn’t exist or has timed-out.
-    400 Bad Request – “Can’t read directory” The remote path 
-      is a directory instead of a file.
-    400 Bad Request – “File not found” The remote path doesn’t exist.
-    400 Bad Request – “Access denied” The session user doesn’t have 
-      permissions to access the file.
+      Raises
+      ------
+      200 OK
+        The requested file is returned in the body of the response.
+      404 Not Found
+        The session doesn’t exist or has timed-out.
+      400 Bad Request
+        “Can’t read directory” The remote path is a directory instead of a file.
+      400 Bad Request
+        “File not found” The remote path doesn’t exist.
+      400 Bad Request
+        “Access denied” The session user doesn’t have permissions to access the file.
     """
+
     sid = get_sid(hostname)
     with slycat.web.server.remote.get_session(sid) as session:
         return session.get_file(path, **kwargs)

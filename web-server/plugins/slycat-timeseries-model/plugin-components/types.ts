@@ -1,21 +1,19 @@
-
 /**
  * @export
  * @interface JobCodesProps
  */
-export interface JobCodesProps {
-}
+export interface JobCodesProps {}
 
 /**
  * @export
  * @interface LoadingPageProps
  */
 export interface LoadingPageProps {
-  jid: string
-  hostname: string
-  modelId: string
-  modelState: string
-  callback?: VoidFunction
+  jid: string;
+  hostname: string;
+  modelId: string;
+  modelState: string;
+  callback?: VoidFunction;
 }
 /**
  *
@@ -23,7 +21,7 @@ export interface LoadingPageProps {
  * @interface logMap
  */
 export interface logMap {
-  logLineArray: [string]
+  logLineArray: [string];
 }
 /**
  *
@@ -31,15 +29,41 @@ export interface logMap {
  * @interface LoadingPageState
  */
 export interface LoadingPageState {
-  log: logMap
-  sessionExists: boolean
-  progressBarHidden: boolean
-  progressBarProgress: number
+  log: logMap;
+  sessionExists: boolean;
+  progressBarHidden: boolean;
+  progressBarProgress: number;
+  modalId: string;
+  modelMessage: string;
+  modelId: string;
+  modelShow: boolean;
+  jobStatus: string;
+  pullCalled: number;
+  modelState: string;
+}
+
+export interface LogListProps {
+  log: logMap;
+  jobStatus: string;
+  sessionExists: boolean;
+}
+
+export interface LoadButtonProps {
+  disabled: boolean;
+  onClick: () => void;
+}
+
+export interface InfoBarProps {
+  jid: string;
+  hostname: string;
+  sessionExists: boolean;
+}
+
+export interface LoadingPageButtonsProps {
   modalId: string
-  modelMessage: string
-  modelId: string
-  modelShow: boolean
   jobStatus: string
-  pullCalled: number
-  modelState: string
+  cancelJob: () => void
+  pullHPCData: () => void
+  modelShow: boolean
+  sessionExists: boolean
 }

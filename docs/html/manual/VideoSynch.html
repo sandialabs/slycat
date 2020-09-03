@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Video Synchronization &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Adding Text" href="AddingText.html" />
+    <link rel="prev" title="Close All Pins" href="CloseAllPins.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="TAISDataSet.html">Taylor Anvil Impact Scenario (TAIS) Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingPSModel.html">Creating a Parameter Space Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="PSModelVis.html">Parameter Space Model Visualization</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="ScatterplotView.html">Scatterplot View</a></li>
+<li class="toctree-l4"><a class="reference internal" href="PSVariableTable.html">Variable Table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="parameter.space.model.html">Parameter Space Model</a> &raquo;</li>
+        
+          <li><a href="PSModelVis.html">Parameter Space Model Visualization</a> &raquo;</li>
+        
+          <li><a href="ScatterplotView.html">Scatterplot View</a> &raquo;</li>
+        
+      <li>Video Synchronization </li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/VideoSynch.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="video-synchronization-videosynch">
+<h1>Video Synchronization <img alt="VideoSynch" src="../_images/VideoSynch.png" /><a class="headerlink" href="#video-synchronization-videosynch" title="Permalink to this headline">¶</a></h1>
+<p>Beyond the video functionality described earlier (see the Media Set section), Slycat™ provides additional fine-grained and
+group-based video controls.  Once the first video is pinned, the interface shown in Figure 45 will appear in the model-specific
+controls to right of the Download Data Table <img alt="DownloadIcon" src="../_images/DownloadIcon.png" /> icon.  These video controls will remain visible until all videos
+are closed.  For a single video, these global controls provide single step accuracy in advancing or rewinding the animation,
+which is not possible using the limited controls of an individual viewer.  However, the larger goal of this interface is to
+enable synchronized playback of multiple videos from a single set of controls.</p>
+<div class="figure align-center" id="id1">
+<img alt="../_images/Figure45.png" src="../_images/Figure45.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 45: Video controls: enable video synch, current video location (seconds from start), go to first frame, step back a frame, play, step forward a frame, and go to last frame, respectively.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>From left to right the controls are as follows: the video synchronization button <img alt="VideoSynch" src="../_images/VideoSynch.png" />, a numeric field providing the
+current video location in seconds from the video start, a button to go to the start of the video <img alt="FirstFrame" src="../_images/FirstFrame.png" />, a button to
+step backward by one frame <img alt="BackFrame" src="../_images/BackFrame.png" /> , play <img alt="Play" src="../_images/Play.png" />/pause <img alt="Pause" src="../_images/Pause.png" /> buttons (the icon changes to pause once play is pressed), a button to step forward by one frame <img alt="ForwardFrame" src="../_images/ForwardFrame.png" />, and a button to go to the end of the video <img alt="LastFrame" src="../_images/LastFrame.png" />.</p>
+<p>The video synch button is a toggle that enables/disables shared control of multiple videos.  The background color of the icon
+shows the state of the synchronization.  The background is gray when it is enabled <img alt="VideoSynchOn" src="../_images/VideoSynchOn.png" />, and white when it is
+disabled <img alt="VideoSynch" src="../_images/VideoSynch.png" />.  When video is synched, the playback buttons operate on all pinned videos.  When synch is disabled,
+the playback operates only on the <em>current</em> video. The current video is highlighted by drawing a shadow behind it, making it
+appear to float above the other videos, such as the middle video in Figure 46.  At all times, the video location field shows
+the current value of the video’s elapsed playback time (note that this is not the same as the simulation time stamp for a
+particular frame).  You can directly edit this field to align all videos to the frame that is closest to a specific time of
+interest in the playback.</p>
+<div class="figure align-center" id="id2">
+<img alt="../_images/Figure46.png" src="../_images/Figure46.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 46: Three synched videos, where the middle video is the current video.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="AddingText.html" class="btn btn-neutral float-right" title="Adding Text" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="CloseAllPins.html" class="btn btn-neutral float-left" title="Close All Pins" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

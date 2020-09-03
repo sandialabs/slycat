@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>High Performance Computing Parameters Dialog &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Time Series Model Visualization" href="TSModelVis.html" />
+    <link rel="prev" title="Time Series Parameters Dialog" href="TSParams.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="timeseries.model.html">Timeseries Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="TimeSeriesData.html">Time Series Data</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="CreatingTSModel.html">Creating a Time Series Model</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="FindData.html">Find Data Dialog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TSParams.html">Time Series Parameters Dialog</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">High Performance Computing Parameters Dialog</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="TSModelVis.html">Time Series Model Visualization</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="DAC_Manual/dac.model.html">Dial-A-Cluster Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="timeseries.model.html">Timeseries Model</a> &raquo;</li>
+        
+          <li><a href="CreatingTSModel.html">Creating a Time Series Model</a> &raquo;</li>
+        
+      <li>High Performance Computing Parameters Dialog</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/manual/HPCParams.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="high-performance-computing-parameters-dialog">
+<h1>High Performance Computing Parameters Dialog<a class="headerlink" href="#high-performance-computing-parameters-dialog" title="Permalink to this headline">¶</a></h1>
+<p>The <em>HPC Parameters</em> screen is specific to your institution.  Figure 53 shows the parameters for Sandia’s cluster systems.
+Other than differences in the list of steps shown along the top, the same screen is used for all three data formats (<em>Xyce</em>,
+<em>CSV</em>, and <em>HDF5</em>).</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/Figure53.png"><img alt="../_images/Figure53.png" src="../_images/Figure53.png" style="width: 675.0px; height: 444.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 53: HPC Parameters for Sandia clusters.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p><em>WCID</em> stands for Workload Characterization ID, which is required for job submission on the clusters.  Because Slycat™ uses
+parallel processing to speed up Time Series model creation, users are required to have obtained a <em>WCID</em> prior to creating a
+Time Series model.  Your <em>WCID</em> is associated with an Strategic Management Unit/Program Management Unit (SMU/PMU), which is
+used to specify the <em>Partition</em> or queue-name.  At Sandia, the choices are <em>nw</em>, <em>ec</em>, <em>dsa</em>, <em>ihns</em>, <em>ldrd</em>, <em>cee</em>, <em>viz</em>, or
+<em>viz batch</em>).</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="TSModelVis.html" class="btn btn-neutral float-right" title="Time Series Model Visualization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="TSParams.html" class="btn btn-neutral float-left" title="Time Series Parameters Dialog" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

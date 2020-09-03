@@ -15,21 +15,23 @@ import "slickgrid/plugins/slick.rowselectionmodel";
 import "slickgrid/plugins/slick.headerbuttons";
 import "slickgrid/plugins/slick.autotooltips";
 import he from 'he';
+import $ from 'jquery';
+import { isValueInColorscaleRange } from './color-switcher';
 
 $.widget("parameter_image.table",
 {
   options:
   {
     "server-root" : "",
-    mid : null,
-    aid : null,
-    metadata : null,
-    inputs : [],
-    outputs : [],
-    others : [],
-    images : [],
-    ratings : [],
-    categories : [],
+    "mid" : null,
+    "aid" : null,
+    "metadata" : null,
+    "inputs" : [],
+    "outputs" : [],
+    "others" : [],
+    "images" : [],
+    "ratings" : [],
+    "categories" : [],
     "row-selection" : [],
     "variable-selection": [],
     "sort-variable" : null,
@@ -37,9 +39,9 @@ $.widget("parameter_image.table",
     "image-variable" : null,
     "x-variable" : null,
     "y-variable" : null,
-    x_y_variables : {x: null, y: null},
-    colorscale : null,
-    hidden_simulations : [],
+    "x_y_variables" : {x: null, y: null},
+    "colorscale" : null,
+    "hidden_simulations" : [],
   },
 
   _create: function()
@@ -50,27 +52,37 @@ $.widget("parameter_image.table",
     self.options.x_y_variables.x = self.options['x-variable'];
     self.options.x_y_variables.y = self.options['y-variable'];
 
+    function get_color(colorscale, value)
+    {
+      // If the value is in the color scale's domain, just return the value from the colorscale
+      if(isValueInColorscaleRange(value, self.options.colorscale))
+        return colorscale(value);
+      // Otherwise return the out of domain color
+      return $("#color-switcher").colorswitcher("get_outofdomain_color");
+    }
+
 
     function value_formatter(value)
     {
-      return value == null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      return value === null ? "&nbsp;" : (value + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     }
 
     function cell_formatter(row, cell, value, columnDef, dataContext)
     {
+      // We have a colorscale for this column, meaning we are color coding by its variable.
       if(columnDef.colorscale)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
-      else if(value==null)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
-      return value_formatter(value);
-    }
-
-    function editable_cell_formatter(row, cell, value, columnDef, dataContext)
-    {
-      if(columnDef.colorscale)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + ( d3.hcl(columnDef.colorscale(value)).l > 50 ? " light" : " dark") + "' style='background:" + columnDef.colorscale(value) + "'>" + value_formatter(value) + "</div>";
-      else if(value==null)
-        return "<div class='highlightWrapper" + (value==null ? " null" : "") + "'>" + value_formatter(value) + "</div>";
+      {
+        let classNames = `highlightWrapper ${value===null ? "null" : ""} ${d3.hcl(get_color(columnDef.colorscale, value)).l > 50 ? "light" : "dark"}`;
+        let styles = `background: ${get_color(columnDef.colorscale, value)}`;
+        return `<div class="${classNames}" style="${styles}">${value_formatter(value)}</div>`;
+      }
+      // We don't have a color scale, meaning we are not color coding by this variable,
+      // and the value is null.
+      else if(value===null)
+      {
+        return `<div class='highlightWrapper null'>${value_formatter(value)}</div>`;
+      }
+      // Finally, not color coding and not null value
       return value_formatter(value);
     }
 
@@ -87,7 +99,7 @@ $.widget("parameter_image.table",
       let name;
       if(window.store.getState().derived.variableAliases[variable] !== undefined)
       {
-        name= window.store.getState().derived.variableAliases[variable];
+        name = window.store.getState().derived.variableAliases[variable];
       }
       else
       {
@@ -329,22 +341,35 @@ $.widget("parameter_image.table",
     table_helpers._set_selected_rows_no_trigger(self);
 
     const update_variable_aliases = () => {
-      let label;
-
-      for(const [index, element] of self.columns.entries())
+      // console.log('update_variable_aliases in parameter-image-table.js');
+      // Only do this if variableAliases changed
+      if(!_.isEqual(previousState.derived.variableAliases, window.store.getState().derived.variableAliases))
       {
-        let title = get_column_header_title(self.columns[index].id);
-        let tooltip = get_column_header_tooltip(self.columns[index].id);
-        // Update column name and tooltip if it has changed
-        if(label != self.columns[index].name)
+        // console.log('Looks like variableAliases changed, so will update.');
+        // const t0 = performance.now();
+        let label;
+  
+        for(const [index, element] of self.columns.entries())
         {
-          self.columns[index].name = title;
-          self.columns[index].tooltip = tooltip;
-          self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
+          let title = get_column_header_title(self.columns[index].id);
+          let tooltip = get_column_header_tooltip(self.columns[index].id);
+          // Update column name and tooltip if it has changed
+          if(label != self.columns[index].name)
+          {
+            self.columns[index].name = title;
+            self.columns[index].tooltip = tooltip;
+            self.grid.updateColumnHeader(self.columns[index].id, title, tooltip);
+          }
         }
+        // const t1 = performance.now();
+        // console.log(`Call to update_variable_aliases in parameter-image-table.js took ${t1 - t0} milliseconds.`);
       }
+      // Update previousState
+      previousState = window.store.getState();
     };
 
+    // Let's keep track of the previous state by saving it
+    let previousState = window.store.getState();
     window.store.subscribe(update_variable_aliases);
   },
 
@@ -364,6 +389,7 @@ $.widget("parameter_image.table",
 
   _setOption: function(key, value)
   {
+    // console.log("_setOption in parameter-image-table");
     var self = this;
 
     if(key == "row-selection")
@@ -495,11 +521,11 @@ $.widget("parameter_image.table",
   _color_variables: function(variables)
   {
     var self = this;
+    // console.log(`_color_variables`);
 
     var columns = self.grid.getColumns();
-    for(var i in columns)
+    for(const column of columns)
     {
-      var column = columns[i];
       if(self.options.colorscale !== null && $.inArray(column.id, variables) != -1)
       {
         column.colorscale = self.options.colorscale;
@@ -638,7 +664,7 @@ $.widget("parameter_image.table",
         cssClasses += "hiddenRow ";
       }
       if(cssClasses != "")
-        return {"cssClasses" : cssClasses};
+        return {cssClasses : cssClasses};
       return null;
     }
 

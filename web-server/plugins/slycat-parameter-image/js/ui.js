@@ -43,10 +43,42 @@ import thunkMiddleware from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 import throttle from "redux-throttle";
 import ps_reducer from './reducers';
-import { updateThreeDSync } from './actions';
+import { 
+  updateThreeDSync,
+  setXValues,
+  setYValues,
+  setVValues,
+  setXIndex,
+  setYIndex,
+  setVIndex,
+} from './actions';
 
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import { setSyncCameras, } from './vtk-camera-synchronizer';
+
+import { 
+  DEFAULT_UNSELECTED_POINT_SIZE,
+  DEFAULT_UNSELECTED_BORDER_SIZE,
+  DEFAULT_SELECTED_POINT_SIZE,
+  DEFAULT_SELECTED_BORDER_SIZE,
+  } from 'components/ScatterplotOptions';
+import { 
+  DEFAULT_FONT_SIZE,
+  DEFAULT_FONT_FAMILY,
+  } from './Components/ControlsButtonVarOptions';
+import d3 from 'd3';
+
+let table_metadata = null;
+
+export function get_variable_label(variable)
+{
+  if(window.store.getState().derived.variableAliases[variable] !== undefined)
+  {
+    return window.store.getState().derived.variableAliases[variable];
+  }
+  
+  return table_metadata["column-names"][variable]
+}
 
 // Wait for document ready
 $(document).ready(function() {
@@ -70,7 +102,6 @@ $(document).ready(function() {
   var filter_manager = null;
   var filter_expression = null;
 
-  var table_metadata = null;
   var table_statistics = null;
   var indices = null;
   var x_index = null;
@@ -103,15 +134,20 @@ $(document).ready(function() {
 
   var filterxhr = null;
 
-  var axes_font_size = 12;
-  var axes_font_family = "Arial";
+  var axes_font_size = null;
+  var axes_font_family = null;
   var axes_variables_scale = {};
   var variable_aliases = {};
 
-  var unselected_point_size = 8;
-  var unselected_border_size = 1;
-  var selected_point_size = 16;
-  var selected_border_size = 2;
+  var unselected_point_size = DEFAULT_UNSELECTED_POINT_SIZE;
+  var unselected_border_size = DEFAULT_UNSELECTED_BORDER_SIZE;
+  var selected_point_size = DEFAULT_SELECTED_POINT_SIZE;
+  var selected_border_size = DEFAULT_SELECTED_BORDER_SIZE;
+
+  var custom_color_variable_range = {
+    min: undefined,
+    max: undefined
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////
   // Setup page layout.
@@ -278,6 +314,8 @@ $(document).ready(function() {
     }
   }
 
+  var createReduxStorePromise;
+
   function model_loaded()
   {
     // If the model isn't ready or failed, we're done.
@@ -291,125 +329,130 @@ $(document).ready(function() {
     $(".load-status").text("Loading data.");
 
     // Load data table metadata.
-    $.ajax({
-      url : api_root + "models/" + model_id + "/arraysets/data-table/metadata?arrays=0",
-      contentType : "application/json",
-      success: function(metadata)
-      {
-        var raw_metadata = metadata.arrays[0];
-        // Mapping data from new metadata format to old table_metadata format
-        table_metadata = {};
-        table_metadata["row-count"] = raw_metadata.shape[0];
-
-        // This is going to be one short for now since there is no index. Perhaps just add one for now?
-        table_metadata["column-count"] = raw_metadata.attributes.length + 1;
-
-        table_metadata["column-names"] = [];
-        table_metadata["column-types"] = [];
-        for(var i = 0; i < raw_metadata.attributes.length; i++)
+    createReduxStorePromise = new Promise((resolve, reject) => {
+      $.ajax({
+        url : api_root + "models/" + model_id + "/arraysets/data-table/metadata?arrays=0",
+        contentType : "application/json",
+        success: function(metadata)
         {
-          table_metadata["column-names"].push(raw_metadata.attributes[i].name);
-          table_metadata["column-types"].push(raw_metadata.attributes[i].type);
-        }
+          var raw_metadata = metadata.arrays[0];
+          // Mapping data from new metadata format to old table_metadata format
+          table_metadata = {};
+          table_metadata["row-count"] = raw_metadata.shape[0];
 
-        // Adding Index column
-        table_metadata["column-names"].push("Index");
-        table_metadata["column-types"].push("int64");
+          // This is going to be one short for now since there is no index. Perhaps just add one for now?
+          table_metadata["column-count"] = raw_metadata.attributes.length + 1;
 
-        filter_manager.set_table_metadata(table_metadata);
-        table_statistics = new Array();
-        load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
-          table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+          table_metadata["column-names"] = [];
+          table_metadata["column-types"] = [];
+          for(var i = 0; i < raw_metadata.attributes.length; i++)
+          {
+            table_metadata["column-names"].push(raw_metadata.attributes[i].name);
+            table_metadata["column-types"].push(raw_metadata.attributes[i].type);
+          }
+
+          // Adding Index column
+          table_metadata["column-names"].push("Index");
+          table_metadata["column-types"].push("int64");
+
+          filter_manager.set_table_metadata(table_metadata);
+          load_table_statistics(d3.range(table_metadata["column-count"]-1), function(){
+            table_statistics[table_metadata["column-count"]-1] = {"max": table_metadata["row-count"]-1, "min": 0};
+            metadata_loaded();
+          });
+        },
+        error: artifact_missing
+      });
+
+      // Retrieve bookmarked state information ...
+      bookmarker.getState(function(state)
+      {
+        bookmark = state;
+        
+        let variable_aliases_promise = new Promise(get_variable_aliases);
+        variable_aliases_promise.then(() => {
+          // Create logger for redux
+          const loggerMiddleware = createLogger();
+
+          // Create throttle for redux
+          const defaultWait = 500
+          const defaultThrottleOption = { // https://lodash.com/docs#throttle
+            leading: true,
+            trailing: true
+          }
+          const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
+
+          // Create Redux store and set its state based on what's in the bookmark
+          const state_tree = {
+            fontSize: DEFAULT_FONT_SIZE,
+            fontFamily: DEFAULT_FONT_FAMILY,
+            axesVariables: {},
+            threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
+            threeDColormap: vtkColorMaps.rgbPresetNames[0],
+            unselected_point_size: unselected_point_size,
+            unselected_border_size: unselected_border_size,
+            selected_point_size: selected_point_size,
+            selected_border_size: selected_border_size,
+            variableRanges: {},
+          }
+          window.store = createStore(
+            ps_reducer, 
+            {
+              ...state_tree, 
+              ...bookmark.state, 
+              derived: {
+                variableAliases: variable_aliases,
+                xValues: [],
+                yValues: [],
+              }
+            },
+            applyMiddleware(
+              thunkMiddleware, // Lets us dispatch() functions
+              loggerMiddleware, // Neat middleware that logs actions. 
+                                // Logger must be the last middleware in chain, 
+                                // otherwise it will log thunk and promise, 
+                                // not actual actions.
+              throttleMiddleware, // Allows throttling of actions
+            )
+          );
+
+          // Save Redux state to bookmark whenever it changes
+          const bookmarkReduxStateTree = () => {
+            bookmarker.updateState({
+              state: 
+              // Remove derived property from state tree because it should be computed
+              // from model data each time the model is loaded. Otherwise it has the 
+              // potential of becoming huge. Plus we shouldn't be storing model data
+              // in the bookmark, just UI state.
+              // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+              // sets it to null, so I think it's better to remove it entirely.
+              // eslint-disable-next-line no-undefined
+              { ...window.store.getState(), derived: undefined }
+            });
+          };
+          window.store.subscribe(bookmarkReduxStateTree);
+
+          // Set local variables based on Redux store
+          axes_font_size = store.getState().fontSize;
+          axes_font_family = store.getState().fontFamily;
+          axes_variables_scale = store.getState().axesVariables;
+          unselected_point_size = store.getState().unselected_point_size;
+          unselected_border_size = store.getState().unselected_border_size;
+          selected_point_size = store.getState().selected_point_size;
+          selected_border_size = store.getState().selected_border_size;
+
+          // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
+          filter_manager.set_bookmark(bookmark);
+          filter_manager.notify_store_ready();
+          resolve();
+          setup_controls();
+          setup_colorswitcher();
           metadata_loaded();
         });
-      },
-      error: artifact_missing
-    });
-
-    // Retrieve bookmarked state information ...
-    bookmarker.getState(function(state)
-    {
-      bookmark = state;
-      
-      let variable_aliases_promise = new Promise(get_variable_aliases);
-      variable_aliases_promise.then(() => {
-        // Create logger for redux
-        const loggerMiddleware = createLogger();
-
-        // Create throttle for redux
-        const defaultWait = 500
-        const defaultThrottleOption = { // https://lodash.com/docs#throttle
-          leading: true,
-          trailing: true
-        }
-        const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
-
-        // Create Redux store and set its state based on what's in the bookmark
-        const state_tree = {
-          fontSize: 15,
-          fontFamily: "Arial",
-          axesVariables: {},
-          threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
-          threeDColormap: vtkColorMaps.rgbPresetNames[0],
-          unselected_point_size: 8,
-          unselected_border_size: 1,
-          selected_point_size: 16,
-          selected_border_size: 2,
-        }
-        window.store = createStore(
-          ps_reducer, 
-          {
-            ...state_tree, 
-            ...bookmark.state, 
-            derived: {variableAliases: variable_aliases}
-          },
-          applyMiddleware(
-            thunkMiddleware, // Lets us dispatch() functions
-            loggerMiddleware, // Neat middleware that logs actions. 
-                              // Logger must be the last middleware in chain, 
-                              // otherwise it will log thunk and promise, 
-                              // not actual actions.
-            throttleMiddleware, // Allows throttling of actions
-          )
-        );
-
-        // Save Redux state to bookmark whenever it changes
-        const bookmarkReduxStateTree = () => {
-          bookmarker.updateState({
-            state: 
-            // Remove derived property from state tree because it should be computed
-            // from model data each time the model is loaded. Otherwise it has the 
-            // potential of becoming huge. Plus we shouldn't be storing model data
-            // in the bookmark, just UI state.
-            // Passing 'undefined' removes it from bookmark. Passing 'null' actually
-            // sets it to null, so I think it's better to remove it entirely.
-            // eslint-disable-next-line no-undefined
-            { ...window.store.getState(), derived: undefined }
-          });
-        };
-        window.store.subscribe(bookmarkReduxStateTree);
-
-        window.store.subscribe(update_scatterplot_labels);
-
-        // Set local variables based on Redux store
-        axes_font_size = store.getState().fontSize;
-        axes_font_family = store.getState().fontFamily;
-        axes_variables_scale = store.getState().axesVariables;
-        unselected_point_size = store.getState().unselected_point_size;
-        unselected_border_size = store.getState().unselected_border_size;
-        selected_point_size = store.getState().selected_point_size;
-        selected_border_size = store.getState().selected_border_size;
-
-        // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
-        filter_manager.set_bookmark(bookmark);
-        filter_manager.notify_store_ready();
-        setup_controls();
-        setup_colorswitcher();
-        metadata_loaded();
+        
+        // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
+        note_manager = new NoteManager(model_id, bookmarker, bookmark);
       });
-      
-      // instantiate this in callback for now to keep NoteManager isolated but avoid a duplicate GET bookmark AJAX call
-      note_manager = new NoteManager(model_id, bookmarker, bookmark);
     });
   }
 
@@ -500,6 +543,14 @@ $(document).ready(function() {
         x_index = Number(bookmark["x-selection"]);
       if("y-selection" in bookmark)
         y_index = Number(bookmark["y-selection"]);
+      
+      // Wait until the redux store has been created
+      createReduxStorePromise.then(() => {
+        // Dispatch update to x and y indexex in Redux
+        window.store.dispatch(setXIndex(x_index));
+        window.store.dispatch(setYIndex(y_index));
+      });
+
       auto_scale = true;
       if("auto-scale" in bookmark)
       {
@@ -547,8 +598,13 @@ $(document).ready(function() {
           {
             x = x[0];
           }
-          setup_scatterplot();
-          setup_table();
+          // Wait until the redux store has been created
+          createReduxStorePromise.then(() => {
+            // Dispatch update to x values in Redux
+            window.store.dispatch(setXValues(x));
+            setup_scatterplot();
+            setup_table();
+          });
         },
         error : artifact_missing
       });
@@ -566,15 +622,28 @@ $(document).ready(function() {
           {
             y = y[0];
           }
-          setup_scatterplot();
-          setup_table();
+          // Wait until the redux store has been created
+          createReduxStorePromise.then(() => {
+            // Dispatch update to y values in Redux
+            window.store.dispatch(setYValues(y));
+            setup_scatterplot();
+            setup_table();
+          });
         },
         error : artifact_missing
       });
 
       v_index = table_metadata["column-count"] - 1;
       if("variable-selection" in bookmark)
+      {
         v_index = Number(bookmark["variable-selection"]);
+      }
+
+      // Wait until the redux store has been created
+      createReduxStorePromise.then(() => {
+        // Dispatch update to v index in Redux
+        window.store.dispatch(setVIndex(v_index));
+      });
 
       if(v_index == table_metadata["column-count"] - 1)
       {
@@ -582,9 +651,17 @@ $(document).ready(function() {
         v = new Float64Array(count);
         for(var i = 0; i != count; ++i)
           v[i] = i;
-        update_current_colorscale();
-        setup_scatterplot();
-        setup_table();
+
+        // Wait until the redux store has been created
+        createReduxStorePromise.then(() => {
+          // Dispatch update to v values in Redux
+          window.store.dispatch(setVValues(v));
+          // console.log(`window.store.dispatch(setVValues(v));`);
+          update_current_colorscale();
+          setup_scatterplot();
+          setup_table();
+        });
+        
       }
       else
       {
@@ -601,9 +678,14 @@ $(document).ready(function() {
             {
               v = v[0];
             }
-            update_current_colorscale();
-            setup_scatterplot();
-            setup_table();
+            // Wait until the redux store has been created
+            createReduxStorePromise.then(() => {
+              // Dispatch update to v values in Redux
+              window.store.dispatch(setVValues(v));
+              update_current_colorscale();
+              setup_scatterplot();
+              setup_table();
+            });
           },
           error : artifact_missing
         });
@@ -907,6 +989,7 @@ $(document).ready(function() {
       && (images_index !== null) && (selected_simulations != null) && (hidden_simulations != null)
       && indices && (open_images !== null) & (video_sync !== null) && (video_sync_time !== null)
       && (threeD_sync !== null) && window.store !== undefined
+      && table_statistics
       )
     {
       controls_ready = true;
@@ -936,34 +1019,35 @@ $(document).ready(function() {
       {
         color_variable = [bookmark["variable-selection"]];
       }
-
+      
       $("#controls").controls({
-        mid : model_id,
-        model: model,
-        model_name: window.model_name,
-        aid : "data-table",
-        metadata: table_metadata,
+        "mid" : model_id,
+        "model": model,
+        "model_name": window.model_name,
+        "aid" : "data-table",
+        "metadata": table_metadata,
+        "table_statistics": table_statistics,
         // clusters : clusters,
-        x_variables: axes_variables,
-        y_variables: axes_variables,
-        axes_variables: axes_variables,
-        image_variables: image_columns,
-        color_variables: color_variables,
-        rating_variables : rating_columns,
-        category_variables : category_columns,
-        selection : selected_simulations,
+        "x_variables": axes_variables,
+        "y_variables": axes_variables,
+        "axes_variables": axes_variables,
+        "image_variables": image_columns,
+        "color_variables": color_variables,
+        "rating_variables" : rating_columns,
+        "category_variables" : category_columns,
+        "selection" : selected_simulations,
         // cluster_index : cluster_index,
         "x-variable" : x_index,
         "y-variable" : y_index,
         "image-variable" : images_index,
         "color-variable" : color_variable,
         "auto-scale" : auto_scale,
-        hidden_simulations : hidden_simulations,
-        indices : indices,
-        open_images : open_images,
+        "hidden_simulations" : hidden_simulations,
+        "indices" : indices,
+        "open_images" : open_images,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
-        threeD_sync : threeD_sync,
+        "threeD_sync" : threeD_sync,
       });
 
       // Changing the x variable updates the controls ...
@@ -983,6 +1067,17 @@ $(document).ready(function() {
       {
         $("#controls").controls("option", "image-variable", variable);
       });
+
+      $("#controls").bind("update_axes_ranges", function()
+      {
+        // console.log(`variable-ranges-changed`);
+        // Alert scatterplot that it might need to update its axes
+        $("#scatterplot").scatterplot("update_axes_ranges");
+        // Update the color scale
+        update_current_colorscale();
+        $("#table").table("option", "colorscale", colorscale);
+        $("#scatterplot").scatterplot("option", "colorscale", colorscale);
+      })
 
       // Changing the value of a variable updates the database, table, and scatterplot ...
       $("#controls").bind("set-value", function(event, props)
@@ -1248,6 +1343,9 @@ $(document).ready(function() {
 
   function selected_colormap_changed(colormap)
   {
+    // Update color switcher with new colormap
+    $("#color-switcher").colorswitcher("option", "colormap", colormap);
+
     update_current_colorscale();
 
     // Changing the color map updates the table with a new color scale ...
@@ -1292,6 +1390,9 @@ $(document).ready(function() {
     });
 
     bookmarker.updateState({"variable-selection" : variable});
+
+    // Dispatch update to v indexe in Redux
+    window.store.dispatch(setVIndex(v_index));
   }
 
   function handle_image_variable_change(variable)
@@ -1350,6 +1451,8 @@ $(document).ready(function() {
         {
           v = v[0];
         }
+        // Dispatch update to v values in Redux
+        window.store.dispatch(setVValues(v));
         update_widgets_after_color_variable_change();
       },
       error : artifact_missing
@@ -1394,18 +1497,42 @@ $(document).ready(function() {
       $("#controls").controls("option", "hidden_simulations", hidden_simulations);
   }
 
+  function set_custom_color_variable_range()
+  {
+    // console.log(`set_custom_color_variable_range`);
+    const variableRanges = window.store.getState().variableRanges[v_index];
+    custom_color_variable_range.min = variableRanges != undefined ? variableRanges.min : undefined;
+    custom_color_variable_range.max = variableRanges != undefined ? variableRanges.max : undefined;
+  }
+
   function update_current_colorscale()
   {
+    set_custom_color_variable_range();
     // Check if numeric or string variable
     var v_type = table_metadata["column-types"][v_index];
     if(auto_scale)
+    {
       filtered_v = filterValues(v);
+    }
     else
+    {
       filtered_v = v;
+    }
 
     if(v_type != "string")
     {
-      colorscale = $("#color-switcher").colorswitcher("get_color_scale", undefined, d3.min(filtered_v), d3.max(filtered_v));
+      let axes_variables = store.getState().axesVariables[v_index];
+      let v_axis_type = axes_variables != undefined ? axes_variables : 'Linear';
+      let get_color_scale_function = v_axis_type == 'Log' ? 'get_color_scale_log' : 'get_color_scale';
+      // console.log(`v_axis_type is ${v_axis_type}`);
+
+      // console.log(`update_current_colorscale for not strings`);
+      colorscale = $("#color-switcher").colorswitcher(
+        get_color_scale_function, 
+        undefined, 
+        custom_color_variable_range.min != undefined ? custom_color_variable_range.min : d3.min(filtered_v), 
+        custom_color_variable_range.max != undefined ? custom_color_variable_range.max : d3.max(filtered_v),
+      );
     }
     else
     {
@@ -1477,6 +1604,9 @@ $(document).ready(function() {
     });
     bookmarker.updateState( {"x-selection" : variable} );
     x_index = Number(variable);
+
+    // Dispatch update to x index in Redux
+    window.store.dispatch(setXIndex(x_index));
   }
 
   function y_selection_changed(variable)
@@ -1488,6 +1618,9 @@ $(document).ready(function() {
     });
     bookmarker.updateState( {"y-selection" : variable} );
     y_index = Number(variable);
+
+    // Dispatch update to y index in Redux
+    window.store.dispatch(setYIndex(y_index));
   }
 
   function auto_scale_option_changed(auto_scale_value)
@@ -1584,34 +1717,18 @@ $(document).ready(function() {
       attribute : variable,
       success : function(result)
       {
+        const x = table_metadata["column-types"][variable]=="string" ? result[0] : result;
+        // Dispatch update to x values in Redux
+        window.store.dispatch(setXValues(x));
         $("#scatterplot").scatterplot("option", {
           x_index: variable,
           x_string: table_metadata["column-types"][variable]=="string", 
-          x: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
-          x_label:get_variable_label(variable),
+          x: x, 
+          x_label: get_variable_label(variable),
         });
       },
       error : artifact_missing
     });
-  }
-
-  function update_scatterplot_labels()
-  {
-    $("#scatterplot").scatterplot("option", {
-      x_label: get_variable_label(x_index),
-      y_label: get_variable_label(y_index),
-      v_label: get_variable_label(v_index),
-    });
-  }
-
-  function get_variable_label(variable)
-  {
-    if(window.store.getState().derived.variableAliases[variable] !== undefined)
-    {
-      return window.store.getState().derived.variableAliases[variable];
-    }
-    
-    return table_metadata["column-names"][variable]
   }
 
   function update_scatterplot_y(variable)
@@ -1624,10 +1741,13 @@ $(document).ready(function() {
       attribute : variable,
       success : function(result)
       {
+        const y = table_metadata["column-types"][variable]=="string" ? result[0] : result;
+        // Dispatch update to y values in Redux
+        window.store.dispatch(setYValues(y));
         $("#scatterplot").scatterplot("option", {
           y_index: variable,
           y_string: table_metadata["column-types"][variable]=="string", 
-          y: table_metadata["column-types"][variable]=="string" ? result[0] : result, 
+          y: y, 
           y_label:get_variable_label(variable),
         });
       },
@@ -1644,6 +1764,10 @@ $(document).ready(function() {
       statistics: "0/" + columns.join("|"),
       success: function(metadata)
       {
+        if(table_statistics === null)
+        {
+          table_statistics = new Array();
+        }
         var statistics = metadata.statistics;
         for(var i = 0; i != statistics.length; ++i)
           table_statistics[statistics[i].attribute] = {min: statistics[i].min, max: statistics[i].max};

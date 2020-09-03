@@ -12,7 +12,7 @@ functionality is used in a variety of ways:
 
 * Web clients can browse the filesystem of a remote host.
 * Web clients can create a Slycat model using data stored on a remote host.
-* Web clients can retrieve images on a remote host (an essential part of the :ref:`parameter-image-model`).
+* Web clients can retrieve images on a remote host (an essential part of the parameter-image-model).
 * Web clients can retrieve video compressed from still images on a remote host.
 
 When a remote session is created, a connection to the remote host over ssh is
@@ -363,26 +363,31 @@ class Session(object):
         script or batch job or something as simple as moving files.
         the only requirement is that the script is in our list of 
         trusted scripts.
-        
         this_func()->calls agent_command_func()->which runs_shell_command()
         -> which launches_script()-> sends_response_to_agent()->sends_response_to_server()
         ->sends_status_response_to_client()
-        
-        :param self: 
-        :param command: json form of a command to be run
+
+        Parameters
+        ----------
+        command: json
+        form of a command to be run
         {
-            "scripts": //pre defined scripts that are registerd with the server
-            [{
-                "script_name":"script_name", // key for the script lookup 
-                "parameters": [{key:value},...] // params that are fed to the script
-            },...]
-            "hpc": // these are the hpc commands that may be add for thing such as slurm
-            {
-                "is_hpc_job":bol, // determins if this should be run as an hpc job
-                "parameters":[{key:value},...] // things such as number of nodes
-            }
+        "scripts": //pre defined scripts that are registerd with the server
+        [{
+        "script_name":"script_name", // key for the script lookup 
+        "parameters": [{key:value},...] // params that are fed to the script
+        },...]
+        "hpc": // these are the hpc commands that may be add for thing such as slurm
+        {
+        "is_hpc_job":bol, // determins if this should be run as an hpc job
+        "parameters":[{key:value},...] // things such as number of nodes
         }
-        :return: {"msg":"message from the agent", "error": boolean}
+        }
+
+        Returns
+        ----------
+        obj:
+        {"msg":"message from the agent", "error": boolean}
         """
         # check for an agent if none available die
         if self._agent is None:
@@ -575,9 +580,46 @@ class Session(object):
                         "mime-types": mime_types}
             return response
         except Exception as e:
-            cherrypy.response.headers["x-slycat-message"] = str(e)
-            cherrypy.log.error("slycat.web.server.remote.py browse", "cherrypy.HTTPError 400 %s" % str(e))
-            raise cherrypy.HTTPError(400)
+            cherrypy.log.error("Exception reading remote file %s: %s %s" % (path, type(e), str(e)))
+
+            if str(e) == "Garbage packet received":
+                cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 500 remote access failed: %s" % str(e))
+                raise cherrypy.HTTPError("500 Remote access failed.")
+
+            if str(e) == "No such file":
+                # Ideally this would be a 404, but we already use
+                # 404 to handle an unknown sessions, and clients need to make the distinction.
+                cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
+                    self.hostname, path)
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
+                                            self.hostname, path))
+                raise cherrypy.HTTPError("400 File not found.")
+
+            if str(e) == "Permission denied":
+                # The file exists, but is not available due to access controls
+                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
+                    self.hostname, path)
+                cherrypy.response.headers[
+                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access " \
+                                       "to %s, and don't forget to set appropriate permissions on all " \
+                                       "the parent directories!" % (
+                                           self.hostname, path)
+                cherrypy.log.error("slycat.web.server.remote.py get_file",
+                                        "cherrypy.HTTPError 400 you do not have permission to "
+                                        "retrieve %s:%s. Check the filesystem on %s to verify that your "
+                                        "user has access to %s, and don't forget to set appropriate permissions"
+                                        " on all the parent directories." % (
+                                            self.hostname, path, self.hostname, path))
+                raise cherrypy.HTTPError("400 Access denied.")
+
+            # Catchall
+            cherrypy.response.headers["x-slycat-message"] = "Remote access failed: %s" % str(e)
+            cherrypy.log.error("slycat.web.server.remote.py get_file",
+                                    "cherrypy.HTTPError 400 remote access failed: %s" % str(e))
+            raise cherrypy.HTTPError("400 Remote access failed.")
 
     def write_file(self, path, data, **kwargs):
         '''
@@ -602,7 +644,7 @@ class Session(object):
                                         "cherrypy.HTTPError 400 must specify cache key.")
                 raise cherrypy.HTTPError("400 Must specify cache key.")
 
-        # Use the agent to retrieve a file.
+        # Use the agent to write a file.
         if self._agent is not None:
             stdin, stdout, stderr = self._agent
             try:
@@ -688,78 +730,6 @@ class Session(object):
                 cherrypy.log.error("slycat.web.server.remote.py get_file",
                                         "cherrypy.HTTPError 400 must specify cache key.")
                 raise cherrypy.HTTPError("400 Must specify cache key.")
-
-        # Use the agent to retrieve a file.
-        if self._agent is not None:
-            stdin, stdout, stderr = self._agent
-            try:
-                cherrypy.log.error(json.dumps({"action": "get-file", "path": path}))
-                stdin.write("%s\n" % json.dumps({"action": "get-file", "path": path}))
-                stdin.flush()
-            except socket.error as e:
-                delete_session(self._sid)
-                raise socket.error('Socket is closed')
-            value = stdout.readline()
-            metadata = json.loads(value)
-            if metadata["message"] == "Path must be absolute.":
-                cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is not absolute." % (
-                    self.hostname, path)
-                cherrypy.log.error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 remote path %s:%s is not absolute." % (
-                                            self.hostname, path))
-                raise cherrypy.HTTPError("400 Path not absolute.")
-            elif metadata["message"] == "No read permission.":
-                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
-                    self.hostname, path)
-                cherrypy.response.headers[
-                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has" \
-                                       " access to %s, and don't forget to set appropriate permissions" \
-                                       " on all the parent directories!" % (
-                                           self.hostname, path)
-                cherrypy.log.error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 you do not have permission to "
-                                        "retrieve %s:%s. Check the filesystem on %s to verify that"
-                                        " your user has access to %s, and don't forget to set appropriate "
-                                        "permissions on all the parent directories." % (
-                                            self.hostname, path, self.hostname, path))
-                raise cherrypy.HTTPError("400 Access denied.")
-            elif metadata["message"] == "Path not found.":
-                cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
-                    self.hostname, path)
-                cherrypy.log.error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 the remote file %s:%s does not exist." % (
-                                            self.hostname, path))
-                raise cherrypy.HTTPError("400 File not found.")
-            elif metadata["message"] == "Directory unreadable.":
-                cherrypy.response.headers["x-slycat-message"] = "Remote path %s:%s is a directory." % (
-                    self.hostname, path)
-                cherrypy.log.error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 can't read directory %s:%s." % (self.hostname, path))
-                raise cherrypy.HTTPError("400 Can't read directory.")
-            elif metadata["message"] == "Access denied.":
-                cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
-                    self.hostname, path)
-                cherrypy.response.headers[
-                    "x-slycat-hint"] = "Check the filesystem on %s to verify that your user has access" \
-                                       " to %s, and don't forget to set appropriate permissions on all" \
-                                       " the parent directories!" % (
-                                           self.hostname, path)
-                cherrypy.log.error("slycat.web.server.remote.py get_file",
-                                        "cherrypy.HTTPError 400 you do not have permission to"
-                                        " retrieve %s:%s. Check the filesystem on %s to verify "
-                                        "that your user has access to %s, and don't forget to set"
-                                        " appropriate permissions on all the parent directories." % (
-                                            self.hostname, path, self.hostname, path))
-                raise cherrypy.HTTPError("400 Access denied.")
-            content_type = metadata["content-type"]
-            content = base64.b64decode(metadata["content"])
-
-            if cache == "project":
-                cache_object(project, key, content_type, content)
-
-            cherrypy.response.headers["content-type"] = content_type
-            return content
-
         # Use sftp to retrieve a file.
         try:
             if stat.S_ISDIR(self._sftp.stat(path).st_mode):
@@ -772,7 +742,10 @@ class Session(object):
             content_type, encoding = slycat.mime_type.guess_type(path)
             if content_type is None:
                 content_type = "application/octet-stream"
-            content = self._sftp.file(path).read()
+
+            my_file = self._sftp.file(path)
+            my_file.prefetch()
+            content = my_file.read(my_file.stat().st_size)
 
             if cache == "project":
                 cache_object(project, key, content_type, content)
@@ -788,7 +761,7 @@ class Session(object):
                                         "cherrypy.HTTPError 500 remote access failed: %s" % str(e))
                 raise cherrypy.HTTPError("500 Remote access failed.")
 
-            if e.strerror == "No such file":
+            if str(e) == "No such file":
                 # Ideally this would be a 404, but we already use
                 # 404 to handle an unknown sessions, and clients need to make the distinction.
                 cherrypy.response.headers["x-slycat-message"] = "The remote file %s:%s does not exist." % (
@@ -798,7 +771,7 @@ class Session(object):
                                             self.hostname, path))
                 raise cherrypy.HTTPError("400 File not found.")
 
-            if e.strerror == "Permission denied":
+            if str(e) == "Permission denied":
                 # The file exists, but is not available due to access controls
                 cherrypy.response.headers["x-slycat-message"] = "You do not have permission to retrieve %s:%s" % (
                     self.hostname, path)

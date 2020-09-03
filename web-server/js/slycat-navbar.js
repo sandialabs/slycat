@@ -31,8 +31,8 @@ import "bootstrap";
 import config from 'config.json';
 
 export function renderNavBar() {
-  // Let's check to see if we have a session by trying to retrive the projects list.
-  // If we get redirected, it likely means we don't have a seesion, so let's take the user
+  // Let's check to see if we have a session by trying to retrieve the projects list.
+  // If we get redirected, it likely means we don't have a session, so let's take the user
   // to the login page.
   fetch(api_root + 'projects_list' + '?_=' + new Date().getTime(), {redirect: 'error', credentials: "same-origin", cache: "no-store"})
     .catch(error => {
@@ -87,6 +87,10 @@ export function renderNavBar() {
       component.project_id = ko.observable(params.project_id);
       component.project = ko.observableArray();
       component.project_models = mapping.fromJS([]);
+      // Setting git version, branch, and commit hash from globals created in webpack.common.js with DefinePlugin
+      component.GIT_SLYCAT_VERSION = GIT_SLYCAT_VERSION;
+      component.GIT_SLYCAT_BRANCH = GIT_SLYCAT_BRANCH;
+      component.GIT_SLYCAT_COMMITHASH = GIT_SLYCAT_COMMITHASH;
 
       // Retrieve current project, if any.
       if(component.project_id())
@@ -413,7 +417,7 @@ export function renderNavBar() {
 
       component.open_documentation = function()
       {
-        window.open("/docs/user-manual.html");
+        window.open("/docs/index.html");
       }
 
       var references = mapping.fromJS([]);

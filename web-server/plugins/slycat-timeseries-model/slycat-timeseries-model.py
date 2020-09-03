@@ -16,6 +16,9 @@ def register_slycat_plugin(context):
     import numpy
     import re
     import couchdb
+    import statistics
+    import io
+    import tarfile
     try:
         import cpickle as pickle
     except ImportError:
@@ -72,7 +75,7 @@ def register_slycat_plugin(context):
         slycat.web.server.update_model(database, model, state="finished", result="failed",
                                        finished=datetime.datetime.utcnow().isoformat(), message=message)
 
-    def get_remote_file_server(hostname, model, filename, calling_client=None):
+    def get_remote_file_server(hostname, model, filename, total_file_delta_time = [], calling_client=None):
         """
         Utility function to fetch remote files.
         :param hostname:
@@ -82,7 +85,13 @@ def register_slycat_plugin(context):
         """
         sid = get_sid(hostname, model)
         with slycat.web.server.remote.get_session(sid, calling_client) as session:
-          return session.get_file(filename)
+          import time
+          start = time.time()
+          file = session.get_file(filename)
+          end = time.time()
+          delta_time = (end - start)
+          total_file_delta_time.append(delta_time)
+          return file
 
     def get_sid(hostname, model):
         """
@@ -120,6 +129,31 @@ def register_slycat_plugin(context):
             raise cherrypy.HTTPError("400 session is None value")
         return sid
 
+    def helpGetFile(filename, use_tar, hostname, model, total_file_delta_time,calling_client, input_tar):
+        """
+        help determin how to get a file either through
+        extracting from a tar file or from grabbing the file remotely
+        
+        Arguments:
+            filename {[type]} -- file path
+            use_tar {[type]} -- flag for if it should use the tar
+            hostname {[type]} -- name of the host system
+            model {[type]} -- model from the DB
+            total_file_delta_time {[type]} -- array of file load times
+            calling_client {[type]} -- ip of the calling client
+            input_tar {[type]} -- tar file to read from 
+        
+        Returns:
+            file -- in memory file
+        """
+        if use_tar:
+            return input_tar.extractfile(filename).read()
+        else:
+            return get_remote_file_server(hostname, model,
+                                          filename,
+                                          total_file_delta_time,
+                                          calling_client)
+
     def compute(model_id, stop_event, calling_client):
         """
         Computes the Time Series model. It fetches the necessary files from a
@@ -134,11 +168,15 @@ def register_slycat_plugin(context):
         :param username:
         """
         try:
+            total_file_delta_time = []
             #cherrypy.log.error("in thread")
             # workdir += "/slycat/pickle"  # route to the slycat directory
+            start_time = time.time()
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", model_id)
             model["model_compute_time"] = datetime.datetime.utcnow().isoformat()
+            with slycat.web.server.get_model_lock(model["_id"]):
+                database.save(model)
             slycat.web.server.update_model(database, model, state="waiting", message="starting data pull Timeseries")
             model = database.get("model", model_id)
             uid = slycat.web.server.get_model_parameter(database, model, "pickle_uid")
@@ -151,8 +189,23 @@ def register_slycat_plugin(context):
             sid = get_sid(hostname, model)
             # load inputs
             slycat.web.server.update_model(database, model, progress=50, message="loading inputs")
-            inputs = get_remote_file_server(hostname, model,
-                                            "%s/slycat_timeseries_%s/arrayset_inputs.pickle" % (workdir, uid), calling_client)
+            use_tar = True
+            # keep this blank unless we need it
+            pickle_path = ''
+            input_tar=None
+            try:
+                myfiles_tar_gz = get_remote_file_server(hostname, model,
+                                                "%s/slycat_timeseries_%s/slycat-timeseries.tar.gz" % (workdir, uid),
+                                                total_file_delta_time,
+                                                calling_client)
+                myfiles_tar_gz = io.BytesIO(myfiles_tar_gz)
+                input_tar = tarfile.open(fileobj=myfiles_tar_gz, mode="r:gz")
+            except:
+                  # looks like the file is too large lets just grab one file at a time
+                  use_tar = False
+                  pickle_path = "%s/slycat_timeseries_%s/" % (workdir, uid)
+            inputs = helpGetFile("%sarrayset_inputs.pickle" % (pickle_path),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
             inputs = pickle.loads(inputs)
             slycat.web.server.put_model_arrayset(database, model, inputs["aid"])
             # load attributes
@@ -160,8 +213,8 @@ def register_slycat_plugin(context):
             attributes = inputs["attributes"]
             slycat.web.server.put_model_array(database, model, inputs["aid"], 0, attributes, inputs["dimensions"])
             # load attribute data
-            data = get_remote_file_server(hostname, model,
-                                          "%s/slycat_timeseries_%s/inputs_attributes_data.pickle" % (workdir, uid), calling_client)
+            data = helpGetFile("%sinputs_attributes_data.pickle" % (pickle_path),
+                                use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
             attributes_data = pickle.loads(data)
 
             # push attribute arraysets
@@ -172,8 +225,8 @@ def register_slycat_plugin(context):
                                                           [attributes_data[attribute]])
             # load clusters data
             slycat.web.server.update_model(database, model, progress=60, message="loading cluster data")
-            clusters = get_remote_file_server(hostname, model,
-                                                  "%s/slycat_timeseries_%s/file_clusters.json" % (workdir, uid), calling_client)
+            clusters = helpGetFile("%sfile_clusters.json" % (pickle_path),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
             clusters = json.loads(clusters)
             clusters_file = json.JSONDecoder().decode(clusters["file"])
             timeseries_count = json.JSONDecoder().decode(clusters["timeseries_count"])
@@ -188,8 +241,8 @@ def register_slycat_plugin(context):
             for file_name in clusters_file:
                 progress = progress + progress_part
                 slycat.web.server.update_model(database, model, progress=progress, message="loading %s cluster file" % file_name)
-                file_cluster_data = get_remote_file_server(hostname, model,
-                                                            "%s/slycat_timeseries_%s/file_cluster_%s.json" % (workdir, uid, file_name), calling_client)
+                file_cluster_data = helpGetFile("%sfile_cluster_%s.json" % (pickle_path, file_name),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
                 file_cluster_attr = json.loads(file_cluster_data)
                 slycat.web.server.post_model_file(model["_id"], True, sid,
                                                   "%s/slycat_timeseries_%s/file_cluster_%s.out" % (
@@ -199,24 +252,22 @@ def register_slycat_plugin(context):
                 model = database.get("model", model["_id"])
                 slycat.web.server.put_model_arrayset(database, model, "preview-%s" % file_name)
 
-                waveform_dimensions_data = get_remote_file_server(hostname, model,
-                                                                        "%s/slycat_timeseries_%s/waveform_%s_dimensions"
-                                                                        ".pickle" % (workdir, uid, file_name), calling_client)
+                waveform_dimensions_data = helpGetFile("%swaveform_%s_dimensions.pickle" % (pickle_path, file_name),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
                 waveform_dimensions_array = pickle.loads(waveform_dimensions_data)
-                waveform_attributes_data = get_remote_file_server(hostname, model,
-                                                                        "%s/slycat_timeseries_%s/waveform_%s_attributes"
-                                                                        ".pickle" % (workdir, uid, file_name), calling_client)
+
+                waveform_attributes_data = helpGetFile("%swaveform_%s_attributes.pickle" % (pickle_path, file_name),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
                 waveform_attributes_array = pickle.loads(waveform_attributes_data)
-                waveform_times_data = get_remote_file_server(hostname, model,
-                                                                  "%s/slycat_timeseries_%s/waveform_%s_times"
-                                                                  ".pickle" % (workdir, uid, file_name), calling_client)
+
+                waveform_times_data = helpGetFile("%swaveform_%s_times.pickle" % (pickle_path, file_name),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
                 waveform_times_array = pickle.loads(waveform_times_data)
-                waveform_values_data = get_remote_file_server(hostname, model,
-                                                                    "%s/slycat_timeseries_%s/waveform_%s_values"
-                                                                    ".pickle" % (workdir, uid, file_name), calling_client)
+
+                waveform_values_data = helpGetFile("%swaveform_%s_values.pickle" % (pickle_path, file_name),
+                                    use_tar, hostname, model, total_file_delta_time,calling_client, input_tar)
                 waveform_values_array = pickle.loads(waveform_values_data)
 
-                # TODO this can become multi processored
                 for index in range(int(timeseries_count)):
                     try:
                         model = database.get("model", model["_id"])
@@ -231,11 +282,25 @@ def register_slycat_plugin(context):
                     except:
                         cherrypy.log.error("failed on index: %s" % index)
                         pass
+            if input_tar:
+                input_tar.close()
             database = slycat.web.server.database.couchdb.connect()
             model = database.get("model", model_id)
             slycat.web.server.update_model(database, model, message="finished loading all data")
             slycat.web.server.put_model_parameter(database, model, "computing", False)
             cherrypy.log.error("finished Pulling timeseries computed data")
+            finish_time = time.time()
+            file_stats = {
+              "min": min(total_file_delta_time),
+              "max": max(total_file_delta_time),
+              "mean": statistics.mean(total_file_delta_time),
+              "median": statistics.median(total_file_delta_time),
+              "number_of_files_pulled":len(total_file_delta_time),
+              "total_time_Pulling_data": sum(total_file_delta_time),
+              "total_time": (finish_time - start_time)
+            }
+            cherrypy.log.error("File Stats %s" % str(file_stats))
+            total_file_delta_time = []
             finish(model["_id"])
             stop_event.set()
             # TODO add finished to the model state
@@ -310,9 +375,11 @@ def register_slycat_plugin(context):
             else:
                 slycat.web.server.update_model(database, model, progress=5, message="Job is in pending state")
             slycat.web.server.put_model_parameter(database, model, "computing", False)
-            if "job_running_time" not in model:
+            if "job_running_time" not in model and state == "RUNNING":
+                model = database.get("model", model["_id"])
                 model["job_running_time"] = datetime.datetime.utcnow().isoformat()
-                slycat.web.server.update_model(database, model)
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    database.save(model)
 
         if state in ["CANCELLED", "REMOVED", "VACATED"]:
             slycat.web.server.put_model_parameter(database, model, "computing", False)
@@ -321,11 +388,15 @@ def register_slycat_plugin(context):
         if state == "COMPLETED":
             slycat.web.server.update_model(database, model, progress=50, message="Job is in Completed state")
             if "job_running_time" not in model:
+                model = database.get("model", model["_id"])
                 model["job_running_time"] = datetime.datetime.utcnow().isoformat()
-                slycat.web.server.update_model(database, model)
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    database.save(model)
             if "job_completed_time" not in model:
+                model = database.get("model", model["_id"])
                 model["job_completed_time"] = datetime.datetime.utcnow().isoformat()
-                slycat.web.server.update_model(database, model)
+                with slycat.web.server.get_model_lock(model["_id"]):
+                    database.save(model)
             """
             Callback for a successful remote job completion. It computes the model
             and successfully completes it.

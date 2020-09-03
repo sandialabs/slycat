@@ -14,6 +14,9 @@ import "js/slycat-login-controls";
 import "js/slycat-3d-viewer";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
 import { changeCurrentFrame } from './actions';
+import { get_variable_label } from './ui';
+import { isValueInColorscaleRange } from './color-switcher';
+import $ from 'jquery';
 
 var nodrag = d3.behavior.drag();
 
@@ -100,6 +103,21 @@ $.widget("parameter_image.scatterplot",
   pausing_videos : [],
   playing_videos : [],
   current_frame : null,
+  previousState : null,
+  custom_axes_ranges : {
+    x: {
+      min: undefined,
+      max: undefined
+    },
+    y: {
+      min: undefined,
+      max: undefined
+    },
+    v: {
+      min: undefined,
+      max: undefined
+    }
+  },
 
   _create: function()
   {
@@ -135,6 +153,7 @@ $.widget("parameter_image.scatterplot",
     self.login_open = false;
 
     self.set_x_y_v_axes_types();
+    self.set_custom_axes_ranges();
 
     // Setup the scatterplot ...
     self.media_layer = d3.select(self.element.get(0)).append("div").attr("class", "media-layer bootstrap-styles");
@@ -366,6 +385,7 @@ $.widget("parameter_image.scatterplot",
     const update_axes_font_size = () => {
       if(self.options.axes_font_size != store.getState().fontSize)
       {
+        // console.log('1 update_axes_font_size');
         self.options.axes_font_size = store.getState().fontSize;
         self.x_axis_layer.selectAll("text")
           .style("font-size", self.options.axes_font_size + 'px')
@@ -384,6 +404,7 @@ $.widget("parameter_image.scatterplot",
     const update_axes_font_family = () => {
       if(self.options.axes_font_family != store.getState().fontFamily)
       {
+        // console.log('2 update_axes_font_family');
         self.options.axes_font_family = store.getState().fontFamily;
         self.x_axis_layer.selectAll("text")
           .style("font-family", self.options.axes_font_family)
@@ -400,9 +421,10 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_axes_variables_scale = () => {
-      if(self.options.axes_variables_scale != store.getState().axesVariables)
+      if(!_.isEqual(self.options.axes_variables_scale, store.getState().axesVariables))
       {
-        self.options.axes_variables_scale = store.getState().axesVariables;
+        // console.log('3 update_axes_variables_scale');
+        self.options.axes_variables_scale = _.cloneDeep(store.getState().axesVariables);
         self.set_x_y_v_axes_types();
         self._schedule_update({
           update_x:true, 
@@ -418,17 +440,17 @@ $.widget("parameter_image.scatterplot",
     };
 
     const update_point_border_size = () => {
-      // console.log('update_point_border_size');
       let unselected_point_size_changed = self.options.canvas_square_size != store.getState().unselected_point_size;
       let unselected_border_size_changed = self.options.canvas_square_border_size != store.getState().unselected_border_size;
       let selected_point_size_changed = self.options.canvas_selected_square_size != store.getState().selected_point_size;
       let selected_border_size_changed = self.options.canvas_selected_square_border_size != store.getState().selected_border_size;
-
+      
       if(unselected_point_size_changed || unselected_border_size_changed)
       {
+        // console.log('4 update_point_border_size');
         self.options.canvas_square_size = store.getState().unselected_point_size;
         self.options.canvas_square_border_size = store.getState().unselected_border_size;
-
+        
         self._schedule_update({
           update_datum_width_height: true, 
           render_data:true, 
@@ -436,6 +458,7 @@ $.widget("parameter_image.scatterplot",
       }
       if(selected_point_size_changed || selected_border_size_changed)
       {
+        // console.log('4 update_point_border_size');
         self.options.canvas_selected_square_size = store.getState().selected_point_size;
         self.options.canvas_selected_square_border_size = store.getState().selected_border_size;
 
@@ -446,10 +469,73 @@ $.widget("parameter_image.scatterplot",
       }
     };
 
+    const update_scatterplot_labels = () => {
+      const x_label_changed = self.options.x_label != get_variable_label(self.options.x_index);
+      const y_label_changed = self.options.y_label != get_variable_label(self.options.y_index);
+      const v_label_changed = self.options.v_label != get_variable_label(self.options.v_index);
+      // console.log('x_label_changed: ' + x_label_changed);
+      
+      if(x_label_changed)
+      {
+        // console.log('5 update_scatterplot_labels');
+        self.options.x_label = get_variable_label(self.options.x_index);
+        self._schedule_update({update_x_label:true});
+      }
+      if(y_label_changed)
+      {
+        // console.log('5 update_scatterplot_labels');
+        self.options.y_label = get_variable_label(self.options.y_index);
+        self._schedule_update({update_y_label:true});
+      }
+      if(v_label_changed)
+      {
+        // console.log('5 update_scatterplot_labels');
+        self.options.v_label = get_variable_label(self.options.v_index);
+        self._schedule_update({update_v_label:true});
+      }
+    }
+
+    const update_previous_state = () => {
+      // console.log('LAST update_previous_state');
+      self.previousState = window.store.getState();
+    }
+
+    update_previous_state();
     window.store.subscribe(update_axes_font_size);
     window.store.subscribe(update_axes_font_family);
     window.store.subscribe(update_axes_variables_scale);
     window.store.subscribe(update_point_border_size);
+    window.store.subscribe(update_scatterplot_labels);
+    // This update_previous_state needs to be the last window.store.subscribe
+    // since the other callbacks rely on the previous state not being updated
+    // until they are finished.
+    window.store.subscribe(update_previous_state);
+  },
+
+  update_axes_ranges: function()
+  {
+    // console.log('update_axes_scales');
+    let self = this;
+    // Make a copy of current custom axes ranges
+    let previous_custom_axes_ranges = _.cloneDeep(self.custom_axes_ranges);
+    self.set_custom_axes_ranges();
+    for(const axis of ['x','y','v'])
+    {
+      if(!_.isEqual(previous_custom_axes_ranges[axis], self.custom_axes_ranges[axis]))
+      {
+        // console.log(`update_axes_scales updating ${axis}`);
+        self._schedule_update({
+          [`update_${axis}`]:true, 
+          update_leaders:true, 
+          render_data:true, 
+          render_selection:true,
+          update_legend_axis: axis == 'v' ? true : false,
+        });
+      }
+    }
+    self._close_hidden_simulations();
+    self._open_shown_simulations();
+    self._sync_open_images();
   },
 
   set_x_y_v_axes_types: function()
@@ -458,6 +544,19 @@ $.widget("parameter_image.scatterplot",
     self.options.x_axis_type = self.options.axes_variables_scale[self.options.x_index] != undefined ? self.options.axes_variables_scale[self.options.x_index] : 'Linear';
     self.options.y_axis_type = self.options.axes_variables_scale[self.options.y_index] != undefined ? self.options.axes_variables_scale[self.options.y_index] : 'Linear';
     self.options.v_axis_type = self.options.axes_variables_scale[self.options.v_index] != undefined ? self.options.axes_variables_scale[self.options.v_index] : 'Linear';
+  },
+
+  set_custom_axes_ranges: function()
+  {
+    var self = this;
+    for(const axis of ['x','y','v'])
+    {
+      const variableRanges = window.store.getState().variableRanges[self.options[`${axis}_index`]];
+      const customMin = variableRanges != undefined ? variableRanges.min : undefined;
+      const customMax = variableRanges != undefined ? variableRanges.max : undefined;
+      self.custom_axes_ranges[axis].min = customMin;
+      self.custom_axes_ranges[axis].max = customMax;
+    }
   },
 
   _filterIndices: function()
@@ -520,27 +619,37 @@ $.widget("parameter_image.scatterplot",
     return clone;
   },
 
-  _createScale: function(string, values, range, reverse, type)
+  _createScale: function(string, values, range, reverse, type, axis)
   {
+    let self = this;
     // console.log("_createScale: " + type);
+    const customMin = self.custom_axes_ranges[axis].min;
+    const customMax = self.custom_axes_ranges[axis].max;
+
     // Make a time scale for 'Date & Time' variable types
     if(type == 'Date & Time')
     {
       let dates = [];
-      let date = NaN;
       for(let date of values)
       {
         // Make sure Date is valid before adding it to array, so we get a scale with usable min and max
         date = new Date(date.toString())
         if(!isNaN(date))
+        {
           dates.push(date);
+        }
       }
       // console.log("unsorted dates: " + dates);
       dates.sort(function(a, b){
         return a - b;
       });
       // console.log('sorted dates: ' + dates);
-      var domain = [dates[0], dates[dates.length-1]];
+
+      // Use custom range for min or max if we have one
+      const min = customMin != undefined && !isNaN(new Date(customMin.toString())) ? new Date(customMin.toString()) : dates[0];
+      const max = customMax != undefined && !isNaN(new Date(customMax.toString())) ? new Date(customMax.toString()) : dates[dates.length-1];
+
+      let domain = [min, max];
       // console.log('domain: ' + domain);
       if(reverse === true)
       {
@@ -554,46 +663,39 @@ $.widget("parameter_image.scatterplot",
     // For numeric variables
     else if(!string)
     {
+      // Use custom range for min or max if we have one
+      const min = customMin != undefined ? customMin : d3.min(values);
+      const max = customMax != undefined ? customMax : d3.max(values);
+
+      let domain = [min, max];
+      if(reverse === true)
+      {
+        domain.reverse();
+      }
       // Log scale if 'Log' variable types
       if(type == 'Log')
       {
-        var domain = [d3.min(values), d3.max(values)];
-        if(reverse === true)
-        {
-          domain.reverse();
-        }
         return d3.scale.log()
           .domain(domain)
           .range(range)
           ;
       }
       // Linear scale otherwise
-      else 
-      {
-        var domain = [d3.min(values), d3.max(values)];
-        if(reverse === true)
-        {
-          domain.reverse();
-        }
-        return d3.scale.linear()
-          .domain(domain)
-          .range(range)
-          ;
-      }
-    }
-    // For string variables, make an ordinal scale
-    else
-    {
-      var uniqueValues = d3.set(values).values().sort();
-      if(reverse === true)
-      {
-        uniqueValues.reverse();
-      }
-      return d3.scale.ordinal()
-        .domain(uniqueValues)
-        .rangePoints(range)
+      return d3.scale.linear()
+        .domain(domain)
+        .range(range)
         ;
     }
+    // For string variables, make an ordinal scale
+    var uniqueValues = d3.set(values).values().sort();
+    if(reverse === true)
+    {
+      uniqueValues.reverse();
+    }
+    return d3.scale.ordinal()
+      .domain(uniqueValues)
+      .rangePoints(range)
+      ;
   },
 
   _getDefaultXPosition: function(imageIndex, imageWidth)
@@ -636,7 +738,7 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
-    //console.log("parameter_image.scatterplot._setOption()", key, value);
+    // console.log("parameter_image.scatterplot._setOption()", key, value);
     self.options[key] = value;
 
     // This "indices" key never seems to be used, so Alex is commenting it out for now.
@@ -946,8 +1048,23 @@ $.widget("parameter_image.scatterplot",
       var range = [0 + width_offset + self.options.border, total_width - width_offset - self.options.border - xoffset];
       var range_canvas = [0, width - (2 * self.options.border) - xoffset];
 
-      self.x_scale = self._createScale(self.options.x_string, self.options.scale_x, range, false, self.options.x_axis_type);
-      self.x_scale_canvas = self._createScale(self.options.x_string, self.options.scale_x, range_canvas, false, self.options.x_axis_type);
+      self.set_custom_axes_ranges();
+      self.x_scale = self._createScale(
+        self.options.x_string, 
+        self.options.scale_x, 
+        range, 
+        false, 
+        self.options.x_axis_type, 
+        'x'
+      );
+      self.x_scale_canvas = self._createScale(
+        self.options.x_string, 
+        self.options.scale_x, 
+        range_canvas, 
+        false, 
+        self.options.x_axis_type, 
+        'x'
+      );
 
       var height = Math.min(self.options.width, self.options.height);
       var height_offset = (total_height - height) / 2;
@@ -957,6 +1074,9 @@ $.widget("parameter_image.scatterplot",
         .orient("bottom")
         // Set number of ticks based on width of axis.
         .ticks(range_canvas[1]/85)
+        // Forces ticks at min and max axis values, but sometimes they collide
+        // with other ticks and sometimes they get rounded.
+        // .tickValues( self.x_scale.ticks( range_canvas[1]/85 ).concat( self.x_scale.domain() ) )
         // .tickSize(15)
         ;
       self.x_axis_layer
@@ -989,14 +1109,32 @@ $.widget("parameter_image.scatterplot",
       var range_canvas = [height - (2 * self.options.border) - 40, 0];
       self.y_axis_offset = 0 + width_offset + self.options.border;
 
-      self.y_scale = self._createScale(self.options.y_string, self.options.scale_y, range, false, self.options.y_axis_type);
-      self.y_scale_canvas = self._createScale(self.options.y_string, self.options.scale_y, range_canvas, false, self.options.y_axis_type);
+      self.set_custom_axes_ranges();
+      self.y_scale = self._createScale(
+        self.options.y_string, 
+        self.options.scale_y, 
+        range, 
+        false, 
+        self.options.y_axis_type,
+        'y'
+      );
+      self.y_scale_canvas = self._createScale(
+        self.options.y_string, 
+        self.options.scale_y, 
+        range_canvas, 
+        false, 
+        self.options.y_axis_type,
+        'y'
+      );
 
       self.y_axis = d3.svg.axis()
         .scale(self.y_scale)
         .orient("left")
         // Set number of ticks based on height of axis.
         .ticks(range_canvas[0]/50)
+        // Forces ticks at min and max axis values, but sometimes they collide
+        // with other ticks and sometimes they get rounded.
+        // .tickValues( self.y_scale.ticks( range_canvas[0]/50 ).concat( self.y_scale.domain() ) )
         ;
       self.y_axis_layer
         .attr("transform", "translate(" + self.y_axis_offset + ",0)")
@@ -1087,10 +1225,17 @@ $.widget("parameter_image.scatterplot",
       canvas.lineWidth = border_width;
 
       while (++i < n) {
-        var index = filtered_indices[i];
-        var value = v[index];
+        let index = filtered_indices[i];
+        if(self._is_off_axes(index))
+        {
+          // console.log(`this point is off axes, so skipping: ${index}`);
+          continue;
+        }
+        let value = v[index];
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
+        else if( !isValueInColorscaleRange(value, self.options.colorscale) )
+          color = $("#color-switcher").colorswitcher("get_outofdomain_color");
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
@@ -1137,10 +1282,17 @@ $.widget("parameter_image.scatterplot",
       canvas.lineWidth = border_width;
 
       while (++i < n) {
-        var index = filtered_selection[i];
-        var value = v[index];
+        let index = filtered_selection[i];
+        if(self._is_off_axes(index))
+        {
+          // console.log(`this point is off axes, so skipping: ${index}`);
+          continue;
+        }
+        let value = v[index];
         if(!self._validateValue(value))
           color = $("#color-switcher").colorswitcher("get_null_color");
+        else if( !isValueInColorscaleRange(value, self.options.colorscale) )
+          color = $("#color-switcher").colorswitcher("get_outofdomain_color");
         else
           color = self.options.colorscale(value);
         canvas.fillStyle = color;
@@ -1278,15 +1430,26 @@ $.widget("parameter_image.scatterplot",
     if(self.updates["update_legend_axis"])
     {
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
+      self.set_custom_axes_ranges();
 
       // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
       // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
-      self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true);
+      self.legend_scale = self._createScale(
+        self.options.v_string, 
+        self.options.scale_v, 
+        range, 
+        true,
+        self.options.v_axis_type,
+        'v'
+      );
 
       self.legend_axis = d3.svg.axis()
         .scale(self.legend_scale)
         .orient("right")
         .ticks(range[1]/50)
+        // Forces ticks at min and max axis values, but sometimes they collide
+        // with other ticks and sometimes they get rounded.
+        // .tickValues( self.legend_scale.ticks( range[1]/50 ).concat( self.legend_scale.domain() ) )
         ;
       self.legend_axis_layer
         .attr("transform", "translate(" + parseInt(self.legend_layer.select("rect.color").attr("width")) + ",0)")
@@ -1923,6 +2086,12 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
+    // Don't open images for off axes simulations
+    if(self._is_off_axes(image.index)) {
+      self._open_images(images.slice(1));
+      return;
+    }
+
     // Don't open image if it's already open
     if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
       self._open_images(images.slice(1));
@@ -2308,7 +2477,7 @@ $.widget("parameter_image.scatterplot",
           }, false);
 
           // Convert the blob to an array buffer and pass it to the geometry loader
-          blob.arrayBuffer().then((buffer) => {
+          function passToGeometryLoaded(buffer) {
             geometryLoad(
               vtk.node(),
               buffer,
@@ -2318,7 +2487,24 @@ $.widget("parameter_image.scatterplot",
             if(image.current_frame) {
               frame_html.node().querySelector('.vtp').dispatchEvent(vtkselect_event);
             }
-          })
+          }
+          // For newer browser, let's use the promise based Blob.arrayBuffer() function
+          if(blob.arrayBuffer)
+          {
+            // console.log(`using blob.arrayBuffer`);
+            blob.arrayBuffer().then((buffer) => {
+              passToGeometryLoaded(buffer);
+            });
+          }
+          // For older browser, we can't use blob.arrayBuffer(), so we'll use FileReader.readAsArrayBuffer() instead
+          else {
+            // console.log(`using FileReader`);
+            const reader = new FileReader();
+            reader.onload = function onLoad(e) {
+              passToGeometryLoaded(reader.result);
+            };
+            reader.readAsArrayBuffer(blob);
+          }
         }
         else {
           // We don't support this file type, so just create a download link for files
@@ -2488,11 +2674,28 @@ $.widget("parameter_image.scatterplot",
     xhr.send();
   },
 
+  _is_off_axes: function(index) {
+    let self = this;
+    const x_value = self.options.x[index];
+    const y_value = self.options.y[index];
+
+    // console.log(`x: ${x_value}, y: ${y_value}`);
+
+    const off_x_axis = self.custom_axes_ranges.x.min > x_value || self.custom_axes_ranges.x.max < x_value;
+    const off_y_axis = self.custom_axes_ranges.y.min > y_value || self.custom_axes_ranges.y.max < y_value;
+
+    const off_axes = off_x_axis || off_y_axis;
+    return off_axes;
+  },
+
   _close_hidden_simulations: function() {
     var self = this;
     $(".media-layer div.image-frame")
       .filter(function(){
-        return $.inArray($(this).data("index"), self.options.filtered_indices) == -1
+        const index = $(this).data("index");
+        const filtered = $.inArray(index, self.options.filtered_indices) == -1;
+        const off_axes = self._is_off_axes(index);
+        return filtered || off_axes;
       })
       .each(function(){
         self._remove_image_and_leader_line(d3.select(this));
@@ -2514,7 +2717,13 @@ $.widget("parameter_image.scatterplot",
     self.options.open_images.forEach(function(image, index)
     {
       // Making sure we have an index and uri before attempting to open an image
-      if( image.index != null && image.uri != undefined && self.options.filtered_indices.indexOf(image.index) != -1 && areOpen.indexOf(image.index) == -1 )
+      if (
+        image.index != null 
+        && image.uri != undefined 
+        && self.options.filtered_indices.indexOf(image.index) != -1 
+        && areOpen.indexOf(image.index) == -1 
+        && !self._is_off_axes(image.index)
+      )
       {
         images.push({
           index : image.index,
@@ -2581,6 +2790,14 @@ $.widget("parameter_image.scatterplot",
         yvalues = self.options.y;
     for(var i = indices.length-1; i > -1; i-- ) {
       let index = indices[i];
+
+      // Disable hovering on points that are off axes
+      if(self._is_off_axes(index))
+      {
+        // console.log(`_open_first_match _is_off_axes`);
+        continue;
+      }
+      
       let x1 = Math.round( self.x_scale_format( xvalues[index] ) ) - shift;
       let y1 = Math.round( self.y_scale_format( yvalues[index] ) ) - shift;
       let x2 = x1 + size;

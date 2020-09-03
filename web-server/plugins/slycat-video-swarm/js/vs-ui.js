@@ -31,8 +31,8 @@ import control from "./vs-controls"
 // global parameters to set up movie-plex UI
 // -----------------------------------------
 
-var MAX_POINTS_ANIMATE = 2500;  // number of points over which to stop animation
-var SCATTER_BORDER = 0.025;     // border around scatter plot (fraction of 1)
+var MAX_POINTS_ANIMATE = 2500;// number of points over which to stop animation
+var SCATTER_BORDER = 0.025;// border around scatter plot (fraction of 1)
 // scatter plot colors (css/d3 named colors)
 var POINT_COLOR = "whitesmoke";
 var POINT_SIZE = 5;
@@ -83,9 +83,10 @@ var other_columns = null;
 // constants for polling timeouts
 var ONE_MINUTE = 60000;
 var ONE_SECOND = 1000;
+var TEN_SECOND = 10000;
 
 // polling interval is 1 second
-var interval = ONE_SECOND;
+var interval = TEN_SECOND;
 
 // waits 1 minute past last successful progress update
 var endTime = Number(new Date()) + ONE_MINUTE;
@@ -102,7 +103,6 @@ $("#vs_processing_textarea").focusout(function () { user_scroll = false; });
 // reconnect button
 var reconnect = function ()
 {
-
     // sever connections associated with this user
     $.ajax(
     {
@@ -111,7 +111,30 @@ var reconnect = function ()
         url: api_root + "clear/ssh-sessions",
         success: function(id)
         {
-            // polling will automatically ask for new connection
+            // try to re-connect to server
+            var remote_pool = remotes.create_pool();
+            remote_pool.get_remote({
+                hostname: logHostName,
+                title: "Login to " + logHostName,
+                message: "Loading " + logFileName,
+                cancel: function() {
+
+                    // if the user cancels, we do nothing and the program stops
+
+                },
+                success: function() {
+
+                    // reset time out and continue
+                    endTime = Number(new Date()) + ONE_MINUTE;
+                    window.setTimeout(poll, interval);
+
+                },
+                error: function() {
+
+                    dialog.ajax_error("Server error: could not connect to cluster.")("","","");
+
+                }
+            });
         },
         error: function(request, status, reason_phrase)
         {
@@ -124,8 +147,8 @@ var reconnect = function ()
 $("#vs-reconnect-button").on("click", reconnect);
 
 // poll database for artifact "vs-loading-progress"
-(function poll() {
-
+function poll() {
+    
     client.get_model_parameter(
     {
         mid: model._id,
@@ -143,6 +166,8 @@ $("#vs-reconnect-button").on("click", reconnect);
                 logFileName = result[1];
                 logHostName = result[2];
                 workDir = result[3];
+
+                // get_movie_links();
 
                 // call web server to read log file
                 client.get_model_command({
@@ -185,7 +210,7 @@ $("#vs-reconnect-button").on("click", reconnect);
                             $("#vs_processing_textarea").scrollTop($("#vs_processing_textarea")[0].scrollHeight);
 
                             // done computing, go upload the model
-                            read_csv_file();
+                            get_movie_links();
 
                         }
                     },
@@ -258,28 +283,18 @@ $("#vs-reconnect-button").on("click", reconnect);
             }
         }
     });
-})();
+}
+// initialize poll
+poll();
 
-// reconnect button
-var reconnect = function ()
+function get_movie_links()
 {
-
-    // sever connections associated with this user
-    $.ajax(
-    {
-        dataType: "json",
-        type: "GET",
-        url: api_root + "clear/ssh-sessions",
-        success: function(id)
-        {
-            // polling will automatically ask for new connection
-        },
-        error: function(request, status, reason_phrase)
-        {
-            dialog.ajax_error("Server error: could not reset connection.")("","","");
-        },
+  var link_column = 0;
+    client.get_model_command_fetch({mid:model._id, type:"VS", command: "extract-links", parameters: [workDir, logHostName]})
+    .then(() => { 
+      console.log("Movie links extracted."); 
+      read_csv_file();
     });
-
 }
 
 // read in csv file

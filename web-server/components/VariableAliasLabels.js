@@ -1,57 +1,88 @@
-import React, { useState } from "react";
+import React from "react";
 import css from "css/slycat-variable-alias-labels.scss";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { render } from "enzyme";
 
-export default function VariableAliasLabels(props) {
+export default class VariableAliasLabels extends React.PureComponent {
 
-  let variables = props.metadata['column-names'];
-  let minLength = 1;
-  let maxLength = 256;
-  let alias, aliasLength;
+  variables = this.props.metadata['column-names'];
 
-  function getVariableAlias(index) {
-    let alias = variables[index];
-    if(props.variableAliases[index] !== undefined)
-    {
-      alias = props.variableAliases[index];
-    }
-    return alias;
+  render() {
+    // console.log('VariableAliasLabels render');
+    return (
+      <div className={`slycat-variable-alias-labels ${this.props.uniqueID}`}>
+        <table className='table table-striped table-hover table-sm table-borderless'>
+          <thead>
+            <tr>
+              <th scope='col' className='align-top'>Name</th>
+              <th scope='col' className='align-top'>Label</th>
+            </tr>
+          </thead>
+          <tbody>
+          {
+            this.variables.map((variable, index) => {
+              let userInput = this.props.variableAliases[index] != undefined;
+              return (
+                <VariableAliasLabelsRow 
+                  key={index}
+                  index={index}
+                  variable={variable}
+                  alias={this.props.variableAliases[index] ? this.props.variableAliases[index] : ''}
+                  userInput={userInput}
+                  placeholder={this.variables[index]}
+                  onChange={this.props.onChange}
+                />
+              )
+            })
+          }
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+}
+
+class VariableAliasLabelsRow extends React.PureComponent {
+  clearLabel = (event) => {
+    let index = event.currentTarget.name;
+    let input = document.querySelector(`.slycat-variable-alias-labels input[name='${index}'`);
+    input.value = '';
+    this.props.onChange(event);
   }
 
-  return (
-    <div className={`slycat-variable-alias-labels ${props.uniqueID}`}>
-      <table className='table table-striped table-hover table-sm table-borderless'>
-        <thead>
-          <tr>
-            <th scope='col' className='align-top'>Name</th>
-            <th scope='col' className='align-top'>Label</th>
-          </tr>
-        </thead>
-        <tbody>
-        {
-          variables.map((variable, index) => {
-            alias = getVariableAlias(index);
-            aliasLength = alias.length;
-            return (
-              <tr key={index}>
-                <th scope='row' className='col-form-label-sm align-middle variable-name'>{variable}</th>
-                <td className={`${minLength <= aliasLength && aliasLength <= maxLength  ? '' : 'was-validated'}`}>
-                    <input type='text' className='form-control form-control-sm variable-alias'
-                      minLength={minLength} 
-                      maxLength={maxLength}
-                      required
-                      name={index}
-                      defaultValue={alias} 
-                      onChange={props.onChange} />
-                    <div className='invalid-feedback'>
-                      Please enter a label betweeen {minLength} and {maxLength} characters long.
-                    </div>
-                </td>
-              </tr>
-            )
-          })
-        }
-        </tbody>
-      </table>
-    </div>
-  );
+  render() {
+    return (
+      <tr key={this.props.index}>
+        <th scope='row' className='align-middle variable-name'>{this.props.variable}</th>
+        <td>
+        <div className='input-group input-group-sm'>
+            <input type='text' 
+              className={`form-control form-control-sm variable-alias 
+                ${this.props.userInput ? 'contains-user-input' : ''}`}
+              minLength='0' 
+              maxLength='256'
+              name={this.props.index}
+              value={this.props.alias} 
+              placeholder={this.props.placeholder}
+              onChange={this.props.onChange} 
+            />
+            <div className='input-group-append'>
+              <button 
+                className='btn btn-outline-secondary' 
+                type='button'
+                title='Clear alias label'
+                name={this.props.index}
+                value=''
+                disabled={!this.props.userInput}
+                onClick={this.clearLabel}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+          </div>
+        </td>
+      </tr>
+    );
+  }
 }

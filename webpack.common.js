@@ -2,7 +2,10 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-var GitRevisionPlugin = require('git-revision-webpack-plugin');
+const GitRevisionPlugin = require('git-revision-webpack-plugin');
+// Creating new instance of GitRevisionPlugin and configuring it to use lightweight tags
+// so that our tagging comes out correctly. Without it, we are tagged 1.0
+const gitRevisionPlugin = new GitRevisionPlugin({lightweightTags: true});
 
 // importing vtk rules for for vtk.js package to work
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
@@ -28,8 +31,9 @@ module.exports = {
   output: {
     // Use this to add the chunk hash into the filename. 
     // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
+    // Also adding the git revision hash to the filename so it's clear what version of the code we have.
     filename: '[name].[chunkhash].git_[git-revision-hash].js',
-    // If problems arise, remove chuckhash from the filename like so:
+    // If problems arise, remove chunkhash from the filename like so:
     // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
     // Public URL of js bundle files. We want them available at the root URL.
@@ -95,12 +99,18 @@ module.exports = {
       chunks: ['slycat_login'],
     }),
     // Copying our documentation manual into the dist folder, from docs/manual/html to dist/docs
-    new CopyPlugin(
-      [{ from: 'docs/manual/html', to: 'docs' },],
-      { copyUnmodified: true }
-    ),
-    new GitRevisionPlugin({
-      branch: true
+    new CopyPlugin({
+      patterns: [
+        { from: 'docs/html', to: 'docs' },
+      ],
+    }),
+    gitRevisionPlugin,
+    // Using DefinePlugin to create global constants so we can output the 
+    // git version, hash, and branch in our About Slycat dialog.
+    new webpack.DefinePlugin({
+      'GIT_SLYCAT_VERSION': JSON.stringify(gitRevisionPlugin.version()),
+      'GIT_SLYCAT_COMMITHASH': JSON.stringify(gitRevisionPlugin.commithash()),
+      'GIT_SLYCAT_BRANCH': JSON.stringify(gitRevisionPlugin.branch()),
     }),
   ],
   module: {
@@ -110,9 +120,16 @@ module.exports = {
         exclude: /node_modules/, 
         use: "babel-loader",
       },
-      // This enables the html-loader, needed to load knockout .html templates
+      // This enables the html-loader, needed to load knockout .html templates.
       { test: /\.html$/, 
-        use: 'html-loader' 
+        loader: 'html-loader',
+        options: {
+          minimize: {
+            // Disabling removing comments when minimizing html because it causes
+            // knockout to break, probably because it uses comments for binding.
+            removeComments: false,
+          }
+        },
       },
       // This enables the style and css loaders, which are needed to load CSS files
       {

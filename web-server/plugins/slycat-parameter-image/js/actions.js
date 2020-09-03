@@ -8,6 +8,8 @@ export const CHANGE_FONT_SIZE = 'CHANGE_FONT_SIZE'
 export const CHANGE_FONT_FAMILY = 'CHANGE_FONT_FAMILY'
 export const CHANGE_AXES_VARIABLE_SCALE = 'CHANGE_AXES_VARIABLE_SCALE'
 export const CHANGE_VARIABLE_ALIAS_LABEL = 'CHANGE_VARIABLE_ALIAS_LABEL'
+export const REMOVE_VARIABLE_ALIAS_LABEL = 'REMOVE_VARIABLE_ALIAS_LABEL'
+export const REMOVE_ALL_VARIABLE_ALIAS_LABELS = 'REMOVE_ALL_VARIABLE_ALIAS_LABELS'
 export const CHANGE_CURRENT_FRAME = 'CHANGE_CURRENT_FRAME'
 export const CHANGE_THREED_COLORMAP = 'CHANGE_THREED_COLORMAP'
 export const UPDATE_THREE_D_COLORBY = 'UPDATE_THREE_D_COLORBY'
@@ -18,35 +20,58 @@ export const SET_UNSELECTED_POINT_SIZE = 'SET_UNSELECTED_POINT_SIZE'
 export const SET_UNSELECTED_BORDER_SIZE = 'SET_UNSELECTED_BORDER_SIZE'
 export const SET_SELECTED_POINT_SIZE = 'SET_SELECTED_POINT_SIZE'
 export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
+export const SET_VARIABLE_RANGE = 'SET_VARIABLE_RANGE'
+export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
+export const CLEAR_ALL_VARIABLE_RANGES = 'CLEAR_ALL_VARIABLE_RANGES'
+export const SET_X_VALUES = 'SET_X_VALUES'
+export const SET_Y_VALUES = 'SET_Y_VALUES'
+export const SET_V_VALUES = 'SET_V_VALUES'
+export const SET_X_INDEX = 'SET_X_INDEX'
+export const SET_Y_INDEX = 'SET_Y_INDEX'
+export const SET_V_INDEX = 'SET_V_INDEX'
 
-export function changeFontSize(size) {
+export function changeFontSize(event) {
   return { 
     type: CHANGE_FONT_SIZE, 
-    fontSize: size 
+    fontSize: event.currentTarget.value 
   }
 }
 
-export function changeFontFamily(family) {
+export function changeFontFamily(event) {
+  let fontFamily = event.currentTarget.value != undefined ? 
+    event.currentTarget.value : event.currentTarget.dataset.value;
   return { 
     type: CHANGE_FONT_FAMILY, 
-    fontFamily: family 
+    fontFamily: fontFamily
   }
 }
 
-export function changeAxesVariableScale(variable, scale) {
+export function changeAxesVariableScale(event) {
   return { 
     type: CHANGE_AXES_VARIABLE_SCALE, 
-    axesVariable: variable, 
-    axesScale: scale 
+    axesVariable: event.currentTarget.name,
+    axesScale: event.currentTarget.value,  
   }
 }
 
-export function changeVariableAliasLabels(variable, label) {
+export function changeVariableAliasLabels(event) {
+  let label = event.currentTarget.value;
+  if(label == '')
+  {
+    return {
+      type: REMOVE_VARIABLE_ALIAS_LABEL, 
+      aliasVariable: event.currentTarget.name
+    }
+  }
   return { 
     type: CHANGE_VARIABLE_ALIAS_LABEL, 
-    aliasVariable: variable, 
+    aliasVariable: event.currentTarget.name, 
     aliasLabel: label 
   }
+}
+
+export function clearAllVariableAliasLabels(event) {
+  return { type: REMOVE_ALL_VARIABLE_ALIAS_LABELS }
 }
 
 export function changeCurrentFrame(frame) {
@@ -101,17 +126,53 @@ export function updateThreeDSync(threeD_sync) {
 }
 
 export function setUnselectedPointSize(event) {
-  return { type: SET_UNSELECTED_POINT_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_UNSELECTED_POINT_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setUnselectedBorderSize(event) {
-  return { type: SET_UNSELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_UNSELECTED_BORDER_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setSelectedPointSize(event) {
-  return { type: SET_SELECTED_POINT_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_SELECTED_POINT_SIZE, size: parseFloat(event.currentTarget.value) }
 }
 
 export function setSelectedBorderSize(event) {
-  return { type: SET_SELECTED_BORDER_SIZE, size: parseFloat(event.target.value) }
+  return { type: SET_SELECTED_BORDER_SIZE, size: parseFloat(event.currentTarget.value) }
+}
+
+export function setVariableRange(index, value, minOrMax) {
+  return { type: SET_VARIABLE_RANGE, index: index, value: value, minOrMax: minOrMax }
+}
+
+export function clearVariableRange(index, minOrMax) {
+  return { type: CLEAR_VARIABLE_RANGE, index: index, minOrMax: minOrMax }
+}
+
+export function clearAllVariableRanges() {
+  return { type: CLEAR_ALL_VARIABLE_RANGES }
+}
+
+export function setXValues(values) {
+  return { type: SET_X_VALUES, values: values, }
+}
+
+export function setYValues(values) {
+  return { type: SET_Y_VALUES, values: values, }
+}
+
+export function setVValues(values) {
+  return { type: SET_V_VALUES, values: values, }
+}
+
+export function setXIndex(index) {
+  return { type: SET_X_INDEX, index: index, }
+}
+
+export function setYIndex(index) {
+  return { type: SET_Y_INDEX, index: index, }
+}
+
+export function setVIndex(index) {
+  return { type: SET_V_INDEX, index: index, }
 }
