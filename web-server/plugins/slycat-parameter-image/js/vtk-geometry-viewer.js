@@ -301,7 +301,7 @@ export function load(container, buffer, uri, uid, type) {
   let camera = renderer.getActiveCamera();
 
   // Set the camera based on what's in the state
-  let cameraState = window.store.getState().three_d_cameras ? window.store.getState().three_d_cameras[uri] : false;
+  let cameraState = window.store.getState().three_d_cameras ? window.store.getState().three_d_cameras[uid] : false;
   if(cameraState)
   {
     // console.log('we have state for the camera: ' + cameraState);
@@ -313,5 +313,5 @@ export function load(container, buffer, uri, uid, type) {
   }
 
   // Pass the active camera to camera synchronizer
-  addCamera(camera, container, interactor, uri);
+  addCamera(camera, container, interactor, uid);
 }

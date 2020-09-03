@@ -151,7 +151,7 @@ export default function ps_reducer(state = initialState, action) {
       let newCameras = {};
       for(let camera of action.cameras)
       {
-        newCameras[camera.uri] = {
+        newCameras[camera.uid] = {
           position: camera.camera.getPosition(),
           focalPoint: camera.camera.getFocalPoint(),
           viewUp: camera.camera.getViewUp(),

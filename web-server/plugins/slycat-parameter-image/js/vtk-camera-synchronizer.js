@@ -4,7 +4,7 @@ import { updateThreeDCameras } from './actions';
 let syncCameras = true;
 // An array of all the cameras. Each element is an object containing 
 // a camera and its associated interactor, like so: 
-// {camera: *the camera*, interactor: *the interactor*, uri: *the uri*}
+// {camera: *the camera*, interactor: *the interactor*, uid: *the uid*}
 let cameras = [];
 
 let cameraOnModified = null;
@@ -43,7 +43,7 @@ export function setSyncCameras(syncCamerasBool) {
   }
 }
 
-export function addCamera(camera, container, interactor, uri) {
+export function addCamera(camera, container, interactor, uid) {
   // When we are adding a new camera and sync is on, we need to set it up like the others
   if(syncCameras && cameras.length)
   {
@@ -55,7 +55,7 @@ export function addCamera(camera, container, interactor, uri) {
   }
 
 
-  cameras.push({camera: camera, interactor: interactor, uri: uri});
+  cameras.push({camera: camera, interactor: interactor, uid: uid});
 
   // Listen for the selected event and add an onModified handler to the selected camera
   container.addEventListener('vtkselect', (e) => { 
