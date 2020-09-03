@@ -513,7 +513,7 @@ $.widget("parameter_image.scatterplot",
       let pointOrCell = false;
       let domain = null;
       const three_d_colorvars = state.three_d_colorvars;
-      const three_d_colorvar = three_d_colorvars ? three_d_colorvars[state.currentFrame] : undefined;
+      const three_d_colorvar = three_d_colorvars ? three_d_colorvars[state.currentFrame.uid] : undefined;
       // If we have a 3D color variable, create a label for the legend
       if(three_d_colorvar)
       {
@@ -523,7 +523,7 @@ $.widget("parameter_image.scatterplot",
         let component = split[2];
         threeDLegendLabel = `${variable}${component ? ` [${parseInt(component, 10) + 1}]` : ''}`;
         try {
-          domain = state.derived.three_d_colorby_range[state.currentFrame][three_d_colorvar];
+          domain = state.derived.three_d_colorby_range[state.currentFrame.uri][three_d_colorvar];
         }
         catch (e) {
           // No need to do anything. With no domain, the legend just won't render.
@@ -2595,6 +2595,7 @@ $.widget("parameter_image.scatterplot",
               vtk.node(),
               buffer,
               image.uri,
+              image.uid,
               isStl ? 'stl' : 'vtp'
             );
             // dispatch vtk select event so we know which camera to sync
@@ -3139,7 +3140,10 @@ $.widget("parameter_image.scatterplot",
       }
 
       // Dispatch update to current frame to redux store
-      window.store.dispatch(changeCurrentFrame(frame.data("uri")));
+      window.store.dispatch(changeCurrentFrame({
+        uri: frame.data("uri"), 
+        uid: frame.data("uid"),
+      }));
 
       self._sync_open_media();
     }
@@ -3164,7 +3168,7 @@ $.widget("parameter_image.scatterplot",
     {
       self.current_frame = null;
       // Dispatch update to current frame to redux store
-      window.store.dispatch(changeCurrentFrame(null));
+      window.store.dispatch(changeCurrentFrame({}));
     }
   },
 

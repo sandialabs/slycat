@@ -409,6 +409,7 @@ $(document).ready(function() {
             selected_border_size: selected_border_size,
             variableRanges: {},
             open_media: bookmarked_open_media,
+            currentFrame: {},
           }
           window.store = createStore(
             ps_reducer, 

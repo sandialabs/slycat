@@ -25,7 +25,7 @@ import {
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
-export function load(container, buffer, uri, type) {
+export function load(container, buffer, uri, uid, type) {
 
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
@@ -146,9 +146,9 @@ export function load(container, buffer, uri, type) {
 
     function updateColorBy() {
       // Use default colorBy if we don't have a setting for it in the state
-      if(window.store.getState().three_d_colorvars && window.store.getState().three_d_colorvars[uri])
+      if(window.store.getState().three_d_colorvars && window.store.getState().three_d_colorvars[uid])
       {
-        colorBy = window.store.getState().three_d_colorvars[uri];
+        colorBy = window.store.getState().three_d_colorvars[uid];
       }
 
       const [location, colorByArrayName, componentString] = colorBy.split(':');
@@ -215,8 +215,8 @@ export function load(container, buffer, uri, type) {
 
     function updateColorByIfChanged() {
       if(window.store.getState().three_d_colorvars
-        && window.store.getState().three_d_colorvars[uri]
-        && window.store.getState().three_d_colorvars[uri] != colorBy)
+        && window.store.getState().three_d_colorvars[uid]
+        && window.store.getState().three_d_colorvars[uid] != colorBy)
       {
         // console.log("ColorBy changed, so applying the new one.");
         updateColorBy();

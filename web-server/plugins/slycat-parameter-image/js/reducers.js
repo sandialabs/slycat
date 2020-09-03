@@ -49,7 +49,7 @@ const initialState = {
   fontSize: DEFAULT_FONT_SIZE,
   fontFamily: DEFAULT_FONT_FAMILY,
   axesVariables: {},
-  currentFrame: null,
+  currentFrame: {},
   threeD_sync: false,
   three_d_colormaps: {},
   open_media: [],
@@ -117,7 +117,7 @@ export default function ps_reducer(state = initialState, action) {
         three_d_colorvars: {
           ...state.three_d_colorvars,
           // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
-          [action.uri]: action.colorBy
+          [action.uid]: action.colorBy
         }
       })
 

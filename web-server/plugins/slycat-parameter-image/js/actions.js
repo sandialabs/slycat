@@ -85,10 +85,10 @@ export function changeThreeDColormap(threeDColormap) {
   }
 }
 
-export function updateThreeDColorBy(uri, colorBy) {
+export function updateThreeDColorBy(uid, colorBy) {
   return { 
     type: UPDATE_THREE_D_COLORBY, 
-    uri, 
+    uid, 
     colorBy,
   }
 }

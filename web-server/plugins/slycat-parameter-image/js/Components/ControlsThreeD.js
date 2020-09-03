@@ -15,7 +15,7 @@ class ControlsThreeD extends React.Component {
   }
 
   changeThreeDColorBy = (label, key) => {
-    this.props.updateThreeDColorBy(this.props.currentFrame, key);
+    this.props.updateThreeDColorBy(this.props.currentFrame.uid, key);
   };
 
   render() {
@@ -71,13 +71,13 @@ const mapStateToProps = (state) => {
   // and we have color by options for that frame
   if (
     state.derived.three_d_colorby_options &&
-    state.currentFrame &&
-    state.derived.three_d_colorby_options[state.currentFrame]
+    state.currentFrame.uri &&
+    state.derived.three_d_colorby_options[state.currentFrame.uri]
   ) {
     // Sort Color By options.
     // List points data first, then cell data.
     // Within each, list the items alphabetically.
-    color_by_items = state.derived.three_d_colorby_options[state.currentFrame];
+    color_by_items = state.derived.three_d_colorby_options[state.currentFrame.uri];
     // Compare using English locale
     const locale = "en";
     // Make it case and accent insensitive.
@@ -126,7 +126,7 @@ const mapStateToProps = (state) => {
 
   let threeDColorBy;
   if (state.three_d_colorvars) {
-    threeDColorBy = state.three_d_colorvars[state.currentFrame];
+    threeDColorBy = state.three_d_colorvars[state.currentFrame.uid];
   }
 
   return {
