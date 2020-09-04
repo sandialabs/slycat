@@ -1,3 +1,5 @@
+.. _Sliders:
+
 Sliders
 =======
 
@@ -15,6 +17,11 @@ sliders on the far right being set to 1.  Hovering over a slider displays its ac
 interactively adjust a variable’s weight by dragging the slider, which then triggers changes to the positions of points in 
 the *Scatterplot*.
 
+.. figure:: figures/slider-buttons.png
+   :align: center
+
+   **Figure 18: Slider controls are (1) download table, (2) set all sliders to 0, (3) set all sliders to 1, and (4) optimize sliders for selected Metadata Table column.**
+
 The controls shown in Figure 18 appear at the bottom of the *Slider* view.  From left to right, the buttons perform the
 following functions:
 
@@ -22,11 +29,6 @@ following functions:
 * Set all slider weights to 0. 
 * Set all slider weights to 1. 
 * Set the slider weights to optimize the *Scatterplot* for the selected *Metadata Table* column (selected from the dropdown list in the upper right above the *Scatterplot*, as shown in Figure 20).
-
-.. figure:: figures/slider-buttons.png
-   :align: center
-
-   **Figure 18: Slider controls are (1) download table, (2) set all sliders to 0, (3) set all sliders to 1, and (4) optimize sliders for selected Metadata Table column.**
 
 .. figure:: figures/color-by-pulldown-context.png
    :scale: 50 %

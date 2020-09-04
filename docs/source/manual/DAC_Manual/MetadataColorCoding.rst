@@ -22,10 +22,10 @@ the top and highlighted in the list.
    **Figure 20: Weather data scalar variables for color-coding Scatterplot points.  The default is 'Do Not Color'.**
 
 After changing the variable to *Average Temperature*, the *Scatterplot* is recolored using shades of gray (see 
-Model Preferences to change color palettes), where cities with higher average temperature values are colored darker gray 
+:ref:`ModelPreferences` to change color palettes), where cities with higher average temperature values are colored darker gray 
 and cities with lower values are drawn in lighter gray, as shown in Figure 23.  Notice that although the MDS projection 
 positions cities with similar values near one another, the highest and lowest values are not found on the extreme edges 
-of the plot, since the projection is based on multiple temporal variables.  Honolulu (outlined in red) and Anchorage 
+of the plot, since the projection is based on multiple temporal variables.  *Honolulu* (outlined in red) and *Anchorage* 
 (outlined in blue) are the points with the highest and lowest average temperatures, respectively.  
 
 .. figure:: figures/avg-temp-hi-lo-mac.png

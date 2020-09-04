@@ -57,7 +57,7 @@ those categories.  To add a categorical column, select “Add categorical column
 
 First, type the column name into the “New Categorical Column” text box.  Next, add categories to your column.  The categories 
 can be added either manually by entering each category into the “New Category” text box and pushing the *Add Category* button, 
-or uploaded from a file.  In Figure 42, two categories have been added manually, named “Category 1” and “Category 2”.  These 
+or by uploading from a file.  In Figure 42, two categories have been added manually, named “Category 1” and “Category 2”.  These 
 categories are shown in a list in the middle of the dialog.  The “No Value” category is a required member of any category list.
 
 To upload a list of categories, select a file using the “Browse …” button.  The file should be a text file containing one 

@@ -3,6 +3,9 @@ Optimize Slider Weights |Optimize|
 
 .. |Optimize| image:: icons/optimize.png
 
+.. |Optimize2| image:: icons/optimize.png
+   :scale: 80 %
+
 .. figure:: figures/color-by-pulldown-context.png
    :scale: 50 %
    :align: center
@@ -11,7 +14,7 @@ Optimize Slider Weights |Optimize|
 
 You may want to explore the relationships between temporal variables and one of the scalar variables in a column of the 
 *Metadata Table*.  First, select a *Metadata Table* column header for the comparison from the dropdown list shown in Figure 20.  
-This dropdown is above the *Scatterplot* in the upper right.  Then click the |Optimize| icon, which will adjust the slider weights 
+This dropdown is above the *Scatterplot* in the upper right.  Then click the |Optimize2| icon, which will adjust the slider weights 
 to generate a *Scatterplot* projection maximizing differences in the value range of the selected variable.  The resulting slider 
 weights indicate the relative importance of each temporal variable in the phenomenon described by the set of values in that 
 *Metadata Table* column.  Note that *Metadata Table* columns with string values can be selected here, but that those strings are 

@@ -1,3 +1,5 @@
+.. _ModelPreferences:
+
 Model Preferences
 =================
 

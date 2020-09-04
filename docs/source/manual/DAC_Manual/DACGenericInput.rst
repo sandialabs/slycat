@@ -2,6 +2,7 @@ DAC Generic Zip Input
 =====================
 
 .. figure:: figures/locate-generic-mac.png
+   :scale: 40 %
    :align: center
 
    **Figure 6: Locate Data tab to select the zip file used in the DAC Generic Format.**

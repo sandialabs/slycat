@@ -16,5 +16,5 @@ Filter Plots |FilterIcon|
    **Figure 29: Zoom icon.**
 
 The filter button |FilterIcon2|, on the far right of the controls shown in Figure 29, is used to filter the *Scatterplot* and 
-*Time Series Plots* in conjunction with the *Metadata Table* filters, as discussed in greater detail in Table Filtering.
+*Time Series Plots* in conjunction with the *Metadata Table* filters, as discussed in greater detail in :ref:`TableFiltering`.
 

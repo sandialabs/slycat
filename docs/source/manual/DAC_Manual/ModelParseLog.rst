@@ -1,5 +1,12 @@
+.. _ModelParseLog:
+
 Model Parse Log
 ===============
+
+.. figure:: figures/upload-messages.png
+   :align: center
+
+   **Figure 13: Data processing and model creation progress indicator.**
 
 Once a model has been created, information on the success of the model import process can be viewed using the *Info* 
 button menu pulldown, as shown in Figure 15.
@@ -16,6 +23,7 @@ information about which files in your ensemble were not imported, what data migh
 the Weather data is shown in Figure 16.
 
 .. figure:: figures/parse-log.png
+   :scale: 40 %
    :align: center
 
    **Figure 16: Model Parse Log for DAC Generic Zip Format containing the Weather data.**

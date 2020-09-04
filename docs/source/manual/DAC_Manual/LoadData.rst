@@ -33,7 +33,7 @@ two-dimensional space.  Proximity of projected points indicates similarity betwe
 
 Each variable’s contribution (weighting) in calculating point projections can be interactively adjusted using the 
 sliders on the left side of the DAC interface. This allows you to explore each variable’s importance in forming 
-clusters or patterns within the projected space (see the Sliders section).  Values for the weights range between 
+clusters or patterns within the projected space (see the :ref:`Sliders` section).  Values for the weights range between 
 zero and one, with a value of zero excluding a variable, and a value of one providing full inclusion.
 
 .. figure:: figures/weather-initial-mac.png

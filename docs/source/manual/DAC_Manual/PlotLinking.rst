@@ -11,5 +11,5 @@ duplicated on any linked plots.  Two linked plots are shown in Figure 33.
 
    **Figure 33: Linked plots, both zoomed to the same scale.  The user’s cursor position is shown as a vertical line, replicated in both linked plots.**
 
-In order to link plots, the time scale (x-axis) must be identical in the plots to be linked.  If the scales are not identical, an error 
-message will be displayed and the plots will not be linked.
+In order to link plots, the time scale (\ *x*-axis) must be identical in the plots to be linked.  If the scales are not identical, an error 
+message will be displayed, and the plots will not be linked.

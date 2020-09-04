@@ -3,8 +3,11 @@
 Table Row Selection
 ===================
 
+.. |SelectSet2| image:: icons/select-set.png
+   :scale: 80 %
+
 As in the case of the *Scatterplot*, ensemble members can be selected via the *Metadata Table*.  The selection color 
-is controlled by the color selection icons     above the *Scatterplot*.  If none of the color selection icons are active, 
+is controlled by the color selection icons |SelectSet2| above the *Scatterplot*.  If none of the color selection icons are active, 
 selections are not recognized.  If a selection icon is active, there are a few different ways to select rows in the 
 *Metadata Table*.  First, if a selection is empty, simply clicking on a row will select that ensemble member.  The 
 corresponding point in the *Scatterplot* will be show in the selected color and the corresponding time series will be 

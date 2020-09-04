@@ -1,3 +1,5 @@
+.. _OrderingPlotDisplays:
+
 Ordering Plot Displays |OrderPlotsIcon| 
 =======================================
 
