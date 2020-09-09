@@ -23,13 +23,14 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
       sessionExists: false,
       progressBarHidden: false,
       modalId: "ConnectModal",
-      progressBarProgress: 20,
+      progressBarProgress: 1,
       modelMessage: "",
       modelShow: false,
       hostname: '',
       jobStatus: "Job Status Unknown",
+      vsLog: {logLineArray: [] as string[]},
       log: {
-        logLineArray: [] as any, // [string]
+        logLineArray: [] as string[], // [string]
       },
     };
   }
@@ -52,57 +53,13 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
     this.timer = setInterval(() => this.checkRemoteStatus(), this.TIMER_MS);
     // this.progressTimer = setInterval(() => this.updateProgress(), 3000);
   }
-
   // tear down
   componentWillUnmount() {
-    // clearInterval(this.timer);
+    clearInterval(this.timer);
     // clearInterval(this.progressTimer);
-    // this.timer = null;
+    this.timer = null;
     // this.progressTimer = null;
   }
-  /**
-   * updates the progress bar
-   *
-   * @private
-   * @memberof LoadingPage
-   */
-  // private updateProgress = (): void => {
-  //   client
-  //     .get_model_fetch(this.props.modelId)
-  //     .then((model: any) => {
-  //       if (model.hasOwnProperty("progress") && model.hasOwnProperty("state")) {
-  //         this.setState({ progressBarProgress: model.progress, modelState: model.state }, () => {
-  //           if (this.state.progressBarProgress === 100) {
-  //             window.location.reload(true);
-  //           }
-  //         });
-  //       }
-  //     })
-  //     .catch((err: any) => {
-  //       alert(`error retrieving the model ${err}`);
-  //     });
-  // };
-  /**
-   * callback for the model that establishes connection to the remote server
-   *
-   * @private
-   * @memberof LoadingPage
-   */
-  // private connectModalCallBack = (sessionExists: boolean): void => {
-  //   this.setState({ sessionExists }, () => {
-  //     if (this.state.sessionExists) {
-  //       this.checkRemoteJob();
-  //     }
-  //   });
-  //   clearInterval(this.timer);
-  //   this.timer = null;
-  // };
-
-  // private cancelJob = async (): Promise<any> => {
-  //   return client.delete_job_fetch(this.props.hostname, this.props.jid).then((response: any) => {
-  //     console.log("response", response);
-  //   });
-  // };
   /**
    * function used to test if we have an ssh connection to the hostname
    * @param hostname name of the host we want to connect to
@@ -118,6 +75,18 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
     this.setState({
       jobStatus: `${resJson.status.state}`,
       log: { logLineArray: resJson.logFile.split("\n") },
+    }, () => {
+      const vsLog: string[] = []
+      let progressBarProgress = this.state.progressBarProgress;
+      this.state.log.logLineArray.forEach((line: string) => {
+        if (line.includes('[VS-PROGRESS]')) {
+          progressBarProgress = parseFloat(line.split(" ")[1])
+        }
+        else if (line.includes('[VS-LOG]')) {
+          vsLog.push(line.split(" ")[1])
+        }
+      });
+      this.setState({...this.state, progressBarProgress, vsLog})
     });
   }
   /**
@@ -193,7 +162,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
         </div>
         <div className="col-lg-12">
           <div className="slycat-job-checker-output text-white bg-secondary">
-
             <LogList
               sessionExists={this.state.sessionExists}
               jobStatus={this.state.jobStatus}
@@ -201,6 +169,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
             />
           </div>
         </div>
+        {JSON.stringify(this.state)}
       </div>
     );
   }
