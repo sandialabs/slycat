@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Time Filtered Models &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Model Preferences" href="ModelPreferences.html" />
+    <link rel="prev" title="Combining Models" href="CombiningModels.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACData.html">Data Formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="DerivedModels.html">Derived Models</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="CombiningModels.html">Combining Models</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Time Filtered Models</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="dac.model.html">Dial-A-Cluster Model</a> &raquo;</li>
+        
+          <li><a href="DerivedModels.html">Derived Models</a> &raquo;</li>
+        
+      <li>Time Filtered Models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/manual/DAC_Manual/TimeFilteredModels.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="time-filtered-models">
+<h1>Time Filtered Models<a class="headerlink" href="#time-filtered-models" title="Permalink to this headline">¶</a></h1>
+<p>The second option for altering data in a pre-existing model is the restriction of the time axis in the <em>Time Series Plots</em>.
+Such restrictions, however, also alter between curve similarity values, making it necessary to re-compute the coordinates
+in the <em>Scatterplot</em>.  Therefore, restricting the time axis values in the <em>Time Series Plots</em> requires the creation of a
+new, derived model.  To create a time filtered derived model, select Create &gt; Time Filtered Model, as shown in Figure 47.
+As with combined model creation, this must be done from within an existing model.</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../../_images/create-time-filtered.png"><img alt="../../_images/create-time-filtered.png" src="../../_images/create-time-filtered.png" style="width: 204.0px; height: 189.0px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 47: Pulldown menu for creating a time filtered model.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>The time filtered model creation wizard consists of two dialogs.  The first dialog is shown in Figure 48.  In this dialog,
+simply adjust the sliders for a given time series plot to the desired range.  After the desired restrictions have been
+performed, push the <em>Continue</em> button.  To return the ranges to their full available values, push the <em>Reset</em> button.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../../_images/time-filters-1.png"><img alt="../../_images/time-filters-1.png" src="../../_images/time-filters-1.png" style="width: 632.0px; height: 308.8px;" /></a>
+<p class="caption"><span class="caption-text"><strong>⋮</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-center" id="id3">
+<a class="reference internal image-reference" href="../../_images/time-filters-2.png"><img alt="../../_images/time-filters-2.png" src="../../_images/time-filters-2.png" style="width: 632.0px; height: 306.40000000000003px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 48: Time filtered creation wizard.  Sliders allow the user to restrict any given time axis.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>As in the combined model wizard, the final dialog allows you to name and mark the new time filtered model.  This is done in
+the same way that new models are named (see <a class="reference internal" href="NameModel.html#namemodel"><span class="std std-ref">Name Model</span></a>).  After naming the model, an indicator and accompanying message box
+will be presented to show progress and any problems making the time filtered model (see <a class="reference internal" href="LoadData.html#loadingdataandprogressindicators"><span class="std std-ref">Loading Data and Progress Indicators</span></a>).</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ModelPreferences.html" class="btn btn-neutral float-right" title="Model Preferences" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="CombiningModels.html" class="btn btn-neutral float-left" title="Combining Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

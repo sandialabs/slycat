@@ -36,12 +36,16 @@ ensemble members, with sets shown in red, blue, and green; (4) and a *Metadata T
 values from shared scalar variables (columns) for individual ensemble members (rows).
 
 .. toctree::
-  :maxdepth: 3
+  :maxdepth: 1
 
   WeatherExample.rst
   DACData.rst
   CreatingDACModel.rst
   DACModelVis.rst
+  DerivedModels.rst
+  ModelPreferences.rst
+  BookmarksTemplates.rst
+  Acknowledgements.rst
 
 .. rubric:: Footnotes
 

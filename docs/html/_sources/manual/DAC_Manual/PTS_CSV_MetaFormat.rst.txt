@@ -24,9 +24,9 @@ and t2_d10.ini, respectively.
 .csv
 ----
 
-Each time series file has four columns, named “SampleNum”, “Raw”, “X”, and “Y”, respectively.  SampleNum is a one-based 
-index of the time samples in the file.  Raw contains the raw data values for the quantity being sampled.  X is the temporal 
-value for the sample that will be used as the x-coordinate in the Time Series Plot.  Y is the sampled value that will be 
+Each time series file has four columns, named “SampleNum”, “Raw”, “X”, and “Y”, respectively.  *SampleNum* is a one-based 
+index of the time samples in the file.  *Raw* contains the raw data values for the quantity being sampled.  *X* is the temporal 
+value for the sample that will be used as the *x*-coordinate in the *Time Series Plot*.  *Y* is the sampled value that will be 
 plotted (either the original raw value or a scaled/modified value).
 
 .ini
@@ -34,7 +34,7 @@ plotted (either the original raw value or a scaled/modified value).
 These files contain the metadata for each temporal variable for each sample.  They also contain the scalar metadata for 
 each sample, which is repeated for each temporal variable (since there is a file per temporal variable per sample).  The 
 metadata is described using key-value pairs in an ASCII text file.  An example from our weather data set for the city of 
-New York for the first temporal variable, Max Temperature, would look like::
+*New York* for the first temporal variable, *Max Temperature*, would look like::
 
    ; Fake PTS Weather data
    ; S. Martin 6/23/2017
@@ -65,7 +65,7 @@ New York for the first temporal variable, Max Temperature, would look like::
 Comments are lines beginning with a ‘;’.  The bracketed text, *[test]*, *[operation]*, and *[waveform]* are required.  The 
 key-value pairs in the *[test]* section are used in the *Metadata Table*.  They can be any set of variables and values, so long 
 as they are consistent across the samples (inconsistent values will generate warnings and/or errors during model creation – 
-see Model Parse Log).  The table values are in quotes.  Under *[operation]*, the *test_op_inst_id* variable provides the ensemble 
+see :ref:`ModelParseLog`).  The table values are in quotes.  Under *[operation]*, the *test_op_inst_id* variable provides the ensemble 
 member number.  The *test_op_inst_id* is also typically encoded in the file name, but this is optional.  Under *[waveform]*, the 
 *WF_DIG_ID* variable provides the temporal variable index.  Unlike the variable names in the *[test]* section, the variable names 
 in the *[waveform]* section cannot be changed.  Only the values for those waveform variables can be modified to describe the time 

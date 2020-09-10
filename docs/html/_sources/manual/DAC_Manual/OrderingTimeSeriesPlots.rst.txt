@@ -1,0 +1,8 @@
+Ordering Time Series Plots |OrderIcon| 
+======================================
+
+.. |OrderIcon| image:: icons/order-plots.png
+   :scale: 50 %
+
+The three buttons to the right of the zoom icon affect the ordering of the *Time Series Plots* and are described in greater 
+detail in :ref:`OrderingPlotDisplays`.
