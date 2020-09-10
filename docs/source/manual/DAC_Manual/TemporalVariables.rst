@@ -4,7 +4,7 @@ Temporal Variables
 The first dialog you will see upon launching the Model Preferences wizard is shown in Figure 50.  This dialog 
 allows the user to display only the variables of interest.  Other variables will not be shown in the *Sliders* 
 pane, and the corresponding sliders will be set to zero.  Additionally, those variables will not be displayed in 
-the *Time Series Plots* variable selection dropdowns (see Figure 31).
+the *Time Series Plots* variable selection dropdowns (see Figure 31 in :ref:`PlotVariableSelection`).
 
 .. figure:: figures/time-variables.png
    :scale: 40 %

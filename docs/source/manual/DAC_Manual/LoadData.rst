@@ -1,3 +1,5 @@
+.. _LoadingDataAndProgressIndicators:
+
 Loading Data and Progress Indicators
 ====================================
 

@@ -31,5 +31,5 @@ performed, push the *Continue* button.  To return the ranges to their full avail
    **Figure 48: Time filtered creation wizard.  Sliders allow the user to restrict any given time axis.**
 
 As in the combined model wizard, the final dialog allows you to name and mark the new time filtered model.  This is done in 
-the same way that new models are named (see Figure 11).  After naming the model, an indicator and accompanying message box 
-will be presented to show progress and any problems making the time filtered model (see Figure 13).
+the same way that new models are named (see :ref:`NameModel`).  After naming the model, an indicator and accompanying message box 
+will be presented to show progress and any problems making the time filtered model (see :ref:`LoadingDataAndProgressIndicators`).

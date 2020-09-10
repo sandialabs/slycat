@@ -1,3 +1,5 @@
+.. _PlotVariableSelection:
+
 Plot Variable Selection
 =======================
 

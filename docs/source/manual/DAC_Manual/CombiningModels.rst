@@ -27,8 +27,9 @@ The next dialog in the combined model wizard is shown in Figure 46.  In this dia
 available models in the current project.  Compatible models may be selected from the list and used to create a new combined 
 model.  Compatible models must have identical *Metadata Table* headers and equal numbers of time series.  If the user has checked 
 the box next to “Intersect time points if mismatches are found during model computation,” compatible models may have different 
-number of time points for a given time series.  Otherwise they must also have identical time points for each time series.  If you 
-select an incompatible model, the wizard will prompt you and continue only when all selected models are verified to be compatible.
+numbers of time points for a given time series.  Otherwise they must also have identical numbers of time points for each time 
+series.  If you select an incompatible model, the wizard will prompt you and continue only when all selected models are verified to 
+be compatible.
 
 .. figure:: figures/select-combined.png
    :scale: 40 %
@@ -37,6 +38,6 @@ select an incompatible model, the wizard will prompt you and continue only when 
    **Figure 46: Selecting models to use for creating a combined model.**
 
 Once compatible models have been selected, push the *Continue* button to advance the wizard.  The final dialog allows you to name 
-and mark the model the combined model, in the same way that new models are named (see :ref:`NameModel`).  After naming the model, an 
+and mark the combined model, in the same way that new models are named (see :ref:`NameModel`).  After naming the model, an 
 indicator and accompanying message window will be presented to show progress and any problems making the combined model 
-(see Figure 13 in :ref:`NameModel`).
+(see Figure 13 in :ref:`LoadingDataAndProgressIndicators`).

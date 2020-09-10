@@ -7,21 +7,23 @@ variable names can be before they are truncated to prevent pulldown menus from b
 is 20.  Names longer than 20 characters are truncated with an appended ellipsis (e.g. “Mean Sea Level Press …” instead 
 of “Mean Sea Level Pressure”).
 
-.. figure:: figures/color-sequential.png
+.. figure:: figures/performance-parms.png
    :scale: 40 %
    :align: center
 
    **Figure 55: Performance-oriented parameters available to modify in the Model Preferences wizard.**
 
 .. |BadPlotNum| image:: icons/number-plots-bad.png
+   :scale: 90 %
 
 .. |BadResolution| image:: icons/plot-resolution-bad.png
+   :scale: 90 %
 
 .. |RadioButton| image:: icons/radio-button.png
-   :scale: 40 %
+   :scale: 50 %
 
 .. |RadioButtonSelected| image:: icons/radio-button-selected.png
-   :scale: 40 %
+   :scale: 50 %
 
 The second adjustable parameter is “Max. number plots,” which specifies the maximum number of *Time Series Plots* to 
 display per variable.  The default value for this parameter is 33.  This allows the user to make arbitrarily large 
@@ -44,11 +46,11 @@ can be lowered to avoid animation between the old and new coordinates.
 
 The fifth parameter “Max. categories” specifies the maximum number of categories allowed in a user-added categorical 
 column in the *Metadata Table*.  See :ref:`AddingTableColumns`.  The sixth parameter “Max. freetext length” is also related 
-to the *Metadata Table* user-added columns.  The maximum freetext length specifies the maximum allowed length of notes 
-input into the text box of a freetext user-added column.
+to the *Metadata Table* user-added columns.  The maximum freetext length specifies the maximum of characters allowed for
+notes input into the text box of a freetext user-added column.
 
-Finally, the DAC user interface allows the use of squares to designate points in the *Scatterplot*.  This option can be 
-specified by toggling the radio buttons in “Use |RadioButtonSelected| circles, or |RadioButton| squares for scatter plot.”  
-The option is included to improve rendering speed for the Scatterplot in the browser, as squares are rendered more quickly 
-than circles.
+Finally, the DAC user interface allows the use of squares to represent points in the *Scatterplot*.  This option can be 
+specified by switching between the radio buttons in “Use |RadioButtonSelected| circles, or |RadioButton| squares for 
+scatter plot.”  The option is included to improve rendering speed for the *Scatterplot* in the browser, as squares are 
+rendered more quickly than circles.
 
