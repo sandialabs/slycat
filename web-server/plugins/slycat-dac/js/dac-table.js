@@ -236,7 +236,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
         }
 
         // save data filter
-        columnFilters[columnId] = $.trim($(this).val());
+        columnFilters[columnId] = $.trim($(this).val().toLowerCase());
 
         // create regular expression
         filter_reg_exp(columnId);
@@ -932,13 +932,13 @@ function filter(item)
 
         // use regular expression if valid
         if (columnFiltersRegExpValid[columnId]) {
-            if (item[c.field].toString().search(columnFiltersRegExp[columnId]) == -1) {
+            if (item[c.field].toString().toLowerCase().search(columnFiltersRegExp[columnId]) == -1) {
                 return false;
             }
 
         // otherwise use string search
         } else {
-            if (item[c.field].toString().toLowerCase().indexOf(columnFilters[columnId].toLowerCase()) == -1) {
+            if (item[c.field].toString().toLowerCase().indexOf(columnFilters[columnId]) == -1) {
                 return false;
             }
         }

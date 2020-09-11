@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Options &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Bookmarks and Templates" href="BookmarksTemplates.html" />
+    <link rel="prev" title="Color Palettes" href="ColorPalettes.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACData.html">Data Formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="TemporalVariables.html">Temporal Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TableColumns.html">Table Columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ColorPalettes.html">Color Palettes</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Options</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="dac.model.html">Dial-A-Cluster Model</a> &raquo;</li>
+        
+          <li><a href="ModelPreferences.html">Model Preferences</a> &raquo;</li>
+        
+      <li>Options</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/manual/DAC_Manual/Options.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="options">
+<h1>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h1>
+<p>The final dialog in the Model Preferences wizard allows the user to adjust performance-oriented parameters.  It is
+shown in Figure 55.  The first adjustable parameter is the “Max. label length,” an integer which specifies how long
+variable names can be before they are truncated to prevent pulldown menus from being overly wide.  The default value
+is 20.  Names longer than 20 characters are truncated with an appended ellipsis (e.g. “Mean Sea Level Press …” instead
+of “Mean Sea Level Pressure”).</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../../_images/performance-parms.png"><img alt="../../_images/performance-parms.png" src="../../_images/performance-parms.png" style="width: 633.6px; height: 484.8px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 55: Performance-oriented parameters available to modify in the Model Preferences wizard.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>The second adjustable parameter is “Max. number plots,” which specifies the maximum number of <em>Time Series Plots</em> to
+display per variable.  The default value for this parameter is 33.  This allows the user to make arbitrarily large
+selections but will only plot a random subset of the corresponding plots.  This is necessary to prevent performance
+delays from rendering too many plots.  A smaller number for the maximum number of plots will result in a faster user
+interface experience and a larger number will result in a slower user interface experience.  In case the maximum number
+of plots is exceeded in the selection, an indicator <a class="reference internal" href="../../_images/number-plots-bad.png"><img alt="BadPlotNum" src="../../_images/number-plots-bad.png" style="width: 27.0px; height: 27.0px;" /></a> will be displayed warning that you are not viewing
+all the plots in the selection (see <a class="reference internal" href="PlotResolution.html#plotresolutionindicators"><span class="std std-ref">Plot Resolution Indicators  </span></a> for details).</p>
+<p>The third adjustable parameter is “Max. plot resolution,” also related to the <em>Time Series Plots</em>.  The maximum plot
+resolution specifies how many time points to use when rendering the <em>Time Series Plots</em>.  The default number is 500.
+This is again necessary to prevent performance delays due to browser rendering speed.  For a faster user interface
+experience, use a lower maximum plot resolution.  There is a corresponding indicator <a class="reference internal" href="../../_images/plot-resolution-bad.png"><img alt="BadResolution" src="../../_images/plot-resolution-bad.png" style="width: 27.0px; height: 27.0px;" /></a> which is displayed
+when the plot resolution exceeds the maximum specified (see again <a class="reference internal" href="PlotResolution.html#plotresolutionindicators"><span class="std std-ref">Plot Resolution Indicators  </span></a> for details).</p>
+<p>The fourth adjustable parameter is “Max. animation.”  This integer that defaults to 2,500 and determines the maximum
+number of points in the <em>Scatterplot</em> beyond which changes in the coordinates are no longer animated.  If animation
+during zooming, sub-setting, or adjusting the sliders in the <em>Sliders</em> pane is jumpy and/or too slow, this parameter
+can be lowered to avoid animation between the old and new coordinates.</p>
+<p>The fifth parameter “Max. categories” specifies the maximum number of categories allowed in a user-added categorical
+column in the <em>Metadata Table</em>.  See <a class="reference internal" href="AddingTableColumns.html#addingtablecolumns"><span class="std std-ref">Adding Table Columns</span></a>.  The sixth parameter “Max. freetext length” is also related
+to the <em>Metadata Table</em> user-added columns.  The maximum freetext length specifies the maximum of characters allowed for
+notes input into the text box of a freetext user-added column.</p>
+<p>Finally, the DAC user interface allows the use of squares to represent points in the <em>Scatterplot</em>.  This option can be
+specified by switching between the radio buttons in “Use <a class="reference internal" href="../../_images/radio-button-selected.png"><img alt="RadioButtonSelected" src="../../_images/radio-button-selected.png" style="width: 21.0px; height: 20.0px;" /></a> circles, or <a class="reference internal" href="../../_images/radio-button.png"><img alt="RadioButton" src="../../_images/radio-button.png" style="width: 20.0px; height: 21.0px;" /></a> squares for
+scatter plot.”  The option is included to improve rendering speed for the <em>Scatterplot</em> in the browser, as squares are
+rendered more quickly than circles.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="BookmarksTemplates.html" class="btn btn-neutral float-right" title="Bookmarks and Templates" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="ColorPalettes.html" class="btn btn-neutral float-left" title="Color Palettes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

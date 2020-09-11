@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="PTS CSV/META Zip Format" href="PTS_CSV_MetaFormat.html" />
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> Slycat
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
 
           
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -97,6 +99,10 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
@@ -112,6 +118,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -150,7 +157,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
         
@@ -184,10 +191,10 @@ each directory provides a different type of information.  The CSV files are grou
 relies on file extensions to differentiate the data types: .dac, .meta, .var, .time, and .dist.  Other than the .dac
 file, which can have any name so long as it has a .dac extension, the names of the directories and all of the other
 files are fixed.  At the top level, there is the .dac file and three directories named <em>dist</em>, <em>time</em>, and <em>var</em>.
-The <em>dist</em> directory contains files named sequentially as variable_1.dist, variable_2.dist, …, variable_n.dist, where
+The <em>dist</em> directory contains files named sequentially as variable_1.dist, variable_2.dist, …, variable_<em>n</em>.dist, where
 <em>n</em> is the number of time series variables for each datapoint in the ensemble.  The <em>time</em> directory contains files
-variable_1.time, variable_2.time, …, variable_n.time; and the <em>var</em> directory contains files variable_1.var,
-variable_2.var, …, variable_n.var.  In addition, the <em>var</em> directory must contain the variables.meta file.  The
+variable_1.time, variable_2.time, …, variable_<em>n</em>.time; and the <em>var</em> directory contains files variable_1.var,
+variable_2.var, …, variable_<em>n</em>.var.  In addition, the <em>var</em> directory must contain the variables.meta file.  The
 directory structure is shown in Figure 2.</p>
 <div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="../../_images/dac-gen-zip-file-structure.png"><img alt="../../_images/dac-gen-zip-file-structure.png" src="../../_images/dac-gen-zip-file-structure.png" style="width: 550.0px; height: 325.6px;" /></a>
@@ -202,7 +209,7 @@ same level as the directories <em>dist</em>, <em>time</em>, and <em>var</em>.</p
 </div>
 <div class="section" id="dist">
 <h2>.dist<a class="headerlink" href="#dist" title="Permalink to this headline">¶</a></h2>
-<p>In the <em>dist</em> folder, there are variable_1.dist, variable_2.dist, …, variable_n.dist files.  Each .dist file contains
+<p>In the <em>dist</em> folder, there are variable_1.dist, variable_2.dist, …, variable_<em>n</em>.dist files.  Each .dist file contains
 the all-to-all distance matrix comparing every ensemble member to each of the others, calculated using the correspond
 time series variable.  These matrices are used to compute the visualization in the <em>Scatterplot</em> pane.  The file
 variable_1.dist is the distance matrix calculated using the first variable defined in variables.meta.  The .dist
@@ -211,15 +218,15 @@ distance values.  The rows and columns in these matrices are ordered according t
 </div>
 <div class="section" id="time">
 <h2>.time<a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h2>
-<p>In the <em>time</em> folder, there are variable_1.time, variable_2.time, …, variable_n.time files.  These files contain the
+<p>In the <em>time</em> folder, there are variable_1.time, variable_2.time, …, variable_<em>n</em>.time files.  These files contain the
 times when the corresponding temporal variables were sampled.  For example the file variable_1.time contains the
-x-axis values for graphing the time sequence associated with the first variable in the variables.meta file.  These
+<em>x</em>-axis values for graphing the time sequence associated with the first variable in the variables.meta file.  These
 files have no header row, consisting of just a single row of comma delimited values.  The temporal units for these
 values are defined in the .meta file in the “Time Units” column.</p>
 </div>
 <div class="section" id="var">
 <h2>.var<a class="headerlink" href="#var" title="Permalink to this headline">¶</a></h2>
-<p>In the <em>var</em> folder, there are variable_1.var, variable_2.var, …, variable_n.var files.  Here, the file variable_1.var
+<p>In the <em>var</em> folder, there are variable_1.var, variable_2.var, …, variable_<em>n</em>.var files.  Here, the file variable_1.var
 contains the values (amplitudes in the <em>Time Series Plot</em>) for the first variable in the variables.meta.  The .var
 files have no header row, containing a single row with comma delimited values for each data point, ordered according
 to the order given in the .dac fille.  The units for these values are defined in the .meta file in the “Units” column.</p>
@@ -276,13 +283,21 @@ directory containing the .dac file and the <em>dist</em>, <em>time</em>, and <em
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -293,7 +308,6 @@ rights in this software
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

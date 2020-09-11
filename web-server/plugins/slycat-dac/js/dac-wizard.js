@@ -400,93 +400,19 @@ function constructor(params)
                     $(".browser-continue").prop("disabled", true);
 
                     // read .zip file contents
-                    try { file.arrayBuffer().then(function(data) {
-
-                        data = new Uint8Array(data);
-                        var entries = ZipInfo.getEntries(data);
-
-                        // parse .zip file contents for .tdms file suffixes
-                        var file_suffix_set = new Set([]);
-                        for (var i = 0; i < entries.length; i++) {
-
-                            // is it a file?
-                            if (entries[i].directory == false) {
-
-                                // get file extension
-                                var file_ext = entries[i].filename.split(".").pop();
-
-                                // is it a tdms file?
-                                if (file_ext == "tdms") {
-
-                                    // get all possible suffixes
-                                    var all_file_suffixes = entries[i].filename.split("_");
-
-                                    // find last integer in filename (should be serial number)
-                                    for (var j = all_file_suffixes.length-1; j >= 0; j--) {
-                                        if (Number.isInteger(parseInt(all_file_suffixes[j]))) {
-                                            file_suffix_set.add(all_file_suffixes[j+1].split(".")[0]);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // convert set to array
-                        var file_suffix = Array.from(file_suffix_set);
-
-                        // check if there are any suffixes
-                        if (file_suffix.length == 0) {
-
-                            // no suffixes, error condition
-                            $("#dac-tdms-file-error").text("Please select a .zip file containing .tdms files.")
-                            $("#dac-tdms-file-error").show();
-
-                            // turn off continue button
-                            $(".browser-continue").toggleClass("disabled", false);
-                            $(".browser-continue").prop("disabled", false);
-
-                        } else {
-
-                            // set up information for next tab
-                            var attributes = [];
-                            for(var i = 0; i != file_suffix.length; ++i)
-                            {
-                                name = file_suffix[i];
-                                attributes.push({
-                                    name: name,
-                                    type: "string",
-                                    constant: null,
-                                    disabled: null,
-                                    Include: true,
-                                    hidden: false,
-                                    selected: false,
-                                    lastSelected: false,
-                                    tooltip: ""
-                                });
-                            }
-                            mapping.fromJS(attributes, component.suffix_attributes);
-
-                            // turn off continue button
-                            $(".browser-continue").toggleClass("disabled", false);
-                            $(".browser-continue").prop("disabled", false);
-
-                            // go to next tab
-                            component.tab(tabs['suffix-selection']);
-                        }
-
-                    }); }
+                    if (file.arrayBuffer) {
                     
-                    // .arrayBuffer() doesn't work with Sandia's default browser (Firefox 68)
-                    catch {
+                        file.arrayBuffer().then(function(data) {
+                            upload_tdms_extensions(data); });
+                    
+                    // .arrayBuffer() doesn't work with older browsers
+                    } else {
 
-                        // display error
-                        $("#dac-tdms-file-error").text("Your browser may be out of date.  Please use Chrome or Firefox version 69 or higher.")
-                        $("#dac-tdms-file-error").show();
-
-                        // turn off continue button
-                        $(".browser-continue").toggleClass("disabled", false);
-                        $(".browser-continue").prop("disabled", false);
+                        const reader = new FileReader();
+                        reader.onload = function onLoad(e) {
+                          upload_tdms_extensions(reader.result);
+                        };
+                        reader.readAsArrayBuffer(file);
 
                     }
 
@@ -505,6 +431,84 @@ function constructor(params)
             }
         }
     };
+
+    // upload tdms file extension for zip pane of wizard
+    function upload_tdms_extensions (data) {
+
+        data = new Uint8Array(data);
+        var entries = ZipInfo.getEntries(data);
+
+        // parse .zip file contents for .tdms file suffixes
+        var file_suffix_set = new Set([]);
+        for (var i = 0; i < entries.length; i++) {
+
+            // is it a file?
+            if (entries[i].directory == false) {
+
+                // get file extension
+                var file_ext = entries[i].filename.split(".").pop();
+
+                // is it a tdms file?
+                if (file_ext == "tdms") {
+
+                    // get all possible suffixes
+                    var all_file_suffixes = entries[i].filename.split("_");
+
+                    // find last integer in filename (should be serial number)
+                    for (var j = all_file_suffixes.length-1; j >= 0; j--) {
+                        if (Number.isInteger(parseInt(all_file_suffixes[j]))) {
+                            file_suffix_set.add(all_file_suffixes[j+1].split(".")[0]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // convert set to array
+        var file_suffix = Array.from(file_suffix_set);
+
+        // check if there are any suffixes
+        if (file_suffix.length == 0) {
+
+            // no suffixes, error condition
+            $("#dac-tdms-file-error").text("Please select a .zip file containing .tdms files.")
+            $("#dac-tdms-file-error").show();
+
+            // turn off continue button
+            $(".browser-continue").toggleClass("disabled", false);
+            $(".browser-continue").prop("disabled", false);
+
+        } else {
+
+            // set up information for next tab
+            var attributes = [];
+            for(var i = 0; i != file_suffix.length; ++i)
+            {
+                name = file_suffix[i];
+                attributes.push({
+                    name: name,
+                    type: "string",
+                    constant: null,
+                    disabled: null,
+                    Include: true,
+                    hidden: false,
+                    selected: false,
+                    lastSelected: false,
+                    tooltip: ""
+                });
+            }
+            mapping.fromJS(attributes, component.suffix_attributes);
+
+            // turn off continue button
+            $(".browser-continue").toggleClass("disabled", false);
+            $(".browser-continue").prop("disabled", false);
+
+            // go to next tab
+            component.tab(tabs['suffix-selection']);
+        }
+
+    }
 
     // checks the suffix selection and continues
     component.check_suffix_selection = function () {

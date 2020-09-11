@@ -17,7 +17,7 @@ of choices regarding the input data format, location, and model name, each of wh
 wizard’s popup window.  
 
 .. toctree::
-  :maxdepth: 3
+  :maxdepth: 1
 
   DACInputFormats.rst
   NameModel.rst
