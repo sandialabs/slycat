@@ -259,7 +259,7 @@ module.get_project_data_fetch = function(params, successFunction, errorFunction)
       })
   .then(function(response) {
     if (!response.ok) {
-        throw `bad response with: ${response.status} :: ${response.statusText}`;
+      throw `bad response with: ${response.status} :: ${response.statusText}`;
     }
     return response.json();
   }).catch((error) => {
@@ -961,11 +961,27 @@ module.get_remotes_fetch = function(hostname)
   });
 };
 
-module.get_user_fetch = function(params) {
-  return fetch(`${api_root}users/${params? params.uid : "-"}/${new Date().getTime()}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
-  .then(function(response) {
-    return response.json();
-  })
+module.get_user_fetch = function(params, successFunction, errorFunction) {
+  return fetch(`${api_root}users/${params? params.uid : "-"}/${new Date().getTime()}`, 
+      {
+        credentials: "same-origin", 
+        cache: "no-store", 
+        dataType: "json"
+      }
+    )
+    .then((response) => {
+      if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      if (errorFunction) {
+        errorFunction(error);
+      } else {
+        console.log(error);
+      }
+    });
 };
 
 module.get_user = function(params)
