@@ -9,8 +9,8 @@ DAC Input Formats
 
 The initial tab for selecting the input format is the Data Format tab shown in Figure 5.  Select either the 
 “Dial-A-Cluster Generic Zip Format”, the “PTS CSV/META Zip Format”, or the “Switchtube TDMS Format.”  
-(See Data Formats for an explanation of the format choices.)  Click the *Continue* button on the lower right 
-to advance to the next tab.
+(See :ref:`DataFormats` for an explanation of the format choices.)  Click the *Continue* button on the lower 
+right to advance to the next tab.
 
 .. toctree::
   :maxdepth: 3

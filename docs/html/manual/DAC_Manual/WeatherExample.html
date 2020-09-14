@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,10 +35,6 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Data Formats" href="DACData.html" />
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> Slycat
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
 
           
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -92,6 +94,10 @@
 <li class="toctree-l3"><a class="reference internal" href="DACData.html">Data Formats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
@@ -107,6 +113,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -145,7 +152,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
         
@@ -177,7 +184,7 @@ The weather dataset is not an ensemble of simulation outputs.  Instead it is a s
 measured values of various temporally-changing weather-related quantities, such as
 temperature, dew point, humidity, sea level pressure, visibility, wind speed, precipitation,
 cloud cover, and wind direction collected during 2014 for 100 cities in the United States
-from Weather Underground (<a class="reference external" href="http://www.wunderground.com">http://www.wunderground.com</a>).  The number of samples in each of the time
+from <a class="reference external" href="http://www.wunderground.com">Weather Underground</a>.  The number of samples in each of the time
 series are all identical, each consisting of a value per day for a little more than a year.
 In addition to the temporal variables, each city has associated meta data, including city
 name, state, time zone, population, latitude, longitude, average temperature, average
@@ -205,13 +212,21 @@ cover.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -222,7 +237,6 @@ rights in this software
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

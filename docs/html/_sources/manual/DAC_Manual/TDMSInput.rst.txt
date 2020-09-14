@@ -13,7 +13,7 @@ or more .tdms files directly use the “.tdms file(s)” option.  To select an a
 
 In addition to the *Locate Data* tab, the TDMS format uses two additional tabs.  In the case of a TDMS .zip file 
 selection, a *Select Suffixes* tab is displayed, as shown in Figure 9.  In the *Select Suffixes* tab, you have the 
-option of filtering the TDMS files by a file suffix, which is used to tag a TDMS file of the form *_suffix.tdms.  
+option of filtering the TDMS files by a file suffix, which is used to tag a TDMS file of the form \*_suffix.tdms.  
 The user then has the option to include only TDMS files with specific suffixes.  After selecting the TDMS format, 
 the *Continue* button advances to the *Import Options* tab.
 

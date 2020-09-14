@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,13 +35,9 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Model Views" href="DACModelVis.html" />
+    <link rel="next" title="Model Parse Log" href="ModelParseLog.html" />
     <link rel="prev" title="Name Model" href="NameModel.html" /> 
 </head>
 
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> Slycat
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
           
 
           
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -94,9 +96,14 @@
 <li class="toctree-l4"><a class="reference internal" href="DACInputFormats.html">DAC Input Formats</a></li>
 <li class="toctree-l4"><a class="reference internal" href="NameModel.html">Name Model</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">Loading Data and Progress Indicators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ModelParseLog.html">Model Parse Log</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="DACModelVis.html">Model Views</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
@@ -112,6 +119,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -150,7 +158,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
         
@@ -178,7 +186,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="loading-data-and-progress-indicators">
-<h1>Loading Data and Progress Indicators<a class="headerlink" href="#loading-data-and-progress-indicators" title="Permalink to this headline">¶</a></h1>
+<span id="loadingdataandprogressindicators"></span><h1>Loading Data and Progress Indicators<a class="headerlink" href="#loading-data-and-progress-indicators" title="Permalink to this headline">¶</a></h1>
 <p>At this point, the wizard will return to the Locate Data tab where you selected the input files and provide a progress
 indicator for each of the uploads.  For instance, if you selected a single DAC Generic Zip file, the progress indicator
 would look like the one shown in Figure 12.  At this point you must wait for the selected file(s) to upload before closing
@@ -205,7 +213,7 @@ then input to a weighted Multi-Dimensional Scaling (MDS) algorithm that projects
 two-dimensional space.  Proximity of projected points indicates similarity between those samples.</p>
 <p>Each variable’s contribution (weighting) in calculating point projections can be interactively adjusted using the
 sliders on the left side of the DAC interface. This allows you to explore each variable’s importance in forming
-clusters or patterns within the projected space (see the Sliders section).  Values for the weights range between
+clusters or patterns within the projected space (see the <a class="reference internal" href="Sliders.html#sliders"><span class="std std-ref">Sliders</span></a> section).  Values for the weights range between
 zero and one, with a value of zero excluding a variable, and a value of one providing full inclusion.</p>
 <div class="figure align-center" id="id3">
 <img alt="../../_images/weather-initial-mac.png" src="../../_images/weather-initial-mac.png" />
@@ -223,7 +231,7 @@ model is shown in Figure 14.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="DACModelVis.html" class="btn btn-neutral float-right" title="Model Views" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="ModelParseLog.html" class="btn btn-neutral float-right" title="Model Parse Log" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="NameModel.html" class="btn btn-neutral float-left" title="Name Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -235,13 +243,21 @@ model is shown in Figure 14.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
 DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
 rights in this software
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -252,7 +268,6 @@ rights in this software
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

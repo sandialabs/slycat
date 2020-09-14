@@ -1,3 +1,5 @@
+.. _NameModel:
+
 Name Model
 ==========
 
@@ -17,5 +19,5 @@ Once you have completed entering this information, click the *Finish & Go To Mod
 DAC model creation process.  The system will now start to upload the input files.
 
 If the model name and/or markings need to be changed after the model has been loaded, that can be performed using the 
-Edit > Model Name & Info pulldown in the upper right of the Slycat™ window.
+*Edit > Model Name & Info* pulldown in the upper right of the Slycat™ window.
 
