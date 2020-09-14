@@ -12,10 +12,13 @@ import ConnectModal from "components/ConnectModal";
 interface LoadingPageProps {
   modelId: any;
 }
+const RECT_PADDING = 10;
 export default class VSLoadingPage extends React.Component<LoadingPageProps, any> {
   timer: any; //NodeJS.Timeout
   progressTimer: any;
   TIMER_MS: number = 10000;
+  containerRef: React.RefObject<any>;
+  getRectsInterval: any;
   public constructor(props: any) {
     super(props);
     this.state = {
@@ -28,12 +31,22 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
       modelShow: false,
       hostname: '',
       jobStatus: "Job Status Unknown",
-      vsLog: {logLineArray: [] as string[]},
+      showVerboseLog: false,
+      containerRect: null,
+      vsLog: { logLineArray: [] as string[] },
       log: {
         logLineArray: [] as string[], // [string]
       },
     };
+    this.containerRef = React.createRef();
+    this.getRectsInterval = undefined;
   }
+  updateDimensions = () => {
+    const containerRect = this.containerRef.current.getBoundingClientRect();
+    if (JSON.stringify(containerRect) !== JSON.stringify(this.state.containerRect)) {
+      this.setState({ containerRect });
+    }
+  };
   /**
    * method runs after the component output has been rendered to the DOM
    */
@@ -50,15 +63,16 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
           )
       )
     );
+    this.updateDimensions();
+    window.addEventListener('resize', this.updateDimensions);
     this.timer = setInterval(() => this.checkRemoteStatus(), this.TIMER_MS);
     // this.progressTimer = setInterval(() => this.updateProgress(), 3000);
   }
   // tear down
   componentWillUnmount() {
     clearInterval(this.timer);
-    // clearInterval(this.progressTimer);
     this.timer = null;
-    // this.progressTimer = null;
+    window.removeEventListener('resize', this.updateDimensions);
   }
   /**
    * function used to test if we have an ssh connection to the hostname
@@ -76,19 +90,26 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
       jobStatus: `${resJson.status.state}`,
       log: { logLineArray: resJson.logFile.split("\n") },
     }, () => {
-      const vsLog: string[] = []
+      const userLog: string[] = []
       let progressBarProgress = this.state.progressBarProgress;
       this.state.log.logLineArray.forEach((line: string) => {
         if (line.includes('[VS-PROGRESS]')) {
-          progressBarProgress = parseFloat(line.split(" ")[1])
+          progressBarProgress = parseFloat(line.split(/(?<=^\S+)\s/)[1])
         }
         else if (line.includes('[VS-LOG]')) {
-          vsLog.push(line.split(" ")[1])
+          userLog.push(line.split(/(?<=^\S+)\s/)[1])
         }
       });
-      this.setState({...this.state, progressBarProgress, vsLog})
+      this.setState({
+        ...this.state,
+        progressBarProgress,
+        vsLog: {
+          logLineArray: userLog
+        }
+      })
     });
   }
+
   /**
    * cancel the current running job on the hpc
    */
@@ -122,6 +143,8 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
   };
 
   public render() {
+    const rightpx = this.state.containerRect ? this.state.containerRect.left + RECT_PADDING : "13%";
+    const topPx = this.state.containerRect ? this.state.containerRect.top + RECT_PADDING : "29%";
     return (
       <div className="slycat-job-checker bootstrap-styles">
         <div className="slycat-job-checker-controls">
@@ -161,15 +184,26 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
           </div>
         </div>
         <div className="col-lg-12">
-          <div className="slycat-job-checker-output text-white bg-secondary">
+          <div
+            className="slycat-job-checker-output text-white bg-secondary"
+            ref={this.containerRef}
+          >
+            <button
+              className="btn btn-primary float-right"
+              style={{ borderColor: "white", position: "fixed", right: rightpx, top: topPx }}
+              type="button"
+              onClick={() => this.setState({ showVerboseLog: !this.state.showVerboseLog })}
+              title="Toggle between the verbose log and the simplified user log"
+            >
+              Toggle verbose log
+          </button>
             <LogList
               sessionExists={this.state.sessionExists}
               jobStatus={this.state.jobStatus}
-              log={this.state.log}
+              log={this.state.showVerboseLog ? this.state.log : this.state.vsLog}
             />
           </div>
         </div>
-        {JSON.stringify(this.state)}
       </div>
     );
   }

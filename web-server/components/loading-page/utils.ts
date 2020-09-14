@@ -9,8 +9,8 @@ export const getFormattedDateTime = (): string => {
     " " +
     d.getHours() +
     ":" +
-    d.getMinutes() +
+    (d.getMinutes()<10?"0"+d.getMinutes():d.getMinutes()) +
     ":" +
-    d.getSeconds()
+    (d.getSeconds()<10?"0"+d.getSeconds():d.getSeconds())
   );
 };
