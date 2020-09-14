@@ -36,7 +36,7 @@ ensemble members, with sets shown in red, blue, and green; (4) and a *Metadata T
 values from shared scalar variables (columns) for individual ensemble members (rows).
 
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 1
 
   WeatherExample.rst
   DACData.rst

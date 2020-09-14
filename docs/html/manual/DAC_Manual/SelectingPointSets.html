@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Selecting Point Sets &mdash; Slycat 3.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Point Focus Selection" href="PointFocusSelection.html" />
+    <link rel="prev" title="Metadata Color-Coding" href="MetadataColorCoding.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> Slycat
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user-manual.html">Slycat User Manual</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../slycat.overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cca.model.html">Canonical Correlation Analysis Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameter.space.model.html">Parameter Space Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../timeseries.model.html">Timeseries Model</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dac.model.html">Dial-A-Cluster Model</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="WeatherExample.html">Weather Example Data Set</a></li>
+<li class="toctree-l3"><a class="reference internal" href="DACData.html">Data Formats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="CreatingDACModel.html">Model Creation</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="DACModelVis.html">Model Views</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="Scatterplot.html">Scatterplot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="TimeSeriesPlots.html">Time Series Plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="MetadataTable.html">Metadata Table</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="DerivedModels.html">Derived Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ModelPreferences.html">Model Preferences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="BookmarksTemplates.html">Bookmarks and Templates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../Acknowledgements.html">Acknowledgements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../coding-guidelines.html">Coding Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../colophon.html">Colophon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rest-api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../python-api.html">Python API</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Slycat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../user-manual.html">Slycat User Manual</a> &raquo;</li>
+        
+          <li><a href="dac.model.html">Dial-A-Cluster Model</a> &raquo;</li>
+        
+          <li><a href="DACModelVis.html">Model Views</a> &raquo;</li>
+        
+          <li><a href="Scatterplot.html">Scatterplot</a> &raquo;</li>
+        
+      <li>Selecting Point Sets </li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/manual/DAC_Manual/SelectingPointSets.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="selecting-point-sets-selectset">
+<span id="selectingpointsets"></span><h1>Selecting Point Sets <img alt="SelectSet" src="../../_images/select-set.png" /><a class="headerlink" href="#selecting-point-sets-selectset" title="Permalink to this headline">¶</a></h1>
+<p>Thus far, we have explored similarities between ensemble members through their proximity in the abstract space of the
+<em>Scatterplot</em>.  However, exploring and comparing temporally changing variables requires comparison of the underlying time
+series data.  DAC does this for small sets of points using plots showing variable values over time to reveal temporal patterns.</p>
+<p>Using the <em>Scatterplot</em>, we identify potentially interesting sets of points to view as <em>Time Series Plots</em>.  Up to three sets
+of points can be defined at one time.  The points of each set are rendered with color-coded borders (<em>red</em>, <em>blue</em>, and
+<em>green</em>).  Points retain their fill color, which encodes a point’s value for the selected metavariable (see the previous section,
+<a class="reference internal" href="MetadataColorCoding.html#metadata-color-coding"><span class="std std-ref">Metadata Color-Coding</span></a>).</p>
+<div class="figure align-center" id="id1">
+<a class="reference internal image-reference" href="../../_images/select-red.png"><img alt="../../_images/select-red.png" src="../../_images/select-red.png" style="width: 368.4px; height: 43.199999999999996px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 24: Scatterplot control bar configured to select ensemble members for the red set.</strong></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>To select points for the <em>red</em> selection, click on the <img alt="RedSet" src="../../_images/select-red1.png" /> icon, as shown in Figure 24, then select a group of points.
+This places them in the <em>red</em> group.  Clicking on the <img alt="BlueSet" src="../../_images/select-blue.png" /> icon (as shown in Figure 25) places subsequently selected
+points into the <em>blue</em> group.  Similarly, points can be selected for the <em>green</em> group (as in Figure 26).  Selection actions
+operate only on the group indicated by the currently highlighted (gray background) <em>color set</em> icon.  Points can be added to
+a set through either a click-and-drag rubber-band operation to encircle points, or through individual point selection.  Although
+the initial point can simply be clicked on, adding additional points requires holding down the shift-key or the control-key
+while clicking or rubber-banding each new point (simply clicking on additional points will not add them to the set).  Clicking
+on the background will clear the current point set.  You can remove subsets of points by either shift- or control-clicking a
+previously selected point, or by holding the shift- or control-key while rubber-banding a subset of previously selected points.</p>
+<div class="figure align-center" id="id2">
+<a class="reference internal image-reference" href="../../_images/select-blue1.png"><img alt="../../_images/select-blue1.png" src="../../_images/select-blue1.png" style="width: 368.4px; height: 43.199999999999996px;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 25: Scatterplot control bar configured to select ensemble members for the blue set.</strong></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>Selections in the <em>Scatterplot</em> are linked to both the <em>Time Series Plots</em> (right view) and the <em>Metadata Table</em> (bottom left
+view), as shown in Figure 26.  Plots for the selected points are drawn as correspondingly colored lines, while the selected
+table rows are highlighted with matching color-coded backgrounds.  Since the links between the <em>Scatterplot</em> and the
+<em>Metadata Table</em> are bidirectional, selections can also be made by selecting rows in the table (see <a class="reference internal" href="TableRowSelection.html#tablerowselection"><span class="std std-ref">Table Row Selection</span></a>).</p>
+<div class="figure align-center" id="id3">
+<img alt="../../_images/temp-vs-precip-mac.png" src="../../_images/temp-vs-precip-mac.png" />
+<p class="caption"><span class="caption-text"><strong>Figure 26: Cities near the extremes of the scatterplot are selected as R, B, and G sets.  Looking at the Metadata Table, we see that the green group consists of hot dry cities, the red group as warm humid cities, and the blue group as colder cities.   Selections are linked between the Scatterplot, Time Series Plots, and Metadata Table views.</strong></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>The layout of the points in the <em>Scatterplot</em> appears to place hot dry cities in the top right corner, warm humid cities at the
+bottom, and cold wet cities on the left.  Selecting points from each of these groups as our color-coded sets, we can explore
+this hypothesis by identifying the cities in each of the selected sets by scrolling through the <em>Metadata Table</em>, as shown in
+Figure 26.  Indeed, the cities in <em>green</em> are in Arizona, the cities in <em>red</em> are in Hawaii and Florida, and the cities in <em>blue</em>
+are in New York and the Midwest.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="PointFocusSelection.html" class="btn btn-neutral float-right" title="Point Focus Selection" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="MetadataColorCoding.html" class="btn btn-neutral float-left" title="Metadata Color-Coding" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2013, Sandia Corporation. Under the terms of Contract
+DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains certain
+rights in this software
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -8,10 +8,10 @@ each directory provides a different type of information.  The CSV files are grou
 relies on file extensions to differentiate the data types: .dac, .meta, .var, .time, and .dist.  Other than the .dac 
 file, which can have any name so long as it has a .dac extension, the names of the directories and all of the other 
 files are fixed.  At the top level, there is the .dac file and three directories named *dist*, *time*, and *var*.  
-The *dist* directory contains files named sequentially as variable_1.dist, variable_2.dist, …, variable_n.dist, where 
+The *dist* directory contains files named sequentially as variable_1.dist, variable_2.dist, …, variable\_\ *n*.dist, where 
 *n* is the number of time series variables for each datapoint in the ensemble.  The *time* directory contains files 
-variable_1.time, variable_2.time, …, variable_n.time; and the *var* directory contains files variable_1.var, 
-variable_2.var, …, variable_n.var.  In addition, the *var* directory must contain the variables.meta file.  The 
+variable_1.time, variable_2.time, …, variable\_\ *n*.time; and the *var* directory contains files variable_1.var, 
+variable_2.var, …, variable\_\ *n*.var.  In addition, the *var* directory must contain the variables.meta file.  The 
 directory structure is shown in Figure 2.
 
 .. figure:: figures/dac-gen-zip-file-structure.png
@@ -31,7 +31,7 @@ same level as the directories *dist*, *time*, and *var*.
 .dist
 -----
 
-In the *dist* folder, there are variable_1.dist, variable_2.dist, …, variable_n.dist files.  Each .dist file contains 
+In the *dist* folder, there are variable_1.dist, variable_2.dist, …, variable\_\ *n*.dist files.  Each .dist file contains 
 the all-to-all distance matrix comparing every ensemble member to each of the others, calculated using the correspond 
 time series variable.  These matrices are used to compute the visualization in the *Scatterplot* pane.  The file 
 variable_1.dist is the distance matrix calculated using the first variable defined in variables.meta.  The .dist 
@@ -41,16 +41,16 @@ distance values.  The rows and columns in these matrices are ordered according t
 .time
 -----
 
-In the *time* folder, there are variable_1.time, variable_2.time, …, variable_n.time files.  These files contain the 
+In the *time* folder, there are variable_1.time, variable_2.time, …, variable\_\ *n*.time files.  These files contain the 
 times when the corresponding temporal variables were sampled.  For example the file variable_1.time contains the 
-x-axis values for graphing the time sequence associated with the first variable in the variables.meta file.  These 
+*x*-axis values for graphing the time sequence associated with the first variable in the variables.meta file.  These 
 files have no header row, consisting of just a single row of comma delimited values.  The temporal units for these 
 values are defined in the .meta file in the “Time Units” column.
 
 .var
 ----
 
-In the *var* folder, there are variable_1.var, variable_2.var, …, variable_n.var files.  Here, the file variable_1.var 
+In the *var* folder, there are variable_1.var, variable_2.var, …, variable\_\ *n*.var files.  Here, the file variable_1.var 
 contains the values (amplitudes in the *Time Series Plot*) for the first variable in the variables.meta.  The .var 
 files have no header row, containing a single row with comma delimited values for each data point, ordered according 
 to the order given in the .dac fille.  The units for these values are defined in the .meta file in the “Units” column.
