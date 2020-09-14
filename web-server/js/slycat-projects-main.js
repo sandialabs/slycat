@@ -18,8 +18,14 @@ import ko from 'knockout';
 // Wait for document ready
 $(document).ready(function() {
 
-  function loadNavBar() {
-    return import(/* webpackChunkName: "slycat-navbar" */ 'js/slycat-navbar').then(navbar => {
+  // First we do a simple api call for the user to make sure we are authenticated
+  // before going ahead with loading the navbar, which makes a bunch more
+  // api calls.
+  client.get_user_fetch()
+    // Once we have got the user, thus verified authentication, we import the navbar JS.
+    .then(() => import(/* webpackChunkName: "slycat-navbar" */ 'js/slycat-navbar'))
+    // Once the navbar is loaded, we render it and load the list of projects.
+    .then(navbar => {
       navbar.renderNavBar();
       client.get_projects({
         success: function(result) {
@@ -38,22 +44,10 @@ $(document).ready(function() {
       // These next 2 lines render the navbar using knockout. Remove them once we convert it to react.
       var page = {}
       ko.applyBindings(page, document.querySelector("html"));
-    });
-  }
-
-  // First we do a simple api call for the user to make sure we are authenticated
-  // before going ahead with loading the navbar, which makes a bunch more
-  // api calls.
-  client.get_user(
-  {
-    success: function(user)
-    {
-      loadNavBar();  
-    },
-    error: function()
-    {
-      console.log("Can't retrieve current user before loading the navbar.");
-    }
-  });
+    })
+    .catch(error => {
+      console.log(`Can't retrieve current user before loading the navbar. Error was: ${error}`);
+    })
+    ;
   
 });
