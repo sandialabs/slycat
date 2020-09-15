@@ -25,6 +25,7 @@ export const SET_X_INDEX = 'SET_X_INDEX'
 export const SET_Y_INDEX = 'SET_Y_INDEX'
 export const SET_V_INDEX = 'SET_V_INDEX'
 export const SET_OPEN_MEDIA = 'SET_OPEN_MEDIA'
+export const SET_MEDIA_SIZE_POSITION = 'SET_MEDIA_SIZE_POSITION'
 
 
 export function changeFontSize(event) {
@@ -185,4 +186,8 @@ export function setVIndex(index) {
 
 export function setOpenMedia(open_media) {
   return { type: SET_OPEN_MEDIA, open_media }
+}
+
+export function setMediaSizePosition(media_size_position) {
+  return { type: SET_MEDIA_SIZE_POSITION, media_size_position }
 }

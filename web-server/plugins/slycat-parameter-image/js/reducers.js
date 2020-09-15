@@ -26,6 +26,7 @@ import {
   SET_Y_INDEX,
   SET_V_INDEX,
   SET_OPEN_MEDIA,
+  SET_MEDIA_SIZE_POSITION,
 } from './actions';
 
 import { 
@@ -44,6 +45,7 @@ import {
   DEFAULT_FONT_FAMILY,
   } from './Components/ControlsButtonVarOptions';
 import { AnimationActionLoopStyles } from 'three';
+import _ from 'lodash';
 
 const initialState = {
   fontSize: DEFAULT_FONT_SIZE,
@@ -334,6 +336,14 @@ export default function ps_reducer(state = initialState, action) {
     case SET_OPEN_MEDIA:
       return Object.assign({}, state, {
         open_media: action.open_media
+      })
+      
+    case SET_MEDIA_SIZE_POSITION:
+      let cloned_deep_open_media = _.cloneDeep(state.open_media);
+      const match = cloned_deep_open_media.findIndex(element => element.uid == action.media_size_position.uid);
+      cloned_deep_open_media[match] = Object.assign({}, cloned_deep_open_media[match], action.media_size_position);
+      return Object.assign({}, state, {
+        open_media: cloned_deep_open_media
       })
 
     default:
