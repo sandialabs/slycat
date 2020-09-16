@@ -52,4 +52,5 @@ export interface LoadingPageButtonsProps {
   modalId: string
   jobStatus: string
   cancelJob: () => void
+  verboseCallback: () => void
 }

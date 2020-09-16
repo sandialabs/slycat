@@ -12,12 +12,10 @@ import ConnectModal from "components/ConnectModal";
 interface LoadingPageProps {
   modelId: any;
 }
-const RECT_PADDING = 10;
 export default class VSLoadingPage extends React.Component<LoadingPageProps, any> {
   timer: any; //NodeJS.Timeout
   progressTimer: any;
   TIMER_MS: number = 10000;
-  containerRef: React.RefObject<any>;
   getRectsInterval: any;
   public constructor(props: any) {
     super(props);
@@ -38,15 +36,8 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
         logLineArray: [] as string[], // [string]
       },
     };
-    this.containerRef = React.createRef();
     this.getRectsInterval = undefined;
   }
-  updateDimensions = () => {
-    const containerRect = this.containerRef.current.getBoundingClientRect();
-    if (JSON.stringify(containerRect) !== JSON.stringify(this.state.containerRect)) {
-      this.setState({ containerRect });
-    }
-  };
   /**
    * method runs after the component output has been rendered to the DOM
    */
@@ -63,8 +54,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
           )
       )
     );
-    this.updateDimensions();
-    window.addEventListener('resize', this.updateDimensions);
     this.timer = setInterval(() => this.checkRemoteStatus(), this.TIMER_MS);
     // this.progressTimer = setInterval(() => this.updateProgress(), 3000);
   }
@@ -72,7 +61,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
   componentWillUnmount() {
     clearInterval(this.timer);
     this.timer = null;
-    window.removeEventListener('resize', this.updateDimensions);
   }
   /**
    * function used to test if we have an ssh connection to the hostname
@@ -143,8 +131,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
   };
 
   public render() {
-    const rightpx = this.state.containerRect ? this.state.containerRect.left + RECT_PADDING : "13%";
-    const topPx = this.state.containerRect ? this.state.containerRect.top + RECT_PADDING : "29%";
     return (
       <div className="slycat-job-checker bootstrap-styles">
         <div className="slycat-job-checker-controls">
@@ -172,6 +158,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
                 modalId={"modalID"}
                 jobStatus={"status"}
                 cancelJob={this.cancelJob}
+                verboseCallback={()=>this.setState({ showVerboseLog: !this.state.showVerboseLog })}
               />
             </div>
           </div>
@@ -186,17 +173,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
         <div className="col-lg-12">
           <div
             className="slycat-job-checker-output text-white bg-secondary"
-            ref={this.containerRef}
           >
-            <button
-              className="btn btn-primary float-right"
-              style={{ borderColor: "white", position: "fixed", right: rightpx, top: topPx }}
-              type="button"
-              onClick={() => this.setState({ showVerboseLog: !this.state.showVerboseLog })}
-              title="Toggle between the verbose log and the simplified user log"
-            >
-              Toggle verbose log
-          </button>
             <LogList
               sessionExists={this.state.sessionExists}
               jobStatus={this.state.jobStatus}

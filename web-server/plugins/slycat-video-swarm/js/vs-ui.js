@@ -258,21 +258,6 @@ const showLoadingPage = () => {
     />,
     document.querySelector('#vs-react')
   );
-  // client.get_model_fetch(model._id).then((modelResponse) => {
-  //     ReactDOM.render(
-  //         <LoadingPage
-  //           modelId={modelResponse._id}
-  //           modelState={modelResponse["state"]}
-  //           jid={modelResponse['artifact:jid']}
-  //           hostname={modelResponse['artifact:hostname']?modelResponse['artifact:hostname']:"missing"}
-  //         />,
-  //         document.querySelector('#timeseries-model')
-  //     );
-  //   }
-  // ).catch((msg) => {
-  //       // eslint-disable-next-line no-alert
-  //       window.alert(`Error retrieving model: ${msg}`);
-  // })
 };
 // initialize poll
 // poll();

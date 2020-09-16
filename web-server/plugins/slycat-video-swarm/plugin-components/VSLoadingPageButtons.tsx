@@ -16,6 +16,14 @@ const VSLoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
       <button
         className="btn btn-outline-primary"
         type="button"
+        onClick={() => props.verboseCallback()}
+        title="Toggle between the verbose log and the simplified user log"
+      >
+        Toggle verbose log
+      </button>
+      <button
+        className="btn btn-outline-primary"
+        type="button"
         data-toggle="collapse"
         data-target="#collapseJobCodes"
         aria-expanded="false"
