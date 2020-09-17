@@ -9,18 +9,17 @@ import VSLoadingPageButtons from "./VSLoadingPageButtons";
 import InfoBar from "components/loading-page/InfoBar";
 // import { faJedi } from "@fortawesome/free-solid-svg-icons";
 import ConnectModal from "components/ConnectModal";
-interface LoadingPageProps {
-  modelId: any;
-}
-export default class VSLoadingPage extends React.Component<LoadingPageProps, any> {
+import * as utils from "./utils";
+import { LoadingPageProps, LoadingPageState } from "./types";
+
+export default class VSLoadingPage extends React.Component<LoadingPageProps, LoadingPageState> {
   timer: any; //NodeJS.Timeout
-  progressTimer: any;
   TIMER_MS: number = 10000;
-  getRectsInterval: any;
-  public constructor(props: any) {
+  public constructor(props: LoadingPageProps) {
     super(props);
     this.state = {
       jid: "",
+      finished: false,
       sessionExists: false,
       progressBarHidden: false,
       modalId: "ConnectModal",
@@ -28,34 +27,59 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
       modelMessage: "",
       modelShow: false,
       hostname: '',
+      workdir: '',
       jobStatus: "Job Status Unknown",
       showVerboseLog: false,
-      containerRect: null,
-      vsLog: { logLineArray: [] as string[] },
+      vsLog: { logLineArray: [] },
       log: {
-        logLineArray: [] as string[], // [string]
+        logLineArray: [],
       },
     };
-    this.getRectsInterval = undefined;
   }
   /**
    * method runs after the component output has been rendered to the DOM
    */
   componentDidMount() {
     console.log(this.props.modelId);
-    client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "jid" }).then((jid) =>
-      this.setState({ jid }, () =>
-        client
-          .get_model_parameter_fetch({ mid: this.props.modelId, aid: "hostname" })
-          .then((hostname) =>
-            this.setState({ hostname }, () =>
-              this.checkRemoteStatus()
+    client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "jid" })
+      .then((jid) =>
+        this.setState({ jid }, () =>
+          client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "hostname" })
+            .then((hostname) =>
+              this.setState({ hostname }, () =>
+                client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "workdir" })
+                  .then(workdir =>
+                    this.setState({ workdir }, () => this.checkRemoteStatus())
+                  )
+              )
             )
-          )
-      )
-    );
+        )
+      );
     this.timer = setInterval(() => this.checkRemoteStatus(), this.TIMER_MS);
-    // this.progressTimer = setInterval(() => this.updateProgress(), 3000);
+  }
+  componentDidUpdate(prevProps: LoadingPageProps, prevState: LoadingPageState) {
+    if (prevState.finished !== this.state.finished && this.state.finished === true) {
+      console.log("the finished state has been acquired");
+      this.setState({ progressBarProgress: 75 }, () => {
+        utils.computeVSModel(this.props.modelId, this.state.workdir, this.state.hostname,this.updateProgressBarCallback)
+        console.log("call computing function");
+        this.updateProgressBarCallback(78, "message", true);
+      });
+    }
+  }
+  /**
+   * This function is passed to other components to update the loading page
+   * progress bar and info
+   * @param progress progress to be applied to the progress bar
+   * @param info info to display to the user
+   * @param error display if an error occurred
+   */
+  private updateProgressBarCallback = (progress: number, info: string, error: boolean = false) => {
+    if (error) {
+      console.log(info);
+    }
+    console.log("progress update called", progress, info);
+    this.setState({ progressBarProgress: progress });
   }
   // tear down
   componentWillUnmount() {
@@ -80,12 +104,16 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
     }, () => {
       const userLog: string[] = []
       let progressBarProgress = this.state.progressBarProgress;
+      let finished = false;
       this.state.log.logLineArray.forEach((line: string) => {
-        if (line.includes('[VS-PROGRESS]')) {
-          progressBarProgress = parseFloat(line.split(/(?<=^\S+)\s/)[1])
+        if (line.includes('[VS-PROGRESS]') && !this.state.finished) {
+          progressBarProgress = 10 + Math.round(parseFloat(line.split(/(?<=^\S+)\s/)[1]) * 0.7)
         }
         else if (line.includes('[VS-LOG]')) {
           userLog.push(line.split(/(?<=^\S+)\s/)[1])
+        }
+        else if (line.includes('[VS-FINISHED]')) {
+          finished = true;
         }
       });
       this.setState({
@@ -94,7 +122,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
         vsLog: {
           logLineArray: userLog
         }
-      })
+      }, () => this.setState({ finished }))
     });
   }
 
@@ -158,7 +186,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, any
                 modalId={"modalID"}
                 jobStatus={"status"}
                 cancelJob={this.cancelJob}
-                verboseCallback={()=>this.setState({ showVerboseLog: !this.state.showVerboseLog })}
+                verboseCallback={() => this.setState({ showVerboseLog: !this.state.showVerboseLog })}
               />
             </div>
           </div>

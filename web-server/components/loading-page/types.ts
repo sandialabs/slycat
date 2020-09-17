@@ -10,7 +10,7 @@ export interface JobCodesProps {}
  * @interface logMap
  */
 export interface logMap {
-  logLineArray: [string];
+  logLineArray: string[];
 }
 
 export interface LogListProps {
