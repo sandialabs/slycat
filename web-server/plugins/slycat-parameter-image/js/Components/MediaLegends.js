@@ -16,8 +16,8 @@ class MediaLegends extends React.PureComponent {
       >
         <ScatterplotLegend 
           render={legend.render}
-          fontSize={this.props.fontSize}
-          fontFamily={this.props.fontFamily}
+          fontSize={this.props.font_size}
+          fontFamily={this.props.font_family}
           label={legend.label}
           gradient_data={legend.gradient_data}
           domain={legend.domain}
