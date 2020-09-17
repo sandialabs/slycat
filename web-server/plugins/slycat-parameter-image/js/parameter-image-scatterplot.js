@@ -15,6 +15,7 @@ import { load as geometryLoad, } from "./vtk-geometry-viewer";
 import { 
   changeCurrentFrame,
   setOpenMedia,
+  setMediaSizePosition,
 } from './actions';
 import { get_variable_label } from './ui';
 import { isValueInColorscaleRange } from './color-switcher';
@@ -22,8 +23,7 @@ import $ from 'jquery';
 import React from 'react';
 import ReactDOM from "react-dom";
 import { Provider, connect } from 'react-redux';
-import ScatterplotLegend from './Components/ScatterplotLegend'; 
-import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
+import MediaLegends from './Components/MediaLegends'; 
 import { v4 as uuidv4 } from 'uuid';
 
 var nodrag = d3.behavior.drag();
@@ -181,10 +181,6 @@ $.widget("parameter_image.scatterplot",
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
-    self.threeD_legend_layer = self.svg.append("g")
-      .attr("class", "legend")
-      .attr("id", "threeD_legend")
-      ;
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.canvas_datum = d3.select(self.element.get(0)).append("canvas")
       .style({'position':'absolute'}).node()
@@ -196,6 +192,7 @@ $.widget("parameter_image.scatterplot",
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.line_layer = self.svg.append("g").attr("class", "line-layer");
+    self.threeD_legends_layer = self.svg.append("g").attr("id", "threeD_legends");
 
     self.options.image_cache = {};
 
@@ -248,7 +245,6 @@ $.widget("parameter_image.scatterplot",
     }
 
     setup_legend_drag(self.legend_layer);
-    setup_legend_drag(self.threeD_legend_layer);
 
     // self.element is div#scatterplot here
     self.element.mousedown(function(e)
@@ -508,59 +504,11 @@ $.widget("parameter_image.scatterplot",
       }
     }
 
-    const mapStateToProps = (state, ownProps) => {
-      let threeDLegendLabel = "";
-      let pointOrCell = false;
-      let domain = null;
-      const three_d_colorvars = state.three_d_colorvars;
-      const three_d_colorvar = three_d_colorvars ? three_d_colorvars[state.currentFrame.uid] : undefined;
-      // If we have a 3D color variable, create a label for the legend
-      if(three_d_colorvar)
-      {
-        let split = three_d_colorvar.split(':');
-        pointOrCell = split[0];
-        let variable = split[1];
-        let component = split[2];
-        threeDLegendLabel = `${variable}${component ? ` [${parseInt(component, 10) + 1}]` : ''}`;
-        try {
-          domain = state.derived.three_d_colorby_range[state.currentFrame.uri][three_d_colorvar];
-        }
-        catch (e) {
-          // No need to do anything. With no domain, the legend just won't render.
-          // console.log(`don't have enough state to get range`);
-        }
-      }
-      const gradient_data = slycat_threeD_color_maps.get_gradient_data(state.threeDColormap);
-      
-      return {
-        // only render if we have a color variable and it's a point or cell variable (not just solid color)
-        // and we have a range
-        render: three_d_colorvar && pointOrCell && domain,
-        fontSize: state.fontSize,
-        fontFamily: state.fontFamily,
-        label: threeDLegendLabel,
-        gradient_data: gradient_data,
-        domain: domain,
-        height: 400,
-        width: 10,
-      }
-    }
-
-    let ConnectedScatterplotLegend = connect(
-      mapStateToProps,
-      {
-      },
-    )(ScatterplotLegend)
-
-    const scatterplot_legend_render = 
-      (<Provider store={window.store}>
-        <ConnectedScatterplotLegend />
-      </Provider>)
-    ;
-
     ReactDOM.render(
-      scatterplot_legend_render,
-      document.getElementById('threeD_legend')
+      <Provider store={window.store}>
+        <MediaLegends />
+      </Provider>,
+      document.getElementById('threeD_legends')
     );
 
     const update_previous_state = () => {
@@ -1501,17 +1449,6 @@ $.widget("parameter_image.scatterplot",
       self.legend_layer.select("rect.color")
         .attr("height", rectHeight)
         ;
-      
-      if( self.threeD_legend_layer.attr("data-status") != "moved" )
-      {
-        const transx = parseInt(y_axis_layer_width + width_offset + 75);
-        const transy = parseInt((total_height/2)-(rectHeight/2));
-         self.threeD_legend_layer
-          .attr("transform", "translate(" + transx + "," + transy + ")")
-          .attr("data-transx", transx)
-          .attr("data-transy", transy)
-          ;
-      }
     }
 
     if(self.updates["update_legend_axis"])
@@ -1617,6 +1554,8 @@ $.widget("parameter_image.scatterplot",
           index : Number(frame.attr("data-index")),
           uri : frame.attr("data-uri"),
           uid : frame.attr("data-uid"),
+          x : Number(frame.attr("data-transx")),
+          y : Number(frame.attr("data-transy")),
           relx : Number(frame.attr("data-transx")) / width,
           rely : Number(frame.attr("data-transy")) / height,
           width : frame.outerWidth(),
@@ -3084,17 +3023,27 @@ $.widget("parameter_image.scatterplot",
 
   _adjust_leader_line: function(frame_html)
   {
-    var self = this;
-    const width = $(frame_html.node()).width();
-    const height = $(frame_html.node()).height();
+    const self = this;
+    const frame = $(frame_html.node());
+    const width = frame.outerWidth();
+    const height = frame.outerHeight();
     const uid = frame_html.attr("data-uid");
-    const x1 = Number(frame_html.attr("data-transx")) + (width / 2);
-    const y1 = Number(frame_html.attr("data-transy")) + (height / 2);
+    const x = Number(frame_html.attr("data-transx"));
+    const y = Number(frame_html.attr("data-transy"));
+    const x1 = x + (width / 2);
+    const y1 = y + (height / 2);
     self.line_layer
       .select(`line[data-uid='${uid}']`)
       .attr("x1", x1)
       .attr("y1", y1)
       ;
+    window.store.dispatch(setMediaSizePosition({
+      uid: uid,
+      width: width,
+      height: height,
+      x: x,
+      y: y,
+    }));
   },
 
   // Move the frame to the front. Do not run this on mousedown or mouseup, because it stops propagation
