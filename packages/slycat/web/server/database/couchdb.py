@@ -17,6 +17,14 @@ import uuid
 
 
 db_lock = threading.Lock()
+session_locks = {}
+
+def get_session_lock(sid):
+  if sid in session_locks:
+    return session_locks[sid]
+  session_locks[sid] = threading.Lock()
+  return session_locks[sid]
+
 class Database:
   """Wraps a :class:`couchdb.client.Database` to convert CouchDB exceptions into CherryPy exceptions."""
   def __init__(self, database):
