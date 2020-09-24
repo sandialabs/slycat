@@ -9,6 +9,7 @@ export const CHANGE_THREED_COLORMAP = 'CHANGE_THREED_COLORMAP'
 export const UPDATE_THREE_D_COLORBY = 'UPDATE_THREE_D_COLORBY'
 export const UPDATE_THREE_D_COLORBY_OPTIONS = 'UPDATE_THREE_D_COLORBY_OPTIONS'
 export const SET_THREE_D_COLORBY_RANGE = 'SET_THREE_D_COLORBY_RANGE'
+export const SET_THREE_D_COLORBY_LEGEND = 'SET_THREE_D_COLORBY_LEGEND'
 export const UPDATE_THREE_D_CAMERAS = 'UPDATE_THREE_D_CAMERAS'
 export const UPDATE_THREE_D_SYNC = 'UPDATE_THREE_D_SYNC'
 export const SET_UNSELECTED_POINT_SIZE = 'SET_UNSELECTED_POINT_SIZE'
@@ -108,6 +109,15 @@ export function setThreeDColorByRange(uri, colorBy, range) {
     uri,
     colorBy,
     range,
+  }
+}
+
+export function setThreeDColorByLegend(uid, width, height) {
+  return {
+    type: SET_THREE_D_COLORBY_LEGEND,
+    uid,
+    width,
+    height,
   }
 }
 

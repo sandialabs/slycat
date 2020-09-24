@@ -421,6 +421,7 @@ $(document).ready(function() {
                 xValues: [],
                 yValues: [],
                 three_d_colorby_range: {},
+                three_d_colorby_legends: {},
               }
             },
             applyMiddleware(

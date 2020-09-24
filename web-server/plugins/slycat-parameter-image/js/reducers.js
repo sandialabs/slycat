@@ -10,6 +10,7 @@ import {
   UPDATE_THREE_D_COLORBY,
   UPDATE_THREE_D_COLORBY_OPTIONS,
   SET_THREE_D_COLORBY_RANGE,
+  SET_THREE_D_COLORBY_LEGEND,
   UPDATE_THREE_D_CAMERAS,
   UPDATE_THREE_D_SYNC,
   SET_UNSELECTED_POINT_SIZE,
@@ -145,6 +146,22 @@ export default function ps_reducer(state = initialState, action) {
             [action.uri]: {
               ...state.derived.three_d_colorby_range[action.uri],
               [action.colorBy]: action.range
+            }
+          }
+        }
+      })
+    
+    case SET_THREE_D_COLORBY_LEGEND:
+      // console.log('SET_THREE_D_COLORBY_LEGEND');
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          three_d_colorby_legends: {
+            ...state.derived.three_d_colorby_legends,
+            [action.uid]: {
+              ...state.derived.three_d_colorby_legends[action.uid],
+              width: action.width,
+              height: action.height,
             }
           }
         }
