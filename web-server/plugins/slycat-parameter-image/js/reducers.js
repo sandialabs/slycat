@@ -9,6 +9,8 @@ import {
   CHANGE_THREED_COLORMAP,
   UPDATE_THREE_D_COLORBY,
   UPDATE_THREE_D_COLORBY_OPTIONS,
+  SET_THREE_D_COLORBY_RANGE,
+  SET_THREE_D_COLORBY_LEGEND,
   UPDATE_THREE_D_CAMERAS,
   UPDATE_THREE_D_SYNC,
   SET_UNSELECTED_POINT_SIZE,
@@ -24,6 +26,8 @@ import {
   SET_X_INDEX,
   SET_Y_INDEX,
   SET_V_INDEX,
+  SET_OPEN_MEDIA,
+  SET_MEDIA_SIZE_POSITION,
 } from './actions';
 
 import { 
@@ -42,14 +46,16 @@ import {
   DEFAULT_FONT_FAMILY,
   } from './Components/ControlsButtonVarOptions';
 import { AnimationActionLoopStyles } from 'three';
+import _ from 'lodash';
 
 const initialState = {
   fontSize: DEFAULT_FONT_SIZE,
   fontFamily: DEFAULT_FONT_FAMILY,
   axesVariables: {},
-  currentFrame: null,
+  currentFrame: {},
   threeD_sync: false,
   three_d_colormaps: {},
+  open_media: [],
 }
 
 export default function ps_reducer(state = initialState, action) {
@@ -114,7 +120,7 @@ export default function ps_reducer(state = initialState, action) {
         three_d_colorvars: {
           ...state.three_d_colorvars,
           // We use ES6 computed property syntax so we can update three_d_colormaps[action.uri] with Object.assign() in a concise way
-          [action.uri]: action.colorBy
+          [action.uid]: action.colorBy
         }
       })
 
@@ -129,12 +135,43 @@ export default function ps_reducer(state = initialState, action) {
           }
         }
       })
+    
+    case SET_THREE_D_COLORBY_RANGE:
+      // console.log('SET_THREE_D_COLORBY_RANGE');
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          three_d_colorby_range: {
+            ...state.derived.three_d_colorby_range,
+            [action.uri]: {
+              ...state.derived.three_d_colorby_range[action.uri],
+              [action.colorBy]: action.range
+            }
+          }
+        }
+      })
+    
+    case SET_THREE_D_COLORBY_LEGEND:
+      // console.log('SET_THREE_D_COLORBY_LEGEND');
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          three_d_colorby_legends: {
+            ...state.derived.three_d_colorby_legends,
+            [action.uid]: {
+              ...state.derived.three_d_colorby_legends[action.uid],
+              width: action.width,
+              height: action.height,
+            }
+          }
+        }
+      })
       
     case UPDATE_THREE_D_CAMERAS:
       let newCameras = {};
       for(let camera of action.cameras)
       {
-        newCameras[camera.uri] = {
+        newCameras[camera.uid] = {
           position: camera.camera.getPosition(),
           focalPoint: camera.camera.getFocalPoint(),
           viewUp: camera.camera.getViewUp(),
@@ -311,6 +348,19 @@ export default function ps_reducer(state = initialState, action) {
     case SET_V_INDEX:
       return Object.assign({}, state, {
         v_index: action.index
+      })
+      
+    case SET_OPEN_MEDIA:
+      return Object.assign({}, state, {
+        open_media: action.open_media
+      })
+      
+    case SET_MEDIA_SIZE_POSITION:
+      let cloned_deep_open_media = _.cloneDeep(state.open_media);
+      const match = cloned_deep_open_media.findIndex(element => element.uid == action.media_size_position.uid);
+      cloned_deep_open_media[match] = Object.assign({}, cloned_deep_open_media[match], action.media_size_position);
+      return Object.assign({}, state, {
+        open_media: cloned_deep_open_media
       })
 
     default:
