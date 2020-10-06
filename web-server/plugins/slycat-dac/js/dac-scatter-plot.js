@@ -1284,10 +1284,12 @@ function zoom()
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
+	// look for points that were selected
+	var selection = get_brush_sel(extent);
+
     // was it an empty zoom?
-    if (extent[0][0] != extent[1][0] &&
-        extent[0][1] != extent[1][1])
-    {
+    if (selection.length > 0) {
+
         // user did zoom in on something, so reset window
         x_scale.domain([extent[0][0], extent[1][0]]);
         y_scale.domain([extent[0][1], extent[1][1]]);
@@ -1328,23 +1330,7 @@ function subset ()
 	var extent = d3.event.target.extent();
 
 	// look for points that were selected
-	var selection = [];
-	for (var i = 0; i < mds_coords.length; i++)
-	{
-		if (extent[0][0] <= mds_coords[i][0] &&
-			mds_coords[i][0] < extent[1][0] &&
-			extent[0][1] <= mds_coords[i][1] &&
-			mds_coords[i][1] < extent[1][1])
-			{
-			    // restrict to filtered selection, if applicable
-			    //if (filtered_selection[i] == 1) {
-
-                    // save current selection
-                    selection.push(i);
-			    //}
-
-			};
-	};
+	var selection = get_brush_sel(extent);
 
 	// save current center for scaling
 	var subset_extent = transpose([x_scale.domain(), y_scale.domain()]);
@@ -1430,6 +1416,31 @@ function subset ()
 	document.body.dispatchEvent(subsetEvent);
 }
 
+// get user selected points from a d3 brush
+function get_brush_sel(extent)
+{
+
+	// look for points that were selected
+	var selection = [];
+	for (var i = 0; i < mds_coords.length; i++)
+	{
+		if (extent[0][0] <= mds_coords[i][0] &&
+			mds_coords[i][0] < extent[1][0] &&
+			extent[0][1] <= mds_coords[i][1] &&
+			mds_coords[i][1] < extent[1][1])
+			{
+			    // restrict to filtered selection, if applicable
+			    //if (filtered_selection[i] == 1) {
+
+                    // save current selection
+                    selection.push(i);
+			    //}
+
+			};
+	};
+
+	return selection
+}
 // transpose a 2d array (sometimes d3.transpose produces an error)
 function transpose(a)
 {
@@ -1653,7 +1664,7 @@ function exclude_individual (i) {
 		} else {
 			$("#dac-scatter-button-subset").removeClass("text-warning");
 		}
-		
+
 		// fire subset changed event
 		var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
 											new_subset: mds_subset,
