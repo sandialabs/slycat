@@ -359,7 +359,7 @@ function truncate_color_by_name (name_i) {
 
 // toggle shift key flag
 function key_flip() {
-	selections.key_flip(d3.event.shiftKey, d3.event.ctrlKey);
+	selections.key_flip(d3.event.shiftKey);
 }
 
 // draw the MDS scatter plot
