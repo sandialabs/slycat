@@ -1396,6 +1396,20 @@ function subset ()
 		for (var i = 0; i < selection.length; i++) {
 			mds_subset[selection[i]] = 0;
 		}
+
+		// check that subset is non-empty
+		if (mds_subset.every(item => item === 0)) {
+
+			// put selection back
+			for (var i = 0; i < selection.length; i++) {
+				mds_subset[selection[i]] = 1;
+			}
+
+			// throw error message
+			dialog.ajax_error ("This exclusion results in an empty subset -- make sure selected subset is non-empty.")("","","");
+
+		}
+		
 	}
 
 	// remove gray selection box
@@ -1620,14 +1634,27 @@ function exclude_individual (i) {
 		// remove point from subset
 		mds_subset[i] = 0;
 
-        // subset changed, update button
-        $("#dac-scatter-button-subset").addClass("text-warning");
+		// check that we didn't just remove the last point
+		if (mds_subset.some(item => item !== 0)) {
 
-		// fire subset changed event
-		var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
-											new_subset: mds_subset,
-											subset_flag: true} });
-		document.body.dispatchEvent(subsetEvent);
+			// subset changed, update button
+			$("#dac-scatter-button-subset").addClass("text-warning");
+
+			// fire subset changed event
+			var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
+												new_subset: mds_subset,
+												subset_flag: true} });
+			document.body.dispatchEvent(subsetEvent);
+
+		} else {
+
+			// put point back (do nothing)
+			mds_subset[i] = 1
+
+			// throw error message
+			dialog.ajax_error ("This exclusion results in an empty subset -- make sure selected subset is non-empty.")("","","");
+
+		}
 
 	// otherwise it's a focus event
 	} else {
