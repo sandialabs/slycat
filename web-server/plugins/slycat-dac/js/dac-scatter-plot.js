@@ -1400,14 +1400,12 @@ function subset ()
 		// check that subset is non-empty
 		if (mds_subset.every(item => item === 0)) {
 
-			// put selection back
-			for (var i = 0; i < selection.length; i++) {
-				mds_subset[selection[i]] = 1;
+			// otherwise reset subset
+			for (var i = 0; i < mds_coords.length; i++) {
+				mds_subset[i] = 1;
+
 			}
-
-			// throw error message
-			dialog.ajax_error ("This exclusion results in an empty subset -- make sure selected subset is non-empty.")("","","");
-
+			subset_flag = false;
 		}
 		
 	}
@@ -1631,30 +1629,36 @@ function exclude_individual (i) {
 	// check for shift key (to exclude a single point)
 	if (selections.shift_key()) {
 
+		// default to active subset
+		var subset_flag = true;
+
 		// remove point from subset
 		mds_subset[i] = 0;
 
 		// check that we didn't just remove the last point
-		if (mds_subset.some(item => item !== 0)) {
+		if (!mds_subset.some(item => item !== 0)) {
 
-			// subset changed, update button
-			$("#dac-scatter-button-subset").addClass("text-warning");
+			// otherwise reset subset
+			for (var i = 0; i < mds_coords.length; i++) {
+				mds_subset[i] = 1;
 
-			// fire subset changed event
-			var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
-												new_subset: mds_subset,
-												subset_flag: true} });
-			document.body.dispatchEvent(subsetEvent);
-
-		} else {
-
-			// put point back (do nothing)
-			mds_subset[i] = 1
-
-			// throw error message
-			dialog.ajax_error ("This exclusion results in an empty subset -- make sure selected subset is non-empty.")("","","");
+			}
+			subset_flag = false;
 
 		}
+
+		// update subset button status
+		if (subset_flag) {
+			$("#dac-scatter-button-subset").addClass("text-warning");
+		} else {
+			$("#dac-scatter-button-subset").removeClass("text-warning");
+		}
+		
+		// fire subset changed event
+		var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
+											new_subset: mds_subset,
+											subset_flag: subset_flag} });
+		document.body.dispatchEvent(subsetEvent);
 
 	// otherwise it's a focus event
 	} else {
