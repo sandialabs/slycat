@@ -15,10 +15,10 @@ def register_slycat_plugin(context):
 
   Register a custom page
 
-  Running this example code:
+  Running this code:
 
-    - Configure your web server to load the slycat-login plugin by adding it to the /etc/slycat/web-server-config.ini for the developer image
-    - Point a browser to https://your-slycat-server/pages/login
+    - Configure your web server to load the slycat-run-command plugin by adding it to the /etc/slycat/web-server-config.ini for the developer image
+    - Point a browser to https://your-slycat-server/pages/run-command
 
   '''
   context.register_page("run-command", page_html)

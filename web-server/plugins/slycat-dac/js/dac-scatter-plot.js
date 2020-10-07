@@ -359,7 +359,7 @@ function truncate_color_by_name (name_i) {
 
 // toggle shift key flag
 function key_flip() {
-	selections.key_flip(d3.event.shiftKey, d3.event.ctrlKey);
+	selections.key_flip(d3.event.shiftKey);
 }
 
 // draw the MDS scatter plot
@@ -1284,10 +1284,12 @@ function zoom()
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
+	// look for points that were selected
+	var selection = get_brush_sel(extent);
+
     // was it an empty zoom?
-    if (extent[0][0] != extent[1][0] &&
-        extent[0][1] != extent[1][1])
-    {
+    if (selection.length > 0) {
+
         // user did zoom in on something, so reset window
         x_scale.domain([extent[0][0], extent[1][0]]);
         y_scale.domain([extent[0][1], extent[1][1]]);
@@ -1328,26 +1330,10 @@ function subset ()
 	var extent = d3.event.target.extent();
 
 	// look for points that were selected
-	var selection = [];
-	for (var i = 0; i < mds_coords.length; i++)
-	{
-		if (extent[0][0] <= mds_coords[i][0] &&
-			mds_coords[i][0] < extent[1][0] &&
-			extent[0][1] <= mds_coords[i][1] &&
-			mds_coords[i][1] < extent[1][1])
-			{
-			    // restrict to filtered selection, if applicable
-			    //if (filtered_selection[i] == 1) {
-
-                    // save current selection
-                    selection.push(i);
-			    //}
-
-			};
-	};
+	var selection = get_brush_sel(extent);
 
 	// save current center for scaling
-	var subset_extent = d3.transpose([x_scale.domain(), y_scale.domain()]);
+	var subset_extent = transpose([x_scale.domain(), y_scale.domain()]);
 
 	// compute subset center
 	subset_center = [(subset_extent[0][0] + subset_extent[1][0])/2.0,
@@ -1396,6 +1382,18 @@ function subset ()
 		for (var i = 0; i < selection.length; i++) {
 			mds_subset[selection[i]] = 0;
 		}
+
+		// check that subset is non-empty
+		if (mds_subset.every(item => item === 0)) {
+
+			// otherwise reset subset
+			for (var i = 0; i < mds_coords.length; i++) {
+				mds_subset[i] = 1;
+
+			}
+			subset_flag = false;
+		}
+		
 	}
 
 	// remove gray selection box
@@ -1416,6 +1414,40 @@ function subset ()
 										 subset_flag: subset_flag,
 										 zoom: reset_zoom} });
 	document.body.dispatchEvent(subsetEvent);
+}
+
+// get user selected points from a d3 brush
+function get_brush_sel(extent)
+{
+
+	// look for points that were selected
+	var selection = [];
+	for (var i = 0; i < mds_coords.length; i++)
+	{
+		if (extent[0][0] <= mds_coords[i][0] &&
+			mds_coords[i][0] < extent[1][0] &&
+			extent[0][1] <= mds_coords[i][1] &&
+			mds_coords[i][1] < extent[1][1])
+			{
+			    // restrict to filtered selection, if applicable
+			    //if (filtered_selection[i] == 1) {
+
+                    // save current selection
+                    selection.push(i);
+			    //}
+
+			};
+	};
+
+	return selection
+}
+// transpose a 2d array (sometimes d3.transpose produces an error)
+function transpose(a)
+{
+  return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
+
+  // or in more modern dialect
+  // return a[0].map((_, c) => a.map(r => r[c]));
 }
 
 // reset zoom, accessible to ui controller
@@ -1608,16 +1640,35 @@ function exclude_individual (i) {
 	// check for shift key (to exclude a single point)
 	if (selections.shift_key()) {
 
+		// default to active subset
+		var subset_flag = true;
+
 		// remove point from subset
 		mds_subset[i] = 0;
 
-        // subset changed, update button
-        $("#dac-scatter-button-subset").addClass("text-warning");
+		// check that we didn't just remove the last point
+		if (!mds_subset.some(item => item !== 0)) {
+
+			// otherwise reset subset
+			for (var i = 0; i < mds_coords.length; i++) {
+				mds_subset[i] = 1;
+
+			}
+			subset_flag = false;
+
+		}
+
+		// update subset button status
+		if (subset_flag) {
+			$("#dac-scatter-button-subset").addClass("text-warning");
+		} else {
+			$("#dac-scatter-button-subset").removeClass("text-warning");
+		}
 
 		// fire subset changed event
 		var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
 											new_subset: mds_subset,
-											subset_flag: true} });
+											subset_flag: subset_flag} });
 		document.body.dispatchEvent(subsetEvent);
 
 	// otherwise it's a focus event

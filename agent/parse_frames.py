@@ -26,7 +26,11 @@ import urllib.parse
 import sys
 
 # video processing
-import cv2
+# cv2 has been replaced by imageio
+# import cv2
+import imageio
+
+# parallel computations
 import ipyparallel
 
 # computing distance matrices and coordinates
@@ -288,7 +292,8 @@ for i in range(0, num_rows):
 
 # try to read image
 try:
-    frame = cv2.imread(all_frame_files[0][0])
+    #frame = cv2.imread(all_frame_files[0][0])
+    frame = imageio.imread(all_frame_files[0][0])
 except:
     log("[VS-LOG] Error: could not read frame " + str(all_frame_files[0][0]))
     sys.exit()
@@ -317,7 +322,11 @@ start_time = time.time()
 
 def compute(frame_number, input_num_movies, input_frame_files, input_use_energy, input_num_dim, input_num_pixels):
     import sys
-    import cv2
+
+    # cv2 has been replaced by imageio
+    # import cv2
+    import imageio
+
     from sklearn.metrics.pairwise import euclidean_distances
     import numpy
     import traceback
@@ -385,7 +394,8 @@ def compute(frame_number, input_num_movies, input_frame_files, input_use_energy,
 
             # get frame i
             try:
-                frame_i = cv2.imread(input_frame_files[j])
+                # frame_i = cv2.imread(input_frame_files[j])
+                frame_i = imageio.imread(input_frame_files[j])
             except Exception as e:
                 msg=str(e)
                 return msg

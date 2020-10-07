@@ -470,6 +470,10 @@
 .frame-button.jump-button {
   padding: 0;
 }
+.frame-button.clone-button {
+  padding-top: 4px;
+  font-weight: bold;
+}
 .frame-button.table-index {
   padding: 0px 0px 0px 2px;
 }
@@ -1068,4 +1072,9 @@ slycat-3d-viewer .header-bar {
 /* avoiding double border between this button and the previous one because the button is prececed by a hidden modal dialog div */
 button#controls-button-var-options {
   margin-left: -1px;
+}
+
+.legend text.label {
+  text-anchor: middle; 
+  font-weight: bold; 
 }

@@ -11,12 +11,20 @@ import _ from "lodash";
 import ko from "knockout";
 import "jquery-ui";
 import "js/slycat-login-controls";
-import "js/slycat-3d-viewer";
 import { load as geometryLoad, } from "./vtk-geometry-viewer";
-import { changeCurrentFrame } from './actions';
+import { 
+  changeCurrentFrame,
+  setOpenMedia,
+  setMediaSizePosition,
+} from './actions';
 import { get_variable_label } from './ui';
 import { isValueInColorscaleRange } from './color-switcher';
 import $ from 'jquery';
+import React from 'react';
+import ReactDOM from "react-dom";
+import { Provider, connect } from 'react-redux';
+import MediaLegends from './Components/MediaLegends'; 
+import { v4 as uuidv4 } from 'uuid';
 
 var nodrag = d3.behavior.drag();
 
@@ -76,8 +84,6 @@ $.widget("parameter_image.scatterplot",
     canvas_selected_square_border_size : 2,
     pinned_width : 200,
     pinned_height : 200,
-    pinned_stl_width: 200,
-    pinned_stl_height: 200,
     hover_time : 250,
     image_cache : {},
     video_file_extensions : [
@@ -186,6 +192,7 @@ $.widget("parameter_image.scatterplot",
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");
     self.line_layer = self.svg.append("g").attr("class", "line-layer");
+    self.threeD_legends_layer = self.svg.append("g").attr("id", "threeD_legends");
 
     self.options.image_cache = {};
 
@@ -209,8 +216,8 @@ $.widget("parameter_image.scatterplot",
       update_v_label:true,
     });
 
-    self.legend_layer
-      .call(
+    let setup_legend_drag = (legend) => {
+      legend.call(
         d3.behavior.drag()
           .on('drag', function(){
             // Make sure mouse is inside svg element
@@ -231,11 +238,13 @@ $.widget("parameter_image.scatterplot",
           })
           .on("dragend", function() {
             self.state = "";
-            // self._sync_open_images();
+            // self._sync_open_media();
             d3.select(this).attr("data-status", "moved");
           })
-      )
-      ;
+      );
+    }
+
+    setup_legend_drag(self.legend_layer);
 
     // self.element is div#scatterplot here
     self.element.mousedown(function(e)
@@ -495,6 +504,13 @@ $.widget("parameter_image.scatterplot",
       }
     }
 
+    ReactDOM.render(
+      <Provider store={window.store}>
+        <MediaLegends />
+      </Provider>,
+      document.getElementById('threeD_legends')
+    );
+
     const update_previous_state = () => {
       // console.log('LAST update_previous_state');
       self.previousState = window.store.getState();
@@ -535,7 +551,7 @@ $.widget("parameter_image.scatterplot",
     }
     self._close_hidden_simulations();
     self._open_shown_simulations();
-    self._sync_open_images();
+    self._sync_open_media();
   },
 
   set_x_y_v_axes_types: function()
@@ -1333,6 +1349,7 @@ $.widget("parameter_image.scatterplot",
           images.push({
             index : image.index,
             uri : image.uri.trim(),
+            uid : image.uid,
             image_class : "open-image",
             x : width * image.relx,
             y : height * image.rely,
@@ -1343,6 +1360,7 @@ $.widget("parameter_image.scatterplot",
             video : image.video,
             currentTime : image.currentTime,
             current_frame : image.current_frame,
+            initial : true,
             });
         }
         if(image.current_frame)
@@ -1360,8 +1378,8 @@ $.widget("parameter_image.scatterplot",
       {
         var frame = $(frame);
         var image_index = Number(frame.attr("data-index"));
-        var uri = frame.attr("data-uri");
-        self.line_layer.select("line[data-uri='" + uri + "']")
+        var uid = frame.attr("data-uid");
+        self.line_layer.select("line[data-uid='" + uid + "']")
           .attr("x2", self.x_scale_format(self.options.x[image_index]) )
           .attr("y2", self.y_scale_format(self.options.y[image_index]) )
           .attr("data-targetx", self.x_scale_format(self.options.x[image_index]))
@@ -1372,10 +1390,16 @@ $.widget("parameter_image.scatterplot",
 
     if(self.updates["render_legend"])
     {
-      var gradient = self.legend_layer.append("defs").append("linearGradient");
-      gradient.attr("id", "color-gradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%")
+      var gradient = self.legend_layer
+        .append("defs")
+        .append("linearGradient")
+        ;
+      gradient
+        .attr("id", "color-gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%")
         ;
 
       var colorbar = self.legend_layer.append("rect")
@@ -1413,8 +1437,8 @@ $.widget("parameter_image.scatterplot",
 
       if( self.legend_layer.attr("data-status") != "moved" )
       {
-        var transx = parseInt(y_axis_layer_width + 10 + width_offset);
-        var transy = parseInt((total_height/2)-(rectHeight/2));
+        const transx = parseInt(y_axis_layer_width - 75 + width_offset);
+        const transy = parseInt((total_height/2)-(rectHeight/2));
          self.legend_layer
           .attr("transform", "translate(" + transx + "," + transy + ")")
           .attr("data-transx", transx)
@@ -1432,7 +1456,6 @@ $.widget("parameter_image.scatterplot",
       var range = [0, parseInt(self.legend_layer.select("rect.color").attr("height"))];
       self.set_custom_axes_ranges();
 
-      // Legend scale never goes Log, so we don't pass the v_axis_type parameter to ensure that.
       // self.legend_scale = self._createScale(self.options.v_string, self.options.scale_v, range, true, self.options.v_axis_type);
       self.legend_scale = self._createScale(
         self.options.v_string, 
@@ -1473,8 +1496,6 @@ $.widget("parameter_image.scatterplot",
         .attr("x", x)
         .attr("y", y)
         .attr("transform", "rotate(-90," + x +"," + y + ")")
-        .style("text-anchor", "middle")
-        .style("font-weight", "bold")
         .style("font-size", self.options.axes_font_size + 'px')
         .style("font-family", self.options.axes_font_family)
         .text(self.options.v_label)
@@ -1504,7 +1525,7 @@ $.widget("parameter_image.scatterplot",
         video.currentTime = Math.min(videoSyncTime, video.duration-0.000001);
       }
     });
-    self._sync_open_images();
+    self._sync_open_media();
   },
 
   _update_threeD_sync: function()
@@ -1512,7 +1533,7 @@ $.widget("parameter_image.scatterplot",
     // Not sure what to do here yet.
   },
 
-  _sync_open_images: function()
+  _sync_open_media: function()
   {
     var self = this;
 
@@ -1532,6 +1553,9 @@ $.widget("parameter_image.scatterplot",
         var open_element = {
           index : Number(frame.attr("data-index")),
           uri : frame.attr("data-uri"),
+          uid : frame.attr("data-uid"),
+          x : Number(frame.attr("data-transx")),
+          y : Number(frame.attr("data-transy")),
           relx : Number(frame.attr("data-transx")) / width,
           rely : Number(frame.attr("data-transy")) / height,
           width : frame.outerWidth(),
@@ -1555,7 +1579,7 @@ $.widget("parameter_image.scatterplot",
       })
       ;
 
-    self.element.trigger("open-images-changed", [self.options.open_images]);
+    window.store.dispatch(setOpenMedia(self.options.open_images));
   },
 
   _is_video_playing: function(video)
@@ -1566,15 +1590,15 @@ $.widget("parameter_image.scatterplot",
     return playing;
   },
 
-  _open_images: function(images, is_stl_return)
+  _open_images: function(images)
   {
     var self = this;
     // If the list of images is empty, we're done.
     if(images.length == 0) return;
     var image = images[0];
 
-    var fileUriArr = image.uri.split('/');
-    var isStl = fileUriArr[fileUriArr.length - 1].indexOf('.stl') !== -1 ? true : false;
+    const isVtp = image.uri.endsWith('.vtp');
+    const isStl = image.uri.endsWith('.stl');
 
     var frame_html = null;
 
@@ -1657,6 +1681,16 @@ $.widget("parameter_image.scatterplot",
         ;
     };
 
+    var add_clone_button = function(fh) {
+      // console.log(`Adding clone button for 3D media...`);
+      fh.append("i")
+        .attr('class', 'clone-button frame-button fa fa-clone')
+        .attr('title', 'Clone')
+        .attr('aria-hidden', 'true')
+        .on('click', handlers["clone"])
+        ;
+    }
+
     var build_frame_html = function(img) {
       // Define a default size for every image.
       if(!img.width)
@@ -1679,6 +1713,7 @@ $.widget("parameter_image.scatterplot",
 
       var frame_html = self.media_layer.append("div")
         .attr("data-uri", img.uri)
+        .attr("data-uid", img.uid)
         .attr("data-transx", img.x)
         .attr("data-transy", img.y)
         .style({
@@ -1717,6 +1752,7 @@ $.widget("parameter_image.scatterplot",
       {
         self.line_layer.append("line")
           .attr("data-uri", img.uri)
+          .attr("data-uid", img.uid)
           .attr("class", "leader")
           .attr("x1", img.x + (img.width / 2))
           .attr("y1", img.y + (img.height / 2))
@@ -1792,13 +1828,13 @@ $.widget("parameter_image.scatterplot",
         $(".mouseEventOverlay", this.closest(".image-frame")).hide();
 
         self.state = "";
-        self._sync_open_images();
+        self._sync_open_media();
       },
       close: function() {
         // console.log("close click");
         var frame = d3.select(d3.event.target.closest(".image-frame"));
         self._remove_image_and_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
       },
       frame_mousedown: function(){
         // console.log("frame_mousedown");
@@ -1807,12 +1843,6 @@ $.widget("parameter_image.scatterplot",
         if(target.classed("close-button"))
         {
           return;
-        }
-        // Something special happens for STLs
-        if (target.classed('slycat-3d-btn-settings')) {
-          d3.select('#slycat-3d-modal')
-            .on('.drag', null)
-            .call(nodrag);
         }
         // Move the frame to the front.
         self._move_frame_to_front(this);
@@ -1878,7 +1908,7 @@ $.widget("parameter_image.scatterplot",
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
-        self._sync_open_images();
+        self._sync_open_media();
         // d3.event.sourceEvent.stopPropagation();
 
         // Fire a custom reize event to let vtk viewers know it was resized
@@ -1964,7 +1994,7 @@ $.widget("parameter_image.scatterplot",
         frame.classed("maximized", true);
 
         self._adjust_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
 
         $(window).trigger('resize');
       },
@@ -1997,7 +2027,7 @@ $.widget("parameter_image.scatterplot",
           ;
 
         self._adjust_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
 
         $(window).trigger('resize');
       },
@@ -2011,8 +2041,8 @@ $.widget("parameter_image.scatterplot",
         // Remove maximized class from frame
         frame.classed("maximized", false);
 
-        imageWidth = isStl ? self.options.pinned_stl_width : self.options.pinned_width;
-        imageHeight = isStl ? self.options.pinned_stl_height : self.options.pinned_height;
+        imageWidth = self.options.pinned_width;
+        imageHeight = self.options.pinned_height;
 
         var $svg = $('#scatterplot svg');
         var svgw = $svg.height();
@@ -2044,11 +2074,8 @@ $.widget("parameter_image.scatterplot",
           })
           ;
 
-        if (isStl)
-          frame.style('height', (imageHeight + 20) + 'px');
-
         self._adjust_leader_line(frame);
-        self._sync_open_images();
+        self._sync_open_media();
 
         $(window).trigger('resize');
       },
@@ -2066,6 +2093,28 @@ $.widget("parameter_image.scatterplot",
         var index = d3.select(d3.event.target.closest(".image-frame")).attr("data-index");
         self.element.trigger("jump_to_simulation", index);
       },
+
+      clone: function(){
+        // console.log(`About to clone this frame...`);
+        const frame = d3.select(d3.event.target.closest(".image-frame"));
+        const width = frame.node().offsetWidth;
+        const height = frame.node().offsetHeight;
+        const index = frame.attr("data-index");
+        const x = +frame.attr("data-transx") + width;
+        const y = frame.attr("data-transy");
+        self._open_images([{
+          index : index,
+          uri : frame.attr("data-uri"),
+          image_class : "open-image",
+          x : x,
+          y : y,
+          target_x : self.x_scale_format(self.options.x[index]),
+          target_y : self.y_scale_format(self.options.y[index]),
+          width : width,
+          height : height,
+          clone : true,
+        }]);
+      }
     }
 
     function video_sync_time_changed(self_passed)
@@ -2077,7 +2126,7 @@ $.widget("parameter_image.scatterplot",
         self._schedule_update({update_video_sync_time:true,});
       }
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-      self._sync_open_images();
+      self._sync_open_media();
     }
 
     // Don't open images for hidden simulations
@@ -2092,9 +2141,15 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
-    // Don't open image if it's already open
-    if($(".open-image[data-uri='" + image.uri + "']:not(.scaffolding)").length > 0) {
+    // Don't open media if it's already open, unless we are cloning or it's the initial set
+    if(
+      !image.initial
+      && !image.clone
+      && $(`.open-image[data-uri='${image.uri}']:not(.scaffolding)`).length > 0
+    )
+    {
       self._open_images(images.slice(1));
+      // console.log(`Skipped opening media at ${image.uri} because it's already open.`);
       return;
     }
 
@@ -2103,8 +2158,19 @@ $.widget("parameter_image.scatterplot",
       return;
     }
 
-    // Create scaffolding and status indicator if we already don't have one
-    if ( self.media_layer.select("div[data-uri='" + image.uri + "']").filter("." + image.image_class + ",.open-image").empty() ) {
+    // Add a UID if there isn't one already.
+    if(image.uid === undefined) {
+      image.uid = uuidv4();
+    }
+
+    // Create scaffolding and status indicator if we already don't have one 
+    if( 
+      self.media_layer
+        .select(`div[data-uid='${image.uid}']`)
+        .filter(`.${image.image_class},.open-image`)
+        .empty()
+    )
+    {
       frame_html = build_frame_html(image);
     }
 
@@ -2132,7 +2198,9 @@ $.widget("parameter_image.scatterplot",
         image.y = self._getDefaultYPosition(image.index, image.height);
       }
 
-      var frame_html = self.media_layer.select("div." + image.image_class + "[data-uri='" + image.uri + "']");
+      var frame_html = self.media_layer
+        .select(`div.${image.image_class}[data-uid='${image.uid}']`)
+        ;
       frame_html.classed("scaffolding", false);
       frame_html.select("span.reload-button").remove();
 
@@ -2157,7 +2225,7 @@ $.widget("parameter_image.scatterplot",
 
       // Otherwise if the image is already in the cache, display it.
       else if (already_cached) {
-        console.log("Displaying image " + image.uri + " from cache...");
+        // console.log("Displaying image " + image.uri + " from cache...");
         var url_creator = window.URL || window.webkitURL;
         var blob = self.options.image_cache[image.uri];
         var image_url = url_creator.createObjectURL(blob);
@@ -2205,6 +2273,7 @@ $.widget("parameter_image.scatterplot",
           var video = frame_html
             .append("video")
             .attr("data-uri", image.uri)
+            .attr("data-uid", image.uid)
             .attr("src", image_url)
             .attr("controls", true)
             .attr("loop", true)
@@ -2246,7 +2315,7 @@ $.widget("parameter_image.scatterplot",
             })
             .on("playing", function(){
               // console.log("onplaying");
-              self._sync_open_images();
+              self._sync_open_media();
             })
             .on("pause", function(){
               // console.log("onpause");
@@ -2388,12 +2457,14 @@ $.widget("parameter_image.scatterplot",
             .attr("data-ratio", 8.5/11)
             .append("object")
             .attr("data-uri", image.uri)
+            .attr("data-uid", image.uid)
             .attr("data", image_url)
             .attr("type", "application/pdf")
             .attr("width", "100%")
             .attr("height", "100%")
             .append("iframe")
             .attr("data-uri", image.uri)
+            .attr("data-uid", image.uid)
             .attr("src", image_url)
             // .attr("type", "application/pdf")
             .attr("width", "100%")
@@ -2435,28 +2506,9 @@ $.widget("parameter_image.scatterplot",
             ;
 
         }
-        else if(isStl)
+        else if(isVtp || isStl)
         {
-          var container = frame_html[0][0];
-          var viewer = document.createElement('slycat-3d-viewer');
-
-          var ps = document.createAttribute('params')
-          // var stl_uri = api_root + "projects/" + model.project + "/cache/" + URI.encode(uri.host() + uri.path());
-          var stl_uri = image_url;
-          ps.value = "backgroundColor: '#FFFFFF', uri: '" + stl_uri + "', container: $element";
-          var s = document.createAttribute('style');
-          s.value = 'width: 100%; height: 100%;';
-          viewer.setAttributeNode(ps);
-          viewer.setAttributeNode(s);
-
-          container.appendChild(viewer);
-          ko.applyBindings({}, container);
-
-          $(window).trigger('resize');
-        }
-        else if(image.uri.endsWith('.vtp'))
-        {
-          // This is a VTP file, so use the VTK 3d viewer
+          // This is a VTP or STL file, so use the VTK 3d viewer
           let vtk = frame_html
             .append("div")
             .attr('class', 'vtp')
@@ -2481,7 +2533,9 @@ $.widget("parameter_image.scatterplot",
             geometryLoad(
               vtk.node(),
               buffer,
-              image.uri
+              image.uri,
+              image.uid,
+              isStl ? 'stl' : 'vtp'
             );
             // dispatch vtk select event so we know which camera to sync
             if(image.current_frame) {
@@ -2553,8 +2607,14 @@ $.widget("parameter_image.scatterplot",
       // Create jump control
       add_jump_button(footer, image.index);
 
+      // Create clone button for 3D media ... 
+      if(isVtp)
+      {
+        add_clone_button(footer, image.uri);
+      }
+
       if(!image.no_sync)
-        self._sync_open_images();
+        self._sync_open_media();
 
       self._open_images(images.slice(1), true);
 
@@ -2589,12 +2649,20 @@ $.widget("parameter_image.scatterplot",
             title: "Login to " + uri.hostname(),
             message: "Loading " + uri.pathname(),
             cancel: function() {
-              var jFrame = $(".scaffolding." + image.image_class + "[data-uri=\"" + image.uri + "\"]");
+              var jFrame = $(".scaffolding." + image.image_class + "[data-uid=\"" + image.uid + "\"]");
               var frame = d3.select(jFrame[0]);
-              var related_frames = jFrame.closest('.media-layer').children('.scaffolding').filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == uri.hostname(); });
+              var related_frames = jFrame
+                .closest('.media-layer')
+                .children('.scaffolding')
+                .filter(function(_,x){ 
+                  return URI($(x).attr("data-uri")).hostname() == uri.hostname(); 
+                });
+              debugger;
               related_frames.find(".loading-image").remove();
 
-              var reload_button = d3.selectAll(related_frames.filter(":not(:has(>.reload-button))")).append("span")
+              var reload_button = d3
+                .selectAll(related_frames.filter(":not(:has(>.reload-button))"))
+                .append("span")
                 .attr("class", "fa fa-refresh reload-button")
                 .attr("title", "Could not load image. Click to reconnect.")
                 .each(function(){
@@ -2606,10 +2674,25 @@ $.widget("parameter_image.scatterplot",
                 .on("click", (function(img, frame){
                   return function(){
                     var hostname = URI(img.uri).hostname();
-                    var images = $(this).closest(".media-layer").children(".scaffolding").filter(function(_,x){ return URI($(x).attr("data-uri")).hostname() == hostname; })
-                    var loading_image = d3.selectAll(images).append("div").attr("class", "loading-image");
+                    var images = $(this)
+                      .closest(".media-layer")
+                      .children(".scaffolding")
+                      .filter(function(_,x){ 
+                        return URI($(x).attr("data-uri")).hostname() == hostname; 
+                      })
+                      ;
+                    var loading_image = d3.selectAll(images)
+                      .append("div")
+                      .attr("class", "loading-image")
+                      ;
                     images.find(".reload-button").remove();
-                    self._open_images(images.map(function(_,x){ return {uri: $(x).attr("data-uri"), image_class: image.image_class}; }));
+                    self._open_images(images.map(function(_,x){ 
+                      return {
+                        uri: $(x).attr("data-uri"), 
+                        uid: $(x).attr("data-uid"),
+                        image_class: image.image_class
+                      }; 
+                      }));
                   }})(image, frame));
               self.login_open = false;
             },
@@ -2748,7 +2831,7 @@ $.widget("parameter_image.scatterplot",
         self._remove_image_and_leader_line(d3.select(this));
       })
       ;
-    self._sync_open_images();
+    self._sync_open_media();
   },
 
   _schedule_hover_canvas: function(e) {
@@ -2940,17 +3023,27 @@ $.widget("parameter_image.scatterplot",
 
   _adjust_leader_line: function(frame_html)
   {
-    var self = this;
-    var width = $(frame_html.node()).width();
-    var height = $(frame_html.node()).height();
-    var uri = frame_html.attr("data-uri");
-    var x1 = Number(frame_html.attr("data-transx")) + (width / 2);
-    var y1 = Number(frame_html.attr("data-transy")) + (height / 2);
-    var line = self.line_layer
-      .select("line[data-uri='" + uri + "']")
+    const self = this;
+    const frame = $(frame_html.node());
+    const width = frame.outerWidth();
+    const height = frame.outerHeight();
+    const uid = frame_html.attr("data-uid");
+    const x = Number(frame_html.attr("data-transx"));
+    const y = Number(frame_html.attr("data-transy"));
+    const x1 = x + (width / 2);
+    const y1 = y + (height / 2);
+    self.line_layer
+      .select(`line[data-uid='${uid}']`)
       .attr("x1", x1)
       .attr("y1", y1)
       ;
+    window.store.dispatch(setMediaSizePosition({
+      uid: uid,
+      width: width,
+      height: height,
+      x: x,
+      y: y,
+    }));
   },
 
   // Move the frame to the front. Do not run this on mousedown or mouseup, because it stops propagation
@@ -2996,18 +3089,21 @@ $.widget("parameter_image.scatterplot",
       }
 
       // Dispatch update to current frame to redux store
-      window.store.dispatch(changeCurrentFrame(frame.data("uri")));
+      window.store.dispatch(changeCurrentFrame({
+        uri: frame.data("uri"), 
+        uid: frame.data("uid"),
+      }));
 
-      self._sync_open_images();
+      self._sync_open_media();
     }
   },
 
   _remove_image_and_leader_line: function(frame_html)
   {
     var self = this;
-    var uri = frame_html.attr("data-uri");
+    var uid = frame_html.attr("data-uid");
     var index = frame_html.attr("data-index");
-    var line = self.line_layer.select("line[data-uri='" + uri + "']");
+    var line = self.line_layer.select("line[data-uid='" + uid + "']");
 
     // Let vtk viewer know it was closed
     if(frame_html.node().querySelector('.vtp'))
@@ -3021,7 +3117,7 @@ $.widget("parameter_image.scatterplot",
     {
       self.current_frame = null;
       // Dispatch update to current frame to redux store
-      window.store.dispatch(changeCurrentFrame(null));
+      window.store.dispatch(changeCurrentFrame({}));
     }
   },
 
@@ -3275,7 +3371,7 @@ $.widget("parameter_image.scatterplot",
         self.syncing_videos.push(videoIndex);
         video.currentTime = self.options["video-sync-time"];
         self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-        self._sync_open_images();
+        self._sync_open_media();
       }
     }
   },
@@ -3290,7 +3386,7 @@ $.widget("parameter_image.scatterplot",
       video.currentTime = time;
       self.options["video-sync-time"] = time;
       self.element.trigger("video-sync-time", self.options["video-sync-time"]);
-      self._sync_open_images();
+      self._sync_open_media();
     }
   },
 

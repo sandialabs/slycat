@@ -62,14 +62,20 @@ class ControlsDropdownColor extends React.Component {
               + gradient_data[i].offset + "%");
       }
       let background_color = colormap.background;
+      const width = 250;
+      const right_margin = 5;
+      const left_margin = 5;
+      const right_left_padding = 10;
+      const background_width = width - right_margin - left_margin - (2 * right_left_padding);
+      const gradient_width = background_width - (2 * right_left_padding);
       let style = {
-        "backgroundImage": "linear-gradient(to bottom, "
+        backgroundImage: "linear-gradient(to left, "
             + color_stops.join(", ") + "), linear-gradient(to bottom, "
             + background_color + ", " + background_color + ")",
-        "backgroundSize": "5px 75%, 50px 100%",
-        "backgroundPosition": "right 10px center, right 5px center",
-        "backgroundRepeat": "no-repeat, no-repeat",
-        "paddingRight": "70px",
+        backgroundSize: `${gradient_width}px 55%, ${background_width}px 100%`,
+        backgroundPosition: `right ${right_margin + right_left_padding}px center, right ${right_margin}px center`,
+        backgroundRepeat: "no-repeat, no-repeat",
+        paddingRight: `${width}px`,
       }
 
       return {

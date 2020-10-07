@@ -194,7 +194,7 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	// add two columns to data, unique id and selection mode
 	table_data.push(row_id);
 	table_data.push(zero_vec);
-	grid_rows = d3.transpose(table_data);
+	grid_rows = transpose(table_data);
 
 	// set up slick grid
 	data_view = new Slick.Data.DataView();
@@ -378,6 +378,15 @@ module.setup = function (metadata, data, include_columns, editable_columns, mode
 	    module.jump_to(selections.sel(1));
 	};
 
+}
+
+// transpose a 2d array (sometimes d3.transpose produces an error)
+function transpose(a)
+{
+  return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
+
+  // or in more modern dialect
+  // return a[0].map((_, c) => a.map(r => r[c]));
 }
 
 // make regular expression from filter string

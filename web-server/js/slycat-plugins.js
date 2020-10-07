@@ -1,5 +1,3 @@
-
-
 // This is the front-end slycat plugin configuartion file.
 // Import plugin registrations below for any plugin you want available on the system.
 

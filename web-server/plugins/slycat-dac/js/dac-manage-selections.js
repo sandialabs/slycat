@@ -246,8 +246,8 @@ module.len_filtered_sel = function(i)
 }
 
 // toggle shift key flag
-module.key_flip = function(shiftKey, metaKey) {
-	shift_key_pressed = shiftKey || metaKey;
+module.key_flip = function(shiftKey) {
+	shift_key_pressed = shiftKey;
 }
 
 // get state of shift key

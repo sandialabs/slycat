@@ -53,7 +53,8 @@ import {
   setVIndex,
 } from './actions';
 
-import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
+
 import { setSyncCameras, } from './vtk-camera-synchronizer';
 
 import { 
@@ -67,6 +68,7 @@ import {
   DEFAULT_FONT_FAMILY,
   } from './Components/ControlsButtonVarOptions';
 import d3 from 'd3';
+import { v4 as uuidv4 } from 'uuid';
 
 let table_metadata = null;
 
@@ -382,18 +384,32 @@ $(document).ready(function() {
           }
           const throttleMiddleware = throttle(defaultWait, defaultThrottleOption);
 
+          // Add unique IDs to bookmarked open_media, as these are now required.
+          let bookmarked_open_media = bookmark["open-images-selection"] ? bookmark["open-images-selection"] : [];
+          for(let media of bookmarked_open_media)
+          {
+            if(!('uid' in media))
+            {
+              media.uid = uuidv4();
+            }
+          }
+
           // Create Redux store and set its state based on what's in the bookmark
           const state_tree = {
             fontSize: DEFAULT_FONT_SIZE,
             fontFamily: DEFAULT_FONT_FAMILY,
             axesVariables: {},
             threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
-            threeDColormap: vtkColorMaps.rgbPresetNames[0],
+            // First colormap is default
+            threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
+            threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
             unselected_point_size: unselected_point_size,
             unselected_border_size: unselected_border_size,
             selected_point_size: selected_point_size,
             selected_border_size: selected_border_size,
             variableRanges: {},
+            open_media: bookmarked_open_media,
+            currentFrame: {},
           }
           window.store = createStore(
             ps_reducer, 
@@ -404,6 +420,8 @@ $(document).ready(function() {
                 variableAliases: variable_aliases,
                 xValues: [],
                 yValues: [],
+                three_d_colorby_range: {},
+                three_d_colorby_legends: {},
               }
             },
             applyMiddleware(
@@ -440,6 +458,7 @@ $(document).ready(function() {
           unselected_border_size = store.getState().unselected_border_size;
           selected_point_size = store.getState().selected_point_size;
           selected_border_size = store.getState().selected_border_size;
+          open_images = store.getState().open_media;
 
           // set this in callback for now to keep FilterManager isolated but avoid a duplicate GET bookmark AJAX call
           filter_manager.set_bookmark(bookmark);
@@ -485,15 +504,6 @@ $(document).ready(function() {
 
   function metadata_loaded()
   {
-    if(bookmark)
-    {
-      open_images = [];
-      if("open-images-selection" in bookmark)
-      {
-        open_images = bookmark["open-images-selection"];
-      }
-    }
-
     if(table_metadata)
     {
       other_columns = [];
@@ -958,12 +968,6 @@ $(document).ready(function() {
         handle_image_variable_change(variable);
       });
 
-      // Log changes to open images ...
-      $("#scatterplot").bind("open-images-changed", function(event, selection)
-      {
-        open_images_changed(selection);
-      });
-
       // Changing the video sync time updates the controls and logs it ...
       $("#scatterplot").bind("video-sync-time", function(event, video_sync_time)
       {
@@ -1044,7 +1048,6 @@ $(document).ready(function() {
         "auto-scale" : auto_scale,
         "hidden_simulations" : hidden_simulations,
         "indices" : indices,
-        "open_images" : open_images,
         "video-sync" : video_sync,
         "video-sync-time" : video_sync_time,
         "threeD_sync" : threeD_sync,
@@ -1681,19 +1684,6 @@ $(document).ready(function() {
       url : api_root + "events/models/" + model_id + "/threeD_sync/" + threeD_sync
     });
     bookmarker.updateState( {"threeD_sync" : threeD_sync} );
-  }
-
-  function open_images_changed(selection)
-  {
-    open_images = selection;
-    $("#controls").controls("option", "open_images", open_images);
-    // Logging every open image is too slow, so just log the count instead.
-    $.ajax(
-    {
-      type : "POST",
-      url : api_root + "events/models/" + model_id + "/select/openimages/count/" + selection.length
-    });
-    bookmarker.updateState( {"open-images-selection" : selection} );
   }
 
   function hidden_simulations_changed()

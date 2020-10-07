@@ -1,5 +1,6 @@
 import vtkActor from 'vtk.js/Sources/Rendering/Core/Actor';
 import vtkXMLPolyDataReader from 'vtk.js/Sources/IO/XML/XMLPolyDataReader';
+import vtkSTLReader from 'vtk.js/Sources/IO/Geometry/STLReader';
 import HttpDataAccessHelper from 'vtk.js/Sources/IO/Core/DataAccessHelper/HttpDataAccessHelper';
 import vtkMapper from 'vtk.js/Sources/Rendering/Core/Mapper';
 import vtkOpenGLRenderWindow from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow';
@@ -9,7 +10,7 @@ import vtkRenderer from 'vtk.js/Sources/Rendering/Core/Renderer';
 import vtkInteractorStyleTrackballCamera from 'vtk.js/Sources/Interaction/Style/InteractorStyleTrackballCamera';
 import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction';
 import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray';
-import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
+import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import {
   ColorMode,
   ScalarMode,
@@ -17,20 +18,29 @@ import {
 
 import { addCamera, } from './vtk-camera-synchronizer';
 
-import { updateThreeDColorByOptions } from './actions';
+import { 
+  updateThreeDColorByOptions,
+  setThreeDColorByRange,
+} from './actions';
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
-export function load(container, buffer, uri) {
+export function load(container, buffer, uri, uid, type) {
 
   // ----------------------------------------------------------------------------
   // Standard rendering code setup
   // ----------------------------------------------------------------------------
 
   const renderWindow = vtkRenderWindow.newInstance();
+
+  const rgb = window.store.getState().threeD_background_color;
   const renderer = vtkRenderer.newInstance({
-    // Set the background to black
-    background: [0, 0, 0] 
+    // Set the background color
+    background: [
+      rgb[0]/255, 
+      rgb[1]/255, 
+      rgb[2]/255,
+    ],
   });
   renderWindow.addRenderer(renderer);
 
@@ -38,178 +48,194 @@ export function load(container, buffer, uri) {
   // Simple pipeline VTP reader Source --> Mapper --> Actor
   // ----------------------------------------------------------------------------
 
-  const vtpReader = vtkXMLPolyDataReader.newInstance();
-  vtpReader.parseAsArrayBuffer(buffer);
-
-  const lookupTable = vtkColorTransferFunction.newInstance();
-  const source = vtpReader.getOutputData(0);
-  const mapper = vtkMapper.newInstance({
-    interpolateScalarsBeforeMapping: false,
-    useLookupTableScalarRange: true,
-    lookupTable,
-    scalarVisibility: false,
-  });
-  mapper.setInputData(source);
-  const actor = vtkActor.newInstance();
-  const scalars = source.getPointData().getScalars();
-  const dataRange = [].concat(scalars ? scalars.getRange() : [0, 1]);
-  let activeArray = vtkDataArray;
-  actor.setMapper(mapper);
-
-  // --------------------------------------------------------------------
-  // Color handling
-  // --------------------------------------------------------------------
-  
-  let colormap;
-
-  function applyPreset() {
-    // console.log('setting color to: ' + window.store.getState().threeDColormap);
-    colormap = vtkColorMaps.getPresetByName(window.store.getState().threeDColormap);
-    lookupTable.applyColorMap(colormap);
-    lookupTable.setMappingRange(dataRange[0], dataRange[1]);
-    lookupTable.updateRange();
-
-    // Not part of VTK example, but needs to be done to get update after chaning color options
-    renderWindow.render();
+  let mapper, lookupTable, source, scalars, dataRange, activeArray;
+  if (type == 'stl')
+  {
+    const stlReader = vtkSTLReader.newInstance();
+    mapper = vtkMapper.newInstance({ scalarVisibility: false });
+    mapper.setInputConnection(stlReader.getOutputPort());
+    stlReader.parseAsArrayBuffer(buffer);
   }
+  else if (type == 'vtp')
+  {
+    const vtpReader = vtkXMLPolyDataReader.newInstance();
+    vtpReader.parseAsArrayBuffer(buffer);
 
-  function applyPresetIfChanged() {
-    if(vtkColorMaps.getPresetByName(window.store.getState().threeDColormap) != colormap)
-    {
-      // console.log("Colormap changed, so applying the new one.");
-      applyPreset();
-    }
-    else{
-      // console.log("Colormap did not changed, so not applying the new one.");
-    }
-  }
-
-  // Set the 3D colormap to what's currently in the Redux store
-  applyPreset();
-
-  // Set the 3D colormap to what's in the Redux state
-  // each time the Redux state changes.
-  window.store.subscribe(applyPresetIfChanged);
-
-  // --------------------------------------------------------------------
-  // ColorBy handling
-  // --------------------------------------------------------------------
+    lookupTable = vtkColorTransferFunction.newInstance();
+    source = vtpReader.getOutputData(0);
+    mapper = vtkMapper.newInstance({
+      interpolateScalarsBeforeMapping: false,
+      useLookupTableScalarRange: true,
+      lookupTable,
+      scalarVisibility: false,
+    });
+    mapper.setInputData(source);
+    scalars = source.getPointData().getScalars();
+    dataRange = [].concat(scalars ? scalars.getRange() : [0, 1]);
+    activeArray = vtkDataArray;
   
-  // Default to Solid color
-  let colorBy = ":";
+    // --------------------------------------------------------------------
+    // Color handling
+    // --------------------------------------------------------------------
+    
+    let colormap;
 
-  const colorByOptions = [{ 
-      value: ':', 
-      label: 'Solid color',
-    }]
-    .concat(
-      source
-        .getPointData()
-        .getArrays()
-        .map((a) => ({       
-          label: a.getName(),
-          value: `PointData:${a.getName()}`,
-          type: 'Point',
-          components: a.getNumberOfComponents(),
-      })),
-      source
-        .getCellData()
-        .getArrays()
-        .map((a) => ({
-          label: a.getName(),
-          value: `CellData:${a.getName()}`,
-          type: 'Cell',
-          components: a.getNumberOfComponents(),
-      })
-    )
-  );
-  // Dispatch update to available color by options to redux store
-  window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
+    function applyPreset() {
+      // console.log('setting color to: ' + window.store.getState().threeDColormap);
+      colormap = slycat_threeD_color_maps.vtk_color_maps[window.store.getState().threeDColormap];
+      lookupTable.applyColorMap(colormap);
+      lookupTable.setMappingRange(dataRange[0], dataRange[1]);
+      lookupTable.updateRange();
 
-  function updateColorBy() {
-    // Use default colorBy if we don't have a setting for it in the state
-    if(window.store.getState().three_d_colorvars && window.store.getState().three_d_colorvars[uri])
-    {
-      colorBy = window.store.getState().three_d_colorvars[uri];
+      // Not part of VTK example, but needs to be done to get update after chaning color options
+      renderWindow.render();
     }
 
-    const [location, colorByArrayName, componentString] = colorBy.split(':');
-    // Convert component string to integer, set to undefined if there isn't one
-    const component = componentString ? parseInt(componentString, 10) : undefined;
-    const interpolateScalarsBeforeMapping = location === 'PointData';
-    let colorMode = ColorMode.DEFAULT;
-    let scalarMode = ScalarMode.DEFAULT;
-    const scalarVisibility = location.length > 0;
-
-    // We are coloring by point or cell data
-    if (scalarVisibility) 
-    {
-      const newArray = source[`get${location}`]().getArrayByName(
-        colorByArrayName
-      );
-      activeArray = newArray;
-      const numberOfComponents = activeArray.getNumberOfComponents();
-
-      const newDataRange = activeArray.getRange();
-      dataRange[0] = newDataRange[0];
-      dataRange[1] = newDataRange[1];
-      colorMode = ColorMode.MAP_SCALARS;
-      scalarMode =
-        location === 'PointData'
-          ? ScalarMode.USE_POINT_FIELD_DATA
-          : ScalarMode.USE_CELL_FIELD_DATA
-      ;
-      
-      if(mapper.getLookupTable())
+    function applyPresetIfChanged() {
+      if(slycat_threeD_color_maps.vtk_color_maps[window.store.getState().threeDColormap] != colormap)
       {
-        const lut = mapper.getLookupTable();
-        // Use the selected component if we have one
-        if(component > -1) 
-        {
-          lut.setVectorModeToComponent();
-          lut.setVectorComponent(component);
-          const componentDataRange = activeArray.getRange(component);
-          dataRange[0] = componentDataRange[0];
-          dataRange[1] = componentDataRange[1];
-          lookupTable.setMappingRange(dataRange[0], dataRange[1]);
-          lut.updateRange();
-        }
-        // Set the component to magnitude if we don't have one
-        else
-        {
-          lut.setVectorModeToMagnitude();
-        }
+        // console.log("Colormap changed, so applying the new one.");
+        applyPreset();
+      }
+      else{
+        // console.log("Colormap did not changed, so not applying the new one.");
       }
     }
 
-    mapper.set({
-      colorByArrayName,
-      colorMode,
-      interpolateScalarsBeforeMapping,
-      scalarMode,
-      scalarVisibility,
-    });
+      // Set the 3D colormap to what's currently in the Redux store
     applyPreset();
+
+    // Set the 3D colormap to what's in the Redux state
+    // each time the Redux state changes.
+    window.store.subscribe(applyPresetIfChanged);
+    
+    // --------------------------------------------------------------------
+    // ColorBy handling
+    // --------------------------------------------------------------------
+    
+    // Default to Solid color
+    let colorBy = ":";
+
+    const colorByOptions = [{ 
+        value: ':', 
+        label: 'Solid color',
+      }]
+      .concat(
+        source
+          .getPointData()
+          .getArrays()
+          .map((a) => ({       
+            label: a.getName(),
+            value: `PointData:${a.getName()}`,
+            type: 'Point',
+            components: a.getNumberOfComponents(),
+        })),
+        source
+          .getCellData()
+          .getArrays()
+          .map((a) => ({
+            label: a.getName(),
+            value: `CellData:${a.getName()}`,
+            type: 'Cell',
+            components: a.getNumberOfComponents(),
+        })
+      )
+    );
+    // Dispatch update to available color by options to redux store
+    window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
+
+    function updateColorBy() {
+      // Use default colorBy if we don't have a setting for it in the state
+      if(window.store.getState().three_d_colorvars && window.store.getState().three_d_colorvars[uid])
+      {
+        colorBy = window.store.getState().three_d_colorvars[uid];
+      }
+
+      const [location, colorByArrayName, componentString] = colorBy.split(':');
+      // Convert component string to integer, set to undefined if there isn't one
+      const component = componentString ? parseInt(componentString, 10) : undefined;
+      const interpolateScalarsBeforeMapping = location === 'PointData';
+      let colorMode = ColorMode.DEFAULT;
+      let scalarMode = ScalarMode.DEFAULT;
+      const scalarVisibility = location.length > 0;
+
+      // We are coloring by point or cell data
+      if (scalarVisibility) 
+      {
+        const newArray = source[`get${location}`]().getArrayByName(
+          colorByArrayName
+        );
+        activeArray = newArray;
+        const numberOfComponents = activeArray.getNumberOfComponents();
+
+        const newDataRange = activeArray.getRange();
+        dataRange[0] = newDataRange[0];
+        dataRange[1] = newDataRange[1];
+        colorMode = ColorMode.MAP_SCALARS;
+        scalarMode =
+          location === 'PointData'
+            ? ScalarMode.USE_POINT_FIELD_DATA
+            : ScalarMode.USE_CELL_FIELD_DATA
+        ;
+        
+        if(mapper.getLookupTable())
+        {
+          const lut = mapper.getLookupTable();
+          // Use the selected component if we have one
+          if(component > -1) 
+          {
+            lut.setVectorModeToComponent();
+            lut.setVectorComponent(component);
+            const componentDataRange = activeArray.getRange(component);
+            dataRange[0] = componentDataRange[0];
+            dataRange[1] = componentDataRange[1];
+            lookupTable.setMappingRange(dataRange[0], dataRange[1]);
+            lut.updateRange();
+          }
+          // Set the component to magnitude if we don't have one
+          else
+          {
+            lut.setVectorModeToMagnitude();
+          }
+        }
+        // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
+        // Dispatch update to color by range to redux store
+        window.store.dispatch(setThreeDColorByRange(uri, colorBy, dataRange));
+      }
+
+      mapper.set({
+        colorByArrayName,
+        colorMode,
+        interpolateScalarsBeforeMapping,
+        scalarMode,
+        scalarVisibility,
+      });
+      applyPreset();
+    }
+
+    function updateColorByIfChanged() {
+      if(window.store.getState().three_d_colorvars
+        && window.store.getState().three_d_colorvars[uid]
+        && window.store.getState().three_d_colorvars[uid] != colorBy)
+      {
+        // console.log("ColorBy changed, so applying the new one.");
+        updateColorBy();
+      }
+      else{
+        // console.log("ColorBy did not changed, so not applying the new one.");
+      }
+    }
+
+    updateColorBy();
+
+    // Set the 3D colormap to what's in the Redux state
+    // each time the Redux state changes.
+    window.store.subscribe(updateColorByIfChanged);
+
   }
 
-  function updateColorByIfChanged() {
-    if(window.store.getState().three_d_colorvars
-       && window.store.getState().three_d_colorvars[uri]
-       && window.store.getState().three_d_colorvars[uri] != colorBy)
-    {
-      // console.log("ColorBy changed, so applying the new one.");
-      updateColorBy();
-    }
-    else{
-      // console.log("ColorBy did not changed, so not applying the new one.");
-    }
-  }
-
-  updateColorBy();
-
-  // Set the 3D colormap to what's in the Redux state
-  // each time the Redux state changes.
-  window.store.subscribe(updateColorByIfChanged);
+  const actor = vtkActor.newInstance();
+  actor.setMapper(mapper);
 
   // ----------------------------------------------------------------------------
   // Add the actor to the renderer and set the camera based on it
@@ -275,17 +301,17 @@ export function load(container, buffer, uri) {
   let camera = renderer.getActiveCamera();
 
   // Set the camera based on what's in the state
-  let cameraState = window.store.getState().three_d_cameras? window.store.getState().three_d_cameras[uri] : false;
+  let cameraState = window.store.getState().three_d_cameras ? window.store.getState().three_d_cameras[uid] : false;
   if(cameraState)
   {
     // console.log('we have state for the camera: ' + cameraState);
     camera.setPosition(...cameraState.position);
     camera.setFocalPoint(...cameraState.focalPoint);
     camera.setViewUp(...cameraState.viewUp);
-    interactor.render();
     // renderer.resetCamera();
+    interactor.render();
   }
 
   // Pass the active camera to camera synchronizer
-  addCamera(camera, container, interactor, uri);
+  addCamera(camera, container, interactor, uid);
 }
