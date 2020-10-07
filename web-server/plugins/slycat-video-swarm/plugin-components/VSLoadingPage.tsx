@@ -59,7 +59,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
   componentDidUpdate(prevProps: LoadingPageProps, prevState: LoadingPageState) {
     if (prevState.finished !== this.state.finished && this.state.finished === true) {
       this.setState({ progressBarProgress: 75 }, () => {
-        utils.computeVSModel(this.props.modelId, this.state.workdir, this.state.hostname,this.updateProgressBarCallback)
+        utils.computeVSModel(this.props.modelId, this.state.workdir, this.state.hostname, this.updateProgressBarCallback)
         this.updateProgressBarCallback(78, "message", true);
       });
     }
@@ -101,7 +101,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
       const userLog: string[] = []
       let progressBarProgress = this.state.progressBarProgress;
       let finished = false;
-      if (this.state.log.logLineArray.length>0){
+      if (this.state.log.logLineArray.length > 0) {
         userLog.push("log loaded from HPC (click verbose log for extra info)")
       }
       this.state.log.logLineArray.forEach((line: string) => {
