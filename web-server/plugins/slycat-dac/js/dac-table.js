@@ -762,7 +762,7 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 function one_row_selected(e, args) {
 
 	// pass along shift/meta key information
-	selections.key_flip(e.shiftKey, e.ctrlKey);
+	selections.key_flip(e.shiftKey);
 
 	// convert row clicked to data table row
 	var data_clicked = convert_row_ids([args.row])[0];
