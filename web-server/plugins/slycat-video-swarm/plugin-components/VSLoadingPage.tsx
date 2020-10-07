@@ -105,6 +105,9 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
       const userLog: string[] = []
       let progressBarProgress = this.state.progressBarProgress;
       let finished = false;
+      if (this.state.log.logLineArray.length>0){
+        userLog.push("log loaded from HPC (click verbose log for extra info)")
+      }
       this.state.log.logLineArray.forEach((line: string) => {
         if (line.includes('[VS-PROGRESS]') && !this.state.finished) {
           progressBarProgress = 10 + Math.round(parseFloat(line.split(/(?<=^\S+)\s/)[1]) * 0.7)

@@ -143,7 +143,7 @@ const read_ycoords_file = (
             aid: "vs-loading-parms",
             value: ["Uploaded"],
             success: function () {
-              // go to model
+              window.location.href = '/models/' + modelId;
             },
             error: function () {
               dialog.ajax_error("Error uploading model status.")("", "", "");

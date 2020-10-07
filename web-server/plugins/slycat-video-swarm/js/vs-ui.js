@@ -95,11 +95,6 @@ var interval = TEN_SECOND;
 // waits 1 minute past last successful progress update
 var endTime = Number(new Date()) + ONE_MINUTE;
 
-// hostname, log file for monitoring; working directory for outputs
-var logHostName = "";
-var logFileName = "";
-var workDir = "";
-
 // if user is looking at textarea then don't scroll to bottom
 var user_scroll = false;
 $("#vs_processing_textarea").focus(function () {
@@ -108,40 +103,15 @@ $("#vs_processing_textarea").focus(function () {
 $("#vs_processing_textarea").focusout(function () {
   user_scroll = false;
 });
-// reconnect button
-var reconnect = function () {
-  // sever connections associated with this user
-  $.ajax({
-    dataType: "json",
-    type: "GET",
-    url: api_root + "clear/ssh-sessions",
-    success: function (id) {
-      // try to re-connect to server
-      var remote_pool = remotes.create_pool();
-      remote_pool.get_remote({
-        hostname: logHostName,
-        title: "Login to " + logHostName,
-        message: "Loading " + logFileName,
-        cancel: function () {
-          // if the user cancels, we do nothing and the program stops
-        },
-        success: function () {
-          // reset time out and continue
-          endTime = Number(new Date()) + ONE_MINUTE;
-          window.setTimeout(poll, interval);
-        },
-        error: function () {
-          dialog.ajax_error("Server error: could not connect to cluster.")("", "", "");
-        },
-      });
-    },
-    error: function (request, status, reason_phrase) {
-      dialog.ajax_error("Server error: could not reset connection.")("", "", "");
-    },
-  });
+
+const showLoadingPage = () => {
+  ReactDOM.render(
+    <VSLoadingPage
+      modelId={model._id}
+    />,
+    document.querySelector('#vs-react')
+  );
 };
-// set-up reconnect button
-$("#vs-reconnect-button").on("click", reconnect);
 
 // poll database for artifact "vs-loading-progress"
 function poll() {
@@ -153,74 +123,7 @@ function poll() {
       if (result[0] === "Uploaded") {
         launch_model();
       } else if (result[0] === "Remote") {
-        // update host and log file name
-        logFileName = result[1];
-        logHostName = result[2];
-        workDir = result[3];
-
-        // get_movie_links();
-
-        // call web server to read log file
-        client.get_model_command({
-          mid: model._id,
-          type: "VS",
-          command: "read_log",
-          parameters: [logFileName, logHostName],
-          success: function (result) {
-            if (result["error"] === true) {
-              dialog.ajax_error("Server error: " + result["error_message"])("", "", "");
-            } else if (result["finished"] === false) {
-              var compute_progress = 10 + Math.round(result["progress"] * 0.7);
-
-              // update progress bar
-              $("#vs_processing_progress_bar").width(compute_progress + "%");
-              $("#vs_processing_progress_bar").text("Computing ...");
-
-              // update text box unless user has focused on it
-              if (user_scroll == false) {
-                $("#vs_processing_textarea").text(result["user_log"]);
-                $("#vs_processing_textarea").scrollTop(
-                  $("#vs_processing_textarea")[0].scrollHeight
-                );
-              }
-
-              // reset time out and continue
-              endTime = Number(new Date()) + ONE_MINUTE;
-              window.setTimeout(poll, interval);
-            } else {
-              // update progress bar one last time
-              $("#vs_processing_progress_bar").width(75 + "%");
-              $("#vs_processing_progress_bar").text("Computing ...");
-
-              // update text box one last time
-              $("#vs_processing_textarea").text(result["user_log"]);
-              $("#vs_processing_textarea").scrollTop($("#vs_processing_textarea")[0].scrollHeight);
-
-              // done computing, go upload the model
-              get_movie_links();
-            }
-          },
-          error: function (result1, result2, result3) {
-            // try to re-connect to server
-            var remote_pool = remotes.create_pool();
-            remote_pool.get_remote({
-              hostname: logHostName,
-              title: "Login to " + logHostName,
-              message: "Loading " + logFileName,
-              cancel: function () {
-                // if the user cancels, we do nothing and the program stops
-              },
-              success: function () {
-                // reset time out and continue
-                endTime = Number(new Date()) + ONE_MINUTE;
-                window.setTimeout(poll, interval);
-              },
-              error: function () {
-                dialog.ajax_error("Server error: could not connect to cluster.")("", "", "");
-              },
-            });
-          },
-        });
+        showLoadingPage();
       } else {
         dialog.ajax_error("Wizard error: unknown model launch type.")("", "", "");
       }
@@ -251,17 +154,10 @@ function poll() {
     },
   });
 }
-const showLoadingPage = () => {
-  ReactDOM.render(
-    <VSLoadingPage
-      modelId={model._id}
-    />,
-    document.querySelector('#vs-react')
-  );
-};
+
 // initialize poll
-// poll();
-showLoadingPage();
+poll();
+
 
 // called when done polling to launch the model
 function launch_model() {
