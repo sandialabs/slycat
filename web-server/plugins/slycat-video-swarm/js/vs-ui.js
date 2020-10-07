@@ -30,8 +30,6 @@ import table_pane from "./vs-table.js";
 import movie_pane from "./vs-movies.js";
 import d3 from "d3";
 import control from "./vs-controls";
-//import _ from "js/lodash";
-
 // global parameters to set up movie-plex UI
 // -----------------------------------------
 

@@ -40,7 +40,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
    * method runs after the component output has been rendered to the DOM
    */
   componentDidMount() {
-    console.log(this.props.modelId);
     client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "jid" })
       .then((jid) =>
         this.setState({ jid }, () =>
@@ -59,10 +58,8 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
   }
   componentDidUpdate(prevProps: LoadingPageProps, prevState: LoadingPageState) {
     if (prevState.finished !== this.state.finished && this.state.finished === true) {
-      console.log("the finished state has been acquired");
       this.setState({ progressBarProgress: 75 }, () => {
         utils.computeVSModel(this.props.modelId, this.state.workdir, this.state.hostname,this.updateProgressBarCallback)
-        console.log("call computing function");
         this.updateProgressBarCallback(78, "message", true);
       });
     }
@@ -78,7 +75,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
     if (error) {
       console.log(info);
     }
-    console.log("progress update called", progress, info);
     this.setState({ progressBarProgress: progress });
   }
   // tear down
@@ -134,7 +130,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
    */
   private cancelJob = async (): Promise<any> => {
     return client.delete_job_fetch(this.state.hostname, this.state.jid).then((response: any) => {
-      console.log("response", response);
+      console.log("cancelJob response", response);
     });
   };
   /**
@@ -151,7 +147,6 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
         },
         () => {
           if (!this.state.sessionExists) {
-            console.log("session", json.status);
             this.setState({ modelShow: true });
             ($(`#${this.state.modalId}`) as any).modal("show");
           }
