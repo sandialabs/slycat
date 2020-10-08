@@ -175,7 +175,7 @@ function constructor(params)
 
             // get file extension
             var file = component.browser_dac_file.selection()[0];
-            var file_ext = file.name.split(".").pop();
+            var file_ext = file.name.split(".").pop().toLowerCase();
 
             if (file_ext == 'zip') {
 
@@ -307,7 +307,7 @@ function constructor(params)
 
             // get file extension
             var file = component.browser_zip_file.selection()[0];
-            var file_ext = file.name.split(".").pop();
+            var file_ext = file.name.split(".").pop().toLowerCase();
 
             if (file_ext != 'zip') {
 
@@ -355,16 +355,16 @@ function constructor(params)
                 for (var i = 0; i < file_num; i++) {
 
                     var file = component.browser_tdms_files.selection()[i];
-                    var file_ext = file.name.split(".").pop();
+                    var file_ext = file.name.split(".").pop().toLowerCase();
 
-                    if (file_ext != 'tdms') {
+                    if (file_ext != 'tdms' && file_ext != 'tdm') {
                         tdms_files = false;
                     }
                 }
 
                 if (tdms_files == false) {
 
-                    $("#dac-tdms-file-error").text("Please select file(s) with the .tdms extension.")
+                    $("#dac-tdms-file-error").text("Please select file(s) with the .tdms or .TDM extension.")
                     $("#dac-tdms-file-error").show();
 
                 } else {
@@ -376,7 +376,7 @@ function constructor(params)
 
             } else {
 
-                $("#dac-tdms-file-error").text("Please select .tdms file(s).")
+                $("#dac-tdms-file-error").text("Please select .tdms or .TDM file(s).")
                 $("#dac-tdms-file-error").show();
             }
 
@@ -391,7 +391,7 @@ function constructor(params)
 
                 // check .zip file extension
                 var file = component.browser_tdms_files.selection()[0];
-                var file_ext = file.name.split(".").pop();
+                var file_ext = file.name.split(".").pop().toLowerCase();
 
                 if (file_ext == 'zip') {
 
@@ -418,7 +418,7 @@ function constructor(params)
 
                 } else {
 
-                    $("#dac-tdms-file-error").text("Please select a .zip file containing .tdms files.")
+                    $("#dac-tdms-file-error").text("Please select a .zip file containing .tdms of .TDM files.")
                     $("#dac-tdms-file-error").show();
 
                 }
@@ -446,10 +446,10 @@ function constructor(params)
             if (entries[i].directory == false) {
 
                 // get file extension
-                var file_ext = entries[i].filename.split(".").pop();
+                var file_ext = entries[i].filename.split(".").pop().toLowerCase();
 
                 // is it a tdms file?
-                if (file_ext == "tdms") {
+                if (file_ext == "tdms" || file_ext == "tdm") {
 
                     // get all possible suffixes
                     var all_file_suffixes = entries[i].filename.split("_");
@@ -472,7 +472,7 @@ function constructor(params)
         if (file_suffix.length == 0) {
 
             // no suffixes, error condition
-            $("#dac-tdms-file-error").text("Please select a .zip file containing .tdms files.")
+            $("#dac-tdms-file-error").text("Please select a .zip file containing .tdms or .TDM files.")
             $("#dac-tdms-file-error").show();
 
             // turn off continue button
