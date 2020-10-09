@@ -308,6 +308,7 @@ export function load(container, buffer, uri, uid, type) {
     camera.setPosition(...cameraState.position);
     camera.setFocalPoint(...cameraState.focalPoint);
     camera.setViewUp(...cameraState.viewUp);
+    camera.setClippingRange(...cameraState.clippingRange);
     // renderer.resetCamera();
     interactor.render();
   }

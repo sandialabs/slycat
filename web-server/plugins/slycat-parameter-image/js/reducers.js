@@ -175,6 +175,7 @@ export default function ps_reducer(state = initialState, action) {
           position: camera.camera.getPosition(),
           focalPoint: camera.camera.getFocalPoint(),
           viewUp: camera.camera.getViewUp(),
+          clippingRange: camera.camera.getClippingRange(),
         }
       }
 
