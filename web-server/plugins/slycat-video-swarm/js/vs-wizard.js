@@ -20,6 +20,7 @@ import fileUploader from "js/slycat-file-uploader-factory";
 import URI from "urijs";
 import vsWizardUI from "../html/vs-wizard.html";
 import { remoteControlsReauth } from "js/slycat-remote-controls";
+import request from "./vs-request-data.js";
 
 function constructor(params)
 {
@@ -48,6 +49,11 @@ component.vs_browser = mapping.fromJS({
     selection: [],
     progress: ko.observable(null),
 });
+
+// existing movies present in moviedir
+var existing_movies = [];
+component.movies_exist = ko.observable();
+component.replace_movies = ko.observable();
 
 // prevent user from uploading files twice
 var vs_files_uploaded = false;
@@ -503,6 +509,7 @@ var start_remote_job = function () {
         {"name":"--csv_file","value": component.table_browser.selection()[0]},
         {"name":"--frame_col","value": frame_column + 1},
         {"name":"--movie_dir","value": component.moviedir()},
+        {"name":"--replace_movies","value": component.replace_movies()},
         {"name":"--output_dir","value": component.workdir()},
         {"name":"--fps","value": component.frame_rate()}]}],
         "hpc":{"is_hpc_job": component.HPC_Job(),
@@ -554,6 +561,57 @@ var start_remote_job = function () {
             data: JSON.stringify(payload)
         });
 };
+
+component.check_existing_movies = function () {
+    // Browse the moviedir and get a list of all files in it
+    client.post_remote_browse({
+        hostname : component.remote.hostname(),
+        path : component.moviedir(),
+        success : function(results)
+        {
+            var link_selected = $("#vs-local-links-selector").val();
+            var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
+            var link_column = media_columns_inds[link_selected_ind];
+
+            // Get the CSV to check for existing movies that match the upcoming frame names
+            $.when(
+                request.get_table("movies.meta", component.model._id()),
+            )
+            .then(
+            function(table_data) {
+                var path_string = table_data["data"][link_column][0];
+                var split_string = path_string.split('/');
+                var last_index = split_string.length - 1;
+                var frame_name_template = split_string[last_index];
+                frame_name_template = frame_name_template.split('.')[0];
+
+                var movie_dir_files = results["names"];
+                movie_dir_files.forEach(function(movie) {
+                    var split_movie_file = movie.split('.');
+                    var file_extension = split_movie_file[split_movie_file.length - 1];
+                    var movie_name_template = split_movie_file[0];
+
+                    if(movie_name_template == frame_name_template && file_extension == 'mp4') {
+                        component.movies_exist(true);
+                        existing_movies.push(movie);
+                    }
+                });
+                if (component.movies_exist()) {
+                    component.tab(6);
+                }
+                else {
+                    component.tab(7);
+                }
+            });
+        }
+    });
+}
+
+component.check_replacement_selection = function () {
+    if (component.replace_movies() != null) {
+        component.tab(7);
+    }
+}
 
 // upload movie plex links (from csv table)
 component.upload_vs_links = function () {
@@ -638,7 +696,8 @@ component.upload_vs_frames_links = function () {
         link_column = media_columns_inds[link_selected_ind];
 
         launch_remote_job = true;
-        component.tab(6)
+        
+        component.check_existing_movies();
     }
 };
 
@@ -765,13 +824,13 @@ component.check_hpc_job = function () {
         if (HPC_errors == false) {
 
             // got everything needed, next name model
-            component.tab(7);
+            component.tab(8);
         }
 
     } else {
 
         // not an HPC job -- go name model
-        component.tab(7);
+        component.tab(8);
 
     }
 
