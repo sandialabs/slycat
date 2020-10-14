@@ -225,9 +225,9 @@ for i in range(0, num_rows):
     file_location = split_path[0]
     # check 
     if args.movie_dir[-1] == '/':
-        movie_output = args.movie_dir + identifier + '_%d.mp4' % (i+1)
+        movie_output = args.movie_dir + identifier + '.%d.mp4' % (i+1)
     else:
-        movie_output = args.movie_dir + '/' + identifier + '_%d.mp4' % (i+1)
+        movie_output = args.movie_dir + '/' + identifier + '.%d.mp4' % (i+1)
 
     all_movies.append(file_location + movie_output)
     movie_input = frame_file_path + + '/' + identifier + '*.jpg'

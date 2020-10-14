@@ -569,7 +569,7 @@ component.check_existing_movies = function () {
         path : component.moviedir(),
         success : function(results)
         {
-            var link_selected = $("#vs-local-links-selector").val();
+            var link_selected = $("#vs-remote-frames-selector").val();
             var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
             var link_column = media_columns_inds[link_selected_ind];
 
@@ -584,7 +584,6 @@ component.check_existing_movies = function () {
                 var last_index = split_string.length - 1;
                 var frame_name_template = split_string[last_index];
                 frame_name_template = frame_name_template.split('.')[0];
-
                 var movie_dir_files = results["names"];
                 movie_dir_files.forEach(function(movie) {
                     var split_movie_file = movie.split('.');
