@@ -19,7 +19,7 @@ const InfoBar: React.FunctionComponent<InfoBarProps> = (props) => (
       Remote host: <b>{props.hostname}</b>
     </div>
     <div className="col-2">
-      Session: <b>{props.sessionExists ? "true" : "false"}</b>
+      Session: <b>{props.sessionExists ? "Connected" : "Not connected"}</b>
     </div>
   </div>
 );

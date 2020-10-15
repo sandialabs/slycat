@@ -1,8 +1,3 @@
-/**
- * @export
- * @interface JobCodesProps
- */
-export interface JobCodesProps {}
 
 /**
  * @export
@@ -51,12 +46,6 @@ export interface LogListProps {
 export interface LoadButtonProps {
   disabled: boolean;
   onClick: () => void;
-}
-
-export interface InfoBarProps {
-  jid: string;
-  hostname: string;
-  sessionExists: boolean;
 }
 
 export interface LoadingPageButtonsProps {

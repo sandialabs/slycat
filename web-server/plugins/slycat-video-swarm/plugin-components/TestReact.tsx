@@ -1,20 +1,19 @@
 import * as React from "react";
-import { LoadButtonProps } from "./types";
 
 /* Creates the JSX for the loading button
  *
  */
-const LoadButton: React.FC<LoadButtonProps> = (props) => (
+const TestReact: React.FC<{}> = (props) => (
   <button
     className={`btn btn-outline-primary`}
-    id={"pullbtn"}
+    id={"testbtn"}
     type="button"
     title={"Send a command to try manually pulling the data from the HPC and loading it the server"}
-    disabled={props.disabled}
-    onClick={() => props.onClick()}
+    disabled={false}
+    onClick={() => window.alert()}
   >
-    {"Load"}
+    {"react test"}
   </button>
 );
 
-export default LoadButton;
+export default TestReact;

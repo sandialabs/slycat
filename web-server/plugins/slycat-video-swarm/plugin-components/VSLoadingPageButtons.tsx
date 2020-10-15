@@ -1,13 +1,11 @@
 import * as React from "react";
-import ControlsButton from "components/ControlsButton.js";
-import LoadButton from "./LoadButton";
 import { LoadingPageButtonsProps } from "./types";
 
 /**
  *  loads the buttons for the loading page for timeseries model
  * @param props
  */
-const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
+const VSLoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
   // wait until all the jquery stuff is loaded
   $(document).ready(function ($) {
     // enable tooltips
@@ -15,6 +13,14 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
   });
   return (
     <React.Fragment>
+      <button
+        className="btn btn-outline-primary"
+        type="button"
+        onClick={() => props.verboseCallback()}
+        title="Toggle between the verbose log and the simplified user log"
+      >
+        Toggle verbose log
+      </button>
       <button
         className="btn btn-outline-primary"
         type="button"
@@ -38,22 +44,8 @@ const LoadingPageButtons: React.FC<LoadingPageButtonsProps> = (props) => {
       >
         {"Cancel job"}
       </button>
-      <LoadButton
-        disabled={!props.jobStatus.includes("COMPLETED")}
-        onClick={() => props.pullHPCData()}
-      />
-      {props.modelShow && !props.sessionExists && (
-        <ControlsButton
-          label="Connect"
-          title={"Connect to HPC"}
-          data_toggle="modal"
-          data_target={"#" + props.modalId}
-          button_type={"btn-outline-primary"}
-          id="controls-button-death"
-        />
-      )}
     </React.Fragment>
   );
 };
 
-export default LoadingPageButtons;
+export default VSLoadingPageButtons;

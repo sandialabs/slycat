@@ -250,5 +250,6 @@ module.exports = {
       "./slycat/node_modules",
       path.resolve(__dirname, "web-server"),
     ],
+      extensions: ['.tsx', '.ts', '.js', '.jsx' ]
   },
 };

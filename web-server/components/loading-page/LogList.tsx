@@ -22,8 +22,8 @@ import Spinner from "components/Spinner.tsx";
     let items: JSX.Element[] = logBuilder(log.logLineArray);
     return sessionExists ? (
       <dl>
-        <dt>`&gt;` {jobStatus}</dt>
-        <dt>`&gt;` Slurm run Log:</dt>
+        <dt>&gt;$ Job Status :: {jobStatus}</dt>
+        <dt>&gt;$ Slurm run Log:</dt>
         {items.length >= 1 ? items : <Spinner />}
       </dl>
     ) : (

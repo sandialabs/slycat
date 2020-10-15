@@ -1,12 +1,12 @@
 import * as React from "react";
 import client from "../../../js/slycat-web-client";
-import ProgressBar from "components/ProgressBar.tsx";
+import ProgressBar from "components/ProgressBar";
 import { LoadingPageProps, LoadingPageState } from "./types";
-import { JobCodes } from "./JobCodes.tsx";
-import LogList from "./LogList.tsx";
-import LoadingPageButtons from "./LoadingPageButtons.tsx";
-import InfoBar from "./InfoBar.tsx";
-import ConnectModal from "components/ConnectModal.tsx";
+import { JobCodes } from "components/loading-page/JobCodes";
+import LogList from "components/loading-page/LogList";
+import LoadingPageButtons from "./LoadingPageButtons";
+import InfoBar from "components/loading-page/InfoBar";
+import ConnectModal from "components/ConnectModal";
 /**
  * react component used to create a loading page
  *
@@ -214,9 +214,7 @@ export default class LoadingPage extends React.Component<LoadingPageProps, Loadi
             />
             <div className="btn-group col-8" role="group">
               <LoadingPageButtons
-                hostname={this.props.hostname}
                 modalId={this.state.modalId}
-                connectModalCallBack={this.connectModalCallBack}
                 jobStatus={this.state.jobStatus}
                 cancelJob={this.cancelJob}
                 pullHPCData={this.pullHPCData}

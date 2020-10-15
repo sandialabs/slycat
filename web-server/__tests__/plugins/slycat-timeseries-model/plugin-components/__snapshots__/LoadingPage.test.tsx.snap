@@ -48,8 +48,6 @@ exports[`Timeseries LoadingPage we have expected props on initial load 2`] = `
       >
         <LoadingPageButtons
           cancelJob={[Function]}
-          connectModalCallBack={[Function]}
-          hostname="hostname"
           jobStatus="Job Status Unknown"
           modalId="ConnectModal"
           modelShow={false}
