@@ -23,6 +23,7 @@ function handleModifiedCamera(sourceCamera, allCameras) {
         targetCamera.camera.setPosition(...sourceCamera.getPosition());
         targetCamera.camera.setFocalPoint(...sourceCamera.getFocalPoint());
         targetCamera.camera.setViewUp(...sourceCamera.getViewUp());
+        targetCamera.camera.setClippingRange(...sourceCamera.getClippingRange());
         targetCamera.interactor.render();
       }
     }
@@ -50,6 +51,7 @@ export function addCamera(camera, container, interactor, uid) {
     camera.setPosition(...cameras[0].camera.getPosition());
     camera.setFocalPoint(...cameras[0].camera.getFocalPoint());
     camera.setViewUp(...cameras[0].camera.getViewUp());
+    camera.setClippingRange(...cameras[0].camera.getClippingRange());
     interactor.render();
     // console.log('Hurray, we set up this camera like the first one of the existing ones!!!');
   }

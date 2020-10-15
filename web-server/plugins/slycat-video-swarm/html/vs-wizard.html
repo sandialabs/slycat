@@ -25,8 +25,9 @@ S. Martin
         <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: vs_type() == 'remote'"><a class="nav-link">Choose Host</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: vs_type() == 'remote'"><a class="nav-link">Upload Table</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: vs_type() == 'remote'"><a class="nav-link">Choose Columns</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 6}, visible: vs_type() == 'remote'"><a class="nav-link">HPC Info</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 7}"><a class="nav-link">Name Model</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 6}, visible: vs_type() == 'remote' && movies_exist()"><a class="nav-link">Movie Verification</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 7}, visible: vs_type() == 'remote'"><a class="nav-link">HPC Info</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 8}"><a class="nav-link">Name Model</a></li>
     </ul>
 
   <div class="tab-content">
@@ -187,8 +188,28 @@ S. Martin
 
     </div>
 
+    <div data-bind="visible: tab() == 6">
+      <div className="alert alert-warning" role="alert" style="BACKGROUND-COLOR: #FFFF99">
+        <h4 className='alert-heading'>Movies Detected</h4>
+        <p className='alert-heading'>We have detected existing movies in your movie directory. These movies have the same name as the frames present in your CSV.</p>
+        <p className='mt-3'>Would you like to replace these existing movies?</p>
+      </div>
+      <div class="form-check" style="margin-left: 15px;">
+        <label id="local-radio-label" class="form-check-label" for="local-radio">
+        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="local-radio" value="true" data-bind="checked: replace_movies">
+          Yes
+        </label>
+      </div>
+      <div class="form-check disabled" style="margin-left: 15px;">
+        <label id="share-radio-label" class="form-check-label" for="share-radio">
+        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="share-radio" value="false" data-bind="checked: replace_movies">
+          No
+        </label>
+      </div>
+    </div>
+
     <!-- gather HPC information, if needed -->
-    <div class="bootstrap-styles" data-bind="visible:tab() == 6" style="padding: 1%;">
+    <div class="bootstrap-styles" data-bind="visible:tab() == 7" style="padding: 1%;">
       <form class="form-horizontal">
         <div id = "form-group-HPC" class="form-group">
           <div>
@@ -261,7 +282,7 @@ S. Martin
     </div>
 
     <!-- Name model and launch remote or server job -->
-    <div data-bind="visible:tab() == 7">
+    <div data-bind="visible:tab() == 8">
       <form class="form-horizontal" role="form" onsubmit="return false">
         <slycat-model-controls params="name:model.name,description:model.description,marking:model.marking"></slycat-model-controls>
       </form>
@@ -284,6 +305,7 @@ S. Martin
   <button class="btn btn-primary remote-browser-continue" data-bind="visible:tab() == 3,click:connect,enable:remote.enable"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 4,click:upload_remote_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 5,click:upload_vs_frames_links">Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 6, click:check_hpc_job">Continue</button>
-  <button class="btn btn-primary vs-finish-button" data-bind="visible:tab() == 7,click:name_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 6,click:check_replacement_selection">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 7, click:check_hpc_job">Continue</button>
+  <button class="btn btn-primary vs-finish-button" data-bind="visible:tab() == 8,click:name_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
 </div>

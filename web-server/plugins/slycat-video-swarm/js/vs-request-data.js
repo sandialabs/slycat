@@ -28,14 +28,14 @@ import URI from "urijs";
     },
 
     // get table data artifact stored in the model
-    get_table: function (tableid)
+    get_table: function (tableid, modelid=self.model._id)
     {
         var self = this;
-    	return $.when ($.ajax(api_root + "models/" + self.model._id + "/tables/" +
+    	return $.when ($.ajax(api_root + "models/" + modelid + "/tables/" +
     					 tableid + "/arrays/0/metadata")).then(
     		function (metadata)
     		{
-          		return $.ajax(api_root + "models/" + self.model._id + "/tables/" + tableid +
+          		return $.ajax(api_root + "models/" + modelid + "/tables/" + tableid +
           			"/arrays/0/chunk?rows=0-" + metadata["row-count"] +
           			"&columns=0-" + metadata["column-count"]);
           	}

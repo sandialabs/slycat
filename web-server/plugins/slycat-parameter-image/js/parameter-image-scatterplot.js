@@ -2657,7 +2657,6 @@ $.widget("parameter_image.scatterplot",
                 .filter(function(_,x){ 
                   return URI($(x).attr("data-uri")).hostname() == uri.hostname(); 
                 });
-              debugger;
               related_frames.find(".loading-image").remove();
 
               var reload_button = d3

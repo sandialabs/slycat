@@ -209,7 +209,7 @@ function model_loaded() {
   // ----------------------------------
   $.when(
     request.get_table_metadata("movies.meta"),
-    request.get_table("movies.meta"),
+    request.get_table("movies.meta", model._id),
     request.get_array("movies.links", 0),
     request.get_array("movies.xcoords", 0),
     request.get_array("movies.ycoords", 0),

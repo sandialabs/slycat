@@ -19,6 +19,7 @@ import fileUploader from "js/slycat-file-uploader-factory";
 import URI from "urijs";
 import vsWizardUI from "../html/vs-wizard.html";
 import { remoteControlsReauth } from "js/slycat-remote-controls";
+import request from "./vs-request-data.js";
 
 function constructor(params) {
   // functions accessible outside this define are returned via component
@@ -48,65 +49,66 @@ function constructor(params) {
     path: null,
     selection: [],
     progress: ko.observable(null),
-  });
+});
 
-  // prevent user from uploading files twice
-  var vs_files_uploaded = false;
-  var remote_table_uploaded = false;
+// existing movies present in moviedir
+var existing_movies = [];
+component.movies_exist = ko.observable();
+component.replace_movies = ko.observable();
 
-  // data for media columns link selector
-  component.vs_media_columns = ko.observableArray([]);
-  var media_columns_inds = [];
-  var vs_table_num_rows = null;
+// prevent user from uploading files twice
+var vs_files_uploaded = false;
+var remote_table_uploaded = false;
 
-  // working directory
-  localStorage["VS_WORKDIR"]
-    ? (component.workdir = ko.observable(localStorage["VS_WORKDIR"]))
-    : (component.workdir = ko.observable(""));
-  component.delete_workdir = ko.observable(false);
+// data for media columns link selector
+component.vs_media_columns = ko.observableArray([]);
+var media_columns_inds = [];
+var vs_table_num_rows = null;
 
-  // movie write directory
-  localStorage["VS_MOVIEDIR"]
-    ? (component.moviedir = ko.observable(localStorage["VS_MOVIEDIR"]))
-    : (component.moviedir = ko.observable(""));
+// working directory
+localStorage["VS_WORKDIR"] ? component.workdir = ko.observable(localStorage["VS_WORKDIR"]) : component.workdir = ko.observable('');
+component.delete_workdir = ko.observable(false);
 
-  // video frame rate (defaults to 25)
-  component.frame_rate = ko.observable(25);
+// movie write directory
+localStorage["VS_MOVIEDIR"] ? component.moviedir = ko.observable(localStorage["VS_MOVIEDIR"]) : component.moviedir = ko.observable('');
 
-  // HPC job information
-  component.wckey = ko.observable("");
-  component.partition = ko.observable("");
-  component.nnodes = ko.observable("1");
-  component.ntasks_per_node = ko.observable("1");
-  component.time_hours = ko.observable("01");
-  component.time_minutes = ko.observable("00");
+// video frame rate (defaults to 25)
+component.frame_rate = ko.observable(25);
 
-  // HPC UI status
-  component.HPC_Job = ko.observable(false);
+// HPC job information
+component.wckey = ko.observable('');
+component.partition = ko.observable('');
+component.nnodes = ko.observable('1');
+component.ntasks_per_node = ko.observable('1');
+component.time_hours = ko.observable('01');
+component.time_minutes = ko.observable('00');
 
-  // if we need to launch a remote job, we need column for the frames
-  // note these are 0-based, but the script is 1-based
-  var launch_remote_job = false;
-  var frame_column = null;
-  var link_column = null;
+// HPC UI status
+component.HPC_Job = ko.observable(false);
 
-  // access to remote clusters
-  component.remote = mapping.fromJS({
-    hostname: null,
-    username: null,
-    password: null,
-    status: null,
-    status_type: null,
-    enable: true,
-    focus: false,
-    sid: null,
-    session_exists: false,
-    progress: ko.observable(null),
-  });
+// if we need to launch a remote job, we need column for the frames
+// note these are 0-based, but the script is 1-based
+var launch_remote_job = false;
+var frame_column = null;
+var link_column = null;
 
-  // Navigate to login controls and set alert message to
-  // inform user their session has been disconnected.
-  component.reauth = function () {
+// access to remote clusters
+component.remote = mapping.fromJS({
+  hostname: null,
+  username: null,
+  password: null,
+  status: null,
+  status_type: null,
+  enable: true,
+  focus: false,
+  sid: null,
+  session_exists: false,
+  progress: ko.observable(null),
+});
+
+// Navigate to login controls and set alert message to 
+// inform user their session has been disconnected.
+component.reauth = function() {
     remoteControlsReauth(component.remote.status, component.remote.status_type);
     component.tab(3);
   };
@@ -465,35 +467,41 @@ function constructor(params) {
   // run remote job to process movie files
   var start_remote_job = function () {
     // set up remote launch (note movie and frame column are 1-based)
-    var payload = {
-      command: {
-        scripts: [
-          {
-            name: "parse_frames",
-            parameters: [
-              { name: "--csv_file", value: component.table_browser.selection()[0] },
-              { name: "--frame_col", value: frame_column + 1 },
-              { name: "--movie_dir", value: component.moviedir() },
-              { name: "--output_dir", value: component.workdir() },
-              { name: "--fps", value: component.frame_rate() },
-            ],
-          },
-        ],
-        hpc: {
-          is_hpc_job: component.HPC_Job(),
-          parameters: {
-            wckey: component.wckey(),
-            partition: component.partition(),
-            nnodes: component.nnodes(),
-            ntasks_per_node: component.ntasks_per_node(),
-            time_hours: component.time_hours(),
-            time_minutes: component.time_minutes(),
-            time_seconds: "0",
-            working_dir: component.workdir(),
-          },
-        },
-      },
-    };
+    var payload = {"command":
+        {"scripts":[{"name":"parse_frames","parameters":[
+        {"name":"--csv_file","value": component.table_browser.selection()[0]},
+        {"name":"--frame_col","value": frame_column + 1},
+        {"name":"--movie_dir","value": component.moviedir()},
+        {"name":"--replace_movies","value": component.replace_movies()},
+        {"name":"--output_dir","value": component.workdir()},
+        {"name":"--fps","value": component.frame_rate()}]}],
+        "hpc":{"is_hpc_job": component.HPC_Job(),
+            "parameters":{"wckey": component.wckey(),
+                           "partition": component.partition(),
+                           "nnodes": component.nnodes(),
+                           "ntasks_per_node": component.ntasks_per_node(),
+                           "time_hours": component.time_hours(),
+                           "time_minutes": component.time_minutes(),
+                           "time_seconds": '0',
+                           "working_dir": component.workdir()}}}};
+
+        // launch job
+        $.ajax({
+            contentType: "application/json",
+            type: "POST",
+            url: URI(api_root + "remotes/" +
+                     component.remote.hostname() + "/post-remote-command"),
+            success: function(result)
+            {
+
+                // put job ID into loading progress variable
+                client.put_model_parameter({
+                    mid: component.model._id(),
+                    aid: "vs-loading-parms",
+                    value: ["Remote", result["log_file_path"],
+                            component.remote.hostname(),
+                            component.workdir()],
+                    success: function () {
 
     // launch job
     $.ajax({
@@ -544,14 +552,60 @@ function constructor(params) {
             $(".vs-finish-button").toggleClass("disabled", false);
           },
         });
-      },
-      error: function () {
-        dialog.ajax_error("Error launching remote job.")("", "", "");
-        $(".vs-finish-button").toggleClass("disabled", false);
-      },
-      data: JSON.stringify(payload),
+};
+
+component.check_existing_movies = function () {
+    // Browse the moviedir and get a list of all files in it
+    client.post_remote_browse({
+        hostname : component.remote.hostname(),
+        path : component.moviedir(),
+        success : function(results)
+        {
+            var link_selected = $("#vs-remote-frames-selector").val();
+            var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
+            var link_column = media_columns_inds[link_selected_ind];
+
+            // Get the CSV to check for existing movies that match the upcoming frame names
+            $.when(
+                request.get_table("movies.meta", component.model._id()),
+            )
+            .then(
+            function(table_data) {
+                var path_string = table_data["data"][link_column][0];
+                var split_string = path_string.split('/');
+                var last_index = split_string.length - 1;
+                var frame_name_template = split_string[last_index];
+                frame_name_template = frame_name_template.split('.')[0];
+                var movie_dir_files = results["names"];
+                movie_dir_files.forEach(function(movie) {
+                    var split_movie_file = movie.split('.');
+                    var file_extension = split_movie_file[split_movie_file.length - 1];
+                    var movie_name_template = split_movie_file[0];
+
+                    if(movie_name_template == frame_name_template && file_extension == 'mp4') {
+                        component.movies_exist(true);
+                        existing_movies.push(movie);
+                    }
+                });
+                if (component.movies_exist()) {
+                    component.tab(6);
+                }
+                else {
+                    component.tab(7);
+                }
+            });
+        }
     });
-  };
+}
+
+component.check_replacement_selection = function () {
+    if (component.replace_movies() != null) {
+        component.tab(7);
+    }
+}
+
+// upload movie plex links (from csv table)
+component.upload_vs_links = function () {
 
   // upload movie plex links (from csv table)
   component.upload_vs_links = function () {
@@ -625,8 +679,9 @@ function constructor(params) {
       var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
       link_column = media_columns_inds[link_selected_ind];
 
-      launch_remote_job = true;
-      component.tab(6);
+        launch_remote_job = true;
+        
+        component.check_existing_movies();
     }
   };
 
@@ -712,13 +767,9 @@ function constructor(params) {
         $("#VS-ncores").removeClass("is-invalid");
       }
 
-      // check limits on job time (hours)
-      if (component.time_hours() < 0) {
-        $("#VS-nhours").addClass("is-invalid");
-        HPC_errors = true;
-      } else {
-        $("#VS-nhours").removeClass("is-invalid");
-      }
+            // got everything needed, next name model
+            component.tab(8);
+        }
 
       // check limits on job time (minutes)
       if (
@@ -732,13 +783,9 @@ function constructor(params) {
         $("#VS-nminutes").removeClass("is-invalid");
       }
 
-      if (HPC_errors == false) {
-        // got everything needed, next name model
-        component.tab(7);
-      }
-    } else {
-      // not an HPC job -- go name model
-      component.tab(7);
+        // not an HPC job -- go name model
+        component.tab(8);
+
     }
   };
 

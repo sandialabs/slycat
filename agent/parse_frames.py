@@ -217,17 +217,22 @@ for i in range(0, num_rows):
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
     split_path = frame_files[i].split(frame_file_path)
+    # Get the frame name, including number and file extension
+    frame_name = split_path[1].split('/')[1]
+    # Get the identifier name only
+    identifier = frame_name.split('.')[0]
+
     file_location = split_path[0]
     # check 
     if args.movie_dir[-1] == '/':
-        movie_output = args.movie_dir + 'movie_%d.mp4' % (i+1)
+        movie_output = args.movie_dir + identifier + '.%d.mp4' % (i+1)
     else:
-        movie_output = args.movie_dir + '/movie_%d.mp4' % (i+1)
+        movie_output = args.movie_dir + '/' + identifier + '.%d.mp4' % (i+1)
 
     all_movies.append(file_location + movie_output)
-    movie_input = frame_file_path + '/*.jpg'
+    movie_input = frame_file_path + + '/' + identifier + '*.jpg'
 
-    if not movies_exist:
+    if replace_movies:
         #create the movie
         ff = ffmpy.FFmpeg(
             inputs={None: ['-pattern_type', 'glob'],

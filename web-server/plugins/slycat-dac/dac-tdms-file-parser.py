@@ -633,7 +633,7 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
         except Exception as e:
 
             dac_error.quit_raise_exception(database, model, parse_error_log,
-                                           "Couldn't read .tdms file.")
+                                           "Couldn't read TDMS file.")
 
     # start actual parsing as a thread
     stop_event = threading.Event()
@@ -846,10 +846,10 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
         # get file name and extension
         head, tail = os.path.split(zip_file)
-        ext = tail.split(".")[-1]
+        ext = tail.split(".")[-1].lower()
 
         # is it a tdms file?
-        if ext == 'tdms':
+        if ext == 'tdms' or ext =='tdm':
 
             # get suffix
             suffix = tail.split("_")[-1].split(".")[0]
@@ -883,5 +883,5 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
 
 def register_slycat_plugin(context):
-    context.register_parser("dac-tdms-file-parser", ".tdms file(s)", ["dac-tdms-files"], parse_tdms)
+    context.register_parser("dac-tdms-file-parser", ".tdms or .TDM file(s)", ["dac-tdms-files"], parse_tdms)
     context.register_parser("dac-tdms-zip-file-parser", "TDMS .zip file", ["dac-tdms-files"], parse_tdms_zip)
