@@ -53,13 +53,14 @@ class ArgumentParser(argparse.ArgumentParser):
   def __init__(self, *arguments, **keywords):
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_argument("--host", default="https://localhost:9000", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--host", default="https://localhost", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
     self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
     self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
     self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
     self.add_argument("--password", default=None)
+    self.add_argument("--port", default=None)
     self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
     self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
@@ -99,7 +100,7 @@ class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
-  def __init__(self, host="https://localhost:9000", **keywords):
+  def __init__(self, host="https://localhost", port=None, **keywords):
     proxies = keywords.get("proxies", {"http": "", "https": ""})
     verify = True
     if keywords.get("verify") == "False":
@@ -132,6 +133,8 @@ class Connection(object):
     self.keywords = keywords
     self.session = requests.Session()
     self.session.post(url, json=data, proxies=proxies, verify=verify)
+    if port:
+      self.host = host + ':' + port
     print(self.session.cookies)
     if len(list(self.session.cookies.keys())) == 0:
       raise NameError('bad username or password:%s, for username:%s' % (keywords.get("auth", ("", ""))[1], keywords.get("auth", ("", ""))[0]))
@@ -891,5 +894,5 @@ def connect(arguments, **keywords):
     keywords["verify"] = False
   elif arguments.verify is not None:
     keywords["verify"] = arguments.verify
-  return Connection(auth=(arguments.user, arguments.password if arguments.password is not None else getpass.getpass("%s password: " % arguments.user)), host=arguments.host, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
+  return Connection(auth=(arguments.user, arguments.password if arguments.password is not None else getpass.getpass("%s password: " % arguments.user)), host=arguments.host, port=arguments.port, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 
