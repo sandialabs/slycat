@@ -122,7 +122,7 @@ class Connection(object):
     print(user_name_str)
     print(password_str)
 
-    data = {"user_name":user_name_sr, "password":password_str}
+    data = {"user_name":user_name_str, "password":password_str}
     # log.info("$$$$$$$$$$$$$ Requests Version ::::: " + requests.__version__)
     url = host + "/login"
     # print("url: %s" % url)
