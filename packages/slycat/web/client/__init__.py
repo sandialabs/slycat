@@ -23,6 +23,7 @@ try:
 except:
   import io
 
+import cherrypy
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -52,7 +53,7 @@ class ArgumentParser(argparse.ArgumentParser):
   def __init__(self, *arguments, **keywords):
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    self.add_argument("--host", default="https://localhost", help="Root URL of the Slycat server.  Default: %(default)s")
+    self.add_argument("--host", default="https://localhost:9000", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
     self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
@@ -98,22 +99,41 @@ class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
-  def __init__(self, host="http://localhost:8092", **keywords):
+  def __init__(self, host="https://localhost:9000", **keywords):
     proxies = keywords.get("proxies", {"http": "", "https": ""})
     verify = True
     if keywords.get("verify") == "False":
       verify = False
     elif not keywords.get("verify"):
       verify = False
-    data = {"user_name":base64.encodestring(keywords.get("auth", ("", ""))[0]), "password":base64.encodestring(keywords.get("auth", ("", ""))[1])}
+
+    # get user name and passowrd
+    user_name = keywords.get("auth", ("",""))[0]
+    password = keywords.get("auth", ("",""))[1]
+
+    # encode as base 64
+    user_name_b64 = base64.b64encode(user_name.encode("ascii"))
+    password_b64 = base64.b64encode(password.encode("ascii"))
+
+    # change back to ascii for JSON
+    user_name_str = user_name_b64.decode('ascii')
+    password_str = password_b64.decode('ascii')
+
+    print(user_name_str)
+    print(password_str)
+
+    data = {"user_name":user_name_sr, "password":password_str}
     # log.info("$$$$$$$$$$$$$ Requests Version ::::: " + requests.__version__)
     url = host + "/login"
     # print("url: %s" % url)
     self.host = host
+    print(self.host)
+    print(url)
     self.keywords = keywords
     self.session = requests.Session()
     self.session.post(url, json=data, proxies=proxies, verify=verify)
-    if len(list(self.session.cookies.keys())) is 0 or None:
+    print(self.session.cookies)
+    if len(list(self.session.cookies.keys())) == 0:
       raise NameError('bad username or password:%s, for username:%s' % (keywords.get("auth", ("", ""))[1], keywords.get("auth", ("", ""))[0]))
 
   def request(self, method, path, **keywords):
