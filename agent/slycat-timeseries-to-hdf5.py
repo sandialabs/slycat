@@ -258,7 +258,7 @@ def convert_timeseries(timeseries_index, eval_id, row):
     :param row: row data
     """
     for i, val in enumerate(row):
-        if column_types[i] is "string":
+        if column_types[i] == "string":
             val = val.strip()
             file_ext = val[len(val) - 3:]
             if file_ext == "csv" or file_ext == "dat" or file_ext == "txt" or file_ext == "prn":  # TODO add or file_ext == "prn"
