@@ -2751,7 +2751,7 @@ def get_time_series_names(hostname, path, **kwargs):
     file_extensions = {".csv", ".dat", ".prn", "csv", "dat", "prn"}
     response_time_series_names = []
     for i, val in enumerate(rows[0]):
-        if column_types[i] is "string":
+        if column_types[i] == "string":
             file_ext = val[-3:]
             if file_ext in file_extensions:
                 response_time_series_names.append(column_names[i])
