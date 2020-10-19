@@ -90,8 +90,9 @@ for i in range(total_columns):
   connection.put_model_arrayset_data(mid, "data-table", "0/%s/..." % i, [data.T[i]])
 
 # Store the remaining parameters.
-connection.put_model_parameter(mid, "input-columns", range(0, arguments.input_count))
-connection.put_model_parameter(mid, "output-columns", range(arguments.input_count, arguments.input_count + arguments.output_count))
+connection.put_model_parameter(mid, "input-columns", list(range(0, arguments.input_count)))
+connection.put_model_parameter(mid, "output-columns", 
+  list(range(arguments.input_count, arguments.input_count + arguments.output_count)))
 connection.put_model_parameter(mid, "scale-inputs", False)
 
 # Signal that we're done uploading data to the model.  This lets Slycat Web

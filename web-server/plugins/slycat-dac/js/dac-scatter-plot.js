@@ -1333,7 +1333,7 @@ function subset ()
 	var selection = get_brush_sel(extent);
 
 	// save current center for scaling
-	var subset_extent = transpose([x_scale.domain(), y_scale.domain()]);
+	var subset_extent = d3.transpose([x_scale.domain(), y_scale.domain()]);
 
 	// compute subset center
 	subset_center = [(subset_extent[0][0] + subset_extent[1][0])/2.0,
@@ -1440,14 +1440,6 @@ function get_brush_sel(extent)
 	};
 
 	return selection
-}
-// transpose a 2d array (sometimes d3.transpose produces an error)
-function transpose(a)
-{
-  return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
-
-  // or in more modern dialect
-  // return a[0].map((_, c) => a.map(r => r[c]));
 }
 
 // reset zoom, accessible to ui controller

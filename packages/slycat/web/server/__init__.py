@@ -346,7 +346,7 @@ def put_model_arrayset_data(database, model, aid, hyperchunks, data):
     Unique (to the model) arrayset artifact id.
   hyperchunks: string or hyperchunks parse tree, required
     Specifies where the data will be stored, in :ref:`Hyperchunks` format.
-  data: iterable, required)
+  data: iterable, required
     A collection of numpy.ndarray data chunks to be stored.  The number of
     data chunks must match the number implied by the `hyperchunks` parameter.
 

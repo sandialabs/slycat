@@ -36,6 +36,7 @@ import uuid
 import functools
 import datetime
 from urllib.parse import urlparse, urlencode, parse_qs
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, numpy.integer):

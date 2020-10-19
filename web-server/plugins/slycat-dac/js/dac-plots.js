@@ -1034,7 +1034,7 @@ function update_data_d3(i)
 
 				// draw focus curve
 				plot[i].selectAll(".focus")
-					   .data([transpose([plots_selected_time[i],
+					   .data([d3.transpose([plots_selected_time[i],
 										plots_selected_data[i][focus_curve_ind()]])])
 					   .attr("class", "focus")
 					   .enter()
@@ -1130,7 +1130,7 @@ function generate_curve_data (i)
 
 	    // make array of data for current selection
 	    for (var j = 0; j < Math.min(curr_sel.length, max_num_plots); j++) {
-		    curve_data.push(transpose([plots_selected_time[i],
+		    curve_data.push(d3.transpose([plots_selected_time[i],
 				  plots_selected_data[i][j + curr_sel_ind],
 				  curr_sel_color]));
 	    };
@@ -1140,15 +1140,6 @@ function generate_curve_data (i)
     }
 
 	return curve_data;
-}
-
-// transpose a 2d array (sometimes d3.transpose produces an error)
-function transpose(a)
-{
-  return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
-
-  // or in more modern dialect
-  // return a[0].map((_, c) => a.map(r => r[c]));
 }
 
 // draw a plot with specific axis, labels, etc.

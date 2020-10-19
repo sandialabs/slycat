@@ -17,11 +17,12 @@ import slycat.darray
 
 import sys
 import time
+
+# encode/decode functions for string data
 import base64
-try:
-  import io as StringIO
-except:
-  import io
+
+# stream utilities
+import io
 
 import cherrypy
 
@@ -49,10 +50,14 @@ def _require_array_ranges(ranges):
     raise Exception("Not a valid ranges object.")
 
 class ArgumentParser(argparse.ArgumentParser):
-  """Return an instance of argparse.ArgumentParser, pre-configured with arguments to connect to a Slycat server."""
+  """Return an instance of argparse.ArgumentParser, pre-configured with arguments to
+  connect to a Slycat server."""
+
   def __init__(self, *arguments, **keywords):
+
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
+    # Slycat arguments
     self.add_argument("--host", default="https://localhost", help="Root URL of the Slycat server.  Default: %(default)s")
     self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
     self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
@@ -60,16 +65,19 @@ class ArgumentParser(argparse.ArgumentParser):
     self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
     self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
     self.add_argument("--password", default=None)
-    self.add_argument("--port", default=None)
+    self.add_argument("--port", default=None, help="Port of the Slycat server.")
     self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
     self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
 
   def parse_args(self):
+
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
 
+    # parse arguments
     arguments = argparse.ArgumentParser.parse_args(self)
 
+    # list available Slycat markings and quit
     if arguments.list_markings:
       connection = connect(arguments)
       markings = connection.get_configuration_markings()
@@ -83,6 +91,7 @@ class ArgumentParser(argparse.ArgumentParser):
       print()
       self.exit()
 
+    # log level
     if arguments.log_level == "debug":
       log.setLevel(logging.DEBUG)
     elif arguments.log_level == "info":
@@ -100,8 +109,13 @@ class Connection(object):
   """Encapsulates a set of requests to the given host.  Additional keyword
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
+
   def __init__(self, host="https://localhost", port=None, **keywords):
+
+    # proxies default to ""
     proxies = keywords.get("proxies", {"http": "", "https": ""})
+
+    # certificate verification is disabled unless specifically requested
     verify = True
     if keywords.get("verify") == "False":
       verify = False
@@ -120,24 +134,26 @@ class Connection(object):
     user_name_str = user_name_b64.decode('ascii')
     password_str = password_b64.decode('ascii')
 
-    print(user_name_str)
-    print(password_str)
-
+    # authentication information
     data = {"user_name":user_name_str, "password":password_str}
-    # log.info("$$$$$$$$$$$$$ Requests Version ::::: " + requests.__version__)
+
+    # login url
     url = host + "/login"
-    # print("url: %s" % url)
+
+    # host and port
     self.host = host
-    print(self.host)
-    print(url)
+    if port:
+      self.host = host + ':' + port
+
+    # get session
     self.keywords = keywords
     self.session = requests.Session()
     self.session.post(url, json=data, proxies=proxies, verify=verify)
-    if port:
-      self.host = host + ':' + port
-    print(self.session.cookies)
+
+    # session error, assume bad password
     if len(list(self.session.cookies.keys())) == 0:
-      raise NameError('bad username or password:%s, for username:%s' % (keywords.get("auth", ("", ""))[1], keywords.get("auth", ("", ""))[0]))
+      raise NameError('bad username or password:%s, for username:%s' % 
+        (keywords.get("auth", ("", ""))[1], keywords.get("auth", ("", ""))[0]))
 
   def request(self, method, path, **keywords):
     """Makes a request with the given HTTP method and path, returning the body of
@@ -146,10 +162,10 @@ class Connection(object):
 
     # Combine per-request and per-connection keyword arguments ...
     keywords.update(self.keywords)
-
+    
     # Combine host and path to produce the final request URI ...
     uri = self.host + path
-
+    
     log_message = "{} {} {}".format(keywords.get("auth", ("", ""))[0], method, uri)
 
     try:
@@ -694,23 +710,28 @@ class Connection(object):
     --------
     `/api/models/(mid)/arraysets/(aid)/data`
     """
+
     # Sanity check arguments
     if not isinstance(mid, str):
-      cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Model id must be a string")
+      cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", 
+        "Model id must be a string")
       raise ValueError("Model id must be a string.")
     if not isinstance(aid, str):
-      cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Artifact id must be a string")
+      cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", 
+        "Artifact id must be a string")
       raise ValueError("Artifact id must be a string.")
     if not isinstance(hyperchunks, str):
-      cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Hyperchunks specification must be a string.")
+      cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", 
+        "Hyperchunks specification must be a string.")
       raise ValueError("Hyperchunks specification must be a string.")
     for chunk in data:
       if not isinstance(chunk, numpy.ndarray):
-        cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", "Data chunk must be a numpy array.")
+        cherrypy.log.error("slycat.web.client.__init__.py put_model_arrayset_data", 
+          "Data chunk must be a numpy array.")
         raise ValueError("Data chunk must be a numpy array.")
 
     # Mark whether every data chunk is numeric ... if so, we can send the data in binary form.
-    use_binary = numpy.all([chunk.dtype.char != "S" for chunk in data]) and not force_json
+    use_binary = numpy.all([chunk.dtype.char != "U" for chunk in data]) and not force_json
 
     # Build-up the request
     request_data = {}
@@ -718,15 +739,21 @@ class Connection(object):
     if use_binary:
       request_data["byteorder"] = sys.byteorder
 
-    request_buffer = io.StringIO()
     if use_binary:
+
+      # binary data
+      request_buffer = io.BytesIO()
       for chunk in data:
         request_buffer.write(chunk.tostring(order="C"))
     else:
+
+      # string data
+      request_buffer = io.StringIO()
       request_buffer.write(json.dumps([chunk.tolist() for chunk in data]))
 
     # Send the request to the server ...
-    self.request("PUT", "/api/models/%s/arraysets/%s/data" % (mid, aid), data=request_data, files={"data":request_buffer.getvalue()})
+    self.request("PUT", "/api/models/%s/arraysets/%s/data" % (mid, aid), 
+      data=request_data, files={"data":request_buffer.getvalue()})
 
   def put_model_arrayset_array(self, mid, aid, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""

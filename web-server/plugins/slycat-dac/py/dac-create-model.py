@@ -50,10 +50,10 @@ num_time_series = len(meta_rows)
 meta_columns = list(zip(*meta_rows))
 for index in range(len(meta_columns)):
   try:
-    meta_columns[index] = numpy.array(meta_columns[index], dtype="float64")
+    meta_columns[index] = numpy.array(meta_columns[index], dtype=numpy.double)
     meta_column_types[index] = "float64"
   except:
-    meta_columns[index] = numpy.array(meta_columns[index], dtype="string")
+    meta_columns[index] = numpy.array(meta_columns[index], dtype=numpy.str_)
 
 # read in variables.meta file
 #############################
@@ -72,7 +72,7 @@ num_vars = len(meta_vars)
 # convert from row-oriented to column-oriented data
 meta_var_cols = list(zip(*meta_vars))
 for index in range(len(meta_var_cols)):
-    meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="string")
+    meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype=numpy.str_)
 
 # check for 4 columns with proper headers
 if len(meta_var_col_names) != 4:

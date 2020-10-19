@@ -14,7 +14,8 @@ in a list of 2d numpy arrays and the alpha values are stored in a 1d numpy
 array."""
 
 import numpy as np
-import scipy
+import scipy.linalg
+import scipy.optimize
 
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D):
