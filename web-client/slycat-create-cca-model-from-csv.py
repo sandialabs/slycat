@@ -32,13 +32,13 @@ column_types = ["string" for name in column_names]
 rows = rows[1:]
 
 # Convert from row-oriented to column-oriented data, and convert to numeric columns where possible.
-columns = zip(*rows)
+columns = list(zip(*rows))
 for index in range(len(columns)):
   try:
-    columns[index] = numpy.array(columns[index], dtype="float64")
+    columns[index] = numpy.array(columns[index], dtype=numpy.float64)
     column_types[index] = "float64"
   except:
-    columns[index] = numpy.array(columns[index], dtype="string")
+    columns[index] = numpy.array(columns[index], dtype=numpy.str_)
 
 # Sanity-check input arguments.
 try:

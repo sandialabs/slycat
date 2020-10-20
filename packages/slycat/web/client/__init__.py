@@ -1,34 +1,40 @@
-# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract
-# DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government
-# retains certain rights in this software.
+# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC. 
+# Under the terms of Contract DE-NA0003525 with National Technology and Engineering 
+# Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
 
+# This module supports interacting with the Slycat server from Python and the command line.
+
+# parse arguments
 import argparse
-import collections
+import os
+import shlex
+
+# authenticate to server
 import getpass
 import json
-import logging
-import numbers
-import numpy
-import os
 import requests
+from requests_gssapi import HTTPSPNEGOAuth
 import requests.exceptions as exceptions
-import shlex
-import slycat.darray
 
-import sys
-import time
-
-# encode/decode functions for string data
-import base64
-
-# stream utilities
-import io
-
-import cherrypy
-
+# turn off warning for insecure connections
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+# encode/decode functions for string data (for http communication)
+import base64
+
+# handle arrays for Slycat requests
+import numpy
+import slycat.darray
+import io
+
+# miscellaneous utilities
+import sys
+import time
+
+# set up logging
+import logging
+import cherrypy
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
@@ -37,6 +43,7 @@ log.propagate = False
 
 def _require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
+
   if ranges is None:
     return None
   elif isinstance(ranges, int):
@@ -57,17 +64,32 @@ class ArgumentParser(argparse.ArgumentParser):
 
     argparse.ArgumentParser.__init__(self, *arguments, **keywords)
 
-    # Slycat arguments
-    self.add_argument("--host", default="https://localhost", help="Root URL of the Slycat server.  Default: %(default)s")
-    self.add_argument("--http-proxy", default="", help="HTTP proxy URL.  Default: %(default)s")
-    self.add_argument("--https-proxy", default="", help="HTTPS proxy URL.  Default: %(default)s")
-    self.add_argument("--list-markings", default=False, action="store_true", help="Display available marking types supported by the server.")
-    self.add_argument("--log-level", default="info", choices=["debug", "info", "warning", "error", "critical"], help="Log level.  Default: %(default)s")
-    self.add_argument("--no-verify", default=False, action="store_true", help="Disable HTTPS host certificate verification.")
-    self.add_argument("--password", default=None)
-    self.add_argument("--port", default=None, help="Port of the Slycat server.")
-    self.add_argument("--user", default=getpass.getuser(), help="Slycat username.  Default: %(default)s")
-    self.add_argument("--verify", default=None, help="Specify a certificate to use for HTTPS host certificate verification.")
+    # arguments for connecting to Slycat server
+
+    self.add_argument("--host", default="https://localhost", 
+      help="Root URL of the Slycat server.  Default: '%(default)s'.")
+    self.add_argument("--port", default=None, 
+      help="Port of the Slycat server.")
+
+    self.add_argument("--http-proxy", default="", 
+      help="HTTP proxy URL.  Default: '%(default)s'.")
+    self.add_argument("--https-proxy", default="", 
+      help="HTTPS proxy URL.  Default: '%(default)s'.")
+    self.add_argument("--verify", default=None, 
+      help="Specify a certificate to use for HTTPS host certificate verification.")
+    self.add_argument("--no-verify", default=False, action="store_true", 
+      help="Disable HTTPS host certificate verification.")
+
+    self.add_argument("--user", default=getpass.getuser(), 
+      help="Slycat username.  Default: '%(default)s'")
+    self.add_argument("--password", default=None, help="User password.")
+
+    self.add_argument("--kerberos", default=False, action="store_true", 
+      help="Use Kerberos authentication.  Default: %(default)s.")
+
+    self.add_argument("--log-level", default="info", 
+      choices=["debug", "info", "warning", "error", "critical"], 
+      help="Log level.  Default: '%(default)s'.")
 
   def parse_args(self):
 
@@ -76,20 +98,6 @@ class ArgumentParser(argparse.ArgumentParser):
 
     # parse arguments
     arguments = argparse.ArgumentParser.parse_args(self)
-
-    # list available Slycat markings and quit
-    if arguments.list_markings:
-      connection = connect(arguments)
-      markings = connection.get_configuration_markings()
-      type_width = numpy.max([len(marking["type"]) for marking in markings])
-      label_width = numpy.max([len(marking["label"]) for marking in markings])
-      print()
-      print("{:>{}} {:<{}}".format("Marking", type_width, "Description", label_width))
-      print("{:>{}} {:<{}}".format("-" * type_width, type_width, "-" * label_width, label_width))
-      for marking in markings:
-        print("{:>{}} {:<{}}".format(marking["type"], type_width, marking["label"], label_width))
-      print()
-      self.exit()
 
     # log level
     if arguments.log_level == "debug":
@@ -102,7 +110,7 @@ class ArgumentParser(argparse.ArgumentParser):
       log.setLevel(logging.ERROR)
     elif arguments.log_level == "critical":
       log.setLevel(logging.CRITICAL)
-
+    
     return arguments
 
 class Connection(object):
@@ -110,8 +118,8 @@ class Connection(object):
   arguments must be compatible with the Python Requests library,
   http://docs.python-requests.org/en/latest"""
 
-  def __init__(self, host="https://localhost", port=None, **keywords):
-
+  def __init__(self, host="https://localhost", port=None, kerberos=False, **keywords):
+    
     # proxies default to ""
     proxies = keywords.get("proxies", {"http": "", "https": ""})
 
@@ -122,38 +130,64 @@ class Connection(object):
     elif not keywords.get("verify"):
       verify = False
 
-    # get user name and passowrd
-    user_name = keywords.get("auth", ("",""))[0]
-    password = keywords.get("auth", ("",""))[1]
-
-    # encode as base 64
-    user_name_b64 = base64.b64encode(user_name.encode("ascii"))
-    password_b64 = base64.b64encode(password.encode("ascii"))
-
-    # change back to ascii for JSON
-    user_name_str = user_name_b64.decode('ascii')
-    password_str = password_b64.decode('ascii')
-
-    # authentication information
-    data = {"user_name":user_name_str, "password":password_str}
-
-    # login url
-    url = host + "/login"
-
     # host and port
     self.host = host
     if port:
       self.host = host + ':' + port
 
-    # get session
+    # using kerberos authentication?
+    self.kerberos = kerberos
+
+    # set up session
     self.keywords = keywords
     self.session = requests.Session()
-    self.session.post(url, json=data, proxies=proxies, verify=verify)
 
-    # session error, assume bad password
-    if len(list(self.session.cookies.keys())) == 0:
-      raise NameError('bad username or password:%s, for username:%s' % 
-        (keywords.get("auth", ("", ""))[1], keywords.get("auth", ("", ""))[0]))
+    # check for Kerberos authentication
+    if self.kerberos:
+
+      # get Kerberos ticket granting ticket
+      self.session.auth = HTTPSPNEGOAuth()
+
+      # check that ticket is valid using list markings
+      url = self.host + "/api/configuration/markings"
+      response = self.session.get(url)
+
+      if response.status_code == 401:
+        cherrypy.log.error(
+          "User %s is not Kerberos authenticated, try running 'kinit'." % 
+          keywords.get("auth", ("",""))[0])
+        sys.exit(1)
+
+    else:
+
+      # get user name and password, if supplied
+      user_name, password = keywords.get("auth", ("",""))
+
+      # if password not supplied, prompt user
+      if not password:
+        password = getpass.getpass("%s password: " % user_name)
+
+      # encode as base 64
+      user_name_b64 = base64.b64encode(user_name.encode("ascii"))
+      password_b64 = base64.b64encode(password.encode("ascii"))
+
+      # change back to ascii for JSON
+      user_name_str = user_name_b64.decode('ascii')
+      password_str = password_b64.decode('ascii')
+
+      # authentication information
+      data = {"user_name":user_name_str, "password":password_str}
+
+      # login url
+      url = host + "/login"
+
+      # connect to server
+      self.session.post(url, json=data, proxies=proxies, verify=verify)
+
+      # session error, assume bad password
+      if len(list(self.session.cookies.keys())) == 0:
+        raise NameError('bad username or password:%s, for username:%s' % 
+          (user_name, password))
 
   def request(self, method, path, **keywords):
     """Makes a request with the given HTTP method and path, returning the body of
@@ -183,13 +217,15 @@ class Connection(object):
 
       log.debug(log_message)
       return body
+
     except:
       log.debug(log_message)
       cherrypy.log.error("slycat.web.client.__init__.py request", "%s" % log_message)
       raise
 
-  ###########################################################################################################3
-  # Low-level functions that map directly to the underlying RESTful API
+  #######################################################################
+  # Low-level functions that map directly to the underlying RESTful API #
+  #######################################################################
 
   def delete_model(self, mid):
     """Delete an existing model.
@@ -203,6 +239,7 @@ class Connection(object):
     --------
     :http:delete:`/api/models/(mid)`
     """
+
     self.request("DELETE", "/api/models/%s" % (mid))
 
   def delete_project(self, pid):
@@ -217,6 +254,7 @@ class Connection(object):
     --------
     :http:delete:`/api/projects/(pid)`
     """
+
     self.request("DELETE", "/api/projects/%s" % (pid))
 
   def delete_project_cache_object(self, pid, key):
@@ -233,6 +271,7 @@ class Connection(object):
     --------
     :http:delete:`/api/projects/(pid)/cache/(key)`
     """
+
     self.request("DELETE", "/api/projects/%s/cache/%s" % (pid, key))
 
   def delete_reference(self, rid):
@@ -247,6 +286,7 @@ class Connection(object):
     --------
     `/api/references/(rid)`
     """
+
     self.request("DELETE", "/references/%s" % (rid))
 
   def delete_remote(self, sid):
@@ -261,6 +301,7 @@ class Connection(object):
     --------
     :http:delete:`/api/remotes/(hostname)`
     """
+
     self.request("DELETE", "/api/remotes/%s" % (sid))
 
   def get_bookmark(self, bid):
@@ -281,6 +322,7 @@ class Connection(object):
     --------
     :http:get:`/api/bookmarks/(bid)`
     """
+
     return self.request("GET", "/bookmarks/%s" % (bid))
 
   def get_configuration_markings(self):
@@ -294,7 +336,9 @@ class Connection(object):
     --------
     `/api/configuration/markings`
     """
-    return self.request("GET", "/configuration/markings", headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/configuration/markings", 
+      headers={"accept":"application/json"})
 
   def get_configuration_parsers(self):
     """Retrieve parser plugin information from the server.
@@ -307,7 +351,9 @@ class Connection(object):
     --------
     `/api/configuration/parsers`
     """
-    return self.request("GET", "/api/configuration/parsers", headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/configuration/parsers", 
+      headers={"accept":"application/json"})
 
   def get_configuration_remote_hosts(self):
     """Retrieve remote host information from the server.
@@ -320,7 +366,9 @@ class Connection(object):
     --------
     `/api/configuration/remote-hosts`
     """
-    return self.request("GET", "/api/configuration/remote-hosts", headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/configuration/remote-hosts", 
+      headers={"accept":"application/json"})
 
   def get_configuration_support_email(self):
     """Retrieve support email information from the server.
@@ -333,7 +381,9 @@ class Connection(object):
     --------
     `/api/configuration/support-email`
     """
-    return self.request("GET", "/api/configuration/support-email", headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/configuration/support-email", 
+      headers={"accept":"application/json"})
 
   def get_configuration_version(self):
     """Retrieve version information from the server.
@@ -346,7 +396,9 @@ class Connection(object):
     --------
     `/api/configuration/version`
     """
-    return self.request("GET", "/api/configuration/version", headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/configuration/version",
+      headers={"accept":"application/json"})
 
   def get_configuration_wizards(self):
     """Retrieve wizard plugin information from the server.
@@ -359,7 +411,9 @@ class Connection(object):
     --------
     `/api/configuration/wizards`
     """
-    return self.request("GET", "/api/configuration/wizards", headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/configuration/wizards", 
+      headers={"accept":"application/json"})
 
   def get_global_resource(self, resource):
     return self.request("GET", "/resources/global/%s" % resource)
@@ -388,7 +442,9 @@ class Connection(object):
     --------
     :http:get:`/api/models/(mid)`
     """
-    return self.request("GET", "/api/models/%s" % mid, headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/models/%s" % mid, 
+      headers={"accept":"application/json"})
 
   def get_model_arrayset_metadata(self, mid, aid, arrays=None, statistics=None, unique=None):
     """Retrieve metadata describing an existing model arrayset artifact.
@@ -416,6 +472,7 @@ class Connection(object):
     --------
     :http:get:`/api/models/(mid)/arraysets/(aid)/metadata`
     """
+
     params = dict()
     if arrays is not None:
       params["arrays"] = arrays
@@ -423,7 +480,8 @@ class Connection(object):
       params["statistics"] = statistics
     if unique is not None:
       params["unique"] = unique
-    return self.request("GET", "/api/models/%s/arraysets/%s/metadata" % (mid, aid), params=params, headers={"accept":"application/json"})
+    return self.request("GET", "/api/models/%s/arraysets/%s/metadata" % 
+      (mid, aid), params=params, headers={"accept":"application/json"})
 
   def get_model_file(self, mid, aid):
     return self.request("GET", "/api/models/%s/files/%s" % (mid, aid))
@@ -450,15 +508,19 @@ class Connection(object):
     --------
     :http:put:`/api/models/(mid)/parameters/(aid)`
     """
-    return self.request("GET", "/api/models/%s/parameters/%s" % (mid, aid), headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/models/%s/parameters/%s" % 
+      (mid, aid), headers={"accept":"application/json"})
 
   def get_project_models(self, pid):
     """Returns every model in a project."""
-    return self.request("GET", "/api/projects/%s/models" % pid, headers={"accept":"application/json"})
+    return self.request("GET", "/api/projects/%s/models" % pid, 
+      headers={"accept":"application/json"})
 
   def get_project_references(self, pid):
     """Returns every reference in a project."""
-    return self.request("GET", "/api/projects/%s/references" % pid, headers={"accept":"application/json"})
+    return self.request("GET", "/api/projects/%s/references" % pid, 
+      headers={"accept":"application/json"})
 
   def get_project(self, pid):
     """Retrieve an existing project.
@@ -476,7 +538,9 @@ class Connection(object):
     --------
     :http:get:`/api/projects/(pid)`
     """
-    return self.request("GET", "/api/projects/%s" % pid, headers={"accept":"application/json"})
+
+    return self.request("GET", "/api/projects/%s" % pid, 
+      headers={"accept":"application/json"})
 
   def get_project_cache_object(self, pid, key):
     """Retrieve an object from a project cache.
@@ -496,6 +560,7 @@ class Connection(object):
     --------
     :http:get:`/api/projects/(pid)/cache/(key)`
     """
+
     return self.request("GET", "/api/projects/%s/cache/%s" % (pid, key))
 
   def get_projects(self):
@@ -509,6 +574,7 @@ class Connection(object):
     --------
     :http:get:`/api/projects`
     """
+
     return self.request("GET", "/api/projects_list", headers={"accept":"application/json"})
 
   def get_remote_file(self, sid, path, cache=None, project=None, key=None):
@@ -535,7 +601,9 @@ class Connection(object):
     --------
     :http:get:`/api/remotes/(hostname)/file(path)`
     """
-    return self.request("GET", "/api/remotes/%s/file%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
+
+    return self.request("GET", "/api/remotes/%s/file%s" % (sid, path), 
+      params={"cache": cache, "project": project, "key": key})
 
   def get_remote_image(self, sid, path, cache=None, project=None, key=None):
     """Retrieve an image using a remote session.
@@ -561,7 +629,9 @@ class Connection(object):
     --------
     :http:get:`/api/remotes/(hostname)/image(path)`
     """
-    return self.request("GET", "/api/remotes/%s/image%s" % (sid, path), params={"cache": cache, "project": project, "key": key})
+
+    return self.request("GET", "/api/remotes/%s/image%s" % (sid, path), 
+      params={"cache": cache, "project": project, "key": key})
 
   def get_user(self, uid=None):
     """Retrieve directory information about an existing user.
@@ -579,13 +649,16 @@ class Connection(object):
     --------
     :http:get:`/api/users/(uid)`
     """
-    return self.request("GET", "/users/%s" % ("-" if uid is None else uid), headers={"accept":"application/json"})
+
+    return self.request("GET", "/users/%s" % ("-" if uid is None else uid), 
+      headers={"accept":"application/json"})
 
   def post_events(self, path, parameters={}):
     self.request("POST", "/events/%s" % path, params=parameters)
 
   def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
-    """Stores a model file artifacts."""
+    """Stores model file artifacts."""
+
     data = parameters
 
     data.update({
@@ -613,6 +686,7 @@ class Connection(object):
     --------
     :http:post:`/api/models/(mid)/finish`
     """
+
     self.request("POST", "/api/models/%s/finish" % (mid))
 
   def post_project_bookmarks(self, pid, bookmark):
@@ -634,11 +708,14 @@ class Connection(object):
     --------
     :http:post:`/api/projects/(pid)/bookmarks`
     """
-    return self.request("POST", "/api/projects/%s/bookmarks" % (pid), headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
+
+    return self.request("POST", "/api/projects/%s/bookmarks" % (pid), 
+      headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
   def post_project_models(self, pid, mtype, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
-    return self.request("POST", "/api/projects/%s/models" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
+    return self.request("POST", "/api/projects/%s/models" % (pid), 
+      headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
 
   def post_project_references(self, pid, name, mtype=None, mid=None, bid=None):
     """Store a project reference.
@@ -665,16 +742,24 @@ class Connection(object):
     --------
     `/api/projects/(pid)/references`
     """
-    return self.request("POST", "/api/projects/%s/references" % (pid), headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
+
+    return self.request("POST", "/api/projects/%s/references" % (pid), 
+      headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
 
   def post_projects(self, name, description=""):
     """Creates a new project, returning the project ID."""
-    return self.request("POST", "/api/projects", headers={"content-type":"application/json"}, data=json.dumps({"name":name, "description":description}))["id"]
+    return self.request("POST", "/api/projects", 
+      headers={"content-type":"application/json"}, 
+      data=json.dumps({"name":name, "description":description}))["id"]
 
   def post_remotes(self, hostname, username, password, agent=None):
-    return self.request("POST", "/api/remotes", headers={"content-type":"application/json"}, data=json.dumps({"hostname":hostname, "username":username, "password":password, "agent": agent}))["sid"]
+    return self.request("POST", "/api/remotes", 
+    headers={"content-type":"application/json"}, 
+    data=json.dumps({"hostname":hostname, "username":username, 
+                     "password":password, "agent": agent}))["sid"]
 
-  def post_remote_browse(self, sid, path, file_reject=None, file_allow=None, directory_allow=None, directory_reject=None):
+  def post_remote_browse(self, sid, path, file_reject=None, file_allow=None, 
+    directory_allow=None, directory_reject=None):
     body = {}
     if file_reject is not None:
       body["file-reject"] = file_reject
@@ -684,10 +769,13 @@ class Connection(object):
       body["directory-reject"] = directory_reject
     if directory_allow is not None:
       body["directory-allow"] = directory_allow
-    return self.request("POST", "/api/remotes/" + sid + "/browse" + path, headers={"content-type":"application/json"}, data=json.dumps(body))
+
+    return self.request("POST", "/api/remotes/" + sid + "/browse" + path, 
+      headers={"content-type":"application/json"}, data=json.dumps(body))
 
   def put_model(self, mid, model):
-    self.request("PUT", "/api/models/%s" % (mid), headers={"content-type":"application/json"}, data=json.dumps(model))
+    self.request("PUT", "/api/models/%s" % (mid), 
+      headers={"content-type":"application/json"}, data=json.dumps(model))
 
   def put_model_arrayset_data(self, mid, aid, hyperchunks, data, force_json=False):
     """Write data to an arrayset artifact on the server.
@@ -757,15 +845,21 @@ class Connection(object):
 
   def put_model_arrayset_array(self, mid, aid, array, dimensions, attributes):
     """Starts a new array set array, ready to receive data."""
+
     stub = slycat.darray.Stub(dimensions, attributes)
-    self.request("PUT", "/api/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), headers={"content-type":"application/json"}, data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
+    self.request("PUT", "/api/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), 
+      headers={"content-type":"application/json"}, 
+      data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
   def put_model_arrayset(self, mid, aid, input=True):
     """Starts a new model array set artifact, ready to receive data."""
-    self.request("PUT", "/api/models/%s/arraysets/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
+
+    self.request("PUT", "/api/models/%s/arraysets/%s" % (mid, aid), 
+      headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_inputs(self, source, target):
-    self.request("PUT", "/api/models/%s/inputs" % (target), headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
+    self.request("PUT", "/api/models/%s/inputs" % (target), 
+      headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
   def put_model_parameter(self, mid, aid, value, input=True):
     """Store a model parameter artifact.
@@ -793,14 +887,18 @@ class Connection(object):
     --------
     :http:put:`/api/models/(mid)/parameters/(aid)`
     """
-    self.request("PUT", "/api/models/%s/parameters/%s" % (mid, aid), headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
+
+    self.request("PUT", "/api/models/%s/parameters/%s" % (mid, aid), 
+      headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
     """Modifies a project."""
-    return self.request("PUT", "/api/projects/%s" % pid, headers={"content-type":"application/json"}, data=json.dumps(project))
+    return self.request("PUT", "/api/projects/%s" % pid, 
+      headers={"content-type":"application/json"}, data=json.dumps(project))
 
-  ###########################################################################################################
-  # Convenience functions that layer additional functionality atop the RESTful API
+  ##################################################################################
+  # Convenience functions that layer additional functionality atop the RESTful API #
+  ##################################################################################
 
   def find_project(self, name):
     """Return a project identified by name.
@@ -823,15 +921,18 @@ class Connection(object):
     --------
     :func:`find_or_create_project`, :func:`get_projects`
     """
+
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
-      cherrypy.log.error("slycat.web.client.__init__.py find_project", "More than one project matched the given name.")
+      cherrypy.log.error("slycat.web.client.__init__.py find_project", 
+        "More than one project matched the given name.")
       raise Exception("More than one project matched the given name.")
     elif len(projects) == 1:
       return projects[0]
     else:
-      cherrypy.log.error("slycat.web.client.__init__.py find_project", "No project matched the given name.")
+      cherrypy.log.error("slycat.web.client.__init__.py find_project", 
+        "No project matched the given name.")
       raise Exception("No project matched the given name.")
 
   def find_or_create_project(self, name, description=""):
@@ -858,11 +959,14 @@ class Connection(object):
     --------
     :func:`post_projects`
     """
+
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
 
     if len(projects) > 1:
-      cherrypy.log.error("slycat.web.client.__init__.py find_or_create_project", "More than one project matched the given name. Try using a different project name instead.")
-      raise Exception("More than one project matched the given name.  Try using a different project name instead.")
+      cherrypy.log.error("slycat.web.client.__init__.py find_or_create_project", 
+        "More than one project matched the given name. Try using a different project name instead.")
+      raise Exception("More than one project matched the given name. " +
+        "Try using a different project name instead.")
     elif len(projects) == 1:
       return projects[0]["_id"]
     else:
@@ -877,6 +981,7 @@ class Connection(object):
     --------
     :func:`put_model`
     """
+
     model = {key: value for key, value in list(kwargs.items()) if value is not None}
     self.put_model(mid, model)
 
@@ -909,6 +1014,7 @@ class Connection(object):
     --------
     :func:`post_model_finish`
     """
+
     while True:
       model = self.request("GET", "/api/models/%s" % (mid), headers={"accept":"application/json"})
       if "state" in model and model["state"] not in ["waiting", "running"]:
@@ -917,9 +1023,13 @@ class Connection(object):
 
 def connect(arguments, **keywords):
   """Factory function for client connections that takes an option parser as input."""
+
+  # check for --no-verify or security certificate
   if arguments.no_verify:
     keywords["verify"] = False
   elif arguments.verify is not None:
     keywords["verify"] = arguments.verify
-  return Connection(auth=(arguments.user, arguments.password if arguments.password is not None else getpass.getpass("%s password: " % arguments.user)), host=arguments.host, port=arguments.port, proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
 
+  return Connection(auth=(arguments.user, arguments.password),
+    host=arguments.host, port=arguments.port, kerberos = arguments.kerberos,
+    proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
