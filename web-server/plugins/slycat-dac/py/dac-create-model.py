@@ -5,10 +5,6 @@
 # Reads in dial-a-cluster data files from a directory.  Modified from
 # slycat-csv-to-cca-model.py.
 #
-# NOTE: This script is no longer compatible witht he single sign on
-# version of slycat, but will still work with a local copy running
-# in docker.  As of 5/26/2019.
-#
 # S. Martin
 # 11/12/2014
 
@@ -26,7 +22,6 @@ parser.add_argument("dir", help="Input data directory containing tab-delimited D
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")
 parser.add_argument("--model-description", default="", help="New model description.  Default: %(default)s")
 parser.add_argument("--model-name", default="Model", help="New model name.  Default: %(default)s")
-parser.add_argument("--no-join", default=False, action="store_true", help="Don't wait for the model to finish.")
 parser.add_argument("--project-description", default="", help="New project description.  Default: %(default)s")
 parser.add_argument("--project-name", default="DAC", help="New project name.  Default: %(default)s")
 arguments = parser.parse_args()
@@ -482,4 +477,7 @@ connection.post_model_finish(mid)
 connection.join_model(mid)
 
 # Supply the user with a direct link to the new model.
-slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
+host = arguments.host
+if arguments.port:
+    host = host + ":" + arguments.port
+slycat.web.client.log.info("Your new model is located at %s/models/%s" % (host, mid))

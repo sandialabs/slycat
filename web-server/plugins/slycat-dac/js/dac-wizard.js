@@ -468,6 +468,9 @@ function constructor(params)
         // convert set to array
         var file_suffix = Array.from(file_suffix_set);
 
+        // sort array
+        file_suffix.sort();
+
         // check if there are any suffixes
         if (file_suffix.length == 0) {
 

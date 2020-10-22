@@ -24,6 +24,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 import base64
 
 # handle arrays for Slycat requests
+import math
 import numpy
 import slycat.darray
 import io
@@ -31,6 +32,9 @@ import io
 # miscellaneous utilities
 import sys
 import time
+
+# maximum number of bytes to upload per slice
+FILE_SLICE_SIZE = 10000000
 
 # set up logging
 import logging
@@ -55,6 +59,31 @@ def _require_array_ranges(ranges):
   else:
     cherrypy.log.error("slycat.web.client.__init__.py", "Not a valid ranges object.")
     raise Exception("Not a valid ranges object.")
+
+# print iterations progress bar -- from stack overflow
+# https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+def print_progress_bar (iteration, total, prefix = '', suffix = '', 
+  decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+
+    # print new line on complete
+    if iteration == total: 
+        print()
 
 class ArgumentParser(argparse.ArgumentParser):
   """Return an instance of argparse.ArgumentParser, pre-configured with arguments to
@@ -715,7 +744,9 @@ class Connection(object):
   def post_project_models(self, pid, mtype, name, marking="", description=""):
     """Creates a new model, returning the model ID."""
     return self.request("POST", "/api/projects/%s/models" % (pid), 
-      headers={"content-type":"application/json"}, data=json.dumps({"model-type":mtype, "name":name, "marking":marking, "description":description}))["id"]
+      headers={"content-type":"application/json"}, 
+      data=json.dumps({"model-type":mtype, "name":name, "marking":marking, 
+        "description":description}))["id"]
 
   def post_project_references(self, pid, name, mtype=None, mid=None, bid=None):
     """Store a project reference.
@@ -796,7 +827,7 @@ class Connection(object):
 
     See Also
     --------
-    `/api/models/(mid)/arraysets/(aid)/data`
+    :http:put:`/api/models/(mid)/arraysets/(aid)/data`
     """
 
     # Sanity check arguments
@@ -961,7 +992,7 @@ class Connection(object):
     """
 
     projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
-
+    
     if len(projects) > 1:
       cherrypy.log.error("slycat.web.client.__init__.py find_or_create_project", 
         "More than one project matched the given name. Try using a different project name instead.")
@@ -1021,8 +1052,200 @@ class Connection(object):
         return
       time.sleep(1.0)
 
+  ##############################################################
+  # Functions that manage file uploading using the RESTful API #
+  ##############################################################
+
+  def post_uploads(self, mid, parser, aids, input=True):
+    """Create Slycat file upload session.
+
+    Create an upload session used to upload files for storage as model artifacts. 
+    Once an upload session has been created, use upload_file put_upload_file_part
+    to upload files directly from the client to the server.
+
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    parser: string,
+      Name of parser to call after completion of upload.
+    aids: array, required
+      Artifact IDs for storage.
+    input: boolean, optional
+      True to create input artifacts for the model.
+
+    Returns
+    -------
+    uid: string
+      Upload session ID.
+
+    See Also
+    --------
+    :http:post:`/api/uploads`
+    """
+
+    return self.request("POST", "/api/uploads", headers={"content-type":"application/json"},
+      data=json.dumps({"mid":mid, "input":input, "parser":parser, "aids":aids}))["id"]
+
+  def put_upload_file_part(self, uid, pid, fid, file_slice):
+    """Upload a file or part of a file to Slycat.
+
+    Upload a file (or part of a file) as part of an upload session created with 
+    post_uploads.
+
+    Use the “pid” and “fid” parameters to specify that the data being uploaded is 
+    for part M of file N. To upload a file from the client, specify the “file” parameter. 
+
+    Parameters
+    ----------
+    uid: string, required
+      Unique file upload session ID.
+    pid: string, required
+      Zero-based part ID of file being uploaded.
+    fid: string, required
+      Zero-based file ID for file being uploaded.
+    file: file part in bytes, required
+      File part to upload.
+
+    See Also
+    --------
+    :http:put:`/api/uploads/(uid)/files/(fid)/parts/(pid)`
+    """
+    
+    return self.request("PUT", "/api/uploads/%s/files/%s/parts/%s" % (uid, fid, pid),
+      data={'file': base64.b64encode(file_slice)})
+
+  def post_upload_finished(self, uid, file_parts):
+    """Notify Slycat server that file upload is finished
+
+    Notify the server that all files have been uploaded for the given upload 
+    session, and processing can begin. The request must include the uploaded 
+    parameter, which specifies the number of files that were uploaded, 
+    and the number of parts in each file. The server uses this information to 
+    validate that it received every part of every file that the client sent.
+
+    Parameters
+    ----------
+    uid: string, required
+      Unique file upload session ID.
+    file_parts: array, required
+      Array of length number of files, 
+      with each entry number of slices for that file.
+
+    See Also
+    --------
+    :http:put:`/api/uploads/(uid)/finished`
+    """
+
+    return self.request("POST", "/api/uploads/%s/finished" % uid, 
+      headers={"content-type":"application/json"},
+      data=json.dumps({'uploaded': file_parts}))
+
+  def delete_upload(self, uid):
+    """Delete uploaded files from Slycat server
+
+    Delete an upload session used to upload files for storage as model artifacts. 
+    This function must be called once the client no longer needs the session, 
+    whether the upload(s) have been completed successfully or the client is cancelling 
+    an incomplete session.
+
+    Note that you can examine the return codes to see if the files have been completely
+    parsed by Slycat.
+
+    Parameters
+    ----------
+    uid: string, required
+      Unique file upload session ID.
+
+    Return Codes
+    ------------
+    204 No Content – The upload session and any temporary storage have been deleted.
+    409 Conflict – The upload session cannot be deleted, because parsing is in progress. 
+      Try again later.
+
+    See Also
+    --------
+    :http:put:`/api/uploads/(uid)`
+    """
+  
+    # call directly to get response code
+    response = self.session.delete(self.host + "/api/uploads/%s" % uid)
+    
+    # return code
+    return response.status_code
+
+  def upload_files(self, mid, file_list, parser, parser_parms, progress=True):
+    """Upload a list of files for a given model to the Slycat server.
+    The files will be parsed by specified parser.  This is not a direct call
+    to the API, but rather a convenience call to load/parse a list of files.
+
+    Parameters
+    ----------
+    mid: string, required
+      Model ID associated with the files to be uploaded.
+    file_list: string array, required
+      Local files to be uploaded to the Slycat server.  This can be one file,
+      but it should be passed as an array with one file.
+    parser: string, required
+      Name of parser to use on the Slycat server.
+    parser_parms: array, required
+      Any parameters to be passed to the parser (passed using aids when the 
+      upload session is established).
+    progress: boolean, optional
+      Display a download progress indicator using standard out.
+    """
+
+    # how many files?
+    num_files = len(file_list)
+
+    # get number of parts for progress bar
+    file_slices_to_upload = []
+    for fid in range(num_files):
+      num_slices = math.ceil(os.path.getsize(file_list[fid]) / FILE_SLICE_SIZE)
+      file_slices_to_upload.append(num_slices)
+
+    # create upload session
+    uid = self.post_uploads(mid, parser, parser_parms)
+
+    # keep track of slices uploaded
+    file_slices_uploaded = [0] * num_files
+
+    # upload each file
+    for fid in range(num_files):
+      
+      # print progress bar if desired
+      if progress:
+        print('Uploading "%s":' % file_list[fid])
+
+      # split each file into slices
+      with open(file_list[fid], "rb") as file:
+        while (file_slice := file.read(FILE_SLICE_SIZE)):
+
+          # upload slice
+          self.put_upload_file_part(uid, file_slices_uploaded[fid], fid, file_slice)
+
+          # advance to next slice
+          file_slices_uploaded[fid] += 1
+
+          if progress:
+            print_progress_bar(file_slices_uploaded[fid], file_slices_to_upload[fid], 
+              prefix = 'Progress:', suffix = 'Complete', length = 50)
+
+    # finish upload
+    self.post_upload_finished(uid, file_slices_uploaded)
+      
+    # wait for parsing to finish
+    while True:
+      if self.delete_upload(uid) == 409:
+        time.sleep(1.0)
+      else:
+        break
+
 def connect(arguments, **keywords):
   """Factory function for client connections that takes an option parser as input."""
+
+  # arguments are from the command line parser,
+  # keywords get passed into the actual requests
 
   # check for --no-verify or security certificate
   if arguments.no_verify:

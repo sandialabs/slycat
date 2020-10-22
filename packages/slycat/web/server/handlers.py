@@ -37,6 +37,9 @@ import functools
 import datetime
 from urllib.parse import urlparse, urlencode, parse_qs
 
+# decode base64 byte streams for file upload
+import base64
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, numpy.integer):
@@ -986,7 +989,15 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
     pid = require_integer_parameter(pid, "pid")
 
     if file is not None and hostname is None and path is None:
-        data = file.file.read()
+
+        # check for byte stream
+        if type(file) == str:
+            data = base64.b64decode(file)
+        
+        # otherwise it's a file stream
+        else:
+            data = file.file.read()
+
     elif file is None and hostname is not None and path is not None:
         sid = get_sid(hostname)
         with slycat.web.server.remote.get_session(sid) as session:
