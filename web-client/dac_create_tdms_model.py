@@ -17,6 +17,13 @@ import os
 # get suffixes from zip file
 import zipfile
 
+# TDMS error handling
+class TDMSUploadError (Exception):
+
+    # exception for TDMS upload problems
+    def __init__(self, message):
+        self.message = message
+
 # check for .TDM, .tdms, or a single .zip file extension
 # returns "not-tdms" for wrong extension, "tdms" for correct extensions,
 # "zip" for a single .zip file
@@ -129,7 +136,7 @@ def is_int(s):
 # create TDMS model, show progress by default, arguments 
 # include the command line connection parameters
 # and project/model information
-def create_model (arguments, parser, parms, file_list, progress=True):
+def upload_model (arguments, parser, parms, file_list, progress=True):
 
     # setup a connection to the Slycat Web Server.
     connection = slycat.web.client.connect(arguments)
@@ -205,8 +212,128 @@ def dac_model_defaults():
 
     }
 
-# command line version to load a single DAC model
-if __name__ == "__main__":
+# check arguments and create model
+def create_model (arguments, log):
+
+    # can't have both overvoltage and sprytron
+    if arguments.overvoltage and arguments.sprytron:
+        raise TDMSUploadError("Can't use both overvoltage and sprytron options " +
+              "together. Please select one or the other and try again.")
+
+    # check file name extensions
+    file_list = arguments.files
+    file_type = check_file_extensions (file_list)
+    if file_type == "not-tdms":
+        log("One or more files had the wrong extension (note that if using .zip " +
+              "only one file can be uploaded). Please revise the file list " +
+              "and try again.")
+        exit()
+
+    # check that files exist
+    if not check_files_exist (file_list):
+        raise TDMSUpoadError("One or more input files did not exist. Please make " +
+              "sure the file names are correct and try again.")
+
+    # check that zip file is valid
+    if file_type == 'zip':
+        if not zipfile.is_zipfile(file_list[0]):
+            raise TDMSUploadError("Zip file is invalid or corrupt. Please fix the " + 
+                  "file and try again.")
+
+    # set shot type
+    shot_type = 'General'
+    if arguments.overvoltage:
+        shot_type = 'Overvoltage'
+    if arguments.sprytron:
+        shot_type = 'Sprytron'
+
+    # set union type
+    union_type = "Union"
+    if arguments.intersection:
+        union_type = "Intersection"
+
+    # populate parameters
+    parser_parms = [arguments.min_time_points, arguments.min_channels, 
+                    shot_type, union_type, not arguments.do_not_infer_channel_units,
+                    not arguments.do_not_infer_time_units]
+
+    # check common parameters
+    check_parser_error = check_parser_parms (parser_parms)
+    if check_parser_error != "":
+        raise TDMSUploadError(check_parser_error)
+
+    # compile suffixes to include if .zip file
+    dac_parser = "dac-tdms-file-parser"
+    if file_type == "zip":
+
+        # get all possible suffixes
+        include_suffixes = get_suffixes (file_list[0])
+
+        # make sure there is at least one suffix
+        if len(include_suffixes) == 0:
+            raise TDMSUploadError("No valid .tdms files were found in .zip file. " +
+                  "A valid .tdms file has to have a .tdms extension and " +
+                  "a recognizable suffix. Please fix .zip file and try again.")
+
+        # exclude suffixes as requested
+        if arguments.exclude:
+
+            # exclude and print list of excluded suffixes
+            for suffix in arguments.exclude:
+                include_suffixes.discard(suffix)
+
+        # sort suffixes
+        list_suffixes = list(include_suffixes)
+        list_suffixes.sort()
+
+        # add to parameters
+        parser_parms.append(list_suffixes)
+
+        # set parser type to zip
+        dac_parser = "dac-tdms-zip-file-parser"
+
+    # echo back user input, starting with files
+    log('*********** Creating DAC Model ***********')
+    log("Input files:")
+    for file in file_list:
+        log("\t%s" % file)
+    
+    # next list included/excluded suffixes
+    if file_type == "zip":
+
+        if arguments.exclude:
+            log("Excluding TDMS file suffixes:")
+            for suffix in arguments.exclude:
+                log("\t%s" % suffix)
+
+        log("Including TDMS file suffixes:")
+        for suffix in parser_parms[6]:
+            log("\t%s" % suffix)
+
+    # next list common parameters
+    log("Minimum number of time steps per channel: %s" % parser_parms[0])
+    log("Minumum number of channels: %s" % parser_parms[1])
+    log("Expecting TDMS data type: %s" % parser_parms[2])
+    log("Combining mismatched time steps using: %s" % parser_parms[3])
+    log("Infer channel units: %s" % parser_parms[4])
+    log("Infer time units: %s" % parser_parms[5])
+
+    # upload model file(s)
+    mid = upload_model (arguments, dac_parser, parser_parms, file_list, progress=True)
+
+    # supply the user with a direct link to the new model.
+    host = arguments.host
+    if arguments.port:
+        host = host + ":" + arguments.port
+    log("Your new model is located at %s/models/%s" % (host, mid))
+    log('***** DAC Model Successfully Created *****')
+
+# logging is just printing to the screen
+def log (msg):
+    print(msg)
+
+# set up argument parser
+def parser ():
 
     # provide additional command line arguments for TDMS files
     parser = slycat.web.client.ArgumentParser(description=
@@ -256,122 +383,18 @@ if __name__ == "__main__":
              "from channel name.")
     parser.add_argument("--do-not-infer-time-units", action="store_true",
         help="Do not infer time units. Default is to assume unspecified units " +
-             "are seconds.")        
+             "are seconds.")
+
+    return parser
+
+# command line version to load a single DAC model
+if __name__ == "__main__":
+
+    # set up argument parser
+    tdms_parser = parser()  
 
     # get user arguments
-    arguments = parser.parse_args()
+    arguments = tdms_parser.parse_args()
 
-    # can't have both overvoltage and sprytron
-    if arguments.overvoltage and arguments.sprytron:
-        print("Can't use both overvoltage and sprytron options together. Please " + 
-              "select one or the other and try again.")
-        exit()
-
-    # check file name extensions
-    file_list = arguments.files
-    file_type = check_file_extensions (file_list)
-    if file_type == "not-tdms":
-        print("One or more files had the wrong extension (note that if using .zip " +
-              "only one file can be uploaded). Please revise the file list " +
-              "and try again.")
-        exit()
-
-    # check that files exist
-    if not check_files_exist (file_list):
-        print("One or more input files did not exist. Please make sure the file names are " +
-              "correct and try again.")
-        exit()
-
-    # check that zip file is valid
-    if file_type == 'zip':
-        if not zipfile.is_zipfile(file_list[0]):
-            print("Zip file is invalid or corrupt. Please fix the file and try again.")
-            exit()
-
-    # set shot type
-    shot_type = 'General'
-    if arguments.overvoltage:
-        shot_type = 'Overvoltage'
-    if arguments.sprytron:
-        shot_type = 'Sprytron'
-
-    # set union type
-    union_type = "Union"
-    if arguments.intersection:
-        union_type = "Intersection"
-
-    # populate parameters
-    parser_parms = [arguments.min_time_points, arguments.min_channels, 
-                    shot_type, union_type, not arguments.do_not_infer_channel_units,
-                    not arguments.do_not_infer_time_units]
-
-    # check common parameters
-    check_parser_error = check_parser_parms (parser_parms)
-    if check_parser_error != "":
-        print(check_parser_error)
-        exit()
-
-    # compile suffixes to include if .zip file
-    dac_parser = "dac-tdms-file-parser"
-    if file_type == "zip":
-
-        # get all possible suffixes
-        include_suffixes = get_suffixes (file_list[0])
-
-        # make sure there is at least one suffix
-        if len(include_suffixes) == 0:
-            print("No valid .tdms files were found in .zip file. " +
-                  "A valid .tdms file has to have a .tdms extension and " +
-                  "a recognizable suffix. Please fix .zip file and try again.")
-            exit()
-
-        # exclude suffixes as requested
-        if arguments.exclude:
-
-            # exclude and print list of excluded suffixes
-            for suffix in arguments.exclude:
-                include_suffixes.discard(suffix)
-
-        # sort suffixes
-        list_suffixes = list(include_suffixes)
-        list_suffixes.sort()
-
-        # add to parameters
-        parser_parms.append(list_suffixes)
-
-        # set parser type to zip
-        dac_parser = "dac-tdms-zip-file-parser"
-
-    # echo back user input, starting with files
-    print("Creating DAC model from files:")
-    for file in file_list:
-        print("\t", file)
-    
-    # next list included/excluded suffixes
-    if file_type == "zip":
-
-        if arguments.exclude:
-            print("Excluding TDMS file suffixes:")
-            for suffix in arguments.exclude:
-                print("\t", suffix)
-
-        print("Including TDMS file suffixes:")
-        for suffix in parser_parms[6]:
-            print("\t", suffix)
-
-    # next list common parameters
-    print("Minimum number of time steps per channel:", parser_parms[0])
-    print("Minumum number of channels:", parser_parms[1])
-    print("Expecting TDMS data type:", parser_parms[2])
-    print("Combining mismatched time steps using:", parser_parms[3])
-    print("Infer channel units:", parser_parms[4])
-    print("Infer time units:", parser_parms[5])
-
-    # create model
-    mid = create_model (arguments, dac_parser, parser_parms, file_list, progress=True)
-
-    # supply the user with a direct link to the new model.
-    host = arguments.host
-    if arguments.port:
-        host = host + ":" + arguments.port
-    slycat.web.client.log.info("Your new model is located at %s/models/%s" % (host, mid))
+    # check arguments and create model
+    create_model(arguments, log)

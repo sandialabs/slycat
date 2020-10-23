@@ -9,7 +9,7 @@ import numpy
 import slycat.web.client
 import sys
 
-parser = slycat.web.client.ArgumentParser()
+parser = slycat.web.client.ArgumentParser(description="Create CCA model from .csv file.")
 parser.add_argument("file", default="-", help="Input CSV file.  Use - for stdin.  Default: %(default)s")
 parser.add_argument("--input", default=[], nargs="+", help="Input column(s).")
 parser.add_argument("--marking", default="", help="Marking type.  Default: %(default)s")

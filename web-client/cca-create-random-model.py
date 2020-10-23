@@ -17,7 +17,7 @@ in your own scripts:
 import numpy
 import slycat.web.client
 
-parser = slycat.web.client.ArgumentParser()
+parser = slycat.web.client.ArgumentParser(description="Create CCA model from randomly generated data.")
 parser.add_argument("--column-prefix", default="a", help="Column prefix.  Default: %(default)s")
 parser.add_argument("--constant-input-count", type=int, default=0, help="Number of input columns to make constant.  Default: %(default)s")
 parser.add_argument("--constant-output-count", type=int, default=0, help="Number of output columns to make constant.  Default: %(default)s")

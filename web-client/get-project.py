@@ -6,7 +6,7 @@
 import pprint
 import slycat.web.client
 
-parser = slycat.web.client.ArgumentParser()
+parser = slycat.web.client.ArgumentParser("Get details of project from Slycat server.")
 parser.add_argument("pid", help="The ID of the project to retrieve")
 arguments = parser.parse_args()
 

@@ -6,7 +6,7 @@
 import pprint
 import slycat.web.client
 
-parser = slycat.web.client.ArgumentParser()
+parser = slycat.web.client.ArgumentParser("Get model details from Slycat server.")
 parser.add_argument("mid", help="The ID of the model to retrieve")
 arguments = parser.parse_args()
 

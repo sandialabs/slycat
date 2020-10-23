@@ -120,13 +120,13 @@ class ArgumentParser(argparse.ArgumentParser):
       choices=["debug", "info", "warning", "error", "critical"], 
       help="Log level.  Default: '%(default)s'.")
 
-  def parse_args(self):
+  def parse_args(self, list_input=None):
 
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
 
     # parse arguments
-    arguments = argparse.ArgumentParser.parse_args(self)
+    arguments = argparse.ArgumentParser.parse_args(self, list_input)
 
     # log level
     if arguments.log_level == "debug":
