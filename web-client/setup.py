@@ -35,7 +35,7 @@ copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 import slycat
 VERSION = slycat.__version__
 
-VERSION = VERSION + ".dev.2"
+VERSION = VERSION
 
 # get README.md
 import pathlib

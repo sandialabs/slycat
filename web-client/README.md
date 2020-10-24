@@ -2,8 +2,8 @@
 > The Slycat web client provides a Python package for interacting with the Slycat web server.
 
 Slycat is a web based data analysis and visualization platform created at Sandia
-National Labs.  You can read about it at: https://slycat.readthedocs.io/en/latest/.
-Slycat is open source and can be downloaded from: https://github.com/sandialabs/slycat.
+National Labs.  You can read about it at https://slycat.readthedocs.io/en/latest/.
+Slycat is open source and can be downloaded from https://github.com/sandialabs/slycat.
 
 The Slycat web client provides a Python package which can be used
 to interact with the Slycat web server.  The web client provides Python routines
@@ -15,7 +15,7 @@ to query the Slycat server and create Slycat data analysis models.
 pip install slycat-web-client
 ```
 
-:exclamation: **Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
+**Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
 
 ## Basic Use
 
@@ -105,9 +105,7 @@ $ python -m slycat.web.client.cca_random.py
 To create a sample CCA model from a CSV file, use:
 
 ```sh
-$ python -m slycat.web.client.cca_csv.py slycat-data/cars.csv 
-    --input Cylinders Displacement Weight Year 
-    --output MPG Horsepower Acceleration
+$ python -m slycat.web.client.cca_csv.py slycat-data/cars.csv --input Cylinders Displacement Weight Year --output MPG Horsepower Acceleration
 ```
 
 where "slycat-data/cars.csv" is from the slycat-data git repository at
@@ -180,4 +178,4 @@ errors in the upload process.
 
 Shawn Martin -- smartin@sandia.gov
 
-Distributed under the Sandia license. See ``LICENSE`` for more information.
+Distributed under the Sandia license. See LICENSE file for more information.

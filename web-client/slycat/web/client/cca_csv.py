@@ -94,4 +94,7 @@ connection.post_model_finish(mid)
 connection.join_model(mid)
 
 # Supply the user with a direct link to the new model.
-slycat.web.client.log.info("Your new model is located at %s/models/%s" % (arguments.host, mid))
+host = arguments.host
+if arguments.port:
+    host = host + ":" + arguments.port
+slycat.web.client.log.info("Your new model is located at %s/models/%s" % (host, mid))

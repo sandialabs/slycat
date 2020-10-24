@@ -23,7 +23,7 @@ import logging
 import traceback
 
 # tdms upload
-import dac_tdms as tdms
+import slycat.web.client.dac_tdms as tdms
 
 # sets up logging to screen or file, depending on user input
 def setup_logging(log_file):
