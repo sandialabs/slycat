@@ -82,11 +82,11 @@ $ python list-projects.py
 To examine a particular model or project, use
 
 ```sh
-$ python get-model.py <mid>
-$ python get-project.py <pid>
+$ python get-model.py mid
+$ python get-project.py pid
 ```
 
-where <mid> and <pid> are the hash identifiers for a Slycat model
+where mid and pid are the hash identifiers for a Slycat model
 or project residing on the Slycat server.  These IDs can be extracted
 from the URL in the Slycat web browser client, or by using
 Info -> Model Details from the browser.
