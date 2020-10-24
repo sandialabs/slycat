@@ -1,0 +1,2 @@
+exclude non-working-examples/*
+include slycat_web_client/web-client-readme.txt

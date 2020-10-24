@@ -1,3 +1,7 @@
+# Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC. 
+# Under the terms of Contract DE-NA0003525 with National Technology and Engineering 
+# Solutions of Sandia, LLC, the U.S. Government retains certain rights in this software.
+
 # Creates a batch of dial-a-cluster models by uploading TDMS and TMDS .zip 
 # formatted files to the Slycat server.  Once uploaded the models are created 
 # on the server using the TDMS parser.
@@ -19,7 +23,7 @@ import logging
 import traceback
 
 # tdms upload
-import dac_create_tdms_model as tdms
+import dac_tdms as tdms
 
 # sets up logging to screen or file, depending on user input
 def setup_logging(log_file):
