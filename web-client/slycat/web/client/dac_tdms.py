@@ -391,8 +391,8 @@ def parser ():
 
     return parser
 
-# command line version to load a single DAC model
-if __name__ == "__main__":
+# tdms entry point
+def main():
 
     # set up argument parser
     tdms_parser = parser()  
@@ -402,3 +402,8 @@ if __name__ == "__main__":
 
     # check arguments and create model
     create_model(arguments, log)
+
+# command line version to load a single DAC model
+if __name__ == "__main__":
+
+    main()

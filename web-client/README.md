@@ -15,14 +15,16 @@ to query the Slycat server and create Slycat data analysis models.
 pip install slycat-web-client
 ```
 
+:exclamation: **Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
+
 ## Basic Use
 
 The Slycat web client can be imported from within a Python file using
 
     import slycat.web.client
 
-Some examples using the web client can be found in the slycat_web_client
-directory.  These can be run using, e.g.
+Some examples using the web client can be found in the slycat/web/client
+source directory.  These can be run using, e.g.
 
 ```sh
 $ python list_markings.py
@@ -31,7 +33,7 @@ $ python list_markings.py
 or
 
 ```sh
-$ python -m slycat_web_client.list_markings
+$ python -m slycat.web.client.list_markings
 ```
 
 In addition, there are two entry points defined for the Slycat Dial-A-Cluster plugin
@@ -59,14 +61,14 @@ server running on https://localhost:9000 without a security certificate,
 use:
 
 ```sh
-$ python list_markings.py --user slycat --port 9000 --no-verify
+$ python -m slycat.web.client.list_markings.py --user slycat --port 9000 --no-verify
 ```
 
 Or, to access a Kerberos authenticated server running at slycat.sandia.gov,
 use:
 
 ```sh
-$ python list_markings.py --host https://slycat.sandia.gov --kerberos
+$ python -m slycat.web.client.list_markings.py --host https://slycat.sandia.gov --kerberos
 ```
 
 ## General Utilities
@@ -75,15 +77,15 @@ The simplest examples of interacting with the Slycat server issue
 requests for markings and projects, e.g.
 
 ```sh
-$ python list-markings.py
-$ python list-projects.py
+$ python -m slycat.web.client.list_markings.py
+$ python -m slcyat.web.client.list_projects.py
 ```
 
 To examine a particular model or project, use
 
 ```sh
-$ python get-model.py mid
-$ python get-project.py pid
+$ python -m slycat.web.client.get_model.py mid
+$ python -m slycat.web.client.get_project.py pid
 ```
 
 where mid and pid are the hash identifiers for a Slycat model
@@ -97,18 +99,19 @@ The slycat.web.client provides a command line option for creating Slycat
 models.  For example, to create a sample CCA model using random data, use:
 
 ```sh
-$ python cca-create-random-model.py
+$ python -m slycat.web.client.cca_random.py
 ```
 
 To create a sample CCA model from a CSV file, use:
 
 ```sh
-$ python cca-create-csv-model.py slycat-data/cars.csv 
+$ python -m slycat.web.client.cca_csv.py slycat-data/cars.csv 
     --input Cylinders Displacement Weight Year 
     --output MPG Horsepower Acceleration
 ```
 
-where "slycat-data/cars.csv" is from the slycat-data git repository.
+where "slycat-data/cars.csv" is from the slycat-data git repository at
+https://github.com/sandialabs/slycat-data.
 
 Note that when a model is created, the URL is given in the console and
 can be copied into a web browser to display the model.  The model ID

@@ -11,6 +11,7 @@
 
 # To publish to PyPi, perform the following steps:
 #
+# $ rm -rf dist
 # $ python setup.py sdist bdist_wheel
 # $ twine upload dist/*
 #
@@ -23,17 +24,18 @@ from shutil import copyfile
 
 # copy slycat.web.client and slycat.darray into slycat_web_client directory. This
 # makes the slycat_web_directory a Python package without other Slycat dependencies.
-copyfile('../packages/slycat/web/client/__init__.py', 
-    'slycat_web_client/slycat/web/client/__init__.py')
-copyfile('../packages/slycat/darray.py', 'slycat_web_client/slycat/darray.py')
+copyfile('../packages/slycat/web/client/__init__.py', 'slycat/web/client/__init__.py')
+copyfile('../packages/slycat/darray.py', 'slycat/darray.py')
 
 # also copy the __init__.py files, which include the Slycat version number
-copyfile('../packages/slycat/__init__.py', 'slycat_web_client/slycat/__init__.py')
-copyfile('../packages/slycat/web/__init__.py', 'slycat_web_client/slycat/web/__init__.py')
+copyfile('../packages/slycat/__init__.py', 'slycat/__init__.py')
+copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 
 # get Slycat version
-import slycat_web_client.slycat
-VERSION = slycat_web_client.slycat.__version__
+import slycat
+VERSION = slycat.__version__
+
+VERSION = VERSION + ".dev.2"
 
 # get README.md
 import pathlib
@@ -47,7 +49,7 @@ README = (HERE / "README.md").read_text()
 # create distribution
 import setuptools
 
-# create Python wheel
+# create Python distribution wheel
 from setuptools import setup
 
 setup(
@@ -71,8 +73,8 @@ setup(
                       "numpy", "cherrypy"],
     entry_points={
         "console_scripts": [
-            "dac_tdms=slycat_web_client.dac_tdms:main",
-            "dac_tdms_batch=slycat_web_client.dac_tdms_batch:main"
+            "dac_tdms=slycat.web.client.dac_tdms:main",
+            "dac_tdms_batch=slycat.web.client.dac_tdms_batch:main"
         ]
     },
 )

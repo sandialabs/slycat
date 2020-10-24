@@ -54,8 +54,8 @@ def setup_logging(log_file):
 
     return logger
 
-# command line entry point
-if __name__ == "__main__":
+# tdms batch entry point
+def main():
 
     # provide additional command line arguments 
     batch_parser = argparse.ArgumentParser(description=
@@ -125,3 +125,8 @@ if __name__ == "__main__":
         except:
             log('Could not upload model with arguments: ' + ' '.join(args))
             log(traceback.format_exc())
+
+# command line entry point
+if __name__ == "__main__":
+
+    main()
