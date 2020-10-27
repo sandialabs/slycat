@@ -51,7 +51,7 @@
     "three-trackballcontrols": "0.0.8",
     "urijs": "1.19.2",
     "uuid": "8.2.0",
-    "vtk.js": "^14.15.1",
+    "vtk.js": "^14.17.2",
     "wslink": "0.1.14",
     "zipinfo.js": "1.0.0"
   },

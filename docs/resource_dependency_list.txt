@@ -183,7 +183,7 @@ three-stl-loader                     1.0.6   https://yarnpkg.com/en/package/thre
 three-trackballcontrols              0.0.8   https://yarnpkg.com/en/package/three-trackballcontrols
 urijs                               1.19.2   https://medialize.github.io/URI.js/
 uuid                                 7.0.3   https://www.npmjs.com/package/uuid
-vtk.js                             13.15.1   https://github.com/Kitware/vtk-js
+vtk.js                             14.17.2   https://github.com/Kitware/vtk-js
 wslink                              0.1.14   https://github.com/Kitware/wslink
 zipinfo.js                           1.0.0   https://github.com/Rob--W/zipinfo.js
 
