@@ -183,11 +183,15 @@ $.widget("parameter_image.scatterplot",
     self.legend_layer = self.svg.append("g").attr("class", "legend");
     self.legend_axis_layer = self.legend_layer.append("g").attr("class", "legend-axis");
     self.canvas_datum = d3.select(self.element.get(0)).append("canvas")
-      .style({'position':'absolute'}).node()
+      .style({'position':'absolute'})
+      .attr("class", "points")
+      .node()
       ;
     self.canvas_datum_layer = self.canvas_datum.getContext("2d");
     self.canvas_selected = d3.select(self.element.get(0)).append("canvas")
-      .style({'position':'absolute'}).node()
+      .style({'position':'absolute'})
+      .attr("class", "points")
+      .node()
       ;
     self.canvas_selected_layer = self.canvas_selected.getContext("2d");
     self.selection_layer = self.svg.append("g").attr("class", "selection-layer");

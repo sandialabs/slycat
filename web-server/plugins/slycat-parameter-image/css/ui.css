@@ -543,7 +543,8 @@
 .dialogErrorMessage {
   color: red;
 }
-#scatterplot canvas {
+
+#scatterplot canvas.points {
   z-index: -1;
 }
 
@@ -1077,4 +1078,12 @@ button#controls-button-var-options {
 .legend text.label {
   text-anchor: middle; 
   font-weight: bold; 
+}
+
+.vtp .timeLabel {
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  color: black;
+  font-size: 14px;
 }

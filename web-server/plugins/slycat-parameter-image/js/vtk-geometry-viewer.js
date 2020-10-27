@@ -3,6 +3,7 @@ import vtkXMLPolyDataReader from 'vtk.js/Sources/IO/XML/XMLPolyDataReader';
 import vtkSTLReader from 'vtk.js/Sources/IO/Geometry/STLReader';
 import HttpDataAccessHelper from 'vtk.js/Sources/IO/Core/DataAccessHelper/HttpDataAccessHelper';
 import vtkMapper from 'vtk.js/Sources/Rendering/Core/Mapper';
+import vtkLabelWidget from 'vtk.js/Sources/Interaction/Widgets/LabelWidget';
 import vtkOpenGLRenderWindow from 'vtk.js/Sources/Rendering/OpenGL/RenderWindow';
 import vtkRenderWindow from 'vtk.js/Sources/Rendering/Core/RenderWindow';
 import vtkRenderWindowInteractor from 'vtk.js/Sources/Rendering/Core/RenderWindowInteractor';
@@ -87,7 +88,7 @@ export function load(container, buffer, uri, uid, type) {
       lookupTable.setMappingRange(dataRange[0], dataRange[1]);
       lookupTable.updateRange();
 
-      // Not part of VTK example, but needs to be done to get update after chaning color options
+      // Not part of VTK example, but needs to be done to get update after changing color options
       renderWindow.render();
     }
 
@@ -282,6 +283,21 @@ export function load(container, buffer, uri, uid, type) {
   interactor.setView(openglRenderWindow);
   interactor.initialize();
   interactor.bindEvents(container);
+
+  // ----------------------------------------------------------------------------
+  // Display time step if the data exists
+  // ----------------------------------------------------------------------------
+  const TimeValue = source.getFieldData().getArrayByName('TimeValue');
+  if(TimeValue)
+  {
+    const timeStep = TimeValue.getData()[0];
+    // console.log(`Time: ${timeStep}`);
+    const timeLabel = document.createElement('div');
+    timeLabel.classList.add('timeLabel');
+    const text = document.createTextNode(`Time: ${timeStep}`);
+    timeLabel.appendChild(text);
+    container.appendChild(timeLabel);
+  }
 
   // ----------------------------------------------------------------------------
   // Setup interactor style to use
