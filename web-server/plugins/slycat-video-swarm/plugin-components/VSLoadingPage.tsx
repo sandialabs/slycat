@@ -182,7 +182,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
             <div className="btn-group col-8" role="group">
               <VSLoadingPageButtons
                 modalId={"modalID"}
-                jobStatus={"status"}
+                jobStatus={this.state.jobStatus}
                 cancelJob={this.cancelJob}
                 verboseCallback={() => this.setState({ showVerboseLog: !this.state.showVerboseLog })}
               />
