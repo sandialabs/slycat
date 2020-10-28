@@ -1,5 +1,8 @@
 /* Copyright (c) 2013, 2018 National Technology and Engineering Solutions of Sandia, LLC . Under the terms of Contract  DE-NA0003525 with National Technology and Engineering Solutions of Sandia, LLC, the U.S. Government  retains certain rights in this software. */
 
+
+
+
 /* Page header */
 
 #edit-model-button
@@ -1085,5 +1088,8 @@ button#controls-button-var-options {
   top: 3px;
   left: 6px;
   color: black;
-  font-size: 14px;
+  /* Using custom font size and family. These are set by the user 
+     and defined in ConstrolsButtonVarOptions.js */
+  font-size: var(--custom-font-size, 15px);
+  font-family: var(--custom-font-family, Arial);
 }

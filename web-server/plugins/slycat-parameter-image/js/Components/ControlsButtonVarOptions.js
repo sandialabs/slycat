@@ -203,6 +203,18 @@ class ControlsButtonVarOptions extends React.PureComponent {
 
     return (
       <React.Fragment>
+        {/* Defining custom CSS properties so non-React code can use customized font size
+            and family as defined in this UI. Technically <style> elements are not allowed
+            inside the <body> tag, but browsers have no problem with it. This should go away once we
+            are converted to React. */}
+        <style type="text/css">
+        :root 
+        {`{
+          --custom-font-size: ${this.props.font_size}px;
+          --custom-font-family: ${this.props.font_family};
+        }`}
+        </style>
+
         <div className='modal fade' data-backdrop='false' id={this.modalId}>
           <div className='modal-dialog modal-lg'>
             <div className='modal-content'>
