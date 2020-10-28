@@ -190,7 +190,7 @@ S. Martin
         </label>
         <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
         <div className="alert alert-warning" data-bind="visible:movies_exist() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
-          <p className='mt-3'>We weren't able to locate your movies. Do you want us to create them for you? If yes, please select 'Yes' at the top of the wizard.</p>
+          <p className='mt-3'>We weren't able to locate your movies. Please verify that the provided path is correct.</p>
         </div>
         <div className="alert alert-warning" data-bind="visible:generate_movies_verification() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
           <p className='mt-3'>VideoSwarm cannot create a model without videos being provided or generated for each ensemble member, so the model creation process cannot be completed.</p>
@@ -222,6 +222,9 @@ S. Martin
         </head>
         <div data-bind="visible: user_char_selection()" style="margin-left:30px">
           <label>We need to name your new movies. Please click on the first character of the simulation ID.</label>
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="When VideoSwarm creates movies for you, they will all be located in a single directory. We need to ensure that your movies have unique names. By selecting the first character of the simulation ID, we can use that ID to make each movie name unique."
+          ></i>
           <div id="charSelector" title="" class="charSelector">
           </div>
         </div>
@@ -239,7 +242,7 @@ S. Martin
 
       <label style="margin-top:30px">Working Directory
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
-           title="When creating a VideoSwarm model, Slycat needs a location for temporary files to be created and stored. Slycat relies on users to select a suitable scratch disk location for creation of this directory. The directory is not deleted, but if you decide to keep the files created by the wizard, they can be read directly into the wizard as local files."
+           title="When creating a VideoSwarm model, Slycat needs a location for temporary files to be created and stored. Slycat relies on users to select a suitable scratch disk location for creation of this directory. The directory is not deleted, but if you decide to keep the files created by the wizard, they can be read directly into the wizard as local files. Please make sure that the working directory is different from the movie directory."
         ></i>
       </label>
       <input id="VS-working-directory" class="form-control" type="text" placeholder="full path for temporary slycat files" data-bind="value: workdir"></input>
