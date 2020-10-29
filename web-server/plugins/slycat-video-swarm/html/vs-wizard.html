@@ -24,8 +24,8 @@ S. Martin
         <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: vs_type() == 'local'"><a class="nav-link">Choose Column</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: vs_type() == 'remote'"><a class="nav-link">Choose Host</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 4}, visible: vs_type() == 'remote'"><a class="nav-link">Upload Table</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 5}, visible: vs_type() == 'remote'"><a class="nav-link">Choose Columns</a></li>
-        <li class="nav-item" data-bind="css:{active:tab() == 6}, visible: vs_type() == 'remote' && movies_exist()"><a class="nav-link">Movie Verification</a></li>
+        <li class="nav-item" data-bing="css:{active:tab() == 5}, visible: vs_type() == 'remote'"><a class="nav-link">Movie Location</a></li>
+        <li class="nav-item" data-bind="css:{active:tab() == 6}, visible: vs_type() == 'remote'"><a class="nav-link">Working Directory</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 7}, visible: vs_type() == 'remote'"><a class="nav-link">HPC Info</a></li>
         <li class="nav-item" data-bind="css:{active:tab() == 8}"><a class="nav-link">Name Model</a></li>
     </ul>
@@ -136,11 +136,105 @@ S. Martin
       </div>
     </div>
 
-    <!-- select frame/movie columns -->
     <div data-bind="visible:tab() == 5">
       <label style="margin-top:15px">Please choose column of CSV file with links to video frame files (format "name.#.jpg").</label>
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-frames-selector">
       </select>
+      <div className="alert alert-warning" role="alert">
+        <h4 className='alert-heading' style="margin-top:30px">Would you like us to generate your movies?</h4>
+      </div>
+      <fieldset id="group1">
+      <div class="form-check">
+        <label id="local-radio-label" class="form-check-label" for="local-radio">
+        <input class="form-check-input" type="radio" name="generate-movies-radios" id="yes-radio" value="true" data-bind="checked: generate_movies, click: cleanup()">
+          Yes
+        </label>
+      </div>
+      <div class="form-check disabled">
+        <label id="share-radio-label" class="form-check-label" for="share-radio">
+        <input class="form-check-input" type="radio" name="generate-movies-radios" id="no-radio" value="false" data-bind="checked: generate_movies, click: cleanup()">
+          No
+        </label>
+      </div>
+    </fieldset>
+      <div data-bind="visible:generate_movies() == 'true'" style="margin-left:30px">
+        <label style="margin-top:30px">Movie Directory
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
+          ></i>
+        </label>
+        <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
+        <div className="alert alert-warning" data-bind="visible:movies_exist() == true && generate_movies() == 'true'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
+          <p className='mt-3'>We located existing movies that match the naming template of the frames in your selected CSV column. Should we overwrite them?</p>
+        </div>
+        <fieldset id="group2">
+        <div class="form-check"data-bind="visible: movies_exist() == true">
+          <label id="local-radio-label" class="form-check-label" for="local-radio">
+          <input class="form-check-input" type="radio" name="overwrite-movies-radios" id="yes-radio" value="true" data-bind="checked: replace_movies">
+            Yes
+          </label>
+        </div>
+        <div class="form-check disabled" data-bind="visible: movies_exist() == true">
+          <label id="share-radio-label" class="form-check-label" for="share-radio">
+          <input class="form-check-input" type="radio" name="overwrite-movies-radios" id="no-radio" value="false" data-bind="checked: replace_movies">
+            No
+          </label>
+        </div>
+      </fieldset>
+      </div>
+      <div data-bind="visible:generate_movies() == 'false'" style="margin-left:30px">
+        <label style="margin-top:30px">Movie Directory
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
+          ></i>
+        </label>
+        <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
+        <div className="alert alert-warning" data-bind="visible:movies_exist() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
+          <p className='mt-3'>We weren't able to locate your movies. Please verify that the provided path is correct.</p>
+        </div>
+        <div className="alert alert-warning" data-bind="visible:generate_movies_verification() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
+          <p className='mt-3'>VideoSwarm cannot create a model without videos being provided or generated for each ensemble member, so the model creation process cannot be completed.</p>
+        </div>
+        
+        -- OR --
+
+        <label style="margin-top:15px">Please choose column of CSV file with links to video files (format .mp4).</label>
+        <select data-bind="options: vs_media_columns, optionsCaption: 'Select an item...'" class="form-control" id="vs-remote-movie-selector">
+        </select>
+      </div>
+        <head>
+          <style>
+            .charSelector {
+              font-family:'Courier New', Courier, monospace;
+              font-weight: bold;
+            }
+            .charSelector .letter {
+              background-color: #e4e4e4;
+              padding: 0 0.1em;
+              margin: 0 1px;
+              cursor: pointer;
+              display: inline-block;
+            }
+            .letter.selectedLetter {
+              background-color: #7bbb7b;
+            }
+          </style>
+        </head>
+        <div data-bind="visible: user_char_selection()" style="margin-left:30px">
+          <label>We need to name your new movies. Please click on the first character of the simulation ID.</label>
+          <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="When VideoSwarm creates movies for you, they will all be located in a single directory. We need to ensure that your movies have unique names. By selecting the first character of the simulation ID, we can use that ID to make each movie name unique."
+          ></i>
+          <div id="charSelector" title="" class="charSelector">
+          </div>
+        </div>
+    </div>
+
+    <!-- select frame/movie columns -->
+    <div data-bind="visible:tab() == 6">
+      <!-- <label style="margin-top:15px">Please choose column of CSV file with links to video frame files (format "name.#.jpg").</label>
+      <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-frames-selector">
+      </select> -->
 
       <!-- <label style="margin-top:30px">Please choose column of CSV file with links to video files.</label>
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-videos-selector">
@@ -148,7 +242,7 @@ S. Martin
 
       <label style="margin-top:30px">Working Directory
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
-           title="When creating a VideoSwarm model, Slycat needs a location for temporary files to be created and stored. Slycat relies on users to select a suitable scratch disk location for creation of this directory. The directory is not deleted, but if you decide to keep the files created by the wizard, they can be read directly into the wizard as local files."
+           title="When creating a VideoSwarm model, Slycat needs a location for temporary files to be created and stored. Slycat relies on users to select a suitable scratch disk location for creation of this directory. The directory is not deleted, but if you decide to keep the files created by the wizard, they can be read directly into the wizard as local files. Please make sure that the working directory is different from the movie directory."
         ></i>
       </label>
       <input id="VS-working-directory" class="form-control" type="text" placeholder="full path for temporary slycat files" data-bind="value: workdir"></input>
@@ -159,7 +253,7 @@ S. Martin
         <input type="checkbox" style="margin-top:10px" data-bind="checked: delete_workdir"> Delete working directory when computations are complete.</input>
       </div>
 
-      <label style="margin-top:30px">Movie Directory
+      <!-- <label style="margin-top:30px">Movie Directory
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
            title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
         ></i>
@@ -167,8 +261,7 @@ S. Martin
       <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
       <div class="invalid-feedback">
         Please enter a movie directory.
-      </div>
-      <br>
+      </div> -->
 
       <label style="margin-top:30px">Video Frame Rate
         <i class="fa fa-question-circle inline-help" aria-hidden="true"
@@ -186,26 +279,6 @@ S. Martin
 
     </div>
 
-    </div>
-
-    <div data-bind="visible: tab() == 6">
-      <div className="alert alert-warning" role="alert" style="BACKGROUND-COLOR: #FFFF99">
-        <h4 className='alert-heading'>Movies Detected</h4>
-        <p className='alert-heading'>We have detected existing movies in your movie directory. These movies have the same name as the frames present in your CSV.</p>
-        <p className='mt-3'>Would you like to replace these existing movies?</p>
-      </div>
-      <div class="form-check" style="margin-left: 15px;">
-        <label id="local-radio-label" class="form-check-label" for="local-radio">
-        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="local-radio" value="true" data-bind="checked: replace_movies">
-          Yes
-        </label>
-      </div>
-      <div class="form-check disabled" style="margin-left: 15px;">
-        <label id="share-radio-label" class="form-check-label" for="share-radio">
-        <input class="form-check-input" type="radio" name="local-or-remote-radios" id="share-radio" value="false" data-bind="checked: replace_movies">
-          No
-        </label>
-      </div>
     </div>
 
     <!-- gather HPC information, if needed -->
@@ -304,8 +377,8 @@ S. Martin
   <button class="btn btn-primary local-browser-continue browser-continue" data-bind="visible:tab() == 2,click:upload_vs_links"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary remote-browser-continue" data-bind="visible:tab() == 3,click:connect,enable:remote.enable"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 4,click:upload_remote_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 5,click:upload_vs_frames_links">Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 6,click:check_replacement_selection">Continue</button>
+  <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 5,click:movie_location"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
+  <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 6,click:upload_vs_frames_links">Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 7, click:check_hpc_job">Continue</button>
   <button class="btn btn-primary vs-finish-button" data-bind="visible:tab() == 8,click:name_model"><i class="fa fa-spinner fa-pulse"></i> Finish & Go To Model</button>
 </div>
