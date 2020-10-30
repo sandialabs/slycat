@@ -89,6 +89,17 @@ parser.add_argument("--log_file", default=None,
 parser.add_argument("--movie_dir",
                     help="directory to write movies to.")
 
+# mandatory argument for decision to replace existing movies
+parser.add_argument("--replace_movies", default=None,
+                    help="user decision to replace existing movies.")
+
+# mandatory argument for decision to generate movies
+parser.add_argument("--generate_movies",
+                    help="user decision to generate movies.")
+
+parser.add_argument("--sim_id_template", default=None,
+                    help="naming template for the simulation id.")
+
 # madatory argument for column of frames
 parser.add_argument("--frame_col",
                     help="column number (indexed by 1) with the frame files "
@@ -102,6 +113,10 @@ parser.add_argument("--frame_col",
 parser.add_argument("--output_dir",
                     help="output directory for the VideoSwarm movie files "
                          "(must already exist)")
+
+# optional argument for column of movies
+parser.add_argument("--movie_col", default=None,
+                    help="column number (indexed by 1) with the movie files.")
 
 # optional argument for number of dimensions to use for alignment
 parser.add_argument("--num_dim", default=10,
@@ -131,9 +146,9 @@ if args.csv_file == None:
     log("[VS_LOG] Error: .csv file not specified.")
     sys.exit()
 
-# if args.movie_col == None:
-#     log("[VS-LOG] Error: movie column must be specified.")
-#     sys.exit()
+if args.generate_movies == None:
+    log("[VS-LOG] Error: movie generation must be specified.")
+    sys.exit()
 
 if args.frame_col == None:
     log("[VS-LOG] Error: frame column must be specified.")
@@ -189,8 +204,8 @@ num_rows = len(meta_data) - 1
 num_movies = num_rows
 # get file names of movies
 
-# movie_files = [movie_file[int(10) - 1] for movie_file in meta_data]
-# movie_files = movie_files[1:]
+movie_files = [movie_file[int(10) - 1] for movie_file in meta_data]
+movie_files = movie_files[1:]
 
 # get file names of frames
 frame_files = [frame_file[int(args.frame_col) - 1] for frame_file in meta_data]
@@ -198,14 +213,6 @@ frame_files = frame_files[1:]
 
 # identify all frame files and order them by frame number
 log("[VS-LOG] Locating and ordering frame files ...")
-
-movies_exist = False
-for fname in os.listdir(args.movie_dir):
-    if fname.endswith('.mp4'):
-        movies_exist = True
-        log("[VS-LOG] MP4 files located. Skipping movie creation.")
-        break
-
 
 num_frames = 0
 all_frame_files = []
@@ -216,6 +223,13 @@ for i in range(0, num_rows):
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
+    if args.sim_id_template != 'None':
+        frame_file_path_split = frame_file_path.split(args.sim_id_template)
+        frame_file_path_split = frame_file_path_split[1].split('/')
+        simulation_id = frame_file_path_split[0]
+    else:
+        simulation_id = '0'
+
     split_path = frame_files[i].split(frame_file_path)
     # Get the frame name, including number and file extension
     frame_name = split_path[1].split('/')[1]
@@ -223,26 +237,27 @@ for i in range(0, num_rows):
     identifier = frame_name.split('.')[0]
 
     file_location = split_path[0]
+
     # check 
     if args.movie_dir[-1] == '/':
-        movie_output = args.movie_dir + identifier + '.%d.mp4' % (i+1)
+        movie_output = args.movie_dir + identifier + '.' + 'simulation' + simulation_id + '.%d.mp4' % (i+1)
     else:
-        movie_output = args.movie_dir + '/' + identifier + '.%d.mp4' % (i+1)
+        movie_output = args.movie_dir + '/' + identifier + '.' + 'simulation' + simulation_id + '.%d.mp4' % (i+1)
 
     all_movies.append(file_location + movie_output)
-    movie_input = frame_file_path + + '/' + identifier + '*.jpg'
+    movie_input = frame_file_path + '/' +  identifier + '*.jpg'
 
-    if replace_movies:
+    if args.replace_movies == "true" or args.generate_movies == 'True':
+        log("[VS-LOG] Creating movie %d" % (i))
         #create the movie
         ff = ffmpy.FFmpeg(
-            inputs={None: ['-pattern_type', 'glob'],
+            inputs={None: ['-y', '-pattern_type', 'glob'],
                 movie_input: None},
             outputs={None: ['-force_key_frames', '0.0,0.04,0.08', '-vcodec', 'libx264', '-acodec', 'aac'],
             movie_output: None}
         )
         ff.run()
 
-    log("[VS-LOG] Creating movie %d" % (i))
 
     # check for at least two dots in frame file name
     frame_split = frame_file_name.split('.')
@@ -570,11 +585,13 @@ if not os.path.exists(args.output_dir):
 log("[VS-LOG] Writing movies.csv file ...")
 
 # add a column to the end of the csv with created movie files
-for i in range(0, (len(meta_data))):
-    if i == 0:
-        meta_data[i].append("movie_files")
-    else:
-        meta_data[i].append(all_movies[i])
+if args.movie_col != None:
+    log("[VS-LOG] Creating movie column.")
+    for i in range(0, (len(meta_data))):
+        if i == 0:
+            meta_data[i].append("movie_files")
+        else:
+            meta_data[i].append(all_movies[i])
 
 
 meta_file = open(os.path.join(args.output_dir, 'movies.csv'), 'w')
@@ -617,3 +634,4 @@ traj_file.close()
 
 log("[VS-LOG] All files written successfully to: " + str(args.output_dir))
 log("[VS-FINISHED] parse_frames.py complete.")
+

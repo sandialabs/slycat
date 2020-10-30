@@ -58,6 +58,7 @@ component.replace_movies = ko.observable();
 component.generate_movies = ko.observable();
 component.generate_movies_verification = ko.observable();
 component.user_char_selection = ko.observable();
+component.movie_source = ko.observable();
 var simulation_id_template = null;
 var selected_char_index = null;
 var movie_column = null;

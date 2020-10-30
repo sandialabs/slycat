@@ -160,12 +160,12 @@ S. Martin
       <div data-bind="visible:generate_movies() == 'true'" style="margin-left:30px">
         <label style="margin-top:30px">Movie Directory
           <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
+            title="When creating a VideoSwarm model, Slycat needs to create persistent movie files from your frame data. Slycat requires a location to write these movie files to."
           ></i>
         </label>
         <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
         <div className="alert alert-warning" data-bind="visible:movies_exist() == true && generate_movies() == 'true'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
-          <p className='mt-3'>We located existing movies that match the naming template of the frames in your selected CSV column. Should we overwrite them?</p>
+          <p className='mt-3'>We located existing movies that match the naming template of the frames in your selected CSV column. Should we overwrite them? If not, we will use the existing movies in the provided directory.</p>
         </div>
         <fieldset id="group2">
         <div class="form-check"data-bind="visible: movies_exist() == true">
@@ -183,23 +183,21 @@ S. Martin
       </fieldset>
       </div>
       <div data-bind="visible:generate_movies() == 'false'" style="margin-left:30px">
-        <label style="margin-top:30px">Movie Directory
+        <label style="margin-top:30px">
+          <input class="form-check-input" type="radio" name="movie-source-radios" id="dir-radio" value="dir" data-bind="checked: movie_source">
+          Movie Directory
           <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="When creating a VideoSwarm model, Slycat needs to create movie files from your frame data. Slycat requires a location to write these movie files to."
+            title="When creating a VideoSwarm model, Slycat needs the location of your movies. All movies must be located in a single, persistent directory."
           ></i>
         </label>
-        <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir"></input>
+        <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir, disable: movie_source() == 'col'"></input>
         <div className="alert alert-warning" data-bind="visible:movies_exist() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
           <p className='mt-3'>We weren't able to locate your movies. Please verify that the provided path is correct.</p>
         </div>
-        <div className="alert alert-warning" data-bind="visible:generate_movies_verification() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
-          <p className='mt-3'>VideoSwarm cannot create a model without videos being provided or generated for each ensemble member, so the model creation process cannot be completed.</p>
-        </div>
-        
-        -- OR --
-
-        <label style="margin-top:15px">Please choose column of CSV file with links to video files (format .mp4).</label>
-        <select data-bind="options: vs_media_columns, optionsCaption: 'Select an item...'" class="form-control" id="vs-remote-movie-selector">
+        <label style="margin-top:15px">
+          <input class="form-check-input" type="radio" name="movie-source-radios" id="col-radio" value="col" data-bind="checked: movie_source">
+          Please choose column of CSV file with links to video files (format .mp4).</label>
+        <select data-bind="options: vs_media_columns, optionsCaption: 'Select an item...', disable: movie_source() == 'dir'" class="form-control" id="vs-remote-movie-selector">
         </select>
       </div>
         <head>
@@ -211,7 +209,7 @@ S. Martin
             .charSelector .letter {
               background-color: #e4e4e4;
               padding: 0 0.1em;
-              margin: 0 1px;
+              margin: 0 1px 1px 0px;
               cursor: pointer;
               display: inline-block;
             }
