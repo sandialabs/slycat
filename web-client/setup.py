@@ -56,7 +56,7 @@ setup(
     name="slycat-web-client",
     version=VERSION,
     description="Slycat web client utilties for interacting with the Slycat " +
-                "data analysis and visualizatuion server.",
+                "data analysis and visualization server.",
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/sandialabs/slycat",
