@@ -53,6 +53,7 @@ Documentation:
   :maxdepth: 2
 
   manual/user-manual.rst
+  QuickStart.rst
   design.rst
   coding-guidelines.rst
   colophon.rst
