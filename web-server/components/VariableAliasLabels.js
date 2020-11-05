@@ -30,7 +30,6 @@ export default class VariableAliasLabels extends React.PureComponent {
                   variable={variable}
                   alias={this.props.variableAliases[index] ? this.props.variableAliases[index] : ''}
                   userInput={userInput}
-                  placeholder={this.variables[index]}
                   onChange={this.props.onChange}
                 />
               )
@@ -64,7 +63,6 @@ class VariableAliasLabelsRow extends React.PureComponent {
               maxLength='256'
               name={this.props.index}
               value={this.props.alias} 
-              placeholder={this.props.placeholder}
               onChange={this.props.onChange} 
             />
             <div className='input-group-append'>
