@@ -33,7 +33,7 @@ import io
 import sys
 import time
 
-# maximum number of bytes to upload per slice
+# maximum number of bytes to upload per slice (10MB)
 FILE_SLICE_SIZE = 10000000
 
 # set up logging
@@ -1220,12 +1220,16 @@ class Connection(object):
 
       # split each file into slices
       with open(file_list[fid], "rb") as file:
-        while (file_slice := file.read(FILE_SLICE_SIZE)):
+        
+        # get file slice
+        file_slice = file.read(FILE_SLICE_SIZE)
+        while (file_slice != b''):
 
           # upload slice
           self.put_upload_file_part(uid, file_slices_uploaded[fid], fid, file_slice)
 
           # advance to next slice
+          file_slice = file.read(FILE_SLICE_SIZE)
           file_slices_uploaded[fid] += 1
 
           if progress:

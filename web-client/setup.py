@@ -19,6 +19,9 @@
 # uploads to PyPi.  To install the package from another computer use:
 #
 # $ pip install slycat-web-client
+#
+# NOTE: Any local changes to slycat/web/client/__init__.py will be overwritten
+# when you run this command!  Changes should be made to pacakges/slycat/web/client
 
 from shutil import copyfile
 
