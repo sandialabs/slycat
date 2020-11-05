@@ -251,7 +251,6 @@ class VariableRangesRow extends React.PureComponent {
                 ${this.props.min_valid ? 'valid' : 'is-invalid'}
                 ${this.props.min_value !== '' ? 'contains-user-input' : ''}`} 
               name={this.props.min_name}
-              placeholder={this.props.data_min}
               value={this.props.min_value}
               onChange={this.props.handleChange}
             />
@@ -291,7 +290,6 @@ class VariableRangesRow extends React.PureComponent {
                 ${this.props.max_valid ? 'valid' : 'is-invalid'}
                 ${this.props.max_value !== '' ? 'contains-user-input' : ''}`}
               name={this.props.max_name}
-              placeholder={this.props.data_max}
               value={this.props.max_value}
               onChange={this.props.handleChange}
             />
