@@ -328,9 +328,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
                     <VariableRanges 
-                      metadata={this.props.metadata}
-                      table_statistics={this.props.table_statistics}
-                      variableAliases={this.props.variable_aliases}
+                      variables={this.props.numericScatterplotVariables}
                       variableRanges={this.props.variableRanges}
                       setVariableRange={this.props.setVariableRange}
                       clearVariableRange={this.props.clearVariableRange}
@@ -387,12 +385,38 @@ class ControlsButtonVarOptions extends React.PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
+
+  const variable_aliases = state.derived.variableAliases;
+
+  const getVariableAlias = (index) => {
+    if(variable_aliases[index] !== undefined)
+    {
+      return variable_aliases[index];
+    }
+    return ownProps.metadata['column-names'][index];
+  }
+
+  const numericScatterplotVariables = ownProps.metadata['column-names']
+    .flatMap((name, index) => {
+      if(ownProps.metadata['column-types'][index] != 'string')
+      {
+        return [{
+          index: index,
+          name: getVariableAlias(index),
+          min: ownProps.table_statistics[index].min,
+          max: ownProps.table_statistics[index].max,
+        }];
+      }
+      return [];
+    });
+
   return {
     font_size: state.fontSize,
     font_family: state.fontFamily,
     axes_variables_scale: state.axesVariables,
-    variable_aliases: state.derived.variableAliases,
+    variable_aliases: variable_aliases,
     variableRanges: state.variableRanges,
+    numericScatterplotVariables: numericScatterplotVariables,
   }
 }
 
