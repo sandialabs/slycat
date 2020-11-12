@@ -31,6 +31,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
 
+    this.threeDVariableRangesRef = React.createRef();
     this.variableRangesRef = React.createRef();
 
     this.modalId = 'varOptionsModal';
@@ -327,11 +328,22 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     />
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
+                    <h5>3D Variables</h5>
+                    <VariableRanges 
+                      variables={this.props.threeDVariables}
+                      variableRanges={this.props.three_d_variable_user_ranges}
+                      // setVariableRange={this.props.setVariableRange}
+                      // clearVariableRange={this.props.clearVariableRange}
+                      inputLabel="3D Legend"
+                      ref={this.threeDVariableRangesRef}
+                    />
+                    <h5>Scatterplot Variables</h5>
                     <VariableRanges 
                       variables={this.props.numericScatterplotVariables}
                       variableRanges={this.props.variableRanges}
                       setVariableRange={this.props.setVariableRange}
                       clearVariableRange={this.props.clearVariableRange}
+                      inputLabel="Axis"
                       ref={this.variableRangesRef}
                     />
                   </div>
@@ -409,6 +421,16 @@ const mapStateToProps = (state, ownProps) => {
       }
       return [];
     });
+  
+  const threeDVariables = Object.entries(state.three_d_variable_data_ranges)
+    .map(([key, value]) => {
+      return {
+        index: key,
+        name: key,
+        min: value.min,
+        max: value.max,
+      };
+    });
 
   return {
     font_size: state.fontSize,
@@ -417,6 +439,8 @@ const mapStateToProps = (state, ownProps) => {
     variable_aliases: variable_aliases,
     variableRanges: state.variableRanges,
     numericScatterplotVariables: numericScatterplotVariables,
+    threeDVariables: threeDVariables,
+    three_d_variable_user_ranges: state.three_d_variable_user_ranges,
   }
 }
 
