@@ -19,6 +19,9 @@ import {
   SET_SELECTED_BORDER_SIZE,
   SET_VARIABLE_RANGE,
   CLEAR_VARIABLE_RANGE,
+  ADJUST_THREE_D_VARIABLE_DATA_RANGE,
+  SET_THREE_D_VARIABLE_USER_RANGE,
+  CLEAR_THREE_D_VARIABLE_USER_RANGE,
   CLEAR_ALL_VARIABLE_RANGES,
   SET_X_VALUES,
   SET_Y_VALUES,
@@ -145,7 +148,8 @@ export default function ps_reducer(state = initialState, action) {
             ...state.derived.three_d_colorby_range,
             [action.uri]: {
               ...state.derived.three_d_colorby_range[action.uri],
-              [action.colorBy]: action.range
+              // action.range is an array, so we clone it to prevent the code that passed it from updating it
+              [action.colorBy]: action.range.slice(0)
             }
           }
         }
@@ -307,6 +311,23 @@ export default function ps_reducer(state = initialState, action) {
         variableRanges: variableRangesClone
       })
     
+    case ADJUST_THREE_D_VARIABLE_DATA_RANGE:
+      let current = state.three_d_variable_data_ranges[action.name];
+      let newMin = action.range[0];
+      let newMax = action.range[1];
+
+      const range = {
+        min: current ? Math.min(current.min, newMin) : newMin,
+        max: current ? Math.max(current.max, newMax) : newMax,
+      };
+
+      return Object.assign({}, state, {
+        three_d_variable_data_ranges: {
+          ...state.three_d_variable_data_ranges,
+          [action.name]: range
+        }
+      })
+    
     case CLEAR_ALL_VARIABLE_RANGES:
       return Object.assign({}, state, {
         variableRanges: {}
@@ -316,7 +337,7 @@ export default function ps_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         derived: {
           ...state.derived,
-          xValues: action.values
+          xValues: action.values.slice(0)
         }
       })
 
@@ -324,7 +345,7 @@ export default function ps_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         derived: {
           ...state.derived,
-          yValues: action.values
+          yValues: action.values.slice(0)
         }
       })
       
@@ -332,7 +353,7 @@ export default function ps_reducer(state = initialState, action) {
       return Object.assign({}, state, {
         derived: {
           ...state.derived,
-          vValues: action.values
+          vValues: action.values.slice(0)
         }
       })
       
@@ -353,7 +374,7 @@ export default function ps_reducer(state = initialState, action) {
       
     case SET_OPEN_MEDIA:
       return Object.assign({}, state, {
-        open_media: action.open_media
+        open_media: action.open_media.slice(0)
       })
       
     case SET_MEDIA_SIZE_POSITION:
