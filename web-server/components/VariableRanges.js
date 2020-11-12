@@ -157,51 +157,14 @@ export default class VariableRanges extends React.Component {
 
     let result = (
       <div className={`${this.class} ${this.props.uniqueID}`}>
-        <h5>3D Variables</h5>
         <table className='table table-striped table-hover table-sm table-borderless'>
           <thead>
             <tr>
               <th scope='col' className='align-top' />
               <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Min</th>
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>3D Min</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>{this.props.inputLabel} Min</th>
               <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`} />
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>3D Max</th>
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Max</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* {this.threeDVariables.map((variable, index) => {
-              let minName = this.getName(variable.index, true);
-              let maxName = this.getName(variable.index, false);
-              let minNameValid = `${minName}_valid`;
-              let maxNameValid = `${maxName}_valid`;
-
-              return (
-                <VariableRangesRow
-                  key={index}
-                  text_align={this.text_align}
-                  data_min={variable.dataMin}
-                  min_valid={this.state[minNameValid]}
-                  min_value={this.state[minName]}
-                  min_name={minName}
-                  data_max={variable.dataMax}
-                  max_valid={this.state[maxNameValid]}
-                  max_value={this.state[maxName]}
-                  max_name={maxName}
-                  handleChange={this.handleChange} />
-              );
-            })} */}
-          </tbody>
-        </table>
-        <h5>Scatterplot Variables</h5>
-        <table className='table table-striped table-hover table-sm table-borderless'>
-          <thead>
-            <tr>
-              <th scope='col' className='align-top' />
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Min</th>
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Axis Min</th>
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`} />
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Axis Max</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>{this.props.inputLabel} Max</th>
               <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Max</th>
             </tr>
           </thead>
