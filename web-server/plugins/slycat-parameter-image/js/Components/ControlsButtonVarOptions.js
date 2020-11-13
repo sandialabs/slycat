@@ -328,24 +328,63 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     />
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
-                    <h5>3D Variables</h5>
-                    <VariableRanges 
-                      variables={this.props.threeDVariables}
-                      variableRanges={this.props.three_d_variable_user_ranges}
-                      // setVariableRange={this.props.setVariableRange}
-                      // clearVariableRange={this.props.clearVariableRange}
-                      inputLabel="3D Legend"
-                      ref={this.threeDVariableRangesRef}
-                    />
-                    <h5>Scatterplot Variables</h5>
-                    <VariableRanges 
-                      variables={this.props.numericScatterplotVariables}
-                      variableRanges={this.props.variableRanges}
-                      setVariableRange={this.props.setVariableRange}
-                      clearVariableRange={this.props.clearVariableRange}
-                      inputLabel="Axis"
-                      ref={this.variableRangesRef}
-                    />
+                    <div class="accordion" id="accordionRanges">
+                      <div class="card">
+                        <div class="card-header" id="headingOne">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left" 
+                              type="button" 
+                              data-toggle="collapse" 
+                              data-target="#collapseOne" 
+                              aria-expanded="true" 
+                              aria-controls="collapseOne"
+                            >
+                              Scatterplot Variables
+                            </button>
+                          </h2>
+                        </div>
+
+                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionRanges">
+                          <div class="card-body">
+                            <VariableRanges 
+                              variables={this.props.numericScatterplotVariables}
+                              variableRanges={this.props.variableRanges}
+                              setVariableRange={this.props.setVariableRange}
+                              clearVariableRange={this.props.clearVariableRange}
+                              inputLabel="Axis"
+                              ref={this.variableRangesRef}
+                            />                        
+                          </div>
+                        </div>
+                      </div>
+                      <div class="card">
+                        <div class="card-header" id="headingTwo">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left collapsed" 
+                              type="button" 
+                              data-toggle="collapse" 
+                              data-target="#collapseTwo" 
+                              aria-expanded="false" 
+                              aria-controls="collapseTwo"
+                            >
+                              3D Variables
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionRanges">
+                          <div class="card-body">
+                          <VariableRanges 
+                            variables={this.props.threeDVariables}
+                            variableRanges={this.props.three_d_variable_user_ranges}
+                            // setVariableRange={this.props.setVariableRange}
+                            // clearVariableRange={this.props.clearVariableRange}
+                            inputLabel="3D Legend"
+                            ref={this.threeDVariableRangesRef}
+                          />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
@@ -424,9 +463,11 @@ const mapStateToProps = (state, ownProps) => {
   
   const threeDVariables = Object.entries(state.three_d_variable_data_ranges)
     .map(([key, value]) => {
+      const [pointOrCell, varName, component] = key.split(':');
+      const name = `${varName}${component ? `[${component}]` : ``}`;
       return {
         index: key,
-        name: key,
+        name: name,
         min: value.min,
         max: value.max,
       };
