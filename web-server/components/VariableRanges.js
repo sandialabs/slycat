@@ -204,6 +204,22 @@ export default class VariableRanges extends React.Component {
 }
 
 class VariableRangesRow extends React.PureComponent {
+
+  precise = (number) => {
+    const significantDigits = 7;
+    // Fractional digits for exponential notation should be 4 shorter than
+    // significant digits to create string about the same length.
+    const fractionDigits = significantDigits - 4;
+
+    let variations = [];
+    variations.push(number.toString());
+    variations.push(number.toPrecision(significantDigits));
+    variations.push(number.toExponential(fractionDigits));
+    
+    // Return shortest string, comparing orignal to precision to exponential
+    return variations.reduce((a, b) => a.length <= b.length ? a : b);
+  }
+
   render() {
     return (
       <tr key={this.props.index}>
@@ -214,7 +230,8 @@ class VariableRangesRow extends React.PureComponent {
         <td 
           className={`align-middle px-2 ${this.props.text_align} data-min`}
         >
-          {this.props.data_min}
+          <span className="imprecise">{this.precise(this.props.data_min)}</span>
+          <span className="precise">{this.props.data_min}</span>
         </td>
         <td className={`align-middle ${this.props.text_align} axis-min axis-input`}>
           <div className='input-group input-group-sm'>
@@ -282,7 +299,8 @@ class VariableRangesRow extends React.PureComponent {
           </div>
         </td>
         <td className={`align-middle px-2 ${this.props.text_align} data-max`}>
-          {this.props.data_max}
+          <span className="imprecise">{this.precise(this.props.data_max)}</span>
+          <span className="precise">{this.props.data_max}</span>
         </td>
       </tr>
     );

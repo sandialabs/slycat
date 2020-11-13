@@ -41,4 +41,22 @@
     justify-content: center;
   }
 
+  .precise,
+  .imprecise,
+  {
+    overflow-wrap: normal;
+  }
+
+  .precise {
+    display: none;
+  }
+  
+  // Swap precise and imprecise when hovering on containing cell
+  td:hover .precise {
+    display: inline;
+  }
+  td:hover .imprecise {
+    display: none;
+  }
+
 }
