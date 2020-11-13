@@ -27,6 +27,26 @@ import { faUndo } from '@fortawesome/free-solid-svg-icons'
 export const DEFAULT_FONT_SIZE = 15;
 export const DEFAULT_FONT_FAMILY = 'Arial';
 
+class Caret extends React.Component {
+  render() {
+    return (
+      <>
+      <svg width="1em" height="1em" viewBox="0 0 16 16"
+        className="bi bi-caret-right-fill ml-2 mb-1"
+        fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
+      </svg>
+      <svg width="1em" height="1em" viewBox="0 0 16 16"
+        className="bi bi-caret-down-fill ml-2 mb-1"
+        fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+      </svg>
+      </>
+    );
+  }
+}
 class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -328,11 +348,11 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     />
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
-                    <div class="accordion" id="accordionRanges">
-                      <div class="card">
-                        <div class="card-header" id="headingOne">
-                          <h2 class="mb-0">
-                            <button class="btn btn-link btn-block text-left" 
+                    <div className="accordion" id="accordionRanges">
+                      <div className="card">
+                        <div className="card-header" id="headingOne">
+                          <h2 className="mb-0">
+                            <button className="btn btn-link btn-block text-center" 
                               type="button" 
                               data-toggle="collapse" 
                               data-target="#collapseOne" 
@@ -340,12 +360,13 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               aria-controls="collapseOne"
                             >
                               Scatterplot Variables
+                              <Caret />
                             </button>
                           </h2>
                         </div>
 
-                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionRanges">
-                          <div class="card-body">
+                        <div id="collapseOne" className="collapse show" aria-labelledby="headingOne" data-parent="#accordionRanges">
+                          <div className="card-body">
                             <VariableRanges 
                               variables={this.props.numericScatterplotVariables}
                               variableRanges={this.props.variableRanges}
@@ -357,10 +378,10 @@ class ControlsButtonVarOptions extends React.PureComponent {
                           </div>
                         </div>
                       </div>
-                      <div class="card">
-                        <div class="card-header" id="headingTwo">
-                          <h2 class="mb-0">
-                            <button class="btn btn-link btn-block text-left collapsed" 
+                      <div className="card">
+                        <div className="card-header" id="headingTwo">
+                          <h2 className="mb-0">
+                            <button className="btn btn-link btn-block text-center collapsed" 
                               type="button" 
                               data-toggle="collapse" 
                               data-target="#collapseTwo" 
@@ -368,11 +389,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               aria-controls="collapseTwo"
                             >
                               3D Variables
+                              <Caret />
                             </button>
                           </h2>
                         </div>
-                        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionRanges">
-                          <div class="card-body">
+                        <div id="collapseTwo" className="collapse" aria-labelledby="headingTwo" data-parent="#accordionRanges">
+                          <div className="card-body">
                           <VariableRanges 
                             variables={this.props.threeDVariables}
                             variableRanges={this.props.three_d_variable_user_ranges}
