@@ -13,7 +13,7 @@ import shlex
 import getpass
 import json
 import requests
-from requests_gssapi import HTTPSPNEGOAuth
+from requests_kerberos import HTTPKerberosAuth, OPTIONAL
 import requests.exceptions as exceptions
 
 # turn off warning for insecure connections
@@ -176,11 +176,12 @@ class Connection(object):
     if self.kerberos:
 
       # get Kerberos ticket granting ticket
-      self.session.auth = HTTPSPNEGOAuth()
+      self.session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL,
+                                           force_preemptive=True)
 
       # check that ticket is valid using list markings
       url = self.host + "/api/configuration/markings"
-      response = self.session.get(url)
+      response = self.session.get(url, auth=self.session.auth)
 
       if response.status_code == 401:
         cherrypy.log.error(

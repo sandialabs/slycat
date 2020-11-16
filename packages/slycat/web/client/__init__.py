@@ -176,7 +176,8 @@ class Connection(object):
     if self.kerberos:
 
       # get Kerberos ticket granting ticket
-      self.session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL)
+      self.session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL,
+                                           force_preemptive=True)
 
       # check that ticket is valid using list markings
       url = self.host + "/api/configuration/markings"
