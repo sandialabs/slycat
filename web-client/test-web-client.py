@@ -25,12 +25,15 @@ import slycat.web.client.dac_tdms as dac_tdms
 SLYCAT_CONNECTION = ['--user', 'slycat', '--password', 'slycat',
                      '--port', '9000', '--no-verify']
 
-# tdms marking for localhost
-TDMS_MARKING = ['--marking', 'faculty']
+# test marking for localhost
+TEST_MARKING = ['--marking', 'faculty']
 
 # slycat connection for qual
-# SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
-#                      '--kerberos']
+SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
+                     '--kerberos']
+
+# test marking for qual
+TEST_MARKING = ['--marking', 'ouo3']
 
 # testing project name
 TEST_PROJECT = ['--project-name', 'Unit/Integration Testing']
@@ -99,7 +102,8 @@ class TestSlycatWebClient(unittest.TestCase):
         """
 
         # create random CCA model
-        arguments = cca_random.parse_arguments(SLYCAT_CONNECTION + TEST_PROJECT)
+        arguments = cca_random.parse_arguments(SLYCAT_CONNECTION + TEST_MARKING +
+                                               TEST_PROJECT)
         arguments, connection = self.connect_to_server(arguments)
         mid = cca_random.main(arguments, connection)
 
@@ -111,8 +115,8 @@ class TestSlycatWebClient(unittest.TestCase):
 
         # create TDMS model from one file
         tdms_parser = dac_tdms.parser()
-        arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_FILE
-                                           + TDMS_MARKING + TEST_PROJECT)
+        arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_FILE +
+                                           TEST_MARKING + TEST_PROJECT)
         dac_tdms.create_model(arguments, dac_tdms.log)
 
     @ignore_warnings
@@ -123,8 +127,8 @@ class TestSlycatWebClient(unittest.TestCase):
 
         # create TDMS model from zip file
         tdms_parser = dac_tdms.parser()
-        arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP
-                                           + TDMS_MARKING + TEST_PROJECT)
+        arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP +
+                                           TEST_MARKING + TEST_PROJECT)
         dac_tdms.create_model(arguments, dac_tdms.log)
 
 if __name__ == '__main__':
