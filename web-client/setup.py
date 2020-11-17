@@ -38,7 +38,7 @@ copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 import slycat
 VERSION = slycat.__version__
 
-VERSION = VERSION
+VERSION = VERSION + "dev12"
 
 # get README.md
 import pathlib
@@ -72,7 +72,7 @@ setup(
     ],
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=["requests", "requests_gssapi",
+    install_requires=["requests", "requests-kerberos",
                       "numpy", "cherrypy"],
     entry_points={
         "console_scripts": [
