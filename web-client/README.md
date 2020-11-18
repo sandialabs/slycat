@@ -117,6 +117,9 @@ $ export NO_PROXY="localhost,slycat.server"
 where the list "localhost,slycat.server" includes any other URLs where you don't
 need a proxy.
 
+These environment variables can often be set using an IDE as well, often under the
+"preferences" option.
+ 
 ## General Utilities
 
 The simplest examples of interacting with the Slycat server issue

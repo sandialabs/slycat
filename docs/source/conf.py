@@ -16,6 +16,10 @@
 
 import sys
 import os
+
+# add in slycat packages for autodoc
+sys.path.insert(0, os.path.abspath('../../packages'))
+
 class module_proxy(object):
   __all__ = []
 
@@ -36,7 +40,11 @@ class module_proxy(object):
     else:
       return module_proxy()
 
-for module_name in ["couchdb", "couchdb.client", "h5py", "numpy", "paramiko", "pyparsing", "pystache", "scipy", "scipy.linalg", "scipy.cluster", "scipy.cluster.hierarchy", "scipy.spatial", "scipy.spatial.distance", "scipy.stats", "slycat.hyperchunks.grammar"]:
+for module_name in ["couchdb", "couchdb.client", "h5py", "numpy", 
+                    "paramiko", "pyparsing", "pystache", "scipy", 
+                    "scipy.linalg", "scipy.cluster", "scipy.cluster.hierarchy", 
+                    "scipy.spatial", "scipy.spatial.distance", "scipy.stats", 
+                    "slycat.hyperchunks.grammar"]:
   sys.modules[module_name] = module_proxy()
 
 # -- Project information -----------------------------------------------------
