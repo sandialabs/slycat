@@ -1,5 +1,5 @@
 # Slycat Web Client
-> The Slycat web client provides a Python package for interacting with the Slycat web server.
+The Slycat web client provides a Python package for interacting with the Slycat web server.
 
 Slycat is a web based data analysis and visualization platform created at Sandia
 National Labs.  You can read about it at https://slycat.readthedocs.io/en/latest/.
@@ -14,6 +14,14 @@ to query the Slycat server and create Slycat data analysis models.
 ```sh
 pip install slycat-web-client
 ```
+
+If you are working behind a proxy, you might also need, e.g.
+
+```sh
+pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
+```
+
+or some variation.
 
 **Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
 
@@ -70,6 +78,46 @@ use:
 ```sh
 $ python -m slycat.web.client.list_markings.py --host https://slycat.sandia.gov --kerberos
 ```
+
+## Kerberos
+
+The --kerberos option relies on a working Kerberos installation on your system.  Sometimes
+this will fail.  If you get a stack trace related to Kerberos credentials (e.g. "Matching
+credential not found."), run "kinit" then try again.
+
+## Proxies
+
+If you are separated from the Slycat server by a proxy (for whatever reason), you will
+most likely have to set some environment variablers.  Often setting HTTPS_PROXY will work.
+On Windows this is done using:
+
+```sh
+$ set HTTPS_PROXY=https://your.proxy:your_port
+```
+
+Or on a Unix system, using:
+
+```sh
+$ export HTTPS_PROXY=your.proxy:your_port
+```
+
+On the other hand, if you are trying to access the Slycat server from behind a firewall,
+where the server is also behind the firewall, you may have to "unset" your proxy.  This
+is usually accomplished using the "NO_PROXY" environment variable.  You can put
+the Slycat server in the NO_PROXY list using, e.g.
+
+```sh
+$ set NO_PROXY=localhost,slycat.server
+```
+
+in Windows, or in Unix (including Mac):
+
+```sh
+$ export NO_PROXY="localhost,slycat.server"
+```
+
+where the list "localhost,slycat.server" includes any other URLs where you don't
+need a proxy.
 
 ## General Utilities
 
@@ -174,7 +222,7 @@ Depending on how many models are being created, it is helpful to
 use the "--log_file" flag to specify a log file for recording any
 errors in the upload process.
 
-## Meta
+## Contact
 
 Shawn Martin -- smartin@sandia.gov
 
