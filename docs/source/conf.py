@@ -20,6 +20,7 @@ import os
 # add in slycat packages for autodoc
 sys.path.insert(0, os.path.abspath('../../packages'))
 
+# this code excludes some modules from the documentation
 class module_proxy(object):
   __all__ = []
 

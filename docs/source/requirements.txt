@@ -1,3 +1,4 @@
 cherrypy
 sphinx_rtd_theme
 sphinxcontrib-httpdomain
+requests-kerberos
