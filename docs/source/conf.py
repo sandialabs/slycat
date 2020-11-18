@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath('../../packages'))
 
 # read the docs fails trying to build requests-kerberos
 # so we are using a mock import
-autodoc_mock_imports = ["requests-kerberos"]
+autodoc_mock_imports = ["requests_kerberos"]
 
 # this code excludes some modules from the documentation
 class module_proxy(object):
