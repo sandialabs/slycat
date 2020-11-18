@@ -21,7 +21,8 @@ If you are working behind a proxy, you might also need, e.g.
 pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
 ```
 
-**Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
+Note: that for the Slycat web client to work, you must have a Slycat server running.  
+See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.
 
 ## Basic Use
 
@@ -218,6 +219,11 @@ described.
 Depending on how many models are being created, it is helpful to
 use the "--log_file" flag to specify a log file for recording any
 errors in the upload process.
+
+## API
+
+You should be able to find the API for slycat.web.client at 
+https://slycat.readthedocs.io/en/latest/.
 
 ## Contact
 
