@@ -18,7 +18,7 @@ This is Slycat - a web-based ensemble analysis and visualization platform, creat
 [Latest documentation can be found here](https://slycat.readthedocs.io/en/latest/).
 
 # Slycat Demo
-You can try out slycat at https://myslycat.com
+You can try out slycat at https://myslycat.com.
 
 Username: demo  
 Password: demo
