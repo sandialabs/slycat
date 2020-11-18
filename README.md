@@ -25,8 +25,8 @@ Password: demo
 
 The data in this demo instance of Slycat is erased on a regular basis, so please don't upload anything you intend to keep.
 
-# [Slycat-data](https://github.com/sandialabs/slycat-data)
-A github repo of sample data that can be used by slycat.
+# Slycat Data
+A github repo of sample data that can be used by slycat is at [slycat-data](https://github.com/sandialabs/slycat-data).
 
 ****
 
