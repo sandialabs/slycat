@@ -21,8 +21,6 @@ If you are working behind a proxy, you might also need, e.g.
 pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
 ```
 
-or some variation.
-
 **Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
 
 ## Basic Use
@@ -60,9 +58,8 @@ These are described in greater detail below.
 
 ## User Authentication
 
-The Slycat server requires user authentication.  Each example in This
-directory takes the same inputs for the authentication process, the
-options being provided by the slycat.web.client module.
+The Slycat server requires user authentication.  The slycat.web.client
+module provides the options for the authentication process.
 
 For example, to use standard password authentication for a Slycat
 server running on https://localhost:9000 without a security certificate,
@@ -95,7 +92,7 @@ On Windows this is done using:
 $ set HTTPS_PROXY=https://your.proxy:your_port
 ```
 
-Or on a Unix system, using:
+Or on a Unix system (incuding Mac), using:
 
 ```sh
 $ export HTTPS_PROXY=your.proxy:your_port
