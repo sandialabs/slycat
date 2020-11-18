@@ -12,7 +12,7 @@ export default class VariableRanges extends React.Component {
     let inputsArray = this.props.variables.map((variable, index) => {
       let min = '';
       let max = '';
-      let bookmark = this.props.variableRanges[variable.index];
+      let bookmark = this.props.variableRanges[variable.key];
       if (bookmark) 
       {
         min = bookmark.min != undefined ? bookmark.min : '';
@@ -128,11 +128,12 @@ export default class VariableRanges extends React.Component {
 
   validateMinOrMax = (inputString, inputNum, min, compare, index) => {
     // console.log('validateMinOrMax');
+    const key = this.props.variables[index].key;
     // Empty field is always valid because the data value overrides it
     if(inputString === '')
     {
       // Clear min or max in redux store since it's blank
-      this.props.clearVariableRange(index, min ? 'min' : 'max');
+      this.props.clearVariableRange(key, min ? 'min' : 'max');
       return true;
     }
     // NaNs are invalid
@@ -143,11 +144,11 @@ export default class VariableRanges extends React.Component {
     else if(min ? inputNum < compare : inputNum > compare)
     {
       // Save min or max to redux store since it's valid
-      this.props.setVariableRange(index, inputNum, min ? 'min' : 'max');
+      this.props.setVariableRange(key, inputNum, min ? 'min' : 'max');
       return true;
     }
     // Clear min or max in redux store when invalid
-    this.props.clearVariableRange(index, min ? 'min' : 'max');
+    this.props.clearVariableRange(key, min ? 'min' : 'max');
     return false;
   }
 

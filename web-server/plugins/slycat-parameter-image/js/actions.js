@@ -22,6 +22,7 @@ export const CLEAR_ALL_VARIABLE_RANGES = 'CLEAR_ALL_VARIABLE_RANGES'
 export const ADJUST_THREE_D_VARIABLE_DATA_RANGE = 'ADJUST_THREE_D_VARIABLE_DATA_RANGE'
 export const SET_THREE_D_VARIABLE_USER_RANGE = 'SET_THREE_D_VARIABLE_USER_RANGE'
 export const CLEAR_THREE_D_VARIABLE_USER_RANGE = 'CLEAR_THREE_D_VARIABLE_USER_RANGE'
+export const CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES = 'CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES'
 export const SET_X_VALUES = 'SET_X_VALUES'
 export const SET_Y_VALUES = 'SET_Y_VALUES'
 export const SET_V_VALUES = 'SET_V_VALUES'
@@ -195,17 +196,23 @@ export function adjustThreeDVariableDataRange(name, range) {
 export function setThreeDVariableUserRange(name, value, minOrMax) {
   return { 
     type: SET_THREE_D_VARIABLE_USER_RANGE, 
-    name: name, 
-    value: value, 
-    minOrMax: minOrMax, 
+    name, 
+    value, 
+    minOrMax, 
   }
 }
 
 export function clearThreeDVariableUserRange(name, minOrMax) {
   return { 
     type: CLEAR_THREE_D_VARIABLE_USER_RANGE, 
-    name: name, 
-    minOrMax: minOrMax, 
+    name, 
+    minOrMax, 
+  }
+}
+
+export function clearAllThreeDVariableUserRanges() {
+  return { 
+    type: CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES,
   }
 }
 

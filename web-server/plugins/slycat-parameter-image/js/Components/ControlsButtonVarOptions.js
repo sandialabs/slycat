@@ -8,6 +8,9 @@ import {
   setVariableRange,
   clearVariableRange,
   clearAllVariableRanges,
+  setThreeDVariableUserRange,
+  clearThreeDVariableUserRange,
+  clearAllThreeDVariableUserRanges,
 } from '../actions';
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
@@ -27,7 +30,7 @@ import { faUndo } from '@fortawesome/free-solid-svg-icons'
 export const DEFAULT_FONT_SIZE = 15;
 export const DEFAULT_FONT_FAMILY = 'Arial';
 
-class Caret extends React.Component {
+class Caret extends React.PureComponent {
   render() {
     return (
       <>
@@ -47,12 +50,29 @@ class Caret extends React.Component {
     );
   }
 }
+
+class ClearAllButton extends React.PureComponent {
+  render() {
+    return (
+      <div className="text-center">
+        <button type='button' 
+          className='btn btn-danger mx-2 mb-2 mt-2' 
+          disabled={this.props.disable}
+          onClick={this.props.handleClick}
+        >
+          {this.props.label}
+        </button>
+      </div>
+    );
+  }
+}
+
 class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    this.threeDVariableRangesRef = React.createRef();
     this.variableRangesRef = React.createRef();
+    this.threeDVariableRangesRef = React.createRef();
 
     this.modalId = 'varOptionsModal';
     this.title = 'Display Settings';
@@ -127,7 +147,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
   clearAllVariableRanges = () => {
     const self = this;
     dialog.confirm({
-      title: 'Clear All Variable Ranges',
+      title: 'Clear All Scatterplot Variable Ranges',
       message: 'This will erase all Axis Min and Axis Max values that have been entered.',
       ok: function(){
         // First clear all variable ranges in Redux state;
@@ -135,6 +155,24 @@ class ControlsButtonVarOptions extends React.PureComponent {
         // Then let VariableRanges component know this happened because it needs
         // to update its local state accordingly. 
         self.variableRangesRef.current.clearAllVariableRanges();
+      },
+      cancel: function(){
+        // Do nothing if cancel. The confirmation dialog will just close.
+      }
+    });
+  }
+
+  clearAllThreeDVariableUserRanges = () => {
+    const self = this;
+    dialog.confirm({
+      title: 'Clear All 3D Variable Ranges',
+      message: 'This will erase all 3D Legend Min and Max values that have been entered.',
+      ok: function(){
+        // First clear all variable ranges in Redux state;
+        self.props.clearAllThreeDVariableUserRanges();
+        // Then let VariableRanges component know this happened because it needs
+        // to update its local state accordingly. 
+        self.threeDVariableRangesRef.current.clearAllVariableRanges();
       },
       cancel: function(){
         // Do nothing if cancel. The confirmation dialog will just close.
@@ -374,7 +412,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
                               clearVariableRange={this.props.clearVariableRange}
                               inputLabel="Axis"
                               ref={this.variableRangesRef}
-                            />                        
+                            />
+                            <ClearAllButton 
+                              label="Clear All Scatterplot Variable Ranges"
+                              disable={Object.keys(this.props.variableRanges).length === 0}
+                              handleClick={this.clearAllVariableRanges}
+                            />
                           </div>
                         </div>
                       </div>
@@ -395,14 +438,19 @@ class ControlsButtonVarOptions extends React.PureComponent {
                         </div>
                         <div id="collapseTwo" className="collapse" aria-labelledby="headingTwo" data-parent="#accordionRanges">
                           <div className="card-body">
-                          <VariableRanges 
-                            variables={this.props.threeDVariables}
-                            variableRanges={this.props.three_d_variable_user_ranges}
-                            // setVariableRange={this.props.setVariableRange}
-                            // clearVariableRange={this.props.clearVariableRange}
-                            inputLabel="3D Legend"
-                            ref={this.threeDVariableRangesRef}
-                          />
+                            <VariableRanges 
+                              variables={this.props.threeDVariables}
+                              variableRanges={this.props.three_d_variable_user_ranges}
+                              setVariableRange={this.props.setThreeDVariableUserRange}
+                              clearVariableRange={this.props.clearThreeDVariableUserRange}
+                              inputLabel="3D Legend"
+                              ref={this.threeDVariableRangesRef}
+                            />
+                            <ClearAllButton 
+                              label="Clear All 3D Variable Ranges"
+                              disable={Object.keys(this.props.three_d_variable_user_ranges).length === 0}
+                              handleClick={this.clearAllThreeDVariableUserRanges}
+                            />
                           </div>
                         </div>
                       </div>
@@ -423,13 +471,6 @@ class ControlsButtonVarOptions extends React.PureComponent {
               </div>
               <div className='modal-footer'>
                 <div className='mr-auto'>
-                  <button type='button' 
-                    className='btn btn-danger mr-2 tabDependent variable-ranges-tab-content d-none' 
-                    disabled={Object.keys(this.props.variableRanges).length === 0}
-                    onClick={this.clearAllVariableRanges}
-                  >
-                    Clear All Variable Ranges
-                  </button>
                   <button type='button' 
                     className='btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none'
                     disabled={Object.keys(this.props.variable_aliases).length === 0}
@@ -474,6 +515,7 @@ const mapStateToProps = (state, ownProps) => {
       if(ownProps.metadata['column-types'][index] != 'string')
       {
         return [{
+          key: index,
           index: index,
           name: getVariableAlias(index),
           min: ownProps.table_statistics[index].min,
@@ -484,11 +526,12 @@ const mapStateToProps = (state, ownProps) => {
     });
   
   const threeDVariables = Object.entries(state.three_d_variable_data_ranges)
-    .map(([key, value]) => {
+    .map(([key, value], index) => {
       const [pointOrCell, varName, component] = key.split(':');
       const name = `${varName}${component ? `[${component}]` : ``}`;
       return {
-        index: key,
+        key: key,
+        index: index,
         name: name,
         min: value.min,
         max: value.max,
@@ -518,5 +561,8 @@ export default connect(
     setVariableRange,
     clearVariableRange,
     clearAllVariableRanges,
+    setThreeDVariableUserRange,
+    clearThreeDVariableUserRange,
+    clearAllThreeDVariableUserRanges,
   }
 )(ControlsButtonVarOptions)

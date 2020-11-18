@@ -19,10 +19,11 @@ import {
   SET_SELECTED_BORDER_SIZE,
   SET_VARIABLE_RANGE,
   CLEAR_VARIABLE_RANGE,
+  CLEAR_ALL_VARIABLE_RANGES,
   ADJUST_THREE_D_VARIABLE_DATA_RANGE,
   SET_THREE_D_VARIABLE_USER_RANGE,
   CLEAR_THREE_D_VARIABLE_USER_RANGE,
-  CLEAR_ALL_VARIABLE_RANGES,
+  CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES,
   SET_X_VALUES,
   SET_Y_VALUES,
   SET_V_VALUES,
@@ -311,6 +312,11 @@ export default function ps_reducer(state = initialState, action) {
         variableRanges: variableRangesClone
       })
     
+    case CLEAR_ALL_VARIABLE_RANGES:
+      return Object.assign({}, state, {
+        variableRanges: {}
+      })
+    
     case ADJUST_THREE_D_VARIABLE_DATA_RANGE:
       let current = state.three_d_variable_data_ranges[action.name];
       let newMin = action.range[0];
@@ -328,9 +334,36 @@ export default function ps_reducer(state = initialState, action) {
         }
       })
     
-    case CLEAR_ALL_VARIABLE_RANGES:
+    case SET_THREE_D_VARIABLE_USER_RANGE:
       return Object.assign({}, state, {
-        variableRanges: {}
+        three_d_variable_user_ranges: {
+          ...state.three_d_variable_user_ranges,
+          [action.name]: {
+            ...state.three_d_variable_user_ranges[action.name],
+            [action.minOrMax]: action.value
+          }
+        }
+      })
+    
+    case CLEAR_THREE_D_VARIABLE_USER_RANGE:
+      let three_d_variable_user_ranges_clone = Object.assign({}, state.three_d_variable_user_ranges);
+      if(three_d_variable_user_ranges_clone[action.name] != undefined)
+      {
+        delete three_d_variable_user_ranges_clone[action.name][action.minOrMax];
+        // Delete the entire entry if there is no other value in it (min or max)
+        if(Object.keys(three_d_variable_user_ranges_clone[action.name]).length === 0)
+        {
+          delete three_d_variable_user_ranges_clone[action.name];
+        }
+      }
+
+      return Object.assign({}, state, {
+        three_d_variable_user_ranges: three_d_variable_user_ranges_clone
+      })
+    
+    case CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES:
+      return Object.assign({}, state, {
+        three_d_variable_user_ranges: {}
       })
 
     case SET_X_VALUES:
