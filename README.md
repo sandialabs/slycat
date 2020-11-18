@@ -11,11 +11,11 @@ This is Slycat - a web-based ensemble analysis and visualization platform, creat
 
 # Quick Start
 
-[Build Your own local slycat environment with docker-compose](https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose)
+[Build Your own local slycat environment with docker-compose](https://github.com/sandialabs/slycat/tree/master/docker/compose/slycat-compose).
 
 # Documentation
 
-[Latest documentation can be found here](https://slycat.readthedocs.io/en/latest/)
+[Latest documentation can be found here](https://slycat.readthedocs.io/en/latest/).
 
 # Slycat Demo
 You can try out slycat at https://myslycat.com
@@ -46,7 +46,7 @@ A github repo of sample data that can be used by slycat is at [slycat-data](http
 
 ![alt tag](https://github.com/sandialabs/slycat/blob/master/docs/source/Sample-Images/ParameterSpaceExploration/LevelsOfAbstraction3.png)
 
-##Sensitivity Analysis
+## Sensitivity Analysis
 1. Model Understanding 
 2. Model Validation
 3. Model Simplification
@@ -68,7 +68,6 @@ A github repo of sample data that can be used by slycat is at [slycat-data](http
 ## Anomaly Detection
 1. Unique Features
 2. Bugs
-
 
 ![alt tag](https://github.com/sandialabs/slycat/blob/master/docs/source/Sample-Images/Anomaly%20detection/AnomalyDetection1.png)
 ![alt tag](https://github.com/sandialabs/slycat/blob/master/docs/source/Sample-Images/Anomaly%20detection/AnomalyDetection2.png)
