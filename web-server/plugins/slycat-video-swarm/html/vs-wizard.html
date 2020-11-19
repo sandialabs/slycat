@@ -190,14 +190,14 @@ S. Martin
             title="When creating a VideoSwarm model, Slycat needs the location of your movies. All movies must be located in a single, persistent directory."
           ></i>
         </label>
-        <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir, disable: movie_source() == 'col'"></input>
+        <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir, disable: movie_source() == 'col' || movie_source() == null"></input>
         <div className="alert alert-warning" data-bind="visible:movies_exist() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
           <p className='mt-3'>We weren't able to locate your movies. Please verify that the provided path is correct.</p>
         </div>
         <label style="margin-top:15px">
           <input class="form-check-input" type="radio" name="movie-source-radios" id="col-radio" value="col" data-bind="checked: movie_source">
           Please choose column of CSV file with links to video files (format .mp4).</label>
-        <select data-bind="options: vs_media_columns, optionsCaption: 'Select an item...', disable: movie_source() == 'dir'" class="form-control" id="vs-remote-movie-selector">
+        <select data-bind="options: vs_media_columns, optionsCaption: 'Select an item...', disable: movie_source() == 'dir' || movie_source() == null" class="form-control" id="vs-remote-movie-selector">
         </select>
       </div>
         <head>
@@ -219,7 +219,7 @@ S. Martin
           </style>
         </head>
         <div data-bind="visible: user_char_selection()" style="margin-left:30px">
-          <label>We need to name your new movies. Please click on the first character of the simulation ID.</label>
+          <label>We need to name your new movies, or locate your existing ones. Please click on the first character of the simulation ID.</label>
           <i class="fa fa-question-circle inline-help" aria-hidden="true"
             title="When VideoSwarm creates movies for you, they will all be located in a single directory. We need to ensure that your movies have unique names. By selecting the first character of the simulation ID, we can use that ID to make each movie name unique."
           ></i>

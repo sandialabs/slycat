@@ -96,7 +96,7 @@ def parse_command_line ():
     #################################
 
     # decision to generate movies
-    parser.add_argument("--generate_movies", action="store_true",
+    parser.add_argument("--generate_movies",
                         help="generate movies")
 
     # if generate_movies is true, must also provide
@@ -107,7 +107,7 @@ def parse_command_line ():
     # if generate_movies is false, must provide instead
 
     # column of movies
-    parser.add_argument("--movie_col", default=None, type=int,
+    parser.add_argument("--movie_col", default=None,
                         help="column number (indexed by 1) with the movie files "
                             "(can't use with --generate_movies).")
 
@@ -119,7 +119,7 @@ def parse_command_line ():
                         help="log file for job status (optional)")
 
     # decision to replace existing movies
-    parser.add_argument("--replace_movies", action="store_true",
+    parser.add_argument("--replace_movies", default=None,
                         help="replace existing movies.")
 
     # naming template for the simulation
@@ -193,12 +193,12 @@ def check_command_line_args(args, log):
         sys.exit()
 
     # check presence of both conditional arguments
-    if args.movie_col and args.generate_movies:
+    if args.movie_col != 'None' and args.generate_movies == 'true':
         log("[VS-LOG] Error: can't use both --generate_movies and --movie_col.")
         sys.exit()
 
     # check conditional mandatory arguments
-    if args.generate_movies:
+    if args.generate_movies == 'true':
 
         # check that movie directory was specified
         if args.movie_dir == None:
@@ -216,17 +216,17 @@ def check_command_line_args(args, log):
                 sys.exit()
 
     # otherwise check to see if movie column was provided and >= 1
-    else:
+    # else:
         
         # movie column provided
-        if args.movie_col == None:
-            log('[VS-LOG] Error: must either generate movies or specify movie column.')
-            sys.exit()
+        # if args.movie_col == 'None':
+        #     log('[VS-LOG] Error: must either generate movies or specify movie column.')
+        #     sys.exit()
         
         # movie col is >= 1
-        if args.movie_col <= 0:
-            log('[VS-LOG] Error: movie column must be >= 1.')
-            sys.exit()
+        # if args.movie_col <= 0:
+        #     log('[VS-LOG] Error: movie column must be >= 1.')
+        #     sys.exit()
 
     # check optional arguments
     if args.group_size <= 0:
@@ -261,7 +261,7 @@ def init_working_dirs (args, log):
         os.makedirs(args.output_dir)
 
     # check to see if movies directory exists
-    if args.generate_movies:
+    if args.generate_movies == 'true':
         if not os.path.exists(args.movie_dir):
 
             # make directory if it does not exist
@@ -307,7 +307,7 @@ def read_csv(args, log):
 
     # get file names of movies
     movie_files = []
-    if args.movie_col:
+    if args.movie_col != 'None':
         movie_files = [movie_file[int(args.movie_col) - 1] for movie_file in meta_data]
         movie_files = movie_files[1:]
 
@@ -326,17 +326,27 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files):
     num_frames = 0
     all_frame_files = []
     for i in range(0, num_movies):
-        
+
         # create movie, if requested
-        if args.generate_movies:
+        if (args.generate_movies == 'true' and args.replace_movies == 'None') or (args.generate_movies == 'true' and args.replace_movies == 'true'):
             movie_name = create_movie(args, log, frame_files, i)
 
             # keep track of movie files created
+            movie_files.append(movie_name)
+        elif (args.generate_movies == 'false' and args.movie_dir != 'None') or (args.generate_movies == 'true' and args.replace_movies == 'false'):
+            movie_input, movie_output, file_location, frame_file_path = create_movie_name(args, log, frame_files, i)
+            movie_name = file_location + movie_output
             movie_files.append(movie_name)
 
         # isolate first frame file
         frame_file_path, frame_file_name = \
             os.path.split(urllib.parse.urlparse(frame_files[i]).path)
+
+        if args.generate_movies == 'false' and args.movie_dir != 'None':
+            if args.sim_id_template != None:
+                frame_file_path_split = frame_file_path.split(args.sim_id_template)
+                frame_file_path_split = frame_file_path_split[1].split('/')
+                simulation_id = '.simulation.' + frame_file_path_split[0]             
 
         # check for at least two dots in frame file name
         frame_split = frame_file_name.split('.')
@@ -410,15 +420,13 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files):
 
     return num_frames, num_pixels, all_frame_files, movie_files, vid_duration
 
-# create movie i
-def create_movie(args, log, frame_files, i):
-
+def create_movie_name(args, log, frame_files, i):
     # isolate first frame file
     frame_file_path, frame_file_name = \
         os.path.split(urllib.parse.urlparse(frame_files[i]).path)
 
     # get simulation identifier for movie generation
-    if args.sim_id_template != None:
+    if args.sim_id_template != 'None':
         frame_file_path_split = frame_file_path.split(args.sim_id_template)
         frame_file_path_split = frame_file_path_split[1].split('/')
         simulation_id = '.simulation.' + frame_file_path_split[0]
@@ -441,10 +449,15 @@ def create_movie(args, log, frame_files, i):
     else:
         movie_output = args.movie_dir + '/' + identifier + simulation_id + '.%d.mp4' % (i+1)
 
-    log("[VS-LOG] Creating movie " + movie_output)
-
     # frames to make into movie
     movie_input = frame_file_path + '/' +  identifier + '*.jpg'
+
+    return movie_input, movie_output, file_location, frame_file_path
+
+# create movie i
+def create_movie(args, log, frame_files, i):
+
+    movie_input, movie_output, file_location, frame_file_path = create_movie_name(args, log, frame_files, i)
 
     #create the movie
     ff = ffmpy.FFmpeg(
@@ -765,9 +778,8 @@ def output_VS_files(args, log, meta_data, movie_files, vid_duration,
                     num_frames, xcoords, ycoords):
 
     log("[VS-LOG] Writing movies.csv file ...")
-
     # add a column to the end of the csv with created movie files
-    if args.movie_col == None:
+    if args.movie_col == 'None':
         log("[VS-LOG] Creating movie column.")
         for i in range(0, (len(meta_data))):
             if i == 0:
