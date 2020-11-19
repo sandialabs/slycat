@@ -538,11 +538,6 @@ component.reauth = function() {
                       });
                       component.movies_exist(movies_exist);
 
-                      console.log(component.movie_source());
-                      if(component.movie_source() == 'dir') {
-                        console.log("Movie directory selected.");
-                      }
-
                       // Check if user char selection is necessary 
                       if((component.generate_movies() == 'true' && component.replace_movies() == 'true') || 
                       (component.generate_movies() == 'true' && component.movies_exist() == false) ||
