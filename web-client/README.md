@@ -80,45 +80,36 @@ $ python -m slycat.web.client.list_markings.py --host https://slycat.sandia.gov 
 ## Kerberos
 
 The --kerberos option relies on a working Kerberos installation on your system.  Sometimes
-this will fail.  If you get a stack trace related to Kerberos credentials (e.g. "Matching
-credential not found."), run "kinit" then try again.
-
-## Proxies
-
-If you are separated from the Slycat server by a proxy (for whatever reason), you will
-most likely have to set some environment variablers.  Often setting HTTPS_PROXY will work.
-On Windows this is done using:
+this will fail.  If you get an error related to Kerberos credentials (e.g. "Couldn't find
+Kerberos ticket," or "User not Kerberos authenticated"), try:
 
 ```sh
-$ set HTTPS_PROXY=https://your.proxy:your_port
+$ kinit
 ```
 
-Or on a Unix system (incuding Mac), using:
+Then re-run the original command.
+
+## Proxies/Certificates
+
+If you are separated from the Slycat server by a proxy, or have not set up a security
+certificate, you will have to use the slycat.web.client proxy settings.  The proxy
+settings are available using the flags:
+
+* --http-proxy
+* --https-proxy
+* --verify
+* --no-verify
+
+The proxy flags are by default set to no proxy.  If you have proxies set in the
+environment variables they will be ignored.  To proxy flags are used as follows
+(for example):
 
 ```sh
-$ export HTTPS_PROXY=your.proxy:your_port
+$ python -m slycat.web.client.list_markings.py --http-proxy http://your.http.proxy --https-proxy https://your.https.proxy
 ```
 
-On the other hand, if you are trying to access the Slycat server from behind a firewall,
-where the server is also behind the firewall, you may have to "unset" your proxy.  This
-is usually accomplished using the "NO_PROXY" environment variable.  You can put
-the Slycat server in the NO_PROXY list using, e.g.
-
-```sh
-$ set NO_PROXY=localhost,slycat.server
-```
-
-in Windows, or in Unix (including Mac):
-
-```sh
-$ export NO_PROXY="localhost,slycat.server"
-```
-
-where the list "localhost,slycat.server" includes any other URLs where you don't
-need a proxy.
-
-These environment variables can often be set using an IDE as well, often under the
-"preferences" option.
+The verify flag can be used to pass a security certificate as a command line argument and
+the --no-verify flag can be used to ignore the security certificates altogether.
  
 ## General Utilities
 
