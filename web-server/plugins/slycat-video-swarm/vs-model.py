@@ -187,10 +187,10 @@ def register_slycat_plugin(context):
 
     # extract links column and put it into movies.links artifact
     def extract_links(database, model, verb, type, command, **kwargs):
-
         # column to extract
         workdir = kwargs["0"]
         hostname = kwargs["1"]
+        link_column = kwargs["2"]
 
         filename = workdir + '/movies.csv'
 
@@ -208,11 +208,16 @@ def register_slycat_plugin(context):
 
         # Extract movie links
         movie_column = []
+        movie_column_index = None
         for i in range(0, (len(rows) - 1)):
             if i > 0:
                 split_column = rows[i].split(',')
 
-                movie_path = split_column[len(split_column) - 1]
+                if link_column == '':
+                    movie_path = split_column[len(split_column) - 1]
+                else:
+                    movie_path = split_column[int(link_column)]
+
                 if '\r' in movie_path:
                     movie_path = movie_path.split('\r')[0]
                 movie_column.append(movie_path)

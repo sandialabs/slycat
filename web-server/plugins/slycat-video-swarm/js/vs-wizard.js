@@ -20,6 +20,7 @@ import URI from "urijs";
 import vsWizardUI from "../html/vs-wizard.html";
 import { remoteControlsReauth } from "js/slycat-remote-controls";
 import request from "./vs-request-data.js";
+import { TorusGeometry } from "three";
 
 function constructor(params) {
   // functions accessible outside this define are returned via component
@@ -483,9 +484,23 @@ component.reauth = function() {
 
   component.movie_location = function () {
       var movie_link_selected = $("#vs-remote-movie-selector").val();
+
       if($("#vs-remote-movie-selector").val() != '') {
           movie_column = movie_link_selected;
+          var link_selected_ind = component.vs_media_columns.indexOf(movie_column);
+          link_column = media_columns_inds[link_selected_ind];
       }
+      
+      client.put_model_parameter({
+        mid: component.model._id(),
+        aid: "link_column",
+        value: [link_column],
+        input: true,
+        success: function () {
+          console.log("Saved link_column.");
+        },
+      });
+      
 
       if (component.moviedir() != null && component.moviedir() != '') {
           client.post_remote_browse({
@@ -495,7 +510,7 @@ component.reauth = function() {
               {
                   var link_selected = $("#vs-remote-frames-selector").val();
                   var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
-                  var link_column = media_columns_inds[link_selected_ind];
+                  var frame_link_column = media_columns_inds[link_selected_ind];
       
                   // Get the CSV to check for existing movies that match the upcoming frame names
                   $.when(
@@ -503,7 +518,7 @@ component.reauth = function() {
                   )
                   .then(
                   function(table_data) {
-                      var path_string = table_data["data"][link_column][0];
+                      var path_string = table_data["data"][frame_link_column][0];
                       var split_string = path_string.split('/');
                       var last_index = split_string.length - 1;
                       var frame_name_template = split_string[last_index];
@@ -523,9 +538,16 @@ component.reauth = function() {
                       });
                       component.movies_exist(movies_exist);
 
+                      console.log(component.movie_source());
+                      if(component.movie_source() == 'dir') {
+                        console.log("Movie directory selected.");
+                      }
+
                       // Check if user char selection is necessary 
                       if((component.generate_movies() == 'true' && component.replace_movies() == 'true') || 
-                      (component.generate_movies() == 'true' && component.movies_exist() == false)) {
+                      (component.generate_movies() == 'true' && component.movies_exist() == false) ||
+                      (component.generate_movies() == 'false' && component.movie_source() == 'dir') || 
+                      (component.generate_movies() == 'true' && component.replace_movies() == 'false')) {
                           component.user_char_selection(true);
                       }
 
@@ -576,16 +598,16 @@ component.reauth = function() {
                       });
 
                       if (component.generate_movies() === 'true' && component.movies_exist() === false && simulation_id_template != null) {
-                          component.tab(6)
+                          component.tab(6);
                       }
-                      else if (component.generate_movies() === 'false' && component.movies_exist() === true) {
-                          component.tab(6)
+                      else if (component.generate_movies() === 'false' && component.movies_exist() === true && simulation_id_template != null) {
+                          component.tab(6);
                       }
-                      else if (component.generate_movies() === 'true' && component.movies_exist() === true && component.replace_movies() == 'false') {
+                      else if (component.generate_movies() === 'true' && simulation_id_template != null && component.replace_movies() == 'false') {
                           component.tab(6);
                       }
                       else if (component.replace_movies() != null && simulation_id_template != null) {
-                          component.tab(6)
+                          component.tab(6);
                       }
                   });
               }
@@ -598,88 +620,89 @@ component.reauth = function() {
       }
   }
 
-// run remote job to process movie files
-var start_remote_job = function () {
-    var generate_movies = null;
-    if(component.generate_movies() == 'true' && component.movies_exist() == false) {
-        generate_movies = true;
-    }
-    // set up remote launch (note movie and frame column are 1-based)
-    var payload = {"command":
-        {"scripts":[{"name":"parse_frames","parameters":[
-        {"name":"--csv_file","value": component.table_browser.selection()[0]},
-        {"name":"--frame_col","value": frame_column + 1},
-        {"name":"--movie_dir","value": component.moviedir()},
-        {"name":"--replace_movies","value": component.replace_movies()},
-        {"name":"--generate_movies","value": generate_movies},
-        {"name":"--sim_id_template","value": simulation_id_template},
-        {"name":"--output_dir","value": component.workdir()},
-        {"name":"--movie_col","value": null},
-        {"name":"--fps","value": component.frame_rate()}]
-      }],
-      "hpc":{"is_hpc_job": component.HPC_Job(),
-          "parameters":{"wckey": component.wckey(),
-                        "partition": component.partition(),
-                        "nnodes": component.nnodes(),
-                        "ntasks_per_node": component.ntasks_per_node(),
-                        "time_hours": component.time_hours(),
-                        "time_minutes": component.time_minutes(),
-                        "time_seconds": '0',
-                        "working_dir": component.workdir()}}}};
-      // launch job
-      $.ajax({
-        contentType: "application/json",
-        type: "POST",
-        url: URI(api_root + "remotes/" + component.remote.hostname() + "/post-remote-command"),
-        
-        success: function (result) {
-          // put job ID into loading progress variable
-          client.put_model_parameter({
-            mid: component.model._id(),
-            aid: "vs-loading-parms",
-            value: [
-              "Remote",
-              result["log_file_path"],
-              component.remote.hostname(),
-              component.workdir(),
-              result["jid"],
-            ],
-            success: function () {
-              // track some info value for the hpc
-              client.put_model_parameter({
-                mid: component.model._id(),
-                aid: "jid",
-                value: result["jid"],
-                success: function () {
-                  client.put_model_parameter({
-                    mid: component.model._id(),
-                    aid: "workdir",
-                    value: component.workdir(),
-                    success: function () {
-                      client.put_model_parameter({
-                        mid: component.model._id(),
-                        aid: "hostname",
-                        value: component.remote.hostname(),
-                        success: function () {
-                          console.log("Launched remote job, ID = " + result["jid"] + ".");
-                          // go to model
-                          component.go_to_model();
-                        }
-                      });
-                    }
-                  });
-                }
-              });
-            },
-          });
-        },
-        error: function () {
-          dialog.ajax_error("Error uploading remote job data.")("", "", "");
-          $(".vs-finish-button").toggleClass("disabled", false);
-        },
-        data: JSON.stringify(payload)
-      })
-    }
+  // run remote job to process movie files
+  var start_remote_job = function () {
+      // var generate_movies = null;
+      // if(component.generate_movies() == 'true' && component.movies_exist() == false) {
+      //     generate_movies = true;
+      // }
+
+      // set up remote launch (note movie and frame column are 1-based)
+      var payload = {"command":
+          {"scripts":[{"name":"parse_frames","parameters":[
+          {"name":"--csv_file","value": component.table_browser.selection()[0]},
+          {"name":"--frame_col","value": frame_column + 1},
+          {"name":"--movie_dir","value": component.moviedir()},
+          {"name":"--replace_movies","value": component.replace_movies()},
+          {"name":"--generate_movies","value": component.generate_movies()},
+          {"name":"--sim_id_template","value": simulation_id_template},
+          {"name":"--output_dir","value": component.workdir()},
+          {"name":"--movie_col","value": link_column},
+          {"name":"--fps","value": component.frame_rate()}]
+        }],
+        "hpc":{"is_hpc_job": component.HPC_Job(),
+            "parameters":{"wckey": component.wckey(),
+                          "partition": component.partition(),
+                          "nnodes": component.nnodes(),
+                          "ntasks_per_node": component.ntasks_per_node(),
+                          "time_hours": component.time_hours(),
+                          "time_minutes": component.time_minutes(),
+                          "time_seconds": '0',
+                          "working_dir": component.workdir()}}}};
+        // launch job
+        $.ajax({
+          contentType: "application/json",
+          type: "POST",
+          url: URI(api_root + "remotes/" + component.remote.hostname() + "/post-remote-command"),
+          
+          success: function (result) {
+            // put job ID into loading progress variable
+            client.put_model_parameter({
+              mid: component.model._id(),
+              aid: "vs-loading-parms",
+              value: [
+                "Remote",
+                result["log_file_path"],
+                component.remote.hostname(),
+                component.workdir(),
+                result["jid"],
+              ],
+              success: function () {
+                // track some info value for the hpc
+                client.put_model_parameter({
+                  mid: component.model._id(),
+                  aid: "jid",
+                  value: result["jid"],
+                  success: function () {
+                    client.put_model_parameter({
+                      mid: component.model._id(),
+                      aid: "workdir",
+                      value: component.workdir(),
+                      success: function () {
+                        client.put_model_parameter({
+                          mid: component.model._id(),
+                          aid: "hostname",
+                          value: component.remote.hostname(),
+                          success: function () {
+                            console.log("Launched remote job, ID = " + result["jid"] + ".");
+                            // go to model
+                            component.go_to_model();
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              },
+            });
+          },
+          error: function () {
+            dialog.ajax_error("Error uploading remote job data.")("", "", "");
+            $(".vs-finish-button").toggleClass("disabled", false);
+          },
+          data: JSON.stringify(payload)
+        })
+      }
 
   // upload movie plex links (from csv table)
   component.upload_vs_links = function () {
@@ -750,9 +773,9 @@ var start_remote_job = function () {
       frame_column = media_columns_inds[frame_selected_ind];
 
       // get column in table of selected link for videos
-      var link_selected = $("#vs-remote-videos-selector").val();
-      var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
-      link_column = media_columns_inds[link_selected_ind];
+      // var link_selected = $("#vs-remote-videos-selector").val();
+      // var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
+      // link_column = media_columns_inds[link_selected_ind];
 
       launch_remote_job = true;
         

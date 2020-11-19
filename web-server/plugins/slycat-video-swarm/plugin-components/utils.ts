@@ -5,13 +5,14 @@ export const computeVSModel = (
     modelId:string,
     workDir:string,
     logHostName:string,
+    linkColumn:number,
     callBack:(progress:number, info: string, error: boolean) =>void ) => {
     return client
       .get_model_command_fetch({
         mid: modelId,
         type: "VS",
         command: "extract-links",
-        parameters: [workDir, logHostName],
+        parameters: [workDir, logHostName, linkColumn],
       })
       .then(() => {
         callBack(75, "Movie links extracted.", false)
