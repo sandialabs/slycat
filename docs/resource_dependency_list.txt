@@ -120,6 +120,7 @@ qt                            5.9.7      https://anaconda.org
 readline                      7          https://anaconda.org
 repoze.lru                    0.7        https://anaconda.org
 requests                      2.22.0     https://anaconda.org
+requests-kerberos             0.12.0     https://pypi.org
 routes                        2.4.1      https://anaconda.org
 ruamel_yaml                   0.15.46    https://anaconda.org
 scikit-learn                  0.21.3     https://anaconda.org

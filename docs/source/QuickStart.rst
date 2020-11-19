@@ -1,6 +1,6 @@
-###############################
-Quick Start with Docker-Compose
-###############################
+#########################################
+Running Slycat Server with Docker-Compose
+#########################################
 
 ***************************************************************************
 Slycat Docker-compose (Alpha release, non production build for development) 

@@ -50,8 +50,8 @@ def ignore_warnings(test_func):
             test_func(self, *args, **kwargs)
     return do_test
 
-# tests the different pieces of slycat.web.client, set
-# connection information in paramters above
+# tests a few of the different pieces of slycat.web.client, 
+# set connection information in paramters above
 class TestSlycatWebClient(unittest.TestCase):
 
     # connect to local host
@@ -70,7 +70,7 @@ class TestSlycatWebClient(unittest.TestCase):
     @ignore_warnings
     def test_connection(self):
         """
-        Test that we can connect to Slycat using password authentication.
+        Test that we can connect to Slycat.
         """
 
         self.connect_to_server()
