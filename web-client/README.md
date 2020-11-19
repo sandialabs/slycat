@@ -100,8 +100,8 @@ settings are available using the flags:
 * --verify
 * --no-verify
 
-The proxy flags are by default set to no proxy.  If you have proxies set in the
-environment variables they will be ignored.  To proxy flags are used as follows
+The proxy flags are by default set to "no proxy".  If you have proxies set in the
+environment variables, they will be ignored.  The proxy flags are used as follows
 (for example):
 
 ```sh
@@ -174,7 +174,7 @@ models.  To use this script, you must first create a file containing the
 options for each model.  The file has the following format.
 
 Line 1 contains the authentication information for the Slycat server that
-you would pass to the dac_create_tdms_model script, but separated by commas.
+you would pass to the dac_tdms script, but separated by commas.
 For example,
 
     --user,smartin,--kerberos
@@ -193,7 +193,7 @@ Lines 3 and beyond contain the model information for each model, such as
     model-data-file-2.tdms,--model-name,Model 2
 
 Note that you must supply a model file (or multiple files) in accordance
-with the dac_create_tdms_model script for each model.  Also note that if 
+with the dac_tdms script for each model.  Also note that if 
 you want to put models into different projects, you can override the 
 original project given in line 2, by using the "--project-name" flag 
 again, e.g.
