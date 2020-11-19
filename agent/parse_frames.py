@@ -449,13 +449,11 @@ def create_movie_name(args, log, frame_files, i):
     else:
         movie_output = args.movie_dir + '/' + identifier + simulation_id + '.%d.mp4' % (i+1)
 
-    log("[VS-LOG] Creating movie " + movie_output)
-
     # frames to make into movie
     movie_input = frame_file_path + '/' +  identifier + '*.jpg'
 
     return movie_input, movie_output, file_location, frame_file_path
-    
+
 # create movie i
 def create_movie(args, log, frame_files, i):
 
