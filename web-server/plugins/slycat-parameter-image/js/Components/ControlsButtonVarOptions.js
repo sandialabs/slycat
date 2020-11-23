@@ -528,7 +528,7 @@ const mapStateToProps = (state, ownProps) => {
   const threeDVariables = Object.entries(state.three_d_variable_data_ranges)
     .map(([key, value], index) => {
       const [pointOrCell, varName, component] = key.split(':');
-      const name = `${varName}${component ? `[${component}]` : ``}`;
+      const name = `${varName}${component ? `[${Number(component) + 1}]` : ``}`;
       return {
         key: key,
         index: index,
