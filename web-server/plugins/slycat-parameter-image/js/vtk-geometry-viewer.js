@@ -24,6 +24,7 @@ import {
   setThreeDColorByRange,
   adjustThreeDVariableDataRange,
 } from './actions';
+import _ from 'lodash';
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
@@ -196,7 +197,7 @@ export function load(container, buffer, uri, uid, type) {
         );
         activeArray = newArray;
 
-        const newDataRange = activeArray.getRange();
+        const newDataRange = getDataRange();
         dataRange[0] = newDataRange[0];
         dataRange[1] = newDataRange[1];
         colorMode = ColorMode.MAP_SCALARS;
@@ -214,9 +215,6 @@ export function load(container, buffer, uri, uid, type) {
           {
             lut.setVectorModeToComponent();
             lut.setVectorComponent(component);
-            const componentDataRange = activeArray.getRange(component);
-            dataRange[0] = componentDataRange[0];
-            dataRange[1] = componentDataRange[1];
             lookupTable.setMappingRange(dataRange[0], dataRange[1]);
             lut.updateRange();
           }
@@ -240,10 +238,28 @@ export function load(container, buffer, uri, uid, type) {
       applyPreset();
     }
 
+    function getDataRange() {
+      const three_d_variable_data_ranges = window.store.getState().three_d_variable_data_ranges[colorBy];
+      const three_d_variable_user_ranges = window.store.getState().three_d_variable_user_ranges[colorBy];
+      // console.debug(`vtk-geometry-viewer three_d_variable_user_ranges for ${colorBy} is ${three_d_variable_user_ranges}`);
+      // console.debug(`vtk-geometry-viewer three_d_variable_data_ranges for ${colorBy} is ${three_d_variable_data_ranges}`);
+      const min = three_d_variable_user_ranges && three_d_variable_user_ranges.min !== undefined ? 
+        three_d_variable_user_ranges.min : three_d_variable_data_ranges.min;
+      const max = three_d_variable_user_ranges && three_d_variable_user_ranges.max !== undefined ? 
+        three_d_variable_user_ranges.max : three_d_variable_data_ranges.max;
+      return [min, max];
+    }
+
     function updateColorByIfChanged() {
-      if(window.store.getState().three_d_colorvars
+      const colorVariableChanged = window.store.getState().three_d_colorvars
         && window.store.getState().three_d_colorvars[uid]
-        && window.store.getState().three_d_colorvars[uid] != colorBy)
+        && window.store.getState().three_d_colorvars[uid] != colorBy
+        ;
+      
+      const colorVariableRangeChanged = !_.isEqual(getDataRange(), dataRange);
+      // console.log(`colorVariableRangeChanged: ${colorVariableRangeChanged}`);
+
+      if(colorVariableChanged || colorVariableRangeChanged)
       {
         // console.log("ColorBy changed, so applying the new one.");
         updateColorBy();
