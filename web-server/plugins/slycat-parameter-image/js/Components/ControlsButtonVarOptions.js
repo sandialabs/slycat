@@ -260,6 +260,36 @@ class ControlsButtonVarOptions extends React.PureComponent {
       </a>
     ));
 
+    let scatterplotVariableRanges = <>
+      <VariableRanges
+        variables={this.props.numericScatterplotVariables}
+        variableRanges={this.props.variableRanges}
+        setVariableRange={this.props.setVariableRange}
+        clearVariableRange={this.props.clearVariableRange}
+        inputLabel="Axis"
+        ref={this.variableRangesRef} />
+      <ClearAllButton
+        label="Clear All Scatterplot Variable Ranges"
+        disable={Object.keys(this.props.variableRanges).length === 0}
+        handleClick={this.clearAllVariableRanges} />
+      </>;
+    
+    let threeDVariableRanges = <>
+      <VariableRanges 
+        variables={this.props.numericScatterplotVariables}
+        variableRanges={this.props.variableRanges}
+        setVariableRange={this.props.setVariableRange}
+        clearVariableRange={this.props.clearVariableRange}
+        inputLabel="Axis"
+        ref={this.variableRangesRef}
+      />
+      <ClearAllButton 
+        label="Clear All Scatterplot Variable Ranges"
+        disable={Object.keys(this.props.variableRanges).length === 0}
+        handleClick={this.clearAllVariableRanges}
+      />
+      </>;
+
     return (
       <React.Fragment>
         {/* Defining custom CSS properties so non-React code can use customized font size
@@ -386,6 +416,12 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     />
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
+                    {/* Show this scatterplot variable ranges UI on its own when there are no 3D variables.  */}
+                    {this.props.threeDVariables.length == 0 &&
+                      <>{scatterplotVariableRanges}</>
+                    }
+                    {/* When there are 3D variables, show both variable ranges components inside an accordion */}
+                    {this.props.threeDVariables.length > 0 &&
                     <div className="accordion" id="accordionRanges">
                       <div className="card">
                         <div className="card-header" id="headingOne">
@@ -402,22 +438,9 @@ class ControlsButtonVarOptions extends React.PureComponent {
                             </button>
                           </h2>
                         </div>
-
                         <div id="collapseOne" className="collapse show" aria-labelledby="headingOne" data-parent="#accordionRanges">
                           <div className="card-body">
-                            <VariableRanges 
-                              variables={this.props.numericScatterplotVariables}
-                              variableRanges={this.props.variableRanges}
-                              setVariableRange={this.props.setVariableRange}
-                              clearVariableRange={this.props.clearVariableRange}
-                              inputLabel="Axis"
-                              ref={this.variableRangesRef}
-                            />
-                            <ClearAllButton 
-                              label="Clear All Scatterplot Variable Ranges"
-                              disable={Object.keys(this.props.variableRanges).length === 0}
-                              handleClick={this.clearAllVariableRanges}
-                            />
+                            {threeDVariableRanges}
                           </div>
                         </div>
                       </div>
@@ -455,6 +478,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                         </div>
                       </div>
                     </div>
+                    }
                   </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
@@ -528,7 +552,7 @@ const mapStateToProps = (state, ownProps) => {
   const threeDVariables = Object.entries(state.three_d_variable_data_ranges)
     .map(([key, value], index) => {
       const [pointOrCell, varName, component] = key.split(':');
-      const name = `${varName}${component ? `[${Number(component) + 1}]` : ``}`;
+      const name = `${varName}${component ? `[${parseInt(component, 10) + 1}]` : ``}`;
       return {
         key: key,
         index: index,
