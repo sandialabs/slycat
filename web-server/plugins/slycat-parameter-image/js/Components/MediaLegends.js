@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import ScatterplotLegend from './ScatterplotLegend';
 import { setThreeDColorByLegend } from '../actions';
+import { getDataRange } from '../vtk-geometry-viewer';
 
 class MediaLegends extends React.PureComponent {
 
@@ -60,8 +61,8 @@ const mapStateToProps = (state, ownProps) => {
     let domain = null;
     
     const three_d_colorvar = three_d_colorvars ? three_d_colorvars[media.uid] : undefined;
-    // If we have a 3D color variable, create a label for the legend
-    if(three_d_colorvar)
+    // If we have a 3D color variable and it's not ':' (i.e., Solid color), create a label for the legend
+    if(three_d_colorvar && three_d_colorvar !== ':')
     {
       const split = three_d_colorvar.split(':');
       pointOrCell = split[0];
@@ -69,7 +70,8 @@ const mapStateToProps = (state, ownProps) => {
       const component = split[2];
       threeDLegendLabel = `${variable}${component ? ` [${parseInt(component, 10) + 1}]` : ''}`;
       try {
-        domain = state.derived.three_d_colorby_range[media.uri][three_d_colorvar];
+        domain = getDataRange(three_d_colorvar);
+        // console.log(`globalDomain for ${media.uri} is ${domain}`);
       }
       catch (e) {
         // No need to do anything. With no domain, the legend just won't render.
