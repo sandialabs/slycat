@@ -28,6 +28,22 @@ import _ from 'lodash';
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
 
+export function getDataRange(colorBy) {
+  if(colorBy == ":")
+  {
+    return [0,1];
+  }
+  const three_d_variable_data_ranges = window.store.getState().three_d_variable_data_ranges[colorBy];
+  const three_d_variable_user_ranges = window.store.getState().three_d_variable_user_ranges[colorBy];
+  // console.debug(`vtk-geometry-viewer three_d_variable_user_ranges for ${colorBy} is ${three_d_variable_user_ranges}`);
+  // console.debug(`vtk-geometry-viewer three_d_variable_data_ranges for ${colorBy} is ${three_d_variable_data_ranges}`);
+  const min = three_d_variable_user_ranges && three_d_variable_user_ranges.min !== undefined ? 
+    three_d_variable_user_ranges.min : three_d_variable_data_ranges.min;
+  const max = three_d_variable_user_ranges && three_d_variable_user_ranges.max !== undefined ? 
+    three_d_variable_user_ranges.max : three_d_variable_data_ranges.max;
+  return [min, max];
+}
+
 export function load(container, buffer, uri, uid, type) {
 
   // ----------------------------------------------------------------------------
@@ -197,7 +213,7 @@ export function load(container, buffer, uri, uid, type) {
         );
         activeArray = newArray;
 
-        const newDataRange = getDataRange();
+        const newDataRange = getDataRange(colorBy);
         dataRange[0] = newDataRange[0];
         dataRange[1] = newDataRange[1];
         colorMode = ColorMode.MAP_SCALARS;
@@ -238,25 +254,13 @@ export function load(container, buffer, uri, uid, type) {
       applyPreset();
     }
 
-    function getDataRange() {
-      const three_d_variable_data_ranges = window.store.getState().three_d_variable_data_ranges[colorBy];
-      const three_d_variable_user_ranges = window.store.getState().three_d_variable_user_ranges[colorBy];
-      // console.debug(`vtk-geometry-viewer three_d_variable_user_ranges for ${colorBy} is ${three_d_variable_user_ranges}`);
-      // console.debug(`vtk-geometry-viewer three_d_variable_data_ranges for ${colorBy} is ${three_d_variable_data_ranges}`);
-      const min = three_d_variable_user_ranges && three_d_variable_user_ranges.min !== undefined ? 
-        three_d_variable_user_ranges.min : three_d_variable_data_ranges.min;
-      const max = three_d_variable_user_ranges && three_d_variable_user_ranges.max !== undefined ? 
-        three_d_variable_user_ranges.max : three_d_variable_data_ranges.max;
-      return [min, max];
-    }
-
     function updateColorByIfChanged() {
       const colorVariableChanged = window.store.getState().three_d_colorvars
         && window.store.getState().three_d_colorvars[uid]
         && window.store.getState().three_d_colorvars[uid] != colorBy
         ;
       
-      const colorVariableRangeChanged = !_.isEqual(getDataRange(), dataRange);
+      const colorVariableRangeChanged = !_.isEqual(getDataRange(colorBy), dataRange);
       // console.log(`colorVariableRangeChanged: ${colorVariableRangeChanged}`);
 
       if(colorVariableChanged || colorVariableRangeChanged)
