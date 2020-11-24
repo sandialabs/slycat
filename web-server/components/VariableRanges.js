@@ -26,7 +26,7 @@ export default class VariableRanges extends React.Component {
       }
     });
 
-    let inputObject = Object.assign(...inputsArray);
+    let inputObject = inputsArray.length ? Object.assign(...inputsArray) : {};
 
     this.state = inputObject;
 
@@ -155,6 +155,12 @@ export default class VariableRanges extends React.Component {
   render() {
     // console.log('render in VariableRanges');
     // const t0 = performance.now();
+
+    // Don't render if we have no variables
+    if(this.props.variables.length == 0)
+    {
+      return null;
+    }
 
     let result = (
       <div className={`${this.class} ${this.props.uniqueID}`}>
