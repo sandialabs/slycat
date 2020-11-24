@@ -213,7 +213,21 @@ export function load(container, buffer, uri, uid, type) {
         );
         activeArray = newArray;
 
+        const vtpDataRange = component > -1 ? activeArray.getRange(component) : activeArray.getRange();
+        console.group(`Data ranges of %s variable %s%s for %s`,
+          location,
+          colorByArrayName,
+          componentString ? `[${Number(componentString)+1}]` : '',
+          uri,
+        );
+        console.debug(`From this VTP file:                      %o`,
+          vtpDataRange,
+        );
         const newDataRange = getDataRange(colorBy);
+        console.debug(`From Display Settings > Variable Ranges: %o`, 
+          newDataRange,
+        );
+        console.groupEnd();
         dataRange[0] = newDataRange[0];
         dataRange[1] = newDataRange[1];
         colorMode = ColorMode.MAP_SCALARS;
