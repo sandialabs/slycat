@@ -187,53 +187,68 @@ def register_slycat_plugin(context):
 
     # extract links column and put it into movies.links artifact
     def extract_links(database, model, verb, type, command, **kwargs):
-        # column to extract
-        workdir = kwargs["0"]
-        hostname = kwargs["1"]
-        link_column = kwargs["2"]
+        if kwargs["0"] == 'remote':
+            # column to extract
+            workdir = kwargs["1"]
+            hostname = kwargs["2"]
+            link_column = kwargs["3"]
 
-        filename = workdir + '/movies.csv'
+            filename = workdir + '/movies.csv'
 
-        sid = None
-        session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
-        for host_session in session["sessions"]:
-            if host_session["hostname"] == hostname:
-                sid = host_session["sid"]
-                break
-        
-        # Get movies.csv so that the movie links can be extracted
-        csv_file = slycat.web.server.get_remote_file(sid, filename)
-        csv_file = csv_file.decode('utf-8')
-        rows = csv_file.split('\n')
+            sid = None
+            session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+            for host_session in session["sessions"]:
+                if host_session["hostname"] == hostname:
+                    sid = host_session["sid"]
+                    break
 
-        # Extract movie links
-        movie_column = []
-        movie_column_index = None
-        for i in range(0, (len(rows) - 1)):
-            if i > 0:
-                split_column = rows[i].split(',')
+            # Get movies.csv so that the movie links can be extracted
+            csv_file = slycat.web.server.get_remote_file(sid, filename)
+            csv_file = csv_file.decode('utf-8')
+            rows = csv_file.split('\n')
 
-                if link_column == '':
-                    movie_path = split_column[len(split_column) - 1]
-                else:
-                    movie_path = split_column[int(link_column)]
+            # Extract movie links
+            movie_column = []
+            movie_column_index = None
+            for i in range(0, (len(rows) - 1)):
+                if i > 0:
+                    split_column = rows[i].split(',')
 
-                if '\r' in movie_path:
-                    movie_path = movie_path.split('\r')[0]
-                movie_column.append(movie_path)
+                    if link_column == '':
+                        movie_path = split_column[len(split_column) - 1]
+                    else:
+                        movie_path = split_column[int(link_column)]
 
-        movie_column = numpy.asarray(movie_column)
+                    if '\r' in movie_path:
+                        movie_path = movie_path.split('\r')[0]
+                    movie_column.append(movie_path)
 
-        # set up links as an artifact
-        attributes = [dict(name="value", type="string")]
-        dimensions = [dict(name="row", end=len(movie_column))]
+            movie_column = numpy.asarray(movie_column)
 
-        # push to "movies.links" artifact in database
-        slycat.web.server.put_model_arrayset(database, model, "movies.links", input)
-        slycat.web.server.put_model_array(database, model, "movies.links", 0, attributes, dimensions)
-        slycat.web.server.put_model_arrayset_data(database, model, "movies.links", "0/.../...", [movie_column])
+            # set up links as an artifact
+            attributes = [dict(name="value", type="string")]
+            dimensions = [dict(name="row", end=len(movie_column))]
 
-        return json.dumps("Extracted video links.")
+            # push to "movies.links" artifact in database
+            slycat.web.server.put_model_arrayset(database, model, "movies.links", input)
+            slycat.web.server.put_model_array(database, model, "movies.links", 0, attributes, dimensions)
+            slycat.web.server.put_model_arrayset_data(database, model, "movies.links", "0/.../...", [movie_column])
+
+            return json.dumps("Extracted video links.")
+
+        else:
+            links_col = int(kwargs["1"])
+            data = slycat.web.server.get_model_arrayset_data(database, model, "movies.meta",
+                "0/.../...")
+            links_col_data = data[links_col]
+            attributes = [dict(name="value", type="string")]
+            dimensions = [dict(name="row", end=len(links_col_data))]
+
+            slycat.web.server.put_model_arrayset(database, model, "movies.links", input)
+            slycat.web.server.put_model_array(database, model, "movies.links", 0, attributes, dimensions)
+            slycat.web.server.put_model_arrayset_data(database, model, "movies.links", "0/.../...", [links_col_data])
+
+            return json.dumps("Extracted video links.")
 
     def finish(database, model):
         slycat.web.server.update_model(database, model, state="finished",

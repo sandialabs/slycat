@@ -12,7 +12,7 @@ export const computeVSModel = (
         mid: modelId,
         type: "VS",
         command: "extract-links",
-        parameters: [workDir, logHostName, linkColumn],
+        parameters: ['remote', workDir, logHostName, linkColumn],
       })
       .then(() => {
         callBack(75, "Movie links extracted.", false)

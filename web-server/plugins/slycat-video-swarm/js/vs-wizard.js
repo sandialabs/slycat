@@ -713,7 +713,7 @@ component.reauth = function() {
         mid: component.model._id(),
         type: "VS",
         command: "extract-links",
-        parameters: [link_column],
+        parameters: ['local', link_column],
         success: function(result) {
             component.tab(8)
         },
