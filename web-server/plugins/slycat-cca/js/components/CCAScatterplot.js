@@ -48,14 +48,14 @@ class CCAScatterplot extends React.Component {
     }
 
     // When indices change
-    if(_.xor(prevProps.indices, this.props.indices).length > 0)
+    if(!_.isEqual(prevProps.indices, this.props.indices))
     {
       // console.log("CCAScatterplot, componentDidUpdate, indices changed");
       this.update_indices();
       this.render_selection();
     }
     // When x changes
-    if(_.xor(prevProps.x, this.props.x).length > 0)
+    if(!_.isEqual(prevProps.x, this.props.x))
     {
       // console.log("CCAScatterplot, componentDidUpdate, x changed");
       this.update_x();
@@ -63,7 +63,7 @@ class CCAScatterplot extends React.Component {
       this.render_selection();
     }
     // When y changes
-    if(_.xor(prevProps.y, this.props.y).length > 0)
+    if(!_.isEqual(prevProps.y, this.props.y))
     {
       // console.log("CCAScatterplot, componentDidUpdate, y changed");
       this.update_y();
@@ -71,7 +71,7 @@ class CCAScatterplot extends React.Component {
       this.render_selection();
     }
     // When v changes
-    if(_.xor(prevProps.v, this.props.v).length > 0)
+    if(!_.isEqual(prevProps.v, this.props.v))
     {
       // console.log("CCAScatterplot, componentDidUpdate, v changed");
       this.update_color_domain();
@@ -79,7 +79,7 @@ class CCAScatterplot extends React.Component {
       this.render_selection();
     }
     // When selection changes
-    if(_.xor(prevProps.selection, this.props.selection).length > 0) 
+    if(!_.isEqual(prevProps.selection, this.props.selection)) 
     {
       // console.log("CCAScatterplot, componentDidUpdate, selection changed");
       this.render_selection();
