@@ -6,15 +6,26 @@
 
 import slycat.web.client
 
-# get arguments for connecting to Slycat server
-parser = slycat.web.client.ArgumentParser(
-    description="List projects accessible for a given user.")
-arguments = parser.parse_args()
+# call server and list projects
+def main (arguments, connection):
 
-# connect and get projects
-connection = slycat.web.client.connect(arguments)
-projects = connection.get_projects()
+    # get projects
+    projects = connection.get_projects()
 
-# output projects
-for project in projects["projects"]:
-    print("Found user %s project %s." %(arguments.user, project["name"]))
+    # output projects
+    for project in projects["projects"]:
+        print("Found user %s project %s." %(arguments.user, project["name"]))
+
+# command line entry point
+if __name__ == "__main__":
+
+    # get arguments for connecting to Slycat server
+    parser = slycat.web.client.ArgumentParser(
+        description="List projects accessible for a given user.")
+    arguments = parser.parse_args()
+
+    # connect and get projects
+    connection = slycat.web.client.connect(arguments)
+
+    # list projects
+    main(arguments, connection)

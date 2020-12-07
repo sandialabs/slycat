@@ -1,5 +1,5 @@
 # Slycat Web Client
-> The Slycat web client provides a Python package for interacting with the Slycat web server.
+The Slycat web client provides a Python package for interacting with the Slycat web server.
 
 Slycat is a web based data analysis and visualization platform created at Sandia
 National Labs.  You can read about it at https://slycat.readthedocs.io/en/latest/.
@@ -15,7 +15,14 @@ to query the Slycat server and create Slycat data analysis models.
 pip install slycat-web-client
 ```
 
-**Note that for the Slycat web client to work, you must have a Slycat server running.  See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.**
+If you are working behind a proxy, you might also need, e.g.
+
+```sh
+pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
+```
+
+Note: that for the Slycat web client to work, you must have a Slycat server running.  
+See https://slycat.readthedocs.io/en/latest/ for details on setting up a server.
 
 ## Basic Use
 
@@ -52,9 +59,8 @@ These are described in greater detail below.
 
 ## User Authentication
 
-The Slycat server requires user authentication.  Each example in This
-directory takes the same inputs for the authentication process, the
-options being provided by the slycat.web.client module.
+The Slycat server requires user authentication.  The slycat.web.client
+module provides the options for the authentication process.
 
 For example, to use standard password authentication for a Slycat
 server running on https://localhost:9000 without a security certificate,
@@ -71,6 +77,40 @@ use:
 $ python -m slycat.web.client.list_markings.py --host https://slycat.sandia.gov --kerberos
 ```
 
+## Kerberos
+
+The --kerberos option relies on a working Kerberos installation on your system.  Sometimes
+this will fail.  If you get an error related to Kerberos credentials (e.g. "Couldn't find
+Kerberos ticket," or "User not Kerberos authenticated"), try:
+
+```sh
+$ kinit
+```
+
+Then re-run the original command.
+
+## Proxies/Certificates
+
+If you are separated from the Slycat server by a proxy, or have not set up a security
+certificate, you will have to use the slycat.web.client proxy settings.  The proxy
+settings are available using the flags:
+
+* --http-proxy
+* --https-proxy
+* --verify
+* --no-verify
+
+The proxy flags are by default set to "no proxy".  If you have proxies set in the
+environment variables, they will be ignored.  The proxy flags are used as follows
+(for example):
+
+```sh
+$ python -m slycat.web.client.list_markings.py --http-proxy http://your.http.proxy --https-proxy https://your.https.proxy
+```
+
+The verify flag can be used to pass a security certificate as a command line argument and
+the --no-verify flag can be used to ignore the security certificates altogether.
+ 
 ## General Utilities
 
 The simplest examples of interacting with the Slycat server issue
@@ -134,7 +174,7 @@ models.  To use this script, you must first create a file containing the
 options for each model.  The file has the following format.
 
 Line 1 contains the authentication information for the Slycat server that
-you would pass to the dac_create_tdms_model script, but separated by commas.
+you would pass to the dac_tdms script, but separated by commas.
 For example,
 
     --user,smartin,--kerberos
@@ -153,7 +193,7 @@ Lines 3 and beyond contain the model information for each model, such as
     model-data-file-2.tdms,--model-name,Model 2
 
 Note that you must supply a model file (or multiple files) in accordance
-with the dac_create_tdms_model script for each model.  Also note that if 
+with the dac_tdms script for each model.  Also note that if 
 you want to put models into different projects, you can override the 
 original project given in line 2, by using the "--project-name" flag 
 again, e.g.
@@ -174,7 +214,12 @@ Depending on how many models are being created, it is helpful to
 use the "--log_file" flag to specify a log file for recording any
 errors in the upload process.
 
-## Meta
+## API
+
+You should be able to find the API for slycat.web.client at 
+https://slycat.readthedocs.io/en/latest/.
+
+## Contact
 
 Shawn Martin -- smartin@sandia.gov
 

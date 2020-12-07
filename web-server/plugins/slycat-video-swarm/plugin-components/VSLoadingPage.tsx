@@ -28,6 +28,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
       modelShow: false,
       hostname: '',
       workdir: '',
+      linkColumn: 0,
       jobStatus: "Job Status Unknown",
       showVerboseLog: false,
       vsLog: { logLineArray: [] },
@@ -46,9 +47,14 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
           client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "hostname" })
             .then((hostname) =>
               this.setState({ hostname }, () =>
-                client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "workdir" })
-                  .then(workdir =>
-                    this.setState({ workdir }, () => this.checkRemoteStatus())
+                client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "link_column"})
+                  .then((linkColumn) =>
+                    this.setState({ linkColumn }, () => 
+                      client.get_model_parameter_fetch({ mid: this.props.modelId, aid: "workdir" })
+                        .then(workdir =>
+                          this.setState({ workdir }, () => this.checkRemoteStatus())
+                      )
+                    )
                   )
               )
             )
@@ -59,7 +65,7 @@ export default class VSLoadingPage extends React.Component<LoadingPageProps, Loa
   componentDidUpdate(prevProps: LoadingPageProps, prevState: LoadingPageState) {
     if (prevState.finished !== this.state.finished && this.state.finished === true) {
       this.setState({ progressBarProgress: 75 }, () => {
-        utils.computeVSModel(this.props.modelId, this.state.workdir, this.state.hostname, this.updateProgressBarCallback)
+        utils.computeVSModel(this.props.modelId, this.state.workdir, this.state.hostname, this.state.linkColumn, this.updateProgressBarCallback)
         this.updateProgressBarCallback(78, "message", true);
       });
     }

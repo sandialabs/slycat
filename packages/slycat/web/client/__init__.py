@@ -4,6 +4,8 @@
 
 # This module supports interacting with the Slycat server from Python and the command line.
 
+# standard libraries
+
 # parse arguments
 import argparse
 import os
@@ -12,40 +14,58 @@ import shlex
 # authenticate to server
 import getpass
 import json
+
+# encode/decode functions for string data (for http communication)
+import base64
+
+# miscellaneous utilities
+import sys
+import time
+import math
+
+# stream to server
+import io
+
+# logging
+import logging
+
+# 3rd party libraries
+
+# http requests & kerberos
 import requests
-from requests_gssapi import HTTPSPNEGOAuth
 import requests.exceptions as exceptions
+from requests_kerberos import HTTPKerberosAuth, OPTIONAL
+from requests_kerberos.exceptions import KerberosExchangeError
 
 # turn off warning for insecure connections
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-# encode/decode functions for string data (for http communication)
-import base64
+# handle arrays for Slycat requests
+import numpy
+
+# web server interaction
+import cherrypy
+
+# local libraries
 
 # handle arrays for Slycat requests
-import math
-import numpy
 import slycat.darray
-import io
-
-# miscellaneous utilities
-import sys
-import time
-
-# maximum number of bytes to upload per slice
-FILE_SLICE_SIZE = 10000000
 
 # set up logging
-import logging
 log = logging.getLogger("slycat.web.client")
 log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
 log.handlers[0].setFormatter(logging.Formatter("%(levelname)s - %(message)s"))
 log.propagate = False
 
-import cherrypy
+# default file slice size (10 MB)
+FILE_SLICE_DEFAULT = 10_000_000
 
+# default Slycat server
+HOST_DEFAULT = "http://localhost"
+
+# private function (denoted by _name)
 def _require_array_ranges(ranges):
   """Validates a range object (hyperslice) for transmission to the server."""
 
@@ -63,20 +83,20 @@ def _require_array_ranges(ranges):
 
 # print iterations progress bar -- from stack overflow
 # https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-def print_progress_bar (iteration, total, prefix = '', suffix = '', 
+def _print_progress_bar (iteration, total, prefix = '', suffix = '', 
   decimals = 1, length = 100, fill = '█', printEnd = "\r"):
-    """
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
-    """
+    
+    # Call in a loop to create terminal progress bar
+    # @params:
+    #     iteration   - Required  : current iteration (Int)
+    #     total       - Required  : total iterations (Int)
+    #     prefix      - Optional  : prefix string (Str)
+    #     suffix      - Optional  : suffix string (Str)
+    #     decimals    - Optional  : positive number of decimals in percent complete (Int)
+    #     length      - Optional  : character length of bar (Int)
+    #     fill        - Optional  : bar fill character (Str)
+    #     printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)
@@ -88,7 +108,22 @@ def print_progress_bar (iteration, total, prefix = '', suffix = '',
 
 class ArgumentParser(argparse.ArgumentParser):
   """Return an instance of argparse.ArgumentParser, pre-configured with arguments to
-  connect to a Slycat server."""
+  connect to a Slycat server.
+
+  Pre-configured options are: 
+
+    * **-\\-host** -- the URL of the Slycat server.
+    * **-\\-port** -- the port of the Slycat server.
+    * **-\\-http-proxy** -- the URL for an http proxy.
+    * **-\\-https-proxy** -- the URL for an https proxy.
+    * **-\\-verify** -- an SSL certificate to verify https host.
+    * **-\\-no-verify** -- disable https verification.
+    * **-\\-file-slice-size** -- maximum number of bytes to upload at once.
+    * **-\\-user** -- user name.
+    * **-\\-passowrd** -- user password.
+    * **-\\-kerberos** -- enable kerberos authentication.
+    * **-\\-log-level** -- log detail to display.
+  """
 
   def __init__(self, *arguments, **keywords):
 
@@ -96,7 +131,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     # arguments for connecting to Slycat server
 
-    self.add_argument("--host", default="https://localhost", 
+    self.add_argument("--host", default=HOST_DEFAULT, 
       help="Root URL of the Slycat server.  Default: '%(default)s'.")
     self.add_argument("--port", default=None, 
       help="Port of the Slycat server.")
@@ -110,6 +145,10 @@ class ArgumentParser(argparse.ArgumentParser):
     self.add_argument("--no-verify", default=False, action="store_true", 
       help="Disable HTTPS host certificate verification.")
 
+    self.add_argument('--file-slice-size', default=FILE_SLICE_DEFAULT, type=int,
+      help="Maximum number of bytes to upload before slicing files (i.e. before "
+           "uploading in chunks).  Default: %(default)s.")
+
     self.add_argument("--user", default=getpass.getuser(), 
       help="Slycat username.  Default: '%(default)s'")
     self.add_argument("--password", default=None, help="User password.")
@@ -122,6 +161,13 @@ class ArgumentParser(argparse.ArgumentParser):
       help="Log level.  Default: '%(default)s'.")
 
   def parse_args(self, list_input=None):
+    """Overrides argparse parse_args command.  Parses slycat.web.client arguments
+    in addition to any arguments added by users of the class.  Can also be used to
+    parse a list of arguments passed from a Python function, such as
+    
+    >>> parser = slycat.web.client.ArgumentParser()
+    >>> parser.parse_args(["--host", "slycat.sandia.gov", "--kerberos"]).
+    """
 
     if "SLYCAT" in os.environ:
       sys.argv += shlex.split(os.environ["SLYCAT"])
@@ -140,19 +186,25 @@ class ArgumentParser(argparse.ArgumentParser):
       log.setLevel(logging.ERROR)
     elif arguments.log_level == "critical":
       log.setLevel(logging.CRITICAL)
-    
+
     return arguments
 
 class Connection(object):
-  """Encapsulates a set of requests to the given host.  Additional keyword
-  arguments must be compatible with the Python Requests library,
-  http://docs.python-requests.org/en/latest"""
+  """Provides a class to facilitate communication with the Slycat web server.  
+  To use, open a connection and submit requests.  For example:
 
-  def __init__(self, host="https://localhost", port=None, kerberos=False, **keywords):
+  >>> parser = slycat.web.client.ArgumentParser()
+  >>> arguments = parser.parse_args()
+  >>> connection = slycat.web.client.connect(arguments)
+  >>> projects = connection.get_projects()
+  """
+
+  def __init__(self, host=HOST_DEFAULT, port=None, kerberos=False,
+               file_slice_size=FILE_SLICE_DEFAULT, **keywords):
     
     # proxies default to ""
     proxies = keywords.get("proxies", {"http": "", "https": ""})
-
+    
     # certificate verification is disabled unless specifically requested
     verify = True
     if keywords.get("verify") == "False":
@@ -172,15 +224,25 @@ class Connection(object):
     self.keywords = keywords
     self.session = requests.Session()
 
+    # set up max file slice size
+    self.file_slice_size = file_slice_size
+
     # check for Kerberos authentication
     if self.kerberos:
 
       # get Kerberos ticket granting ticket
-      self.session.auth = HTTPSPNEGOAuth()
+      self.session.auth = HTTPKerberosAuth(mutual_authentication=OPTIONAL,
+                                           force_preemptive=True)
 
       # check that ticket is valid using list markings
       url = self.host + "/api/configuration/markings"
-      response = self.session.get(url)
+      try:
+        response = self.session.get(url, proxies=proxies, verify=verify,
+                                    auth=self.session.auth)
+
+      except KerberosExchangeError:
+        cherrypy.log.error("Could not find Kerberos ticket, try running 'kinit'.")
+        sys.exit(1)
 
       if response.status_code == 401:
         cherrypy.log.error(
@@ -220,34 +282,55 @@ class Connection(object):
           (user_name, password))
 
   def request(self, method, path, **keywords):
-    """Makes a request with the given HTTP method and path, returning the body of
+    """Basic request to Slycat server using open session.  To make a request 
+    provide the HTTP method and path, and this method will return the body of
     the response.  Additional keyword arguments must be compatible with the
-    Python Requests library, http://docs.python-requests.org/en/latest"""
+    Python requests library.
+    
+    Parameters
+    ----------
+    method: string, required
+      The HTTP method to use, e.g. "GET", "PUT", etc.
+    path: string, required
+      The extension to the URL for the Slycat server, e.g. "/api/models/(mid)".
 
-    # Combine per-request and per-connection keyword arguments ...
+    Returns
+    -------
+    response: the body of the Server response.
+    """
+
+    # combine per-request and per-connection keyword arguments
     keywords.update(self.keywords)
     
-    # Combine host and path to produce the final request URI ...
+    # combine host and path to produce the final request URI
     uri = self.host + path
     
+    # create log message for this request
     log_message = "{} {} {}".format(keywords.get("auth", ("", ""))[0], method, uri)
 
+    # send request
     try:
       response = self.session.request(method, uri, **keywords)
 
+      # add response to log message
       log_message += " => {} {}".format(response.status_code, response.raw.reason)
 
+      # check to see if an error occured
       response.raise_for_status()
 
+      # parse and return body of response
       body = None
       if response.headers["content-type"].startswith("application/json"):
         body = response.json()
       else:
         body = response.content
 
+      # show request in debug log
       log.debug(log_message)
+
       return body
 
+    # log any errors to both slycat.web.client and cherrypy
     except:
       log.debug(log_message)
       cherrypy.log.error("slycat.web.client.__init__.py request", "%s" % log_message)
@@ -314,7 +397,7 @@ class Connection(object):
 
     See Also
     --------
-    `/api/references/(rid)`
+    :http:delete:`/api/references/(rid)`
     """
 
     self.request("DELETE", "/references/%s" % (rid))
@@ -364,7 +447,7 @@ class Connection(object):
 
     See Also
     --------
-    `/api/configuration/markings`
+    :http:get:`/api/configuration/markings`
     """
 
     return self.request("GET", "/api/configuration/markings", 
@@ -379,7 +462,7 @@ class Connection(object):
 
     See Also
     --------
-    `/api/configuration/parsers`
+    :http:get:`/api/configuration/parsers`
     """
 
     return self.request("GET", "/api/configuration/parsers", 
@@ -390,11 +473,11 @@ class Connection(object):
 
     Returns
     -------
-    parsers: server remote host information.
+    remote_hosts: server remote host information.
 
     See Also
     --------
-    `/api/configuration/remote-hosts`
+    :http:get:`/api/configuration/remote-hosts`
     """
 
     return self.request("GET", "/api/configuration/remote-hosts", 
@@ -405,11 +488,11 @@ class Connection(object):
 
     Returns
     -------
-    parsers: server support email information.
+    email: server support email information.
 
     See Also
     --------
-    `/api/configuration/support-email`
+    :http:get:`/api/configuration/support-email`
     """
 
     return self.request("GET", "/api/configuration/support-email", 
@@ -424,7 +507,7 @@ class Connection(object):
 
     See Also
     --------
-    `/api/configuration/version`
+    :http:get:`/api/configuration/version`
     """
 
     return self.request("GET", "/api/configuration/version",
@@ -435,24 +518,26 @@ class Connection(object):
 
     Returns
     -------
-    version: server wizard plugin information.
+    wizards: server wizard plugin information.
 
     See Also
     --------
-    `/api/configuration/wizards`
+    :http:get:`/api/configuration/wizards`
     """
 
     return self.request("GET", "/api/configuration/wizards", 
       headers={"accept":"application/json"})
 
-  def get_global_resource(self, resource):
-    return self.request("GET", "/resources/global/%s" % resource)
+  # the following three calls seem to be defunct
 
-  def get_model_resource(self, mtype, resource):
-    return self.request("GET", "/resources/pages/%s/%s" % (mtype, resource))
+  # def get_global_resource(self, resource):
+  #   return self.request("GET", "/resources/global/%s" % resource)
 
-  def get_wizard_resource(self, wtype, resource):
-    return self.request("GET", "/resources/wizards/%s/%s" % (wtype, resource))
+  # def get_model_resource(self, mtype, resource):
+  #   return self.request("GET", "/resources/pages/%s/%s" % (mtype, resource))
+
+  # def get_wizard_resource(self, wtype, resource):
+  #   return self.request("GET", "/resources/wizards/%s/%s" % (wtype, resource))
 
   def get_model(self, mid):
     """Retrieve an existing model.
@@ -514,6 +599,24 @@ class Connection(object):
       (mid, aid), params=params, headers={"accept":"application/json"})
 
   def get_model_file(self, mid, aid):
+    """Retrieves the file corresponding to a given model and artifacts.
+
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    aid: string, required
+      Unique (with the model) artifact id.
+
+    Returns
+    -------
+    file: File data corresponding to artifact.
+
+    See Also
+    --------
+    :http:get:`/api/models/(mid)/files/(aid)`
+    """
+
     return self.request("GET", "/api/models/%s/files/%s" % (mid, aid))
 
   def get_model_parameter(self, mid, aid):
@@ -532,7 +635,7 @@ class Connection(object):
 
     Returns
     -------
-    parameter: JSON-compatible object
+    parameter: JSON-compatible object.
 
     See Also
     --------
@@ -543,12 +646,42 @@ class Connection(object):
       (mid, aid), headers={"accept":"application/json"})
 
   def get_project_models(self, pid):
-    """Returns every model in a project."""
+    """Retrieve every model in a oroject.
+
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+
+    Returns
+    -------
+    models: JSON-compatible object.
+
+    See Also
+    --------
+    :http:get:`/api/projects/(pid)/models`
+    """
+
     return self.request("GET", "/api/projects/%s/models" % pid, 
       headers={"accept":"application/json"})
 
   def get_project_references(self, pid):
-    """Returns every reference in a project."""
+    """Returns every reference in a project.
+    
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+
+    Returns
+    -------
+    references: JSON-compatible object.
+
+    See Also
+    --------
+    :http:get:`/api/projects/(pid)/references`
+    """
+    
     return self.request("GET", "/api/projects/%s/references" % pid, 
       headers={"accept":"application/json"})
 
@@ -684,10 +817,44 @@ class Connection(object):
       headers={"accept":"application/json"})
 
   def post_events(self, path, parameters={}):
+    """Post event to be logged on Slycat server.
+
+    Parameters
+    ----------
+    path: string, required
+      Path-like URI describing event to be logged.
+    parameters: dictionary, optional
+      JSON type object describing event.
+
+    See Also
+    --------
+    :http:post:`/api/events/(event)`
+    """
+
     self.request("POST", "/events/%s" % path, params=parameters)
 
   def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
-    """Stores model file artifacts."""
+    """Stores model file artifacts.
+    
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    aids: array, required
+      Artifact IDs for model storage.
+    files: array, required
+      Local files for upload.
+    parser: string, required
+      Name of Slycat parser that will process the files.
+    input: boolean, optional
+      Set as true (default) to store as model artifacts.
+    parametrs: dictionary, optional
+      Additional data to pass to parser.
+
+    See Also
+    --------
+    :http:post:`/api/models/(mid)/files`
+    """
 
     data = parameters
 
@@ -743,7 +910,31 @@ class Connection(object):
       headers={"content-type":"application/json"}, data=json.dumps(bookmark))["id"]
 
   def post_project_models(self, pid, mtype, name, marking="", description=""):
-    """Creates a new model, returning the model ID."""
+    """Creates a new model, returning the model ID.
+    
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+    mtype: string, required
+      Model type.
+    name: string, required
+      Model name.
+    marking: string, optional
+      Model marking.
+    description: string, optional
+      Description of model.
+
+    Returns
+    -------
+    mid: string
+      New model identifier.
+
+    See Also
+    --------
+    :http:post:`/api/projects/(pid)/models`
+    """
+
     return self.request("POST", "/api/projects/%s/models" % (pid), 
       headers={"content-type":"application/json"}, 
       data=json.dumps({"model-type":mtype, "name":name, "marking":marking, 
@@ -772,26 +963,91 @@ class Connection(object):
 
     See Also
     --------
-    `/api/projects/(pid)/references`
+    :http:post:`/api/projects/(pid)/references`
     """
 
     return self.request("POST", "/api/projects/%s/references" % (pid), 
       headers={"content-type":"application/json"}, data=json.dumps({"name":name, "model-type":mtype, "mid":mid, "bid":bid}))["id"]
 
   def post_projects(self, name, description=""):
-    """Creates a new project, returning the project ID."""
+    """Creates a new project, returning the project ID.
+    
+    Parameters
+    ----------
+    name: string, required
+      Name of project to be created.
+    description: string, optional
+      Description of new project.
+
+    Returns
+    -------
+    pid: string
+      Unique project identifier.
+
+    See Also
+    --------
+    :http:post:`/api/projects`
+    """
     return self.request("POST", "/api/projects", 
       headers={"content-type":"application/json"}, 
       data=json.dumps({"name":name, "description":description}))["id"]
 
   def post_remotes(self, hostname, username, password, agent=None):
+    """Creates a new remote connection from the Slycat server to another host. 
+
+    Parameters
+    ----------
+    hostname: string, required
+      Name of remote host.
+    username: string, required
+      User name for connection.
+    password: string, required
+      Password to authenticate connection.
+    agent: boolean, optional
+      Create an agent upon establishing connection.
+    
+    Returns
+    -------
+    sid: string
+      Session ID for connection.
+
+    See Also
+    --------
+    :http:post:`/api/remotes`
+    """
     return self.request("POST", "/api/remotes", 
-    headers={"content-type":"application/json"}, 
-    data=json.dumps({"hostname":hostname, "username":username, 
-                     "password":password, "agent": agent}))["sid"]
+      headers={"content-type":"application/json"}, 
+      data=json.dumps({"hostname":hostname, "username":username, 
+                       "password":password, "agent": agent}))["sid"]
 
   def post_remote_browse(self, sid, path, file_reject=None, file_allow=None, 
-    directory_allow=None, directory_reject=None):
+                         directory_allow=None, directory_reject=None):
+    """Uses an existing remote session to retrieve remote filesystem information.
+
+    Parameters
+    ----------
+    sid: string, required
+      Session ID for connection.
+    path: string, required
+      Remote file system path (must be absolute).
+    file_reject: string, optional
+      Regular expression for rejecting files.
+    file_allow: string, optional
+      Regular expression for retaining files.
+    directory_reject: string, optional
+      Regular expression for rejecting directories.
+    directory_allow: string, optional
+      Regular expression for retaining directories.
+
+    Returns
+    -------
+    response_body: JSON like object.
+
+    See Also
+    --------
+    :http:post:`/api/remotes/(hostname)/browse(path)`
+    """
+
     body = {}
     if file_reject is not None:
       body["file-reject"] = file_reject
@@ -806,6 +1062,25 @@ class Connection(object):
       headers={"content-type":"application/json"}, data=json.dumps(body))
 
   def put_model(self, mid, model):
+    """Modify a Slycat model.
+
+    Parameters
+    ----------
+    mid: string, required
+      Model identifier.
+    model: dictionary, required
+      JSON like dictionary with fields to modified model including:
+
+        * name (*string, optional*)
+        * description (*string, optional*)
+        * state (*string, optional*)
+        * progress (*float, optional*)
+        * message (*string, optional*)
+
+    See Also
+    --------
+    :http:put:`/api/models/(mid)`
+    """
     self.request("PUT", "/api/models/%s" % (mid), 
       headers={"content-type":"application/json"}, data=json.dumps(model))
 
@@ -876,7 +1151,25 @@ class Connection(object):
       data=request_data, files={"data":request_buffer.getvalue()})
 
   def put_model_arrayset_array(self, mid, aid, array, dimensions, attributes):
-    """Starts a new array set array, ready to receive data."""
+    """Starts a new array set array, ready to receive data.
+    
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    aid: string, required
+      Unique artifact identifier.
+    array: int, required
+      Unique array index.
+    dimensions: array, required
+      Array dimensions.
+    attributes: array, required
+      Array attributes (data types).
+
+    See Also
+    --------
+    :http:put:`/api/models/(mid)/arraysets/(aid)/arrays/(array)`
+    """
 
     stub = slycat.darray.Stub(dimensions, attributes)
     self.request("PUT", "/api/models/%s/arraysets/%s/arrays/%s" % (mid, aid, array), 
@@ -884,12 +1177,42 @@ class Connection(object):
       data=json.dumps({"dimensions":stub.dimensions, "attributes":stub.attributes}))
 
   def put_model_arrayset(self, mid, aid, input=True):
-    """Starts a new model array set artifact, ready to receive data."""
+    """Starts a new model array set artifact, ready to receive data.
+    
+    Parameters
+    ----------
+    mid: string, required
+      Unique model identifier.
+    aid: string, required
+      Unique artifact identifier.
+    input: boolean, optional
+      Set to true (default) if array set is a model input.
+
+    See Also
+    --------
+    :http:put:`/api/models/(mid)/arraysets/(aid)`
+    """
 
     self.request("PUT", "/api/models/%s/arraysets/%s" % (mid, aid), 
       headers={"content-type":"application/json"}, data=json.dumps({"input":input}))
 
   def put_model_inputs(self, source, target):
+    """Copies the input artifacts from one model to another. Both models 
+    must be part of the same project. By default, array artifacts are copied 
+    by reference instead of value for efficiency.
+
+    Parameters
+    ----------
+    source: string, required
+      Model ID source of artifacts.
+    target: string, required
+      Model ID target for artifacts.
+
+    See Also
+    --------
+    :http:put:`/api/models/(mid)/inputs`
+    """
+
     self.request("PUT", "/api/models/%s/inputs" % (target), 
       headers={"content-type":"application/json"}, data=json.dumps({"sid":source}))
 
@@ -924,7 +1247,23 @@ class Connection(object):
       headers={"content-type":"application/json"}, data=json.dumps({"value":value, "input":input}))
 
   def put_project(self, pid, project):
-    """Modifies a project."""
+    """Modifies a project.
+    
+    Parameters
+    ----------
+    pid: string, required
+      Unique project identifier.
+    project: dictionary, required
+      JSON like dictionary with fields to modified model including:
+
+        * name (*string, optional*)
+        * description (*string, optional*)
+        * acl (*string, optional*) -- access control list
+
+    See Also
+    --------
+    :http:put:`/api/projects/(pid)`
+    """
     return self.request("PUT", "/api/projects/%s" % pid, 
       headers={"content-type":"application/json"}, data=json.dumps(project))
 
@@ -954,7 +1293,8 @@ class Connection(object):
     :func:`find_or_create_project`, :func:`get_projects`
     """
 
-    projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
+    projects = [project for project in self.get_projects()["projects"] 
+                if project["name"] == name]
 
     if len(projects) > 1:
       cherrypy.log.error("slycat.web.client.__init__.py find_project", 
@@ -992,11 +1332,13 @@ class Connection(object):
     :func:`post_projects`
     """
 
-    projects = [project for project in self.get_projects()["projects"] if project["name"] == name]
+    projects = [project for project in self.get_projects()["projects"] 
+                if project["name"] == name]
     
     if len(projects) > 1:
       cherrypy.log.error("slycat.web.client.__init__.py find_or_create_project", 
-        "More than one project matched the given name. Try using a different project name instead.")
+        "More than one project matched the given name. Try using a " +
+        "different project name instead.")
       raise Exception("More than one project matched the given name. " +
         "Try using a different project name instead.")
     elif len(projects) == 1:
@@ -1048,7 +1390,8 @@ class Connection(object):
     """
 
     while True:
-      model = self.request("GET", "/api/models/%s" % (mid), headers={"accept":"application/json"})
+      model = self.request("GET", "/api/models/%s" % (mid), 
+                           headers={"accept":"application/json"})
       if "state" in model and model["state"] not in ["waiting", "running"]:
         return
       time.sleep(1.0)
@@ -1158,11 +1501,13 @@ class Connection(object):
     uid: string, required
       Unique file upload session ID.
 
-    Return Codes
-    ------------
-    204 No Content – The upload session and any temporary storage have been deleted.
-    409 Conflict – The upload session cannot be deleted, because parsing is in progress. 
-      Try again later.
+    Returns
+    -------
+    status_code: int
+      Http status code:
+
+        * 204 No Content – The upload session and temporary storage has been deleted.
+        * 409 Conflict – The upload session cannot be deleted, parsing is in progress. 
 
     See Also
     --------
@@ -1170,7 +1515,9 @@ class Connection(object):
     """
   
     # call directly to get response code
-    response = self.session.delete(self.host + "/api/uploads/%s" % uid)
+    response = self.session.delete(self.host + "/api/uploads/%s" % uid, 
+                    proxies=self.keywords.get("proxies"), 
+                    verify=self.keywords.get("verify"))
     
     # return code
     return response.status_code
@@ -1193,7 +1540,8 @@ class Connection(object):
       Any parameters to be passed to the parser (passed using aids when the 
       upload session is established).
     progress: boolean, optional
-      Display a download progress indicator using standard out.
+      Display a download progress indicator using standard out (will not
+      be logged to the log file).
     """
 
     # how many files?
@@ -1202,7 +1550,7 @@ class Connection(object):
     # get number of parts for progress bar
     file_slices_to_upload = []
     for fid in range(num_files):
-      num_slices = math.ceil(os.path.getsize(file_list[fid]) / FILE_SLICE_SIZE)
+      num_slices = math.ceil(os.path.getsize(file_list[fid]) / self.file_slice_size)
       file_slices_to_upload.append(num_slices)
 
     # create upload session
@@ -1220,16 +1568,20 @@ class Connection(object):
 
       # split each file into slices
       with open(file_list[fid], "rb") as file:
-        while (file_slice := file.read(FILE_SLICE_SIZE)):
+        
+        # get file slice
+        file_slice = file.read(self.file_slice_size)
+        while (file_slice != b''):
 
           # upload slice
           self.put_upload_file_part(uid, file_slices_uploaded[fid], fid, file_slice)
 
           # advance to next slice
+          file_slice = file.read(self.file_slice_size)
           file_slices_uploaded[fid] += 1
 
           if progress:
-            print_progress_bar(file_slices_uploaded[fid], file_slices_to_upload[fid], 
+            _print_progress_bar(file_slices_uploaded[fid], file_slices_to_upload[fid], 
               prefix = 'Progress:', suffix = 'Complete', length = 50)
 
     # finish upload
@@ -1243,7 +1595,19 @@ class Connection(object):
         break
 
 def connect(arguments, **keywords):
-  """Factory function for client connections that takes an option parser as input."""
+  """Factory function for client connections that takes an option parser as input.
+  
+  Parameters
+  ----------
+  arguments: argument parser object, required
+    Parsed command line arguments. 
+  keywords: dictionary, optional
+    Additional options to pass to requests.
+  
+  Returns
+  -------
+  connection: session for submitting requests to Slycat sever.
+  """
 
   # arguments are from the command line parser,
   # keywords get passed into the actual requests
@@ -1255,5 +1619,6 @@ def connect(arguments, **keywords):
     keywords["verify"] = arguments.verify
 
   return Connection(auth=(arguments.user, arguments.password),
-    host=arguments.host, port=arguments.port, kerberos = arguments.kerberos,
-    proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, **keywords)
+    host=arguments.host, port=arguments.port, kerberos=arguments.kerberos,
+    proxies={"http":arguments.http_proxy, "https":arguments.https_proxy}, 
+    file_slice_size=arguments.file_slice_size, **keywords)

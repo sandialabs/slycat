@@ -15,10 +15,22 @@
 # $ python setup.py sdist bdist_wheel
 # $ twine upload dist/*
 #
+# To publish to testpypi, use:
+#
+# $ twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+#
 # The first step builds the distribution, and the second step
 # uploads to PyPi.  To install the package from another computer use:
 #
 # $ pip install slycat-web-client
+#
+# To install from testpypi, use:
+#
+# $ pip install --extra-index-url https://testpypi.python.org/pypi slycat-web-client 
+#   --upgrade --trusted-host testpypi.python.org --proxy wwwproxy.sandia.gov:80
+#
+# NOTE: Any local changes to slycat/web/client/__init__.py will be overwritten
+# when you run this command!  Changes should be made to pacakges/slycat/web/client
 
 from shutil import copyfile
 
@@ -35,7 +47,8 @@ copyfile('../packages/slycat/web/__init__.py', 'slycat/web/__init__.py')
 import slycat
 VERSION = slycat.__version__
 
-VERSION = VERSION
+# development version
+# VERSION = VERSION + "dev13"
 
 # get README.md
 import pathlib
@@ -69,7 +82,7 @@ setup(
     ],
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=["requests", "requests_gssapi",
+    install_requires=["requests", "requests-kerberos",
                       "numpy", "cherrypy"],
     entry_points={
         "console_scripts": [

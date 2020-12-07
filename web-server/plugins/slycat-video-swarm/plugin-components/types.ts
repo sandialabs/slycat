@@ -28,6 +28,7 @@ export interface LoadingPageState {
   progressBarHidden: boolean;
   modalId: string;
   progressBarProgress: number;
+  linkColumn: number;
   modelMessage: string;
   modelShow: boolean;
   hostname: string;
