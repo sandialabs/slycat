@@ -9,23 +9,10 @@ export default class VariableRanges extends React.Component {
   constructor(props) {
     super(props);
 
-    this.numericVariables = props.metadata['column-names']
-      .flatMap((name, index) => {
-        if(props.metadata['column-types'][index] != 'string')
-        {
-          return [{
-            index: index,
-            dataMin: props.table_statistics[index].min,
-            dataMax: props.table_statistics[index].max,
-          }];
-        }
-        return [];
-      });
-
-    let inputsArray = this.numericVariables.map((variable, index) => {
+    let inputsArray = this.props.variables.map((variable, index) => {
       let min = '';
       let max = '';
-      let bookmark = this.props.variableRanges[variable.index];
+      let bookmark = this.props.variableRanges[variable.key];
       if (bookmark) 
       {
         min = bookmark.min != undefined ? bookmark.min : '';
@@ -39,12 +26,10 @@ export default class VariableRanges extends React.Component {
       }
     });
 
-    let inputObject = Object.assign(...inputsArray);
+    let inputObject = inputsArray.length ? Object.assign(...inputsArray) : {};
 
     this.state = inputObject;
 
-    this.names = props.metadata['column-names'];
-    this.types = props.metadata['column-types'];
     this.text_align = 'text-center';
     this.class = 'slycat-variable-ranges';
   }
@@ -70,7 +55,7 @@ export default class VariableRanges extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
     // console.log('shouldComponentUpdate in VariableRanges');
     let stateDifferent = !_.isEqual(this.state, nextState)
-    let propsDifferent = !_.isEqual(this.props.variableAliases, nextProps.variableAliases)
+    let propsDifferent = !_.isEqual(this.props.variables, nextProps.variables)
     return stateDifferent || propsDifferent;
   }
 
@@ -94,7 +79,7 @@ export default class VariableRanges extends React.Component {
     // Called by ControlsButtonVarOptions component using a reference
     // to inform that all variable ranges have been cleared in the Redux store
     // so we need to clear the local state too to update the UI.
-    let inputsArray = this.numericVariables.map((variable, index) => {
+    let inputsArray = this.props.variables.map((variable, index) => {
       return {
         [this.getName(variable.index, true)] : '',
         [`${this.getName(variable.index, true)}_valid`] : true,
@@ -103,15 +88,6 @@ export default class VariableRanges extends React.Component {
       }
     });
     this.setState(Object.assign(...inputsArray));
-  }
-
-  getVariableAlias = (index) => {
-    let alias = this.props.metadata['column-names'][index];
-    if(this.props.variableAliases[index] !== undefined)
-    {
-      alias = this.props.variableAliases[index];
-    }
-    return alias;
   }
 
   getName = (index, minBool) => {
@@ -138,8 +114,8 @@ export default class VariableRanges extends React.Component {
     let oppositeName = `${oppositePrefix}${name.slice(3)}`;
     let oppositeInput = previousState[oppositeName];
     let oppositeNum = parseFloat(previousState[oppositeName]);
-    let data = parseFloat(props.table_statistics[index][prefix]);
-    let oppositeData = parseFloat(props.table_statistics[index][oppositePrefix]);
+    let data = parseFloat(props.variables[index][prefix]);
+    let oppositeData = parseFloat(props.variables[index][oppositePrefix]);
     let compare = oppositeInput === '' || Number.isNaN(oppositeNum) ? oppositeData : oppositeNum;
     let oppositeCompare = inputString === '' || Number.isNaN(inputNum) ? data : inputNum;
     
@@ -152,11 +128,12 @@ export default class VariableRanges extends React.Component {
 
   validateMinOrMax = (inputString, inputNum, min, compare, index) => {
     // console.log('validateMinOrMax');
+    const key = this.props.variables[index].key;
     // Empty field is always valid because the data value overrides it
     if(inputString === '')
     {
       // Clear min or max in redux store since it's blank
-      this.props.clearVariableRange(index, min ? 'min' : 'max');
+      this.props.clearVariableRange(key, min ? 'min' : 'max');
       return true;
     }
     // NaNs are invalid
@@ -167,17 +144,23 @@ export default class VariableRanges extends React.Component {
     else if(min ? inputNum < compare : inputNum > compare)
     {
       // Save min or max to redux store since it's valid
-      this.props.setVariableRange(index, inputNum, min ? 'min' : 'max');
+      this.props.setVariableRange(key, inputNum, min ? 'min' : 'max');
       return true;
     }
     // Clear min or max in redux store when invalid
-    this.props.clearVariableRange(index, min ? 'min' : 'max');
+    this.props.clearVariableRange(key, min ? 'min' : 'max');
     return false;
   }
 
   render() {
     // console.log('render in VariableRanges');
     // const t0 = performance.now();
+
+    // Don't render if we have no variables
+    if(this.props.variables.length == 0)
+    {
+      return null;
+    }
 
     let result = (
       <div className={`${this.class} ${this.props.uniqueID}`}>
@@ -186,38 +169,35 @@ export default class VariableRanges extends React.Component {
             <tr>
               <th scope='col' className='align-top' />
               <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Min</th>
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Axis Min</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>{this.props.inputLabel} Min</th>
               <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`} />
-              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Axis Max</th>
+              <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>{this.props.inputLabel} Max</th>
               <th scope='col' className={`align-top text-nowrap px-2 ${this.text_align}`}>Data Max</th>
             </tr>
           </thead>
           <tbody>
-          {
-            this.numericVariables.map((variable, index) => {
+            {this.props.variables.map((variable, index) => {
               let minName = this.getName(variable.index, true);
               let maxName = this.getName(variable.index, false);
               let minNameValid = `${minName}_valid`;
               let maxNameValid = `${maxName}_valid`;
 
               return (
-                <VariableRangesRow 
+                <VariableRangesRow
                   key={index}
-                  alias={this.getVariableAlias(variable.index)}
+                  label={variable.name}
                   text_align={this.text_align}
-                  data_min={variable.dataMin}
+                  data_min={variable.min}
                   min_valid={this.state[minNameValid]}
                   min_value={this.state[minName]}
                   min_name={minName}
-                  data_max={variable.dataMax}
+                  data_max={variable.max}
                   max_valid={this.state[maxNameValid]}
                   max_value={this.state[maxName]}
                   max_name={maxName}
-                  handleChange={this.handleChange}
-                />
-              )
-            })
-          }
+                  handleChange={this.handleChange} />
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -231,17 +211,34 @@ export default class VariableRanges extends React.Component {
 }
 
 class VariableRangesRow extends React.PureComponent {
+
+  precise = (number) => {
+    const significantDigits = 7;
+    // Fractional digits for exponential notation should be 4 shorter than
+    // significant digits to create string about the same length.
+    const fractionDigits = significantDigits - 4;
+
+    let variations = [];
+    variations.push(number.toString());
+    variations.push(number.toPrecision(significantDigits));
+    variations.push(number.toExponential(fractionDigits));
+    
+    // Return shortest string, comparing orignal to precision to exponential
+    return variations.reduce((a, b) => a.length <= b.length ? a : b);
+  }
+
   render() {
     return (
       <tr key={this.props.index}>
         <th scope='row' 
           className='align-middle variable-name px-2'>
-          {this.props.alias}
+          {this.props.label}
         </th>
         <td 
           className={`align-middle px-2 ${this.props.text_align} data-min`}
         >
-          {this.props.data_min}
+          <span className="imprecise">{this.precise(this.props.data_min)}</span>
+          <span className="precise">{this.props.data_min}</span>
         </td>
         <td className={`align-middle ${this.props.text_align} axis-min axis-input`}>
           <div className='input-group input-group-sm'>
@@ -251,7 +248,6 @@ class VariableRangesRow extends React.PureComponent {
                 ${this.props.min_valid ? 'valid' : 'is-invalid'}
                 ${this.props.min_value !== '' ? 'contains-user-input' : ''}`} 
               name={this.props.min_name}
-              placeholder={this.props.data_min}
               value={this.props.min_value}
               onChange={this.props.handleChange}
             />
@@ -291,7 +287,6 @@ class VariableRangesRow extends React.PureComponent {
                 ${this.props.max_valid ? 'valid' : 'is-invalid'}
                 ${this.props.max_value !== '' ? 'contains-user-input' : ''}`}
               name={this.props.max_name}
-              placeholder={this.props.data_max}
               value={this.props.max_value}
               onChange={this.props.handleChange}
             />
@@ -311,7 +306,8 @@ class VariableRangesRow extends React.PureComponent {
           </div>
         </td>
         <td className={`align-middle px-2 ${this.props.text_align} data-max`}>
-          {this.props.data_max}
+          <span className="imprecise">{this.precise(this.props.data_max)}</span>
+          <span className="precise">{this.props.data_max}</span>
         </td>
       </tr>
     );

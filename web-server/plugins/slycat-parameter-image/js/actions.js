@@ -19,6 +19,10 @@ export const SET_SELECTED_BORDER_SIZE = 'SET_SELECTED_BORDER_SIZE'
 export const SET_VARIABLE_RANGE = 'SET_VARIABLE_RANGE'
 export const CLEAR_VARIABLE_RANGE = 'CLEAR_VARIABLE_RANGE'
 export const CLEAR_ALL_VARIABLE_RANGES = 'CLEAR_ALL_VARIABLE_RANGES'
+export const ADJUST_THREE_D_VARIABLE_DATA_RANGE = 'ADJUST_THREE_D_VARIABLE_DATA_RANGE'
+export const SET_THREE_D_VARIABLE_USER_RANGE = 'SET_THREE_D_VARIABLE_USER_RANGE'
+export const CLEAR_THREE_D_VARIABLE_USER_RANGE = 'CLEAR_THREE_D_VARIABLE_USER_RANGE'
+export const CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES = 'CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES'
 export const SET_X_VALUES = 'SET_X_VALUES'
 export const SET_Y_VALUES = 'SET_Y_VALUES'
 export const SET_V_VALUES = 'SET_V_VALUES'
@@ -159,15 +163,57 @@ export function setSelectedBorderSize(event) {
 }
 
 export function setVariableRange(index, value, minOrMax) {
-  return { type: SET_VARIABLE_RANGE, index: index, value: value, minOrMax: minOrMax }
+  return { 
+    type: SET_VARIABLE_RANGE, 
+    index, 
+    value, 
+    minOrMax, 
+  }
 }
 
 export function clearVariableRange(index, minOrMax) {
-  return { type: CLEAR_VARIABLE_RANGE, index: index, minOrMax: minOrMax }
+  return { 
+    type: CLEAR_VARIABLE_RANGE, 
+    index, 
+    minOrMax, 
+  }
 }
 
 export function clearAllVariableRanges() {
-  return { type: CLEAR_ALL_VARIABLE_RANGES }
+  return { 
+    type: CLEAR_ALL_VARIABLE_RANGES,
+  }
+}
+
+export function adjustThreeDVariableDataRange(name, range) {
+  return { 
+    type: ADJUST_THREE_D_VARIABLE_DATA_RANGE, 
+    name, 
+    range, 
+  }
+}
+
+export function setThreeDVariableUserRange(name, value, minOrMax) {
+  return { 
+    type: SET_THREE_D_VARIABLE_USER_RANGE, 
+    name, 
+    value, 
+    minOrMax, 
+  }
+}
+
+export function clearThreeDVariableUserRange(name, minOrMax) {
+  return { 
+    type: CLEAR_THREE_D_VARIABLE_USER_RANGE, 
+    name, 
+    minOrMax, 
+  }
+}
+
+export function clearAllThreeDVariableUserRanges() {
+  return { 
+    type: CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES,
+  }
 }
 
 export function setXValues(values) {

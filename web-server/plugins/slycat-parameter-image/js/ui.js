@@ -408,6 +408,8 @@ $(document).ready(function() {
             selected_point_size: selected_point_size,
             selected_border_size: selected_border_size,
             variableRanges: {},
+            three_d_variable_data_ranges: {},
+            three_d_variable_user_ranges: {},
             open_media: bookmarked_open_media,
             currentFrame: {},
           }

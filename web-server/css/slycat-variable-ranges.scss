@@ -7,7 +7,7 @@
   //   width: 1%;
   // }
   tbody th.variable-name {
-    border-right: 1px solid #DDD;
+    // border-right: 1px solid #DDD;
   }
   tbody td.axis-input {
     white-space: nowrap;
@@ -36,6 +36,33 @@
   .data-max
   {
     overflow-wrap: anywhere;
+  }
+  .axis-input > .input-group {
+    justify-content: center;
+  }
+
+  .precise,
+  .imprecise,
+  {
+    overflow-wrap: normal;
+  }
+
+  .precise {
+    display: none;
+  }
+  
+  // Swap precise and imprecise when hovering on containing cell
+  td:hover .precise {
+    display: inline;
+  }
+  td:hover .imprecise {
+    display: none;
+  }
+
+  // Accordion styles
+  table {
+    margin-bottom: 0;
+    margin-top: 0.5rem;
   }
 
 }

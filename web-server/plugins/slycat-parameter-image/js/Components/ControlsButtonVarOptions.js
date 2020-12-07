@@ -8,6 +8,9 @@ import {
   setVariableRange,
   clearVariableRange,
   clearAllVariableRanges,
+  setThreeDVariableUserRange,
+  clearThreeDVariableUserRange,
+  clearAllThreeDVariableUserRanges,
 } from '../actions';
 import React, { useState } from "react";
 import ControlsButton from 'components/ControlsButton';
@@ -27,11 +30,49 @@ import { faUndo } from '@fortawesome/free-solid-svg-icons'
 export const DEFAULT_FONT_SIZE = 15;
 export const DEFAULT_FONT_FAMILY = 'Arial';
 
+class Caret extends React.PureComponent {
+  render() {
+    return (
+      <>
+      <svg width="1em" height="1em" viewBox="0 0 16 16"
+        className="bi bi-caret-right-fill ml-2 mb-1"
+        fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
+      </svg>
+      <svg width="1em" height="1em" viewBox="0 0 16 16"
+        className="bi bi-caret-down-fill ml-2 mb-1"
+        fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+      </svg>
+      </>
+    );
+  }
+}
+
+class ClearAllButton extends React.PureComponent {
+  render() {
+    return (
+      <div className="text-center">
+        <button type='button' 
+          className='btn btn-danger mx-2 mb-2 mt-2' 
+          disabled={this.props.disable}
+          onClick={this.props.handleClick}
+        >
+          {this.props.label}
+        </button>
+      </div>
+    );
+  }
+}
+
 class ControlsButtonVarOptions extends React.PureComponent {
   constructor(props) {
     super(props);
 
     this.variableRangesRef = React.createRef();
+    this.threeDVariableRangesRef = React.createRef();
 
     this.modalId = 'varOptionsModal';
     this.title = 'Display Settings';
@@ -106,7 +147,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
   clearAllVariableRanges = () => {
     const self = this;
     dialog.confirm({
-      title: 'Clear All Variable Ranges',
+      title: 'Clear All Scatterplot Variable Ranges',
       message: 'This will erase all Axis Min and Axis Max values that have been entered.',
       ok: function(){
         // First clear all variable ranges in Redux state;
@@ -114,6 +155,24 @@ class ControlsButtonVarOptions extends React.PureComponent {
         // Then let VariableRanges component know this happened because it needs
         // to update its local state accordingly. 
         self.variableRangesRef.current.clearAllVariableRanges();
+      },
+      cancel: function(){
+        // Do nothing if cancel. The confirmation dialog will just close.
+      }
+    });
+  }
+
+  clearAllThreeDVariableUserRanges = () => {
+    const self = this;
+    dialog.confirm({
+      title: 'Clear All 3D Variable Ranges',
+      message: 'This will erase all 3D Legend Min and Max values that have been entered.',
+      ok: function(){
+        // First clear all variable ranges in Redux state;
+        self.props.clearAllThreeDVariableUserRanges();
+        // Then let VariableRanges component know this happened because it needs
+        // to update its local state accordingly. 
+        self.threeDVariableRangesRef.current.clearAllVariableRanges();
       },
       cancel: function(){
         // Do nothing if cancel. The confirmation dialog will just close.
@@ -200,6 +259,36 @@ class ControlsButtonVarOptions extends React.PureComponent {
         {font.name}
       </a>
     ));
+
+    let scatterplotVariableRanges = <>
+      <VariableRanges
+        variables={this.props.numericScatterplotVariables}
+        variableRanges={this.props.variableRanges}
+        setVariableRange={this.props.setVariableRange}
+        clearVariableRange={this.props.clearVariableRange}
+        inputLabel="Axis"
+        ref={this.variableRangesRef} />
+      <ClearAllButton
+        label="Clear All Scatterplot Variable Ranges"
+        disable={Object.keys(this.props.variableRanges).length === 0}
+        handleClick={this.clearAllVariableRanges} />
+      </>;
+    
+    let threeDVariableRanges = <>
+      <VariableRanges 
+        variables={this.props.numericScatterplotVariables}
+        variableRanges={this.props.variableRanges}
+        setVariableRange={this.props.setVariableRange}
+        clearVariableRange={this.props.clearVariableRange}
+        inputLabel="Axis"
+        ref={this.variableRangesRef}
+      />
+      <ClearAllButton 
+        label="Clear All Scatterplot Variable Ranges"
+        disable={Object.keys(this.props.variableRanges).length === 0}
+        handleClick={this.clearAllVariableRanges}
+      />
+      </>;
 
     return (
       <React.Fragment>
@@ -327,15 +416,69 @@ class ControlsButtonVarOptions extends React.PureComponent {
                     />
                   </div>
                   <div className='tab-pane' id='variable-ranges-tab-content' role='tabpanel' aria-labelledby='variable-ranges-tab'>
-                    <VariableRanges 
-                      metadata={this.props.metadata}
-                      table_statistics={this.props.table_statistics}
-                      variableAliases={this.props.variable_aliases}
-                      variableRanges={this.props.variableRanges}
-                      setVariableRange={this.props.setVariableRange}
-                      clearVariableRange={this.props.clearVariableRange}
-                      ref={this.variableRangesRef}
-                    />
+                    {/* Show this scatterplot variable ranges UI on its own when there are no 3D variables.  */}
+                    {this.props.threeDVariables.length == 0 &&
+                      <>{scatterplotVariableRanges}</>
+                    }
+                    {/* When there are 3D variables, show both variable ranges components inside an accordion */}
+                    {this.props.threeDVariables.length > 0 &&
+                    <div className="accordion" id="accordionRanges">
+                      <div className="card">
+                        <div className="card-header" id="headingOne">
+                          <h2 className="mb-0">
+                            <button className="btn btn-link btn-block text-center" 
+                              type="button" 
+                              data-toggle="collapse" 
+                              data-target="#collapseOne" 
+                              aria-expanded="true" 
+                              aria-controls="collapseOne"
+                            >
+                              Scatterplot Variables
+                              <Caret />
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseOne" className="collapse show" aria-labelledby="headingOne" data-parent="#accordionRanges">
+                          <div className="card-body">
+                            {threeDVariableRanges}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="card">
+                        <div className="card-header" id="headingTwo">
+                          <h2 className="mb-0">
+                            <button className="btn btn-link btn-block text-center collapsed" 
+                              type="button" 
+                              data-toggle="collapse" 
+                              data-target="#collapseTwo" 
+                              aria-expanded="false" 
+                              aria-controls="collapseTwo"
+                            >
+                              3D Variables
+                              <Caret />
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseTwo" className="collapse" aria-labelledby="headingTwo" data-parent="#accordionRanges">
+                          <div className="card-body">
+                            <VariableRanges 
+                              variables={this.props.threeDVariables}
+                              variableRanges={this.props.three_d_variable_user_ranges}
+                              setVariableRange={this.props.setThreeDVariableUserRange}
+                              clearVariableRange={this.props.clearThreeDVariableUserRange}
+                              inputLabel="3D Legend"
+                              ref={this.threeDVariableRangesRef}
+                            />
+                            <ClearAllButton 
+                              label="Clear All 3D Variable Ranges"
+                              disable={Object.keys(this.props.three_d_variable_user_ranges).length === 0}
+                              handleClick={this.clearAllThreeDVariableUserRanges}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    }
                   </div>
                   <div className='tab-pane' id='variable-alias-tab-content' role='tabpanel' aria-labelledby='variable-alias-tab'>
                     <VariableAliasLabels 
@@ -352,13 +495,6 @@ class ControlsButtonVarOptions extends React.PureComponent {
               </div>
               <div className='modal-footer'>
                 <div className='mr-auto'>
-                  <button type='button' 
-                    className='btn btn-danger mr-2 tabDependent variable-ranges-tab-content d-none' 
-                    disabled={Object.keys(this.props.variableRanges).length === 0}
-                    onClick={this.clearAllVariableRanges}
-                  >
-                    Clear All Variable Ranges
-                  </button>
                   <button type='button' 
                     className='btn btn-danger mr-2 tabDependent variable-alias-tab-content d-none'
                     disabled={Object.keys(this.props.variable_aliases).length === 0}
@@ -387,12 +523,54 @@ class ControlsButtonVarOptions extends React.PureComponent {
 }
 
 const mapStateToProps = (state, ownProps) => {
+
+  const variable_aliases = state.derived.variableAliases;
+
+  const getVariableAlias = (index) => {
+    if(variable_aliases[index] !== undefined)
+    {
+      return variable_aliases[index];
+    }
+    return ownProps.metadata['column-names'][index];
+  }
+
+  const numericScatterplotVariables = ownProps.metadata['column-names']
+    .flatMap((name, index) => {
+      if(ownProps.metadata['column-types'][index] != 'string')
+      {
+        return [{
+          key: index,
+          index: index,
+          name: getVariableAlias(index),
+          min: ownProps.table_statistics[index].min,
+          max: ownProps.table_statistics[index].max,
+        }];
+      }
+      return [];
+    });
+  
+  const threeDVariables = Object.entries(state.three_d_variable_data_ranges)
+    .map(([key, value], index) => {
+      const [pointOrCell, varName, component] = key.split(':');
+      const name = `${varName}${component ? `[${parseInt(component, 10) + 1}]` : ``}`;
+      return {
+        key: key,
+        index: index,
+        name: name,
+        min: value.min,
+        max: value.max,
+      };
+    });
+
   return {
     font_size: state.fontSize,
     font_family: state.fontFamily,
     axes_variables_scale: state.axesVariables,
-    variable_aliases: state.derived.variableAliases,
+    variable_aliases: variable_aliases,
     variableRanges: state.variableRanges,
+    numericScatterplotVariables: numericScatterplotVariables,
+    threeDVariables: threeDVariables,
+    three_d_variable_user_ranges: state.three_d_variable_user_ranges,
   }
 }
 
@@ -407,5 +585,8 @@ export default connect(
     setVariableRange,
     clearVariableRange,
     clearAllVariableRanges,
+    setThreeDVariableUserRange,
+    clearThreeDVariableUserRange,
+    clearAllThreeDVariableUserRanges,
   }
 )(ControlsButtonVarOptions)

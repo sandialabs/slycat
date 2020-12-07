@@ -22,9 +22,27 @@ import { addCamera, } from './vtk-camera-synchronizer';
 import { 
   updateThreeDColorByOptions,
   setThreeDColorByRange,
+  adjustThreeDVariableDataRange,
 } from './actions';
+import _ from 'lodash';
 
 var vtkstartinteraction_event = new Event('vtkstartinteraction');
+
+export function getDataRange(colorBy) {
+  if(colorBy == ":")
+  {
+    return [0,1];
+  }
+  const three_d_variable_data_ranges = window.store.getState().three_d_variable_data_ranges[colorBy];
+  const three_d_variable_user_ranges = window.store.getState().three_d_variable_user_ranges[colorBy];
+  // console.debug(`vtk-geometry-viewer three_d_variable_user_ranges for ${colorBy} is ${three_d_variable_user_ranges}`);
+  // console.debug(`vtk-geometry-viewer three_d_variable_data_ranges for ${colorBy} is ${three_d_variable_data_ranges}`);
+  const min = three_d_variable_user_ranges && three_d_variable_user_ranges.min !== undefined ? 
+    three_d_variable_user_ranges.min : three_d_variable_data_ranges.min;
+  const max = three_d_variable_user_ranges && three_d_variable_user_ranges.max !== undefined ? 
+    three_d_variable_user_ranges.max : three_d_variable_data_ranges.max;
+  return [min, max];
+}
 
 export function load(container, buffer, uri, uid, type) {
 
@@ -145,6 +163,33 @@ export function load(container, buffer, uri, uid, type) {
     // Dispatch update to available color by options to redux store
     window.store.dispatch(updateThreeDColorByOptions(uri, colorByOptions));
 
+    // Loop through all color by variables and get their data ranges
+    colorByOptions.forEach((element, index) => {
+      const [pointOrCell, varName] = element.value.split(':');
+      // Don't do anything when not coloring by a variable
+      if (pointOrCell.length > 0)
+      {
+        const array = source[`get${pointOrCell}`]().getArrayByName(
+          varName
+        );
+        const dataRange = array.getRange();
+        // Dispatch update to color variable ranges to redux store.
+        // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
+        window.store.dispatch(adjustThreeDVariableDataRange(element.value, dataRange));
+        window.store.dispatch(setThreeDColorByRange(uri, element.value, dataRange));
+        // If there are any components, look up their ranges and dispatch updates to redux store.
+        if (element.components > 1)
+        {
+          [...Array(element.components)].forEach((component, componentIndex) => {
+            const componentRange = array.getRange(componentIndex);
+            // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
+            window.store.dispatch(adjustThreeDVariableDataRange(`${element.value}:${componentIndex}`, componentRange));
+            window.store.dispatch(setThreeDColorByRange(uri, `${element.value}:${componentIndex}`, componentRange));
+          });
+        }
+      }
+    });
+
     function updateColorBy() {
       // Use default colorBy if we don't have a setting for it in the state
       if(window.store.getState().three_d_colorvars && window.store.getState().three_d_colorvars[uid])
@@ -167,9 +212,22 @@ export function load(container, buffer, uri, uid, type) {
           colorByArrayName
         );
         activeArray = newArray;
-        const numberOfComponents = activeArray.getNumberOfComponents();
 
-        const newDataRange = activeArray.getRange();
+        const vtpDataRange = component > -1 ? activeArray.getRange(component) : activeArray.getRange();
+        console.group(`Data ranges of %s variable %s%s for %s`,
+          location,
+          colorByArrayName,
+          componentString ? `[${Number(componentString)+1}]` : '',
+          uri,
+        );
+        console.debug(`From this VTP file:                      %o`,
+          vtpDataRange,
+        );
+        const newDataRange = getDataRange(colorBy);
+        console.debug(`From Display Settings > Variable Ranges: %o`, 
+          newDataRange,
+        );
+        console.groupEnd();
         dataRange[0] = newDataRange[0];
         dataRange[1] = newDataRange[1];
         colorMode = ColorMode.MAP_SCALARS;
@@ -182,26 +240,22 @@ export function load(container, buffer, uri, uid, type) {
         if(mapper.getLookupTable())
         {
           const lut = mapper.getLookupTable();
-          // Use the selected component if we have one
+          // If a component has been selected, use it.
           if(component > -1) 
           {
             lut.setVectorModeToComponent();
             lut.setVectorComponent(component);
-            const componentDataRange = activeArray.getRange(component);
-            dataRange[0] = componentDataRange[0];
-            dataRange[1] = componentDataRange[1];
             lookupTable.setMappingRange(dataRange[0], dataRange[1]);
             lut.updateRange();
           }
-          // Set the component to magnitude if we don't have one
+          // Use magnitude if a component has not been selected.
+          // This seems to happen with point data when a component is not selected
+          // and with cell data (which don't seem to have components).
           else
           {
             lut.setVectorModeToMagnitude();
           }
         }
-        // console.log(`Data range for ${uri} colored by ${colorBy} is: ${dataRange[0]} - ${dataRange[1]}`);
-        // Dispatch update to color by range to redux store
-        window.store.dispatch(setThreeDColorByRange(uri, colorBy, dataRange));
       }
 
       mapper.set({
@@ -215,9 +269,15 @@ export function load(container, buffer, uri, uid, type) {
     }
 
     function updateColorByIfChanged() {
-      if(window.store.getState().three_d_colorvars
+      const colorVariableChanged = window.store.getState().three_d_colorvars
         && window.store.getState().three_d_colorvars[uid]
-        && window.store.getState().three_d_colorvars[uid] != colorBy)
+        && window.store.getState().three_d_colorvars[uid] != colorBy
+        ;
+      
+      const colorVariableRangeChanged = !_.isEqual(getDataRange(colorBy), dataRange);
+      // console.log(`colorVariableRangeChanged: ${colorVariableRangeChanged}`);
+
+      if(colorVariableChanged || colorVariableRangeChanged)
       {
         // console.log("ColorBy changed, so applying the new one.");
         updateColorBy();

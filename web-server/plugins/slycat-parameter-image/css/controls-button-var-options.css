@@ -7,3 +7,38 @@
 .font-family-dropdown .btn .caret {
     margin-left: 10px;
 }
+
+/* Accordion Styles */
+.btn-link:hover {
+  text-decoration: none;
+}
+.card-body {
+  padding: 0;
+}
+.card-header {
+  padding: 0;
+}
+.card-header button.btn {
+  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+#variable-ranges-tab-content {
+  margin-left: -1rem;
+  margin-right: -1rem;
+}
+.bi-caret-right-fill,
+.bi-caret-down-fill
+{
+  font-size: 1rem;
+}
+.collapsed .bi-caret-right-fill,
+.bi-caret-down-fill
+{
+  display: inline-block;
+}
+.collapsed .bi-caret-down-fill,
+.bi-caret-right-fill
+{
+  display: none;
+}
