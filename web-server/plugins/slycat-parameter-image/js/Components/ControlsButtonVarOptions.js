@@ -273,22 +273,6 @@ class ControlsButtonVarOptions extends React.PureComponent {
         disable={Object.keys(this.props.variableRanges).length === 0}
         handleClick={this.clearAllVariableRanges} />
       </>;
-    
-    let threeDVariableRanges = <>
-      <VariableRanges 
-        variables={this.props.numericScatterplotVariables}
-        variableRanges={this.props.variableRanges}
-        setVariableRange={this.props.setVariableRange}
-        clearVariableRange={this.props.clearVariableRange}
-        inputLabel="Axis"
-        ref={this.variableRangesRef}
-      />
-      <ClearAllButton 
-        label="Clear All Scatterplot Variable Ranges"
-        disable={Object.keys(this.props.variableRanges).length === 0}
-        handleClick={this.clearAllVariableRanges}
-      />
-      </>;
 
     return (
       <React.Fragment>
@@ -440,7 +424,7 @@ class ControlsButtonVarOptions extends React.PureComponent {
                         </div>
                         <div id="collapseOne" className="collapse show" aria-labelledby="headingOne" data-parent="#accordionRanges">
                           <div className="card-body">
-                            {threeDVariableRanges}
+                            {scatterplotVariableRanges}
                           </div>
                         </div>
                       </div>
