@@ -9,32 +9,70 @@ export default class VariableRanges extends React.Component {
   constructor(props) {
     super(props);
 
-    let inputsArray = this.props.variables.map((variable, index) => {
-      let min = '';
-      let max = '';
-      let bookmark = this.props.variableRanges[variable.key];
-      if (bookmark) 
-      {
-        min = bookmark.min != undefined ? bookmark.min : '';
-        max = bookmark.max != undefined ? bookmark.max : '';
-      }
-      return {
-        [this.getName(variable.index, true)] : min,
-        [`${this.getName(variable.index, true)}_valid`] : true,
-        [this.getName(variable.index, false)] : max,
-        [`${this.getName(variable.index, false)}_valid`] : true,
-      }
-    });
-
-    let inputObject = inputsArray.length ? Object.assign(...inputsArray) : {};
-
-    this.state = inputObject;
+    this.state = this.makeInputObject(this.props.variables);
 
     this.text_align = 'text-center';
     this.class = 'slycat-variable-ranges';
   }
 
   componentDidMount() {
+    this.initializePopovers();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    // console.log('shouldComponentUpdate in VariableRanges');
+    let stateDifferent = !_.isEqual(this.state, nextState)
+    let propsDifferent = !_.isEqual(this.props.variables, nextProps.variables)
+    return stateDifferent || propsDifferent;
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    this.initializePopovers();
+
+    // Disabling popover tooltips for valid input fields.
+    $(`.${this.class} .validationPopover.valid`).popover('disable');
+    // Enable popover tooltips for invalid input fields.
+    $(`.${this.class} .validationPopover.is-invalid`).popover('enable');
+
+
+    // Show any new validation popovers but only for the element that has focus, 
+    // since that's the one the user will be interacting with. We don't want
+    // popovers appearing all over the UI for all invalid input fields.
+    $(`.${this.class} .validationPopover`).filter(':focus').popover('show');
+    // Hide any open popovers when the state changes and the underlying input
+    // is now valid.
+    $(`.${this.class} .validationPopover.valid`).popover('hide');
+
+    // Find any new variables added to props.variables by looking at each variable object's key property
+    const newVariables = _.xorBy(this.props.variables, prevProps.variables, 'key');
+    if(newVariables.length)
+    {
+      // console.group(`OOPS, looks like we have new variables to deal with.`);
+      // console.debug(`this.props.variables is %o`, this.props.variables);
+      // console.debug(` prevProps.variables is %o`, prevProps.variables);
+      // console.debug(`          difference is %o`, newVariables);
+      // console.groupEnd();
+      // Add these new variables to local state so the controls for them work
+      this.setState(this.makeInputObject(newVariables));
+    }
+  }
+
+  clearAllVariableRanges = () => {
+    // Called by ControlsButtonVarOptions component using a reference
+    // to inform that all variable ranges have been cleared in the Redux store
+    // so we need to clear the local state too to update the UI.
+    let inputsArray = this.props.variables.map((variable, index) => {
+      return {
+        [this.getName(variable.index, true)] : '',
+        [`${this.getName(variable.index, true)}_valid`] : true,
+        [this.getName(variable.index, false)] : '',
+        [`${this.getName(variable.index, false)}_valid`] : true,
+      }
+    });
+    this.setState(Object.assign(...inputsArray));
+  }
+
+  initializePopovers = () => {
     // Initializing popover tooltips. Used for validation.
     $(`.${this.class} .validationPopover`).popover({
       // Specifying custom popover template to make text red by adding text-danger class.
@@ -52,42 +90,27 @@ export default class VariableRanges extends React.Component {
     $(`.${this.class} .validationPopover.valid`).popover('disable');
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    // console.log('shouldComponentUpdate in VariableRanges');
-    let stateDifferent = !_.isEqual(this.state, nextState)
-    let propsDifferent = !_.isEqual(this.props.variables, nextProps.variables)
-    return stateDifferent || propsDifferent;
-  }
-
-  componentDidUpdate() {
-    // Disabling popover tooltips for valid input fields.
-    $(`.${this.class} .validationPopover.valid`).popover('disable');
-    // Enable popover tooltips for invalid input fields.
-    $(`.${this.class} .validationPopover.is-invalid`).popover('enable');
-
-
-    // Show any new validation popovers but only for the element that has focus, 
-    // since that's the one the user will be interacting with. We don't want
-    // popovers appearing all over the UI for all invalid input fields.
-    $(`.${this.class} .validationPopover`).filter(':focus').popover('show');
-    // Hide any open popovers when the state changes and the underlying input
-    // is now valid.
-    $(`.${this.class} .validationPopover.valid`).popover('hide');
-  }
-
-  clearAllVariableRanges = () => {
-    // Called by ControlsButtonVarOptions component using a reference
-    // to inform that all variable ranges have been cleared in the Redux store
-    // so we need to clear the local state too to update the UI.
-    let inputsArray = this.props.variables.map((variable, index) => {
+  makeInputObject = (variables) => {
+    const inputsArray = variables.map((variable, index) => {
+      let min = '';
+      let max = '';
+      let bookmark = this.props.variableRanges[variable.key];
+      if (bookmark) 
+      {
+        min = bookmark.min != undefined ? bookmark.min : '';
+        max = bookmark.max != undefined ? bookmark.max : '';
+      }
       return {
-        [this.getName(variable.index, true)] : '',
+        [this.getName(variable.index, true)] : min,
         [`${this.getName(variable.index, true)}_valid`] : true,
-        [this.getName(variable.index, false)] : '',
+        [this.getName(variable.index, false)] : max,
         [`${this.getName(variable.index, false)}_valid`] : true,
       }
     });
-    this.setState(Object.assign(...inputsArray));
+
+    const inputsObject = inputsArray.length ? Object.assign(...inputsArray) : {};
+    // console.debug(`inputsObject is %o`, inputsObject);
+    return inputsObject;
   }
 
   getName = (index, minBool) => {
@@ -181,6 +204,15 @@ export default class VariableRanges extends React.Component {
               let maxName = this.getName(variable.index, false);
               let minNameValid = `${minName}_valid`;
               let maxNameValid = `${maxName}_valid`;
+
+              // Don't render rows for variables that don't exist in the state yet.
+              // Only checking for presence of minName, because they should all be created at the same time,
+              // but to be thorough could also check for minNameValid, maxName, and maxNameValid.
+              if(!this.state.hasOwnProperty(minName))
+              {
+                // console.debug(`STOP there is no state data for %s`, minName);
+                return null;
+              }
 
               return (
                 <VariableRangesRow
