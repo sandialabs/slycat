@@ -174,10 +174,13 @@ $.widget("parameter_image.scatterplot",
       event.preventDefault();
     });
 
-    self.svg = d3.select(self.element.get(0)).append("svg").style({
-      "opacity": ".99",
-      // "position": "absolute", // Setting position to absolute also brings the svg element in front of .media-layer but keeps .image-frames on top of everything
-    });
+    self.svg = d3.select(self.element.get(0)).append("svg")
+      .style({
+        "opacity": ".99",
+        // "position": "absolute", // Setting position to absolute also brings the svg element in front of .media-layer but keeps .image-frames on top of everything
+      })
+      .attr("class", "scatterplot-svg")
+      ;
     self.x_axis_layer = self.svg.append("g").attr("class", "x-axis");
     self.y_axis_layer = self.svg.append("g").attr("class", "y-axis");
     self.legend_layer = self.svg.append("g").attr("class", "legend");
@@ -316,7 +319,16 @@ $.widget("parameter_image.scatterplot",
 
     self.element.mouseup(function(e)
     {
-      if(self.state == "resizing" || self.state == "moving")
+      // Figure out of this event happened on the scatterplot svg element
+      const target = e.target;
+      const isScatterplotSVG = target.tagName.toLowerCase() == 'svg' && target.classList.contains('scatterplot-svg');
+      // console.group(`mouseup %o`, e);
+      // console.debug(`isScatterplotSVG: %o`, isScatterplotSVG);
+      // console.groupEnd();
+
+      // Don't respond if we are resizing or moving the frame or if the mouse up
+      // did not happen on the scatterplot svg element.
+      if(self.state == "resizing" || self.state == "moving" || !isScatterplotSVG)
         return;
 
       if(!e.ctrlKey && !e.metaKey)
