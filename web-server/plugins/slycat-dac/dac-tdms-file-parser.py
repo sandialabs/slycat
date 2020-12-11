@@ -563,7 +563,7 @@ def infer_channel_time_units (database, model, dac_error, parse_error_log, base_
 
 # construct DAC variables to match time steps
 def construct_variables (database, model, dac_error, parse_error_log, shot_data,
-                         channel_names, channel_ind, time_steps, 
+                         channel_names, channel_ind, shot_names, time_steps,
                          start_progress, end_progress):
 
     # get channel names
@@ -629,6 +629,11 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
 
             # shot doesn't have this channel -- use identically zero values
             except ValueError:
+
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                    "Progress", 'Channel "' + channel_0 + '" is missing from shot "' +
+                    shot_names[j] + '" -- using identically zero vector.')
+
                 var_j = numpy.zeros(len(time_steps[i]))
 
             # add this variable to our channel list
@@ -794,7 +799,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         # construct DAC variables and distance matrices to match time steps
         parse_error_log, variables, var_dist = construct_variables(database, model,
             dac_error, parse_error_log, shot_data, channel_names, channel_ind, 
-            time_steps, 55.0, 65.0)
+            shot_names, time_steps, 55.0, 65.0)
 
         # finalize time units
         shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
