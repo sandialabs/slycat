@@ -599,7 +599,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
     except Exception as e:
 
         # print error to cherrypy.log.error
-        dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+        dac_error.log_dac_msg(traceback.format_exc())
 
         # done -- destroy the thread
         stop_event.set()

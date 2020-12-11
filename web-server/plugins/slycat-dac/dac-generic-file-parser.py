@@ -553,7 +553,7 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
 
     except Exception as e:
 
-        dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+        dac_error.log_dac_msg(traceback.format_exc())
 
         stop_event.set()
 
@@ -561,9 +561,10 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
 # register all generic file parsers (really just the same csv parser), so that they
 # appear with different labels in the file picker.
 def register_slycat_plugin(context):
-    context.register_parser("dac-gen-zip-parser", "DAC generic .zip file", ["dac-gen-zip-file"], parse_gen_zip)
-    context.register_parser("dac-category-file-parser", "DAC category list (text file, one category per line)",
-                            ["dac-cat-file"], parse)
+    context.register_parser("dac-gen-zip-parser", "DAC generic .zip file", 
+        ["dac-gen-zip-file"], parse_gen_zip)
+    context.register_parser("dac-category-file-parser", 
+        "DAC category list (text file, one category per line)", ["dac-cat-file"], parse)
 
 
 

@@ -162,13 +162,23 @@ S. Martin
         </div>
 
         <div style="margin-top: 20px; margin-bottom: 30px">
-          <label>Minimum number of channels in a test:
+          <label>Minimum number of channels in a shot:
           <i class="fa fa-question-circle inline-help" aria-hidden="true"
           title="Tests with less than the specified number of channels will be discarded during the data import."></i></label>
           <input id="dac-min-channel" class="form-control" type="number" min="1" data-bind="value: min_num_channels">
           <div class="invalid-feedback">
-               Each test must have at least one channel.
+               Each shot must have at least one channel.
           </div>
+        </div>
+
+        <div style="margin-top: 20px; margin-bottom: 30px">
+            <label>Channels must occur in at least this many shots:
+            <i class="fa fa-question-circle inline-help" aria-hidden="true"
+            title="Channels that occur in less than this number of shots will be discarded during the data import.  Missing channels in a given shot will be included as identically zero.  Use a value of zero to indicate that channels must be present in every shot."></i></label>
+            <input id="dac-min-shots" class="form-control" type="number" min="0" data-bind="value: min_num_shots">
+            <div class="invalid-feedback">
+                 Each channel must occur zero or more times.
+            </div>
         </div>
 
         <div>

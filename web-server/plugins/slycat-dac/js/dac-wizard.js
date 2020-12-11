@@ -81,6 +81,7 @@ function constructor(params)
     // TDMS defaults
     var MIN_TIME_STEPS = 10;
     var MIN_NUM_CHANNELS = 2;
+    var MIN_NUM_SHOTS = 1;
     var TDMS_TYPE = 'General';
     var UNION_TYPE = 'Union';
     var INFER_UNITS = true;
@@ -89,12 +90,14 @@ function constructor(params)
     // parameters for testing TDMS ingestion
     component.min_time_steps = ko.observable(MIN_TIME_STEPS);
     component.min_num_channels = ko.observable(MIN_NUM_CHANNELS);
+    component.min_num_shots = ko.observable(MIN_NUM_SHOTS);
     component.dac_tdms_type = ko.observable(TDMS_TYPE);
     component.dac_union_type = ko.observable(UNION_TYPE);
     component.dac_infer_units = ko.observable(INFER_UNITS);
     component.dac_infer_time = ko.observable(INFER_TIME);
 
-    var num_vars = 0;
+    // TDMS file list
+    var tdms_file_list = []
 
     // process pts continue or stop flag
     var process_continue = false;
@@ -349,13 +352,18 @@ function constructor(params)
             // check for file selected
             if (component.browser_tdms_files.selection().length > 0) {
 
-                // check file extensions
+                // check file extensions/get file name
+                tdms_file_list = [];
                 var tdms_files = true;
                 var file_num = component.browser_tdms_files.selection().length;
                 for (var i = 0; i < file_num; i++) {
 
+                    // get file and extension
                     var file = component.browser_tdms_files.selection()[i];
                     var file_ext = file.name.split(".").pop().toLowerCase();
+
+                    // save file name
+                    tdms_file_list[i] = file.name;
 
                     if (file_ext != 'tdms' && file_ext != 'tdm') {
                         tdms_files = false;
@@ -540,9 +548,10 @@ function constructor(params)
     // this function checks the TDMS upload format options
     component.check_tdms_options = function() {
 
-            // check TDMS parse parameters
+        // check TDMS parse parameters
         var time_steps_parm = Math.round(Number(component.min_time_steps()));
         var channel_parm = Math.round(Number(component.min_num_channels()));
+        var shots_parm = parseInt(component.min_num_shots());
 
         // check for input parameter errors
         var no_errors = true;
@@ -562,10 +571,28 @@ function constructor(params)
 
             $("#dac-min-channel").addClass("is-invalid");
             no_errors = false;
+
         } else {
 
             // clear error
             $("#dac-min-channel").removeClass("is-invalid");
+        }
+
+        if (isNaN(shots_parm)) {
+
+            $("#dac-min-shots").addClass("is-invalid");
+            no_errors = false;
+
+        } else if (shots_parm < 0) {
+
+            $("#dac-min-shots").addClass("is-invalid");
+            no_errors = false;
+
+        } else {
+
+            // clear error
+            $("#dac-min-shots").removeClass("is-invalid");
+
         }
 
         // proceed to name model if no errors are present
@@ -586,6 +613,7 @@ function constructor(params)
         // set TDMS defaults
         component.min_time_steps(MIN_TIME_STEPS);
         component.min_num_channels(MIN_NUM_CHANNELS);
+        component.min_num_shots(MIN_NUM_SHOTS);
         component.dac_tdms_type(TDMS_TYPE);
         component.dac_union_type(UNION_TYPE);
         component.dac_infer_units(INFER_UNITS);
@@ -594,6 +622,7 @@ function constructor(params)
         // turn off any errors
         $("#dac-min-time-steps").removeClass("is-invalid");
         $("#dac-min-channel").removeClass("is-invalid");
+        $("#dac-min-shots").removeClass("is-invalid");
 
     }
 
@@ -696,16 +725,16 @@ function constructor(params)
 
             // file selected
             file = component.browser_tdms_files.selection()[0];
-
+            
             // tdms parser parameters
             parser = "dac-tdms-zip-file-parser";
             progress = component.browser_tdms_files.progress;
 
             // pass user parameters to server
             aids = [[component.min_time_steps(), component.min_num_channels(),
-                     component.dac_tdms_type(), component.dac_union_type(),
-                     Boolean(component.dac_infer_units()), Boolean(component.dac_infer_time()),
-                     include_suffix], ["DAC"]];
+                     component.min_num_shots(), component.dac_tdms_type(), 
+                     component.dac_union_type(), Boolean(component.dac_infer_units()), 
+                     Boolean(component.dac_infer_time()), include_suffix], ["DAC"]];
 
             // tab that shows file upload for tdms zip format
             tab = tabs['tdms'];
@@ -774,10 +803,14 @@ function constructor(params)
         var parser = "dac-tdms-file-parser";
         var progress = component.browser_tdms_files.progress;
 
+        // get file names
+        var filenames = filelist[""]
+
         // pass user parameters to server
         var aids = [[component.min_time_steps(), component.min_num_channels(),
-                     component.dac_tdms_type(), component.dac_union_type(),
-                     Boolean(component.dac_infer_units()), Boolean(component.dac_infer_time())], ["DAC"]];
+                     component.min_num_shots(), component.dac_tdms_type(), 
+                     component.dac_union_type(), Boolean(component.dac_infer_units()), 
+                     Boolean(component.dac_infer_time()), tdms_file_list], ["DAC"]];
 
         // upload filelist
         var fileObject ={

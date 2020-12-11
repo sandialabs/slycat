@@ -143,150 +143,176 @@ def filter_shots (database, model, dac_error, parse_error_log, tdms_ref,
     return parse_error_log, shot_meta, shot_data
 
 
-# routine to find minimal channel list for list of shots, order preserving
-# also returns maximum (union) of channels, for error messages, not order preserving
-def intersect_channels (shot_channels):
+# routine to find minimal channel list for list of shots, in data order
+# also returns maximum (union) of channels and index, also in data order
+# use MIN_SHOTS = 0 to keep only channels that occur in all shots
+def intersect_channels (database, model, dac_error, parse_error_log, 
+                        shot_channels, shot_names, MIN_SHOTS):
 
-    # assume empty intersection
-    min_chan = []
-    max_chan = []
-    channel_counts = []
+    num_shots = len(shot_channels)
 
-    # check for non-empty list of shots
-    if len(shot_channels) > 0:
+    # count number of channels in each shot,
+    # and get maximal set of channels
+    channel_count = []
+    channel_union = set()
+    for i in range(num_shots):
+        channel_count.append(len(shot_channels[i]))
+        channel_union = channel_union.union(shot_channels[i])
 
-        # go through each shot and look at the channels available
-        min_chan = shot_channels[0]
-        max_chan = shot_channels[0]
-        for i in range(0, len(shot_channels)):
+    # do we have a single shot that has all channels?
+    max_chan_ind = numpy.argmax(channel_count)
+    max_chan = shot_channels[max_chan_ind]
+    if len(channel_union) != len(max_chan):
 
-            # get intersection and union of channels
-            min_chan = [channel for channel in min_chan if channel in shot_channels[i]]
-            max_chan = list(set(max_chan) | set(shot_channels[i]))
+        # no -- output warning and use maximal channel anyway 
+        parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, 
+            "Progress", 'Found inconsistent maximal channel names -- using ' +
+            'channels from "' + shot_names[max_chan_ind] + '".')
 
-            # count number of channels for each shot
-            channel_counts.append(len(shot_channels[i]))
+    # count number of channels for each shot
+    num_channels = len(max_chan)
+    shot_counts = numpy.zeros(num_channels)
+    for i in range(num_channels):
 
-    # only care about minimum unique values for channel counts
-    min_channel_counts = min(numpy.unique(channel_counts))
+        # find number of shots for each channel
+        for j in range(num_shots):
+            if max_chan[i] in shot_channels[j]:
+                shot_counts[i] = shot_counts[i] + 1
 
-    return min_chan, max_chan, min_channel_counts
+    # if MIN_SHOTS = 0 then we keep only channels that occur in all shots
+    if MIN_SHOTS == 0:
+        MIN_SHOTS = num_shots
+
+    # generate list of channels occuring in MIN_SHOTS number of shots
+    min_chan = [max_chan[i] for i in range(num_channels) if shot_counts[i] >= MIN_SHOTS]
+
+    return min_chan, max_chan, max_chan_ind
 
 
 # routine to reduce shot data to smallest channel minimum by order
 # if can't reduce, changes SHOT_TYPE to 'General'
-def reduce_shot_channels (database, model, dac_error, parse_error_log, first_shot_name,
-                          shot_channels, shot_data, min_channels, min_channel_count,
+def reduce_shot_channels (database, model, dac_error, parse_error_log, shot_names,
+                          shot_channels, shot_data, min_channels, all_channels_ind,
                           SHOT_TYPE, shot_type_min):
 
-    num_shots = len(shot_channels)
+    min_channel_count = len(min_channels)
 
     if min_channel_count >= shot_type_min:
 
-        parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
-            'Found ' + str(min_channel_count) + ' channels for ' + SHOT_TYPE + ' testing -- using "' +
-            first_shot_name + '" for channel names.')
-
-        # reduce channels to consistent number
-        for i in range(0, num_shots):
-            shot_data[i] = shot_data[i][0:min_channel_count]
-
-        min_channels = shot_channels[0][0:min_channel_count]
+        parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, 
+            "Progress", 'Found ' + str(min_channel_count) + ' channels for ' + SHOT_TYPE + 
+            ' testing -- using "' + shot_names[all_channels_ind] + '" for channel names.')
 
     else:
 
-        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-            'Found less than ' + str(shot_type_min) + ' channels per shot for ' +
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+            "Progress", 'Found less than ' + str(shot_type_min) + ' channels per shot for ' +
             SHOT_TYPE + ' testing, reverting to General case.')
 
         SHOT_TYPE = 'General'
 
-    return parse_error_log, shot_data, min_channels, SHOT_TYPE
+    return parse_error_log, SHOT_TYPE
 
 
 # filter out channels to obtain a consistent number
 # of channels per shot and get channel names
-def filter_channels (database, model, dac_error, parse_error_log, first_shot_name, shot_data, SHOT_TYPE):
+def filter_channels (database, model, dac_error, parse_error_log, shot_names, 
+                     shot_data, SHOT_TYPE, MIN_SHOTS):
 
     # get channel names
     shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
 
     # get list of channels that occur in every shot
-    min_channels, all_channels, min_channel_count = intersect_channels(shot_channels)
+    min_channels, all_channels, all_chan_ind = \
+        intersect_channels(database, model, dac_error, parse_error_log, 
+            shot_channels, shot_names, MIN_SHOTS)
 
     # in the overvoltage case, we use channel order and assume at least two channels
     if SHOT_TYPE == 'Overvoltage':
         parse_error_log, shot_data, min_channels, SHOT_TYPE = \
-            reduce_shot_channels(database, model, dac_error, parse_error_log, first_shot_name,
-                shot_channels, shot_data, min_channels, min_channel_count, SHOT_TYPE, 2)
+            reduce_shot_channels(database, model, dac_error, parse_error_log, shot_names,
+                shot_channels, shot_data, min_channels, all_chan_ind, SHOT_TYPE, 2)
 
     # in the sprytron case, we use channel order and assume at least six channels
     if SHOT_TYPE == 'Sprytron':
         parse_error_log, shot_data, min_channels, SHOT_TYPE = \
-            reduce_shot_channels(database, model, dac_error, parse_error_log, first_shot_name,
-                shot_channels, shot_data, min_channels, min_channel_count, SHOT_TYPE, 6)
+            reduce_shot_channels(database, model, dac_error, parse_error_log, shot_names,
+                shot_channels, shot_data, min_channels, all_chan_ind, SHOT_TYPE, 6)
 
-    # in the general case, we discard channels not present in all shots
+    # in the general case, we discard channels not present in MIN_SHOTS shots
     num_shots = len(shot_channels)
-    if SHOT_TYPE == 'General':
-        for channel in all_channels:
-            if channel not in min_channels:
+    for channel in all_channels:
+        if channel not in min_channels:
 
-                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                    'Discarding channel "' + channel + '" -- not present in all shots.')
+            # if MIN_SHOTS == 0 we keep only channels present in all shots
+            discard_message = 'at least ' + str(MIN_SHOTS)
+            if MIN_SHOTS == 0:
+                discard_message = 'all'
 
-                # discard channel from all shots
-                for i in range(0, num_shots):
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Discarding channel "' + channel + 
+                '" -- not present in ' + discard_message + ' shots.')
 
-                    # replace old channel data
-                    new_channel = []
-                    new_data = []
+            # discard channel from all shots
+            for i in range(0, num_shots):
 
-                    for j in range(0, len(shot_channels[i])):
-                        if shot_channels[i][j] != channel:
-                            new_channel.append(shot_channels[i][j])
-                            new_data.append(shot_data[i][j])
+                # replace old channel data
+                new_channel = []
+                new_data = []
 
-                    # update all channel information
-                    shot_channels[i] = new_channel
-                    shot_data[i] = new_data
+                for j in range(0, len(shot_channels[i])):
+                    if shot_channels[i][j] != channel:
+                        new_channel.append(shot_channels[i][j])
+                        new_data.append(shot_data[i][j])
+
+                # update all channel information
+                shot_channels[i] = new_channel
+                shot_data[i] = new_data
 
     parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-        "Filtered TDMS channels to least common number per shot.")
+        "Filtered TDMS channels to common number per shot.")
 
-    return parse_error_log, min_channels, shot_data
+    return parse_error_log, min_channels, all_chan_ind, shot_data
 
 
 # get channel units from consensus or inference via channel names
-def infer_channel_units (database, model, dac_error, parse_error_log, first_shot_name, channel_names,
-                         shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE):
+def infer_channel_units (database, model, dac_error, parse_error_log, channels_shot_name, 
+                         channel_names, shot_units, shot_channels, channel_ind,
+                         INFER_CHANNEL_UNITS, SHOT_TYPE):
 
     num_channels = len(channel_names)
     num_shots = len(shot_units)
     channel_units = []
 
     # check for consistent channel units
-    for i in range(0, num_channels):
+    for i in range(num_channels):
 
         # flag for inconsistent units
         inconsistent_units = False
 
         # get units of first shot in this channel
-        unit_0 = shot_units[0][i]
+        channel_0 = shot_channels[channel_ind][i]
+        unit_0 = shot_units[channel_ind][i]
 
         # compare units of each shot in list
-        for j in range(0, num_shots):
-            unit_j = shot_units[j][i]
-            if unit_j != unit_0:
-                inconsistent_units = True
+        for j in range(num_shots):
+
+            # find corresponding unit in this shot
+            try:
+                channel_j_ind = shot_channels[j].index(channel_0)
+                unit_j = shot_units[j][channel_j_ind]
+                if unit_j != unit_0:
+                    inconsistent_units = True
+            except ValueError:
+                pass
 
         # go with first unit assignment if inconsistent units found
         if inconsistent_units:
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                'Inconsistent units found for channel "' + channel_names[i] + '", using "' +
-                str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
-                first_shot_name + '".')
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Inconsistent units found for channel "' + channel_names[i] + 
+                '", using "' + str('Not Given' if unit_0 is None else unit_0) + 
+                '" from shot "' + channels_shot_name + '".')
 
         # if missing unit, infer from name using Jeremy's method
         if unit_0 is None and INFER_CHANNEL_UNITS:
@@ -306,8 +332,9 @@ def infer_channel_units (database, model, dac_error, parse_error_log, first_shot
         # if units don't agree with expected units issue warning
         if not channel_units[0:2] == ['Amps', 'Volts']:
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                'Warning -- units different from expected units for Overvoltage testing.')
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Warning -- units different from expected units for ' + 
+                'Overvoltage testing.')
 
     # double check units for Sprytron type
     if SHOT_TYPE == 'Sprytron':
@@ -315,8 +342,9 @@ def infer_channel_units (database, model, dac_error, parse_error_log, first_shot
         # if units don't agree with expected units issue warning
         if not channel_units[0:6] == ['Amps', 'Volts', 'Volts', 'Volts', 'Amps', 'Volts']:
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                'Warning -- units different from expected units for Sprytron testing.')
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Warning -- units different from expected units for Sprytron ' + 
+                'testing.')
 
     # change None type to 'Not Given' for final output
     channel_units = ['Not Given' if unit is None else unit for unit in channel_units]
@@ -344,7 +372,8 @@ def make_time_vector (shot_time):
 
 
 # construct and intersect/union all time vectors using a vector of shot times
-def combine_time_vectors (database, model, start_progress, end_progress, shot_times, TIME_STEP_TYPE):
+def combine_time_vectors (database, model, start_progress, end_progress, 
+                          shot_times, TIME_STEP_TYPE):
 
     num_shots = len(shot_times)
     int_progress = end_progress - start_progress
@@ -371,8 +400,12 @@ def combine_time_vectors (database, model, start_progress, end_progress, shot_ti
 # normalize time steps using either intersection or union
 # note shot_data, channel_names, and channel_units might be changed if
 # a channel is removed because it doesn't have enough time steps
-def normalize_time_steps (database, model, dac_error, parse_error_log, shot_data, channel_names,
-                          channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE, start_progress, end_progress):
+def normalize_time_steps (database, model, dac_error, parse_error_log, shot_data, 
+                          channel_names, channel_units, channel_ind,
+                          MIN_TIME_STEPS, TIME_STEP_TYPE, start_progress, end_progress):
+
+    # get channel names
+    shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
 
     # get shot time interval data
     shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
@@ -390,38 +423,52 @@ def normalize_time_steps (database, model, dac_error, parse_error_log, shot_data
 
     for i in range(0, num_channels):
 
-        time_0 = shot_times[0][i]
+        # get time from maximal channel
+        channel_0 = shot_channels[channel_ind][i]
+        time_0 = shot_times[channel_ind][i]
+
         inconsistent_time_steps = False
 
         # compare time for first shot with time for remaining shots
-        for j in range(0, num_shots):
-            time_j = shot_times[j][i]
-            if time_j != time_0:
-                inconsistent_time_steps = True
+        shot_times_i = []
+        for j in range(num_shots):
+
+            # look for channel in shot
+            try:
+                channel_j_ind = shot_channels[j].index(channel_0)
+                time_j = shot_times[j][channel_j_ind]
+                shot_times_i.append(time_j)
+                if time_j != time_0:
+                    inconsistent_time_steps = True
+
+            # shot doesn't have this channel -- skip for now
+            except ValueError:
+                pass
 
         # if inconsistent time steps warn user then use intersection or union
         if inconsistent_time_steps:
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                'Found inconsistent time steps for channel "' + channel_names[i] +
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Found inconsistent time steps for channel "' + channel_names[i] +
                 '" -- normalizing time steps using ' + TIME_STEP_TYPE + '.')
 
             if TIME_STEP_TYPE == 'Union':
 
-                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                    'Warning -- Union introduces artificial data from interpolation and extrapolation.')
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                    "Progress", 'Warning -- Union introduces artificial data from ' +
+                    'interpolation and extrapolation.')
 
             start_combine = start_progress + inc_progress * i
             end_combine = start_combine + inc_progress
 
             # form union or intersection time vector
             time_steps.append(combine_time_vectors(database, model, start_combine, end_combine,
-                numpy.array(shot_times)[:, i], TIME_STEP_TYPE))
+                numpy.array(shot_times_i), TIME_STEP_TYPE))
 
         else:
 
             # add time vector to time steps list
-            time_steps.append(make_time_vector(shot_times[0][i]))
+            time_steps.append(make_time_vector(shot_times[channel_ind][i]))
 
     # check if any time_steps have been reduced below MIN_TIME_STEPS threshold
     # use reverse order because we may be removing items from the data lists
@@ -429,12 +476,13 @@ def normalize_time_steps (database, model, dac_error, parse_error_log, shot_data
 
         if len(time_steps[i]) < MIN_TIME_STEPS:
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                'Discarding channel "' + channel_names[i] + '" -- less than ' +
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Discarding channel "' + channel_names[i] + '" -- less than ' +
                 str(MIN_TIME_STEPS) + ' time steps.')
 
             # discard channel from all shots
             for j in range(0, num_shots):
+                
                 # remove channel i from data, time steps, names, and units
                 shot_data[j].pop(i)
                 time_steps.pop(i)
@@ -448,35 +496,43 @@ def normalize_time_steps (database, model, dac_error, parse_error_log, shot_data
 
 
 # get channel time units from data or time steps and seconds inference
-def infer_channel_time_units (database, model, dac_error, parse_error_log, first_shot_name,
-                              shot_time_units, time_steps, INFER_SECONDS, channel_names):
+def infer_channel_time_units (database, model, dac_error, parse_error_log, base_shot_name,
+                              shot_channels, channel_ind, shot_time_units, time_steps, 
+                              INFER_SECONDS, channel_names):
 
     num_channels = len(channel_names)
     num_shots = len(shot_time_units)
     channel_time_units = []
 
     # check for consistent channel units
-    for i in range(0, num_channels):
+    for i in range(num_channels):
 
         # flag for inconsistent units
         inconsistent_units = False
 
-        # get units of first shot in this channel
-        unit_0 = shot_time_units[0][i]
+        # get units of base shot in this channel
+        channel_0 = shot_channels[channel_ind][i]
+        unit_0 = shot_time_units[channel_ind][i]
 
         # compare units of each shot in list
-        for j in range(0, num_shots):
-            unit_j = shot_time_units[j][i]
-            if unit_j != unit_0:
-                inconsistent_units = True
+        for j in range(num_shots):
+
+            # find corresponding time unit in this shot
+            try:
+                channel_j_ind = shot_channels[j].index(channel_0)
+                unit_j = shot_time_units[j][channel_j_ind]
+                if unit_j != unit_0:
+                    inconsistent_units = True
+            except ValueError:
+                pass
 
         # go with first unit assignment if inconsistent units found
         if inconsistent_units:
 
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                'Inconsistent time units found for channel "' + channel_names[i] + '", using "' +
-                str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
-                first_shot_name + '".')
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+                "Progress", 'Inconsistent time units found for channel "' + channel_names[i] + 
+                '", using "' + str('Not Given' if unit_0 is None else unit_0) + '" from shot "' +
+                base_shot_name + '".')
 
         # if missing unit, infer secons and time steps magnitude
         if unit_0 is None and INFER_SECONDS:
@@ -507,7 +563,11 @@ def infer_channel_time_units (database, model, dac_error, parse_error_log, first
 
 # construct DAC variables to match time steps
 def construct_variables (database, model, dac_error, parse_error_log, shot_data,
-                         time_steps, start_progress, end_progress):
+                         channel_names, channel_ind, time_steps, 
+                         start_progress, end_progress):
+
+    # get channel names
+    shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
 
     # get shot time interval data
     shot_times = [[[channel['wf_start_offset'], channel['wf_increment'], channel['wf_samples']]
@@ -515,7 +575,7 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
 
     # check that time steps are the same for every included channel
     num_shots = len(shot_times)
-    num_channels = len(shot_times[0])
+    num_channels = len(channel_names)
 
     # progress per channel
     inc_progress = (end_progress - start_progress) / num_channels
@@ -525,40 +585,51 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
     var_dist = []
 
     # get variables for each channel
-    for i in range(0, num_channels):
+    for i in range(num_channels):
 
         # each channel has one array of variables
         channel_vars = []
 
+        # name of this channel
+        channel_0 = shot_channels[channel_ind][i]
+
+        # progress indicators
         start_shot = start_progress + inc_progress * i
         end_shot = start_shot + inc_progress
         int_shot = (end_shot - start_shot)
 
-        for j in range(0, num_shots):
+        for j in range(num_shots):
 
             # start with NaNs for entire variable
             var_j = numpy.array([float('NaN')] * len(time_steps[i]))
 
-            # get time steps and variable for this channel and shot
-            time_j = make_time_vector(shot_times[j][i])
-            data_j = numpy.array(shot_data[j][i]['data'])
+            # look for channel in shot
+            try:
+                channel_j_ind = shot_channels[j].index(channel_0)
+                time_j = make_time_vector(shot_times[j][channel_j_ind])
+                data_j = numpy.array(shot_data[j][channel_j_ind]['data'])
 
-            # get indices of time_j in time_steps
-            inds_in_time_steps = numpy.where(numpy.isin(time_steps[i], time_j) == True)[0]
-            inds_in_time_j = numpy.where(numpy.isin(time_j, time_steps[i]) == True)[0]
+                # get indices of time_j in time_steps
+                inds_in_time_steps = numpy.where(numpy.isin(time_steps[i], time_j) == True)[0]
+                inds_in_time_j = numpy.where(numpy.isin(time_j, time_steps[i]) == True)[0]
 
-            # fill in variable with available data
-            var_j[inds_in_time_steps] = data_j[inds_in_time_j]
+                # fill in variable with available data
+                var_j[inds_in_time_steps] = data_j[inds_in_time_j]
 
-            # interpolate or extrapolate for any NaNs
-            nan_inds = numpy.isnan(var_j)
-            if numpy.any(nan_inds):
+                # interpolate or extrapolate for any NaNs
+                nan_inds = numpy.isnan(var_j)
+                if numpy.any(nan_inds):
 
-                # returns time indices of logical array
-                time = lambda z: z.nonzero()[0]
+                    # returns time indices of logical array
+                    time = lambda z: z.nonzero()[0]
 
-                # interpolates between values, extrapolates past ends
-                var_j[nan_inds] = numpy.interp(time(nan_inds), time(~nan_inds), var_j[~nan_inds])
+                    # interpolates between values, extrapolates past ends
+                    var_j[nan_inds] = numpy.interp(time(nan_inds), 
+                                                   time(~nan_inds), var_j[~nan_inds])
+
+            # shot doesn't have this channel -- use identically zero values
+            except ValueError:
+                var_j = numpy.zeros(len(time_steps[i]))
 
             # add this variable to our channel list
             channel_vars.append(list(var_j))
@@ -602,10 +673,12 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     # get user parameters
     MIN_TIME_STEPS = int(aids[0])
     MIN_CHANNELS = int(aids[1])
-    SHOT_TYPE = aids[2]
-    TIME_STEP_TYPE = aids[3]
-    INFER_CHANNEL_UNITS = aids[4]
-    INFER_SECONDS = aids[5]
+    MIN_SHOTS = int(aids[2])
+    SHOT_TYPE = aids[3]
+    TIME_STEP_TYPE = aids[4]
+    INFER_CHANNEL_UNITS = aids[5]
+    INFER_SECONDS = aids[6]
+    FILE_NAMES = aids[7]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -617,13 +690,14 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
                                        "Uploaded " + str(num_files) + " file(s).")
 
     # push progress for wizard polling to database
-    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
+    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", 
+        ["Extracting ...", 10.0])
 
     # treat each uploaded file as bitstream
     file_object = []
     tdms_ref = []
 
-    for i in range(0,num_files):
+    for i in range(num_files):
 
         try:
 
@@ -632,19 +706,26 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
 
         except Exception as e:
 
-            dac_error.quit_raise_exception(database, model, parse_error_log,
-                                           "Couldn't read TDMS file.")
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                "Progress", "Couldn't read .tdms file -- skipping \"" + FILE_NAMES[i] + '".')
 
+    # check if any files were read
+    if len(tdms_ref) == 0:
+        dac_error.quit_raise_exception(database, model, parse_error_log,
+            "No data imported -- no TDMS files read.")
+            
     # start actual parsing as a thread
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-                              MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
-                              INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
+                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, SHOT_TYPE, 
+                              TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
+                              dac_error, parse_error_log, stop_event))
     thread.start()
 
 
-def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
-                              INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event):
+def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS,
+                       SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
+                       dac_error, parse_error_log, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -675,30 +756,34 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                 str(MIN_TIME_STEPS) + ") filters.")
 
         # finalize list of usable channels
-        parse_error_log, channel_names, shot_data = filter_channels(database, model,
-            dac_error, parse_error_log, shot_meta[0].index[0], shot_data, SHOT_TYPE)
+        shot_names = [shot_meta[i].index[0] for i in range(len(shot_meta))]
+        parse_error_log, channel_names, channel_ind, shot_data = \
+            filter_channels(database, model, dac_error, parse_error_log, shot_names, 
+                shot_data, SHOT_TYPE, MIN_SHOTS)
 
         # check that enough channels are still present
         if len(channel_names) < MIN_CHANNELS:
 
             dac_error.quit_raise_exception(database, model, parse_error_log,
-                "No data imported -- available numbers of channels is less than " + str(MIN_CHANNELS) + ".")
+                "No data imported -- available numbers of channels is less than " + 
+                str(MIN_CHANNELS) + ".")
 
         # push progress for wizard polling to database
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Extracting ...", 45.0])
 
-        # get shot units
-        shot_units = [[channel['unit'] for channel in shot] for shot in shot_data]
-
         # finalize channel units
+        shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
+        shot_units = [[channel['unit'] for channel in shot] for shot in shot_data]
         parse_error_log, channel_units = infer_channel_units(database, model, dac_error,
-            parse_error_log, shot_meta[0].index[0], channel_names, shot_units, INFER_CHANNEL_UNITS, SHOT_TYPE)
+            parse_error_log, shot_names[channel_ind], channel_names, shot_units, shot_channels,
+            channel_ind, INFER_CHANNEL_UNITS, SHOT_TYPE)
 
         # normalize time step data
         parse_error_log, time_steps, shot_data, channel_names, channel_units = \
             normalize_time_steps(database, model, dac_error, parse_error_log,
-                shot_data, channel_names, channel_units, MIN_TIME_STEPS, TIME_STEP_TYPE, 45.0, 55.0)
+                shot_data, channel_names, channel_units, channel_ind,
+                MIN_TIME_STEPS, TIME_STEP_TYPE, 45.0, 55.0)
 
         # check that enough channels are still present
         if len(channel_names) < MIN_CHANNELS:
@@ -708,16 +793,16 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
         # construct DAC variables and distance matrices to match time steps
         parse_error_log, variables, var_dist = construct_variables(database, model,
-            dac_error, parse_error_log, shot_data, time_steps, 55.0, 65.0)
-
-        # get shot time units
-        shot_time_units = [[channel['wf_unit'] for channel in shot] for shot in shot_data]
+            dac_error, parse_error_log, shot_data, channel_names, channel_ind, 
+            time_steps, 55.0, 65.0)
 
         # finalize time units
+        shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
+        shot_time_units = [[channel['wf_unit'] for channel in shot] for shot in shot_data]
         parse_error_log, channel_time_units, time_steps = \
             infer_channel_time_units(database, model, dac_error, parse_error_log,
-                                     shot_meta[0].index[0], shot_time_units,
-                                     time_steps, INFER_SECONDS, channel_names)
+                                     shot_names[channel_ind], shot_channels, channel_ind,
+                                     shot_time_units, time_steps, INFER_SECONDS, channel_names)
 
         # construct remaining DAC variables
 
@@ -786,8 +871,10 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
 
     except Exception as e:
 
-        dac_error.report_load_exception(database, model, parse_error_log, traceback.format_exc())
+        # log error to server 
+        dac_error.log_dac_msg(traceback.format_exc())
 
+        # kill thread
         stop_event.set()
 
 
@@ -812,18 +899,20 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     # get user parameters
     MIN_TIME_STEPS = int(aids[0])
     MIN_CHANNELS = int(aids[1])
-    SHOT_TYPE = aids[2]
-    TIME_STEP_TYPE = aids[3]
-    INFER_CHANNEL_UNITS = aids[4]
-    INFER_SECONDS = aids[5]
-    SUFFIX_LIST = aids[6]
+    MIN_SHOTS = int(aids[2])
+    SHOT_TYPE = aids[3]
+    TIME_STEP_TYPE = aids[4]
+    INFER_CHANNEL_UNITS = aids[5]
+    INFER_SECONDS = aids[6]
+    SUFFIX_LIST = aids[7]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
     parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
 
     # push progress for wizard polling to database
-    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
+    slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", 
+        ["Extracting ...", 10.0])
 
     # treat uploaded file as bitstream
     try:
@@ -835,7 +924,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     except Exception as e:
 
         dac_error.quit_raise_exception(database, model, parse_error_log,
-                             "Couldn't read .zip file (too large or corrupted).")
+            "Couldn't read .zip file (too large or corrupted).")
 
     # loop through zip files and look for tdms files matching suffix list
     file_list = []
@@ -866,22 +955,29 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
 
                 except Exception as e:
 
-                    dac_error.quit_raise_exception(database, model, parse_error_log,
-                                                   "Couldn't read .tdms file.")
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                        "Progress", "Couldn't read .tdms file -- skipping \"" + zip_file + '".')
 
     # log files to be parsed
     for file_to_parse in file_list:
-        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                           'Found file to parse: "' + file_to_parse + '".')
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, 
+            "Progress", 'Found file to parse: "' + file_to_parse + '".')
+
+    # quit if not files to parse
+    if len(file_list) == 0:
+        dac_error.quit_raise_exception(database, model, parse_error_log,
+            "No data imported -- no TDMS files read.")
 
     # launch thread to read actual tdms files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-        MIN_TIME_STEPS, MIN_CHANNELS, SHOT_TYPE, TIME_STEP_TYPE,
+        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, SHOT_TYPE, TIME_STEP_TYPE,
         INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
     thread.start()
 
 
 def register_slycat_plugin(context):
-    context.register_parser("dac-tdms-file-parser", ".tdms or .TDM file(s)", ["dac-tdms-files"], parse_tdms)
-    context.register_parser("dac-tdms-zip-file-parser", "TDMS .zip file", ["dac-tdms-files"], parse_tdms_zip)
+    context.register_parser("dac-tdms-file-parser", ".tdms or .TDM file(s)", 
+        ["dac-tdms-files"], parse_tdms)
+    context.register_parser("dac-tdms-zip-file-parser", "TDMS .zip file", 
+        ["dac-tdms-files"], parse_tdms_zip)
