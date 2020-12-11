@@ -605,6 +605,87 @@ component.reauth = function() {
                           component.tab(6);
                       }
                   });
+              },
+              error : function(results) {
+                var link_selected = $("#vs-remote-frames-selector").val();
+                var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
+                var frame_link_column = media_columns_inds[link_selected_ind];
+    
+                // Get the CSV to check for existing movies that match the upcoming frame names
+                $.when(
+                    request.get_table("movies.meta", component.model._id()),
+                )
+                .then(
+                function(table_data) {
+                    var path_string = table_data["data"][frame_link_column][0];
+                    
+                    // Check if user char selection is necessary 
+                    if((component.generate_movies() == 'true' && component.replace_movies() == 'true') || 
+                    (component.generate_movies() == 'true' && (component.movies_exist() == false) || (component.movies_exist() == null)) ||
+                    (component.generate_movies() == 'false' && component.movie_source() == 'dir') || 
+                    (component.generate_movies() == 'true' && component.replace_movies() == 'false')) {
+                        component.user_char_selection(true);
+                    }
+
+                    // Have the user select the first character that begins the simulation ID.
+                    // Then use that first character to build out the simulation ID, so that it
+                    // can be used to name the created movies. 
+                    var selected_letter = null;
+
+                    $('#charSelector').find('span').remove()
+
+                    for (var i = 0; i < path_string.length; i++) {
+                        let letter = path_string.charAt(i);
+                        $('#charSelector').append('<span class="letter">' + letter + '</span>');
+                    }
+
+                    function buildSimId(index, path_string) {
+                        var built = false;
+                        var template = '';
+                        while(built == false) {
+                            let character = path_string.charAt(index);
+                            if(character == '/') {
+                                built = true;
+                            }
+                            else {
+                                template = character + template;
+                            }
+                            index = index - 1;
+                        }
+                        simulation_id_template = template;
+                    }
+
+                    function selectLetter() {
+                        // Remove selected class from all letters
+                        letters.forEach(letter => {
+                            letter.classList.remove('selectedLetter');
+                        });
+                        // Add selected class to this letter
+                        this.classList.add('selectedLetter');
+                        selected_letter = document.querySelectorAll('.selectedLetter');
+                        selected_char_index = $(this).index() - 1; // Don't include the first character of the sim id
+                        buildSimId(selected_char_index, path_string);
+                    }
+                    // Add click event handler to all letters
+                    var letters = document.querySelectorAll('.letter');
+
+                    letters.forEach(letter => {
+                    letter.addEventListener("click", selectLetter);
+                    });
+
+                    if (component.generate_movies() === 'true' && (component.movies_exist() === false || component.movies_exist() == null) && simulation_id_template != null) {
+                        component.tab(6);
+                    }
+                    else if (component.generate_movies() === 'false' && component.movies_exist() === true && simulation_id_template != null) {
+                        component.tab(6);
+                    }
+                    else if (component.generate_movies() === 'true' && simulation_id_template != null && component.replace_movies() == 'false') {
+                        component.tab(6);
+                    }
+                    else if (component.replace_movies() != null && simulation_id_template != null) {
+                        component.tab(6);
+                    }
+                });
               }
           });
       }
