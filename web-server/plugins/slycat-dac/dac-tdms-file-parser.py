@@ -229,13 +229,13 @@ def filter_channels (database, model, dac_error, parse_error_log, shot_names,
 
     # in the overvoltage case, we use channel order and assume at least two channels
     if SHOT_TYPE == 'Overvoltage':
-        parse_error_log, shot_data, min_channels, SHOT_TYPE = \
+        parse_error_log, SHOT_TYPE = \
             reduce_shot_channels(database, model, dac_error, parse_error_log, shot_names,
                 shot_channels, shot_data, min_channels, all_chan_ind, SHOT_TYPE, 2)
 
     # in the sprytron case, we use channel order and assume at least six channels
     if SHOT_TYPE == 'Sprytron':
-        parse_error_log, shot_data, min_channels, SHOT_TYPE = \
+        parse_error_log, SHOT_TYPE = \
             reduce_shot_channels(database, model, dac_error, parse_error_log, shot_names,
                 shot_channels, shot_data, min_channels, all_chan_ind, SHOT_TYPE, 6)
 
