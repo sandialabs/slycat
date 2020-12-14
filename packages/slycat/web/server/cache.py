@@ -201,6 +201,8 @@ class Cache(object):
     else:
       return None
 
+    # cherrypy.log.error("[CACHE] Retrieving %s from cache." % str(digest))
+
     return value
 
   def __setitem__(self, key, value):
@@ -227,6 +229,8 @@ class Cache(object):
     cached_contents = CachedObjectWrapper(value, expiration=self.cached_item_expire_time())
     self.write(cached_contents, path)
     self._loaded[digest_hash] = cached_contents
+
+    # cherrypy.log.error ("[CACHE] Added %s to cache." % str(digest_hash))
 
   def __delitem__(self, digest_hash):
     """
@@ -277,7 +281,7 @@ class Cache(object):
     # check if it has expired
     if value.expired():
 
-      # cherrypy.log.error("[CACHE] value is expired.")
+      # cherrypy.log.error("[CACHE] value is expired for %s." % str(item))
 
       # contents were expired so we should delete them and return false
       self.expire(digest)
@@ -443,7 +447,7 @@ class Cache(object):
     :return: not used
     """
     
-    # cherrypy.log.error("[CACHE] starting the cleaning session for the file system cache")
+    cherrypy.log.error("[CACHE] starting the cleaning session for the file system cache")
 
     # check for slycat path
     self.check_fs_path()
@@ -455,13 +459,13 @@ class Cache(object):
       try:
         contents = self.read(path)
 
-      except CacheError as e:
-        cherrypy.log.error("[CACHE] error deleteing item %s." % str(e))
-        
       if contents.expired():
-        # cherrypy.log.error("[CACHE] expired content found -- deleting %s." % f)
+        cherrypy.log.error("[CACHE] expired content found -- deleting %s." % f)
         self.expire(f)
 
+      except CacheError as e:
+        cherrypy.log.error("[CACHE] error deleting item %s." % str(e))
+        
     # remove expired items from memory (should have been removed by above)
     for key in self.v_keys:
       if self._loaded[key].expired():
