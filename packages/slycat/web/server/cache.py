@@ -521,7 +521,7 @@ class Cache(object):
           loaded_obj = pickle.load(loaded_file)
 
       except Exception as e:
-        msg = "[CACHE] Cache file error %s." % str(e)
+        msg = "[CACHE] Cache read file error %s." % str(e)
         raise CacheError(msg)
 
     return loaded_obj
@@ -530,9 +530,16 @@ class Cache(object):
     """
     writes an object to the selected file path
     """
+
     with self.lock:
-      with open(filename, 'wb') as cache_file:
-        pickle.dump(obj, cache_file, protocol=pickle.HIGHEST_PROTOCOL)
+
+      try:
+        with open(filename, 'wb') as cache_file:
+          pickle.dump(obj, cache_file, protocol=pickle.HIGHEST_PROTOCOL)
+
+      except Exception as e:
+        msg = "[CACHE] Write error failure %s." % str(e)
+        raise CacheError(msg)
 
   # all the remaining methods deal with time stamp conversion
   @staticmethod
@@ -636,6 +643,7 @@ class Cache(object):
 if __name__ == "__main__":
 
   # starting cache tests
+  print()
   print("Testing cache.py")
   print("================")
 
@@ -707,3 +715,27 @@ if __name__ == "__main__":
     empty_obj = cache.read('cache/dir/no-object.pkl')
   except CacheError:
     print("Failed to load non-existing cache file.\n")
+
+  # load from cache
+  meow = cache.load("meow")
+  print("Loading 'meow' from cache.")
+  print(meow)
+  print()
+
+  # print hash keys
+  print("Virtual hash keys:")
+  print(cache.v_keys)
+  print()
+
+  # print has keys fs
+  print("Filesystem hash keys:")
+  print(cache.fs_keys)
+  print()
+
+  # load expired from cache
+  cache.expire(cache.digest_hash("meow"))
+  meow = cache.load("meow")
+  print("Loading non-existent key from cache.")
+  print(meow)
+  print()
+
