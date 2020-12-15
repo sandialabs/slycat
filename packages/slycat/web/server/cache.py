@@ -459,9 +459,9 @@ class Cache(object):
       try:
         contents = self.read(path)
 
-      if contents.expired():
-        cherrypy.log.error("[CACHE] expired content found -- deleting %s." % f)
-        self.expire(f)
+        if contents.expired():
+          cherrypy.log.error("[CACHE] expired content found -- deleting %s." % f)
+          self.expire(f)
 
       except CacheError as e:
         cherrypy.log.error("[CACHE] error deleting item %s." % str(e))
