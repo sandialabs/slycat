@@ -335,9 +335,6 @@ def create_model (arguments, log):
     log("Infer time units: %s" % parser_parms[6])
 
     # upload model file(s)
-    print(parser_parms)
-    print(file_list)
-
     mid = upload_model (arguments, dac_parser, parser_parms, file_list, progress=True)
 
     # supply the user with a direct link to the new model.
