@@ -81,22 +81,28 @@ def check_parser_parms (parms):
         check_parser_msg.append ("Each test must have at least one channel. " + \
             "Please use a larger value for min-channels and try again.")
     
-    # third parameter is expected type
-    if parms[2] != "General" and \
-       parms[2] != "Overvoltage" and \
-       parms[2] != "Sprytron":
+    # third parameter is minimum number of shots
+    if parms[2] < 0:
+        check_parser_msg.append("Each channel must occur in at least one channel " + \
+            "(use 0 to indicate every channel).  Please use a non-negative value " + \
+            "for min-num-shots and try again.")
+
+    # fourth parameter is expected type
+    if parms[3] != "General" and \
+       parms[3] != "Overvoltage" and \
+       parms[3] != "Sprytron":
         check_parser_msg.append ('Expected data type must be one of "General", ' + \
             '"Overvoltage" or "Sprytron". Please use one of those options ' + \
             'and try again.')
 
-    # fourth parameter is union or intersection (combination of time series)
-    if parms[3] != "Union" and \
-       parms[3] != "Intersection":
+    # fifth parameter is union or intersection (combination of time series)
+    if parms[4] != "Union" and \
+       parms[4] != "Intersection":
         check_parser_msg.append ('Available methods for combining mismatched, ' + \
             'time points are "Union" and "Intersection". Please use one of those options ' + \
             'and try again.')
 
-    # fifth and sixth parameters are boolean, so either option is OK 
+    # sixth and seventh parameters are boolean, so either option is OK 
 
     return "\n".join(check_parser_msg)
 
@@ -258,7 +264,8 @@ def create_model (arguments, log):
 
     # populate parameters
     parser_parms = [arguments.min_time_points, arguments.min_channels, 
-                    shot_type, union_type, not arguments.do_not_infer_channel_units,
+                    arguments.min_num_shots, shot_type, union_type, 
+                    not arguments.do_not_infer_channel_units,
                     not arguments.do_not_infer_time_units]
 
     # check common parameters
@@ -296,6 +303,10 @@ def create_model (arguments, log):
         # set parser type to zip
         dac_parser = "dac-tdms-zip-file-parser"
 
+    # add file list if not zip file
+    else:
+        parser_parms.append(file_list)
+
     # echo back user input, starting with files
     log('*********** Creating DAC Model ***********')
     log("Input files:")
@@ -311,18 +322,22 @@ def create_model (arguments, log):
                 log("\t%s" % suffix)
 
         log("Including TDMS file suffixes:")
-        for suffix in parser_parms[6]:
+        for suffix in parser_parms[7]:
             log("\t%s" % suffix)
 
     # next list common parameters
     log("Minimum number of time steps per channel: %s" % parser_parms[0])
     log("Minumum number of channels: %s" % parser_parms[1])
-    log("Expecting TDMS data type: %s" % parser_parms[2])
-    log("Combining mismatched time steps using: %s" % parser_parms[3])
-    log("Infer channel units: %s" % parser_parms[4])
-    log("Infer time units: %s" % parser_parms[5])
+    log("Minimum number of shots: %s" % parser_parms[2])
+    log("Expecting TDMS data type: %s" % parser_parms[3])
+    log("Combining mismatched time steps using: %s" % parser_parms[4])
+    log("Infer channel units: %s" % parser_parms[5])
+    log("Infer time units: %s" % parser_parms[6])
 
     # upload model file(s)
+    print(parser_parms)
+    print(file_list)
+
     mid = upload_model (arguments, dac_parser, parser_parms, file_list, progress=True)
 
     # supply the user with a direct link to the new model.
@@ -374,6 +389,10 @@ def parser ():
              "Default: %(default)s.")
     parser.add_argument("--min-channels", default=2, type=int,
         help="Minimum number of channels per text, integer >= 1. " +
+             "Default: %(default)s.")
+    parser.add_argument("--min-num-shots", default=1, type=int,
+        help="Channels must occur in at least this many shots, integer >= 0. " +
+             "Use zero to indicate that channel must occur in every shot. " +
              "Default: %(default)s.")
     parser.add_argument("--overvoltage", action="store_true",
         help="Expecting overvoltage data.")
