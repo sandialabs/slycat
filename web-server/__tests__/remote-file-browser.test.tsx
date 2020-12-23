@@ -11,7 +11,6 @@ import mockData from './remoteBrowserTestData.json';
 describe("when we load the RemoteFileBrowser", () =>{
   let server = sinon.fakeServer.create();
   let component: renderer.ReactTestRenderer;
-  let DefaultInstance: any;
   let render:ReactWrapper;
   let callbackFileType:string;
   let callbackFilePath:string;
@@ -26,7 +25,7 @@ describe("when we load the RemoteFileBrowser", () =>{
   beforeEach(() => {
   });
 
-  test('we can mount without crashing', async () => {
+  xtest('we can mount without crashing', async () => {
     server.respondWith('POST', '/api/remotes/string/browse/', JSON.stringify(mockData));
     server.respond();
     render = await mount(
@@ -59,7 +58,7 @@ describe("when we load the RemoteFileBrowser", () =>{
 
   test('we have expected props on initial load', async () => {
     render = await mount(
-      <RemoteFileBrowser   
+      <RemoteFileBrowser
         hostname={"string"}
         persistenceId={"string"}
         onSelectFileCallBack={onSelectFile}
@@ -72,7 +71,7 @@ describe("when we load the RemoteFileBrowser", () =>{
 
   test('we expect the correct state to populate', async () => {
     render = await mount(
-      <RemoteFileBrowser   
+      <RemoteFileBrowser
         hostname={"string"}
         persistenceId={"string"}
         onSelectFileCallBack={onSelectFile}
