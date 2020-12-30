@@ -144,36 +144,17 @@ module.exports = {
           },
         ]
       },
-      // This enabled the URL loader for loading images referenced in CSS files as url()
+      // This automatically chooses between exporting a data URI and emitting a 
+      // separate file (if greater than 8kb) when loading images. 
       {
         test: /\.(png|jpg|gif|jp(e*)g)$/,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              // If the file is greater than the limit (in bytes) the file-loader is used by default and all query parameters are passed to it.
-              limit: 8192,
-              name: '[name].[ext]',
-              // Public URL of image files. We want them available at the root URL.
-              publicPath: '/',
-            }
-          }
-        ]
+        type: 'asset',
       },
-      // This enabled the URL loader for loading fonts, with an automatic fallback to the file-loader for fonts larger than the set limit.
+      // This automatically chooses between exporting a data URI and emitting a 
+      // separate file (if greater than 8kb) when loading fonts. 
       { 
         test: /\.(ttf|eot|svg|woff|woff2)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 8192,
-              name: '[name].[ext]',
-              // Public URL of font files. We want them available at the root URL.
-              publicPath: '/',
-            }
-          }
-        ]
+        type: 'asset',
       },
       // This enables compiling Less to CSS
       {
@@ -205,11 +186,11 @@ module.exports = {
           {
             loader: 'postcss-loader', // Run post css actions
             options: {
-              plugins: function () { // post css plugins, can be exported to postcss.config.js
-                return [
+              postcssOptions: {
+                plugins: [
                   require('precss'),
                   require('autoprefixer')
-                ];
+                ]
               }
             }
           }, 
@@ -226,16 +207,15 @@ module.exports = {
     .concat(vtkRules),
   },
   optimization: {
+    // Setting splitChunks to all per Webpack v4 to v5 upgrade guide https://webpack.js.org/migrate/5/
     splitChunks: {
-      // Disabling chunking everything because I can't get it to work with dynamic imports for model code.
-      // 'all' creates lots of chunks but does not automatically load them. Using HtmlWebpackPlugin to inject them into templates.
-      // chunks: 'all',
+      chunks: 'all',
       // Chunking only non-model bundles
-      chunks (chunk) {
-        // exclude `model chunks`
-        var exclude = ['ui_parameter_image', 'ui_timeseries', 'ui_cca', 'ui_parameter_plus', ];
-        return exclude.indexOf(chunk.name) < 0;
-      },
+      // chunks (chunk) {
+      //   // exclude `model chunks`
+      //   var exclude = ['ui_parameter_image', 'ui_timeseries', 'ui_cca', 'ui_parameter_plus', ];
+      //   return exclude.indexOf(chunk.name) < 0;
+      // },
       // chunks: 'async',
     },
   },
@@ -250,6 +230,10 @@ module.exports = {
       "./slycat/node_modules",
       path.resolve(__dirname, "web-server"),
     ],
-      extensions: ['.tsx', '.ts', '.js', '.jsx' ]
+    extensions: ['.tsx', '.ts', '.js', '.jsx' ],
+    fallback: {
+      "stream": require.resolve("stream-browserify"),
+      "buffer": require.resolve("buffer/"),
+    }
   },
 };
