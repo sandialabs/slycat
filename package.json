@@ -49,7 +49,7 @@
     "three": "^0.118.1",
     "three-stl-loader": "1.0.6",
     "three-trackballcontrols": "0.0.8",
-    "urijs": "1.19.2",
+    "urijs": "1.19.4",
     "uuid": "8.2.0",
     "vtk.js": "^14.17.2",
     "wslink": "0.1.14",
