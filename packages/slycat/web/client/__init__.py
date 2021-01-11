@@ -63,7 +63,7 @@ log.propagate = False
 FILE_SLICE_DEFAULT = 10_000_000
 
 # default Slycat server
-HOST_DEFAULT = "http://localhost"
+HOST_DEFAULT = "https://localhost"
 
 # private function (denoted by _name)
 def _require_array_ranges(ranges):
@@ -271,7 +271,7 @@ class Connection(object):
       data = {"user_name":user_name_str, "password":password_str}
 
       # login url
-      url = host + "/login"
+      url = self.host + "/api/login"
 
       # connect to server
       self.session.post(url, json=data, proxies=proxies, verify=verify)
@@ -400,7 +400,7 @@ class Connection(object):
     :http:delete:`/api/references/(rid)`
     """
 
-    self.request("DELETE", "/references/%s" % (rid))
+    self.request("DELETE", "/api/references/%s" % (rid))
 
   def delete_remote(self, sid):
     """Delete an existing remote session.
@@ -436,7 +436,7 @@ class Connection(object):
     :http:get:`/api/bookmarks/(bid)`
     """
 
-    return self.request("GET", "/bookmarks/%s" % (bid))
+    return self.request("GET", "/api/bookmarks/%s" % (bid))
 
   def get_configuration_markings(self):
     """Retrieve marking information from the server.
@@ -813,7 +813,7 @@ class Connection(object):
     :http:get:`/api/users/(uid)`
     """
 
-    return self.request("GET", "/users/%s" % ("-" if uid is None else uid), 
+    return self.request("GET", "/api/users/%s" % ("-" if uid is None else uid), 
       headers={"accept":"application/json"})
 
   def post_events(self, path, parameters={}):
@@ -831,7 +831,7 @@ class Connection(object):
     :http:post:`/api/events/(event)`
     """
 
-    self.request("POST", "/events/%s" % path, params=parameters)
+    self.request("POST", "/api/events/%s" % path, params=parameters)
 
   def post_model_files(self, mid, aids, files, parser, input=True, parameters={}):
     """Stores model file artifacts.

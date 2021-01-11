@@ -322,14 +322,18 @@ $.widget("parameter_image.scatterplot",
       // Figure out of this event happened on the scatterplot svg element
       const target = e.target;
       const isScatterplotSVG = target.tagName.toLowerCase() == 'svg' && target.classList.contains('scatterplot-svg');
+      const isRubberbandRect = target.tagName.toLowerCase() == 'rect' && target.classList.contains('rubberband');
       // console.group(`mouseup %o`, e);
       // console.debug(`isScatterplotSVG: %o`, isScatterplotSVG);
       // console.groupEnd();
 
       // Don't respond if we are resizing or moving the frame or if the mouse up
-      // did not happen on the scatterplot svg element.
-      if(self.state == "resizing" || self.state == "moving" || !isScatterplotSVG)
+      // did not happen on the scatterplot svg element and also not on the rubberband rectangle.
+      if(self.state == "resizing" || self.state == "moving" || (!isScatterplotSVG && !isRubberbandRect))
+      {
+        // console.debug(`Ignoring mouseup. isScatterplotSVG: %o, isRubberbandRect: %o`, isScatterplotSVG, isRubberbandRect);
         return;
+      }
 
       if(!e.ctrlKey && !e.metaKey)
       {
