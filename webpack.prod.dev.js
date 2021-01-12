@@ -1,5 +1,5 @@
 const webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // Commenting out ExportNodeModules plugin because it crashes with Babel7
@@ -18,8 +18,8 @@ module.exports = merge(common, {
   //   pathinfo: true
   // },
   // optimization: {
-  //   namedModules: true,
-  //   namedChunks: true,
+  //   moduleIds: 'named',
+  //   chunkIds: 'named',
   //   nodeEnv: 'development',
   //   flagIncludedChunks: false,
   //   occurrenceOrder: false,
@@ -30,14 +30,12 @@ module.exports = merge(common, {
   //     maxAsyncRequests: Infinity,
   //     maxInitialRequests: Infinity,
   //   },
-  //   noEmitOnErrors: false,
+  //   emitOnErrors: 'true',
   //   checkWasmTypes: false,
   //   minimize: false,
   //   removeAvailableModules: false,
   // },
   // plugins: [
-  //   new webpack.NamedModulesPlugin(),
-  //   new webpack.NamedChunksPlugin(),
   //   new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("development") }),
   // ],
   // development mode config end
@@ -52,11 +50,12 @@ module.exports = merge(common, {
   //   pathinfo: false
   // },
   // optimization: {
-  //   namedModules: false,
-  //   namedChunks: false,
+  //   moduleIds: 'named',
+  //   chunkIds: 'named',
   //   nodeEnv: 'production',
   //   flagIncludedChunks: true,
-  //   occurrenceOrder: true,
+  //   chunkIds: 'total-size', 
+  //   moduleIds: 'size',
   //   concatenateModules: true,
   //   splitChunks: {
   //     hidePathInfo: true,
@@ -64,7 +63,7 @@ module.exports = merge(common, {
   //     maxAsyncRequests: 5,
   //     maxInitialRequests: 3,
   //   },
-  //   noEmitOnErrors: true,
+  //   emitOnErrors: 'false',
   //   checkWasmTypes: true,
   //   minimize: true,
   // },
