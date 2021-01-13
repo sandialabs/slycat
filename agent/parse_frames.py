@@ -142,7 +142,7 @@ def parse_command_line ():
                             "default to 25 fps.")
 
     # size of parallel partition
-    parser.add_argument('--group_size', default=50, type=int,
+    parser.add_argument('--group_size', default=10, type=int,
                         help="number of frames per processor for parallel computation, "
                             "defaults to 50.")
 
@@ -326,8 +326,8 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
     num_frames = 0
     all_frame_files = []
 
-    list_args = list(itertools.repeat(args, 10))
-    list_log = list(itertools.repeat(log, 10))
+    list_args = list(itertools.repeat(args, args.group_size))
+    list_log = list(itertools.repeat(log, args.group_size))
     list_frame_files = []
     list_indeces = []
 
@@ -338,7 +338,7 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
             list_frame_files.append(frame_files[i])
             list_indeces.append(i)
             
-            if i%2 == 0:
+            if i%args.group_size == 0:
                 pool_results = pool.map_sync(create_movie,
                                 list_args,
                                 list_log,
@@ -352,8 +352,8 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
                 # movie_name = create_movie(args, log, frame_files, i)
             elif i == num_movies - 1:
                 pool_results = pool.map_sync(create_movie,
-                                list_args[0:i%2],
-                                list_log[0:i%2],
+                                list_args[0:i%args.group_size],
+                                list_log[0:i%args.group_size],
                                 list_frame_files,
                                 list_indeces)
                 for k in range(0, len(pool_results)):
