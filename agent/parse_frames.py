@@ -349,7 +349,6 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
                 for j in range(0, len(pool_results)):
                     movie_files.append(pool_results[j])
 
-                # movie_name = create_movie(args, log, frame_files, i)
             elif i == num_movies - 1:
                 pool_results = pool.map_sync(create_movie,
                                 list_args[0:i%args.group_size],
