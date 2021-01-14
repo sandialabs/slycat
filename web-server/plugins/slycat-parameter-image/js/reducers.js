@@ -32,6 +32,9 @@ import {
   SET_V_INDEX,
   SET_OPEN_MEDIA,
   SET_MEDIA_SIZE_POSITION,
+  SET_ACTIVE_FILTERS,
+  TOGGLE_SYNC_SCALING,
+  TOGGLE_SYNC_THREE_D_COLORVAR,
 } from './actions';
 
 import { 
@@ -416,6 +419,21 @@ export default function ps_reducer(state = initialState, action) {
       cloned_deep_open_media[match] = Object.assign({}, cloned_deep_open_media[match], action.media_size_position);
       return Object.assign({}, state, {
         open_media: cloned_deep_open_media
+      })
+    
+    case SET_ACTIVE_FILTERS:
+      return Object.assign({}, state, {
+        active_filters: action.activeFilters.slice(0)
+      })
+    
+    case TOGGLE_SYNC_SCALING:
+      return Object.assign({}, state, {
+        sync_scaling: !state.sync_scaling
+      })
+    
+    case TOGGLE_SYNC_THREE_D_COLORVAR:
+      return Object.assign({}, state, {
+        sync_threeD_colorvar: !state.sync_threeD_colorvar
       })
 
     default:

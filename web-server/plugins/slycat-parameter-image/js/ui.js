@@ -412,6 +412,9 @@ $(document).ready(function() {
             three_d_variable_user_ranges: {},
             open_media: bookmarked_open_media,
             currentFrame: {},
+            active_filters: [],
+            sync_scaling: false,
+            sync_threeD_colorvar: false,
           }
           window.store = createStore(
             ps_reducer, 

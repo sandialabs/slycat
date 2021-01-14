@@ -31,6 +31,9 @@ export const SET_Y_INDEX = 'SET_Y_INDEX'
 export const SET_V_INDEX = 'SET_V_INDEX'
 export const SET_OPEN_MEDIA = 'SET_OPEN_MEDIA'
 export const SET_MEDIA_SIZE_POSITION = 'SET_MEDIA_SIZE_POSITION'
+export const SET_ACTIVE_FILTERS = 'SET_ACTIVE_FILTERS'
+export const TOGGLE_SYNC_SCALING = 'TOGGLE_SYNC_SCALING'
+export const TOGGLE_SYNC_THREE_D_COLORVAR = 'TOGGLE_SYNC_THREE_D_COLORVAR'
 
 
 export function changeFontSize(event) {
@@ -246,4 +249,23 @@ export function setOpenMedia(open_media) {
 
 export function setMediaSizePosition(media_size_position) {
   return { type: SET_MEDIA_SIZE_POSITION, media_size_position }
+}
+
+export function setActiveFilters(activeFilters) {
+  return { 
+    type: SET_ACTIVE_FILTERS, 
+    activeFilters 
+  }
+}
+
+export function toggleSyncScaling() {
+  return {
+    type: TOGGLE_SYNC_SCALING,
+  }
+}
+
+export function toggleSyncThreeDColorvar() {
+  return {
+    type: TOGGLE_SYNC_THREE_D_COLORVAR,
+  }
 }
