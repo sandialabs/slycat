@@ -488,6 +488,9 @@ def create_movie(args, log, frame_file, i):
     def create_movie_name_parallel(args, log, frame_file, i):
         import os
         import urllib.parse
+
+        file_extension = frame_file[len(frame_file) - 3] + frame_file[len(frame_file) - 2] + frame_file[len(frame_file) - 1]
+
         # isolate first frame file
         frame_file_path, frame_file_name = \
             os.path.split(urllib.parse.urlparse(frame_file).path)
@@ -517,7 +520,10 @@ def create_movie(args, log, frame_file, i):
             movie_output = args.movie_dir + '/' + identifier + simulation_id + '.%d.mp4' % (i+1)
 
         # frames to make into movie
-        movie_input = frame_file_path + '/' +  identifier + '*.jpg'
+        if file_extension == 'png':
+            movie_input = frame_file_path + '/' +  identifier + '*.png'
+        elif file_extension =='jpg':
+            movie_input = frame_file_path + '/' +  identifier + '*.jpg'
 
         return movie_input, movie_output, file_location, frame_file_path
 
@@ -527,7 +533,7 @@ def create_movie(args, log, frame_file, i):
     ff = ffmpy.FFmpeg(
         inputs={None: ['-y', '-pattern_type', 'glob'], movie_input: None},
         outputs={None: ['-force_key_frames', '0.0,0.04,0.08', '-vcodec', 
-                        'libx264', '-acodec', 'aac'],
+                        'libx264', '-pix_fmt', 'yuv420p', '-acodec', 'aac'],
         movie_output: None}
     )
     ff.run()
