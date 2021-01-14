@@ -413,8 +413,8 @@ $(document).ready(function() {
             open_media: bookmarked_open_media,
             currentFrame: {},
             active_filters: [],
-            sync_scaling: false,
-            sync_threeD_colorvar: false,
+            sync_scaling: true,
+            sync_threeD_colorvar: true,
           }
           window.store = createStore(
             ps_reducer, 
