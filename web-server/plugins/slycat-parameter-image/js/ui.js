@@ -1231,7 +1231,7 @@ $(document).ready(function() {
             hidden_simulations.push(selected_simulations[i]);
           }
         }
-        manually_hidden_simußlations = hidden_simulations.slice();
+        manually_hidden_simulations = hidden_simulations.slice();
         update_widgets_when_hidden_simulations_change();
       });
 
