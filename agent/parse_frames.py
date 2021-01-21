@@ -373,7 +373,7 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
             if args.sim_id_template != None:
                 frame_file_path_split = frame_file_path.split(args.sim_id_template)
                 frame_file_path_split = frame_file_path_split[1].split('/')
-                simulation_id = '.simulation.' + frame_file_path_split[0]             
+                simulation_id = '.' + frame_file_path_split[0]             
 
         # check for at least two dots in frame file name
         frame_split = frame_file_name.split('.')
@@ -456,9 +456,9 @@ def create_movie_name(args, log, frame_file, i):
     if args.sim_id_template != 'None':
         frame_file_path_split = frame_file_path.split(args.sim_id_template)
         frame_file_path_split = frame_file_path_split[1].split('/')
-        simulation_id = '.simulation.' + frame_file_path_split[0]
+        simulation_id = '.' + frame_file_path_split[0]
     else:
-        simulation_id = '.simulation'
+        simulation_id = '.'
 
     split_path = frame_file.split(frame_file_path)
 
@@ -499,9 +499,9 @@ def create_movie(args, log, frame_file, i):
         if args.sim_id_template != 'None':
             frame_file_path_split = frame_file_path.split(args.sim_id_template)
             frame_file_path_split = frame_file_path_split[1].split('/')
-            simulation_id = '.simulation.' + frame_file_path_split[0]
+            simulation_id = '.' + frame_file_path_split[0]
         else:
-            simulation_id = '.simulation'
+            simulation_id = '.'
 
         split_path = frame_file.split(frame_file_path)
 
