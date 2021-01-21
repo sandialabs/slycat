@@ -886,6 +886,7 @@ $.widget("parameter_image.scatterplot",
 
     else if(key == "hidden_simulations")
     {
+      // console.group(`parameter-image-scatterplot setOption "hidden_simulations"`);
       self._filterIndices();
       if(self.options["auto-scale"])
       {
@@ -905,6 +906,7 @@ $.widget("parameter_image.scatterplot",
       self._schedule_update({update_x:true, update_y:true, update_leaders:true, render_data:true, render_selection:true, update_legend_axis:true});
       self._close_hidden_simulations();
       self._open_shown_simulations();
+      // console.groupEnd();
     }
 
     else if(key == "auto-scale")
