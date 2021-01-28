@@ -5,7 +5,9 @@ RUN git config --global http.sslVerify false
 RUN git clone https://github.com/sandialabs/slycat.git
 WORKDIR /usr/src/slycat/slycat
 RUN npm config set registry http://registry.npmjs.org/
-RUN NODE_TLS_REJECT_UNAUTHORIZED=0 npm install node-sass --save-dev
+RUN npm config set strict-ssl false
+RUN export NODE_TLS_REJECT_UNAUTHORIZED=0
+RUN npm install node-sass --save-dev
 RUN npm install
 RUN npm rebuild node-sass
 CMD ls
