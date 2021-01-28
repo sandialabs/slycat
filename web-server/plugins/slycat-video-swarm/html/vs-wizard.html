@@ -194,6 +194,9 @@ S. Martin
         <div className="alert alert-warning" data-bind="visible:movies_exist() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
           <p className='mt-3'>We weren't able to locate your movies. Please verify that the provided path is correct.</p>
         </div>
+        <div className="alert alert-warning" data-bind="visible:directory_exists() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
+          <p className='mt-3'>This directory doesn't exist. Please verify that the provided path is correct.</p>
+        </div>
         <label style="margin-top:15px">
           <input class="form-check-input" type="radio" name="movie-source-radios" id="col-radio" value="col" data-bind="checked: movie_source">
           Please choose column of CSV file with links to video files (format .mp4).</label>

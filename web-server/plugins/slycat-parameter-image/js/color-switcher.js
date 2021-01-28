@@ -18,7 +18,17 @@ let rangeMin, rangeMax;
 
 export function isValueInColorscaleRange(value, colorscale)
 {
-  return rangeMin <= value && value <= rangeMax;
+  // console.debug(`isValueInColorscaleRange with value of %o`, value);
+  // Check against min and max only if value is a number
+  if(Number.isFinite(value))
+  {
+    return rangeMin <= value && value <= rangeMax;
+  }
+  // otherwise check if it's in the domain
+  else
+  {
+    return colorscale.domain().indexOf(value) != -1;
+  }
 }
 
 $.widget("slycat.colorswitcher",

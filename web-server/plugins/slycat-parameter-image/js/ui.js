@@ -51,6 +51,8 @@ import {
   setXIndex,
   setYIndex,
   setVIndex,
+  setHiddenSimulations,
+  setManuallyHiddenSimulations,
 } from './actions';
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -412,6 +414,8 @@ $(document).ready(function() {
             three_d_variable_user_ranges: {},
             open_media: bookmarked_open_media,
             currentFrame: {},
+            hidden_simulations: [],
+            manually_hidden_simulations: [],
           }
           window.store = createStore(
             ps_reducer, 
@@ -1227,8 +1231,8 @@ $(document).ready(function() {
             hidden_simulations.push(selected_simulations[i]);
           }
         }
-        update_widgets_when_hidden_simulations_change();
         manually_hidden_simulations = hidden_simulations.slice();
+        update_widgets_when_hidden_simulations_change();
       });
 
       // Log changes to hidden selection ...
@@ -1257,8 +1261,8 @@ $(document).ready(function() {
         //   }
         // }
 
-        update_widgets_when_hidden_simulations_change();
         manually_hidden_simulations = hidden_simulations.slice();
+        update_widgets_when_hidden_simulations_change();
       });
 
       // Log changes to hidden selection ...
@@ -1269,8 +1273,8 @@ $(document).ready(function() {
         _.pullAll(hidden_simulations, difference);
         // console.log("here's what we need to remove from hidden_simulations: " + difference);
 
-        update_widgets_when_hidden_simulations_change();
         manually_hidden_simulations = hidden_simulations.slice();
+        update_widgets_when_hidden_simulations_change();
       });
 
       // Log changes to hidden selection ...
@@ -1282,8 +1286,8 @@ $(document).ready(function() {
             hidden_simulations.splice(index, 1);
           }
         }
-        update_widgets_when_hidden_simulations_change();
         manually_hidden_simulations = hidden_simulations.slice();
+        update_widgets_when_hidden_simulations_change();
       });
 
       // Log changes to hidden selection ...
@@ -1329,8 +1333,8 @@ $(document).ready(function() {
         while(hidden_simulations.length > 0) {
           hidden_simulations.pop();
         }
-        update_widgets_when_hidden_simulations_change();
         manually_hidden_simulations = hidden_simulations.slice();
+        update_widgets_when_hidden_simulations_change();
       });
 
       // Log changes to hidden selection ...
@@ -1690,6 +1694,9 @@ $(document).ready(function() {
 
   function hidden_simulations_changed()
   {
+    // Update Redux state with new hidden_simulations
+    window.store.dispatch(setHiddenSimulations(hidden_simulations));
+    window.store.dispatch(setManuallyHiddenSimulations(manually_hidden_simulations));
     // Logging every hidden simulation is too slow, so just log the count instead.
     $.ajax(
     {

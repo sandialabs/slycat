@@ -55,6 +55,7 @@ function constructor(params) {
 // existing movies present in moviedir
 var existing_movies = [];
 component.movies_exist = ko.observable();
+component.directory_exists = ko.observable();
 component.replace_movies = ko.observable();
 component.generate_movies = ko.observable();
 component.generate_movies_verification = ko.observable();
@@ -475,6 +476,7 @@ component.reauth = function() {
 
   component.cleanup = function() {
       component.movies_exist(null);
+      component.directory_exists(null);
       component.moviedir(null);
       component.replace_movies(null);
       component.generate_movies_verification(null);
@@ -508,6 +510,7 @@ component.reauth = function() {
               path : component.moviedir(),
               success : function(results)
               {
+                  component.directory_exists(true);
                   var link_selected = $("#vs-remote-frames-selector").val();
                   var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
                   var frame_link_column = media_columns_inds[link_selected_ind];
@@ -607,6 +610,7 @@ component.reauth = function() {
                   });
               },
               error : function(results) {
+                component.directory_exists(false);
                 var link_selected = $("#vs-remote-frames-selector").val();
                 var link_selected_ind = component.vs_media_columns.indexOf(link_selected);
                 var frame_link_column = media_columns_inds[link_selected_ind];
