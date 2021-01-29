@@ -2098,7 +2098,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
                 "sort": sort
             }
 
-    return result
+    return json.loads(json.dumps(result, cls=MyEncoder))
 
 
 def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
