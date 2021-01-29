@@ -2,10 +2,18 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const GitRevisionPlugin = require('git-revision-webpack-plugin');
+// const GitRevisionPlugin = require('git-revision-webpack-plugin');
 // Creating new instance of GitRevisionPlugin and configuring it to use lightweight tags
 // so that our tagging comes out correctly. Without it, we are tagged 1.0
-const gitRevisionPlugin = new GitRevisionPlugin({lightweightTags: true});
+// const gitRevisionPlugin = new GitRevisionPlugin({lightweightTags: true});
+// get git info from command line
+const execSync = require('child_process').execSync
+const commitHash = execSync('git rev-parse --short HEAD')
+  .toString();
+const version = execSync('git describe --always')
+.toString();
+const branch = execSync('git rev-parse --abbrev-ref HEAD')
+.toString();
 
 // importing vtk rules for for vtk.js package to work
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
@@ -104,13 +112,13 @@ module.exports = {
         { from: 'docs/html', to: 'docs' },
       ],
     }),
-    gitRevisionPlugin,
+    // gitRevisionPlugin,
     // Using DefinePlugin to create global constants so we can output the 
     // git version, hash, and branch in our About Slycat dialog.
     new webpack.DefinePlugin({
-      'GIT_SLYCAT_VERSION': JSON.stringify(gitRevisionPlugin.version()),
-      'GIT_SLYCAT_COMMITHASH': JSON.stringify(gitRevisionPlugin.commithash()),
-      'GIT_SLYCAT_BRANCH': JSON.stringify(gitRevisionPlugin.branch()),
+      'GIT_SLYCAT_VERSION': JSON.stringify(version),
+      'GIT_SLYCAT_COMMITHASH': JSON.stringify(commitHash),
+      'GIT_SLYCAT_BRANCH': JSON.stringify(branch),
     }),
   ],
   module: {
