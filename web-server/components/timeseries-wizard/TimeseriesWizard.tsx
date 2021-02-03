@@ -3,6 +3,7 @@ import ModalContent from "components/ModalContent.tsx";
 import client from "js/slycat-web-client";
 import RemoteLoginTab from 'plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab.tsx';
 import HPCParametersTab from 'plugins/slycat-timeseries-model/plugin-components/HPCParametersTab.tsx';
+import ModelNamingTab from 'plugins/slycat-timeseries-model/plugin-components/ModelNamingTab.tsx';
 import TimeseriesParametersTab from 'plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab.tsx';
 import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import SlycatNumberInput from 'components/SlycatNumberInput.tsx';
@@ -252,28 +253,17 @@ export default class TimeseriesWizard extends React.Component<
           : null}
         {this.state.visibleTab === "6" ?
           <div>
-            <SlycatTextInput
-              id={"timeseries-name"}
-              label={"Name"}
-              value={''}
-              warning={"Please enter a model name."}
-              callBack={(name: string) => {
+            <ModelNamingTab 
+              marking={this.state.marking}
+              nameCallback={(name: string) => {
                 this.setState({ timeseriesName: name });
-              }}
-            />
-            <SlycatTextInput
-              label={"Description"}
-              value={''}
-              callBack={(description: string) => {
+                }}
+              descriptionCallback={(description: string) => {
                 this.setState({ modelDescription: description });
-              }}
-            />
-            <SlycatSelector
-              label={'Marking'}
-              options={this.state.marking}
-              onSelectCallBack={(marking: any) => {
+                }}
+              markingCallback={(marking: any) => {
                 this.setState({ selectedMarking: marking });
-              }}
+                }}
             />
           </div>
           : null}
