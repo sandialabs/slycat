@@ -2,6 +2,7 @@ import * as React from "react";
 import ModalContent from "components/ModalContent.tsx";
 import client from "js/slycat-web-client";
 import RemoteLoginTab from 'plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab.tsx';
+import HPCParametersTab from 'plugins/slycat-timeseries-model/plugin-components/HPCParametersTab.tsx';
 import TimeseriesParametersTab from 'plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab.tsx';
 import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import SlycatNumberInput from 'components/SlycatNumberInput.tsx';
@@ -217,57 +218,35 @@ export default class TimeseriesWizard extends React.Component<
           : null}
         {this.state.visibleTab === "5" ?
           <div>
-            <SlycatTextInput
-              id={"account-id"}
-              label={"Account ID"}
-              value={this.state.accountId ? this.state.accountId : ''}
-              warning={"Please enter an account ID."}
-              callBack={(id: string) => {
+            <HPCParametersTab 
+              accountId={this.state.accountId}
+              partition={this.state.partition}
+              numNodes={this.state.numNodes}
+              cores={this.state.cores}
+              jobHours={this.state.jobHours}
+              jobMin={this.state.jobMin}
+              workDir={this.state.workDir}
+              accountIdCallback={(id: string) => {
                 this.setState({ accountId: id });
-              }}
-            />
-            <SlycatTextInput
-              id={"partition"}
-              label={"Partition/Queue"}
-              value={this.state.partition ? this.state.partition : ''}
-              warning={"Please enter a partition/batch."}
-              callBack={(part: string) => {
+                }}
+              partitionCallback={(part: string) => {
                 this.setState({ partition: part });
-              }}
-            />
-            <SlycatNumberInput
-              label={'Number of nodes'}
-              value={this.state.numNodes ? this.state.numNodes : 1}
-              callBack={(num: number) => {
+                }}
+              nodesCallback={(num: number) => {
                 this.setState({ numNodes: num });
-              }}
-            />
-            <SlycatNumberInput
-              label={'Cores'}
-              value={this.state.cores ? this.state.cores : 2}
-              callBack={(numCores: number) => {
+                }}
+              coresCallback={(numCores: number) => {
                 this.setState({ cores: numCores });
-              }}
-            />
-            <SlycatTimeInput
-              label={'Requested Job Time'}
-              hours={this.state.jobHours ? this.state.jobHours : 0}
-              minutes={this.state.jobMin ? this.state.jobMin : 30}
-              minCallBack={(mins: number) => {
-                this.setState({ jobMin: mins });
-              }}
-              hourCallBack={(hours: number) => {
+                }}
+              hoursCallback={(hours: number) => {
                 this.setState({ jobHours: hours });
-              }}
-            />
-            <SlycatTextInput
-              id={"work-dir"}
-              label={"Working Directory"}
-              value={this.state.workDir ? this.state.workDir : ''}
-              warning={"Please enter a working directory."}
-              callBack={(dir: string) => {
+                }}
+              minutesCallback={(mins: number) => {
+                this.setState({ jobMin: mins });
+                }}
+              workDirCallback={(dir: string) => {
                 this.setState({ workDir: dir });
-              }}
+                }}
             />
           </div>
           : null}
