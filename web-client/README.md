@@ -18,7 +18,21 @@ pip install slycat-web-client
 If you are working behind a proxy, you might also need, e.g.
 
 ```sh
-pip install slycat-web-client --proxy your_proxy:your_port --trusted-host pypi.org
+pip install slycat-web-client --proxy your-proxy:your-port
+```
+
+If you are getting SSL certificate errors, you can use:
+
+```sh
+pip install slycat-web-client --trusted-host pypi.org --trusted-host files.pythonhosted.org
+```
+
+Be aware that the last option is insecure.  The better approach is to 
+fix your SSL certificate and/or point Python to a copy of the certificate.
+This can be done using:
+
+```sh
+pip config set global.cert path-to-your-certificate
 ```
 
 Note: that for the Slycat web client to work, you must have a Slycat server running.  
