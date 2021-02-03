@@ -1,6 +1,8 @@
 import * as React from "react";
 import ModalContent from "components/ModalContent.tsx";
 import client from "js/slycat-web-client";
+import RemoteLoginTab from 'plugins/slycat-timeseries-model/plugin-components/RemoteLoginTab.tsx';
+import TimeseriesParametersTab from 'plugins/slycat-timeseries-model/plugin-components/TimeseriesParametersTab.tsx';
 import SlycatFormRadioCheckbox from 'components/SlycatFormRadioCheckbox.tsx';
 import SlycatNumberInput from 'components/SlycatNumberInput.tsx';
 import SlycatTextInput from 'components/SlycatTextInput.tsx';
@@ -71,7 +73,6 @@ export interface TimeseriesWizardState {
  */
 
 let initialState = {};
-
 export default class TimeseriesWizard extends React.Component<
   TimeseriesWizardProps,
   TimeseriesWizardState
@@ -143,33 +144,11 @@ export default class TimeseriesWizard extends React.Component<
         </ul>
         {this.state.visibleTab === "0" ?
           <div>
-            <form className='ml-3'>
-              <SlycatFormRadioCheckbox
-                checked={this.state.selectedOption === 'xyce'}
-                onChange={(value: string) => {
-                  this.setState({ selectedOption: value });
-                }}
-                value={'xyce'}
-                text={'Xyce'}
-              />
-              <SlycatFormRadioCheckbox
-                checked={this.state.selectedOption === 'csv'}
-                onChange={(value: string) => {
-                  this.setState({ selectedOption: value });
-                }}
-                value={'csv'}
-                text={'CSV'}
-              />
-              <SlycatFormRadioCheckbox
-                checked={this.state.selectedOption === 'hdf5'}
-                onChange={(value: string) => {
-                  this.setState({ selectedOption: value });
-                }}
-                value={'hdf5'}
-                text={'HDF5'}
-              />
-            </form>
-            <SlycatRemoteControls
+            <RemoteLoginTab 
+              onChange={(value: string) => {
+                this.setState({ selectedOption: value });
+              }}
+              checked={this.state.selectedOption}
               loadingData={this.state.loadingData}
               callBack={(newHostname: string, newUsername: string, newPassword: string, sessionExists: boolean) => {
                 this.setState({
@@ -179,7 +158,6 @@ export default class TimeseriesWizard extends React.Component<
                   password: newPassword
                 });
               }}
-              showConnectButton={false}
             />
           </div>
           : null}
@@ -192,59 +170,28 @@ export default class TimeseriesWizard extends React.Component<
             />
           </div>
           : null}
-        {this.state.visibleTab === "2" && this.state.selectedOption === 'csv' ?
+        {this.state.visibleTab === "2"?
           <div>
-            <SlycatTextInput
-              id={"delimiter"}
-              label={"Table File Delimeter"}
-              value={this.state.delimiter ? this.state.delimiter : ','}
-              warning={"Please enter a table file delimiter."}
-              callBack={(delim: string) => {
+            <TimeseriesParametersTab 
+              fileType={this.state.selectedOption}
+              delimiter={this.state.delimiter}
+              columnNames={this.state.columnNames}
+              delimiterCallback={(delim: string) => {
                 this.setState({ delimiter: delim });
               }}
-            />
-
-            <SlycatSelector
-              onSelectCallBack={(type: string) => {
+              columnCallback={(type: string) => {
                 this.setState({ timeseriesColumn: type });
               }}
-              label={'Timeseries Column Name'}
-              options={this.state.columnNames}
-            />
-          </div>
-          : null}
-        {this.state.visibleTab === "2" ?
-          <div>
-            <SlycatNumberInput
-              label={'Timeseries Bin Count'}
-              value={500}
-              callBack={(count: number) => {
+              bincountCallback={(count: number) => {
                 this.setState({ binCount: count });
               }}
-            />
-            <SlycatSelector
-              label={'Resampling Algorithm'}
-              options={[{ 'text': 'uniform piecewise aggregate approximation', 'value': 'uniform-paa' },
-              { 'text': 'uniform piecewise linear approximation', 'value': 'uniform-pla' }]}
-              onSelectCallBack={(alg: string) => {
+              resamplingCallback={(alg: string) => {
                 this.setState({ resamplingAlg: alg });
               }}
-            />
-            <SlycatSelector
-              label={'Cluster Linkage Measure'}
-              options={[{ 'text': 'average: Unweighted Pair Group Method with Arithmetic Mean (UPGMA) Algorithm', 'value': 'average' },
-              { 'text': 'single: Nearest Point Algorithm', 'value': 'single' },
-              { 'text': 'complete: Farthest Point Algorithm', 'value': 'complete' },
-              { 'text': 'weighted: Weighted Pair Group Method with Arithmetic Mean (WPGMA) Algorithm', 'value': 'weighted' }]}
-              onSelectCallBack={(clusterLinkage: string) => {
+              linkageCallback={(clusterLinkage: string) => {
                 this.setState({ clusterLinkageMeasure: clusterLinkage });
               }}
-            />
-            <SlycatSelector
-              label={'Cluster Metric'}
-              options={[{ 'text': 'euclidean', 'value': 'euclidean' }]}
-              disabled={true}
-              onSelectCallBack={(metric: string) => {
+              metricCallback={(metric: string) => {
                 this.setState({ clusterMetric: metric });
               }}
             />
@@ -504,7 +451,6 @@ export default class TimeseriesWizard extends React.Component<
         return left.type == right.type ? 0 : left.type < right.type ? -1 : 1;
       });
       if (markings.length) {
-        console.log(markings);
         const configured_markings = markings.map((marking:any) => {return {text: marking["label"], value: marking["type"]} });
         this.setState({ marking: configured_markings });
       }
