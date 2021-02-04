@@ -4,58 +4,34 @@ import SlycatTextInput from 'components/SlycatTextInput.tsx';
 import SlycatSelector from 'components/SlycatSelector.tsx';
 import SlycatNumberInput from 'components/SlycatNumberInput.tsx';
 
-/**
- */
-export interface RemoteLoginTabProps {
-  fileType: string
-  delimiter: string
-  columnNames: any
-  delimiterCallback: Function
-  columnCallback: Function
-  bincountCallback: Function
-  resamplingCallback: Function
-  linkageCallback: Function
-  metricCallback: Function
+interface TimeseriesParametersTabProps {
+    delimiter: string
+    delimiterCallback: Function
+    columnNames: any
+    columnCallback: Function
+    bincountCallback: Function
+    resamplingCallback: Function
+    linkageCallback: Function
+    metricCallback: Function
+    fileType: string
 }
 
-/**
- * not used
- */
-export interface RemoteLoginTabState {
-}
-/**
- * class that creates a a form with checkboxes
- * some other process
- */
-export default class RemoteLoginTab extends React.Component<RemoteLoginTabProps, RemoteLoginTabState> {
-  /**
-   * not used
-   */
-  public constructor(props:RemoteLoginTabProps) {
-    super(props)
-    this.state = {}
-  }
-
-//   onValueChange = (value:string) => {
-
-//   };
-
-  public render () {
+function TimeseriesParametersTab(props: TimeseriesParametersTabProps) {
     return (
     <div>
-        {this.props.fileType === 'csv' ?
+        {props.fileType === 'csv' ?
             <div>
                 <SlycatTextInput
                     id={"delimiter"}
                     label={"Table File Delimeter"}
-                    value={this.props.delimiter ? this.props.delimiter : ','}
+                    value={props.delimiter ? props.delimiter : ','}
                     warning={"Please enter a table file delimiter."}
-                    callBack={this.props.delimiterCallback}
+                    callBack={props.delimiterCallback}
                 />
                 <SlycatSelector
                     label={'Timeseries Column Name'}
-                    options={this.props.columnNames}
-                    onSelectCallBack={this.props.columnCallback}
+                    options={props.columnNames}
+                    onSelectCallBack={props.columnCallback}
                 />
             </div>
         : null }
@@ -63,13 +39,13 @@ export default class RemoteLoginTab extends React.Component<RemoteLoginTabProps,
             <SlycatNumberInput
             label={'Timeseries Bin Count'}
             value={500}
-            callBack={this.props.bincountCallback}
+            callBack={props.bincountCallback}
             />
             <SlycatSelector
             label={'Resampling Algorithm'}
             options={[{ 'text': 'uniform piecewise aggregate approximation', 'value': 'uniform-paa' },
             { 'text': 'uniform piecewise linear approximation', 'value': 'uniform-pla' }]}
-            onSelectCallBack={this.props.resamplingCallback}
+            onSelectCallBack={props.resamplingCallback}
             />
             <SlycatSelector
             label={'Cluster Linkage Measure'}
@@ -77,16 +53,17 @@ export default class RemoteLoginTab extends React.Component<RemoteLoginTabProps,
             { 'text': 'single: Nearest Point Algorithm', 'value': 'single' },
             { 'text': 'complete: Farthest Point Algorithm', 'value': 'complete' },
             { 'text': 'weighted: Weighted Pair Group Method with Arithmetic Mean (WPGMA) Algorithm', 'value': 'weighted' }]}
-            onSelectCallBack={this.props.linkageCallback}
+            onSelectCallBack={props.linkageCallback}
             />
             <SlycatSelector
             label={'Cluster Metric'}
             options={[{ 'text': 'euclidean', 'value': 'euclidean' }]}
             disabled={true}
-            onSelectCallBack={this.props.metricCallback}
+            onSelectCallBack={props.metricCallback}
             />
         </div>
     </div>
     );
-  }
 }
+
+export default TimeseriesParametersTab

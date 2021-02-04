@@ -3,38 +3,14 @@ import * as React from 'react';
 import SlycatTextInput from 'components/SlycatTextInput.tsx';
 import SlycatSelector from 'components/SlycatSelector.tsx';
 
-/**
- */
-export interface ModelNamingTabProps {
-    marking: {text: string, value: string}[]
+interface ModelNamingTabProps {
     nameCallback: Function
-    descriptionCallback: Function
     markingCallback: Function
+    descriptionCallback: Function
+    marking: {text: string, value: string}[]
 }
 
-/**
- * not used
- */
-export interface ModelNamingTabState {
-}
-/**
- * class that creates a a form with checkboxes
- * some other process
- */
-export default class ModelNamingTab extends React.Component<ModelNamingTabProps, ModelNamingTabState> {
-  /**
-   * not used
-   */
-  public constructor(props:ModelNamingTabProps) {
-    super(props)
-    this.state = {}
-  }
-
-//   onValueChange = (value:string) => {
-
-//   };
-
-  public render () {
+function ModelNamingTab (props: ModelNamingTabProps) {
     return (
     <div>
         <SlycatTextInput
@@ -42,19 +18,20 @@ export default class ModelNamingTab extends React.Component<ModelNamingTabProps,
             label={"Name"}
             value={''}
             warning={"Please enter a model name."}
-            callBack={this.props.nameCallback}
+            callBack={props.nameCallback}
         />
         <SlycatTextInput
             label={"Description"}
             value={''}
-            callBack={this.props.descriptionCallback}
+            callBack={props.descriptionCallback}
         />
         <SlycatSelector
             label={'Marking'}
-            options={this.props.marking}
-            onSelectCallBack={this.props.markingCallback}
+            options={props.marking}
+            onSelectCallBack={props.markingCallback}
         />
     </div>
     );
-  }
 }
+
+export default ModelNamingTab

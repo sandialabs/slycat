@@ -4,9 +4,7 @@ import SlycatTextInput from 'components/SlycatTextInput.tsx';
 import SlycatTimeInput from 'components/SlycatTimeInput.tsx';
 import SlycatNumberInput from 'components/SlycatNumberInput.tsx';
 
-/**
- */
-export interface HPCParametersTabProps {
+interface HPCParametersTabProps {
     accountId: string
     partition: string
     numNodes: number
@@ -23,70 +21,50 @@ export interface HPCParametersTabProps {
     workDirCallback: Function
 }
 
-/**
- * not used
- */
-export interface HPCParametersTabState {
-}
-/**
- * class that creates a a form with checkboxes
- * some other process
- */
-export default class HPCParametersTab extends React.Component<HPCParametersTabProps, HPCParametersTabState> {
-  /**
-   * not used
-   */
-  public constructor(props:HPCParametersTabProps) {
-    super(props)
-    this.state = {}
-  }
+function HPCParametersTab(props: HPCParametersTabProps) {
 
-//   onValueChange = (value:string) => {
-
-//   };
-
-  public render () {
     return (
     <div>
         <SlycatTextInput
             id={"account-id"}
             label={"Account ID"}
-            value={this.props.accountId ? this.props.accountId : ''}
+            value={props.accountId ? props.accountId : ''}
             warning={"Please enter an account ID."}
-            callBack={this.props.accountIdCallback}
+            callBack={props.accountIdCallback}
         />
         <SlycatTextInput
             id={"partition"}
             label={"Partition/Queue"}
-            value={this.props.partition ? this.props.partition : ''}
+            value={props.partition ? props.partition : ''}
             warning={"Please enter a partition/batch."}
-            callBack={this.props.partitionCallback}
+            callBack={props.partitionCallback}
         />
         <SlycatNumberInput
             label={'Number of nodes'}
-            value={this.props.numNodes ? this.props.numNodes : 1}
-            callBack={this.props.nodesCallback}
+            value={props.numNodes ? props.numNodes : 1}
+            callBack={props.nodesCallback}
         />
         <SlycatNumberInput
             label={'Cores'}
-            value={this.props.cores ? this.props.cores : 2}
-            callBack={this.props.coresCallback}
+            value={props.cores ? props.cores : 2}
+            callBack={props.coresCallback}
         />
         <SlycatTimeInput
             label={'Requested Job Time'}
-            hours={this.props.jobHours ? this.props.jobHours : 0}
-            minutes={this.props.jobMin ? this.props.jobMin : 30}
-            minCallBack={this.props.minutesCallback}
-            hourCallBack={this.props.hoursCallback}
+            hours={props.jobHours ? props.jobHours : 0}
+            minutes={props.jobMin ? props.jobMin : 30}
+            minCallBack={props.minutesCallback}
+            hourCallBack={props.hoursCallback}
         />
         <SlycatTextInput
             id={"work-dir"}
             label={"Working Directory"}
-            value={this.props.workDir ? this.props.workDir : ''}
+            value={props.workDir ? props.workDir : ''}
             warning={"Please enter a working directory."}
-            callBack={this.props.workDirCallback}
+            callBack={props.workDirCallback}
         />
     </div>
     );
-  }
 }
+
+export default HPCParametersTab
