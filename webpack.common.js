@@ -8,12 +8,12 @@ const CopyPlugin = require('copy-webpack-plugin');
 // const gitRevisionPlugin = new GitRevisionPlugin({lightweightTags: true});
 // get git info from command line
 const execSync = require('child_process').execSync
-const commitHash = execSync('git rev-parse --short HEAD')
-  .toString();
-const version = execSync('git describe --always')
-.toString();
+const commitHash = execSync('git rev-parse HEAD')
+  .toString().trim();
+const version = execSync('git describe --always --tags --abbrev=200')
+  .toString().trim();
 const branch = execSync('git rev-parse --abbrev-ref HEAD')
-.toString();
+  .toString().trim();
 
 // importing vtk rules for for vtk.js package to work
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
@@ -40,7 +40,7 @@ module.exports = {
     // Use this to add the chunk hash into the filename. 
     // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
     // Also adding the git revision hash to the filename so it's clear what version of the code we have.
-    filename: '[name].[chunkhash].git_[git-revision-hash].js',
+    filename: `[name].[chunkhash].git_${commitHash}.js`,
     // If problems arise, remove chunkhash from the filename like so:
     // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
