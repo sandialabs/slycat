@@ -6,10 +6,10 @@
     "prod.dev": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js serve --config webpack.prod.dev.js",
     "watch": "node --max_old_space_size=4096 ./node_modules/webpack/bin/webpack.js --config webpack.watch.js --watch",
     "prod": "webpack --config webpack.prod.js",
-    "test": "jest",
+    "test": "./node_modules/.bin/jest",
     "clean": "rm -rf node_modules/",
-    "update-tests": "jest -u",
-    "test-coverage": "jest --coverage",
+    "update-tests": "./node_modules/.bin/jest -u",
+    "test-coverage": "./node_modules/.bin/jest --coverage",
     "modules": "webpack --display-modules --config webpack.prod.js",
     "precommit-msg": "echo 'Pre-commit checks...' && exit 0"
   },
