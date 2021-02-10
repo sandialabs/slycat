@@ -518,13 +518,14 @@ const mapStateToProps = (state, ownProps) => {
     return ownProps.metadata['column-names'][index];
   }
 
+  let indexCounter = 0;
   const numericScatterplotVariables = ownProps.metadata['column-names']
     .flatMap((name, index) => {
       if(ownProps.metadata['column-types'][index] != 'string')
       {
         return [{
           key: index,
-          index: index,
+          index: indexCounter++,
           name: getVariableAlias(index),
           min: ownProps.table_statistics[index].min,
           max: ownProps.table_statistics[index].max,

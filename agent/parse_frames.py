@@ -142,7 +142,7 @@ def parse_command_line ():
                             "default to 25 fps.")
 
     # size of parallel partition
-    parser.add_argument('--group_size', default=50, type=int,
+    parser.add_argument('--group_size', default=10, type=int,
                         help="number of frames per processor for parallel computation, "
                             "defaults to 50.")
 
@@ -318,21 +318,48 @@ def read_csv(args, log):
     return num_movies, movie_files, frame_files, meta_data
 
 # read and order frame files, generate movies if requested
-def order_frame_files(args, log, num_movies, movie_files, frame_files):
+def order_frame_files(args, log, num_movies, movie_files, frame_files, pool):
 
     # identify all frame files and order them by frame number
     log("[VS-LOG] Locating and ordering frame files ...")
 
     num_frames = 0
     all_frame_files = []
+
+    list_args = list(itertools.repeat(args, args.group_size))
+    list_log = list(itertools.repeat(log, args.group_size))
+    list_frame_files = []
+    list_indeces = []
+
     for i in range(0, num_movies):
 
         # create movie, if requested
         if (args.generate_movies == 'true' and args.replace_movies == 'None') or (args.generate_movies == 'true' and args.replace_movies == 'true'):
-            movie_name = create_movie(args, log, frame_files, i)
+            list_frame_files.append(frame_files[i])
+            list_indeces.append(i)
+            
+            if i%args.group_size == 0:
+                pool_results = pool.map_sync(create_movie,
+                                list_args,
+                                list_log,
+                                list_frame_files,
+                                list_indeces)
+                list_frame_files = []
+                list_indeces = []
+                for j in range(0, len(pool_results)):
+                    movie_files.append(pool_results[j])
+
+            elif i == num_movies - 1:
+                pool_results = pool.map_sync(create_movie,
+                                list_args[0:i%args.group_size],
+                                list_log[0:i%args.group_size],
+                                list_frame_files,
+                                list_indeces)
+                for k in range(0, len(pool_results)):
+                    movie_files.append(pool_results[k])
 
             # keep track of movie files created
-            movie_files.append(movie_name)
+
         elif (args.generate_movies == 'false' and args.movie_dir != 'None') or (args.generate_movies == 'true' and args.replace_movies == 'false'):
             movie_input, movie_output, file_location, frame_file_path = create_movie_name(args, log, frame_files, i)
             movie_name = file_location + movie_output
@@ -346,7 +373,7 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files):
             if args.sim_id_template != None:
                 frame_file_path_split = frame_file_path.split(args.sim_id_template)
                 frame_file_path_split = frame_file_path_split[1].split('/')
-                simulation_id = '.simulation.' + frame_file_path_split[0]             
+                simulation_id = '.' + frame_file_path_split[0]             
 
         # check for at least two dots in frame file name
         frame_split = frame_file_name.split('.')
@@ -420,20 +447,20 @@ def order_frame_files(args, log, num_movies, movie_files, frame_files):
 
     return num_frames, num_pixels, all_frame_files, movie_files, vid_duration
 
-def create_movie_name(args, log, frame_files, i):
+def create_movie_name(args, log, frame_file, i):
     # isolate first frame file
     frame_file_path, frame_file_name = \
-        os.path.split(urllib.parse.urlparse(frame_files[i]).path)
+        os.path.split(urllib.parse.urlparse(frame_file).path)
 
     # get simulation identifier for movie generation
     if args.sim_id_template != 'None':
         frame_file_path_split = frame_file_path.split(args.sim_id_template)
         frame_file_path_split = frame_file_path_split[1].split('/')
-        simulation_id = '.simulation.' + frame_file_path_split[0]
+        simulation_id = '.' + frame_file_path_split[0]
     else:
-        simulation_id = '.simulation'
+        simulation_id = '.'
 
-    split_path = frame_files[i].split(frame_file_path)
+    split_path = frame_file.split(frame_file_path)
 
     # get the frame name, including number and file extension
     frame_name = split_path[1].split('/')[1]
@@ -455,15 +482,58 @@ def create_movie_name(args, log, frame_files, i):
     return movie_input, movie_output, file_location, frame_file_path
 
 # create movie i
-def create_movie(args, log, frame_files, i):
+def create_movie(args, log, frame_file, i):
+    import ffmpy
+        
+    def create_movie_name_parallel(args, log, frame_file, i):
+        import os
+        import urllib.parse
 
-    movie_input, movie_output, file_location, frame_file_path = create_movie_name(args, log, frame_files, i)
+        file_extension = frame_file[len(frame_file) - 3] + frame_file[len(frame_file) - 2] + frame_file[len(frame_file) - 1]
+
+        # isolate first frame file
+        frame_file_path, frame_file_name = \
+            os.path.split(urllib.parse.urlparse(frame_file).path)
+
+        # get simulation identifier for movie generation
+        if args.sim_id_template != 'None':
+            frame_file_path_split = frame_file_path.split(args.sim_id_template)
+            frame_file_path_split = frame_file_path_split[1].split('/')
+            simulation_id = '.' + frame_file_path_split[0]
+        else:
+            simulation_id = '.'
+
+        split_path = frame_file.split(frame_file_path)
+
+        # get the frame name, including number and file extension
+        frame_name = split_path[1].split('/')[1]
+
+        # get the identifier name only
+        identifier = frame_name.split('.')[0]
+
+        file_location = split_path[0]
+
+        # generate movie name
+        if args.movie_dir[-1] == '/':
+            movie_output = args.movie_dir + identifier + simulation_id + '.%d.mp4' % (i+1)
+        else:
+            movie_output = args.movie_dir + '/' + identifier + simulation_id + '.%d.mp4' % (i+1)
+
+        # frames to make into movie
+        if file_extension == 'png':
+            movie_input = frame_file_path + '/' +  identifier + '*.png'
+        elif file_extension =='jpg':
+            movie_input = frame_file_path + '/' +  identifier + '*.jpg'
+
+        return movie_input, movie_output, file_location, frame_file_path
+
+    movie_input, movie_output, file_location, frame_file_path = create_movie_name_parallel(args, log, frame_file, i)
 
     #create the movie
     ff = ffmpy.FFmpeg(
         inputs={None: ['-y', '-pattern_type', 'glob'], movie_input: None},
         outputs={None: ['-force_key_frames', '0.0,0.04,0.08', '-vcodec', 
-                        'libx264', '-acodec', 'aac'],
+                        'libx264', '-pix_fmt', 'yuv420p', '-acodec', 'aac'],
         movie_output: None}
     )
     ff.run()
@@ -860,7 +930,7 @@ def main():
 
     # order frame files and make movies, if requested
     num_frames, num_pixels, all_frame_files, movie_files, vid_duration = \
-        order_frame_files(args, log, num_movies, movie_files, frame_files)
+        order_frame_files(args, log, num_movies, movie_files, frame_files, pool)
 
     # MDS calculations
     ##################

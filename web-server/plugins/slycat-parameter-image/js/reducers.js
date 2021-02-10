@@ -31,6 +31,8 @@ import {
   SET_Y_INDEX,
   SET_V_INDEX,
   SET_OPEN_MEDIA,
+  SET_HIDDEN_SIMULATIONS,
+  SET_MANUALLY_HIDDEN_SIMULATIONS,
   SET_MEDIA_SIZE_POSITION,
   SET_ACTIVE_FILTERS,
   TOGGLE_SYNC_SCALING,
@@ -411,6 +413,16 @@ export default function ps_reducer(state = initialState, action) {
     case SET_OPEN_MEDIA:
       return Object.assign({}, state, {
         open_media: action.open_media.slice(0)
+      })
+      
+    case SET_HIDDEN_SIMULATIONS:
+      return Object.assign({}, state, {
+        hidden_simulations: action.hidden_simulations.slice(0)
+      })
+      
+    case SET_MANUALLY_HIDDEN_SIMULATIONS:
+      return Object.assign({}, state, {
+        manually_hidden_simulations: action.manually_hidden_simulations.slice(0)
       })
       
     case SET_MEDIA_SIZE_POSITION:

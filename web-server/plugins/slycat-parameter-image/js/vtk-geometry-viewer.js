@@ -384,11 +384,13 @@ export function load(container, buffer, uri, uid, type) {
     camera.setPosition(...cameraState.position);
     camera.setFocalPoint(...cameraState.focalPoint);
     camera.setViewUp(...cameraState.viewUp);
-    camera.setClippingRange(...cameraState.clippingRange);
+    // Trying to reset clipping range instead of setting it to see if it helps with issue #986
+    // camera.setClippingRange(...cameraState.clippingRange);
+    renderer.resetCameraClippingRange();
     // renderer.resetCamera();
     interactor.render();
   }
 
   // Pass the active camera to camera synchronizer
-  addCamera(camera, container, interactor, uid);
+  addCamera(camera, container, interactor, uid, renderer);
 }

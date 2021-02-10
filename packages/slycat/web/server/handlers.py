@@ -504,7 +504,7 @@ def create_project_data_from_pid(pid, file=None, file_name=None):
     project = database.get("project", pid)
     slycat.web.server.authentication.require_project_writer(project)
 
-    csv_data = str(file.file.read())
+    csv_data = str(file.file.read(), 'utf-8')
 
     content_type = "text/csv"
     timestamp = time.time()
@@ -2098,7 +2098,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
                 "sort": sort
             }
 
-    return result
+    return json.loads(json.dumps(result, cls=MyEncoder))
 
 
 def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):

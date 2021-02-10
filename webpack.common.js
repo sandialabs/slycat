@@ -2,10 +2,18 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const GitRevisionPlugin = require('git-revision-webpack-plugin');
+// const GitRevisionPlugin = require('git-revision-webpack-plugin');
 // Creating new instance of GitRevisionPlugin and configuring it to use lightweight tags
 // so that our tagging comes out correctly. Without it, we are tagged 1.0
-const gitRevisionPlugin = new GitRevisionPlugin({lightweightTags: true});
+// const gitRevisionPlugin = new GitRevisionPlugin({lightweightTags: true});
+// get git info from command line
+const execSync = require('child_process').execSync
+const commitHash = execSync('git rev-parse HEAD')
+  .toString().trim();
+const version = execSync('git describe --always --tags --abbrev=200')
+  .toString().trim();
+const branch = execSync('git rev-parse --abbrev-ref HEAD')
+  .toString().trim();
 
 // importing vtk rules for for vtk.js package to work
 var vtkRules = require('vtk.js/Utilities/config/dependency.js').webpack.core.rules;
@@ -32,7 +40,7 @@ module.exports = {
     // Use this to add the chunk hash into the filename. 
     // Great for caching, but in the past it wasn't working with dynamic model code imports yet.
     // Also adding the git revision hash to the filename so it's clear what version of the code we have.
-    filename: '[name].[chunkhash].git_[git-revision-hash].js',
+    filename: `[name].[chunkhash].git_${commitHash}.js`,
     // If problems arise, remove chunkhash from the filename like so:
     // filename: '[name].js',
     path: path.resolve(__dirname, 'web-server/dist'),
@@ -104,13 +112,13 @@ module.exports = {
         { from: 'docs/html', to: 'docs' },
       ],
     }),
-    gitRevisionPlugin,
+    // gitRevisionPlugin,
     // Using DefinePlugin to create global constants so we can output the 
     // git version, hash, and branch in our About Slycat dialog.
     new webpack.DefinePlugin({
-      'GIT_SLYCAT_VERSION': JSON.stringify(gitRevisionPlugin.version()),
-      'GIT_SLYCAT_COMMITHASH': JSON.stringify(gitRevisionPlugin.commithash()),
-      'GIT_SLYCAT_BRANCH': JSON.stringify(gitRevisionPlugin.branch()),
+      'GIT_SLYCAT_VERSION': JSON.stringify(version),
+      'GIT_SLYCAT_COMMITHASH': JSON.stringify(commitHash),
+      'GIT_SLYCAT_BRANCH': JSON.stringify(branch),
     }),
   ],
   module: {

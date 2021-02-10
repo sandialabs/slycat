@@ -23,7 +23,9 @@ function handleModifiedCamera(sourceCamera, allCameras) {
         targetCamera.camera.setPosition(...sourceCamera.getPosition());
         targetCamera.camera.setFocalPoint(...sourceCamera.getFocalPoint());
         targetCamera.camera.setViewUp(...sourceCamera.getViewUp());
-        targetCamera.camera.setClippingRange(...sourceCamera.getClippingRange());
+        // Trying to reset clipping range instead of setting it to see if it helps with issue #986
+        // targetCamera.camera.setClippingRange(...sourceCamera.getClippingRange());
+        targetCamera.renderer.resetCameraClippingRange();
         targetCamera.interactor.render();
       }
     }
@@ -44,20 +46,27 @@ export function setSyncCameras(syncCamerasBool) {
   }
 }
 
-export function addCamera(camera, container, interactor, uid) {
+export function addCamera(camera, container, interactor, uid, renderer) {
   // When we are adding a new camera and sync is on, we need to set it up like the others
   if(syncCameras && cameras.length)
   {
     camera.setPosition(...cameras[0].camera.getPosition());
     camera.setFocalPoint(...cameras[0].camera.getFocalPoint());
     camera.setViewUp(...cameras[0].camera.getViewUp());
-    camera.setClippingRange(...cameras[0].camera.getClippingRange());
+    // Trying to reset clipping range instead of setting it to see if it helps with issue #986
+    // camera.setClippingRange(...cameras[0].camera.getClippingRange());
+    renderer.resetCameraClippingRange();
     interactor.render();
     // console.log('Hurray, we set up this camera like the first one of the existing ones!!!');
   }
 
 
-  cameras.push({camera: camera, interactor: interactor, uid: uid});
+  cameras.push({
+    camera: camera, 
+    interactor: interactor, 
+    uid: uid, 
+    renderer: renderer,
+  });
 
   // Listen for the selected event and add an onModified handler to the selected camera
   container.addEventListener('vtkselect', (e) => { 

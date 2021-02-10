@@ -4,6 +4,7 @@ import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
 import ScatterplotLegend from './ScatterplotLegend';
 import { setThreeDColorByLegend } from '../actions';
 import { getDataRange } from '../vtk-geometry-viewer';
+import _ from 'lodash';
 
 class MediaLegends extends React.PureComponent {
 
@@ -54,8 +55,17 @@ class MediaLegends extends React.PureComponent {
 const mapStateToProps = (state, ownProps) => {
   const three_d_colorvars = state.three_d_colorvars;
   const open_media = state.open_media ? state.open_media : [];
+  const hidden_simulations = state.hidden_simulations;
+  const not_hidden_open_media = _.filter(
+    open_media, 
+    o => hidden_simulations.indexOf(o.index) < 0
+    );
+  // console.group(`MediaLegends.js mapStateToProps`);
+  // console.debug(`open_media: %o, not_hidden_open_media: %o`, open_media, not_hidden_open_media);
+  // console.debug(`hidden_simulations: %o`, hidden_simulations);
+  // console.groupEnd();
 
-  const legends = open_media.map(media => {
+  const legends = not_hidden_open_media.map(media => {
     let threeDLegendLabel = "";
     let pointOrCell = false;
     let domain = null;
