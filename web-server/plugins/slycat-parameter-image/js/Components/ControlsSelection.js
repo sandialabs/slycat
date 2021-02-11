@@ -201,26 +201,6 @@ export default class ControlsSelection extends React.PureComponent {
             onClick={this.props.trigger_show_selection}>
             Show
           </a>
-          <div className="form-check dropdown-item">
-            <input className="form-check-input" type="checkbox" value="" id="syncScaling" 
-              disabled={sync_scaling_disabled}
-              checked={this.props.sync_scaling}
-              onChange={this.props.toggle_sync_scaling}
-              />
-            <label className="form-check-label" htmlFor="syncScaling">
-              Sync Scaling
-            </label>
-          </div>
-          <div className="form-check dropdown-item">
-            <input className="form-check-input" type="checkbox" value="" id="threeDScaling" 
-              disabled={sync_threeD_colorvar_disabled}
-              checked={this.props.sync_threeD_colorvar}
-              onChange={this.props.toggle_sync_threeD_colorvar}
-              />
-            <label className="form-check-label" htmlFor="threeDScaling">
-              Sync 3D Color Variable
-            </label>
-          </div>
   
           {divider}
   
@@ -261,6 +241,26 @@ export default class ControlsSelection extends React.PureComponent {
             onClick={this.props.trigger_close_all}>
             Close All Pins
           </a>
+          <div className="form-check dropdown-item">
+            <input className="form-check-input" type="checkbox" value="" id="syncScaling" 
+              disabled={sync_scaling_disabled}
+              checked={this.props.sync_scaling}
+              onChange={this.props.toggle_sync_scaling}
+              />
+            <label className="form-check-label" htmlFor="syncScaling">
+              Sync Scaling
+            </label>
+          </div>
+          <div className="form-check dropdown-item">
+            <input className="form-check-input" type="checkbox" value="" id="threeDScaling" 
+              disabled={sync_threeD_colorvar_disabled}
+              checked={this.props.sync_threeD_colorvar}
+              onChange={this.props.toggle_sync_threeD_colorvar}
+              />
+            <label className="form-check-label" htmlFor="threeDScaling">
+              Sync 3D Color Variable
+            </label>
+          </div>
           </React.Fragment>
           }
   
