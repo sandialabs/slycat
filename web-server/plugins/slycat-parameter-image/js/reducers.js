@@ -429,6 +429,28 @@ export default function ps_reducer(state = initialState, action) {
       let cloned_deep_open_media = _.cloneDeep(state.open_media);
       const match = cloned_deep_open_media.findIndex(element => element.uid == action.media_size_position.uid);
       cloned_deep_open_media[match] = Object.assign({}, cloned_deep_open_media[match], action.media_size_position);
+      // If "Sync Scaling" is enabled and we are working with the currentFrame (i.e., highlighted frame),
+      // go through rest of media and scale it accordingly
+      if(state.sync_scaling && action.media_size_position.uid == state.currentFrame.uid)
+      {
+        // console.group(`Sync Scaling is enabled, so will scale rest of media too.`);
+        cloned_deep_open_media.forEach(function(currentMedia, index, array) {
+          // console.debug(`currentMedia is %o`, currentMedia);
+          // Skip the target media since it's already been scaled
+          if(currentMedia.uid == action.media_size_position.uid) {
+            // console.debug(`skipping target media %o`, currentMedia);
+            return;
+          }
+          const originalWidth = currentMedia.width;
+          const originalHeight = currentMedia.height;
+          const newWidth = action.media_size_position.width;
+          // Set new height based on current media's aspect ratio.
+          currentMedia.height = (newWidth * originalHeight) / originalWidth;
+          // Set width same as target
+          currentMedia.width = newWidth;
+        });
+        // console.groupEnd();
+      }
       return Object.assign({}, state, {
         open_media: cloned_deep_open_media
       })
