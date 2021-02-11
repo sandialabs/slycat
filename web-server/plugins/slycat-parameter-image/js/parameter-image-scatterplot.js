@@ -2246,6 +2246,7 @@ $.widget("parameter_image.scatterplot",
         .empty()
     )
     {
+      // console.debug(`build_frame_html for image %o`, image);
       frame_html = build_frame_html(image);
     }
 
@@ -3239,9 +3240,22 @@ $.widget("parameter_image.scatterplot",
     var imageWidth = self.options.pinned_width;
     var imageHeight = self.options.pinned_height;
 
+    // Override default size if Sync Size is enabled
+    if(window.store.getState().sync_scaling)
+    {
+      // Check if there are any open media
+      const firstOpenMedia = window.store.getState().open_media[0];
+      if(firstOpenMedia)
+      {
+        // console.debug(`Overriding default media size to match sync`);
+        imageWidth = imageHeight = firstOpenMedia.width;
+      }
+    }
+
     var images = [];
     simulations.forEach(function(image_index, loop_index)
     {
+      // console.debug('opening images from pin handler');
       images.push({
         index : self.options.indices[image_index],
         uri : self.options.images[self.options.indices[image_index]].trim(),
