@@ -728,11 +728,9 @@ export default class TimeseriesWizard extends React.Component<
       hostname: this.state.hostname,
       command: json_payload,
     }).then((results) => {
-      console.log("FINISHED");
       const splitResult = results.errors.replace(/(\r\n\t|\n|\r\t)/gm, "").split(" ");
       const newJid = splitResult[splitResult.length - 1];
       this.setState({ jid: newJid });
-      console.log("UPDATING MODEL INFO");
       this.server_update_model_info(uid);
     })
   };
