@@ -524,6 +524,58 @@ $.widget("parameter_image.scatterplot",
       }
     }
 
+    const update_media_sizes = () => {
+      // console.group(`update_media_sizes`);
+      // console.debug(`previous open_media is %o`, self.previousState.open_media);
+      // console.debug(`new open_media is %o`, store.getState().open_media);
+      // console.debug(`Are they the same? %o`, self.previousState.open_media == store.getState().open_media);
+      // If open_media array changed, let's go through it and apply any updated sizes
+      if(self.previousState.open_media != store.getState().open_media)
+      {
+        store.getState().open_media.forEach(function(currentMedia, index, array) {
+          const frames = $(`.media-layer div.image-frame[data-uid=${currentMedia.uid}]`);
+          let differentWidth, differentHeight;
+          // console.debug(`Checking frames %o`, frames);
+          frames.css('width', function(index, value){
+            // console.debug(`current frame index is %o and frame is %o`, index, value);
+            differentWidth = value != `${currentMedia.width}px`;
+            if(differentWidth)
+            {
+              // console.debug(`We have a new width value of %o while current value is %o`, 
+                // currentMedia.width, value);
+              return currentMedia.width;
+            }
+            // console.debug(`We have same width value of %o while current value is %o`, 
+              // currentMedia.width, value);
+          });
+          frames.css('height', function(index, value){
+            // console.debug(`current frame index is %o and frame is %o`, index, value);
+            differentHeight = value != `${currentMedia.height}px`;
+            if(differentHeight)
+            {
+              // console.debug(`We have a new height value of %o while current value is %o`, 
+                // currentMedia.height, value);
+              return currentMedia.height;
+            }
+            // console.debug(`We have same height value of %o while current value is %o`, 
+              // currentMedia.height, value);
+          });
+          frames.each(function(index, element) {
+            // Check each frame to see if it contains a VTP
+            const vtp = element.querySelector(`.vtp`);
+            // If it has a VTP and it was resized...
+            if(vtp && (differentWidth || differentHeight))
+            {
+              // Fire a custom reize event to let vtk viewers know it was resized
+              // console.debug(`Dealing with VTP %o, so need to let it know to resize`, element.dataset.uri);
+              vtp.dispatchEvent(vtkresize_event);
+            }
+          });
+        });
+      }
+      // console.groupEnd();
+    }
+
     ReactDOM.render(
       <Provider store={window.store}>
         <MediaLegends />
@@ -542,6 +594,7 @@ $.widget("parameter_image.scatterplot",
     window.store.subscribe(update_axes_variables_scale);
     window.store.subscribe(update_point_border_size);
     window.store.subscribe(update_scatterplot_labels);
+    window.store.subscribe(update_media_sizes);
     // This update_previous_state needs to be the last window.store.subscribe
     // since the other callbacks rely on the previous state not being updated
     // until they are finished.
