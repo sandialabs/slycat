@@ -561,15 +561,23 @@ $.widget("parameter_image.scatterplot",
               // currentMedia.height, value);
           });
           frames.each(function(index, element) {
-            // Check each frame to see if it contains a VTP
-            const vtp = element.querySelector(`.vtp`);
-            // If it has a VTP and it was resized...
-            if(vtp && (differentWidth || differentHeight))
+            // If we resized the frame...
+            if(differentWidth || differentHeight)
             {
-              // Fire a custom reize event to let vtk viewers know it was resized
-              // console.debug(`Dealing with VTP %o, so need to let it know to resize`, element.dataset.uri);
-              vtp.dispatchEvent(vtkresize_event);
+              // Adjust its leader line
+              self._adjust_leader_line(d3.select(element));
+
+              // Check each frame to see if it contains a VTP
+              const vtp = element.querySelector(`.vtp`);
+              // If it has a VTP and it was resized...
+              if(vtp)
+              {
+                // Fire a custom reize event to let vtk viewers know it was resized
+                // console.debug(`Dealing with VTP %o, so need to let it know to resize`, element.dataset.uri);
+                vtp.dispatchEvent(vtkresize_event);
+              }
             }
+            
           });
         });
       }
@@ -2641,11 +2649,11 @@ $.widget("parameter_image.scatterplot",
           // or a "open in new window" link for http or https URLs
           // console.log("blob?type is: " + blob.type)
           // console.log("creating download link");
-          frame_html
-            .style({
-              "width": "200px",
-              "height": "200px",
-            });
+          // frame_html
+          //   .style({
+          //     "width": "200px",
+          //     "height": "200px",
+          //   });
           self._adjust_leader_line(frame_html);
           var download = frame_html
             .append("a")
