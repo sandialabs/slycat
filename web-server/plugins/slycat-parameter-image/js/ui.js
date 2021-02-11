@@ -53,6 +53,7 @@ import {
   setVIndex,
   setHiddenSimulations,
   setManuallyHiddenSimulations,
+  setSelectedSimulations,
 } from './actions';
 
 import slycat_threeD_color_maps from "js/slycat-threeD-color-maps";
@@ -419,6 +420,7 @@ $(document).ready(function() {
             manually_hidden_simulations: [],
             sync_scaling: true,
             sync_threeD_colorvar: true,
+            selected_simulations: [],
           }
           window.store = createStore(
             ps_reducer, 
@@ -1605,6 +1607,9 @@ $(document).ready(function() {
     });
     bookmarker.updateState( {"simulation-selection" : selection} );
     selected_simulations = selection;
+
+    // Dispatch update to selected_simulations in Redux
+    window.store.dispatch(setSelectedSimulations(selection));
   }
 
   function x_selection_changed(variable)

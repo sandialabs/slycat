@@ -37,6 +37,7 @@ import {
   SET_ACTIVE_FILTERS,
   TOGGLE_SYNC_SCALING,
   TOGGLE_SYNC_THREE_D_COLORVAR,
+  SET_SELECTED_SIMULATIONS,
 } from './actions';
 
 import { 
@@ -430,7 +431,7 @@ export default function ps_reducer(state = initialState, action) {
       const match = cloned_deep_open_media.findIndex(element => element.uid == action.media_size_position.uid);
       cloned_deep_open_media[match] = Object.assign({}, cloned_deep_open_media[match], action.media_size_position);
       // If "Sync Scaling" is enabled and we are working with the currentFrame (i.e., highlighted frame),
-      // go through rest of media and scale it accordingly
+      // go through all selected media and scale it accordingly
       if(state.sync_scaling && action.media_size_position.uid == state.currentFrame.uid)
       {
         // console.group(`Sync Scaling is enabled, so will scale rest of media too.`);
@@ -441,6 +442,12 @@ export default function ps_reducer(state = initialState, action) {
             // console.debug(`skipping target media %o`, currentMedia);
             return;
           }
+          // Skip unselected media
+          // if(state.selected_simulations.indexOf(currentMedia.index) == -1)
+          // {
+          //   // console.debug(`skipping unselected media %o`, currentMedia);
+          //   return;
+          // }
           const originalWidth = currentMedia.width;
           const originalHeight = currentMedia.height;
           const newWidth = action.media_size_position.width;
@@ -468,6 +475,11 @@ export default function ps_reducer(state = initialState, action) {
     case TOGGLE_SYNC_THREE_D_COLORVAR:
       return Object.assign({}, state, {
         sync_threeD_colorvar: !state.sync_threeD_colorvar
+      })
+    
+    case SET_SELECTED_SIMULATIONS:
+      return Object.assign({}, state, {
+        selected_simulations: action.simulations.slice(0)
       })
 
     default:
