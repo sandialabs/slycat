@@ -1103,6 +1103,36 @@ module.post_projects = function(params)
   });
 };
 
+module.post_project_models_fetch = function(params)
+{
+  return fetch(`${api_root}projects/${params.pid}/models`,
+      {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          {
+            "model-type": params.type,
+            "name": params.name,
+            "description": params.description || "",
+            "marking": params.marking || "",
+          })
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw {
+          status:response.status, 
+          statusText: response.statusText
+        };
+    }
+    return response.json();
+  });
+};
+
 module.post_project_models = function(params)
 {
   $.ajax(
@@ -1376,6 +1406,28 @@ module.get_job_output = function(params) {
   });
 };
 
+module.get_user_config_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}remotes/${params.hostname}/get-user-config`,
+      {
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "application/json"
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    } else {
+      console.log(error);
+    }
+  });
+}
+
 module.get_user_config = function(params) {
   $.ajax({
     contentType: 'application/json',
@@ -1389,6 +1441,22 @@ module.get_user_config = function(params) {
       if (params.error)
         params.error(request, status, reason_phrase);
     }
+  });
+};
+
+module.set_user_config_fetch = function(params)
+{
+  return fetch(`${api_root}remotes/${params.hostname}/set-user-config`, {
+    method: 'POST', 
+    body: JSON.stringify({config: params.config}), 
+    credentials: "same-origin", 
+    cache: "no-store", 
+    dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
   });
 };
 
@@ -1407,6 +1475,33 @@ module.set_user_config = function(params) {
     error: function(request, status, reason_phrase) {
       if (params.error)
         params.error(request, status, reason_phrase);
+    }
+  });
+};
+
+module.post_remote_command_fetch = function(params, successFunction, errorFunction)
+{
+  return fetch(`${api_root}remotes/${params.hostname}/post-remote-command`,
+      {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({"command": params.command})
+      })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
+  }).catch((error) => {
+    if (errorFunction) {
+      errorFunction(error)
+    }else{
+      console.log(error);
     }
   });
 };
@@ -1672,6 +1767,40 @@ module.delete_model_parameter = function(params)
   });
 };
 
+module.put_model_fetch = function(params)
+{
+  var model = {};
+  if("name" in params)
+    model.name = params.name;
+  if("description" in params)
+    model.description = params.description;
+  if("marking" in params)
+    model.marking = params.marking;
+  if("state" in params)
+    model.state = params.state;
+  if("bookmark" in params)
+    model.bookmark = params.bookmark;
+
+  return fetch(`${api_root}models/${params.mid}`, 
+  {
+    method: "PUT", 
+    credentials: "same-origin",
+    cache: "no-store",
+    dataType: "json",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(model),
+  })
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    console.log("RESPONSE");
+    console.log(response);
+  });
+};
+
 module.put_model = function(params)
 {
   var model = {};
@@ -1775,6 +1904,17 @@ module.job_time = function(params)
       if (params.error)
         params.error(request, status, reason_phrase);
     }
+  });
+};
+
+module.get_time_series_names_fetch = function(params)
+{
+  return fetch(`${api_root}remotes/${params.hostname}/time_series_names/file/${params.path}`, {credentials: "same-origin", cache: "no-store", dataType: "json"})
+  .then(function(response) {
+    if (!response.ok) {
+        throw `bad response with: ${response.status} :: ${response.statusText}`;
+    }
+    return response.json();
   });
 };
 
