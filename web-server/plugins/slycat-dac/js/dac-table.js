@@ -1288,14 +1288,9 @@ function update_editable_col(row, col, val)
 		}
 	});
 
-	// if categorical column then alert scatter plot for update of colors
-	if (editable_col_types[col] == "categorical") {
-
-	    // editable column change (to update scatter plot, if needed)
-	    var editableColEvent = new CustomEvent("DACEditableColChanged", { detail: num_cols + col });
-	    document.body.dispatchEvent(editableColEvent);
-
-	}
+	// alert scatter plot for update of colors
+	var editableColEvent = new CustomEvent("DACEditableColChanged", { detail: num_cols + col });
+	document.body.dispatchEvent(editableColEvent);
 
 }
 
