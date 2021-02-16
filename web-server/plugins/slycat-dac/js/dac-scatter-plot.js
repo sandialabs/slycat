@@ -582,46 +582,55 @@ var animate_squares = function ()
 // updates the MDS coords given new alpha values and/or subset
 module.update = function (alpha_values)
 {
-
-	// call server to compute new coords
-	client.post_sensitive_model_command(
+	
+	// check if MDS coords exist
+	if (mds_coords.length > 0) 
 	{
-		mid: mid,
-		type: "DAC",
-		command: "update_mds_coords",
-		parameters: {alpha: alpha_values,
-					 subset: selections.get_subset(),
-					 subset_center: subset_center,
-					 current_coords: mds_coords,
-					 include_columns: var_include_columns},
-		success: function (result)
-			{
-				// record new values in mds_coords
-				mds_coords = JSON.parse(result)["mds_coords"];
+		// call server to compute new coords
+		client.post_sensitive_model_command(
+		{
+			mid: mid,
+			type: "DAC",
+			command: "update_mds_coords",
+			parameters: {alpha: alpha_values,
+						subset: selections.get_subset(),
+						subset_center: subset_center,
+						current_coords: mds_coords,
+						include_columns: var_include_columns},
+			success: function (result)
+				{
+					// record new values in mds_coords
+					mds_coords = JSON.parse(result)["mds_coords"];
 
-				// update the data in d3 (using either circes or squares)
-				scatter_plot.selectAll(scatter_plot_type)
-					.data(mds_coords, function(d) { return d[2]; });
+					// update the data in d3 (using either circes or squares)
+					scatter_plot.selectAll(scatter_plot_type)
+						.data(mds_coords, function(d) { return d[2]; });
 
-				// update the focus point
-				if (selections.focus() != null) {
-					scatter_plot.selectAll(".focus")
-								.data([mds_coords[selections.focus()]]);
+					// update the focus point
+					if (selections.focus() != null) {
+						scatter_plot.selectAll(".focus")
+									.data([mds_coords[selections.focus()]]);
+					}
+
+					// re-draw display (animate if small number of points)
+					if (mds_coords.length > max_points_animate) {
+						module.draw();
+					} else {
+						animate();
+					}
+				},
+			error: function ()
+				{
+					dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
 				}
 
-				// re-draw display (animate if small number of points)
-				if (mds_coords.length > max_points_animate) {
-					module.draw();
-				} else {
-					animate();
-				}
-			},
-		error: function ()
-			{
-				dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
-			}
+		});
 
-	});
+	// no MDS coordinates indicates database may be offline
+	} else {
+		dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
+	}
+
 }
 
 // routine to filter scatter plot using table filters
