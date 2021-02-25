@@ -701,12 +701,7 @@ function openCSVSaveChoiceDialog(sel, all_sel, defaultFilename)
 	// (always non-empty when called)
 
 	// check if filters have been applied
-	var filters_applied = false;
-	for (var i in columnFilters) {
-	    if (columnFilters[i] !== "") {
-	        filters_applied = true;
-	    }
-	}
+	var filters_applied = module.filters_active();
 
 	// message to user
 	var txt = "There are " + sel.length + " selected row(s) visible.  What would you like to do?";

@@ -826,6 +826,12 @@ $(document).ready(function() {
                                 // update filter mask/button in selections
                                 selections.update_filter(init_filter_mask, init_filter_button);
 
+                                // set up table with editable columns
+                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                    editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
+                                    MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                                    column_filters);
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -857,12 +863,6 @@ $(document).ready(function() {
 					                OUTLINE_NO_SEL, OUTLINE_SEL, var_include_columns,
 					                init_alpha_values, init_color_by_col, init_zoom_extent, 
                                     init_subset_center);
-
-                                // set up table with editable columns
-                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
-                                                 column_filters);
 
 		   	                },
 		   	                function () {

@@ -11,6 +11,8 @@ import scatter_plot from "./dac-scatter-plot";
 import selections from "./dac-manage-selections";
 import request from "./dac-request-data.js";
 
+import metadata_table from "./dac-table";
+
 // public functions will be returned via the module variable
 var module = {};
 
@@ -236,6 +238,18 @@ module.set_subset_button = function(subset_flag)
 // set filter button background color
 module.set_filter_button = function()
 {
+
+    // check if metadata table filters are active
+    if (metadata_table.filters_active())
+    {
+        // turn on filter button
+        $("#dac-filter-plots-button").prop("disabled", false);
+
+    } else {
+
+        // turn off filter button
+        $("#dac-filter-plots-button").prop("disabled", true);
+    }
 
     // update filtered/unfiltered state
     if (selections.filter_button_status()) {
