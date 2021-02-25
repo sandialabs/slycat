@@ -53,7 +53,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     num_vars = len(meta_vars)
 
     # next compute initial MDS coordinates
-    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj)
+    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj)
 
     # finally compute alpha cluster values
     alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)

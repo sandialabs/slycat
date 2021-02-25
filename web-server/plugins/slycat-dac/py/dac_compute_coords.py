@@ -89,18 +89,23 @@ def cmdscale(D):
     return Y, Yinv
 
 
-def compute_coords (dist_mats, alpha_values, old_coords, subset, proj=None):
+def compute_coords (dist_mats, alpha_values, old_coords, subset, 
+                    proj=None, landmarks=None):
     """
     Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
     classical multidimensional scaling.
     
-    INPUTS: dist_mats is a list of numpy arrays containing square
-            matrices (n,n) representing distances, and alpha_values is
-            a numpy array containing a vector of alpha values between
-            0 and 1.
-            subset is a vector of length n with 1 = in subset, 0 = not in subset.
-            proj is an optional vector similar to subset, defaults to vector
-            of all 1.
+    INPUTS: - dist_mats is a list of numpy arrays containing square
+              matrices (n,n) representing distances,
+            - alpha_values is a numpy array containing a vector of 
+              alpha values between 0 and 1.
+            - subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            - proj is an optional vector similar to subset, defaults to vector
+              of all 1.
+            - landmarks is an optional vector which specifies landmarks to use
+              in MDS calculation. if the dist_mats are not square it is required
+              and the matrices are assumed to be size (n,k), where k is the number
+              of landmarks
     
     OUTPUTS: Y is a numpy array of coordinates (n,2) and
     """
@@ -229,11 +234,13 @@ def scale_coords (coords, full_coords, subset, center):
     return new_coords
 
 
-def init_coords (var_dist, proj=None):
+def init_coords (var_dist, proj=None, landmarks=None):
     """
     Computes initial MDS coordinates assuming alpha values are all 1.0
 
-    INPUTS: var_dist is a list of distance matrices
+    INPUTS: - var_dist is a list of distance matrices 
+            - proj is a vector mask of projected points (optional)
+            - landmarks is a vector of indices of landmark points (optional)
 
     OUTPUTS: mds_coords are the initial scaled MDS coordinates
              full_mds_coords are the unscaled version of the same coordinates
@@ -256,7 +263,8 @@ def init_coords (var_dist, proj=None):
     # compute MDS coordinates assuming alpha = 1 for scaling, full subset, full view
     subset_mask = np.ones(var_dist[0].shape[0])
     old_coords = np.zeros((var_dist[0].shape[0], 2))
-    full_mds_coords = compute_coords(var_dist, alpha_values, old_coords, subset_mask, proj)
+    full_mds_coords = compute_coords(var_dist, alpha_values, old_coords, subset_mask, 
+                                     proj=proj, landmarks=landmarks)
 
     # scale using full coordinates
     subset_center = np.array([.5,.5])

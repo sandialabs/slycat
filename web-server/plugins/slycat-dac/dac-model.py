@@ -225,7 +225,7 @@ def register_slycat_plugin(context):
 
         # compute new MDS coords (truncate coords for old models)
         mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns],
-                                        old_coords[:, 0:2], subset_mask, proj)
+                                        old_coords[:, 0:2], subset_mask, proj=proj)
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords,
