@@ -8,6 +8,14 @@
 # S. Martin
 # 1/6/2015
 
+# Now set up to handle landmarks (3/1/2021).  To preserve compatibility with older 
+# models, landmarks should be set to the entire dataset in the case when full 
+# (square) distance matrices are available.  In this case the exact behavior is
+# preserved.  If landmarks are a subset of the full dataset, there is a slightly
+# different behavior when analyzing subsets (namely a subset does not trigger
+# a full re-calculation of the coordinates, since that would not be possible
+# without full distance matrices).
+
 """Computes a coordinate representation using Multidimensional Scaling
 on an alpha-sum of distance matrices.  The distance matrices are stored
 in a list of 2d numpy arrays and the alpha values are stored in a 1d numpy
@@ -386,25 +394,41 @@ def init_coords (var_dist, proj=None, landmarks=None):
     return mds_coords, full_mds_coords
 
 
-def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
+def compute_alpha_clusters (var_dist, meta_columns, meta_column_types, landmarks=None):
     """
     Computes the alpha cluster values.
 
-    INPUTS: var_dist is a list of distance matrices
-            meta_columns is a list of meta data arrays
-            meta_column_types is a list of the meta data array types
+    INPUTS: -- var_dist is a list of distance matrices
+            -- meta_columns is a list of meta data arrays
+            -- meta_column_types is a list of the meta data array types
+            -- landmarks is a mask indicating landmarks
 
     OUTPUTS: alpha_cluster_mat is a matrix containing all the alpha
              values for clustering each meta data array
     """
 
+    # if landmarks are not given, assume everything is a landmark
+    num_tests = var_dist[0].shape[0]
+    if landmarks is None:
+        landmarks = np.ones(num_tests)
+    
+    # make sure landmarks is an array
+    else:
+        landmarks = np.asarray(landmarks)
+
+    # get landmarks locations in distance matrices
+    num_landmarks = int(np.sum(landmarks))
+    landmark_rows = np.where(landmarks)[0]
+    landmark_cols = np.arange(num_landmarks)
+
+    # compute alpha cluster values using landmarks only
     num_vars = len(var_dist)
-    num_time_series = var_dist[0].shape[0]
+    num_time_series = num_landmarks
 
     # form a matrix with each distance matrix as a column (this is U matrix)
     all_dist_mat = np.zeros((num_time_series * num_time_series, num_vars))
     for i in range(num_vars):
-        all_dist_mat[:, i] = np.squeeze(np.reshape(var_dist[i],
+        all_dist_mat[:, i] = np.squeeze(np.reshape(var_dist[i][landmark_rows[:,None], landmark_cols],
                                     (num_time_series * num_time_series, 1)))
 
     # for each quantitative meta variable, compute distances as columns (V matrices)
@@ -414,7 +438,8 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
         if meta_column_types[i] == "float64":
 
             # compute pairwise distance matrix vector for property i
-            prop_dist_mats.append(compute_prop_dist_vec(meta_columns[i], num_time_series))
+            landmark_data_i = np.asarray(meta_columns[i])[landmark_rows]
+            prop_dist_mats.append(compute_prop_dist_vec(landmark_data_i, num_time_series))
 
         elif meta_column_types[i] == "string":
 
@@ -426,7 +451,8 @@ def compute_alpha_clusters (var_dist, meta_columns, meta_column_types):
             uniq_sorted_columns = sorted(set(meta_columns[i]))
 
             # use alphabetical order to make a vector of numbers
-            meta_column_num = [uniq_sorted_columns.index(str_meta) for str_meta in meta_columns[i]]
+            meta_column_num = np.asarray([uniq_sorted_columns.index(str_meta) 
+                for str_meta in meta_columns[i]])[landmark_rows]
 
             prop_dist_mats.append(compute_prop_dist_vec(meta_column_num, num_time_series))
 
