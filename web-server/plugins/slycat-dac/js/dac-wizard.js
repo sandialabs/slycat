@@ -78,6 +78,10 @@ function constructor(params)
     component.csv_min_size = ko.observable(10);
     component.min_num_dig = ko.observable(3);
 
+    // number of landmarks
+    var NUM_LANDMARKS = 100
+    component.num_landmarks = ko.observable(NUM_LANDMARKS);
+
     // TDMS defaults
     var MIN_TIME_STEPS = 10;
     var MIN_NUM_CHANNELS = 2;
@@ -171,6 +175,23 @@ function constructor(params)
     // this function uploads the meta data table in DAC generic format
     component.upload_dac_format = function() {
 
+        // keep track of input errors
+        var no_errors = true;
+
+        // check number of landmarks
+        var num_landmarks = Math.round(Number(component.num_landmarks()));
+
+        if (num_landmarks < 3) {
+
+            $("#dac-num-landmarks").addClass("is-invalid");
+            no_errors = false;
+
+        } else {
+
+            // clear error
+            $("#dac-num-landmarks").removeClass("is-invalid");
+        }
+
         $("#dac-gen-file-error").hide();
 
         // check for file selected
@@ -180,26 +201,31 @@ function constructor(params)
             var file = component.browser_dac_file.selection()[0];
             var file_ext = file.name.split(".").pop().toLowerCase();
 
-            if (file_ext == 'zip') {
+            if (file_ext != 'zip') {
 
-                // set model name back to blank
-                component.model.name("");
-
-                // go to model naming
-                component.tab(tabs['name-model']);
-
-            } else {
                 $("#dac-gen-file-error").text("Please select a file with the .zip extension.")
                 $("#dac-gen-file-error").show();
+                no_errors = false;
             }
 
         } else {
 
             $("#dac-gen-file-error").text("Please select DAC generic .zip file.")
             $("#dac-gen-file-error").show();
+            no_errors = false;
 
         }
 
+        // if everything is OK go to next tab
+        if (no_errors == true) {
+
+            // set model name back to blank
+            component.model.name("");
+
+            // if already uploaded data, do not re-upload
+            component.tab(tabs['name-model']);
+
+        }
     };
 
     // assigns default ui preferences for DAC to slycat
@@ -277,6 +303,7 @@ function constructor(params)
         // check PTS parse parameters
         var csv_parm = Math.round(Number(component.csv_min_size()));
         var dig_parm = Math.round(Number(component.min_num_dig()));
+        var num_landmarks = Math.round(Number(component.num_landmarks()));
 
         // check for input parameter errors
         var no_errors = true;
@@ -300,6 +327,17 @@ function constructor(params)
 
             // clear error
             $("#dac-min-dig").removeClass("is-invalid");
+        }
+
+        if (num_landmarks < 3) {
+
+            $("#dac-pts-landmarks").addClass("is-invalid");
+            no_errors = false;
+
+        } else {
+
+            // clear error
+            $("#dac-pts-landmarks").removeClass("is-invalid");
         }
 
         // check for file errors
@@ -552,6 +590,7 @@ function constructor(params)
         var time_steps_parm = Math.round(Number(component.min_time_steps()));
         var channel_parm = Math.round(Number(component.min_num_channels()));
         var shots_parm = parseInt(component.min_num_shots());
+        var num_landmarks = Math.round(Number(component.num_landmarks()));
 
         // check for input parameter errors
         var no_errors = true;
@@ -595,6 +634,17 @@ function constructor(params)
 
         }
 
+        if (num_landmarks < 3) {
+
+            $("#dac-tdms-landmarks").addClass("is-invalid");
+            no_errors = false;
+
+        } else {
+
+            // clear error
+            $("#dac-tdms-landmarks").removeClass("is-invalid");
+        }
+
         // proceed to name model if no errors are present
         if (no_errors == true) {
 
@@ -614,12 +664,14 @@ function constructor(params)
         component.min_time_steps(MIN_TIME_STEPS);
         component.min_num_channels(MIN_NUM_CHANNELS);
         component.min_num_shots(MIN_NUM_SHOTS);
+        component.num_landmarks(NUM_LANDMARKS);
         component.dac_tdms_type(TDMS_TYPE);
         component.dac_union_type(UNION_TYPE);
         component.dac_infer_units(INFER_UNITS);
         component.dac_infer_time(INFER_TIME);
 
         // turn off any errors
+        $("#dac-tdms-landmarks").removeClass("is-invalid");
         $("#dac-min-time-steps").removeClass("is-invalid");
         $("#dac-min-channel").removeClass("is-invalid");
         $("#dac-min-shots").removeClass("is-invalid");
