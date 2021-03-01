@@ -17,6 +17,8 @@ import numpy as np
 import scipy.linalg
 import scipy.optimize
 
+import cherrypy
+
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D):
     """                                                                                      
@@ -88,9 +90,9 @@ def cmdscale(D):
 
     return Y, Yinv
 
-
-def compute_coords (dist_mats, alpha_values, old_coords, subset, 
-                    proj=None, landmarks=None):
+# this is the legacy, non-landmark behavior, preserved 
+# in case of models with full pairwise distance matrices
+def compute_coords_subset (dist_mats, alpha_values, old_coords, subset, proj=None):
     """
     Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
     classical multidimensional scaling.
@@ -102,10 +104,6 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
             - subset is a vector of length n with 1 = in subset, 0 = not in subset.
             - proj is an optional vector similar to subset, defaults to vector
               of all 1.
-            - landmarks is an optional vector which specifies landmarks to use
-              in MDS calculation. if the dist_mats are not square it is required
-              and the matrices are assumed to be size (n,k), where k is the number
-              of landmarks
     
     OUTPUTS: Y is a numpy array of coordinates (n,2) and
     """
@@ -172,16 +170,120 @@ def compute_coords (dist_mats, alpha_values, old_coords, subset,
     return mds_coords
 
 
+def compute_coords (dist_mats, alpha_values, old_coords, subset, 
+                    proj=None, landmarks=None):
+    """
+    Computes sum alpha_i^2 dist_mat_i.^2 then calls cmdscale to compute
+    classical multidimensional scaling.
+    
+    INPUTS: -- dist_mats is a list of numpy arrays containing square
+               matrices (n,n) representing distances,
+            -- alpha_values is a numpy array containing a vector of 
+               alpha values between 0 and 1.
+            -- old_coords is a numpy array containing the previous coordinates.
+            -- subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            -- proj is an optional vector similar to subset, defaults to vector
+               of all 1.
+            -- landmarks is an optional vector which specifies landmark indices to use
+               in the MDS calculation using mask. if the dist_mats are not square it 
+               is required and the matrices are assumed to be size (n,k), where k is 
+               the number of landmarks
+    
+    OUTPUTS: Y is a numpy array of coordinates (n,2) and
+    """
+
+    # landmarks test on weather data
+    # test_landmarks = np.concatenate((np.ones(50), np.zeros(50)))
+    # landmarks = test_landmarks
+
+    # set landmark default, vector of all ones, indicating that
+    # everything is a landmark and distance matrices are square
+    num_tests = dist_mats[0].shape[0]
+    if landmarks is None:
+        landmarks = np.ones(num_tests)
+    
+    # make sure landmarks is an array
+    else:
+        landmarks = np.asarray(landmarks)
+
+    # use legacy behavior if we have full pairwise distance matrices
+    num_landmarks = int(np.sum(landmarks))
+    if num_landmarks == num_tests:
+        return compute_coords_subset (dist_mats, alpha_values, 
+            old_coords, subset, proj=proj)
+
+    # set projection default (vector of all ones -- everything in base calculation)
+    if proj is None:
+        proj = np.ones(num_tests)
+
+    # make sure projection is an array
+    else:
+        proj = np.asarray(proj)
+
+    # remove projected points from landmarks
+    landmarks = np.multiply(landmarks, proj)
+
+    # get sizes of projection, subset
+    num_proj = int(np.sum(proj))
+    num_subset = int(np.sum(subset))
+
+    # always use landmarks to compute basic coordinates
+    num_landmarks = int(np.sum(landmarks))
+    full_dist_mat = np.zeros((num_landmarks,num_landmarks))
+
+    # compute alpha-sum of distance matrices on landmarks
+    landmark_rows = np.where(landmarks)[0]
+    landmark_cols = np.arange(num_landmarks)
+    for i in range(len(dist_mats)):
+        full_dist_mat = full_dist_mat + alpha_values[i]**2 * \
+                        dist_mats[i][landmark_rows[:,None], landmark_cols]**2
+
+    # compute mds coordinates on landmarks
+    mds_landmark_coords, proj_inv = cmdscale(np.sqrt(full_dist_mat))
+
+    # if not in landmarks, assign old coordinates
+    mds_coords = old_coords
+    mds_coords[landmark_rows,:] = mds_landmark_coords
+
+    # now project onto landmarks
+    if num_landmarks < num_tests:
+
+        # get points to project (subset or proj except landmarks)
+        if num_subset == num_tests:
+            proj_inds = np.where(landmarks==0)[0]
+        else:
+            proj_inds = np.where(np.logical_and(landmarks==0, subset))[0]
+        
+        # compute mean distance squared for points in projection
+        mean_dist = np.mean(full_dist_mat, axis=1)
+
+        # compute distance squared for each point to be projected
+        num_proj_inds = len(proj_inds)
+        proj_dist_mat = np.zeros((num_proj_inds, num_landmarks))
+        for i in range(len(dist_mats)):
+            proj_dist_mat = proj_dist_mat + alpha_values[i] ** 2 * \
+                                            dist_mats[i][proj_inds[:, None], landmark_cols] ** 2
+
+        # compute projected coords
+        proj_coords = (proj_dist_mat - mean_dist).dot(proj_inv)
+
+        # put projected coords into mds coords
+        mds_coords[proj_inds,:] = proj_coords
+    
+    return mds_coords
+
+
 def scale_coords (coords, full_coords, subset, center):
     """
     Adjusts coords (with 2 columns) so that the orientation is
     correlated with the full_coords and scaled by the scalar
     scale to fit in a box [0,1]^2.
     
-    INPUTS: coords is numpy matrix (n,2) of coords to scale,
-            full_coords is numpy matrix (n,2) to align
-            as a reference for the coords vector.
-            subset is a vector of length n with 1 = in subset, 0 = not in subset.
+    INPUTS: -- coords is numpy matrix (n,2) of coords to scale,
+            -- full_coords is numpy matrix (n,2) to align
+               as a reference for the coords vector.
+            -- subset is a vector of length n with 1 = in subset, 0 = not in subset.
+            -- center is the subset center
             
     OUTPUTS: a numpy matrix (n,2) of adjusted coordinates.
     """
@@ -189,27 +291,38 @@ def scale_coords (coords, full_coords, subset, center):
     # get subset for scaling
     subset_inds = np.where(subset)[0]
     subset_coords = coords[subset_inds,:]
-    full_subset_coords = full_coords[subset_inds,:]
+
+    # mean subtract subset coords
+    subset_coords_mean = np.mean(subset_coords, axis=0)
+    subset_coords_ms = subset_coords - subset_coords_mean
 
     # mean subtract full subset
+    full_subset_coords = full_coords[subset_inds,:]
     full_subset_mean = np.mean(full_subset_coords, axis=0)
     full_subset_coords_ms = full_subset_coords - full_subset_mean
 
     # use Kabsch algorithm to rotate coords in line with full_coords
-    corr_mat = np.dot(subset_coords.transpose(),full_subset_coords_ms)
+    corr_mat = np.dot(subset_coords_ms.transpose(),full_subset_coords_ms)
     u,s,v = np.linalg.svd(corr_mat)
     rot_mat = np.dot(v, u.transpose())
 
     # rotate to get new coords
-    rot_coords = np.dot(subset_coords, rot_mat.transpose())
+    rot_coords = np.dot(subset_coords_ms, rot_mat.transpose())
     
-    # get maximum absolute value in full coordinate system
-    coords_scale = np.amax(np.absolute(rot_coords))
-    if coords_scale < np.finfo(float).eps:
-        coords_scale = 1.0
+    # get max absolute value for x,y independently
+    coords_scale_x = np.amax(np.absolute(rot_coords[:,0]))
+    coords_scale_y = np.amax(np.absolute(rot_coords[:,1]))
 
-    # scale to [0,1]^2
-    scaled_coords = rot_coords / (2.0 * coords_scale) + 0.5
+    # make sure we do not divide by 0
+    if coords_scale_x < np.finfo(float).eps:
+        coords_scale_x = 1.0
+    if coords_scale_y < np.finfo(float).eps:
+        coords_scale_y = 1.0
+
+    # scale to [0,1]^2 independently for x,y
+    scaled_coords = rot_coords
+    scaled_coords[:,0] = scaled_coords[:,0] / (2.0 * coords_scale_x) + 0.5
+    scaled_coords[:,1] = scaled_coords[:,1] / (2.0 * coords_scale_y) + 0.5
 
     # set coords of anything not in subset
     num_coords = coords.shape[0]

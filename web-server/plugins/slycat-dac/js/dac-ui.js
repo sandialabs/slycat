@@ -1055,10 +1055,13 @@ $(document).ready(function() {
             metadata_table.jump_to (new_sel[0]);
         }
 
-        // bookmark subset data
+        // bookmark subset data and selection data (also changes)
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
                                 "dac-subset-center": new_subset.detail.subset_center,
-                                "dac-subset-flag": new_subset.detail.subset_flag});
+                                "dac-subset-flag": new_subset.detail.subset_flag,
+                                "dac-sel-1": selections.sel(1), "dac-sel-2": selections.sel(2),
+                                "dac-sel-3": selections.sel(3), "dac-sel-focus": selections.focus(),
+                                "dac-diff-desired-state": false});
 
     }
 

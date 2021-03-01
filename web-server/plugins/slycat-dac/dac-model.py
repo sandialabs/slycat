@@ -966,7 +966,7 @@ def register_slycat_plugin(context):
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist, proj)
+                                    var_data, time_steps, var_dist, proj=proj)
 
             # done -- destroy the thread
             stop_event.set()
