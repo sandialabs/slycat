@@ -10,6 +10,7 @@ export interface SlycatSelectorProps {
   onSelectCallBack: Function
   options: Option[]
   label: string
+  disabled?: boolean
 }
 
 /**
@@ -56,9 +57,14 @@ export default class SlycatSelector extends React.Component<SlycatSelectorProps,
           {this.props.label}
         </label>
         <div className='col-sm-9'>
-          <select className="form-control" onChange={(e)=>this.props.onSelectCallBack(e.target.value)}>
+          {this.props.disabled === true ?          
+          <select className="form-control" onChange={(e)=>this.props.onSelectCallBack(e.target.value)} disabled>
             {this.getOptions()}
           </select>
+          :
+          <select className="form-control" onChange={(e)=>this.props.onSelectCallBack(e.target.value)} >
+          {this.getOptions()}
+        </select> }          
         </div>
       </div>
     )

@@ -263,8 +263,9 @@
   <div class="modal fade" tabindex="-1" role="dialog" id="slycat-wizard" data-backdrop="static">
     <div class="modal-dialog" role="document" data-bind="css: { 'modal-lg': wizard }">
       <div class="modal-content">
+        <!-- adding a .react-wizard class so we can start rendering based on the selector for new react wizards -->
         <div data-bind="if: wizard">
-          <div data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" style="height: 100%">
+          <div class="react-wizard" data-bind="component:{name:wizard,params:{projects:project,models:model,show_wizard:show_wizard}}" style="height: 100%">
           </div>
         </div>
       </div>
