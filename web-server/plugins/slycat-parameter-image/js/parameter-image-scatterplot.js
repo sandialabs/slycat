@@ -2136,8 +2136,28 @@ $.widget("parameter_image.scatterplot",
           imageHeight = imageWidth;
         }
 
+        // Override default size if Sync Size is enabled
+        let override = false;
+        if(window.store.getState().sync_scaling)
+        {
+          // Check if there are any open media
+          const firstOpenMedia = window.store.getState().open_media[0];
+          if(firstOpenMedia)
+          {
+            // console.debug(`Overriding default media size to match sync`);
+            imageWidth = imageHeight = firstOpenMedia.width;
+            override = true;
+          }
+        }
+
+        // console.debug('inside pin handler');
+
         var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
-        target_width = self._scale_width(ratio, imageWidth, imageHeight);
+        // Only scale the width if we didn't override due to sync size being enabled
+        if(!override)
+        {
+          target_width = self._scale_width(ratio, imageWidth, imageHeight);
+        }
         target_height = self._scale_height(ratio, imageWidth, imageHeight);
         // Adding 20 pixels to make room for the footer with buttons
         target_height += 20;
@@ -2995,6 +3015,18 @@ $.widget("parameter_image.scatterplot",
     var hover_width = Math.min(width, height) * 0.85;
     var hover_height = Math.min(width, height) * 0.85;
 
+    // Override size if Sync Size is enabled
+    if(window.store.getState().sync_scaling)
+    {
+      // Check if there are any open media
+      const firstOpenMedia = window.store.getState().open_media[0];
+      if(firstOpenMedia)
+      {
+        // console.debug(`Overriding default media size to match sync`);
+        hover_width = hover_height = firstOpenMedia.width;
+      }
+    }
+
     self._open_images([{
       index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]].trim(),
@@ -3243,6 +3275,8 @@ $.widget("parameter_image.scatterplot",
   pin: function(simulations)
   {
     var self = this;
+
+    // console.debug('pin');
 
     // Set default image size
     var imageWidth = self.options.pinned_width;
