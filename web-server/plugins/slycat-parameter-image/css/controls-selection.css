@@ -1,0 +1,10 @@
+/* Labels for checkboxes in dropdowns are not bold */
+#controls .dropdown-menu label {
+  font-weight: normal;
+  margin-right: 0;
+}
+/* Make checkboxes in dropdowns look like regular dropdown items */
+.form-check.dropdown-item {
+  padding: 0.25rem 1.5rem;
+  justify-content: initial;
+}

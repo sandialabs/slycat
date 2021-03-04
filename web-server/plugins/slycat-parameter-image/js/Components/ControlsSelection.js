@@ -1,6 +1,7 @@
 import * as dialog from "js/slycat-dialog";
 import React from "react";
 import _ from "lodash";
+import "../../css/controls-selection.css";
 
 export default class ControlsSelection extends React.PureComponent {
 
@@ -115,16 +116,18 @@ export default class ControlsSelection extends React.PureComponent {
     const all_open_hidden = _.difference(open_media_indexes, this.props.hidden_simulations).length === 0;
     const all_open_selected = _.difference(open_media_indexes, this.props.selection).length === 0;
     
-    // Disable show all button when there are no hidden simulations or when the disable_hide_show functionality flag is on (set by filters)
-    const show_all_disabled = this.props.hidden_simulations.length == 0 || this.props.disable_hide_show;
+    // Disable show all button when there are no hidden simulations or when there are active filters
+    const show_all_disabled = this.props.hidden_simulations.length == 0 || this.props.active_filters.length > 0;
     const show_all_title = show_all_disabled ? 'There are currently no hidden scatterplot points to show.' : 'Show All Hidden Scatterplot Points';
   
-    const hide_disabled = this.props.disable_hide_show || all_selected_hidden;
-    const show_disabled = this.props.disable_hide_show || all_selected_visible;
-    const selected_items_header_disabled = hide_disabled && show_disabled;
+    const hide_disabled = this.props.active_filters.length > 0 || all_selected_hidden;
+    const show_disabled = this.props.active_filters.length > 0 || all_selected_visible;
+    const sync_scaling_disabled = false;
+    const sync_threeD_colorvar_disabled = false;
+    const selected_items_header_disabled = hide_disabled && show_disabled && sync_scaling_disabled && sync_threeD_colorvar_disabled;
   
-    const hide_unselected_disabled = this.props.disable_hide_show || no_visible_unselected || all_selected_hidden;
-    const show_unselected_disabled = this.props.disable_hide_show || no_hidden_unselected;
+    const hide_unselected_disabled = this.props.active_filters.length > 0 || no_visible_unselected || all_selected_hidden;
+    const show_unselected_disabled = this.props.active_filters.length > 0 || no_hidden_unselected;
     const unselected_items_header_disabled = hide_unselected_disabled && show_unselected_disabled;
   
     // Completely hide the Pin functionality when the model has no media variables to choose from
@@ -238,6 +241,26 @@ export default class ControlsSelection extends React.PureComponent {
             onClick={this.props.trigger_close_all}>
             Close All Pins
           </a>
+          <div className="form-check dropdown-item">
+            <input className="form-check-input" type="checkbox" value="" id="syncScaling" 
+              disabled={sync_scaling_disabled}
+              checked={this.props.sync_scaling}
+              onChange={this.props.toggle_sync_scaling}
+              />
+            <label className="form-check-label" htmlFor="syncScaling">
+              Sync Scaling
+            </label>
+          </div>
+          <div className="form-check dropdown-item">
+            <input className="form-check-input" type="checkbox" value="" id="threeDScaling" 
+              disabled={sync_threeD_colorvar_disabled}
+              checked={this.props.sync_threeD_colorvar}
+              onChange={this.props.toggle_sync_threeD_colorvar}
+              />
+            <label className="form-check-label" htmlFor="threeDScaling">
+              Sync 3D Color Variable
+            </label>
+          </div>
           </React.Fragment>
           }
   

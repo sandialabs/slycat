@@ -347,7 +347,8 @@ export function load(container, buffer, uri, uid, type) {
   // ----------------------------------------------------------------------------
   // Display time step if the data exists
   // ----------------------------------------------------------------------------
-  const TimeValue = source.getFieldData().getArrayByName('TimeValue');
+  const TimeValue = source ? source.getFieldData().getArrayByName('TimeValue') : undefined;
+  // console.debug(`TimeValue is %o`, TimeValue);
   if(TimeValue)
   {
     const timeStep = TimeValue.getData()[0];

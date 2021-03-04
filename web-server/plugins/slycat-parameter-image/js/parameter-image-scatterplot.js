@@ -524,6 +524,66 @@ $.widget("parameter_image.scatterplot",
       }
     }
 
+    const update_media_sizes = () => {
+      // console.group(`update_media_sizes`);
+      // console.debug(`previous open_media is %o`, self.previousState.open_media);
+      // console.debug(`new open_media is %o`, store.getState().open_media);
+      // console.debug(`Are they the same? %o`, self.previousState.open_media == store.getState().open_media);
+      // If open_media array changed, let's go through it and apply any updated sizes
+      if(self.previousState.open_media != store.getState().open_media)
+      {
+        store.getState().open_media.forEach(function(currentMedia, index, array) {
+          const frames = $(`.media-layer div.image-frame[data-uid=${currentMedia.uid}]`);
+          let differentWidth, differentHeight;
+          // console.debug(`Checking frames %o`, frames);
+          frames.css('width', function(index, value){
+            // console.debug(`current frame index is %o and frame is %o`, index, value);
+            differentWidth = value != `${currentMedia.width}px`;
+            if(differentWidth)
+            {
+              // console.debug(`We have a new width value of %o while current value is %o`, 
+                // currentMedia.width, value);
+              return currentMedia.width;
+            }
+            // console.debug(`We have same width value of %o while current value is %o`, 
+              // currentMedia.width, value);
+          });
+          frames.css('height', function(index, value){
+            // console.debug(`current frame index is %o and frame is %o`, index, value);
+            differentHeight = value != `${currentMedia.height}px`;
+            if(differentHeight)
+            {
+              // console.debug(`We have a new height value of %o while current value is %o`, 
+                // currentMedia.height, value);
+              return currentMedia.height;
+            }
+            // console.debug(`We have same height value of %o while current value is %o`, 
+              // currentMedia.height, value);
+          });
+          frames.each(function(index, element) {
+            // If we resized the frame...
+            if(differentWidth || differentHeight)
+            {
+              // Adjust its leader line
+              self._adjust_leader_line(d3.select(element));
+
+              // Check each frame to see if it contains a VTP
+              const vtp = element.querySelector(`.vtp`);
+              // If it has a VTP and it was resized...
+              if(vtp)
+              {
+                // Fire a custom reize event to let vtk viewers know it was resized
+                // console.debug(`Dealing with VTP %o, so need to let it know to resize`, element.dataset.uri);
+                vtp.dispatchEvent(vtkresize_event);
+              }
+            }
+            
+          });
+        });
+      }
+      // console.groupEnd();
+    }
+
     ReactDOM.render(
       <Provider store={window.store}>
         <MediaLegends />
@@ -542,6 +602,7 @@ $.widget("parameter_image.scatterplot",
     window.store.subscribe(update_axes_variables_scale);
     window.store.subscribe(update_point_border_size);
     window.store.subscribe(update_scatterplot_labels);
+    window.store.subscribe(update_media_sizes);
     // This update_previous_state needs to be the last window.store.subscribe
     // since the other callbacks rely on the previous state not being updated
     // until they are finished.
@@ -2075,8 +2136,28 @@ $.widget("parameter_image.scatterplot",
           imageHeight = imageWidth;
         }
 
+        // Override default size if Sync Size is enabled
+        let override = false;
+        if(window.store.getState().sync_scaling)
+        {
+          // Check if there are any open media
+          const firstOpenMedia = window.store.getState().open_media[0];
+          if(firstOpenMedia)
+          {
+            // console.debug(`Overriding default media size to match sync`);
+            imageWidth = imageHeight = firstOpenMedia.width;
+            override = true;
+          }
+        }
+
+        // console.debug('inside pin handler');
+
         var ratio = frame.attr("data-ratio") ? frame.attr("data-ratio") : 1;
-        target_width = self._scale_width(ratio, imageWidth, imageHeight);
+        // Only scale the width if we didn't override due to sync size being enabled
+        if(!override)
+        {
+          target_width = self._scale_width(ratio, imageWidth, imageHeight);
+        }
         target_height = self._scale_height(ratio, imageWidth, imageHeight);
         // Adding 20 pixels to make room for the footer with buttons
         target_height += 20;
@@ -2193,6 +2274,7 @@ $.widget("parameter_image.scatterplot",
         .empty()
     )
     {
+      // console.debug(`build_frame_html for image %o`, image);
       frame_html = build_frame_html(image);
     }
 
@@ -2587,11 +2669,11 @@ $.widget("parameter_image.scatterplot",
           // or a "open in new window" link for http or https URLs
           // console.log("blob?type is: " + blob.type)
           // console.log("creating download link");
-          frame_html
-            .style({
-              "width": "200px",
-              "height": "200px",
-            });
+          // frame_html
+          //   .style({
+          //     "width": "200px",
+          //     "height": "200px",
+          //   });
           self._adjust_leader_line(frame_html);
           var download = frame_html
             .append("a")
@@ -2933,6 +3015,18 @@ $.widget("parameter_image.scatterplot",
     var hover_width = Math.min(width, height) * 0.85;
     var hover_height = Math.min(width, height) * 0.85;
 
+    // Override size if Sync Size is enabled
+    if(window.store.getState().sync_scaling)
+    {
+      // Check if there are any open media
+      const firstOpenMedia = window.store.getState().open_media[0];
+      if(firstOpenMedia)
+      {
+        // console.debug(`Overriding default media size to match sync`);
+        hover_width = hover_height = firstOpenMedia.width;
+      }
+    }
+
     self._open_images([{
       index : self.options.indices[image_index],
       uri : self.options.images[self.options.indices[image_index]].trim(),
@@ -3182,13 +3276,28 @@ $.widget("parameter_image.scatterplot",
   {
     var self = this;
 
+    // console.debug('pin');
+
     // Set default image size
     var imageWidth = self.options.pinned_width;
     var imageHeight = self.options.pinned_height;
 
+    // Override default size if Sync Size is enabled
+    if(window.store.getState().sync_scaling)
+    {
+      // Check if there are any open media
+      const firstOpenMedia = window.store.getState().open_media[0];
+      if(firstOpenMedia)
+      {
+        // console.debug(`Overriding default media size to match sync`);
+        imageWidth = imageHeight = firstOpenMedia.width;
+      }
+    }
+
     var images = [];
     simulations.forEach(function(image_index, loop_index)
     {
+      // console.debug('opening images from pin handler');
       images.push({
         index : self.options.indices[image_index],
         uri : self.options.images[self.options.indices[image_index]].trim(),
