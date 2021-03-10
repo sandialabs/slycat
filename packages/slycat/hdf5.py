@@ -334,12 +334,16 @@ def start_arrayset(file):
 ################################################################################################################################################
 # Legacy functionality - don't use these in new code.
 
-def dtype(type):
+def dtype(input_type):
   """Convert a string attribute type into a dtype suitable for use with h5py."""
-  if type not in list(dtype.type_map.keys()):
-    cherrypy.log.error("hdf5.py dtype", "Unsupported type: {}".format(type))
-    raise Exception("Unsupported type: {}".format(type))
-  return dtype.type_map[type]
+  try:
+    input_type = input_type.decode()
+  except (UnicodeDecodeError, AttributeError):
+    pass
+  if input_type not in list(dtype.type_map.keys()):
+    cherrypy.log.error("hdf5.py dtype", "Unsupported type: {}".format(input_type))
+    raise Exception("Unsupported type: {}".format(input_type))
+  return dtype.type_map[input_type]
 dtype.type_map = {"int8":"int8", "int16":"int16", "int32":"int32", "int64":"int64", "uint8":"uint8", "uint16":"uint16", "uint32":"uint32", "uint64":"uint64", "float32":"float32", "float64":"float64", "string":h5py.special_dtype(vlen=str), "float":"float32", "double":"float64"}
 
 def path(array, directory):
