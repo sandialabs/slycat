@@ -251,7 +251,8 @@ export default class ControlsSelection extends React.PureComponent {
               Sync Scaling
             </label>
           </div>
-          <div className="form-check dropdown-item">
+          {/* Disabling this control for now since it is not working yet */}
+          {/* <div className="form-check dropdown-item">
             <input className="form-check-input" type="checkbox" value="" id="threeDScaling" 
               disabled={sync_threeD_colorvar_disabled}
               checked={this.props.sync_threeD_colorvar}
@@ -260,7 +261,7 @@ export default class ControlsSelection extends React.PureComponent {
             <label className="form-check-label" htmlFor="threeDScaling">
               Sync 3D Color Variable
             </label>
-          </div>
+          </div> */}
           </React.Fragment>
           }
   
