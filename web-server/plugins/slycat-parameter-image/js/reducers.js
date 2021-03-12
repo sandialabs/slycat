@@ -448,13 +448,17 @@ export default function ps_reducer(state = initialState, action) {
           //   // console.debug(`skipping unselected media %o`, currentMedia);
           //   return;
           // }
-          const originalWidth = currentMedia.width;
-          const originalHeight = currentMedia.height;
+
+          // console.debug(`Calculating media size for %o`, currentMedia);
+          const ratio = currentMedia.ratio ? currentMedia.ratio : 1;
           const newWidth = action.media_size_position.width;
-          // Set new height based on current media's aspect ratio.
-          currentMedia.height = (newWidth * originalHeight) / originalWidth;
-          // Set width same as target
+          // Set width same as target width
           currentMedia.width = newWidth;
+          // Set height based on current media's aspect ratio. 
+          // Need to subtract 2 from newWidth to get width of contained media.
+          // Adding 22 to account for 1px top and 1px bottom borders and 20px bottom footer.
+          currentMedia.height = ((newWidth - 2) / ratio) + 22;
+
         });
         // console.groupEnd();
       }
