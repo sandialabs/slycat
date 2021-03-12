@@ -1644,6 +1644,7 @@ $.widget("parameter_image.scatterplot",
           width : frame.outerWidth(),
           height : frame.outerHeight(),
           current_frame : frame.hasClass("selected"),
+          ratio : frame.attr("data-ratio"),
         };
         var video = frame.find('video')[0];
         if(video != undefined)
@@ -1793,6 +1794,8 @@ $.widget("parameter_image.scatterplot",
 
       // Increment self.options.highest_z_index before assigning it
       self.options.highest_z_index++;
+
+      // console.debug(`building frame_html`);
 
       var frame_html = self.media_layer.append("div")
         .attr("data-uri", img.uri)
@@ -1948,7 +1951,10 @@ $.widget("parameter_image.scatterplot",
           var video = frame.attr("data-type") == "video";
           target_width = self._scale_width(ratio, x, y);
           target_height = self._scale_height(ratio, x, y);
-          target_height += 20;
+          // Adding width of borders, 1px each side
+          target_width += 2;
+          // Adding width of borders, 1px top and bottom, plus toolbar 20px
+          target_height += 22;
           frame.style({
             width: target_width + "px",
             height: target_height + "px"
@@ -2612,6 +2618,8 @@ $.widget("parameter_image.scatterplot",
         }
         else if(isVtp || isStl)
         {
+          // console.debug(`opening a vtp or stl`);
+
           // This is a VTP or STL file, so use the VTK 3d viewer
           let vtk = frame_html
             .append("div")
@@ -2619,10 +2627,6 @@ $.widget("parameter_image.scatterplot",
             .attr("width", "100%")
             .attr("height", "100%")
             ;
-          // Adjusting frame size to remove additional 20px that's added during frame creation. Works for
-          // other media, but caused VTP frame to grow by 20px each time the page is refreshed. So this
-          // adjustment fixes that.
-          frame_html.style({"height": (parseInt(frame_html.style("height"))-20) + 'px'});
 
           // Listen for vtk start interaction event (dispatched by vtk-geometry-viewer)
           // and move the frame to the front since mouse interaction in the vtk viewer
@@ -2645,6 +2649,12 @@ $.widget("parameter_image.scatterplot",
             if(image.current_frame) {
               frame_html.node().querySelector('.vtp').dispatchEvent(vtkselect_event);
             }
+            // Once the geometry is loaded, setting height to auto so frame adjusts to media height.
+            frame_html
+              .style({
+                "height": "auto",
+              })
+              ;
           }
           // For newer browser, let's use the promise based Blob.arrayBuffer() function
           if(blob.arrayBuffer)
