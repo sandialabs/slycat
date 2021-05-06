@@ -2370,9 +2370,16 @@ def get_model_statistics(mid):
                                        "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
                 model["finished"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
         delta_model_compute_time = 0
+    
     else:
         delta_running_time = 0
         delta_model_compute_time = 0
+
+    if "model_delta_time" in model:
+        model_compute_time = model["model_delta_time"]
+
+    if "pulling_time" in model:
+        pulling_time = model["pulling_time"]                                    
 
     # get hdf5 root dir
     hdf5_root_directory = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
@@ -2412,7 +2419,8 @@ def get_model_statistics(mid):
         "hdf5_footprint": 100.0 * (float(hdf5_file_size) / float(total_hdf5_server_size)),
         "job_pending_time": float(delta_queue_time) / 60,
         "job_running_time": float(delta_running_time) / 60,
-        "model_compute_time": float(delta_model_compute_time) / 60,
+        "model_compute_time": float(model_compute_time) / 60,
+        "pulling_time": float(pulling_time) / 60,
         "analysis_computation_time": 0.0 if "analysis_computation_time" not in model else float(
             model["analysis_computation_time"]),
         "db_creation_time": 0.0 if "db_creation_time" not in model else float(model["db_creation_time"])
