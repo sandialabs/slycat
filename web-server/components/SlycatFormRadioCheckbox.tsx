@@ -9,7 +9,7 @@ export interface SlycatFormRadioCheckboxProps {
   onChange: Function
   value: string
   text: string
-  style: any
+  style?: any
 }
 
 /**

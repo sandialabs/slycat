@@ -91,6 +91,12 @@ module.update_filter = function(mask, button)
     filter_button = button;
 }
 
+// get filter mask
+module.get_filter_mask = function()
+{
+    return filter_mask;
+}
+
 // get selection accounting for filters
 module.filtered_sel = function(i=0)
 {

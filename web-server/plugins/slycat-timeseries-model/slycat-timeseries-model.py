@@ -23,6 +23,7 @@ def register_slycat_plugin(context):
         import cpickle as pickle
     except ImportError:
         import pickle
+    thread_pool={}
 
     def media_columns(database, model, verb, type, command, **kwargs):
         """
@@ -424,7 +425,8 @@ def register_slycat_plugin(context):
             stop_event = threading.Event()
             # compute(model["_id"], stop_event, calling_client)
             thread = threading.Thread(target=compute, args=(model["_id"], stop_event, calling_client))
-            thread.start()
+            thread_pool[model["_id"]] = thread
+            thread_pool[model["_id"]].start()
 
         if state == ["FAILED", "UNKNOWN", "NOTQUEUED"]:
             cherrypy.log.error("Something went wrong with job %s job state:" % (jid, state))
@@ -465,6 +467,15 @@ def register_slycat_plugin(context):
         model = database.get("model", model["_id"])
         try:
             cherrypy.log.error("computing model value:" + str(slycat.web.server.get_model_parameter(database, model, "computing")))
+            if model["_id"] in thread_pool:
+                if thread_pool[model["_id"]].is_alive():
+                    cherrypy.log.error("computing thread is alive for model %s"%str(model["_id"]))
+                else:
+                    cherrypy.log.error("computing thread is dead for model %s setting compute to false"%str(model["_id"]))
+                    del thread_pool[model["_id"]]
+                    slycat.web.server.put_model_parameter(database, model, "computing", False)
+            else:
+                slycat.web.server.put_model_parameter(database, model, "computing", False)
         except KeyError:
             cherrypy.log.error("adding computing artifact")
             slycat.web.server.put_model_parameter(database, model, "computing", False)

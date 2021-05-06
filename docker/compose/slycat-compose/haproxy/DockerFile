@@ -1,6 +1,7 @@
 FROM haproxy:alpine
 
 WORKDIR /etc/slycat
+RUN sed -i -e 's/https/http/' /etc/apk/repositories
 RUN apk upgrade --update-cache --available && \
     apk add openssl && \
     rm -rf /var/cache/apk/* && \

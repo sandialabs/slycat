@@ -54,6 +54,7 @@ $.widget("parameter_image.table",
 
     function get_color(colorscale, value)
     {
+      // console.debug(`table get_color, colorscale is %o and value is %o`, colorscale, value);
       // If the value is in the color scale's domain, just return the value from the colorscale
       if(isValueInColorscaleRange(value, self.options.colorscale))
         return colorscale(value);
@@ -407,6 +408,7 @@ $.widget("parameter_image.table",
     }
     else if(key == "colorscale")
     {
+      // console.debug(`table colorscale changed to: %o`, value);
       self.options[key] = value;
       self._color_variables(self.options["variable-selection"]);
     }
@@ -521,7 +523,7 @@ $.widget("parameter_image.table",
   _color_variables: function(variables)
   {
     var self = this;
-    // console.log(`_color_variables`);
+    // console.debug(`_color_variables`);
 
     var columns = self.grid.getColumns();
     for(const column of columns)

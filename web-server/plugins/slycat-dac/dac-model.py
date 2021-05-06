@@ -225,7 +225,7 @@ def register_slycat_plugin(context):
 
         # compute new MDS coords (truncate coords for old models)
         mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns],
-                                        old_coords[:, 0:2], subset_mask, proj)
+                                        old_coords[:, 0:2], subset_mask, proj=proj)
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords,
@@ -966,7 +966,7 @@ def register_slycat_plugin(context):
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist, proj)
+                                    var_data, time_steps, var_dist, proj=proj)
 
             # done -- destroy the thread
             stop_event.set()

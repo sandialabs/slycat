@@ -15,6 +15,10 @@ import ControlsButtonVarOptions from './ControlsButtonVarOptions';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import _ from 'lodash';
 import $ from 'jquery';
+import { 
+  toggleSyncScaling,
+  toggleSyncThreeDColorvar,
+} from '../actions';
 
 class ControlsBar extends React.Component {
   constructor(props) {
@@ -22,8 +26,6 @@ class ControlsBar extends React.Component {
     this.state = {
       auto_scale: this.props.auto_scale,
       hidden_simulations: this.props.hidden_simulations,
-      // disable_hide_show is set to true when there are filters in use
-      disable_hide_show: this.props.disable_hide_show,
       selection: this.props.selection,
       video_sync: this.props.video_sync,
       video_sync_time: this.props.video_sync_time,
@@ -194,7 +196,7 @@ class ControlsBar extends React.Component {
   }
 
   trigger_hide_selection = (e) => {
-    if(!this.state.disable_hide_show) {
+    if(this.props.active_filters.length == 0) {
       this.props.element.trigger("hide-selection", this.state.selection);
     }
     // The to prevent the drop-down from closing when clicking on a disabled item
@@ -208,7 +210,7 @@ class ControlsBar extends React.Component {
   }
 
   trigger_hide_unselected = (e) => {
-    if(!this.state.disable_hide_show) {
+    if(this.props.active_filters.length == 0) {
       // As of jQuery 1.6.2, single string or numeric argument can be passed without being wrapped in an array.
       // https://api.jquery.com/trigger/
       // Thus we need to wrap our selection array in another array to pass it.
@@ -217,13 +219,13 @@ class ControlsBar extends React.Component {
   }
 
   trigger_show_unselected = (e) => {
-    if(!this.state.disable_hide_show) {
+    if(this.props.active_filters.length == 0) {
       this.props.element.trigger("show-unselected", [this.state.selection]);
     }
   }
 
   trigger_show_selection = (e) => {
-    if(!this.state.disable_hide_show) {
+    if(this.props.active_filters.length == 0) {
       this.props.element.trigger("show-selection", [this.state.selection]);
     }
   }
@@ -399,11 +401,16 @@ class ControlsBar extends React.Component {
               trigger_hide_unselected={this.trigger_hide_unselected}
               trigger_show_unselected={this.trigger_show_unselected}
               trigger_show_selection={this.trigger_show_selection}
+              sync_scaling={this.props.sync_scaling}
+              sync_threeD_colorvar={this.props.sync_threeD_colorvar}
+              toggle_sync_scaling={this.props.toggleSyncScaling}
+              sync_threeD_colorvar={this.props.sync_threeD_colorvar}
+              toggle_sync_threeD_colorvar={this.props.toggleSyncThreeDColorvar}
               trigger_pin_selection={this.trigger_pin_selection}
               trigger_close_all={this.trigger_close_all}
               trigger_show_all={this.trigger_show_all}
               trigger_select_pinned={this.trigger_select_pinned}
-              disable_hide_show={this.state.disable_hide_show}
+              active_filters={this.props.active_filters}
               selection={this.state.selection}
               hidden_simulations={this.state.hidden_simulations}
               indices={this.props.indices}
@@ -468,12 +475,17 @@ const mapStateToProps = (state, ownProps) => {
     xValues: state.derived.xValues,
     yValues: state.derived.yValues,
     variable_aliases: state.derived.variableAliases,
+    active_filters: state.active_filters,
+    sync_scaling: state.sync_scaling,
+    sync_threeD_colorvar: state.sync_threeD_colorvar,
   }
 }
 
 export default connect(
   mapStateToProps,
   {
+    toggleSyncScaling,
+    toggleSyncThreeDColorvar,
   },
   null,
   // Before fully convering to React and Redux, we need a reference to this 

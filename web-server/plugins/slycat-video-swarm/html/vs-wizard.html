@@ -137,7 +137,7 @@ S. Martin
     </div>
 
     <div data-bind="visible:tab() == 5">
-      <label style="margin-top:15px">Please choose column of CSV file with links to video frame files (format "name.#.jpg").</label>
+      <label style="margin-top:15px">Please choose column of CSV file with links to video frame files (format "name.#.jpg" or "name.#.png").</label>
       <select data-bind="options: vs_media_columns" class="form-control" id="vs-remote-frames-selector">
       </select>
       <div className="alert alert-warning" role="alert">
@@ -193,6 +193,9 @@ S. Martin
         <input id="VS-movie-directory" class="form-control" type="text" placeholder="full path for movie slycat files" data-bind="value: moviedir, disable: movie_source() == 'col' || movie_source() == null"></input>
         <div className="alert alert-warning" data-bind="visible:movies_exist() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
           <p className='mt-3'>We weren't able to locate your movies. Please verify that the provided path is correct.</p>
+        </div>
+        <div className="alert alert-warning" data-bind="visible:directory_exists() == false && generate_movies() == 'false'" role="alert" style="BACKGROUND-COLOR: #FFFF99">
+          <p className='mt-3'>This directory doesn't exist. Please verify that the provided path is correct.</p>
         </div>
         <label style="margin-top:15px">
           <input class="form-check-input" type="radio" name="movie-source-radios" id="col-radio" value="col" data-bind="checked: movie_source">

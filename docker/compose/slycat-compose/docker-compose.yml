@@ -39,7 +39,7 @@ services:
         - -c
         - | 
           npm install \
-          && npm rebuild node-sass \
+          && NODE_TLS_REJECT_UNAUTHORIZED=0 npm rebuild node-sass \
           && npm run dev
       ports:
         - 9000:9000

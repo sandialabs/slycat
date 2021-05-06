@@ -31,7 +31,13 @@ import {
   SET_Y_INDEX,
   SET_V_INDEX,
   SET_OPEN_MEDIA,
+  SET_HIDDEN_SIMULATIONS,
+  SET_MANUALLY_HIDDEN_SIMULATIONS,
   SET_MEDIA_SIZE_POSITION,
+  SET_ACTIVE_FILTERS,
+  TOGGLE_SYNC_SCALING,
+  TOGGLE_SYNC_THREE_D_COLORVAR,
+  SET_SELECTED_SIMULATIONS,
 } from './actions';
 
 import { 
@@ -410,12 +416,74 @@ export default function ps_reducer(state = initialState, action) {
         open_media: action.open_media.slice(0)
       })
       
+    case SET_HIDDEN_SIMULATIONS:
+      return Object.assign({}, state, {
+        hidden_simulations: action.hidden_simulations.slice(0)
+      })
+      
+    case SET_MANUALLY_HIDDEN_SIMULATIONS:
+      return Object.assign({}, state, {
+        manually_hidden_simulations: action.manually_hidden_simulations.slice(0)
+      })
+      
     case SET_MEDIA_SIZE_POSITION:
       let cloned_deep_open_media = _.cloneDeep(state.open_media);
       const match = cloned_deep_open_media.findIndex(element => element.uid == action.media_size_position.uid);
       cloned_deep_open_media[match] = Object.assign({}, cloned_deep_open_media[match], action.media_size_position);
+      // If "Sync Scaling" is enabled and we are working with the currentFrame (i.e., highlighted frame),
+      // go through all selected media and scale it accordingly
+      if(state.sync_scaling && action.media_size_position.uid == state.currentFrame.uid)
+      {
+        // console.group(`Sync Scaling is enabled, so will scale rest of media too.`);
+        cloned_deep_open_media.forEach(function(currentMedia, index, array) {
+          // console.debug(`currentMedia is %o`, currentMedia);
+          // Skip the target media since it's already been scaled
+          if(currentMedia.uid == action.media_size_position.uid) {
+            // console.debug(`skipping target media %o`, currentMedia);
+            return;
+          }
+          // Skip unselected media
+          // if(state.selected_simulations.indexOf(currentMedia.index) == -1)
+          // {
+          //   // console.debug(`skipping unselected media %o`, currentMedia);
+          //   return;
+          // }
+
+          // console.debug(`Calculating media size for %o`, currentMedia);
+          const ratio = currentMedia.ratio ? currentMedia.ratio : 1;
+          const newWidth = action.media_size_position.width;
+          // Set width same as target width
+          currentMedia.width = newWidth;
+          // Set height based on current media's aspect ratio. 
+          // Need to subtract 2 from newWidth to get width of contained media.
+          // Adding 22 to account for 1px top and 1px bottom borders and 20px bottom footer.
+          currentMedia.height = ((newWidth - 2) / ratio) + 22;
+
+        });
+        // console.groupEnd();
+      }
       return Object.assign({}, state, {
         open_media: cloned_deep_open_media
+      })
+    
+    case SET_ACTIVE_FILTERS:
+      return Object.assign({}, state, {
+        active_filters: action.activeFilters.slice(0)
+      })
+    
+    case TOGGLE_SYNC_SCALING:
+      return Object.assign({}, state, {
+        sync_scaling: !state.sync_scaling
+      })
+    
+    case TOGGLE_SYNC_THREE_D_COLORVAR:
+      return Object.assign({}, state, {
+        sync_threeD_colorvar: !state.sync_threeD_colorvar
+      })
+    
+    case SET_SELECTED_SIMULATIONS:
+      return Object.assign({}, state, {
+        selected_simulations: action.simulations.slice(0)
       })
 
     default:

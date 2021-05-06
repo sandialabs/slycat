@@ -32,14 +32,6 @@ var subset_center = [];
 // model ID
 var mid = URI(window.location).segment(-1);
 
-// difference button fisher ordering and current position
-var fisher_order = [];
-var fisher_pos = null;
-
-// has the difference button ever been used?
-var diff_button_used = false;
-var diff_desired_state = null;
-
 // d3 variables for drawing MDS coords
 var scatter_plot = null;
 var scatter_points = null;
@@ -79,12 +71,7 @@ var color_by_high = null;
 var colormap = null;
 
 // color by selection menu (default is "Do Not Color")
-var curr_color_by_sel = -1;
 var curr_color_by_col = [];
-var color_by_cols = [-1];
-var color_by_names = ["Do Not Color"];
-var color_by_type = [];
-var max_color_by_name_length = null;
 
 // variables to use in analysis
 var var_include_columns = null;
@@ -92,27 +79,14 @@ var var_include_columns = null;
 // show/hide filtered points (mask)
 var filtered_selection = [];
 
-// filter button state
-var filter_button_on = false;
-
-// keep track of number of metadata columns (not counting editable columns)
-var num_metadata_cols = null;
-
-// model origin data
-var num_origin_col = null;
-var model_origin = {};
-
 // initial setup: read in MDS coordinates & plot
 module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	POINT_COLOR, POINT_SIZE, SCATTER_PLOT_TYPE,
 	NO_SEL_COLOR, SELECTION_COLOR, SEL_FOCUS_COLOR,
 	COLOR_BY_LOW, COLOR_BY_HIGH, COLORMAP,
-	MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
-	datapoints_meta, meta_include_columns, VAR_INCLUDE_COLUMNS,
-	init_alpha_values, init_color_by_sel, init_zoom_extent,
-	init_subset_center, init_subset_flag, init_fisher_order,
-	init_fisher_pos, init_diff_desired_state, init_filter_button,
-	init_filter_mask, editable_columns, MODEL_ORIGIN)
+	OUTLINE_NO_SEL, OUTLINE_SEL, VAR_INCLUDE_COLUMNS, 
+	init_alpha_values, init_color_by_col, init_zoom_extent,
+	init_subset_center)
 {
 
 	// set the maximum number of points to animate, maximum zoom factor
@@ -138,9 +112,6 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	color_by_high = COLOR_BY_HIGH;
 	colormap = COLORMAP;
 
-	// set maximum color by name length
-	max_color_by_name_length = MAX_COLOR_NAME;
-
 	// set selection width
 	outline_no_sel = OUTLINE_NO_SEL;
 	outline_sel = OUTLINE_SEL;
@@ -148,130 +119,12 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 	// include columns (variables and metadata)
 	var_include_columns = VAR_INCLUDE_COLUMNS;
 
-    // save model origin data
-    model_origin["data"] = [MODEL_ORIGIN];
+    // initialize local copy of filter mask
+    filtered_selection = selections.get_filter_mask();
 
-    // set selection type button
-    var dac_sel_button_ids = ["#dac-scatter-button-subset",
-                              "#dac-scatter-button-zoom",
-                              "#dac-scatter-button-sel-1",
-                              "#dac-scatter-button-sel-2",
-                              "#dac-scatter-button-sel-3"];
-    $(dac_sel_button_ids[selections.sel_type()+1]).addClass("active");
-
-	// set up selection button colors
-	$("#dac-scatter-button-sel-1").css("color", sel_color[0]);
-	$("#dac-scatter-button-sel-2").css("color", sel_color[1]);
-	$("#dac-scatter-button-sel-3").css("color", sel_color[2]);
-
-	// bind selection/zoom buttons to callback operations
-	$("#dac-scatter-button-sel-1").on("click",
-		function() { selections.set_sel_type(1); module.draw(); });
-	$("#dac-scatter-button-sel-2").on("click",
-		function() { selections.set_sel_type(2); module.draw(); });
-	$("#dac-scatter-button-sel-3").on("click",
-		function() { selections.set_sel_type(3); module.draw(); });
-	$("#dac-scatter-button-subset").on("click",
-		function() { selections.set_sel_type(-1); module.draw(); })
-	$("#dac-scatter-button-zoom").on("click",
-		function() { selections.set_sel_type(0); module.draw(); });
-
-    // set initial subset button indicator
-    if (init_subset_flag) {
-        $("#dac-scatter-button-subset").addClass("text-warning");
-    }
-
-	// bind difference buttons to callback
-	$("#dac-previous-three-button").on("click", previous_three);
-	$("#dac-scatter-diff-button").on("click", diff_button);
-	$("#dac-next-three-button").on("click", next_three);
-
-    // bind filter button to callback
-    $("#dac-filter-plots-button").on("click", filter_plots);
-
-    // initialize filter button state
-    filter_button_on = init_filter_button;
-    if (filter_button_on) {
-        $("#dac-filter-plots-button").addClass("bg-warning");
-    }
-
-    // initialize filter mask
-    filtered_selection = init_filter_mask;
-
-	// set up difference button state
-	fisher_order = init_fisher_order;
-	fisher_pos = init_fisher_pos;
-	if (fisher_order.length > 0) {
-	    diff_button_used = true;
-	}
-	diff_desired_state = init_diff_desired_state;
-
-	// update difference buttons
-	if (diff_button_used) {
-	    set_diff_arrows();
-	    module.toggle_difference(diff_desired_state);
-	}
-
-    // set up color by menu
-
-	// look for columns with numbers/strings for color by menu
-	num_metadata_cols = datapoints_meta["column-count"];
-	for (var i = 0; i < num_metadata_cols; i++)
-	{
-
-		// we accept number and string data, only for included columns
-		if ((meta_include_columns.indexOf(i) != -1) &&
-			((datapoints_meta["column-types"][i] == "float64") ||
-			(datapoints_meta["column-types"][i] == "string"))) {
-			color_by_type.push(datapoints_meta["column-types"][i]);
-			color_by_cols.push(i);
-
-			// make sure names aren't too long (if they are then truncate)
-			var name_i = truncate_color_by_name(datapoints_meta["column-names"][i]);
-			color_by_names.push(name_i);
-		};
-
-	};
-
-    // add origin column, if it exists
-    num_origin_col = 0;
-    if (MODEL_ORIGIN.length > 0) {
-
-        // add to list in drop down
-        color_by_type.push("string");
-        color_by_cols.push(num_metadata_cols);
-
-        // truncate origin column name if too long
-        color_by_names.push(truncate_color_by_name("From Model"));
-
-        // adjust number of metadata columns to accommodate model origin
-        num_origin_col = 1;
-    }
-
-	// add editable columns to menu as well
-	for (var i = 0; i < editable_columns["attributes"].length; i++) {
-
-	    // only color categorical columns
-	    if (editable_columns["attributes"][i]["type"] == "categorical") {
-
-            // add to list in drop down
-	        color_by_type.push("string");
-	        color_by_cols.push(num_metadata_cols + num_origin_col + i);
-
-	        // make sure names aren't too long (if they are then truncate)
-			var name_i = truncate_color_by_name(editable_columns["attributes"][i]["name"]);
-	        color_by_names.push(name_i);
-	    }
-	}
-
-    // check init color by value (make sure it fits on list)
-    if (color_by_cols.indexOf(init_color_by_sel) == -1) {
-        init_color_by_sel = -1;
-    }
-
-	// populate pull down menu
-	display_pull_down.bind($("#dac-scatter-select"))(init_color_by_sel);
-
+	// initialize curr_color_by data
+	curr_color_by_col = init_color_by_col;
+	
 	$.when (request.get_array("dac-mds-coords", 0, mid)).then(
 		function (mds_data)
 		{
@@ -318,9 +171,6 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                         if (init_zoom_extent != null) {
                             x_scale.domain([init_zoom_extent[0][0], init_zoom_extent[1][0]]);
                             y_scale.domain([init_zoom_extent[0][1], init_zoom_extent[1][1]]);
-
-                            // change zoom button to yellow
-                            $("#dac-scatter-button-zoom").addClass("text-warning");
                         }
 
                         // default color scale
@@ -328,8 +178,8 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .range([color_by_low, color_by_high])
                             .interpolate(d3.interpolateRgb);
 
-                        // finish with color plot
-                        color_plot(init_color_by_sel);
+                        // finish with plot
+                        module.draw();
 
                     },
                 error: function ()
@@ -345,16 +195,6 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
 		}
 	);
 
-}
-
-// truncate name to max color by name
-function truncate_color_by_name (name_i) {
-
-    if (name_i.length > max_color_by_name_length) {
-        name_i = name_i.substring(0,max_color_by_name_length) + " ...";
-    }
-
-    return name_i;
 }
 
 // toggle shift key flag
@@ -378,6 +218,33 @@ module.draw = function ()
 	scatter_plot.attr("width", width)
 		.attr("height", height);
 
+	// set up coloring
+	if (curr_color_by_col.length > 0) {
+
+		// set colormap if present
+		if (colormap == null) {
+
+			// revert to default color map
+			color_scale = d3.scale.linear()
+				.range([color_by_low, color_by_high])
+				.interpolate(d3.interpolateRgb);
+
+		} else {
+
+			// use selected color brewer scale
+			color_scale = d3.scale.quantize()
+				.range(colormap);
+
+		};
+
+		// get max and min of appropriate column in metadata table
+		var max_color_val = d3.max(curr_color_by_col);
+		var min_color_val = d3.min(curr_color_by_col);
+
+		// set domain of color scale
+		color_scale.domain([min_color_val, max_color_val]);
+	}
+	
 	// brush has to be under points
 	sel_zoom_buttons();
 	draw_points();
@@ -623,7 +490,6 @@ function draw_squares ()
 	    // check that this is not filtered
 	    if (filtered_selection[selections.focus()] == 1) {
 
-
             // are we in color by mode?
             if (curr_color_by_col.length > 0) {
                 // yes -- get current point color
@@ -716,242 +582,65 @@ var animate_squares = function ()
 // updates the MDS coords given new alpha values and/or subset
 module.update = function (alpha_values)
 {
-
-	// call server to compute new coords
-	client.post_sensitive_model_command(
+	
+	// check if MDS coords exist
+	if (mds_coords.length > 0) 
 	{
-		mid: mid,
-		type: "DAC",
-		command: "update_mds_coords",
-		parameters: {alpha: alpha_values,
-					 subset: selections.get_subset(),
-					 subset_center: subset_center,
-					 current_coords: mds_coords,
-					 include_columns: var_include_columns},
-		success: function (result)
-			{
-				// record new values in mds_coords
-				mds_coords = JSON.parse(result)["mds_coords"];
+		// call server to compute new coords
+		client.post_sensitive_model_command(
+		{
+			mid: mid,
+			type: "DAC",
+			command: "update_mds_coords",
+			parameters: {alpha: alpha_values,
+						subset: selections.get_subset(),
+						subset_center: subset_center,
+						current_coords: mds_coords,
+						include_columns: var_include_columns},
+			success: function (result)
+				{
+					// record new values in mds_coords
+					mds_coords = JSON.parse(result)["mds_coords"];
 
-				// update the data in d3 (using either circes or squares)
-				scatter_plot.selectAll(scatter_plot_type)
-					.data(mds_coords, function(d) { return d[2]; });
+					// update the data in d3 (using either circes or squares)
+					scatter_plot.selectAll(scatter_plot_type)
+						.data(mds_coords, function(d) { return d[2]; });
 
-				// update the focus point
-				if (selections.focus() != null) {
-					scatter_plot.selectAll(".focus")
-								.data([mds_coords[selections.focus()]]);
+					// update the focus point
+					if (selections.focus() != null) {
+						scatter_plot.selectAll(".focus")
+									.data([mds_coords[selections.focus()]]);
+					}
+
+					// re-draw display (animate if small number of points)
+					if (mds_coords.length > max_points_animate) {
+						module.draw();
+					} else {
+						animate();
+					}
+				},
+			error: function ()
+				{
+					dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
 				}
 
-				// re-draw display (animate if small number of points)
-				if (mds_coords.length > max_points_animate) {
-					module.draw();
-				} else {
-					animate();
-				}
-			},
-		error: function ()
-			{
-				dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
-			}
+		});
 
-	});
-}
-
-// previous three button
-var previous_three = function ()
-{
-
-	// compute previous position
-	var prev_pos = fisher_pos - 3;
-
-	// check that new position exists and fire event
-	if ((prev_pos < fisher_order.length) && (prev_pos >= 0)) {
-
-		// fire new difference event
-		var differenceEvent = new CustomEvent("DACDifferenceComputed", { detail: {
-										 fisher_order: fisher_order,
-										 fisher_pos: prev_pos,
-										 diff_desired_state: diff_desired_state} });
-		document.body.dispatchEvent(differenceEvent);
-
-		// update position in list
-		fisher_pos = prev_pos;
-
-		// set arrow buttons
-		set_diff_arrows();
-
+	// no MDS coordinates indicates database may be offline
+	} else {
+		dialog.ajax_error ('Server failure: could not update MDS coords.')("","","");
 	}
 
-}
-
-// difference button
-var diff_button = function()
-{
-
-	// inactivate button
-	$("#dac-scatter-diff-button").prop("active", false);
-
-    // make sure there are at least two selections
-    // with at least two points per selection
-    var num_valid_sel = 0;
-    for (var i = 0; i < max_num_sel; i++) {
-        if (selections.len_sel(i+1) > 1) {
-            num_valid_sel = num_valid_sel + 1;
-        }
-    }
-
-	// make sure there are two selections
-	if (num_valid_sel < 2) {
-
-		dialog.ajax_error
-		('Please make sure at least two selections have two or more points ' +
-		 'each before computing the difference.')
-		("","","");
-		return;
-
-	}
-
-	// put selections into array
-	var sel = [];
-    for (var i = 0; i < max_num_sel; i++) {
-        sel.push(selections.sel(i+1));
-    }
-
-    // call server to compute ordering using Fisher's multi-class discriminant
-	client.post_sensitive_model_command(
-	{
-		mid: mid,
-		type: "DAC",
-		command: "compute_fisher",
-		parameters: {selection: sel,
-					 include_columns: var_include_columns},
-		success: function (result)
-			{
-
-				// compute Fisher's discriminant for each time series separately
-				var fisher_disc = JSON.parse(result)["fisher_disc"];
-
-				// sort Fisher's discriminant values and adjust plot order
-				var fisher_inds = sort_indices(fisher_disc);
-
-				// save indices for previous/next three buttons
-				fisher_order = fisher_inds;
-
-				// save current position for previous/next three buttons
-				fisher_pos = 0;
-
-				// set arrow buttons
-				set_diff_arrows();
-
-				// difference button has been used (show as synced)
-				module.toggle_difference(true);
-
-				// fire difference event
-				var differenceEvent = new CustomEvent("DACDifferenceComputed", { detail: {
-										 fisher_order: fisher_order,
-										 fisher_pos: fisher_pos,
-										 diff_desired_state: true} });
-				document.body.dispatchEvent(differenceEvent);
-
-			},
-		error: function ()
-			{
-				dialog.ajax_error("Server failure: could not compute Fisher's discriminant.")("","","");
-			}
-	});
-
-}
-
-// next three button
-var next_three = function ()
-{
-
-	// compute next position
-	var next_pos = fisher_pos + 3;
-
-	// check that next position exists and fire event
-	if (next_pos < fisher_order.length) {
-
-		// fire new difference event
-		var differenceEvent = new CustomEvent("DACDifferenceComputed", { detail: {
-										 fisher_order: fisher_order,
-										 fisher_pos: next_pos,
-										 diff_desired_state: diff_desired_state} });
-		document.body.dispatchEvent(differenceEvent);
-
-		// update position in list
-		fisher_pos = next_pos;
-
-        // update arrow buttons
-        set_diff_arrows();
-	}
-}
-
-// set arrows according to position and order
-var set_diff_arrows = function ()
-{
-
-    // set forward arrow
-    if (fisher_pos + 3 >= fisher_order.length) {
-
-		// disable next button
-		//$("#dac-next-three-button").addClass("disabled");
-		$("#dac-next-three-button").prop("disabled", true);
-
-    } else {
-
-        // enable next button
-        //$("#dac-next-three-button").removeClass("disabled");
-        $("#dac-next-three-button").prop("disabled", false);
-
-    }
-
-    // set back arrow
-    if (fisher_pos - 3 < 0) {
-
-        // disable previous button
-        //$("#dac-previous-three-button").addClass("disabled");
-		$("#dac-previous-three-button").prop("disabled", true);
-
-    } else {
-
-        //$("#dac-previous-three-button").removeClass("disabled");
-		$("#dac-previous-three-button").prop("disabled", false);
-
-
-    }
-
-}
-
-// toggle difference button indicator to show desired state
-// true = synced, false = out of sync
-module.toggle_difference = function (desired_state)
-{
-
-    diff_desired_state = desired_state;
-
-	if (desired_state == true) {
-
-        // set difference button color to green
-        $("#dac-scatter-diff-button").removeClass("bg-warning");
-
-		// difference button has been used
-		diff_button_used = true;
-
-	} else if (diff_button_used == true) {
-
-        // set difference button color to yellow
-        $("#dac-scatter-diff-button").addClass("bg-warning");
-
-	}
 }
 
 // routine to filter scatter plot using table filters
-var filter_plots = function ()
+module.filter_plots = function ()
 {
 
-    // are we filtering of unfiltering?
+	// get filter button state
+	var filter_button_on = selections.filter_button_status();
+
+    // are we filtering or unfiltering?
     if (filter_button_on) {
 
         // restore unfiltered visualization
@@ -959,9 +648,6 @@ var filter_plots = function ()
             filtered_selection[i] = 1;
         }
         module.draw();
-
-        // update filter mask and filter button state
-        selections.update_filter(filtered_selection, !filter_button_on);
 
         // unfilter plots
         plots.draw();
@@ -982,26 +668,14 @@ var filter_plots = function ()
         // filter scatter plot
         module.draw();
 
-        // update filter mask and filter button state
-        selections.update_filter(filtered_selection, !filter_button_on);
-
         // filter plots
         plots.draw();
 
     }
 
-    // button toggles between filtered/unfiltered state
-    if (filter_button_on) {
-        filter_button_on = false;
-        $("#dac-filter-plots-button").removeClass("bg-warning");
-    } else {
-        filter_button_on = true;
-        $("#dac-filter-plots-button").addClass("bg-warning");
-    }
-
-    // bookmark filter state
+    // bookmark filter state (toggle filter button)
     var filterEvent = new CustomEvent("DACFilterButtonState",
-                             { detail: {button_state: filter_button_on,
+                             { detail: {button_state: !filter_button_on,
                                         filter_mask: filtered_selection} });
     document.body.dispatchEvent(filterEvent);
 
@@ -1017,219 +691,25 @@ module.turn_off_filter_button = function ()
     }
     module.draw();
 
-    // turn off button
-    filter_button_on = false;
-    $("#dac-filter-plots-button").removeClass("bg-warning");
-
-    // update filter mask and filter button state
-    selections.update_filter(filtered_selection, filter_button_on);
-
     // unfilter plots
     plots.draw();
 
     // bookmark filter state
     var filterEvent = new CustomEvent("DACFilterButtonState",
-                             { detail: {button_state: filter_button_on,
+                             { detail: {button_state: false,
                                         filter_mask: filtered_selection} });
     document.body.dispatchEvent(filterEvent);
 
 }
 
-// routine to return sort array and return indices
-// (return only subset of included columns)
-function sort_indices(arr)
+// update color in scatter plot
+module.update_color = function(new_color_by_col)
 {
+	// set curr color by data vector
+	curr_color_by_col = new_color_by_col;
 
-	// add indices to array
-	var arr_with_index = [];
-	for (var i in arr) {
-		arr_with_index.push([arr[i], parseInt(i)]);
-	}
-
-	// now sort new array by "key", carrying along index
-	arr_with_index.sort(function(left, right) {
-		return left[0] > right[0] ? -1 : 1;
-	});
-
-	// isolate indices (keeping only if an included column)
-	var indices = [];
-	for (var j in arr_with_index) {
-
-		var arr_ind_j = arr_with_index[j][1];
-		if (var_include_columns.indexOf(parseInt(arr_ind_j)) != -1) {
-			indices.push(arr_ind_j);
-		}
-	}
-
-	// return only indices
-	return indices;
-
-}
-
-var display_pull_down = function(init_color_by_sel)
-{
-
-	this.empty();
-
-	// pull down contains names from color_by_names
-	for (var i = 0; i < color_by_cols.length; i++)
-	{
-		// generate the pull down (select) in HTML
-		var select_item = $('<option value="' + color_by_cols[i] +'">').appendTo(this);
-		select_item.text(color_by_names[i]);
-	}
-
-	// set default option
-	this.val(init_color_by_sel)
-	curr_color_by_sel = init_color_by_sel;
-
-	// define action for changing menu
-	this.change(function()
-		{
-			// get column to color by
-			var select_col = Number(this.value);
-			curr_color_by_sel = select_col;
-
-			// de-focus
-			this.blur();
-
-            // set up color plot
-            color_plot(select_col);
-
-            // fire new colorby event
-		    var colorbyEvent = new CustomEvent("DACColorByChanged",
-											  {detail: curr_color_by_sel});
-		    document.body.dispatchEvent(colorbyEvent);
-
-		});
-
-}
-
-// set up coloring for scatter plot
-function color_plot (select_col)
-{
-
-    // no coloring
-    if (select_col == -1) {
-
-        // revert to no color & re-draw
-        curr_color_by_col = [];
-        module.draw();
-
-    // editable column coloring
-    } else if (select_col >= num_metadata_cols + num_origin_col) {
-
-        // load editable columns
-        client.get_model_parameter({
-            mid: mid,
-            aid: "dac-editable-columns",
-            success: function (data)
-            {
-                color_plot_draw (data, select_col - num_metadata_cols - num_origin_col);
-            },
-            error: function () {
-
-                // notify user that editable columns exist, but could not be loaded
-                dialog.ajax_error('Server error: could not load editable column data.')
-                ("","","")
-
-                // revert to no color & re-draw
-                curr_color_by_col = [];
-                module.draw();
-
-            }
-        });
-
-    // "From Model" origin column coloring
-    } else if (select_col == num_metadata_cols) {
-
-        color_plot_draw (model_origin, 0);
-
-    // actual meta data coloring
-    } else {
-
-        // request new data from server
-        $.when(request.get_table("dac-datapoints-meta", mid)).then(
-            function (data)
-            {
-                color_plot_draw(data, select_col);
-            },
-            function ()
-            {
-                dialog.ajax_error ('Server failure: could not load color by data column.')("","","");
-
-                // revert to no color & re-draw
-                curr_color_by_col = [];
-                module.draw();
-            }
-        );
-    };
-
-}
-
-// re-color only if selected column is currently being displayed
-module.recolor_plot = function (col)
-{
-
-    // check if column to use for coloring is currently selected
-    if (curr_color_by_sel == col) {
-        color_plot(col);
-    }
-}
-
-// actual color plotting
-function color_plot_draw(data, select_col)
-{
-
-    // check for string data
-    if (color_by_type[color_by_cols.indexOf(select_col) - 1] == "string") {
-
-        // use alphabetical order by number to color
-
-        // get string data
-        var color_by_string_data = data["data"][select_col];
-
-        // get unique sorted string data
-        var unique_sorted_string_data = Array.from(new Set(color_by_string_data)).sort();
-
-        // get indices or original string data in the unique sorted string data
-        curr_color_by_col = [];
-        for (var i=0; i < color_by_string_data.length; i++) {
-            curr_color_by_col.push(unique_sorted_string_data.indexOf(color_by_string_data[i]));
-        }
-
-    } else {
-
-        // get selected column from data base (number data)
-        curr_color_by_col = data["data"][select_col];
-
-    }
-
-    // set colormap if present
-    if (colormap == null) {
-
-        // revert to default color map
-        color_scale = d3.scale.linear()
-            .range([color_by_low, color_by_high])
-            .interpolate(d3.interpolateRgb);
-
-    } else {
-
-        // use selected color brewer scale
-        color_scale = d3.scale.quantize()
-            .range(colormap);
-
-    };
-
-    // get max and min of appropriate column in metadata table
-    var max_color_val = d3.max(curr_color_by_col);
-    var min_color_val = d3.min(curr_color_by_col);
-
-    // set domain of color scale
-    color_scale.domain([min_color_val, max_color_val]);
-
-    // draw new color scale
-    module.draw();
+	// update plot
+	module.draw()
 
 }
 
@@ -1293,9 +773,6 @@ function zoom()
         // user did zoom in on something, so reset window
         x_scale.domain([extent[0][0], extent[1][0]]);
         y_scale.domain([extent[0][1], extent[1][1]]);
-
-        // change button color to indicate zoom state
-        $("#dac-scatter-button-zoom").addClass("text-warning");
 
         // fire zoom changed event
         var zoomEvent = new CustomEvent("DACZoomChanged",
@@ -1400,13 +877,6 @@ function subset ()
 	d3.event.target.clear();
 	d3.select(this).call(d3.event.target);
 
-    // update subset button status
-    if (subset_flag) {
-        $("#dac-scatter-button-subset").addClass("text-warning");
-    } else {
-    	$("#dac-scatter-button-subset").removeClass("text-warning");
-    }
-
 	// fire subset changed event
 	var subsetEvent = new CustomEvent("DACSubsetChanged", { detail: {
 										 new_subset: mds_subset,
@@ -1439,7 +909,7 @@ function get_brush_sel(extent)
 			};
 	};
 
-	return selection
+	return selection;
 }
 
 // reset zoom, accessible to ui controller
@@ -1450,9 +920,6 @@ module.reset_zoom = function ()
 	              [1 + scatter_border, 1 + scatter_border]];
 	x_scale.domain([extent[0][0], extent[1][0]]);
     y_scale.domain([extent[0][1], extent[1][1]]);
-
-    // empty zoom -- change button color back
-    $("#dac-scatter-button-zoom").removeClass("text-warning");
 
 	// reset zoom in bookmarks
     var zoomEvent = new CustomEvent("DACZoomChanged",
@@ -1648,13 +1115,6 @@ function exclude_individual (i) {
 			}
 			subset_flag = false;
 
-		}
-
-		// update subset button status
-		if (subset_flag) {
-			$("#dac-scatter-button-subset").addClass("text-warning");
-		} else {
-			$("#dac-scatter-button-subset").removeClass("text-warning");
 		}
 
 		// fire subset changed event

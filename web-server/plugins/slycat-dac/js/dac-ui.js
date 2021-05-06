@@ -14,6 +14,7 @@ import layout from "./dac-layout.js";
 import request from "./dac-request-data.js";
 import alpha_sliders from "./dac-alpha-sliders.js";
 import alpha_buttons from "./dac-alpha-buttons.js";
+import scatter_buttons from "./dac-scatter-buttons.js";
 import scatter_plot from "./dac-scatter-plot.js";
 import plots from "./dac-plots.js";
 import metadata_table from "./dac-table.js";
@@ -676,12 +677,14 @@ $(document).ready(function() {
 
                                 // initialize zoom extent, if bookmarked
                                 var init_zoom_extent = null;
+                                var init_zoom_flag = null;
                                 if ("dac-zoom-extent" in bookmark) {
                                     init_zoom_extent = bookmark["dac-zoom-extent"];
 
                                     // check if button should be marked
                                     if ("dac-zoom-flag" in bookmark) {
-                                        if (bookmark["dac-zoom-flag"] == false) {
+                                        init_zoom_flag = bookmark["dac-zoom-flag"];
+                                        if (init_zoom_flag == false) {
                                             init_zoom_extent = null;
                                         }
                                     }
@@ -823,6 +826,12 @@ $(document).ready(function() {
                                 // update filter mask/button in selections
                                 selections.update_filter(init_filter_mask, init_filter_button);
 
+                                // set up table with editable columns
+                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
+                                    editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
+                                    MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                                    column_filters);
+
 		   	                    // set up the alpha sliders
 				                alpha_sliders.setup(ALPHA_STEP, num_vars,
 				                                    variables[0]["data"][0], MAX_SLIDER_NAME,
@@ -839,21 +848,21 @@ $(document).ready(function() {
 				                            init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
 				                            init_link_plots);
 
+                                // set up MDS scatter plot buttons
+                                scatter_buttons.setup(SELECTION_COLOR, init_subset_flag, 
+                                    init_zoom_flag, init_fisher_order, init_fisher_pos, 
+                                    init_diff_desired_state, var_include_columns, data_table_meta[0], 
+                                    meta_include_columns, data_table[0], editable_columns, model_origin, 
+                                    init_color_by_sel, MAX_COLOR_NAME);
+                                
 				                // set up the MDS scatter plot
+                                var init_color_by_col = scatter_buttons.get_color_by_col();
 				                scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
 					                POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_COLOR,
 					                FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, cont_colormap,
-					                MAX_COLOR_NAME, OUTLINE_NO_SEL, OUTLINE_SEL,
-					                data_table_meta[0], meta_include_columns, var_include_columns,
-					                init_alpha_values, init_color_by_sel, init_zoom_extent, init_subset_center,
-					                init_subset_flag, init_fisher_order, init_fisher_pos, init_diff_desired_state,
-					                init_filter_button, init_filter_mask, editable_columns, model_origin);
-
-                                // set up table with editable columns
-                                metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                                                 editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                                                 MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
-                                                 column_filters);
+					                OUTLINE_NO_SEL, OUTLINE_SEL, var_include_columns,
+					                init_alpha_values, init_color_by_col, init_zoom_extent, 
+                                    init_subset_center);
 
 		   	                },
 		   	                function () {
@@ -951,7 +960,7 @@ $(document).ready(function() {
         scatter_plot.draw();
 
         // show difference out of sync
-        scatter_plot.toggle_difference(false);
+        scatter_buttons.toggle_difference(false);
 
         // update selections in time series plot
         plots.update_plots();
@@ -1022,9 +1031,12 @@ $(document).ready(function() {
         // re-draw scatter plot, before updating coordinates
         scatter_plot.draw();
 
+        // update subset button status
+        scatter_buttons.set_subset_button(new_subset.detail.subset_flag);
+
         // update change in selection
         if (new_sel[1]) {
-            scatter_plot.toggle_difference(false);
+            scatter_buttons.toggle_difference(false);
         }
 
         // reset zoom, if necessary
@@ -1043,10 +1055,13 @@ $(document).ready(function() {
             metadata_table.jump_to (new_sel[0]);
         }
 
-        // bookmark subset data
+        // bookmark subset data and selection data (also changes)
         bookmarker.updateState({"dac-mds-subset": new_subset.detail.new_subset,
                                 "dac-subset-center": new_subset.detail.subset_center,
-                                "dac-subset-flag": new_subset.detail.subset_flag});
+                                "dac-subset-flag": new_subset.detail.subset_flag,
+                                "dac-sel-1": selections.sel(1), "dac-sel-2": selections.sel(2),
+                                "dac-sel-3": selections.sel(3), "dac-sel-focus": selections.focus(),
+                                "dac-diff-desired-state": false});
 
     }
 
@@ -1075,6 +1090,10 @@ $(document).ready(function() {
     // event for zoom changes
     function zoom_changed (new_extent)
     {
+        
+        // update button status
+        scatter_buttons.set_zoom_button(new_extent.detail.zoom);
+
         // bookmark new zoom extent
         bookmarker.updateState({"dac-zoom-extent": new_extent.detail.extent,
                                 "dac-zoom-flag": new_extent.detail.zoom});
@@ -1105,10 +1124,9 @@ $(document).ready(function() {
 
     // event for change in editable column
     function editable_col_changed (col)
-    {
+    {        
         // change color in scatter plot if necessary
-        scatter_plot.recolor_plot (col.detail);
-
+        scatter_buttons.update_color_by_col(col.detail);
     }
 
     // event for table filter change
@@ -1124,6 +1142,13 @@ $(document).ready(function() {
     // event for scatter button filter state
     function filter_button_state (state)
     {
+
+        // update filter button state
+        selections.update_filter (state.detail.filter_mask, state.detail.button_state);
+
+        // update button appearance
+        scatter_buttons.set_filter_button();
+
         // bookmark filter button state
         bookmarker.updateState({"dac-filter-button-state": state.detail.button_state,
                                 "dac-filter-mask": state.detail.filter_mask});
