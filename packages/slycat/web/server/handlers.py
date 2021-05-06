@@ -2377,9 +2377,13 @@ def get_model_statistics(mid):
 
     if "model_delta_time" in model:
         model_compute_time = model["model_delta_time"]
+    else:
+        model_compute_time = 0
 
     if "pulling_time" in model:
-        pulling_time = model["pulling_time"]                                    
+        pulling_time = model["pulling_time"]
+    else:
+        pulling_time = 0
 
     # get hdf5 root dir
     hdf5_root_directory = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
