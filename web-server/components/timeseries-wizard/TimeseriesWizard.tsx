@@ -524,7 +524,7 @@ export default class TimeseriesWizard extends React.Component<
       type: 'timeseries',
       name: this.state.timeseriesName,
       description: '',
-      marking: '',
+      marking: 'mna',
     }).then((result) => {
       this.setState({ model: result });
     })
