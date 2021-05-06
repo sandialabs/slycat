@@ -1,8 +1,8 @@
-FROM node
-
+FROM node:15
+# see https://github.com/sass/node-sass/issues/3077 locking down to node 15 until this is resolved
 WORKDIR /usr/src/slycat
 RUN git config --global http.sslVerify false
-RUN git clone https://github.com/sandialabs/slycat.git
+RUN git clone --depth 1 https://github.com/sandialabs/slycat.git
 WORKDIR /usr/src/slycat/slycat
 RUN npm config set registry http://registry.npmjs.org/
 RUN npm config set strict-ssl false
