@@ -26,6 +26,7 @@ import scipy.cluster.hierarchy
 import scipy.spatial.distance
 import slycat.hdf5
 import json
+import time
 
 try:
     import cpickle as pickle
@@ -78,6 +79,10 @@ def tardir(path):
                     tarh.add(os.path.join(root, file), arcname=file)
 # Compute the model.
 try:
+    start_now = datetime.datetime.now()
+    start_time = start_now.strftime("%d/%m/%Y %H:%M:%S")
+    print("[START] " + start_time)
+
     print("Examining and verifying data.")
     """
     Find number of timeseries and accurate cluster sample count before starting model
@@ -398,4 +403,14 @@ except:
 
     print((traceback.format_exc()))
 tardir(dirname)
+
+finish_now = datetime.datetime.now()
+finish_time = finish_now.strftime("%d/%m/%Y %H:%M:%S")
+print("[FINISH] " + finish_time)
+
+run_time = finish_time - start_time
+run_time = run_time.total_seconds()
+
+print("[RUN TIME] " + str(run_time))
+
 print("done.")

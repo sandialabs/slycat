@@ -304,6 +304,7 @@ def register_slycat_plugin(context):
             total_file_delta_time = []
             finish(model["_id"])
             stop_event.set()
+
             # TODO add finished to the model state
             # TODO add remove dir command by uncommenting below
             # payload = {
@@ -328,6 +329,22 @@ def register_slycat_plugin(context):
             cherrypy.log.error("Timeseries model compute exception value: %s" % sys.exc_info()[1])
             cherrypy.log.error("Timeseries model compute exception traceback: %s" % sys.exc_info()[2])
             stop_event.set()
+
+        file = get_remote_file_server(hostname, model, "/home/%s/slurm-%s.out" % (username, model["artifact:jid"]), 
+                                total_file_delta_time, 
+                                calling_client)
+
+        pulling_time = finish_time - start_time
+        compute_start_time = file.decode('utf-8').split('[START]')
+        compute_finish_time = file.decode('utf-8').split('[FINISH]')
+        compute_run_time = file.decode('utf-8').split('[RUN TIME]')
+
+        database = slycat.web.server.database.couchdb.connect()
+        model = database.get("model", model_id)
+        model["model_delta_time"] = str(compute_run_time[1].split('\n')[0])
+        model["pulling_time"] = pulling_time
+        with slycat.web.server.get_model_lock(model["_id"]):
+            database.save(model)
 
     def get_job_status(hostname, jid):
         """

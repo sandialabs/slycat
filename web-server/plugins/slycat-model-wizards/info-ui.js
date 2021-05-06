@@ -23,6 +23,7 @@ var constructor = function(params) {
     job_pending_time: 0,
     job_running_time: 0,
     model_compute_time: 0,
+    pulling_time: 0,
     hdf5_footprint: 0,
     server_cache_size: 0,
     analysis_computation_time:0,
