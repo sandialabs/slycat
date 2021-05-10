@@ -8,6 +8,9 @@ import _ from "lodash";
 import ko from "knockout";
 import mapping from "knockout-mapping";
 import "js/jquery.scrollintoview.min";
+import { 
+  setActiveFilters,
+} from './actions';
 
 function FilterManager(model_id, bookmarker, layout, input_columns, output_columns, image_columns, rating_columns, category_columns) {
   var self = this;
@@ -121,6 +124,11 @@ FilterManager.prototype.build_sliders = function(controls_ready) {
         })
         .extend({ rateLimit: { timeout: 0, method: "notifyWhenChangesStop" } })
         ;
+      // Update redux state each time active filters changes
+      self.active_filters.subscribe(function(newValue) {
+        console.debug(`active_filters is %o`, newValue);
+        window.store.dispatch(setActiveFilters(newValue));
+      });
       numericFilters = ko.pureComputed(function() {
         return _.filter(filters(), function(f) { return f.type() === 'numeric'; });
       });

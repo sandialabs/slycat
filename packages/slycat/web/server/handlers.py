@@ -1236,10 +1236,10 @@ def put_project_data_parameter(did, aid):
     slycat.web.server.authentication.require_project_writer(project)
 
     value = require_json_parameter("value")
-    input = require_boolean_json_parameter("input")
+    require_input = require_boolean_json_parameter("input")
     with slycat.web.server.database.couchdb.db_lock:
         try:
-            slycat.web.server.put_project_data_parameter(database, project_data, aid, value, input)
+            slycat.web.server.put_project_data_parameter(database, project_data, aid, value, require_input)
         except Exception:
             time.sleep(1)
             database = slycat.web.server.database.couchdb.connect()
@@ -1248,8 +1248,8 @@ def put_project_data_parameter(did, aid):
             slycat.web.server.authentication.require_project_writer(project)
 
             value = require_json_parameter("value")
-            input = require_boolean_json_parameter("input")
-            slycat.web.server.put_project_data_parameter(database, project_data, aid, value, input)
+            require_input = require_boolean_json_parameter("input")
+            slycat.web.server.put_project_data_parameter(database, project_data, aid, value, require_input)
 
 
 @cherrypy.tools.json_in(on=True)
@@ -1260,10 +1260,10 @@ def put_model_parameter(mid, aid):
     slycat.web.server.authentication.require_project_writer(project)
 
     value = require_json_parameter("value")
-    input = require_boolean_json_parameter("input")
+    require_input = require_boolean_json_parameter("input")
     with slycat.web.server.database.couchdb.db_lock:
         try:
-            slycat.web.server.put_model_parameter(database, model, aid, value, input)
+            slycat.web.server.put_model_parameter(database, model, aid, value, require_input)
         except Exception:
             time.sleep(1)
             database = slycat.web.server.database.couchdb.connect()
@@ -1272,8 +1272,8 @@ def put_model_parameter(mid, aid):
             slycat.web.server.authentication.require_project_writer(project)
 
             value = require_json_parameter("value")
-            input = require_boolean_json_parameter("input")
-            slycat.web.server.put_model_parameter(database, model, aid, value, input)
+            require_input = require_boolean_json_parameter("input")
+            slycat.web.server.put_model_parameter(database, model, aid, value, require_input)
 
 def delete_model_parameter(mid, aid):
     """
@@ -1300,9 +1300,9 @@ def put_model_arrayset(mid, aid):
     project = database.get("project", model["project"])
     slycat.web.server.authentication.require_project_writer(project)
 
-    input = require_boolean_json_parameter("input")
+    require_input = require_boolean_json_parameter("input")
 
-    slycat.web.server.put_model_arrayset(database, model, aid, input)
+    slycat.web.server.put_model_arrayset(database, model, aid, require_input)
 
 
 @cherrypy.tools.json_in(on=True)
@@ -1328,11 +1328,10 @@ def put_model_arrayset_data(mid, aid, hyperchunks, data, byteorder=None):
                                 "cherrypy.HTTPError 400 not a valid hyperchunks specification.")
         raise cherrypy.HTTPError("400 Not a valid hyperchunks specification.")
 
-    if byteorder is not None:
-        if byteorder not in ["big", "little"]:
-            cherrypy.log.error("slycat.web.server.handlers.py put_model_arrayset_data",
-                                    "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
-            raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
+    if byteorder is not None and byteorder not in ["big", "little"]:
+        cherrypy.log.error("slycat.web.server.handlers.py put_model_arrayset_data",
+                                "cherrypy.HTTPError 400 optional byteorder argument must be big or little.")
+        raise cherrypy.HTTPError("400 optional byteorder argument must be big or little.")
 
     # Handle the request.
     database = slycat.web.server.database.couchdb.connect()
@@ -1681,9 +1680,6 @@ def get_model_arrayset_metadata(mid, aid, **kwargs):
     results = slycat.web.server.get_model_arrayset_metadata(database, model, aid, arrays, statistics, unique)
     #cherrypy.log.error("GOT RESULTS")
     if "unique" in results:
-        #cherrypy.log.error( '\n'.join(str(p) for p in results["unique"]) )
-        #cherrypy.log.error("type:")
-        #cherrypy.log.error(str(type(results["unique"][0]['values'][0])))
         for unique in results["unique"]:
             # Maybe due to caching, sometimes the result comes back as a 'list'
             if isinstance(results["unique"][0]['values'][0], list):
@@ -2076,17 +2072,17 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
             # Retrieve the data
             data = []
             sort_index = get_table_sort_index(file, metadata, array, sort, index)
-            slice = sort_index[rows]
+            sort_slice = sort_index[rows]
             slice_index = numpy.argsort(slice, kind="mergesort")
             slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
             for column in columns:
-                type = metadata["column-types"][column]
+                meta_type = metadata["column-types"][column]
                 if index is not None and column == metadata["column-count"] - 1:
-                    values = slice.tolist()
+                    values = sort_slice.tolist()
                 else:
-                    values = slycat.hdf5.ArraySet(file)[array].get_data(column)[slice[slice_index].tolist()][
+                    values = slycat.hdf5.ArraySet(file)[array].get_data(column)[sort_slice[slice_index].tolist()][
                         slice_reverse_index].tolist()
-                    if type in ["float32", "float64"]:
+                    if meta_type in ["float32", "float64"]:
                         values = [None if numpy.isnan(value) else value for value in values]
                 data.append(values)
 
@@ -2098,7 +2094,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
                 "sort": sort
             }
 
-    return result
+    return json.loads(json.dumps(result, cls=MyEncoder))
 
 
 def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
@@ -2370,9 +2366,20 @@ def get_model_statistics(mid):
                                        "%Y-%m-%dT%H:%M:%S.%f") - datetime.datetime.strptime(
                 model["finished"], "%Y-%m-%dT%H:%M:%S.%f")).total_seconds()
         delta_model_compute_time = 0
+    
     else:
         delta_running_time = 0
         delta_model_compute_time = 0
+
+    if "model_delta_time" in model:
+        model_compute_time = model["model_delta_time"]
+    else:
+        model_compute_time = 0
+
+    if "pulling_time" in model:
+        pulling_time = model["pulling_time"]
+    else:
+        pulling_time = 0
 
     # get hdf5 root dir
     hdf5_root_directory = cherrypy.tree.apps[""].config["slycat-web-server"]["data-store"]
@@ -2412,7 +2419,8 @@ def get_model_statistics(mid):
         "hdf5_footprint": 100.0 * (float(hdf5_file_size) / float(total_hdf5_server_size)),
         "job_pending_time": float(delta_queue_time) / 60,
         "job_running_time": float(delta_running_time) / 60,
-        "model_compute_time": float(delta_model_compute_time) / 60,
+        "model_compute_time": float(model_compute_time) / 60,
+        "pulling_time": float(pulling_time) / 60,
         "analysis_computation_time": 0.0 if "analysis_computation_time" not in model else float(
             model["analysis_computation_time"]),
         "db_creation_time": 0.0 if "db_creation_time" not in model else float(model["db_creation_time"])

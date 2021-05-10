@@ -1,5 +1,57 @@
 # Changelog
 
+## [Unreleased](https://github.com/sandialabs/slycat/tree/HEAD)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v3.2.0...HEAD)
+
+**Fixed bugs:**
+
+- Color-coding for Strings is Broken in Parameter Space  [\#1011](https://github.com/sandialabs/slycat/issues/1011)
+
+## [v3.2.0](https://github.com/sandialabs/slycat/tree/v3.2.0) (2021-01-21)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v3.1.1...v3.2.0)
+
+**Implemented enhancements:**
+
+- Shared Ranges for Color Maps in 3D Viewers [\#997](https://github.com/sandialabs/slycat/issues/997)
+- Need to Display TimeValue in 3D Viewer [\#996](https://github.com/sandialabs/slycat/issues/996)
+- Allow opening multiple instances of same 3D media [\#985](https://github.com/sandialabs/slycat/issues/985)
+- Apply Timeseries loading UI to VS [\#980](https://github.com/sandialabs/slycat/issues/980)
+- Add Legend for 3D Viewer Surface Coloration [\#971](https://github.com/sandialabs/slycat/issues/971)
+- Add functionality to capture high-quality image output [\#813](https://github.com/sandialabs/slycat/issues/813)
+- Add PFLOTRAN wizard for time series models [\#696](https://github.com/sandialabs/slycat/issues/696)
+- Parallel parse frames closes \#988 [\#988](https://github.com/sandialabs/slycat/pull/988) ([Mletter1](https://github.com/Mletter1))
+
+**Fixed bugs:**
+
+- Rubberbanding fails to register button up event \(Firefox on Mac\) in Parameter Space model [\#1006](https://github.com/sandialabs/slycat/issues/1006)
+- 3D Synch Lost [\#1004](https://github.com/sandialabs/slycat/issues/1004)
+- CCA point color fails to update sometimes [\#999](https://github.com/sandialabs/slycat/issues/999)
+- In 3D synchronized views, the front and back clipping planes differ based on which one is the focus view [\#986](https://github.com/sandialabs/slycat/issues/986)
+- Model creation information no longer captured in Time Series [\#947](https://github.com/sandialabs/slycat/issues/947)
+- Color Legend Rectangle Height Redundantly Calculated/Overwritten [\#218](https://github.com/sandialabs/slycat/issues/218)
+- Update parse\_frames.py [\#989](https://github.com/sandialabs/slycat/pull/989) ([Mletter1](https://github.com/Mletter1))
+
+**Closed issues:**
+
+- Behavior of Synch in 3D Viewer is Inconsistent  [\#969](https://github.com/sandialabs/slycat/issues/969)
+
+**Merged pull requests:**
+
+- Parallel video creation [\#1009](https://github.com/sandialabs/slycat/pull/1009) ([Spurs20](https://github.com/Spurs20))
+- Vs loading page [\#994](https://github.com/sandialabs/slycat/pull/994) ([Mletter1](https://github.com/Mletter1))
+- Navbar [\#993](https://github.com/sandialabs/slycat/pull/993) ([alexsielicki](https://github.com/alexsielicki))
+- VideoSwarm Data ingestion [\#984](https://github.com/sandialabs/slycat/pull/984) ([Spurs20](https://github.com/Spurs20))
+
+## [v3.1.1](https://github.com/sandialabs/slycat/tree/v3.1.1) (2020-07-22)
+
+[Full Changelog](https://github.com/sandialabs/slycat/compare/v3.1...v3.1.1)
+
+**Closed issues:**
+
+- Clean up Color By dropdown [\#942](https://github.com/sandialabs/slycat/issues/942)
+
 ## [v3.1](https://github.com/sandialabs/slycat/tree/v3.1) (2020-07-16)
 
 [Full Changelog](https://github.com/sandialabs/slycat/compare/3.0.1...v3.1)
