@@ -140,7 +140,9 @@ zstd                      1.4.5                h9ceee32_0    https://anaconda.or
 @fortawesome/react-fontawesome      0.1.14   https://www.npmjs.com/package/@fortawesome/react-fontawesome
 bootstrap                            4.5.3   http://getbootstrap.com
 css-loader                           6.0.3   https://github.com/webpack-contrib/css-loader
-d3                                  3.5.17   http://d3js.org
+d3 version 3                        3.5.17   http://d3js.org
+d3 version 6                         6.7.0   http://d3js.org
+d3fc                                15.2.1   https://www.npmjs.com/package/d3fc
 font-awesome                         4.7.0   https://fontawesome.com/
 he                                   1.2.0   https://github.com/mathiasbynens/he
 jquery                               3.6.0   https://jquery.org/
