@@ -1,3 +1,4 @@
+import 'vtk.js/Sources/Rendering/Profiles/All';
 import vtkActor from 'vtk.js/Sources/Rendering/Core/Actor';
 import vtkXMLPolyDataReader from 'vtk.js/Sources/IO/XML/XMLPolyDataReader';
 import vtkSTLReader from 'vtk.js/Sources/IO/Geometry/STLReader';
