@@ -2073,7 +2073,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
             data = []
             sort_index = get_table_sort_index(file, metadata, array, sort, index)
             sort_slice = sort_index[rows]
-            slice_index = numpy.argsort(slice, kind="mergesort")
+            slice_index = numpy.argsort(sort_slice, kind="mergesort")
             slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
             for column in columns:
                 meta_type = metadata["column-types"][column]
