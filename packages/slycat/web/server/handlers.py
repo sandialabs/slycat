@@ -2073,7 +2073,7 @@ def get_model_table_chunk(mid, aid, array, rows=None, columns=None, index=None, 
             data = []
             sort_index = get_table_sort_index(file, metadata, array, sort, index)
             sort_slice = sort_index[rows]
-            slice_index = numpy.argsort(slice, kind="mergesort")
+            slice_index = numpy.argsort(sort_slice, kind="mergesort")
             slice_reverse_index = numpy.argsort(slice_index, kind="mergesort")
             for column in columns:
                 meta_type = metadata["column-types"][column]
@@ -2133,15 +2133,15 @@ def get_model_table_sorted_indices(mid, aid, array, rows=None, index=None, sort=
 
             # Retrieve the data ...
             sort_index = get_table_sort_index(file, metadata, array, sort, index)
-            slice = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
+            slice_val = numpy.argsort(sort_index, kind="mergesort")[rows].astype("int32")
 
         if byteorder is None:
-            return json.dumps(slice.tolist())
+            return json.dumps(slice_val.tolist())
         else:
             if sys.byteorder != byteorder:
-                return slice.byteswap().tostring(order="C")
+                return slice_val.byteswap().tostring(order="C")
             else:
-                return slice.tostring(order="C")
+                return slice_val.tostring(order="C")
 
 
 def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sort=None, byteorder=None):
@@ -2180,15 +2180,15 @@ def get_model_table_unsorted_indices(mid, aid, array, rows=None, index=None, sor
 
             # Generate a database query
             sort_index = get_table_sort_index(file, metadata, array, sort, index)
-            slice = sort_index[rows].astype("int32")
+            slice_val = sort_index[rows].astype("int32")
 
         if byteorder is None:
-            return json.dumps(slice.tolist())
+            return json.dumps(slice_val.tolist())
         else:
             if sys.byteorder != byteorder:
-                return slice.byteswap().tostring(order="C")
+                return slice_val.byteswap().tostring(order="C")
             else:
-                return slice.tostring(order="C")
+                return slice_val.tostring(order="C")
 
 
 def get_model_file(mid, aid):
