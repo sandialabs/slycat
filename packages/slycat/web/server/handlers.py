@@ -25,6 +25,7 @@ import slycat.web.server.database.couchdb
 import slycat.web.server.hdf5
 import slycat.web.server.plugin
 import slycat.web.server.remote
+import slycat.web.server.smb
 import slycat.web.server.streaming
 import slycat.web.server.upload
 import stat
@@ -2497,8 +2498,8 @@ def post_remotes_smb():
         username = cherrypy.request.login
         
     msg = ""
-    return {"smb_id":"smb_id"}
     smb_id = slycat.web.server.smb.create_session(username,password,server,'share')
+    return {"smb_id":smb_id}
     '''
     save sid to user session
     the session will be stored as follows in the users session

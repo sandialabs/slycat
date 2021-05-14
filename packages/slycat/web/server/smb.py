@@ -139,7 +139,7 @@ def create_session(username, password, server, share):
         return smb_id
     except Exception as e:
         cherrypy.log.error("Unknown exception for %s@%s: %s %s" % (username, server, type(e), str(e)))
-        cherrypy.log.error("slycat.web.server.remote.py create_session",
+        cherrypy.log.error("slycat.web.server.smb.py create_session",
                                 "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s." % (
                                     username, server, type(e), str(e)))
         raise cherrypy.HTTPError("401 Remote connection failed: %s" % str(e))
