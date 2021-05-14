@@ -1886,18 +1886,16 @@ def validate_table_columns(columns):
         columns = [(int(spec[0]), int(spec[1]) if len(spec) == 2 else int(spec[0]) + 1) for spec in columns]
         columns = numpy.concatenate([numpy.arange(begin, end) for begin, end in columns])
         columns = columns[columns >= 0]
-        return columns
-    except:
+    except Exception as e:
+        cherrypy.log.error(str(e))
         cherrypy.log.error("slycat.web.server.handlers.py validate_table_columns",
                                 "cherrypy.HTTPError 400 malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
         raise cherrypy.HTTPError(
             "400 Malformed columns argument must be a comma separated collection of column indices or half-open index ranges.")
-
     if numpy.any(columns < 0):
         cherrypy.log.error("slycat.web.server.handlers.py validate_table_columns",
                                 "cherrypy.HTTPError 400 column values must be non-negative.")
         raise cherrypy.HTTPError("400 Column values must be non-negative.")
-
     return columns
 
 
@@ -2447,6 +2445,60 @@ def post_remotes():
     msg = ""
     agent = cherrypy.request.json.get("agent", None)
     sid = slycat.web.server.remote.create_session(hostname, username, password, agent)
+    '''
+    save sid to user session
+    the session will be stored as follows in the users session
+    {sessions:[{{"sid": sid,"hostname": hostname, "username": username}},...]}
+    '''
+    try:
+        database = slycat.web.server.database.couchdb.connect()
+        session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
+        for i in range(len(session["sessions"])):
+            if session["sessions"][i]["hostname"] == hostname:
+                if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
+                    slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
+                del session["sessions"][i]
+        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+        database.save(session)
+    except Exception as e:
+        cherrypy.log.error("login could not save session for remotes %s" % e)
+        msg = "login could not save session for remote host"
+    return {"sid": sid, "status": True, "msg": msg}
+
+
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
+def post_remotes_smb():
+    """
+      Given username, hostname, password as a json payload
+      establishes a session with the remote host and attaches
+      it to the users session
+      :return: {"sid":sid, "status":boolean, msg:""}
+      user_name password
+
+      encode with in js
+
+        b64EncodeUnicode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+    """
+
+    # try and decode the username and password
+    username = str(cherrypy.request.json["user_name"])
+    password = str(cherrypy.request.json["password"])
+    # username, password = slycat.web.server.decode_username_and_password()
+    server = cherrypy.request.json["server"]
+    cherrypy.log.error("username:%s password:%s server:%s"%(username, password, server))
+    # username/password are not guaranteed to exist within the incoming json
+    # (they don't exist for rsa-cert auth)
+    if username == None:
+        username = cherrypy.request.login
+        
+    msg = ""
+    return {"smb_id":"smb_id"}
+    smb_id = slycat.web.server.smb.create_session(username,password,server,'share')
     '''
     save sid to user session
     the session will be stored as follows in the users session

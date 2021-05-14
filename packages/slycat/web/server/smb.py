@@ -1,10 +1,15 @@
 import tempfile
+import threading
+import time
+import uuid
 from smb.SMBConnection import SMBConnection
 import socket
 import logging
 import datetime
 import cherrypy
 import slycat.mime_type
+session_cache = {}
+session_cache_lock = threading.Lock()
 
 class Smb(object):
     """
@@ -104,3 +109,74 @@ class Smb(object):
             listing["mime-types"].append(mime_type)
 
         return listing
+
+def create_session(username, password, server, share):
+    """
+    Create a cached smb remote session for the given host.
+
+    Parameters
+    ----------
+    username : string
+      Username for ssh authentication.
+    password : string
+      Password for ssh authentication.
+    server : string
+      server that the share is connected to
+    share : string
+      share name that is being connected to
+
+    Returns
+    -------
+    smb_id : string
+      A unique session identifier.
+    """
+    _start_session_cleanup_worker()
+    smb_id = uuid.uuid4().hex
+    try:
+        with session_cache_lock:
+            cherrypy.log.error("create the seesion and add it to the session_cache")
+            session_cache[smb_id] = Smb(username, password, server, share)
+        return smb_id
+    except Exception as e:
+        cherrypy.log.error("Unknown exception for %s@%s: %s %s" % (username, server, type(e), str(e)))
+        cherrypy.log.error("slycat.web.server.remote.py create_session",
+                                "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s." % (
+                                    username, server, type(e), str(e)))
+        raise cherrypy.HTTPError("401 Remote connection failed: %s" % str(e))
+
+def _expire_session(sid):
+    """
+    Test an existing session to see if it is expired.
+
+    Assumes that the caller already holds session_cache_lock.
+    """
+    if sid in session_cache:
+        now = datetime.datetime.utcnow()
+        session = session_cache[sid]
+        if now - session.accessed > slycat.web.server.config["slycat-web-server"]["remote-session-timeout"]:
+            cherrypy.log.error(
+                "Timing-out remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
+            try:    
+              session_cache[sid].close()
+            except Exception as e:
+              pass
+            del session_cache[sid]
+
+def _session_monitor():
+    while True:
+        cherrypy.log.error("Remote session cleanup worker running.")
+        with session_cache_lock:
+            for sid in list(session_cache.keys()):  # We make an explicit copy of the keys because we may be modifying the dict contents
+                _expire_session(sid)
+        cherrypy.log.error("Remote SMB session cleanup worker finished.")
+        time.sleep(datetime.timedelta(minutes=15).total_seconds())
+
+def _start_session_cleanup_worker():
+    if _start_session_cleanup_worker.thread is None:
+        cherrypy.log.error("Starting remote SMB session cleanup worker.")
+        _start_session_cleanup_worker.thread = threading.Thread(name="SMB Monitor", target=_session_monitor)
+        _start_session_cleanup_worker.thread.daemon = True
+        _start_session_cleanup_worker.thread.start()
+
+
+_start_session_cleanup_worker.thread = None

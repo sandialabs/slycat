@@ -28,7 +28,7 @@ def register_slycat_plugin(context):
 
         # See if the client already has a valid session.
         if "slycatauth" in cherrypy.request.cookie:
-            cherrypy.log.error('ding')
+            cherrypy.log.error('running cherrypy no authentication')
             sid = cherrypy.request.cookie["slycatauth"].value
             couchdb = slycat.web.server.database.couchdb.connect()
             session = None
