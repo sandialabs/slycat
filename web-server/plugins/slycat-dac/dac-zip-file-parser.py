@@ -23,6 +23,8 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
+import cherrypy
+
 # CSV file parser
 def parse_csv(file):
 
@@ -161,6 +163,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     # get parameters to eliminate likely unusable PTS files
     CSV_MIN_SIZE = int(aids[0])
     MIN_NUM_DIG = int(aids[1])
+    NUM_LANDMARKS = int(aids[2])
 
     # push progress for wizard polling to database
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
@@ -252,12 +255,13 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     thread = threading.Thread(target=parse_pts_thread,
                               args=(database, model, zip_ref, csv_files,
                               meta_files, csv_no_ext, dac_error, parse_error_log,
-                              CSV_MIN_SIZE, MIN_NUM_DIG, stop_event))
+                              CSV_MIN_SIZE, MIN_NUM_DIG, NUM_LANDMARKS, stop_event))
     thread.start()
 
 
 def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_ext,
-                      dac_error, parse_error_log, CSV_MIN_SIZE, MIN_NUM_DIG, stop_event):
+                      dac_error, parse_error_log, CSV_MIN_SIZE, MIN_NUM_DIG, num_landmarks, 
+                      stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -569,10 +573,24 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                                    " -- no data remaining.")
             meta_rows = []
 
+        # select random landmarks
+        num_points = len(meta_rows)
+
+        # no landmarks needed if fewer points
+        landmarks = None
+        if num_points > num_landmarks:
+        
+            # otherwise use random sampling to get landmarks
+            random_points = numpy.random.permutation(num_points) + 1
+            landmarks = random_points[:num_landmarks]
+            
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Selected " + str(num_landmarks) + " landmarks at random.")
+
         # if no parse errors then inform user
         if len(parse_error_log) == 1:
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                               "No parse errors.")
+                                    "No parse errors.")
 
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
@@ -591,7 +609,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variable, time_steps, var_dist)
+                                    variable, time_steps, var_dist, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()

@@ -679,11 +679,12 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     MIN_TIME_STEPS = int(aids[0])
     MIN_CHANNELS = int(aids[1])
     MIN_SHOTS = int(aids[2])
-    SHOT_TYPE = aids[3]
-    TIME_STEP_TYPE = aids[4]
-    INFER_CHANNEL_UNITS = aids[5]
-    INFER_SECONDS = aids[6]
-    FILE_NAMES = aids[7]
+    NUM_LANDMARKS = int(aids[3])
+    SHOT_TYPE = aids[4]
+    TIME_STEP_TYPE = aids[5]
+    INFER_CHANNEL_UNITS = aids[6]
+    INFER_SECONDS = aids[7]
+    FILE_NAMES = aids[8]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -722,14 +723,14 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     # start actual parsing as a thread
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, SHOT_TYPE, 
+                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, SHOT_TYPE, 
                               TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
                               dac_error, parse_error_log, stop_event))
     thread.start()
 
 
 def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS,
-                       SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
+                       num_landmarks, SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
                        dac_error, parse_error_log, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
@@ -848,6 +849,21 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                                "No parse errors.")
 
+        # select random landmarks
+        num_points = len(meta_rows)
+
+        # no landmarks needed if fewer points
+        landmarks = None
+        if num_points > num_landmarks:
+        
+            # otherwise use random sampling to get landmarks
+            random_points = numpy.random.permutation(num_points) + 1
+            landmarks = random_points[:num_landmarks]
+            
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Selected " + str(num_landmarks) + " landmarks at random.")
+
+
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
         parse_error_log.insert(1, "Total number of tests parsed: " + str(len(meta_rows)) + ".")
@@ -869,7 +885,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variables, time_steps, var_dist)
+                                    variables, time_steps, var_dist, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()
@@ -905,11 +921,12 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     MIN_TIME_STEPS = int(aids[0])
     MIN_CHANNELS = int(aids[1])
     MIN_SHOTS = int(aids[2])
-    SHOT_TYPE = aids[3]
-    TIME_STEP_TYPE = aids[4]
-    INFER_CHANNEL_UNITS = aids[5]
-    INFER_SECONDS = aids[6]
-    SUFFIX_LIST = aids[7]
+    NUM_LANDMARKS = int(aids[3])
+    SHOT_TYPE = aids[4]
+    TIME_STEP_TYPE = aids[5]
+    INFER_CHANNEL_UNITS = aids[6]
+    INFER_SECONDS = aids[7]
+    SUFFIX_LIST = aids[8]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -976,7 +993,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     # launch thread to read actual tdms files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, SHOT_TYPE, TIME_STEP_TYPE,
+        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, SHOT_TYPE, TIME_STEP_TYPE,
         INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
     thread.start()
 

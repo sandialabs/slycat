@@ -25,17 +25,20 @@ import numpy as np
 import scipy.linalg
 import scipy.optimize
 
+# for debugging
 import cherrypy
 
 # cmdscale translation from Matlab by Francis Song 
-def cmdscale(D):
+def cmdscale(D, full=False):
     """                                                                                      
     Classical multidimensional scaling (MDS)                                                 
                                                                                                
     Parameters                                                                               
     ----------                                                                               
     D : (n, n) array                                                                         
-        Symmetric distance matrix.                                                           
+        Symmetric distance matrix.
+    full: Boolean
+        Use to compute all eigenvalues/vectors                                                    
                                                                                                
     Returns                                                                                  
     -------                                                                                  
@@ -61,8 +64,15 @@ def cmdscale(D):
         # YY^T
         B = -H.dot(D ** 2).dot(H) / 2
 
-        # Diagonalize (keep only two largest eigenvals)
-        evals, evecs = scipy.linalg.eigh(B, eigvals=(n-2,n-1))
+        # diagonalize
+        if full:        
+
+            # keep all eigenvalues/vectors    
+            evals, evecs = np.linalg.eigh(B)
+
+        else:
+            # keep only largest two eigenvalues/vectors
+            evals, evecs = scipy.linalg.eigh(B, eigvals=(n-2,n-1))
 
         # Sort by eigenvalue in descending order
         idx   = np.argsort(evals)[::-1]
@@ -77,7 +87,7 @@ def cmdscale(D):
 
         # compute inverse for projection
         Linv = np.diag(np.reciprocal(np.sqrt(evals[w])))
-        Yinv = - V.dot(Linv) / 2.0
+        Yinv = -V.dot(Linv) / 2.0
 
         # if no coordinates then use two columns of zeros for Y and Yinv
         if len(w) == 0:
@@ -97,6 +107,7 @@ def cmdscale(D):
         Yinv = np.array([0, 0])
 
     return Y, Yinv
+
 
 # this is the legacy, non-landmark behavior, preserved 
 # in case of models with full pairwise distance matrices

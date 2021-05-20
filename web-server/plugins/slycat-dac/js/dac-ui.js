@@ -849,7 +849,7 @@ $(document).ready(function() {
 				                            init_link_plots);
 
                                 // set up MDS scatter plot buttons
-                                scatter_buttons.setup(SELECTION_COLOR, init_subset_flag, 
+                                scatter_buttons.setup(SELECTION_COLOR, MAX_NUM_PLOTS, init_subset_flag, 
                                     init_zoom_flag, init_fisher_order, init_fisher_pos, 
                                     init_diff_desired_state, var_include_columns, data_table_meta[0], 
                                     meta_include_columns, data_table[0], editable_columns, model_origin, 
