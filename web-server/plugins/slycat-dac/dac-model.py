@@ -1347,6 +1347,12 @@ def register_slycat_plugin(context):
                 landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
                     database, origin_model, "dac-landmarks", "0/0/..."))[0].astype(int)
 
+                # convert landmarks to indices (1-based)
+                landmarks = numpy.where(landmarks==1)[0] + 1
+                
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                              "Progress", 'Using landmarks from original model.')
+
             # get variables and compute distance matrices
             var_data = []
             var_dist = []
@@ -1361,12 +1367,12 @@ def register_slycat_plugin(context):
 
                 # create pairwise distance matrix, using landmarks if available
                 if landmarks is None:
-                    dist_i = spatial.distance.pdist(var_data[-1])
-                    var_dist.append(spatial.distance.squareform(dist_i))
+                    dist_i = spatial.distance.squareform(spatial.distance.pdist(var_data[-1]))
 
                 else:
-                    cherrypy.log.error(str(landmarks))
-                    cherrypy.log.error(str("filter land"))
+                    dist_i = spatial.distance.cdist(var_data[-1], var_data[-1][landmarks-1,:])
+
+                var_dist.append(dist_i)
 
             # final update of error log to reflect re-compute distance matrices
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
@@ -1389,7 +1395,7 @@ def register_slycat_plugin(context):
             push.init_upload_model(database, model, dac_error, parse_error_log,
                                    meta_column_names, meta_rows,
                                    meta_var_col_names, meta_vars,
-                                   var_data, time_steps, var_dist)
+                                   var_data, time_steps, var_dist, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()
