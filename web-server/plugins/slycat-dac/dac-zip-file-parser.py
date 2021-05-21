@@ -23,8 +23,6 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
-import cherrypy
-
 # CSV file parser
 def parse_csv(file):
 
@@ -269,8 +267,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
     and returned to the calling function.
     """
 
-    # put entire thread into a try-except block in order to print
-    # errors to cherrypy.log.error
+    # put entire thread into a try-except block in order to catch errors
     try:
 
         # import dac_upload_model from source
@@ -475,6 +472,20 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         dac_error.log_dac_msg ("Constructing variables.meta table and data matrices.")
 
+        # select random landmarks
+        num_points = len(meta_rows)
+
+        # no landmarks needed if fewer points
+        landmarks = None
+        if num_points > num_landmarks:
+        
+            # otherwise use random sampling to get landmarks
+            random_points = numpy.random.permutation(num_points) + 1
+            landmarks = random_points[:num_landmarks]
+            
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Selected " + str(num_landmarks) + " landmarks at random.")
+
         # construct variables.meta table, variable/distance matrices, and time vectors
         meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
         meta_vars = []
@@ -557,9 +568,15 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                       ["Computing ...", (i + 1.0)/len(dig_id_keys) * 10.0 + 55.0])
 
-                # create pairwise distance matrix
-                dist_i = spatial.distance.pdist(variable_i)
-                var_dist.append(spatial.distance.squareform (dist_i))
+                # create pairwise distance matrix using landmarks, if requested
+                if landmarks is None:
+                    dist_i = spatial.distance.squareform(spatial.distance.pdist(variable_i))
+                    
+                else:
+                    dist_i = spatial.distance.cdist(variable_i, variable_i[landmarks-1,:])
+                
+                # save distance matrix
+                var_dist.append(dist_i)
 
         # show which digitizers were parsed
         num_vars = len(meta_vars)
@@ -572,20 +589,6 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                                    "Total number of digitizers parsed less than " + str(MIN_NUM_DIG) +
                                    " -- no data remaining.")
             meta_rows = []
-
-        # select random landmarks
-        num_points = len(meta_rows)
-
-        # no landmarks needed if fewer points
-        landmarks = None
-        if num_points > num_landmarks:
-        
-            # otherwise use random sampling to get landmarks
-            random_points = numpy.random.permutation(num_points) + 1
-            landmarks = random_points[:num_landmarks]
-            
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                    "Selected " + str(num_landmarks) + " landmarks at random.")
 
         # if no parse errors then inform user
         if len(parse_error_log) == 1:
@@ -616,7 +619,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
     except Exception as e:
 
-        # print error to cherrypy.log.error
+        # print error
         dac_error.log_dac_msg(traceback.format_exc())
 
         # done -- destroy the thread

@@ -25,9 +25,6 @@ import numpy as np
 import scipy.linalg
 import scipy.optimize
 
-# for debugging
-import cherrypy
-
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D, full=False):
     """                                                                                      

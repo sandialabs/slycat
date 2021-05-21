@@ -28,8 +28,6 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
-import cherrypy
-
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
 # filter out shots that have < MIN_CHANNELS
@@ -563,7 +561,7 @@ def infer_channel_time_units (database, model, dac_error, parse_error_log, base_
 
 # construct DAC variables to match time steps
 def construct_variables (database, model, dac_error, parse_error_log, shot_data,
-                         channel_names, channel_ind, shot_names, time_steps,
+                         num_landmarks, channel_names, channel_ind, shot_names, time_steps,
                          start_progress, end_progress):
 
     # get channel names
@@ -582,7 +580,6 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
 
     # variables contains a list of matrices for DAC
     variables = []
-    var_dist = []
 
     # get variables for each channel
     for i in range(num_channels):
@@ -647,14 +644,37 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
         # add the channel variable matrix to variable list
         variables.append(numpy.array(channel_vars))
 
-        # create pairwise distance matrix
-        dist_i = spatial.distance.pdist(variables[-1])
-        var_dist.append(spatial.distance.squareform(dist_i))
+    # select random landmarks
+    num_points = variables[0].shape[0]
+    
+    # no landmarks needed if fewer points
+    landmarks = None
+    if num_points > num_landmarks:
+    
+        # otherwise use random sampling to get landmarks
+        random_points = numpy.random.permutation(num_points) + 1
+        landmarks = random_points[:num_landmarks]
+        
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                "Selected " + str(num_landmarks) + " landmarks at random.")
+
+    # create pairwise diatnce matrices
+    var_dist = []
+    for i in range(len(variables)):
+        
+        # create pairwise distance matrix using landmarks, if requested
+        if landmarks is None:
+            dist_i = spatial.distance.squareform(spatial.distance.pdist(variables[i]))
+            
+        else:
+            dist_i = spatial.distance.cdist(variables[i], variables[i][landmarks-1,:])
+        
+        var_dist.append(dist_i)
 
     parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
         "Extended/contracted TDMS channels to match time steps.")
 
-    return parse_error_log, variables, var_dist
+    return parse_error_log, variables, var_dist, landmarks
 
 
 def parse_tdms(database, model, input, files, aids, **kwargs):
@@ -739,8 +759,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
     and returned to the calling function.
     """
 
-    # put entire thread into a try-except block in order to print
-    # errors to cherrypy.log.error
+    # put entire thread into a try-except block in order catch errors
     try:
 
         # import dac_upload_model from source
@@ -798,8 +817,8 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                 "No data imported -- available numbers of channels is less than " + str(MIN_CHANNELS) + ".")
 
         # construct DAC variables and distance matrices to match time steps
-        parse_error_log, variables, var_dist = construct_variables(database, model,
-            dac_error, parse_error_log, shot_data, channel_names, channel_ind, 
+        parse_error_log, variables, var_dist, landmarks = construct_variables(database, model,
+            dac_error, parse_error_log, shot_data, num_landmarks, channel_names, channel_ind, 
             shot_names, time_steps, 55.0, 65.0)
 
         # finalize time units
@@ -848,21 +867,6 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         if len(parse_error_log) == 1:
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                                                "No parse errors.")
-
-        # select random landmarks
-        num_points = len(meta_rows)
-
-        # no landmarks needed if fewer points
-        landmarks = None
-        if num_points > num_landmarks:
-        
-            # otherwise use random sampling to get landmarks
-            random_points = numpy.random.permutation(num_points) + 1
-            landmarks = random_points[:num_landmarks]
-            
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                    "Selected " + str(num_landmarks) + " landmarks at random.")
-
 
         # summarize results for user
         parse_error_log.insert(0, "Summary:")

@@ -1246,7 +1246,6 @@ def register_slycat_plugin(context):
         try:
 
             # init parse error log for UI
-            # init parse error log for UI
             parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
 
             # init dac polling progress bar for UI
@@ -1340,6 +1339,14 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Computing ...", 65.0])
 
+            # get landmarks, if available
+            landmarks = None
+            if "artifact:dac-landmarks" in origin_model:
+
+                # load landmarks mask
+                landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                    database, origin_model, "dac-landmarks", "0/0/..."))[0].astype(int)
+
             # get variables and compute distance matrices
             var_data = []
             var_dist = []
@@ -1352,9 +1359,14 @@ def register_slycat_plugin(context):
                 # filter and put into list of variables
                 var_data.append(numpy.concatenate(tuple(var_data_i[:,time_step_inds[i]])))
 
-                # create pairwise distance matrix
-                dist_i = spatial.distance.pdist(var_data[-1])
-                var_dist.append(spatial.distance.squareform(dist_i))
+                # create pairwise distance matrix, using landmarks if available
+                if landmarks is None:
+                    dist_i = spatial.distance.pdist(var_data[-1])
+                    var_dist.append(spatial.distance.squareform(dist_i))
+
+                else:
+                    cherrypy.log.error(str(landmarks))
+                    cherrypy.log.error(str("filter land"))
 
             # final update of error log to reflect re-compute distance matrices
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
