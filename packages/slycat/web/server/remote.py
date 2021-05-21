@@ -1114,17 +1114,9 @@ def check_session(sid):
     -------
     boolean :
     """
-    # client = cherrypy.request.headers.get("x-forwarded-for")
-
     with session_cache_lock:
         _expire_session(sid)
         response = True
-        if sid in session_cache:
-            session = session_cache[sid]
-            # Only the originating client can access a session.
-            # if client != session.client:
-            #     response = False
-
         if sid not in session_cache:
             response = False
         if response:

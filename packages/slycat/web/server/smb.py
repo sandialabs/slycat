@@ -18,6 +18,7 @@ class Smb(object):
     """
     def __init__(self, username, password, server, share, domain='', port=445):
         # setup data
+        now = datetime.datetime.utcnow()
         self.domain    = str(domain)
         self.username  = str(username)
         self.password  = str(password)
@@ -29,8 +30,23 @@ class Smb(object):
         self.conn      = None
         self.connected = False
         # SMB.SMBConnection logs too much
+        self._created = now
+        self._accessed = now
         smb_logger = logging.getLogger('SMB.SMBConnection')
         smb_logger.setLevel(logging.INFO)
+        self._lock = threading.Lock()
+
+    def __enter__(self):
+        self._lock.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return self._lock.__exit__(exc_type, exc_value, traceback)
+
+    @property
+    def accessed(self):
+        """Return the time the session was last accessed."""
+        return self._accessed
 
     def connect(self):
         try:
@@ -136,13 +152,82 @@ def create_session(username, password, server, share):
         with session_cache_lock:
             cherrypy.log.error("create the seesion and add it to the session_cache")
             session_cache[smb_id] = Smb(username, password, server, share)
-        return smb_id
+            if session_cache[smb_id].connect():
+                return smb_id
+            raise cherrypy.HTTPError("401 Remote smb connection failed: could not connect to smb drive")
     except Exception as e:
         cherrypy.log.error("Unknown exception for %s@%s: %s %s" % (username, server, type(e), str(e)))
         cherrypy.log.error("slycat.web.server.smb.py create_session",
                                 "cherrypy.HTTPError 500 unknown exception for %s@%s: %s %s." % (
                                     username, server, type(e), str(e)))
-        raise cherrypy.HTTPError("401 Remote connection failed: %s" % str(e))
+        raise cherrypy.HTTPError("401 Remote smb connection failed: %s" % str(e))
+
+
+def check_session(sid):
+    """
+    Return a true if session is active
+
+    If the session has timed-out or doesn't exist, returns false
+
+    Parameters
+    ----------
+    sid : string
+      Unique session identifier returned by :func:`slycat.web.server.remote.create_session`.
+
+    Returns
+    -------
+    boolean :
+    """
+    with session_cache_lock:
+        _expire_session(sid)
+        response = True
+        if sid not in session_cache:
+            response = False
+        if response:
+            session = session_cache[sid]
+            session._accessed = datetime.datetime.utcnow()
+        return response
+
+
+def delete_session(sid):
+    """
+    Delete a cached remote session.
+
+    Parameters
+    ----------
+    sid : string, required
+      Unique session identifier returned by :func:`slycat.web.server.remote.create_session`.
+    """
+    with session_cache_lock:
+        if sid in session_cache:
+            session = session_cache[sid]
+            cherrypy.log.error(
+                "Deleting remote session for %s@%s" % (session.username, session.hostname))
+            del session_cache[sid]
+
+def get_session(sid):
+    """
+    Return a cached smb remote session.
+
+    If the session has timed-out or doesn't exist, raises a 404 exception.
+
+    Parameters
+    ----------
+    sid : string
+      Unique session identifier returned by :func:`slycat.web.server.smb.create_session`.
+
+    Returns
+    -------
+    session : :class:`slycat.web.server.smb.Session`
+      Session object that encapsulates the connection to a smb remote host.
+    """
+    with session_cache_lock:
+        _expire_session(sid)
+        if sid not in session_cache:
+            raise cherrypy.HTTPError("404 not a session")
+        session = session_cache[sid]
+        session._accessed = datetime.datetime.utcnow()
+        return session
 
 def _expire_session(sid):
     """
@@ -156,10 +241,6 @@ def _expire_session(sid):
         if now - session.accessed > slycat.web.server.config["slycat-web-server"]["remote-session-timeout"]:
             cherrypy.log.error(
                 "Timing-out remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
-            try:    
-              session_cache[sid].close()
-            except Exception as e:
-              pass
             del session_cache[sid]
 
 def _session_monitor():

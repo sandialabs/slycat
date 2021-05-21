@@ -69,9 +69,15 @@ def get_sid(hostname):
         for index, host_session in enumerate(session["sessions"]):
             if host_session["hostname"] == hostname:
                 sid = host_session["sid"]
-                if(not slycat.web.server.remote.check_session(sid)):
+                if(host_session["session_type"] == "ssh" and not slycat.web.server.remote.check_session(sid)):
                     cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.remote.check_session(sid), sid, list(slycat.web.server.remote.session_cache.keys())))
                     slycat.web.server.remote.delete_session(sid)
+                    del session["sessions"][index]
+                    database.save(session)
+                    raise cherrypy.HTTPError("404")
+                elif(host_session["session_type"] == "smb" and not slycat.web.server.smb.check_session(sid)):
+                    cherrypy.log.error("error %s SID:%s Keys %s" % (slycat.web.server.smb.check_session(sid), sid, list(slycat.web.server.smb.session_cache.keys())))
+                    slycat.web.server.smb.delete_session(sid)
                     del session["sessions"][index]
                     database.save(session)
                     raise cherrypy.HTTPError("404")
@@ -1196,7 +1202,7 @@ def clear_ssh_sessions():
           sid = cherrypy.request.cookie["slycatauth"].value
           couchdb = slycat.web.server.database.couchdb.connect()
           session = couchdb.get("session", sid)
-          cherrypy.log.error("ssh sessions cleared for user session: %s" % session)
+          cherrypy.log.error("ssh and smb sessions cleared for user session: %s" % session)
           cherrypy.response.status = "200"
           if session is not None:
               for ssh_session in session["sessions"]:
@@ -2459,7 +2465,7 @@ def post_remotes():
                 if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
                     slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
                 del session["sessions"][i]
-        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username, "session_type": "ssh"})
         database.save(session)
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
@@ -2485,21 +2491,15 @@ def post_remotes_smb():
             }));
         }
     """
-
     # try and decode the username and password
-    username = str(cherrypy.request.json["user_name"])
-    password = str(cherrypy.request.json["password"])
-    # username, password = slycat.web.server.decode_username_and_password()
+    username, password = slycat.web.server.decode_username_and_password()
     server = cherrypy.request.json["server"]
-    cherrypy.log.error("username:%s password:%s server:%s"%(username, password, server))
-    # username/password are not guaranteed to exist within the incoming json
-    # (they don't exist for rsa-cert auth)
+    share = cherrypy.request.json["share"]
+    cherrypy.log.error("username:%s server:%s share:%s" % (username, server , share))
     if username == None:
         username = cherrypy.request.login
-        
     msg = ""
-    smb_id = slycat.web.server.smb.create_session(username,password,server,'share')
-    return {"smb_id":smb_id}
+    sid = slycat.web.server.smb.create_session(username,password,server,share)
     '''
     save sid to user session
     the session will be stored as follows in the users session
@@ -2507,19 +2507,31 @@ def post_remotes_smb():
     '''
     try:
         database = slycat.web.server.database.couchdb.connect()
+        cherrypy.log.error("got the database")
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
         for i in range(len(session["sessions"])):
-            if session["sessions"][i]["hostname"] == hostname:
+            if session["sessions"][i]["hostname"] == server:
                 if("sid" in session["sessions"][i] and session["sessions"][i]["sid"] is not None):
                     slycat.web.server.remote.delete_session(session["sessions"][i]["sid"])
                 del session["sessions"][i]
-        session["sessions"].append({"sid": sid, "hostname": hostname, "username": username})
+        cherrypy.log.error("adding session")
+        session["sessions"].append({"sid": sid, "hostname": server, "username": username, "session_type": "smb"})
+        cherrypy.log.error("saving")
         database.save(session)
+        cherrypy.log.error("saved")
     except Exception as e:
         cherrypy.log.error("login could not save session for remotes %s" % e)
         msg = "login could not save session for remote host"
     return {"sid": sid, "status": True, "msg": msg}
 
+@cherrypy.tools.json_in(on=True)
+@cherrypy.tools.json_out(on=True)
+def post_smb_browse(hostname, path):
+    cherrypy.log.error("path:%s hostname:%s" % (path, hostname))
+    sid = get_sid(hostname)
+    cherrypy.log.error("sid:%s path:%s hostname:%s" % (sid, path, hostname))
+    with slycat.web.server.smb.get_session(sid) as session:
+        return session.browse(path=path)
 
 @cherrypy.tools.json_out(on=True)
 def get_remotes(hostname):
