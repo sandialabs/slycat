@@ -62,12 +62,9 @@ class Smb(object):
 
     def list_shares(self):
         try:
-            shares_list = self.conn.listShares()  # obtain a list of shares
-            for share in shares_list:  # iterate through the list of shares
-                cherrypy.log.error("  Share=", share.name)
+            return self.conn.listShares()
         except Exception as e:
-            cherrypy.log.error(str(e))
-            cherrypy.log.error('### can not list shares')
+            raise cherrypy.HTTPError("401 Remote smb connection failed reseting: %s" % str(e))
     
     def list_path(self, share=None, path='/'):
         if share is None:

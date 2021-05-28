@@ -1,8 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import RemoteFileBrowser from 'components/RemoteFileBrowser.tsx'
+import SmbRemoteFileBrowser from 'components/SmbRemoteFileBrowser.tsx'
 import ModalContent from "components/ModalContent.tsx";
-import ModalMedium from "components/ModalMedium.tsx";
 import client from "js/slycat-web-client";
 
 let userName = "";
@@ -17,6 +16,7 @@ const b64EncodeUnicode = (str) => {
 let encodedUserName = b64EncodeUnicode(userName);
 let encodedPassword = b64EncodeUnicode(password);
 
+alert("Authenticating");
 client.post_remotes_smb_fetch({
     user_name:encodedUserName,
     password:encodedPassword,
@@ -27,11 +27,11 @@ client.post_remotes_smb_fetch({
 });
 
 const onSelectTableFile = () => {
-    console.log("onSelecTableFile");
+    alert("onSelecTableFile");
 }
 
 const onReauth = () => {
-    console.log("onReauth");
+    alert("onReauth");
 }
 
 const cleanup = () => {
@@ -52,7 +52,7 @@ const getBodyJsx = () => {
     return (
         <div>
             SMB Wizard
-            <RemoteFileBrowser
+            <SmbRemoteFileBrowser
               onSelectFileCallBack={onSelectTableFile}
               onReauthCallBack={onReauth}
               hostname={""}

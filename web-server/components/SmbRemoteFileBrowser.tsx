@@ -70,7 +70,7 @@ interface FileMetaData {
  * @class RemoteFileBrowser
  * @extends {React.Component<RemoteFileBrowserProps, RemoteFileBrowserState>}
  */
-export default class RemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
+export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrowserProps, RemoteFileBrowserState> {
     public constructor(props:RemoteFileBrowserProps) {
       super(props)
       this.state = {
@@ -107,7 +107,7 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
               path:pathInput,
               pathInput
             });
-            client.post_remote_browse(
+            client.post_remote_browse_smb(
             {
               hostname : this.props.hostname,
               path : pathInput,

@@ -2548,12 +2548,16 @@ def get_remotes(hostname):
         session = database.get("session", cherrypy.request.cookie["slycatauth"].value)
         for h_session in session["sessions"]:
             if h_session["hostname"] == hostname:
-                if slycat.web.server.remote.check_session(h_session["sid"]):
+                if h_session["session_type"] == "ssh" and not slycat.web.server.remote.check_session(sid):
+                    status = True
+                    msg = "hostname session was found"
+                elif h_session["session_type"] == "smb" and not slycat.web.server.smb.check_session(sid):
                     status = True
                     msg = "hostname session was found"
                 else:
                     session["sessions"][:] = [tup for tup in session["sessions"] if tup["hostname"] != hostname]
                     database.save(session)
+
     except Exception as e:
         cherrypy.log.error("status could not save session for remotes %s" % e)
     return {"status": status, "msg": msg, "hostName": hostname}
