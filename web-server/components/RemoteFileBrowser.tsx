@@ -94,11 +94,13 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
      */
     private browse = (pathInput:string) =>
     {
+      console.log("In browse");
       // First check if we have a remote connection...
       client.get_remotes_fetch(this.props.hostname)
         .then((json) => {
           // If we have a session, go on.
-          if(json.status) {
+          console.log("one tier in");
+          if(true) {
             pathInput = (pathInput === ""?"/":pathInput);
             this.setState({
               rawFiles:[], 
@@ -106,8 +108,9 @@ export default class RemoteFileBrowser extends React.Component<RemoteFileBrowser
               selected:-1,
               path:pathInput,
               pathInput
-            })
-            client.post_remote_browse(
+            });
+            console.log("about to call")
+            client.post_remote_browse_smb(
             {
               hostname : this.props.hostname,
               path : pathInput,
