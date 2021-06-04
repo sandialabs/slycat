@@ -564,6 +564,10 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
                          num_landmarks, channel_names, channel_ind, shot_names, time_steps,
                          start_progress, end_progress):
 
+    # import dac_compute_coords
+    compute_coords = imp.load_source('dac_compute_coords', 
+                os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+
     # get channel names
     shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
 
@@ -649,14 +653,22 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
     
     # no landmarks needed if fewer points
     landmarks = None
-    if num_points > num_landmarks:
+    if num_points > num_landmarks and num_landmarks != 0:
     
         # otherwise use random sampling to get landmarks
-        random_points = numpy.random.permutation(num_points) + 1
-        landmarks = random_points[:num_landmarks]
+        # random_points = numpy.random.permutation(num_points) + 1
+        # landmarks = random_points[:num_landmarks]
         
+        # select landmarks using max-min algorithm
+        landmarks = compute_coords.select_landmarks(num_points, num_landmarks, variables)
+
         parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                "Selected " + str(num_landmarks) + " landmarks at random.")
+                                "Selected " + str(num_landmarks) + " landmarks using max-min.")
+
+    else:
+
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                "Using full dataset for coordinate calculations.")
 
     # create pairwise diatnce matrices
     var_dist = []
@@ -765,7 +777,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
-
+        
         dac_error.log_dac_msg("TDMS thread started.")
 
         # filter shots according to user preferences MIN_TIME_STEPS and MIN_CHANNELS

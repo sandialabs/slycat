@@ -272,8 +272,12 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
-                               os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+                    os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
+        # import dac_compute_coords
+        compute_coords = imp.load_source('dac_compute_coords', 
+                    os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+        
         dac_error.log_dac_msg("PTS Zip thread started.")
 
         num_files = len(csv_files)
@@ -472,26 +476,11 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         dac_error.log_dac_msg ("Constructing variables.meta table and data matrices.")
 
-        # select random landmarks
-        num_points = len(meta_rows)
-
-        # no landmarks needed if fewer points
-        landmarks = None
-        if num_points > num_landmarks:
-        
-            # otherwise use random sampling to get landmarks
-            random_points = numpy.random.permutation(num_points) + 1
-            landmarks = random_points[:num_landmarks]
-            
-            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                    "Selected " + str(num_landmarks) + " landmarks at random.")
-
-        # construct variables.meta table, variable/distance matrices, and time vectors
+        # construct variables.meta table, variable matrices, and time vectors
         meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
         meta_vars = []
         time_steps = []
         variable = []
-        var_dist = []
         for i in range(len(dig_id_keys)):
 
             # row i for variables.meta table
@@ -568,18 +557,44 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                       ["Computing ...", (i + 1.0)/len(dig_id_keys) * 10.0 + 55.0])
 
-                # create pairwise distance matrix using landmarks, if requested
-                if landmarks is None:
-                    dist_i = spatial.distance.squareform(spatial.distance.pdist(variable_i))
-                    
-                else:
-                    dist_i = spatial.distance.cdist(variable_i, variable_i[landmarks-1,:])
+        # select random landmarks
+        num_points = len(meta_rows)
+
+        # no landmarks needed if fewer points
+        landmarks = None
+        if num_points > num_landmarks and num_landmarks != 0:
+        
+            # otherwise use random sampling to get landmarks
+            # random_points = numpy.random.permutation(num_points) + 1
+            # landmarks = random_points[:num_landmarks]
+
+            # select landmarks using max-min algorithm
+            landmarks = compute_coords.select_landmarks(num_points, num_landmarks, variable)
+            
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Selected " + str(num_landmarks) + " landmarks using max-min.")
+        
+        else:
+
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Using full dataset for coordinate calculations.")
+
+        # construct distance matrices
+        var_dist = []
+        num_vars = len(meta_vars)
+        for i in range(num_vars):
+
+            # create pairwise distance matrix using landmarks, if requested
+            if landmarks is None:
+                dist_i = spatial.distance.squareform(spatial.distance.pdist(variable[i]))
                 
-                # save distance matrix
-                var_dist.append(dist_i)
+            else:
+                dist_i = spatial.distance.cdist(variable[i], variable[i][landmarks-1,:])
+            
+            # save distance matrix
+            var_dist.append(dist_i)
 
         # show which digitizers were parsed
-        num_vars = len(meta_vars)
         for i in range(num_vars):
             parse_error_log.append("Digitizer " + str(meta_vars[i][0]) + " parsed successfully.")
 

@@ -25,6 +25,8 @@ import numpy as np
 import scipy.linalg
 import scipy.optimize
 
+from scipy import spatial
+
 # cmdscale translation from Matlab by Francis Song 
 def cmdscale(D, full=False):
     """                                                                                      
@@ -503,3 +505,32 @@ def compute_prop_dist_vec(prop_vec, vec_length):
         prop_dist_vec_max = 1.0
 
     return prop_dist_vec / prop_dist_vec_max
+
+# use max-min algorithm to choose landmarks
+def select_landmarks(num_points, num_landmarks, variable):
+
+    num_vars = len(variable)
+
+    # first landmark is first point in dataset
+    landmarks = [0]
+
+    # next landmarks are chosen by max-min
+    min_combined_dist = np.full((num_points, 1), np.inf)
+    for i in range(1, num_landmarks):
+
+        # compute combined distance from each point to previous landmark
+        combined_dist = np.zeros((num_points, 1))
+        for j in range(num_vars):
+            combined_dist += spatial.distance.cdist(variable[j], variable[j][[landmarks[i-1]],:])
+        
+        # compute minimum distance from each point to set of landmarks
+        min_combined_dist = np.minimum(min_combined_dist, combined_dist)
+
+        # next landmark is maximum of minimum distances
+        landmarks.append(np.argmax(min_combined_dist))
+
+    # make landmarks 1-based numpy array
+    landmarks = np.asarray(landmarks) + 1
+
+    return landmarks
+

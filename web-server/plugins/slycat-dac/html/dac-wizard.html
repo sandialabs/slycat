@@ -113,11 +113,11 @@ S. Martin
         <div style="margin-top: 20px; margin-bottom: 20px">
             <label>Number of landmark points to use in coordinate calculations:
             <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Landmarks points are used for coodinate calculation in large models.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."></i>
+            title="Landmarks points are used for coodinate calculation in large models.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite.  Use a value of zero if you want to do use the full dataset for coordinate calculation."></i>
             </label>
             <input id="dac-pts-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks">
              <div class="invalid-feedback">
-                 Three landmarks is the mathematical minimum for coordinate calculations.
+                 Three landmarks is the mathematical minimum for coordinate calculations (enter zero to use full dataset for calcutions).
              </div>
           </div>
 
@@ -195,11 +195,11 @@ S. Martin
         <div style="margin-top: 20px; margin-bottom: 30px">
             <label>Number of landmark points to use in coordinate calculations:
             <i class="fa fa-question-circle inline-help" aria-hidden="true"
-            title="Landmarks points are used for coodinate calculation in large models.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite."></i>
+            title="Landmarks points are used for coodinate calculation in large models.  A smaller number of landmarks gives less precision but greater speed; a larger number of landmarks gives the opposite.  Use a value of zero if you want to do use the full dataset for coordinate calculation."></i>
             </label>
             <input id="dac-tdms-landmarks" class="form-control" type="number" min="3" data-bind="value: num_landmarks">
              <div class="invalid-feedback">
-                 Three landmarks is the mathematical minimum for coordinate calculations.
+                 Three landmarks is the mathematical minimum for coordinate calculations (enter zero to use full dataset for calcutions).
              </div>
           </div>
 

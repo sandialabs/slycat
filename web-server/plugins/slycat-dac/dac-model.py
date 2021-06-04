@@ -896,7 +896,7 @@ def register_slycat_plugin(context):
 
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                     "Added new table column for model origin.\n" +
-                    "Duplicate time series in different models will be duplicated in table, and\n" +
+                    "Duplicate time series in different models will be duplicated in table, and " +
                     "will be plotted on top of each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -963,7 +963,6 @@ def register_slycat_plugin(context):
 
             # check if we have mismatched time steps
             keep_var_inds = [i for i in range(num_vars)]
-            stop_thread = False
             if intersect_time:
 
                 intersected_time_steps = []
@@ -1055,6 +1054,61 @@ def register_slycat_plugin(context):
                     dist_i = spatial.distance.pdist(var_data[-1])
                     var_dist.append(spatial.distance.squareform(dist_i))
 
+            # get landmarks, check each model individually
+            landmarks = None
+
+            # if projection model, use landmarks from origin model
+            if new_model_type == "proj":
+
+                if "artifact:dac-landmarks" in models_selected[0]:
+
+                    # load landmarks mask for origin model
+                    landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                        database, models_selected[0], "dac-landmarks", "0/0/..."))[0].astype(int)
+
+                    # convert landmarks to indices (1-based)
+                    landmarks = numpy.where(landmarks==1)[0] + 1
+
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                "Progress", 'Using landmarks from origin model.')
+
+            # otherwise look for landmarks in other models
+            else:
+
+                landmarks = []
+                model_ind = 0
+                for j in range(0,num_models):
+
+                    # if landmarks are present, use them
+                    if "artifact:dac-landmarks" in models_selected[j]:
+
+                        landmarks_j = numpy.array(slycat.web.server.get_model_arrayset_data(
+                            database, models_selected[j], "dac-landmarks", "0/0/..."))[0].astype(int)
+
+                        # convert landmarks to indices (1-based)
+                        landmarks_j = numpy.where(landmarks_j==1)[0] + model_ind + 1
+
+                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                            "Progress", "Using landmarks from model " + model_names[j] + ".")
+
+                    # otherwise use all model data points
+                    else:
+                        landmarks_j = numpy.arange(num_rows_per_model[j]) + model_ind + 1
+
+                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                            "Progress", "Using all data points as landmarks for " + model_names[j] + ".")
+
+                    landmarks += landmarks_j.tolist()
+
+                    # advance index into model data points
+                    model_ind += num_rows_per_model[j]
+
+                # convert landmarks back to numpy array
+                landmarks = numpy.asarray(landmarks)
+
+                cherrypy.log.error("landmarks for combination models")
+                cherrypy.log.error(str(landmarks))
+
             # remove empty time steps
             for i in reversed(range(num_vars)):
                 if i not in keep_var_inds:
@@ -1097,7 +1151,7 @@ def register_slycat_plugin(context):
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist, proj=proj)
+                                    var_data, time_steps, var_dist, proj=proj, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()
