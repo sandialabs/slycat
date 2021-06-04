@@ -27,11 +27,11 @@ client.post_remotes_smb_fetch({
 });
 
 const onSelectTableFile = () => {
-    alert("onSelecTableFile");
+    console.log("onSelecTableFile");
 }
 
 const onReauth = () => {
-    alert("onReauth");
+    console.log("onReauth");
 }
 
 const cleanup = () => {

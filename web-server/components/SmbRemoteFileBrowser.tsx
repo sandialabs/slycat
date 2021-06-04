@@ -254,8 +254,11 @@ export default class SmbRemoteFileBrowser extends React.Component<RemoteFileBrow
      */
     private getFilesAsJsx = ():JSX.Element[] => {
       const rawFilesJSX = this.state.rawFiles.map((rawFile, i) => {
+        if (!rawFile.mtime){
+          return null
+        }
         return (
-          <tr 
+          <tr
           className={this.state.selected==i?'selected':''} 
           key={i} 
           onClick={()=>this.selectRow(rawFile,i)}

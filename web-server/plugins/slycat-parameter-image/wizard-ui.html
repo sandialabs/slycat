@@ -10,8 +10,8 @@
   <ul class="nav nav-pills">
     <li class="nav-item" data-bind="css:{active:tab() == 0}"><a class="nav-link">Locate Data</a></li>
     <li class="nav-item" data-bind="css:{active:tab() == 1}, visible: ps_type() == 'local'"><a class="nav-link">Upload Table</a></li>
-    <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: ps_type() == 'remote'"><a class="nav-link">Choose Host</a></li>
-    <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: ps_type() == 'remote'"><a class="nav-link">Select Table</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 2}, visible: ps_type() == 'remote' || ps_type() == 'smb'"><a class="nav-link">Choose Host</a></li>
+    <li class="nav-item" data-bind="css:{active:tab() == 3}, visible: ps_type() == 'remote' || ps_type() == 'smb'"><a class="nav-link">Select Table</a></li>
     <li class="nav-item" data-bind="css:{active:tab() == 4}"><a class="nav-link">Select Columns</a></li>
     <li class="nav-item" data-bind="css:{active:tab() == 5}"><a class="nav-link">Name Model</a></li>
   </ul>
@@ -31,6 +31,13 @@
         <label class="font-weight-bold">
           <input type="radio" name="local-or-remote-radios" id="remote-radio" value="remote" data-bind="checked: ps_type">
           Remote
+        </label>
+      </div>
+
+      <div class="form-check">
+        <label class="font-weight-bold">
+          <input type="radio" name="local-or-remote-radios" id="remote-radio" value="smb" data-bind="checked: ps_type">
+          SMB Drive
         </label>
       </div>
 
@@ -70,7 +77,7 @@
 
     <div data-bind="visible:tab() == 2">
       <form role="form">
-        <slycat-remote-controls params="
+        <slycat-remote-controls data-bind="visible: ps_type() == 'remote'" params="
           hostname:remote.hostname,
           username:remote.username,
           password:remote.password,
@@ -81,6 +88,7 @@
           activate:connect,
           session_exists:remote.session_exists
         "></slycat-remote-controls>
+        <div class="smb-wizard" data-bind="visible: ps_type() == 'smb'">SMB</div>
       </form>
     </div>
 
@@ -126,7 +134,8 @@
   <button class="btn btn-light mr-auto" data-bind="visible: [0].indexOf(tab()) == -1, click: back">Back</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 0,click:select_type">Continue</button>
   <button class="btn btn-primary local-browser-continue browser-continue" data-bind="visible:tab() == 1,click:upload_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
-  <button class="btn btn-primary" data-bind="visible:tab() == 2,click:connect,enable:remote.enable">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 2 && ps_type() == 'remote',click:connect,enable:remote.enable">Continue</button>
+  <button class="btn btn-primary" data-bind="visible:tab() == 2 && ps_type() == 'smb',click:console.log('Continue SMB log')">Continue SMB</button>
   <button class="btn btn-primary remote-browser-continue browser-continue" data-bind="visible:tab() == 3,click:load_table"><i class="fa fa-spinner fa-pulse"></i> Continue</button>
   <button class="btn btn-primary" data-bind="visible:tab() == 4,click:finish">Continue</button>
   <button class="btn btn-primary" 

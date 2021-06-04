@@ -15,6 +15,9 @@ import { remoteControlsReauth } from "js/slycat-remote-controls";
 import "js/slycat-remote-browser";
 import "js/slycat-table-ingestion";
 import parameterImageWizardUI from "../wizard-ui.html";
+import React from "react";
+import ReactDOM from "react-dom";
+import SmbRemoteFileBrowser from 'components/SmbRemoteFileBrowser.tsx'
 
 function constructor(params)
 {
@@ -190,6 +193,12 @@ function constructor(params)
       component.existing_table();
     } else if (type === "remote") {
       component.tab(2);
+    } else if (type === "smb") {
+      component.tab(2);
+      ReactDOM.render(
+        <div>JSX RENDER</div>,
+        document.querySelector(".smb-wizard")
+      );
     }
   };
 
