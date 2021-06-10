@@ -84,7 +84,7 @@ $.widget("parameter_image.scatterplot",
     canvas_selected_square_border_size : 2,
     pinned_width : 200,
     pinned_height : 200,
-    hover_time : 250,
+    hover_time : 800,
     image_cache : {},
     video_file_extensions : [
       '3gp','3g2','h261','h263','h264','jpgv','jpm','jpgm','mj2','mjp2','mp4','mp4v','mpg4','mpeg','mpg','mpe','m1v','m2v','ogv','qt','mov','uvh','uvvh','uvm','uvvm','uvp','uvvp',
