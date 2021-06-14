@@ -221,3 +221,12 @@
 	font-size: 12px;
 	width: 40px;
 }
+
+/************************/
+/* react scatter plot   */
+/************************/
+#scatter-plot-react {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
