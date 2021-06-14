@@ -35,6 +35,24 @@ import React from "react";
 import ReactDOM from "react-dom";
 import ScatterPlot from "./components/ScatterPlot";
 
+import { createStore, applyMiddleware, } from 'redux';
+import { Provider, } from 'react-redux';
+import thunkMiddleware from 'redux-thunk';
+import { createLogger, } from 'redux-logger';
+import dac_reducer from './reducers';
+// import { 
+//   updateThreeDSync,
+//   setXValues,
+//   setYValues,
+//   setVValues,
+//   setXIndex,
+//   setYIndex,
+//   setVIndex,
+//   setHiddenSimulations,
+//   setManuallyHiddenSimulations,
+//   setSelectedSimulations,
+// } from './actions';
+
 
 // wait for document ready
 $(document).ready(function() {
@@ -248,6 +266,73 @@ $(document).ready(function() {
 
                     // truncate model name to max name length
                     MODEL_NAME = MODEL_NAME.substring(0, MAX_PLOT_NAME);
+
+                    // Create Redux store and set its state based on what's in the bookmark
+                    const state_tree = {
+                      MAX_POINTS_ANIMATE: MAX_POINTS_ANIMATE,
+                      // fontSize: DEFAULT_FONT_SIZE,
+                      // fontFamily: DEFAULT_FONT_FAMILY,
+                      // axesVariables: {},
+                      // threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
+                      // // First colormap is default
+                      // threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
+                      // threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
+                      // unselected_point_size: unselected_point_size,
+                      // unselected_border_size: unselected_border_size,
+                      // selected_point_size: selected_point_size,
+                      // selected_border_size: selected_border_size,
+                      // variableRanges: {},
+                      // three_d_variable_data_ranges: {},
+                      // three_d_variable_user_ranges: {},
+                      // open_media: bookmarked_open_media,
+                      // currentFrame: {},
+                      // active_filters: [],
+                      // hidden_simulations: [],
+                      // manually_hidden_simulations: [],
+                      // sync_scaling: true,
+                      // sync_threeD_colorvar: true,
+                      // selected_simulations: [],
+                    }
+                    // Create logger for redux
+                    const loggerMiddleware = createLogger();
+                    window.store = createStore(
+                      dac_reducer, 
+                      {
+                        ...state_tree, 
+                        ...bookmark.state, 
+                        derived: {
+                          // variableAliases: variable_aliases,
+                          // xValues: [],
+                          // yValues: [],
+                          // three_d_colorby_range: {},
+                          // three_d_colorby_legends: {},
+                        }
+                      },
+                      applyMiddleware(
+                        thunkMiddleware, // Lets us dispatch() functions
+                        loggerMiddleware, // Neat middleware that logs actions. 
+                                          // Logger must be the last middleware in chain, 
+                                          // otherwise it will log thunk and promise, 
+                                          // not actual actions.
+                        // throttleMiddleware, // Allows throttling of actions
+                      )
+                    );
+
+                    // Save Redux state to bookmark whenever it changes
+                    const bookmarkReduxStateTree = () => {
+                      bookmarker.updateState({
+                        state: 
+                        // Remove derived property from state tree because it should be computed
+                        // from model data each time the model is loaded. Otherwise it has the 
+                        // potential of becoming huge. Plus we shouldn't be storing model data
+                        // in the bookmark, just UI state.
+                        // Passing 'undefined' removes it from bookmark. Passing 'null' actually
+                        // sets it to null, so I think it's better to remove it entirely.
+                        // eslint-disable-next-line no-undefined
+                        { ...window.store.getState(), derived: undefined }
+                      });
+                    };
+                    window.store.subscribe(bookmarkReduxStateTree);
 
                     // set up model origin column data
                     setup_model_origin();
@@ -834,50 +919,68 @@ $(document).ready(function() {
 
                     // set up table with editable columns
                     metadata_table.setup(data_table_meta, data_table, meta_include_columns,
-                        editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
-                        MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
-                        column_filters);
+                      editable_columns, model_origin, MODEL_NAME, MAX_FREETEXT_LEN,
+                      MAX_NUM_SEL, USER_SEL_COLORS, init_sort_order, init_sort_col,
+                      column_filters
+                    );
 
                     // set up the alpha sliders
                     alpha_sliders.setup(ALPHA_STEP, num_vars,
-                                        variables[0]["data"][0], MAX_SLIDER_NAME,
-                                        var_include_columns, init_alpha_values);
+                      variables[0]["data"][0], MAX_SLIDER_NAME,
+                      var_include_columns, init_alpha_values
+                    );
 
                     // set up the alpha buttons
                     alpha_buttons.setup(num_vars, var_include_columns);
 
                     // set up the time series plots
                     plots.setup(SELECTION_COLOR, FOCUS_COLOR, PLOT_ADJUSTMENTS,
-                                MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
-                                variables_meta, variables, var_include_columns,
-                                data_table[0]["data"][0].length, init_plots_selected,
-                                init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
-                                init_link_plots);
+                      MAX_TIME_POINTS, MAX_NUM_PLOTS, MAX_PLOT_NAME, MODEL_NAME,
+                      variables_meta, variables, var_include_columns,
+                      data_table[0]["data"][0].length, init_plots_selected,
+                      init_plots_displayed, init_plots_zoom_x, init_plots_zoom_y,
+                      init_link_plots
+                    );
 
-                            // set up MDS scatter plot buttons
-                            scatter_buttons.setup(SELECTION_COLOR, MAX_NUM_PLOTS, init_subset_flag, 
-                                init_zoom_flag, init_fisher_order, init_fisher_pos, 
-                                init_diff_desired_state, var_include_columns, data_table_meta[0], 
-                                meta_include_columns, data_table[0], editable_columns, model_origin, 
-                                init_color_by_sel, MAX_COLOR_NAME);
+                    // set up MDS scatter plot buttons
+                    scatter_buttons.setup(SELECTION_COLOR, MAX_NUM_PLOTS, init_subset_flag, 
+                      init_zoom_flag, init_fisher_order, init_fisher_pos, 
+                      init_diff_desired_state, var_include_columns, data_table_meta[0], 
+                      meta_include_columns, data_table[0], editable_columns, model_origin, 
+                      init_color_by_sel, MAX_COLOR_NAME
+                    );
                             
                     // set up the MDS scatter plot
-                            var init_color_by_col = scatter_buttons.get_color_by_col();
-                    scatter_plot.setup(MAX_POINTS_ANIMATE, SCATTER_BORDER, POINT_COLOR,
-                      POINT_SIZE, SCATTER_PLOT_TYPE, NO_SEL_COLOR, SELECTION_COLOR,
-                      FOCUS_COLOR, COLOR_BY_LOW, COLOR_BY_HIGH, cont_colormap,
-                      OUTLINE_NO_SEL, OUTLINE_SEL, var_include_columns,
-                      init_alpha_values, init_color_by_col, init_zoom_extent, 
-                                init_subset_center);
+                    var init_color_by_col = scatter_buttons.get_color_by_col();
+                    scatter_plot.setup(
+                      MAX_POINTS_ANIMATE, 
+                      SCATTER_BORDER, 
+                      POINT_COLOR,
+                      POINT_SIZE, 
+                      SCATTER_PLOT_TYPE, 
+                      NO_SEL_COLOR, 
+                      SELECTION_COLOR,
+                      FOCUS_COLOR, 
+                      COLOR_BY_LOW, 
+                      COLOR_BY_HIGH, 
+                      cont_colormap,
+                      OUTLINE_NO_SEL, 
+                      OUTLINE_SEL, 
+                      var_include_columns,
+                      init_alpha_values, 
+                      init_color_by_col, 
+                      init_zoom_extent, 
+                      init_subset_center
+                    );
                         
                     // Create React scatterplot
                     const scatter_plot_react = 
                       (
-                      // <Provider store={store}>
+                      <Provider store={store}>
                         <ScatterPlot 
                           // aid='data-table'
                         />
-                      // </Provider>
+                      </Provider>
                       )
                     ;
 

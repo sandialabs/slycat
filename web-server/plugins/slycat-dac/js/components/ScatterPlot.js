@@ -10,20 +10,21 @@ class ScatterPlot extends React.PureComponent {
   render() {
 
     return (
-      <div>This is the React scatter plot.</div>
+      <div>
+        <div>This is the React scatter plot.</div>
+        <div>MAX_POINTS_ANIMATE is: {this.props.MAX_POINTS_ANIMATE}</div>
+      </div>
     );
   }
 }
 
-// const mapStateToProps = (state) => {
-//   return {
-    
-//   };
-// };
+const mapStateToProps = (state) => {
+  return {
+    MAX_POINTS_ANIMATE: state.MAX_POINTS_ANIMATE,
+  };
+};
 
-// export default connect(mapStateToProps, {
-//   // changeThreeDColormap,
-//   // updateThreeDColorBy,
-// })(ScatterPlot);
-
-export default ScatterPlot;
+export default connect(mapStateToProps, {
+  // changeThreeDColormap,
+  // updateThreeDColorBy,
+})(ScatterPlot);
