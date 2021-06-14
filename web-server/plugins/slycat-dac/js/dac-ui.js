@@ -270,28 +270,8 @@ $(document).ready(function() {
                     // Create Redux store and set its state based on what's in the bookmark
                     const state_tree = {
                       MAX_POINTS_ANIMATE: MAX_POINTS_ANIMATE,
-                      // fontSize: DEFAULT_FONT_SIZE,
-                      // fontFamily: DEFAULT_FONT_FAMILY,
-                      // axesVariables: {},
-                      // threeD_sync: bookmark.threeD_sync ? bookmark.threeD_sync : false,
-                      // // First colormap is default
-                      // threeDColormap: Object.keys(slycat_threeD_color_maps.color_maps)[0],
-                      // threeD_background_color: [0.7 * 255, 0.7 * 255, 0.7 * 255],
-                      // unselected_point_size: unselected_point_size,
-                      // unselected_border_size: unselected_border_size,
-                      // selected_point_size: selected_point_size,
-                      // selected_border_size: selected_border_size,
-                      // variableRanges: {},
-                      // three_d_variable_data_ranges: {},
-                      // three_d_variable_user_ranges: {},
-                      // open_media: bookmarked_open_media,
-                      // currentFrame: {},
-                      // active_filters: [],
-                      // hidden_simulations: [],
-                      // manually_hidden_simulations: [],
-                      // sync_scaling: true,
-                      // sync_threeD_colorvar: true,
-                      // selected_simulations: [],
+                      SCATTER_PLOT_TYPE: SCATTER_PLOT_TYPE,
+                      cont_colormap: cont_colormap,
                     }
                     // Create logger for redux
                     const loggerMiddleware = createLogger();
@@ -979,6 +959,32 @@ $(document).ready(function() {
                       <Provider store={store}>
                         <ScatterPlot 
                           // aid='data-table'
+                          SCATTER_BORDER={SCATTER_BORDER}
+                          POINT_COLOR={POINT_COLOR}
+                          POINT_SIZE={POINT_SIZE}
+                          NO_SEL_COLOR={NO_SEL_COLOR}
+                          SELECTION_COLOR={SELECTION_COLOR}
+                          FOCUS_COLOR={FOCUS_COLOR}
+                          COLOR_BY_LOW={COLOR_BY_LOW}
+                          COLOR_BY_HIGH={COLOR_BY_HIGH}
+                          OUTLINE_NO_SEL={OUTLINE_NO_SEL}
+                          OUTLINE_SEL={OUTLINE_SEL}
+
+                          // Shawn, are
+                          // var_include_columns 
+                          // init_alpha_values
+                          // something the user can change while interacting
+                          // with the model without reloading it? Or does changing it requirea  model reload?
+                          // If it does not require a reload, it needs to be moved into Redux state instead of props here.
+                          var_include_columns={var_include_columns}
+                          init_alpha_values={init_alpha_values}
+
+                          init_color_by_col={init_color_by_col}
+
+                          // This one seems like it should just be zoom_extent and tracked
+                          // entirely in the bookmark
+                          init_zoom_extent={init_zoom_extent}
+                          init_subset_center={init_subset_center}
                         />
                       </Provider>
                       )
