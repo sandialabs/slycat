@@ -982,7 +982,7 @@ $(document).ready(function() {
 
                     self.scatter_plot_react_render = ReactDOM.render(
                       scatter_plot_react,
-                      document.getElementById('scatter-plot-react')
+                      document.getElementById('scatter-plot-react-debug')
                     );
 
                   },
