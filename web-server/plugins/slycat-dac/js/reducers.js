@@ -1,59 +1,26 @@
-// import {
-//   CHANGE_FONT_SIZE,
-//   CHANGE_FONT_FAMILY,
-//   CHANGE_AXES_VARIABLE_SCALE,
-//   CHANGE_VARIABLE_ALIAS_LABEL,
-//   REMOVE_VARIABLE_ALIAS_LABEL,
-//   REMOVE_ALL_VARIABLE_ALIAS_LABELS,
-//   CHANGE_CURRENT_FRAME,
-//   CHANGE_THREED_COLORMAP,
-//   UPDATE_THREE_D_COLORBY,
-//   UPDATE_THREE_D_COLORBY_OPTIONS,
-//   SET_THREE_D_COLORBY_RANGE,
-//   SET_THREE_D_COLORBY_LEGEND,
-//   UPDATE_THREE_D_CAMERAS,
-//   UPDATE_THREE_D_SYNC,
-//   SET_UNSELECTED_POINT_SIZE,
-//   SET_UNSELECTED_BORDER_SIZE,
-//   SET_SELECTED_POINT_SIZE,
-//   SET_SELECTED_BORDER_SIZE,
-//   SET_VARIABLE_RANGE,
-//   CLEAR_VARIABLE_RANGE,
-//   CLEAR_ALL_VARIABLE_RANGES,
-//   ADJUST_THREE_D_VARIABLE_DATA_RANGE,
-//   SET_THREE_D_VARIABLE_USER_RANGE,
-//   CLEAR_THREE_D_VARIABLE_USER_RANGE,
-//   CLEAR_ALL_THREE_D_VARIABLE_USER_RANGES,
-//   SET_X_VALUES,
-//   SET_Y_VALUES,
-//   SET_V_VALUES,
-//   SET_X_INDEX,
-//   SET_Y_INDEX,
-//   SET_V_INDEX,
-//   SET_OPEN_MEDIA,
-//   SET_HIDDEN_SIMULATIONS,
-//   SET_MANUALLY_HIDDEN_SIMULATIONS,
-//   SET_MEDIA_SIZE_POSITION,
-//   SET_ACTIVE_FILTERS,
-//   TOGGLE_SYNC_SCALING,
-//   TOGGLE_SYNC_THREE_D_COLORVAR,
-//   SET_SELECTED_SIMULATIONS,
-// } from './actions';
+import {
+  SET_MDS_COORDS
+} from './actions';
+
+import _ from 'lodash';
 
 
 const initialState = {
-  // fontSize: DEFAULT_FONT_SIZE,
-  // fontFamily: DEFAULT_FONT_FAMILY,
-  // axesVariables: {},
-  // currentFrame: {},
-  // threeD_sync: false,
-  // three_d_colormaps: {},
-  // open_media: [],
 }
 
 export default function dac_reducer(state = initialState, action) {
   switch (action.type) {
+
+    case SET_MDS_COORDS:
+      return Object.assign({}, state, {
+        derived: {
+          ...state.derived,
+          mds_coords: _.cloneDeep(action.mds_coords)
+        }
+      })
+
     default:
       return state
+
   }
 }

@@ -269,9 +269,9 @@ $(document).ready(function() {
 
                     // Create Redux store and set its state based on what's in the bookmark
                     const state_tree = {
-                      MAX_POINTS_ANIMATE: MAX_POINTS_ANIMATE,
-                      SCATTER_PLOT_TYPE: SCATTER_PLOT_TYPE,
-                      cont_colormap: cont_colormap,
+                      // MAX_POINTS_ANIMATE: MAX_POINTS_ANIMATE,
+                      // SCATTER_PLOT_TYPE: SCATTER_PLOT_TYPE,
+                      // cont_colormap: cont_colormap,
                     }
                     // Create logger for redux
                     const loggerMiddleware = createLogger();
@@ -281,11 +281,7 @@ $(document).ready(function() {
                         ...state_tree, 
                         ...bookmark.state, 
                         derived: {
-                          // variableAliases: variable_aliases,
-                          // xValues: [],
-                          // yValues: [],
-                          // three_d_colorby_range: {},
-                          // three_d_colorby_legends: {},
+                          mds_coords: [],
                         }
                       },
                       applyMiddleware(
@@ -958,29 +954,23 @@ $(document).ready(function() {
                       (
                       <Provider store={store}>
                         <ScatterPlot 
-                          // aid='data-table'
+                          MAX_POINTS_ANIMATE={MAX_POINTS_ANIMATE}
+                          // Padding around the scatterplot
                           SCATTER_BORDER={SCATTER_BORDER}
                           POINT_COLOR={POINT_COLOR}
                           POINT_SIZE={POINT_SIZE}
+                          SCATTER_PLOT_TYPE={SCATTER_PLOT_TYPE}
                           NO_SEL_COLOR={NO_SEL_COLOR}
                           SELECTION_COLOR={SELECTION_COLOR}
                           FOCUS_COLOR={FOCUS_COLOR}
                           COLOR_BY_LOW={COLOR_BY_LOW}
                           COLOR_BY_HIGH={COLOR_BY_HIGH}
+                          cont_colormap={cont_colormap}
                           OUTLINE_NO_SEL={OUTLINE_NO_SEL}
                           OUTLINE_SEL={OUTLINE_SEL}
-
-                          // Shawn, are
-                          // var_include_columns 
-                          // init_alpha_values
-                          // something the user can change while interacting
-                          // with the model without reloading it? Or does changing it requirea  model reload?
-                          // If it does not require a reload, it needs to be moved into Redux state instead of props here.
                           var_include_columns={var_include_columns}
                           init_alpha_values={init_alpha_values}
-
                           init_color_by_col={init_color_by_col}
-
                           // This one seems like it should just be zoom_extent and tracked
                           // entirely in the bookmark
                           init_zoom_extent={init_zoom_extent}

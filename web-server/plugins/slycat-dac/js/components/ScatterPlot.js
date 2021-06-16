@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-// import { changeThreeDColormap, updateThreeDColorBy } from "../actions";
 
 class ScatterPlot extends React.PureComponent {
   constructor(props) {
@@ -9,16 +8,22 @@ class ScatterPlot extends React.PureComponent {
 
   render() {
 
+    // Don't render anything if we have no mds_coords
+    if (!this.props.mds_coords || this.props.mds_coords.length == 0) {
+      return null;
+    }
+
     return (
       <div>
         <div>This is the React scatter plot.</div>
         <br />
         <div>These are from redux state.</div>
+        <div>mds_coords is: {this.props.mds_coords}</div>
+        <br />
+        <div>These are from local state.</div>
         <div>MAX_POINTS_ANIMATE is: {this.props.MAX_POINTS_ANIMATE}</div>
         <div>SCATTER_PLOT_TYPE is: {this.props.SCATTER_PLOT_TYPE}</div>
         <div>cont_colormap is: {this.props.cont_colormap}</div>
-        <br />
-        <div>These are from local state.</div>
         <div>SCATTER_BORDER is: {this.props.SCATTER_BORDER}</div>
         <div>POINT_COLOR is: {this.props.POINT_COLOR}</div>
         <div>POINT_SIZE is: {this.props.POINT_SIZE}</div>
@@ -41,9 +46,7 @@ class ScatterPlot extends React.PureComponent {
 
 const mapStateToProps = (state) => {
   return {
-    MAX_POINTS_ANIMATE: state.MAX_POINTS_ANIMATE,
-    SCATTER_PLOT_TYPE: state.SCATTER_PLOT_TYPE,
-    cont_colormap: state.cont_colormap,
+    mds_coords: state.derived.mds_coords,
   };
 };
 

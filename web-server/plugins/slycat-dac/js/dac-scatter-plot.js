@@ -17,6 +17,10 @@ import plots from "./dac-plots.js";
 import d3 from "d3";
 import URI from "urijs";
 
+import { 
+  setMDSCoords,
+} from './actions';
+
 // public functions will be returned via the module variable
 var module = {};
 
@@ -138,7 +142,7 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
             // set subset to full mds_coord set, unless subset is available
             mds_subset = selections.get_subset();
 
-			// call server to compute new coords (in case of bookmarks)
+						// call server to compute new coords (in case of bookmarks)
             client.post_sensitive_model_command(
             {
                 mid: mid,
@@ -153,6 +157,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                     {
                         // record new values in mds_coords
                         mds_coords = JSON.parse(result)["mds_coords"];
+
+												// dispatch update to mds_coords in redux
+												window.store.dispatch(setMDSCoords(mds_coords));
 
                         // init shift key detection
                         d3.select("body").on("keydown.brush", key_flip)
@@ -601,6 +608,9 @@ module.update = function (alpha_values)
 				{
 					// record new values in mds_coords
 					mds_coords = JSON.parse(result)["mds_coords"];
+
+					// dispatch update to mds_coords in redux
+					window.store.dispatch(setMDSCoords(mds_coords));
 
 					// update the data in d3 (using either circes or squares)
 					scatter_plot.selectAll(scatter_plot_type)
