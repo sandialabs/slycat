@@ -28,8 +28,6 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
-import cherrypy
-
 # go through all tdms files and make of record of each shot
 # filter out channels that have < MIN_TIME_STEPS
 # filter out shots that have < MIN_CHANNELS
@@ -563,8 +561,12 @@ def infer_channel_time_units (database, model, dac_error, parse_error_log, base_
 
 # construct DAC variables to match time steps
 def construct_variables (database, model, dac_error, parse_error_log, shot_data,
-                         channel_names, channel_ind, shot_names, time_steps,
+                         num_landmarks, channel_names, channel_ind, shot_names, time_steps,
                          start_progress, end_progress):
+
+    # import dac_compute_coords
+    compute_coords = imp.load_source('dac_compute_coords', 
+                os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
 
     # get channel names
     shot_channels = [[channel['name'] for channel in shot] for shot in shot_data]
@@ -582,7 +584,6 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
 
     # variables contains a list of matrices for DAC
     variables = []
-    var_dist = []
 
     # get variables for each channel
     for i in range(num_channels):
@@ -647,14 +648,45 @@ def construct_variables (database, model, dac_error, parse_error_log, shot_data,
         # add the channel variable matrix to variable list
         variables.append(numpy.array(channel_vars))
 
-        # create pairwise distance matrix
-        dist_i = spatial.distance.pdist(variables[-1])
-        var_dist.append(spatial.distance.squareform(dist_i))
+    # select random landmarks
+    num_points = variables[0].shape[0]
+    
+    # no landmarks needed if fewer points
+    landmarks = None
+    if num_points > num_landmarks and num_landmarks != 0:
+    
+        # otherwise use random sampling to get landmarks
+        # random_points = numpy.random.permutation(num_points) + 1
+        # landmarks = random_points[:num_landmarks]
+        
+        # select landmarks using max-min algorithm
+        landmarks = compute_coords.select_landmarks(num_points, num_landmarks, variables)
+
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                "Selected " + str(num_landmarks) + " landmarks using max-min.")
+
+    else:
+
+        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                "Using full dataset for coordinate calculations.")
+
+    # create pairwise diatnce matrices
+    var_dist = []
+    for i in range(len(variables)):
+        
+        # create pairwise distance matrix using landmarks, if requested
+        if landmarks is None:
+            dist_i = spatial.distance.squareform(spatial.distance.pdist(variables[i]))
+            
+        else:
+            dist_i = spatial.distance.cdist(variables[i], variables[i][landmarks-1,:])
+        
+        var_dist.append(dist_i)
 
     parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
         "Extended/contracted TDMS channels to match time steps.")
 
-    return parse_error_log, variables, var_dist
+    return parse_error_log, variables, var_dist, landmarks
 
 
 def parse_tdms(database, model, input, files, aids, **kwargs):
@@ -679,11 +711,12 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     MIN_TIME_STEPS = int(aids[0])
     MIN_CHANNELS = int(aids[1])
     MIN_SHOTS = int(aids[2])
-    SHOT_TYPE = aids[3]
-    TIME_STEP_TYPE = aids[4]
-    INFER_CHANNEL_UNITS = aids[5]
-    INFER_SECONDS = aids[6]
-    FILE_NAMES = aids[7]
+    NUM_LANDMARKS = int(aids[3])
+    SHOT_TYPE = aids[4]
+    TIME_STEP_TYPE = aids[5]
+    INFER_CHANNEL_UNITS = aids[6]
+    INFER_SECONDS = aids[7]
+    FILE_NAMES = aids[8]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -722,14 +755,14 @@ def parse_tdms(database, model, input, files, aids, **kwargs):
     # start actual parsing as a thread
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, SHOT_TYPE, 
+                              MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, SHOT_TYPE, 
                               TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
                               dac_error, parse_error_log, stop_event))
     thread.start()
 
 
 def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS,
-                       SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
+                       num_landmarks, SHOT_TYPE, TIME_STEP_TYPE, INFER_CHANNEL_UNITS, INFER_SECONDS, 
                        dac_error, parse_error_log, stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
@@ -738,14 +771,13 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
     and returned to the calling function.
     """
 
-    # put entire thread into a try-except block in order to print
-    # errors to cherrypy.log.error
+    # put entire thread into a try-except block in order catch errors
     try:
 
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
                                os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
-
+        
         dac_error.log_dac_msg("TDMS thread started.")
 
         # filter shots according to user preferences MIN_TIME_STEPS and MIN_CHANNELS
@@ -797,8 +829,8 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
                 "No data imported -- available numbers of channels is less than " + str(MIN_CHANNELS) + ".")
 
         # construct DAC variables and distance matrices to match time steps
-        parse_error_log, variables, var_dist = construct_variables(database, model,
-            dac_error, parse_error_log, shot_data, channel_names, channel_ind, 
+        parse_error_log, variables, var_dist, landmarks = construct_variables(database, model,
+            dac_error, parse_error_log, shot_data, num_landmarks, channel_names, channel_ind, 
             shot_names, time_steps, 55.0, 65.0)
 
         # finalize time units
@@ -869,7 +901,7 @@ def parse_tdms_thread (database, model, tdms_ref, MIN_TIME_STEPS, MIN_CHANNELS, 
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variables, time_steps, var_dist)
+                                    variables, time_steps, var_dist, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()
@@ -905,11 +937,12 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     MIN_TIME_STEPS = int(aids[0])
     MIN_CHANNELS = int(aids[1])
     MIN_SHOTS = int(aids[2])
-    SHOT_TYPE = aids[3]
-    TIME_STEP_TYPE = aids[4]
-    INFER_CHANNEL_UNITS = aids[5]
-    INFER_SECONDS = aids[6]
-    SUFFIX_LIST = aids[7]
+    NUM_LANDMARKS = int(aids[3])
+    SHOT_TYPE = aids[4]
+    TIME_STEP_TYPE = aids[5]
+    INFER_CHANNEL_UNITS = aids[6]
+    INFER_SECONDS = aids[7]
+    SUFFIX_LIST = aids[8]
 
     # keep a parsing error log to help user correct input data
     # (each array entry is a string)
@@ -976,7 +1009,7 @@ def parse_tdms_zip(database, model, input, files, aids, **kwargs):
     # launch thread to read actual tdms files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_tdms_thread, args=(database, model, tdms_ref,
-        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, SHOT_TYPE, TIME_STEP_TYPE,
+        MIN_TIME_STEPS, MIN_CHANNELS, MIN_SHOTS, NUM_LANDMARKS, SHOT_TYPE, TIME_STEP_TYPE,
         INFER_CHANNEL_UNITS, INFER_SECONDS, dac_error, parse_error_log, stop_event))
     thread.start()
 

@@ -161,6 +161,7 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     # get parameters to eliminate likely unusable PTS files
     CSV_MIN_SIZE = int(aids[0])
     MIN_NUM_DIG = int(aids[1])
+    NUM_LANDMARKS = int(aids[2])
 
     # push progress for wizard polling to database
     slycat.web.server.put_model_parameter(database, model, "dac-polling-progress", ["Extracting ...", 10.0])
@@ -252,12 +253,13 @@ def parse_zip(database, model, input, files, aids, **kwargs):
     thread = threading.Thread(target=parse_pts_thread,
                               args=(database, model, zip_ref, csv_files,
                               meta_files, csv_no_ext, dac_error, parse_error_log,
-                              CSV_MIN_SIZE, MIN_NUM_DIG, stop_event))
+                              CSV_MIN_SIZE, MIN_NUM_DIG, NUM_LANDMARKS, stop_event))
     thread.start()
 
 
 def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_ext,
-                      dac_error, parse_error_log, CSV_MIN_SIZE, MIN_NUM_DIG, stop_event):
+                      dac_error, parse_error_log, CSV_MIN_SIZE, MIN_NUM_DIG, num_landmarks, 
+                      stop_event):
     """
     Extracts CSV/META data from the zipfile uploaded to the server
     and processes it/combines it into data in the DAC generic format,
@@ -265,14 +267,17 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
     and returned to the calling function.
     """
 
-    # put entire thread into a try-except block in order to print
-    # errors to cherrypy.log.error
+    # put entire thread into a try-except block in order to catch errors
     try:
 
         # import dac_upload_model from source
         push = imp.load_source('dac_upload_model',
-                               os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
+                    os.path.join(os.path.dirname(__file__), 'py/dac_upload_model.py'))
 
+        # import dac_compute_coords
+        compute_coords = imp.load_source('dac_compute_coords', 
+                    os.path.join(os.path.dirname(__file__), 'py/dac_compute_coords.py'))
+        
         dac_error.log_dac_msg("PTS Zip thread started.")
 
         num_files = len(csv_files)
@@ -471,12 +476,11 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
 
         dac_error.log_dac_msg ("Constructing variables.meta table and data matrices.")
 
-        # construct variables.meta table, variable/distance matrices, and time vectors
+        # construct variables.meta table, variable matrices, and time vectors
         meta_var_col_names = ["Name", "Time Units", "Units", "Plot Type"]
         meta_vars = []
         time_steps = []
         variable = []
-        var_dist = []
         for i in range(len(dig_id_keys)):
 
             # row i for variables.meta table
@@ -553,12 +557,44 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
                 slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                       ["Computing ...", (i + 1.0)/len(dig_id_keys) * 10.0 + 55.0])
 
-                # create pairwise distance matrix
-                dist_i = spatial.distance.pdist(variable_i)
-                var_dist.append(spatial.distance.squareform (dist_i))
+        # select random landmarks
+        num_points = len(meta_rows)
+
+        # no landmarks needed if fewer points
+        landmarks = None
+        if num_points > num_landmarks and num_landmarks != 0:
+        
+            # otherwise use random sampling to get landmarks
+            # random_points = numpy.random.permutation(num_points) + 1
+            # landmarks = random_points[:num_landmarks]
+
+            # select landmarks using max-min algorithm
+            landmarks = compute_coords.select_landmarks(num_points, num_landmarks, variable)
+            
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Selected " + str(num_landmarks) + " landmarks using max-min.")
+        
+        else:
+
+            parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
+                                    "Using full dataset for coordinate calculations.")
+
+        # construct distance matrices
+        var_dist = []
+        num_vars = len(meta_vars)
+        for i in range(num_vars):
+
+            # create pairwise distance matrix using landmarks, if requested
+            if landmarks is None:
+                dist_i = spatial.distance.squareform(spatial.distance.pdist(variable[i]))
+                
+            else:
+                dist_i = spatial.distance.cdist(variable[i], variable[i][landmarks-1,:])
+            
+            # save distance matrix
+            var_dist.append(dist_i)
 
         # show which digitizers were parsed
-        num_vars = len(meta_vars)
         for i in range(num_vars):
             parse_error_log.append("Digitizer " + str(meta_vars[i][0]) + " parsed successfully.")
 
@@ -572,7 +608,7 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
         # if no parse errors then inform user
         if len(parse_error_log) == 1:
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
-                                               "No parse errors.")
+                                    "No parse errors.")
 
         # summarize results for user
         parse_error_log.insert(0, "Summary:")
@@ -591,14 +627,14 @@ def parse_pts_thread (database, model, zip_ref, csv_files, meta_files, files_no_
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    variable, time_steps, var_dist)
+                                    variable, time_steps, var_dist, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()
 
     except Exception as e:
 
-        # print error to cherrypy.log.error
+        # print error
         dac_error.log_dac_msg(traceback.format_exc())
 
         # done -- destroy the thread

@@ -24,6 +24,8 @@ def register_slycat_plugin(context):
     # for model combination via threads
     import threading
     import traceback
+    
+    import cherrypy
 
     def finish(database, model):
         slycat.web.server.update_model(database, model,
@@ -61,8 +63,24 @@ def register_slycat_plugin(context):
         # get distance matrices and included columns
         var_include_columns, var_dist = load_var_dist(database, model, num_vars)
 
+        # check for projection mask
+        proj = None
+        if "artifact:dac-proj-mask" in model:
+
+            # load projecgtion mask
+            proj = numpy.array(slycat.web.server.get_model_parameter(
+                database, model, "dac-proj-mask"))
+
+        # get landmarks
+        landmarks = None
+        if "artifact:dac-landmarks" in model:
+
+            # load landmarks mask
+            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-landmarks", "0/0/..."))[0]
+
         # compute initial MDS coordinates
-        mds_coords, full_mds_coords = dac.init_coords(var_dist)
+        mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, landmarks=landmarks)
 
         # compute alpha cluster parameters
         # --------------------------------
@@ -83,7 +101,8 @@ def register_slycat_plugin(context):
         meta_columns = slycat.web.server.get_model_arrayset_data(database, model, "dac-datapoints-meta", "0/.../...")
 
         # compute alpha cluster values for NNLS cluster button
-        alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)
+        alpha_cluster_mat_included = dac.compute_alpha_clusters(var_dist, meta_columns, 
+            meta_column_types, landmarks=landmarks)
 
         # re-size alpha values to actual number of variables (not just number of included variables)
         alpha_cluster_mat = numpy.zeros((num_meta_cols, num_vars))
@@ -213,6 +232,14 @@ def register_slycat_plugin(context):
             proj = numpy.array(slycat.web.server.get_model_parameter(
                 database, model, "dac-proj-mask"))
 
+        # get landmarks
+        landmarks = None
+        if "artifact:dac-landmarks" in model:
+
+            # load landmarks mask
+            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-landmarks", "0/0/..."))[0]
+
         # get distance matrices as a list of numpy arrays from slycat server
         dist_mats = []
         for i in include_columns:
@@ -225,7 +252,7 @@ def register_slycat_plugin(context):
 
         # compute new MDS coords (truncate coords for old models)
         mds_coords = dac.compute_coords(dist_mats, alpha_values[include_columns],
-                                        old_coords[:, 0:2], subset_mask, proj=proj)
+                                        old_coords[:, 0:2], subset_mask, proj=proj, landmarks=landmarks)
 
         # adjust MDS coords using full MDS scaling (truncate coords for old models)
         scaled_mds_coords = dac.scale_coords(mds_coords,
@@ -247,10 +274,22 @@ def register_slycat_plugin(context):
 
         # convert kwargs into selections and included columns
         selection = kwargs["selection"]
+        selection_limit = kwargs["max_selection"]
         include_columns = numpy.array(kwargs["include_columns"])
 
-        # get total selection
-        tot_selection = [i for sel in selection for i in sel]
+        # get total selection, and indices into total selection
+        # limited to first "max_selection" limit
+        tot_selection = []
+        sel_inds = []
+        i = 0
+        for sel in selection:
+            curr_sel = sel[:selection_limit]
+            tot_selection += curr_sel
+            sel_inds.append(list(numpy.arange(len(curr_sel)) + i))
+            i += len(curr_sel)
+
+        # total selection has to be numpy array for following calculations
+        tot_selection = numpy.asarray(tot_selection)
 
         # get number of alpha values using array metadata
         meta_dist = slycat.web.server.get_model_arrayset_metadata(database, model, "dac-var-dist")
@@ -268,6 +307,56 @@ def register_slycat_plugin(context):
             else:
                 dist_mats.append(0)
 
+        # get landmarks, if available
+        landmarks = None
+        if "artifact:dac-landmarks" in model:
+
+            # load landmarks mask
+            landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                database, model, "dac-landmarks", "0/0/..."))[0].astype(int)
+                
+        # compute coordinates for each distance matrix
+        coord_mats = []
+        for i in range(num_vars):
+            
+            if i in include_columns:
+
+                # get landmark distance matrix
+                if landmarks is not None:
+                    landmark_rows = numpy.where(landmarks)[0]
+                    landmark_cols = numpy.arange(len(landmark_rows))
+                    D = dist_mats[i][landmark_rows[:,None], landmark_cols]
+                
+                # or full distance matrix if no landmarks
+                else:
+                    D = dist_mats[i]
+
+                # compute coordinates using landmark distance matrix
+                mds_landmark_coords, proj_inv = dac.cmdscale(numpy.sqrt(D))
+                
+                # project non-landmarks onto coordinates
+                if landmarks is not None:
+
+                    # project selection
+                    mean_dist = numpy.mean(D, axis=1)
+                    proj_dist_mat = dist_mats[i][tot_selection[:, None], landmark_cols] ** 2
+                    proj_coords = (proj_dist_mat - mean_dist).dot(proj_inv)
+
+                    # really only care about selection
+                    coord_mats.append(proj_coords)
+
+                # if no landmarks coordinates include everything
+                else:
+                    coord_mats.append(mds_landmark_coords[tot_selection,:])
+            
+            else:
+                coord_mats.append([])
+
+        # convert coord mats to squared distance mats
+        for i in include_columns:
+            dist_mats[i] = spatial.distance.squareform(
+                spatial.distance.pdist(coord_mats[i], 'sqeuclidean'))
+
         # calculate Fisher's discriminant for each variable
         num_sel = len(selection)
         fisher_disc = numpy.zeros(num_vars)
@@ -277,8 +366,8 @@ def register_slycat_plugin(context):
             num_sel_x = []
             ss_sel_x = []
             for j in range(0, num_sel):
-                num_sel_x.append(len(selection[j]))
-                ss_sel_x.append(numpy.sum(numpy.square(dist_mats[i][selection[j], :][:, selection[j]])))
+                num_sel_x.append(len(sel_inds[j]))
+                ss_sel_x.append(numpy.sum(dist_mats[i][sel_inds[j], :][:, sel_inds[j]]))
 
             # compute total within class scatter
             tot_num_sel = numpy.sum(num_sel_x)
@@ -290,8 +379,8 @@ def register_slycat_plugin(context):
             for j in range(0, num_sel):
                 if num_sel_x[j] > 0:
                     sw[j] = ss_sel_x[j] / (2 * num_sel_x[j])
-                    sb[j] = num_sel_x[j] * (numpy.sum(numpy.square(
-                        dist_mats[i][selection[j], :][:, tot_selection])) /
+                    sb[j] = num_sel_x[j] * (numpy.sum(
+                        dist_mats[i][sel_inds[j], :]) /
                         (num_sel_x[j] * tot_num_sel) - sw[j] / num_sel_x[j] -
                         tot_sw_sel / tot_num_sel)
 
@@ -301,6 +390,48 @@ def register_slycat_plugin(context):
 
             else:
                 fisher_disc[i] = numpy.sum(sb)
+
+        # optimized Fisher's discriminant using coordinates
+        # (doesn't seem to work as well as distance based calculation)
+
+        # num_sel = len(selection)
+        # fisher_disc = numpy.zeros(num_vars)
+        # for i in include_columns:
+
+        #     # compute within scatter matrix
+        #     num_features = coord_mats[i].shape[1]
+        #     Sw = numpy.zeros((num_features, num_features))
+        #     Sb = numpy.zeros((num_features, num_features))
+        #     overall_mean = numpy.mean(coord_mats[i], axis=0)
+        #     for j in range(num_sel):
+
+        #         nj = len(selection[j])
+
+        #         # only compute if non-empty selection
+        #         if nj > 0:
+
+        #             # within scatter
+        #             mj = numpy.mean(coord_mats[i][sel_inds[j],:], axis=0)
+        #             xj_mj = coord_mats[i][sel_inds[j],:] - mj
+        #             Sj = numpy.sum([numpy.outer(xj_mj[k,:], xj_mj[k,:]) 
+        #                     for k in range(nj)], axis=0)
+        #             Sw += Sj
+
+        #             # between scatter
+        #             Sj = numpy.outer(mj - overall_mean, mj - overall_mean)
+        #             Sb += Sj
+
+        #     # invert within scatter matrix, or use identity
+        #     try:
+        #         Sw_inv = numpy.linalg.inv(Sw)
+        #     except numpy.linalg.LinAlgError:
+        #         Sw_inv = numpy.eye((2,2))
+
+        #     # compute discriminant eigenvalues
+        #     e, V = numpy.linalg.eig(Sw_inv.dot(Sb))
+
+        #     # compute J (Fisher's discriminant)
+        #     fisher_disc[i] = numpy.amax(e)
 
         # scale discriminant values between 0 and 1
         fisher_min = numpy.amin(fisher_disc)
@@ -765,7 +896,7 @@ def register_slycat_plugin(context):
 
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log, "Progress",
                     "Added new table column for model origin.\n" +
-                    "Duplicate time series in different models will be duplicated in table, and\n" +
+                    "Duplicate time series in different models will be duplicated in table, and " +
                     "will be plotted on top of each other in scatter plot and waveform plots.")
 
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
@@ -832,7 +963,6 @@ def register_slycat_plugin(context):
 
             # check if we have mismatched time steps
             keep_var_inds = [i for i in range(num_vars)]
-            stop_thread = False
             if intersect_time:
 
                 intersected_time_steps = []
@@ -924,6 +1054,61 @@ def register_slycat_plugin(context):
                     dist_i = spatial.distance.pdist(var_data[-1])
                     var_dist.append(spatial.distance.squareform(dist_i))
 
+            # get landmarks, check each model individually
+            landmarks = None
+
+            # if projection model, use landmarks from origin model
+            if new_model_type == "proj":
+
+                if "artifact:dac-landmarks" in models_selected[0]:
+
+                    # load landmarks mask for origin model
+                    landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                        database, models_selected[0], "dac-landmarks", "0/0/..."))[0].astype(int)
+
+                    # convert landmarks to indices (1-based)
+                    landmarks = numpy.where(landmarks==1)[0] + 1
+
+                    parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                                "Progress", 'Using landmarks from origin model.')
+
+            # otherwise look for landmarks in other models
+            else:
+
+                landmarks = []
+                model_ind = 0
+                for j in range(0,num_models):
+
+                    # if landmarks are present, use them
+                    if "artifact:dac-landmarks" in models_selected[j]:
+
+                        landmarks_j = numpy.array(slycat.web.server.get_model_arrayset_data(
+                            database, models_selected[j], "dac-landmarks", "0/0/..."))[0].astype(int)
+
+                        # convert landmarks to indices (1-based)
+                        landmarks_j = numpy.where(landmarks_j==1)[0] + model_ind + 1
+
+                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                            "Progress", "Using landmarks from model " + model_names[j] + ".")
+
+                    # otherwise use all model data points
+                    else:
+                        landmarks_j = numpy.arange(num_rows_per_model[j]) + model_ind + 1
+
+                        parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                            "Progress", "Using all data points as landmarks for " + model_names[j] + ".")
+
+                    landmarks += landmarks_j.tolist()
+
+                    # advance index into model data points
+                    model_ind += num_rows_per_model[j]
+
+                # convert landmarks back to numpy array
+                landmarks = numpy.asarray(landmarks)
+
+                cherrypy.log.error("landmarks for combination models")
+                cherrypy.log.error(str(landmarks))
+
             # remove empty time steps
             for i in reversed(range(num_vars)):
                 if i not in keep_var_inds:
@@ -966,7 +1151,7 @@ def register_slycat_plugin(context):
             push.init_upload_model (database, model, dac_error, parse_error_log,
                                     meta_column_names, meta_rows,
                                     meta_var_col_names, meta_vars,
-                                    var_data, time_steps, var_dist, proj=proj)
+                                    var_data, time_steps, var_dist, proj=proj, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()
@@ -1115,7 +1300,6 @@ def register_slycat_plugin(context):
         try:
 
             # init parse error log for UI
-            # init parse error log for UI
             parse_error_log = dac_error.update_parse_log(database, model, [], "Progress", "Notes:")
 
             # init dac polling progress bar for UI
@@ -1209,6 +1393,20 @@ def register_slycat_plugin(context):
             slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                                   ["Computing ...", 65.0])
 
+            # get landmarks, if available
+            landmarks = None
+            if "artifact:dac-landmarks" in origin_model:
+
+                # load landmarks mask
+                landmarks = numpy.array(slycat.web.server.get_model_arrayset_data(
+                    database, origin_model, "dac-landmarks", "0/0/..."))[0].astype(int)
+
+                # convert landmarks to indices (1-based)
+                landmarks = numpy.where(landmarks==1)[0] + 1
+                
+                parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
+                              "Progress", 'Using landmarks from original model.')
+
             # get variables and compute distance matrices
             var_data = []
             var_dist = []
@@ -1221,9 +1419,14 @@ def register_slycat_plugin(context):
                 # filter and put into list of variables
                 var_data.append(numpy.concatenate(tuple(var_data_i[:,time_step_inds[i]])))
 
-                # create pairwise distance matrix
-                dist_i = spatial.distance.pdist(var_data[-1])
-                var_dist.append(spatial.distance.squareform(dist_i))
+                # create pairwise distance matrix, using landmarks if available
+                if landmarks is None:
+                    dist_i = spatial.distance.squareform(spatial.distance.pdist(var_data[-1]))
+
+                else:
+                    dist_i = spatial.distance.cdist(var_data[-1], var_data[-1][landmarks-1,:])
+
+                var_dist.append(dist_i)
 
             # final update of error log to reflect re-compute distance matrices
             parse_error_log = dac_error.update_parse_log(database, model, parse_error_log,
@@ -1246,7 +1449,7 @@ def register_slycat_plugin(context):
             push.init_upload_model(database, model, dac_error, parse_error_log,
                                    meta_column_names, meta_rows,
                                    meta_var_col_names, meta_vars,
-                                   var_data, time_steps, var_dist)
+                                   var_data, time_steps, var_dist, landmarks=landmarks)
 
             # done -- destroy the thread
             stop_event.set()

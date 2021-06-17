@@ -84,7 +84,7 @@ $.widget("parameter_image.scatterplot",
     canvas_selected_square_border_size : 2,
     pinned_width : 200,
     pinned_height : 200,
-    hover_time : 250,
+    hover_time : 800,
     image_cache : {},
     video_file_extensions : [
       '3gp','3g2','h261','h263','h264','jpgv','jpm','jpgm','mj2','mjp2','mp4','mp4v','mpg4','mpeg','mpg','mpe','m1v','m2v','ogv','qt','mov','uvh','uvvh','uvm','uvvm','uvp','uvvp',
@@ -1882,8 +1882,8 @@ $.widget("parameter_image.scatterplot",
       move_start: function() {
         // console.log("move_start");
 
-        // Showing the mouseEventOverlay
-        $(".mouseEventOverlay", this.closest(".image-frame")).show();
+        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        $(".mouseEventOverlay").show();
 
         var frame, sourceEventTarget;
         self.state = "moving";
@@ -1910,8 +1910,8 @@ $.widget("parameter_image.scatterplot",
       move_end: function() {
         // console.log("move_end");
 
-        // Hiding the mouseEventOverlay
-        $(".mouseEventOverlay", this.closest(".image-frame")).hide();
+        // Hiding the mouseEventOverlay on all frames (currently PDF and videos only)
+        $(".mouseEventOverlay").hide();
 
         self.state = "";
         self._sync_open_media();
@@ -1968,8 +1968,8 @@ $.widget("parameter_image.scatterplot",
       resize_start: function() {
         // console.log("resize_start");
 
-        // Showing the mouseEventOverlay
-        $(".mouseEventOverlay", this.closest(".image-frame")).show();
+        // Showing the mouseEventOverlays on all frames (currently PDF and videos only)
+        $(".mouseEventOverlay").show();
 
         // Need to explicitly move the frame to the front on resize_start because we stopPropagation later in this 
         // event handler and that stops the mousedown handler from moving the frame to the front automatically.
@@ -1992,8 +1992,8 @@ $.widget("parameter_image.scatterplot",
       resize_end: function() {
         // console.log("resize_end");
 
-        // Hiding the mouseEventOverlay
-        $(".mouseEventOverlay", this.closest(".image-frame")).hide();
+        // Hiding the mouseEventOverlays on all frames (currently PDF and videos only)
+        $(".mouseEventOverlay").hide();
 
         d3.selectAll([this.closest(".image-frame"), d3.select("#scatterplot").node()]).classed("resizing", false);
         self.state = "";
@@ -2502,6 +2502,15 @@ $.widget("parameter_image.scatterplot",
             video.property("currentTime", image.currentTime);
           }
 
+          // Adding on overlay div to fix mouse event issues when resizing and dragging PDFs because the <object>, <iframe>,
+          // <embed>, and <video> elements capture mouse events and don't propagate them to parent elements.
+          // This div is above those elements but initially hidden. On resize and move events, it's displayed, thus
+          // capturing mouse events and letting them bubble up to the parent frame instead of getting stuck in the 
+          // video or PDF viewers.
+          frame_html.append("div")
+            .classed("mouseEventOverlay", true)
+            ;
+
         } else if(blob.type.indexOf('application/pdf') == 0) {
           // Create the pdf ...
 
@@ -2607,10 +2616,10 @@ $.widget("parameter_image.scatterplot",
           }
 
           // Adding on overlay div to fix mouse event issues when resizing and dragging PDFs because the <object>, <iframe>,
-          // and <embed> elements capture mouse events and don't propagate them to parent elements.
+          // <embed>, and <video> elements capture mouse events and don't propagate them to parent elements.
           // This div is above those elements but initially hidden. On resize and move events, it's displayed, thus
           // capturing mouse events and letting them bubble up to the parent frame instead of getting stuck in the 
-          // PDF viewer.
+          // video or PDF viewers.
           frame_html.append("div")
             .classed("mouseEventOverlay", true)
             ;

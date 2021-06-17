@@ -24,8 +24,10 @@ import slycat.web.server
 # variable is a list of variable matrices
 # time_steps is a list of time step vectors
 # var_dist is a list of pairwise distance matrices
+# landmarks is a list of integer indices (1 based) for landmarks
 def init_upload_model (database, model, dac_error, parse_error_log, meta_column_names, meta_rows,
-                       meta_var_col_names, meta_vars, variable, time_steps, var_dist, proj=None):
+                       meta_var_col_names, meta_vars, variable, time_steps, var_dist, proj=None,
+                       landmarks=None):
 
     # convert from meta data from row-oriented to column-oriented data,
     # and convert to numeric columns where possible.
@@ -49,14 +51,21 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
     for index in range(len(meta_var_cols)):
         meta_var_cols[index] = numpy.array(meta_var_cols[index], dtype="str")
 
+    # convert landmarks to mask
+    if landmarks is not None:
+
+        landmark_mask = numpy.zeros(len(meta_rows))
+        landmark_mask[landmarks.astype(int)-1] = 1
+        landmarks = landmark_mask
+
     # get total number of variables
     num_vars = len(meta_vars)
 
     # next compute initial MDS coordinates
-    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj)
+    mds_coords, full_mds_coords = dac.init_coords(var_dist, proj=proj, landmarks=landmarks)
 
     # finally compute alpha cluster values
-    alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types)
+    alpha_cluster_mat = dac.compute_alpha_clusters(var_dist, meta_columns, meta_column_types, landmarks=landmarks)
 
     dac_error.log_dac_msg("Pushing data to database.")
 
@@ -99,6 +108,7 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
 
     # upload as a series of 1-d arrays
     for i in range(num_vars):
+
         # set up time points array
         time_points = time_steps[i]
         dimensions = [dict(name="row", end=len(time_points))]
@@ -131,11 +141,25 @@ def init_upload_model (database, model, dac_error, parse_error_log, meta_column_
         slycat.web.server.put_model_parameter(database, model, "dac-polling-progress",
                                               ["Uploading ...", (i + 1.0) / num_vars * 10.0 + 80.0])
 
+    # store landmarks on server
+    if landmarks is not None:
+
+        slycat.web.server.put_model_arrayset(database, model, "dac-landmarks")
+
+        # store as vector
+        dimensions = [dict(name="row", end=len(landmarks))]
+        attributes = [dict(name="value", type="float64")]
+
+        # upload as slycat array
+        slycat.web.server.put_model_array(database, model, "dac-landmarks", 0, attributes, dimensions)
+        slycat.web.server.put_model_arrayset_data(database, model, "dac-landmarks", "0/0/...", [landmarks])
+
     # create distance matrices on server
     slycat.web.server.put_model_arrayset(database, model, "dac-var-dist")
 
     # store each .dist file in a seperate array in the arrayset
     for i in range(num_vars):
+
         # set up dist matrices
         dist_mat = var_dist[i]
 

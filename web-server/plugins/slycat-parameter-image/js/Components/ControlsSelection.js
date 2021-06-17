@@ -167,8 +167,22 @@ export default class ControlsSelection extends React.PureComponent {
                               show_disabled &&
                               hide_unselected_disabled &&
                               show_unselected_disabled &&
-                              add_pins_to_selection_disabled
+                              add_pins_to_selection_disabled &&
+                              close_all_disabled
                               ;
+    
+    // console.debug(`disabled state variables are: %o`, 
+    //   {
+    //     show_all_disabled: show_all_disabled,
+    //     hide_disabled: hide_disabled,
+    //     pin_selected_disabled: pin_selected_disabled,
+    //     show_disabled: show_disabled,
+    //     hide_unselected_disabled: hide_unselected_disabled,
+    //     show_unselected_disabled: show_unselected_disabled,
+    //     add_pins_to_selection_disabled: add_pins_to_selection_disabled,
+    //     close_all_disabled: close_all_disabled,
+    //   }
+    // );
 
     return (
       <div className='btn-group'>

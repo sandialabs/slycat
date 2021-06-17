@@ -4,7 +4,6 @@
 // S. Martin
 // 3/31/2017
 
-import api_root from "js/slycat-api-root";
 import client from "js/slycat-web-client";
 import markings from "js/slycat-markings";
 import ko from "knockout";
@@ -79,7 +78,8 @@ function constructor(params)
     component.min_num_dig = ko.observable(3);
 
     // number of landmarks
-    var NUM_LANDMARKS = 100
+    // (mathematical minimum number of landmarks is 3)
+    var NUM_LANDMARKS = 2000
     component.num_landmarks = ko.observable(NUM_LANDMARKS);
 
     // TDMS defaults
@@ -102,21 +102,6 @@ function constructor(params)
 
     // TDMS file list
     var tdms_file_list = []
-
-    // process pts continue or stop flag
-    var process_continue = false;
-    var already_processed = false;
-
-    // ordering and locations of .var, .time, and .dist files
-    var var_file_inds = [];
-    var time_file_inds = [];
-    var dist_file_inds = [];
-
-    // csv/meta file information
-    var csv_files = [];
-    var csv_file_names = [];
-    var meta_files = [];
-    var meta_file_names = [];
 
     // tdms zip suffixes
     var include_suffix = [];
@@ -177,20 +162,6 @@ function constructor(params)
 
         // keep track of input errors
         var no_errors = true;
-
-        // check number of landmarks
-        var num_landmarks = Math.round(Number(component.num_landmarks()));
-
-        if (num_landmarks < 3) {
-
-            $("#dac-num-landmarks").addClass("is-invalid");
-            no_errors = false;
-
-        } else {
-
-            // clear error
-            $("#dac-num-landmarks").removeClass("is-invalid");
-        }
 
         $("#dac-gen-file-error").hide();
 
@@ -303,7 +274,7 @@ function constructor(params)
         // check PTS parse parameters
         var csv_parm = Math.round(Number(component.csv_min_size()));
         var dig_parm = Math.round(Number(component.min_num_dig()));
-        var num_landmarks = Math.round(Number(component.num_landmarks()));
+        var num_landmarks = parseInt(component.num_landmarks());
 
         // check for input parameter errors
         var no_errors = true;
@@ -329,7 +300,7 @@ function constructor(params)
             $("#dac-min-dig").removeClass("is-invalid");
         }
 
-        if (num_landmarks < 3) {
+        if (!(num_landmarks >= 3 || num_landmarks == 0)) {
 
             $("#dac-pts-landmarks").addClass("is-invalid");
             no_errors = false;
@@ -590,7 +561,7 @@ function constructor(params)
         var time_steps_parm = Math.round(Number(component.min_time_steps()));
         var channel_parm = Math.round(Number(component.min_num_channels()));
         var shots_parm = parseInt(component.min_num_shots());
-        var num_landmarks = Math.round(Number(component.num_landmarks()));
+        var num_landmarks = parseInt(component.num_landmarks());
 
         // check for input parameter errors
         var no_errors = true;
@@ -634,7 +605,7 @@ function constructor(params)
 
         }
 
-        if (num_landmarks < 3) {
+        if (!(num_landmarks >= 3 || num_landmarks == 0)) {
 
             $("#dac-tdms-landmarks").addClass("is-invalid");
             no_errors = false;
@@ -744,12 +715,13 @@ function constructor(params)
         // file selected
         var file = component.browser_zip_file.selection()[0];
 
-        // get csv and number digitizer parameters
+        // get csv/digitizer/landmark parameters
         var csv_parm = Math.round(Number(component.csv_min_size()));
         var dig_parm = Math.round(Number(component.min_num_dig()));
+        var num_landmarks = parseInt(component.num_landmarks());
 
         // parameters for call to parser
-        var aids = [[csv_parm, dig_parm], ["DAC"]];
+        var aids = [[csv_parm, dig_parm, num_landmarks], ["DAC"]];
         var parser = "dac-zip-file-parser";
         var progress = component.browser_zip_file.progress;
 
@@ -784,8 +756,9 @@ function constructor(params)
 
             // pass user parameters to server
             aids = [[component.min_time_steps(), component.min_num_channels(),
-                     component.min_num_shots(), component.dac_tdms_type(), 
-                     component.dac_union_type(), Boolean(component.dac_infer_units()), 
+                     component.min_num_shots(), component.num_landmarks(),
+                     component.dac_tdms_type(), component.dac_union_type(), 
+                     Boolean(component.dac_infer_units()), 
                      Boolean(component.dac_infer_time()), include_suffix], ["DAC"]];
 
             // tab that shows file upload for tdms zip format
@@ -860,8 +833,9 @@ function constructor(params)
 
         // pass user parameters to server
         var aids = [[component.min_time_steps(), component.min_num_channels(),
-                     component.min_num_shots(), component.dac_tdms_type(), 
-                     component.dac_union_type(), Boolean(component.dac_infer_units()), 
+                     component.min_num_shots(), component.num_landmarks(),
+                     component.dac_tdms_type(), component.dac_union_type(), 
+                     Boolean(component.dac_infer_units()), 
                      Boolean(component.dac_infer_time()), tdms_file_list], ["DAC"]];
 
         // upload filelist
