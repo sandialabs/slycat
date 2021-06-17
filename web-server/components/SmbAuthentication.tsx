@@ -1,11 +1,11 @@
-import React, {Component} from 'react';
+import React from 'react';
 import client from "js/slycat-web-client";
 import ConnectButton from 'components/ConnectButton.tsx';
 
 /**
  * this class sets up and tests a remote session to an agent
  */
-export default class SmbAuthentication extends Component {
+export default class SmbAuthentication extends React.Component<any,any> {
 
   /**
    *Creates an instance of SlycatRemoteControls.
@@ -85,8 +85,8 @@ export default class SmbAuthentication extends Component {
    *
    * @memberof SmbAuthentication
    */
-  populateDisplay = () => {
-    const display = {};
+  populateDisplay = ():any => {
+    const display:any = {};
     if(localStorage.getItem("slycat-remote-controls-hostname")){
       display.hostname = localStorage.getItem("slycat-remote-controls-hostname") ?
       localStorage.getItem("slycat-remote-controls-hostname"):null;
@@ -166,6 +166,15 @@ export default class SmbAuthentication extends Component {
     if(!this.state.session_exists){
       return (
         <div>
+          <div className='form-group row mb-3'>
+            <label className='col-sm-2 col-form-label'>Share Name</label>
+            <div className='col-sm-9'>
+              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
+                className='form-control' type='text'
+                value={"share"}
+                onChange={(e)=>this.onValueChange(e.target.value, "share")} />
+            </div>
+          </div>
           <div className='form-group row mb-3'>
             <label className='col-sm-2 col-form-label'>Username</label>
             <div className='col-sm-9'>
