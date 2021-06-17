@@ -18,6 +18,8 @@ import parameterImageWizardUI from "../wizard-ui.html";
 import React from "react";
 import ReactDOM from "react-dom";
 import SmbRemoteFileBrowser from 'components/SmbRemoteFileBrowser.tsx'
+import SmbAuthentication from 'components/SmbAuthentication.tsx';
+
 
 function constructor(params)
 {
@@ -184,6 +186,18 @@ function constructor(params)
     }
   };
 
+  var onSelectTableFile = function() {
+    console.log("onSelectTableFile");
+  };
+
+  var onReauth = function() {
+    console.log("onReauth");
+  };
+
+  const smbAuth = function(hostname, username, password, sessionExists) {
+    console.log("Auth yo.");
+  }
+
   component.select_type = function() {
     var type = component.ps_type();
 
@@ -196,7 +210,21 @@ function constructor(params)
     } else if (type === "smb") {
       component.tab(2);
       ReactDOM.render(
-        <div>JSX RENDER</div>,
+        <div>
+          <SmbAuthentication
+            loadingData={false}
+            callBack={smbAuth}
+            showConnectButton={false}
+          />
+        </div>,
+        // <div>
+        //   <SmbRemoteFileBrowser 
+        //     onSelectFileCallBack={onSelectTableFile}
+        //     onReauthCallBack={onReauth}
+        //     hostname={""}
+        //   />
+          
+        // </div>,
         document.querySelector(".smb-wizard")
       );
     }
