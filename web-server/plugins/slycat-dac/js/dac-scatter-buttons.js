@@ -33,8 +33,8 @@ var fisher_pos = null;
 var diff_button_used = false;
 var diff_desired_state = null;
 
-// filter button state
-var filter_button_on = false;
+// maximum number of plots
+var max_num_plots = null;
 
 // color by selection menu (default is "Do Not Color")
 var curr_color_by_sel = -1;
@@ -53,7 +53,7 @@ var num_metadata_cols = null;
 var num_origin_col = null;
 var model_origin = {};
 
-module.setup = function (sel_color, init_subset_flag, init_zoom_flag, 
+module.setup = function (sel_color, MAX_NUM_PLOTS, init_subset_flag, init_zoom_flag, 
                          init_fisher_order, init_fisher_pos, init_diff_desired_state,
                          VAR_INCLUDE_COLUMNS, datapoints_meta, meta_include_columns, data_table,
                          editable_columns, MODEL_ORIGIN, init_color_by_sel, MAX_COLOR_NAME)
@@ -106,6 +106,7 @@ module.setup = function (sel_color, init_subset_flag, init_zoom_flag,
     var_include_columns = VAR_INCLUDE_COLUMNS;
 
     // set up difference button state
+    max_num_plots = MAX_NUM_PLOTS;
     fisher_order = init_fisher_order;
     fisher_pos = init_fisher_pos;
     if (fisher_order.length > 0) {
@@ -326,6 +327,7 @@ var diff_button = function()
 		type: "DAC",
 		command: "compute_fisher",
 		parameters: {selection: sel,
+                     max_selection: max_num_plots,
 					 include_columns: var_include_columns},
 		success: function (result)
 			{

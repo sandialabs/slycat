@@ -29,14 +29,17 @@ SLYCAT_CONNECTION = ['--user', 'slycat', '--password', 'slycat',
 TEST_MARKING = ['--marking', 'faculty']
 
 # slycat connection for qual
-SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
-                     '--kerberos']
+# SLYCAT_CONNECTION = ['--host', 'https://slycat-srn-qual1.sandia.gov',
+#                      '--kerberos']
 
 # test marking for qual
-TEST_MARKING = ['--marking', 'ouo3']
+# TEST_MARKING = ['--marking', 'ouo3']
 
 # testing project name
 TEST_PROJECT = ['--project-name', 'Unit/Integration Testing']
+
+# test landmakrs
+TEST_LANDMARKS = ['--num-landmarks', '30']
 
 # tdms data information
 TDMS_FILE = ['../../dac-switchtubes/4A3392_99_092920_101_Setup.tdms']
@@ -129,6 +132,18 @@ class TestSlycatWebClient(unittest.TestCase):
         tdms_parser = dac_tdms.parser()
         arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP +
                                            TEST_MARKING + TEST_PROJECT)
+        dac_tdms.create_model(arguments, dac_tdms.log)
+
+    @ignore_warnings
+    def test_dac_tdms_zip_landmarks(self):
+        """
+        Test DAC TDMS zip loader with landmarks.
+        """
+
+        # create TDMS model from zip file
+        tdms_parser = dac_tdms.parser()
+        arguments = tdms_parser.parse_args(SLYCAT_CONNECTION + TDMS_ZIP +
+                                           TEST_MARKING + TEST_PROJECT + TEST_LANDMARKS)
         dac_tdms.create_model(arguments, dac_tdms.log)
 
 if __name__ == '__main__':

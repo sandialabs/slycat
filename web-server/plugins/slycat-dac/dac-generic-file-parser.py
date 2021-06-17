@@ -21,7 +21,6 @@ import traceback
 # for dac_compute_coords.py and dac_upload_model.py
 import imp
 
-
 # note this version assumes the first row is a header row, and keeps only the header
 # and data (called by the generic zip parser)
 def parse_table_file(file):
@@ -96,7 +95,6 @@ def parse_file(file):
             # could not convert something to a float defaulting to string
             except Exception as e:
                 column_has_floats = False
-                # cherrypy.log.error("DAC found floats but failed to convert, switching to string types Trace: %s" % e)
             break
 
         if not column_has_floats:
@@ -288,6 +286,7 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
 
     # look for one occurrence (only) of .dac file and var, dist, and time directories
     dac_file = ""
+    landmarks_file = ""
     var_meta_file = ""
     var_files = []
     dist_files = []
@@ -304,6 +303,10 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
             ext = tail.split(".")[-1]
             if ext == "dac":
                 dac_file = zip_file
+
+            # is it "landmarks.csv"?
+            if zip_file == "landmarks.csv":
+                landmarks_file = zip_file
 
         # found a directory -- is it "var/"?
         elif head == "var":
@@ -421,11 +424,23 @@ def parse_gen_zip(database, model, input, files, aids, **kwargs):
         dac_error.quit_raise_exception(database, model, parse_error_log,
                              "Variables.meta file not found.")
 
+    # load landmarks file
+    landmarks = None
+    if landmarks_file != "":
+
+        # parse variables.meta file
+        attr, dim, landmarks = parse_mat_file(zip_ref.read(landmarks_file))
+
+    else:
+
+        parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
+            "No landmarks.csv file found, using all data points.")
+
     # now start thread to prevent timing out on large files
     stop_event = threading.Event()
     thread = threading.Thread(target=parse_gen_zip_thread,
                               args=(database, model, zip_ref, dac_error, parse_error_log,
-                              meta_var_col_names, meta_vars, dac_file, stop_event))
+                              meta_var_col_names, meta_vars, landmarks, dac_file, stop_event))
     thread.start()
 
 
@@ -448,10 +463,9 @@ def check_file_names (database, model, dac_error, parse_error_log,
 
 # gen zip parsing thread to prevent time outs by browser
 def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
-                         meta_var_col_names, meta_vars, dac_file, stop_event):
+                         meta_var_col_names, meta_vars, landmarks, dac_file, stop_event):
 
-    # put entire thread into a try-except block in order to print
-    # errors to cherrypy.log.error
+    # put entire thread into a try-except block in order report errors
     try:
 
         # import dac_upload_model from source
@@ -463,7 +477,36 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
         # parse meta file
         meta_column_names, meta_rows = parse_table_file(zip_ref.read(dac_file))
 
+        # number of data points
         num_datapoints = len(meta_rows)
+
+        # do landmark checks
+        if landmarks is not None:
+        
+            num_landmarks = len(landmarks)
+
+            # check that number of landmarks is at least three
+            if num_landmarks < 3:
+
+                dac_error.quit_raise_exception(database, model, parse_error_log,
+                            'Number of landmarks must be at least three.')
+
+            # make landmarks integer by rounding
+            landmarks = numpy.around(landmarks)
+
+            # check that landmarks in are correct range 
+            if numpy.amin(landmarks) < 1 or numpy.amax(landmarks) > num_datapoints:
+
+                dac_error.quit_raise_exception(database, model, parse_error_log,
+                            'Landmarks are out of range of data points.')
+
+            parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress", 
+                                    "Read " + str(num_landmarks) + " landmarks.")
+
+        # if no landmarks, it's the same as all landmarks,
+        # at least for the purposes of check dist matrix size
+        else:
+            num_landmarks = num_datapoints
 
         parse_error_log = dac_error.update_parse_log (database, model, parse_error_log, "Progress",
                                             "Read " + str(num_datapoints) + " datapoints.")
@@ -512,11 +555,11 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
 
             attr, dim, data = parse_mat_file(zip_ref.read("dist/variable_" + str(i + 1) + ".dist"))
 
-            # check that distance matrix is square
-            if len(data) != len(data[0]):
+            # check that distance matrix is (num_datapoint, num_landmarks)
+            if data.shape[0] != num_datapoints or data.shape[1] != num_landmarks:
 
                 dac_error.quit_raise_exception(database, model, parse_error_log,
-                                     'Distance matrix is not square for variable ' + str(i + 1) + '.')
+                                     'Distance matrix is incorrect shape for variable ' + str(i + 1) + '.')
 
             # check that distance matrix matches number of datapoints
             if len(data) != num_datapoints:
@@ -546,7 +589,7 @@ def parse_gen_zip_thread(database, model, zip_ref, dac_error, parse_error_log,
         push.init_upload_model(database, model, dac_error, parse_error_log,
                                meta_column_names, meta_rows,
                                meta_var_col_names, meta_vars,
-                               variable, time_steps, var_dist)
+                               variable, time_steps, var_dist, landmarks=landmarks)
 
         # done -- destroy the thread
         stop_event.set()

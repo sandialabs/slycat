@@ -87,22 +87,27 @@ def check_parser_parms (parms):
             "(use 0 to indicate every channel).  Please use a non-negative value " + \
             "for min-num-shots and try again.")
 
-    # fourth parameter is expected type
-    if parms[3] != "General" and \
-       parms[3] != "Overvoltage" and \
-       parms[3] != "Sprytron":
+    # fourth parameter is number of landmarks
+    if not (parms[3] == 0 or parms[3] >= 3):
+        check_parser_msg.append("Number of landmarks must be zero or >= 3.  Please " + \
+            "provide a valid number of landmarks and try again.")
+
+    # fifth parameter is expected type
+    if parms[4] != "General" and \
+       parms[4] != "Overvoltage" and \
+       parms[4] != "Sprytron":
         check_parser_msg.append ('Expected data type must be one of "General", ' + \
             '"Overvoltage" or "Sprytron". Please use one of those options ' + \
             'and try again.')
 
-    # fifth parameter is union or intersection (combination of time series)
-    if parms[4] != "Union" and \
-       parms[4] != "Intersection":
+    # sixth parameter is union or intersection (combination of time series)
+    if parms[5] != "Union" and \
+       parms[5] != "Intersection":
         check_parser_msg.append ('Available methods for combining mismatched, ' + \
             'time points are "Union" and "Intersection". Please use one of those options ' + \
             'and try again.')
 
-    # sixth and seventh parameters are boolean, so either option is OK 
+    # seventh and eighth parameters are boolean, so either option is OK 
 
     return "\n".join(check_parser_msg)
 
@@ -264,7 +269,8 @@ def create_model (arguments, log):
 
     # populate parameters
     parser_parms = [arguments.min_time_points, arguments.min_channels, 
-                    arguments.min_num_shots, shot_type, union_type, 
+                    arguments.min_num_shots, arguments.num_landmarks,
+                    shot_type, union_type, 
                     not arguments.do_not_infer_channel_units,
                     not arguments.do_not_infer_time_units]
 
@@ -322,17 +328,18 @@ def create_model (arguments, log):
                 log("\t%s" % suffix)
 
         log("Including TDMS file suffixes:")
-        for suffix in parser_parms[7]:
+        for suffix in parser_parms[8]:
             log("\t%s" % suffix)
 
     # next list common parameters
     log("Minimum number of time steps per channel: %s" % parser_parms[0])
     log("Minumum number of channels: %s" % parser_parms[1])
     log("Minimum number of shots: %s" % parser_parms[2])
-    log("Expecting TDMS data type: %s" % parser_parms[3])
-    log("Combining mismatched time steps using: %s" % parser_parms[4])
-    log("Infer channel units: %s" % parser_parms[5])
-    log("Infer time units: %s" % parser_parms[6])
+    log("Number of landmarks: %s" % parser_parms[3])
+    log("Expecting TDMS data type: %s" % parser_parms[4])
+    log("Combining mismatched time steps using: %s" % parser_parms[5])
+    log("Infer channel units: %s" % parser_parms[6])
+    log("Infer time units: %s" % parser_parms[7])
 
     # upload model file(s)
     mid = upload_model (arguments, dac_parser, parser_parms, file_list, progress=True)
@@ -391,6 +398,9 @@ def parser ():
         help="Channels must occur in at least this many shots, integer >= 0. " +
              "Use zero to indicate that channel must occur in every shot. " +
              "Default: %(default)s.")
+    parser.add_argument("--num-landmarks", default=2000, type=int,
+        help="Number of landmarks to use, integer >= 3.  Can also use zero " +
+             "to indicate use of full dataset (no landmarks).")
     parser.add_argument("--overvoltage", action="store_true",
         help="Expecting overvoltage data.")
     parser.add_argument("--sprytron", action="store_true",
