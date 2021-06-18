@@ -21,7 +21,6 @@ export default class SmbAuthentication extends React.Component<any,any> {
     const display = this.populateDisplay();
     this.state = {
       remote_hosts: [],
-      showConnectButton: this.props.showConnectButton?this.props.showConnectButton:false,
       hostname: display.hostname?display.hostname:null,
       username: display.username?display.username:null,
       session_exists: null,
@@ -46,12 +45,21 @@ export default class SmbAuthentication extends React.Component<any,any> {
           initialLoad:true,
           loadingData:false
         }, () => {
-          this.props.callBack(this.state.hostname, this.state.username,
-            this.state.password, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
     });
   };
-
+  /**
+   * takes a string value and encodes it to b64
+   * @param str string to be encode
+   * @returns encoded result
+   */
+  b64EncodeUnicode = (str) => {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+};
   /**
    * gets a list of all the known remote hosts that we can connect to 
    * via ssh
@@ -103,29 +111,29 @@ export default class SmbAuthentication extends React.Component<any,any> {
       case "share":
         localStorage.setItem("slycat-smb-remote-controls-share", value);
         this.setState({share: value},() => {
-          this.props.callBack(this.state.hostname, this.state.username,
-            this.state.password, this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
         break;
       case "username":
         localStorage.setItem("slycat-smb-remote-controls-username", value);
         this.setState({username: value},() => {
-          this.props.callBack(this.state.hostname, this.state.username,
-            this.state.password, this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
         break;
       case "hostname":
         localStorage.setItem("slycat-smb-remote-controls-hostname", value);
         this.checkRemoteStatus(value);
         this.setState({hostname: value},() => {
-          this.props.callBack(this.state.hostname, this.state.username,
-            this.state.password, this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
         break;
       case "password":
         this.setState({password: value},() => {
-          this.props.callBack(this.state.hostname, this.state.username,
-            this.state.password, this.state.share, this.state.session_exists);
+          this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+            this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
         });
         break;
       default:
@@ -159,9 +167,9 @@ export default class SmbAuthentication extends React.Component<any,any> {
    * @memberof SmbAuthentication
    */
   handleKeyDown = (e) => {
-    if (this.state.showConnectButton && e.key === 'Enter') {
-      this.props.callBack(this.state.hostname, this.state.username,
-        this.state.password, this.state.share, this.state.session_exists);
+    if (e.key === 'Enter') {
+      this.props.callBack(this.state.hostname, this.b64EncodeUnicode(this.state.username),
+        this.b64EncodeUnicode(this.state.password), this.state.share, this.state.session_exists);
     }
   }
 

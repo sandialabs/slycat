@@ -37,7 +37,8 @@ function constructor(params)
   component.remote = mapping.fromJS({
     hostname: null, 
     username: null, 
-    password: null, 
+    password: null,
+    share: null,
     status: null, 
     status_type: null, 
     enable: true, 
@@ -194,8 +195,12 @@ function constructor(params)
     console.log("onReauth");
   };
 
-  const smbAuth = function(hostname, username, password, sessionExists) {
-    console.log("Auth yo.");
+  const setSmbAuthValues = function(hostname, username, password, share, session_exists) {
+    component.remote.hostname(hostname)
+    component.remote.username(username)
+    component.remote.password(password)
+    component.remote.share(share)
+    component.remote.session_exists(session_exists)
   }
 
   component.select_type = function() {
@@ -213,19 +218,10 @@ function constructor(params)
         <div>
           <SmbAuthentication
             loadingData={false}
-            callBack={smbAuth}
-            showConnectButton={false}
+            callBack={setSmbAuthValues}
           />
         </div>,
-        // <div>
-        //   <SmbRemoteFileBrowser 
-        //     onSelectFileCallBack={onSelectTableFile}
-        //     onReauthCallBack={onReauth}
-        //     hostname={""}
-        //   />
-          
-        // </div>,
-        document.querySelector(".smb-wizard")
+        document.querySelector(".smb-wizard-login")
       );
     }
   };
@@ -302,7 +298,68 @@ function constructor(params)
     };
     fileUploader.uploadFile(fileObject);
   };
+  component.connectSMB = function() {
+    component.remote.enable(false);
+    component.remote.status_type("info");
+    component.remote.status("Connecting ...");
 
+    if(component.remote.session_exists())
+    {
+      ReactDOM.render(
+        <div>
+          <SmbRemoteFileBrowser 
+            onSelectFileCallBack={onSelectTableFile}
+            onReauthCallBack={onReauth}
+            hostname={component.remote.hostname()}
+          />
+        </div>,
+        document.querySelector(".smb-wizard-browse")
+      );
+      component.tab(3);
+      component.remote.enable(true);
+      component.remote.status_type(null);
+      component.remote.status(null);
+    }
+    else
+    {
+      client.post_remotes_smb_fetch({
+          user_name: component.remote.username(),
+          password: component.remote.password(),
+          server: component.remote.hostname(),
+          share: component.remote.share()
+      }).then((response) => {
+          console.log("authenticated.",response);
+          if(response.ok){
+            component.remote.session_exists(true);
+            component.remote.enable(true);
+            component.remote.status_type(null);
+            component.remote.status(null);
+            component.tab(3);
+            ReactDOM.render(
+              <div>
+                <SmbRemoteFileBrowser 
+                  onSelectFileCallBack={onSelectTableFile}
+                  onReauthCallBack={onReauth}
+                  hostname={component.remote.hostname()}
+                />
+              </div>,
+              document.querySelector(".smb-wizard-browse")
+            );
+
+          }else{
+            component.remote.enable(true);
+            component.remote.status_type("danger");
+            component.remote.focus("password");
+          }
+      }).catch((error)=>{
+        console.log("could not connect",error)
+        component.remote.enable(true);
+        component.remote.status_type("danger");
+        component.remote.status(reason_phrase);
+        component.remote.focus("password");
+      });
+    }
+  };
   component.connect = function() {
     component.remote.enable(false);
     component.remote.status_type("info");

@@ -724,14 +724,8 @@ def decode_username_and_password():
         # cherrypy.log.error("decoding username and password")
         user_name = str(base64_decode(cherrypy.request.json["user_name"]).decode())
         password = str(base64_decode(cherrypy.request.json["password"]).decode())
-
-        # try and get the redirect path for after successful login
-        try:
-            location = cherrypy.request.json["location"]
-        except Exception as e:
-            location = None
-            # cherrypy.log.error("no location provided moving on")
     except Exception as e:
+        cherrypy.log.error(str(e))
         # cherrypy.log.error("username and password could not be decoded")
         cherrypy.log.error("slycat-standard-authentication.py authenticate", "cherrypy.HTTPError 400")
         raise cherrypy.HTTPError(400)

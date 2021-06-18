@@ -756,7 +756,7 @@ module.post_sensitive_model_command = function(params) {
   });
 };
 
-module.post_remotes_smb_fetch = function(params, successFunction, errorFunction)
+module.post_remotes_smb_fetch = function(params)
 { 
   return fetch(`${api_root}remotes/smb`,
       {
@@ -769,18 +769,6 @@ module.post_remotes_smb_fetch = function(params, successFunction, errorFunction)
         },
         body: JSON.stringify(params || {})
       })
-  .then(function(response) {
-    if (!response.ok) {
-        throw `bad response with: ${response.status} :: ${response.statusText}`;
-    }
-    return response.json();
-  }).catch((error) => {
-    if (errorFunction) {
-      errorFunction(error)
-    }else{
-      console.log(error);
-    }
-  });
 };
 
 module.post_sensitive_model_command_fetch = function(params, successFunction, errorFunction)
