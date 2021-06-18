@@ -1,6 +1,5 @@
 import React from 'react';
 import client from "js/slycat-web-client";
-import ConnectButton from 'components/ConnectButton.tsx';
 
 /**
  * this class sets up and tests a remote session to an agent
@@ -27,6 +26,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
       username: display.username?display.username:null,
       session_exists: null,
       password: "",
+      share: display.share?display.share:null,
       hostnames : [],
       loadingData: this.props.loadingData,
       initialLoad: false
@@ -51,16 +51,6 @@ export default class SmbAuthentication extends React.Component<any,any> {
         });
     });
   };
-
-  connectButtonCallBack = (sessionExists, loadingData) => {
-    this.setState({
-      session_exists:sessionExists,
-      loadingData:loadingData
-    }, () => {
-      this.props.callBack(this.state.hostname, this.state.username,
-        this.state.password, this.state.session_exists);
-    });
-  }
 
   /**
    * gets a list of all the known remote hosts that we can connect to 
@@ -87,13 +77,17 @@ export default class SmbAuthentication extends React.Component<any,any> {
    */
   populateDisplay = ():any => {
     const display:any = {};
-    if(localStorage.getItem("slycat-remote-controls-hostname")){
-      display.hostname = localStorage.getItem("slycat-remote-controls-hostname") ?
-      localStorage.getItem("slycat-remote-controls-hostname"):null;
+    if(localStorage.getItem("slycat-smb-remote-controls-hostname")){
+      display.hostname = localStorage.getItem("slycat-smb-remote-controls-hostname") ?
+      localStorage.getItem("slycat-smb-remote-controls-hostname"):null;
     }
-    if(localStorage.getItem("slycat-remote-controls-username")){
-      display.username = localStorage.getItem("slycat-remote-controls-username") ?
-      localStorage.getItem("slycat-remote-controls-username"):null;
+    if(localStorage.getItem("slycat-smb-remote-controls-username")){
+      display.username = localStorage.getItem("slycat-smb-remote-controls-username") ?
+      localStorage.getItem("slycat-smb-remote-controls-username"):null;
+    }
+    if(localStorage.getItem("slycat-smb-remote-controls-share")){
+      display.share = localStorage.getItem("slycat-smb-remote-controls-share") ?
+      localStorage.getItem("slycat-smb-remote-controls-share"):null;
     }
     return display;
   };
@@ -106,19 +100,32 @@ export default class SmbAuthentication extends React.Component<any,any> {
    */
   onValueChange = (value, type) => {
     switch(type) {
+      case "share":
+        localStorage.setItem("slycat-smb-remote-controls-share", value);
+        this.setState({share: value},() => {
+          this.props.callBack(this.state.hostname, this.state.username,
+            this.state.password, this.state.share, this.state.session_exists);
+        });
+        break;
       case "username":
-        localStorage.setItem("slycat-remote-controls-username", value);
-        this.setState({username: value});
+        localStorage.setItem("slycat-smb-remote-controls-username", value);
+        this.setState({username: value},() => {
+          this.props.callBack(this.state.hostname, this.state.username,
+            this.state.password, this.state.share, this.state.session_exists);
+        });
         break;
       case "hostname":
-        localStorage.setItem("slycat-remote-controls-hostname", value);
+        localStorage.setItem("slycat-smb-remote-controls-hostname", value);
         this.checkRemoteStatus(value);
-        this.setState({hostname: value});
+        this.setState({hostname: value},() => {
+          this.props.callBack(this.state.hostname, this.state.username,
+            this.state.password, this.state.share, this.state.session_exists);
+        });
         break;
       case "password":
         this.setState({password: value},() => {
           this.props.callBack(this.state.hostname, this.state.username,
-            this.state.password, this.state.session_exists);
+            this.state.password, this.state.share, this.state.session_exists);
         });
         break;
       default:
@@ -153,7 +160,8 @@ export default class SmbAuthentication extends React.Component<any,any> {
    */
   handleKeyDown = (e) => {
     if (this.state.showConnectButton && e.key === 'Enter') {
-      this.connect();
+      this.props.callBack(this.state.hostname, this.state.username,
+        this.state.password, this.state.share, this.state.session_exists);
     }
   }
 
@@ -163,51 +171,37 @@ export default class SmbAuthentication extends React.Component<any,any> {
    * @memberof SmbAuthentication
    */
   getFormInputsJSX = () => {
-    if(!this.state.session_exists){
-      return (
-        <div>
-          <div className='form-group row mb-3'>
-            <label className='col-sm-2 col-form-label'>Share Name</label>
-            <div className='col-sm-9'>
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
-                className='form-control' type='text'
-                value={"share"}
-                onChange={(e)=>this.onValueChange(e.target.value, "share")} />
-            </div>
-          </div>
-          <div className='form-group row mb-3'>
-            <label className='col-sm-2 col-form-label'>Username</label>
-            <div className='col-sm-9'>
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
-                className='form-control' type='text'
-                value={this.state.username?this.state.username:""}
-                onChange={(e)=>this.onValueChange(e.target.value, "username")} />
-            </div>
-          </div>
-          <div className='form-group row mb-3' data-bind-old='visible: !session_exists()'>
-            <label className='col-sm-2 col-form-label'>Password</label>
-            <div className='col-sm-9'>
-              <input disabled={this.state.showConnectButton?this.state.loadingData:this.props.loadingData} 
-                className='form-control' type='password' 
-                onKeyDown={this.handleKeyDown}
-                onChange={(e)=>this.onValueChange(e.target.value, "password")} />
-            </div>
-            {this.state.showConnectButton?
-            <div className='col'>
-              <ConnectButton
-                loadingData={this.state.loadingData}
-                hostname = {this.state.hostname}
-                username = {this.state.username}
-                password = {this.state.password}
-                callBack = {this.connectButtonCallBack}
-              />
-            </div>:null
-            }
+    return (
+      <div>
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Share Name</label>
+          <div className='col-sm-9'>
+            <input disabled={this.props.loadingData} 
+              className='form-control' type='text'
+              value={this.state.share?this.state.share:""}
+              onChange={(e)=>this.onValueChange(e.target.value, "share")} />
           </div>
         </div>
-      );
-    }
-    return null;
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Username</label>
+          <div className='col-sm-9'>
+            <input disabled={this.props.loadingData} 
+              className='form-control' type='text'
+              value={this.state.username?this.state.username:""}
+              onChange={(e)=>this.onValueChange(e.target.value, "username")} />
+          </div>
+        </div>
+        <div className='form-group row mb-3'>
+          <label className='col-sm-2 col-form-label'>Password</label>
+          <div className='col-sm-9'>
+            <input disabled={this.props.loadingData} 
+              className='form-control' type='password' 
+              onKeyDown={this.handleKeyDown}
+              onChange={(e)=>this.onValueChange(e.target.value, "password")} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   /**
@@ -219,7 +213,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
     const hostnamesJSX = this.state.hostnames.map((hostnameObject, i) => {
       return (
       <li key={i}>
-        <a className='dropdown-item' onClick={(e)=>this.onValueChange(e.target.text, "hostname")}>
+        <a className='dropdown-item' onClick={(e:any)=>this.onValueChange(e.target.text, "hostname")}>
           {hostnameObject.hostname}
         </a>
       </li>
@@ -258,7 +252,7 @@ export default class SmbAuthentication extends React.Component<any,any> {
             </div>
           </div>
         </div>
-        {this.getFormInputsJSX()}
+        {!this.state.session_exists&&this.getFormInputsJSX()}
       </form>
     );
   }
