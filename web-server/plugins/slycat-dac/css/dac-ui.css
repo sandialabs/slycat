@@ -230,7 +230,6 @@
 	top: 0;
 	left: 0;
 }
-
 #scatter-plot-react {
 	width: 100%;
 	height: 100%;
@@ -241,4 +240,8 @@
 #scatter-plot-react .y-label
 {
 	display: none;
+}
+d3fc-group.cartesian-chart {
+	grid-template-columns: 0 0 auto 0 0 !important;
+	grid-template-rows: 0 0 auto 0 0 !important;
 }
