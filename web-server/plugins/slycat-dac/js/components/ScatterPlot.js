@@ -76,15 +76,8 @@ class ScatterPlot extends React.PureComponent {
       .defined(() => true)
       .equals(d => d.length)
       .decorate( program => {
-
-        
-
-
-
-
         // Set the color of the shapes
         fc.webglFillColor([60 / 255, 180 / 255, 240 / 255, 1.0])(program);
-        // fc.webglFillColor([20 / 255, 80 / 255, 24 / 255, 1.0])(program);
 
         // fc.webglFillColor()
         //   .value((_, i) => {
@@ -93,7 +86,7 @@ class ScatterPlot extends React.PureComponent {
         //   })
         //   .data(data)(program);
         
-        // Trying to add a stroke color. Doesn't render strokes because width is not set maybe???
+        // Setting stroke color, but how to set stroke width?
         fc.webglStrokeColor([0 / 255, 0 / 255, 0 / 255, 1.0])(program);
         // fc.webglStrokeColor()
         //     .data(data)
