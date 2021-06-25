@@ -24,31 +24,32 @@ class ScatterPlot extends React.PureComponent {
         return d[0];
       }])
       // Add padding so point halves aren't cut off at ends of axis
-      // .pad([0.003, 0.1])
+      // .pad([0.029, 0.132])
       ;
     const yExtent = fc
       .extentLinear()
       .accessors([d => d[1]])
       // Add padding so point halves aren't cut off at ends of axis
-      // .pad([0.001, 0.1])
+      // .pad([0.025, 0.021])
       ;
     
-    const xScale = d3.scaleLinear().domain(xExtent(this.props.mds_coords));
-    const yScale = d3.scaleLinear().domain(yExtent(this.props.mds_coords));
+    const border = this.props.SCATTER_BORDER;
+    const xScale = d3.scaleLinear().domain([0 - border, 1 + border]);
+    const yScale = d3.scaleLinear().domain([0 - border, 1 + border]);
 
     const zoom = fc.zoom().on('zoom', render);
 
     // const gridlines = fc.annotationSvgGridline();
 
-    const symbols = [
-      // d3.symbolCircle,
-      // d3.symbolCross,
-      // d3.symbolDiamond,
-      d3.symbolSquare,
-      // d3.symbolStar,
-      // d3.symbolTriangle,
-      // d3.symbolWye
-    ];
+    // const symbols = [
+    //   d3.symbolCircle,
+    //   // d3.symbolCross,
+    //   // d3.symbolDiamond,
+    //   // d3.symbolSquare,
+    //   // d3.symbolStar,
+    //   // d3.symbolTriangle,
+    //   // d3.symbolWye
+    // ];
 
     const color = d3.scaleOrdinal(d3.schemeCategory10);
     // const color = d3.scaleOrdinal(d3.schemeRdBu);
@@ -60,7 +61,7 @@ class ScatterPlot extends React.PureComponent {
       .size(d => {
         
           // console.log(Math.pow(Math.max(100, xScale(d.carat + 0.01) - xScale(d.carat)), 1));
-          return 800;
+          return 1200;
           // return Math.pow(Math.max(100, xScale(d.carat + 0.01) - xScale(d.carat)), 1);
       }
       )
@@ -70,11 +71,17 @@ class ScatterPlot extends React.PureComponent {
       // .size((_, i) => 30 + 100 * (i % 10))
       // .type((_, i) => symbols[i % symbols.length])
       // .type(d3.symbolTriangle)
-      .type(d3.symbolSquare)
+      .type(d3.symbolCircle)
       // .type(d3.symbolCircle)
       .defined(() => true)
       .equals(d => d.length)
-      .decorate( (program, data) => {
+      .decorate( program => {
+
+        
+
+
+
+
         // Set the color of the shapes
         fc.webglFillColor([60 / 255, 180 / 255, 240 / 255, 1.0])(program);
         // fc.webglFillColor([20 / 255, 80 / 255, 24 / 255, 1.0])(program);
@@ -87,7 +94,7 @@ class ScatterPlot extends React.PureComponent {
         //   .data(data)(program);
         
         // Trying to add a stroke color. Doesn't render strokes because width is not set maybe???
-        // fc.webglStrokeColor([60 / 255, 180 / 255, 240 / 255, 1.0])(program);
+        fc.webglStrokeColor([0 / 255, 0 / 255, 0 / 255, 1.0])(program);
         // fc.webglStrokeColor()
         //     .data(data)
         //     .value(d => 
@@ -108,6 +115,16 @@ class ScatterPlot extends React.PureComponent {
         gl.clearColor(1.0, 1.0, 1.0, 0.0);
         // Clearing screen with clearColor set up just above
         gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // const strokeColor = d3.color('red');
+        // const fillColor = d3.color('blue');
+        // fillColor.opacity = 0.5;
+
+        // gl.strokeStyle = strokeColor + '';
+        // gl.strokeWidth = 1;
+        // gl.opacity = 0.5;
+
+        // gl.fillStyle = fillColor + '';
 
         // gl.enable(gl.BLEND);
         // gl.blendColor(0.3, 0.6, 0.9, 1.0);
