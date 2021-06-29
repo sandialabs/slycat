@@ -1,5 +1,5 @@
 FROM haproxy:alpine
-
+USER root
 WORKDIR /etc/slycat
 RUN sed -i -e 's/https/http/' /etc/apk/repositories
 RUN apk upgrade --update-cache --available && \
