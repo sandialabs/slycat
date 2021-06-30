@@ -1575,15 +1575,30 @@ $(document).ready(function() {
   // Clones an ArrayBuffer or Array
   function cloneArrayBuffer(source)
   {
-    if(source.length > 1)
+    // Array.apply method of turning an ArrayBuffer into a normal
+    // array is very fast (around 5ms for 250K) but
+    // doesn't work in WebKit with arrays longer than about 125K
+    // if(source.length > 1)
+    // {
+    //   return Array.apply( [], source );
+    // }
+    // else if(source.length == 1)
+    // {
+    //   return [source[0]];
+    // }
+    // return [];
+
+    // For loop method is much shower (around 300ms for 250K)
+    // but works in WebKit. Might be able to speed things up by
+    // using ArrayBuffer.subarray() method to make smallery
+    // arrays and then Array.apply those.
+    let clone = [];
+    for(let i = 0; i < source.length; i++)
     {
-      return Array.apply( [], source );
+      clone.push(source[i]);
     }
-    else if(source.length == 1)
-    {
-      return [source[0]];
-    }
-    return [];
+
+    return clone;
   }
 
   function variable_sort_changed(variable, order)
