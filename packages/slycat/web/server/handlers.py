@@ -288,14 +288,27 @@ def put_project(pid):
             cherrypy.log.error("slycat.web.server.handlers.py put_project",
                                     "cherrypy.HTTPError 400 missing readers.")
             raise cherrypy.HTTPError("400 missing readers")
+        add_acl = True
+        for admin in cherrypy.request.json["acl"]["administrators"]:
+            cherrypy.log.error("admin %s" % str(admin))
+            if(cherrypy.request.app.config["slycat-web-server"]["directory"](admin['user']) is None):
+                add_acl = False
+        for reader in cherrypy.request.json["acl"]["readers"]:
+            if(cherrypy.request.app.config["slycat-web-server"]["directory"](reader['user']) is None):
+                add_acl = False
+        for writer in cherrypy.request.json["acl"]["writers"]:
+            if(cherrypy.request.app.config["slycat-web-server"]["directory"](writer['user']) is None):
+                add_acl = False
+        if not add_acl:
+            cherrypy.log.error("slycat.web.server.handlers.py put_project",
+                                    "cherrypy.HTTPError 403 un-verifiable user")
+            raise cherrypy.HTTPError("403 un-verifiable user")
         project["acl"] = cherrypy.request.json["acl"]
-
     if "name" in cherrypy.request.json:
         project["name"] = cherrypy.request.json["name"]
 
     if "description" in cherrypy.request.json:
         project["description"] = cherrypy.request.json["description"]
-
     database.save(project)
     cherrypy.response.status = "200 Project updated."
 
