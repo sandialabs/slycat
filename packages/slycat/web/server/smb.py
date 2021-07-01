@@ -89,6 +89,15 @@ class Smb(object):
             cherrypy.log.error('### can not list shares')
             return None
 
+    # Gets the file as a byte object. 
+    def get_file(self, share=None, path='/'):
+        if share is None:
+            share=self.share
+        file_obj = tempfile.NamedTemporaryFile()
+        file_attributes, filesize = self.conn.retrieveFile(share, path, file_obj)
+        file_obj.seek(0)
+        return file_obj.read()
+
     # Handle the 'browse' command.
     def browse(self, share=None, path='/'):
         if share is None:

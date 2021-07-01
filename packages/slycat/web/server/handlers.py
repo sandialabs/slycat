@@ -1030,6 +1030,14 @@ def put_upload_file_part(uid, fid, pid, file=None, hostname=None, path=None):
                     raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
                 data = session.sftp.file(path).read()
         # TODO: add else path for SMB files
+        elif session_type == "smb":
+            with slycat.web.server.smb.get_session(sid) as session:
+                filename = "%s@%s:%s" % (session.username, session.domain, path)
+                # if stat.S_ISDIR(session.sftp.stat(path).st_mode):
+                #     cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
+                #                             "cherrypy.HTTPError 400 cannot load directory %s." % filename)
+                #     raise cherrypy.HTTPError("400 Cannot load directory %s." % filename)
+                data = session.get_file(path=path)
     else:
         cherrypy.log.error("slycat.web.server.handlers.py put_upload_file_part",
                                 "cherrypy.HTTPError 400 must supply file parameter, or sid and path parameters.")
