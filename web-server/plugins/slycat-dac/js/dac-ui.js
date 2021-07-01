@@ -33,7 +33,8 @@ import "layout";
 
 import React from "react";
 import ReactDOM from "react-dom";
-import ScatterPlot from "./components/ScatterPlot";
+// import ScatterPlot from "./components/ScatterPlot";
+import ScatterPlot from "./components/ScatterPlot14";
 
 import { createStore, applyMiddleware, } from 'redux';
 import { Provider, } from 'react-redux';
