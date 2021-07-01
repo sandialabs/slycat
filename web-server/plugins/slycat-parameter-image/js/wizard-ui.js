@@ -187,11 +187,16 @@ function constructor(params)
     }
   };
 
-  var onSelectTableFile = function() {
-    console.log("onSelectTableFile");
+  const onSelectTableFile = function(path, fileType, file) {
+    console.log(`newPath:: ${path}, fileType:: ${fileType}, file:: ${file}`);
+    if(fileType === "f"){
+      component.browser.path(path);
+    }
   };
-
-  var onReauth = function() {
+  const onSelectParserCallBack = function(ParserName) {
+    component.parser(ParserName);
+  }
+  const onReauth = function() {
     console.log("onReauth");
   };
 
@@ -309,6 +314,7 @@ function constructor(params)
         <div>
           <SmbRemoteFileBrowser 
             onSelectFileCallBack={onSelectTableFile}
+            onSelectParserCallBack={onSelectParserCallBack}
             onReauthCallBack={onReauth}
             hostname={component.remote.hostname()}
           />
@@ -394,6 +400,33 @@ function constructor(params)
         }
       });
     }
+  };
+
+  component.load_table_smb = function() {
+    console.log("component.browser.path()",component.browser.path());
+    $('.remote-browser-continue').toggleClass("disabled", true);
+    const file_name = component.browser.path().split("/")[component.browser.path().split("/").length - 1];
+    var fileObject ={
+     pid: component.project._id(),
+     hostname: [component.remote.hostname()],
+     mid: component.model._id(),
+     paths: [component.browser.path()],
+     aids: [["data-table"], file_name],
+     parser: component.parser(),
+     progress: component.remote.progress,
+     progress_status: component.remote.progress_status,
+     progress_final: 90,
+     success: function(){
+       upload_success(component.remote);
+     },
+     error: function(){
+        dialog.ajax_error("Did you choose the correct file and filetype?  There was a problem parsing the file: ")();
+        $('.remote-browser-continue').toggleClass("disabled", false);
+        component.remote.progress(null);
+        component.remote.progress_status('');
+      }
+    };
+    fileUploader.uploadFile(fileObject);
   };
 
   component.load_table = function() {
