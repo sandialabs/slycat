@@ -53,7 +53,6 @@ class ScatterPlot extends React.PureComponent {
     //   // d3.symbolWye
     // ];
 
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
     // const color = d3.scaleOrdinal(d3.schemeRdBu);
 
     const pointSeries = fcWebgl
@@ -63,7 +62,7 @@ class ScatterPlot extends React.PureComponent {
       .size(d => {
         
           // console.log(Math.pow(Math.max(100, xScale(d.carat + 0.01) - xScale(d.carat)), 1));
-          return 600;
+          return this.props.POINT_SIZE * 20;
           // return Math.pow(Math.max(100, xScale(d.carat + 0.01) - xScale(d.carat)), 1);
       })
       // .type(d => {
@@ -77,15 +76,15 @@ class ScatterPlot extends React.PureComponent {
       // .defined(() => true)
       // .equals(d => d.length)
       .decorate( context => {
-        const strokeColor = d3.color('red');
-        const fillColor = d3.color('blue');
-        fillColor.opacity = 0.5;
+        const strokeColor = d3.color(this.props.NO_SEL_COLOR);
+        const fillColor = d3.color(this.props.POINT_COLOR);
+        fillColor.opacity = 1;
 
         context.strokeStyle = strokeColor + '';
         // Contrary to example at https://bl.ocks.org/DevAndyLee/a901617de28912b1e3cbdc6e86d7ac26
         // strokeWidth does not work. Need to use lineWidth instead.
         // context.strokeWidth = 5;
-        context.lineWidth = 5;
+        context.lineWidth = this.props.OUTLINE_NO_SEL;
 
         context.fillStyle = fillColor + '';
 
