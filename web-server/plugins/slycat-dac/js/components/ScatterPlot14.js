@@ -171,7 +171,9 @@ class ScatterPlot extends React.PureComponent {
         .call(chart);
     }
 
+    console.time(`ScatterPlot14.js render()`);
     render();
+    console.timeEnd(`ScatterPlot14.js render()`);
 
     return (
       <div>

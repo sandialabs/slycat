@@ -186,7 +186,9 @@ module.setup = function (MAX_POINTS_ANIMATE, SCATTER_BORDER,
                             .interpolate(d3.interpolateRgb);
 
                         // finish with plot
+												console.time(`module.draw()`);
                         module.draw();
+												console.timeEnd(`module.draw()`);
 
                     },
                 error: function ()
@@ -260,6 +262,7 @@ module.draw = function ()
 
 // entirely redraws points (including selection)
 function draw_points () {
+	console.time(`dac-scatter-plot.js draw_points()`);
 
 	// draw points (either circles or squares)
 	if (scatter_plot_type == "circle") {
@@ -268,6 +271,7 @@ function draw_points () {
 		draw_squares();
 	}
 
+	console.timeEnd(`dac-scatter-plot.js draw_points()`);
 }
 
 // d3 function to set outline color according to selection
@@ -532,12 +536,14 @@ function draw_squares ()
 // animate if MDS coordinates have changed, or from zoom
 var animate = function ()
 {
+	console.time(`dac-scatter-plot.js animate()`);
 	// circles and square have to be treated differently
 	if (scatter_plot_type == "circle") {
 		animate_circles();
 	} else {
 		animate_squares();
 	}
+	console.timeEnd(`dac-scatter-plot.js animate()`);
 }
 
 // animate if MDS coordinates have changed, or for zoom (private) for circles
