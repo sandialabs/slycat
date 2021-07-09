@@ -33,8 +33,7 @@ import "layout";
 
 import React from "react";
 import ReactDOM from "react-dom";
-// import ScatterPlot from "./components/ScatterPlot";
-import ScatterPlot from "./components/ScatterPlot14";
+import Selector from "./components/Selector";
 
 import { createStore, applyMiddleware, } from 'redux';
 import { Provider, } from 'react-redux';
@@ -950,41 +949,41 @@ $(document).ready(function() {
                       init_subset_center
                     );
                         
-                    // // Create React scatterplot
-                    // const scatter_plot_react = 
-                    //   (
-                    //   <Provider store={store}>
-                    //     <ScatterPlot 
-                    //       MAX_POINTS_ANIMATE={MAX_POINTS_ANIMATE}
-                    //       // Padding around the scatterplot
-                    //       SCATTER_BORDER={SCATTER_BORDER}
-                    //       POINT_COLOR={POINT_COLOR}
-                    //       POINT_SIZE={POINT_SIZE}
-                    //       SCATTER_PLOT_TYPE={SCATTER_PLOT_TYPE}
-                    //       NO_SEL_COLOR={NO_SEL_COLOR}
-                    //       SELECTION_COLOR={SELECTION_COLOR}
-                    //       FOCUS_COLOR={FOCUS_COLOR}
-                    //       COLOR_BY_LOW={COLOR_BY_LOW}
-                    //       COLOR_BY_HIGH={COLOR_BY_HIGH}
-                    //       cont_colormap={cont_colormap}
-                    //       OUTLINE_NO_SEL={OUTLINE_NO_SEL}
-                    //       OUTLINE_SEL={OUTLINE_SEL}
-                    //       var_include_columns={var_include_columns}
-                    //       init_alpha_values={init_alpha_values}
-                    //       init_color_by_col={init_color_by_col}
-                    //       // This one seems like it should just be zoom_extent and tracked
-                    //       // entirely in the bookmark
-                    //       init_zoom_extent={init_zoom_extent}
-                    //       init_subset_center={init_subset_center}
-                    //     />
-                    //   </Provider>
-                    //   )
-                    // ;
+                    // Create React selector
+                    const selector = 
+                      (
+                      <Provider store={store}>
+                        <Selector 
+                          MAX_POINTS_ANIMATE={MAX_POINTS_ANIMATE}
+                          // Padding around the scatterplot
+                          SCATTER_BORDER={SCATTER_BORDER}
+                          POINT_COLOR={POINT_COLOR}
+                          POINT_SIZE={POINT_SIZE}
+                          SCATTER_PLOT_TYPE={SCATTER_PLOT_TYPE}
+                          NO_SEL_COLOR={NO_SEL_COLOR}
+                          SELECTION_COLOR={SELECTION_COLOR}
+                          FOCUS_COLOR={FOCUS_COLOR}
+                          COLOR_BY_LOW={COLOR_BY_LOW}
+                          COLOR_BY_HIGH={COLOR_BY_HIGH}
+                          cont_colormap={cont_colormap}
+                          OUTLINE_NO_SEL={OUTLINE_NO_SEL}
+                          OUTLINE_SEL={OUTLINE_SEL}
+                          var_include_columns={var_include_columns}
+                          init_alpha_values={init_alpha_values}
+                          init_color_by_col={init_color_by_col}
+                          // This one seems like it should just be zoom_extent and tracked
+                          // entirely in the bookmark
+                          init_zoom_extent={init_zoom_extent}
+                          init_subset_center={init_subset_center}
+                        />
+                      </Provider>
+                      )
+                    ;
 
-                    // self.scatter_plot_react_render = ReactDOM.render(
-                    //   scatter_plot_react,
-                    //   document.getElementById('scatter-plot-react-debug')
-                    // );
+                    self.scatter_plot_react_render = ReactDOM.render(
+                        selector,
+                      document.getElementById('dac-selector')
+                    );
 
                   },
                   function () {
