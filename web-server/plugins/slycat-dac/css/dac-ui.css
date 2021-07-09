@@ -225,15 +225,20 @@
 /************************/
 /* react scatter plot   */
 /************************/
-#scatter-plot-react {
+#scatter-plot-react,
+#scatter-plot-react-debug
+{
+	display: none;
+}
+/* #scatter-plot-react {
 	position: absolute;
 	top: 0;
 	left: 0;
-}
-#scatter-plot-react {
+} */
+/* #scatter-plot-react {
 	width: 100%;
 	height: 100%;
-}
+} */
 /* #scatter-plot-react .x-axis,
 #scatter-plot-react .y-axis,
 #scatter-plot-react .x-label,
@@ -241,7 +246,7 @@
 {
 	display: none;
 } */
-d3fc-group.cartesian-chart {
+/* d3fc-group.cartesian-chart {
 	grid-template-columns: 0 0 auto 0 0 !important;
 	grid-template-rows: 0 0 auto 0 0 !important;
-}
+} */
