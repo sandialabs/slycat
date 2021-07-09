@@ -818,7 +818,7 @@ function zoom()
 // get subset for future analysis
 function subset ()
 {
-
+	console.debug(`subset()`);
 	// get subset selected
 	var extent = d3.event.target.extent();
 
@@ -947,69 +947,69 @@ module.reset_zoom = function ()
 // selection brush handler call back
 function sel_brush()
 {
-
+	console.debug(`sel_brush()`);
 	// gray real-time selection box
 	var extent = d3.event.target.extent();
 
-	scatter_points.attr("stroke", function(d,i) {
+	// scatter_points.attr("stroke", function(d,i) {
 
-		// default fill
-		var outline_color = no_sel_color;
+	// 	// default fill
+	// 	var outline_color = no_sel_color;
 
-		// if newly selected, fill color is current selection color
-		if (extent[0][0] <= d[0] && d[0] < extent[1][0]
-			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
+	// 	// if newly selected, fill color is current selection color
+	// 	if (extent[0][0] <= d[0] && d[0] < extent[1][0]
+	// 		&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
-				// use curr_sel_type to identify color
-				var curr_sel_type = selections.sel_type();
-				if (curr_sel_type > 0) {
-				    outline_color = sel_color[curr_sel_type-1]
-				}
+	// 			// use curr_sel_type to identify color
+	// 			var curr_sel_type = selections.sel_type();
+	// 			if (curr_sel_type > 0) {
+	// 			    outline_color = sel_color[curr_sel_type-1]
+	// 			}
 
-		} else {
+	// 	} else {
 
-			// color everything else according to what's already selected
-            for (var j = 0; j < max_num_sel; j++) {
-                if (selections.in_sel_x(i,j+1) != -1) {
-                    outline_color = sel_color[j]
-                }
-            }
+	// 		// color everything else according to what's already selected
+  //           for (var j = 0; j < max_num_sel; j++) {
+  //               if (selections.in_sel_x(i,j+1) != -1) {
+  //                   outline_color = sel_color[j]
+  //               }
+  //           }
 
-		};
+	// 	};
 
-		return outline_color;
-	});
+	// 	return outline_color;
+	// });
 
-	scatter_points.attr("stroke-width", function(d,i) {
+	// scatter_points.attr("stroke-width", function(d,i) {
 
-		// default outline width
-		var outline_width = outline_no_sel;
+	// 	// default outline width
+	// 	var outline_width = outline_no_sel;
 
-		// if newly selected, outline is thick
-		if (extent[0][0] <= d[0] && d[0] < extent[1][0]
-			&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
+	// 	// if newly selected, outline is thick
+	// 	if (extent[0][0] <= d[0] && d[0] < extent[1][0]
+	// 		&& extent[0][1] <= d[1] && d[1] < extent[1][1]) {
 
-				outline_width = outline_sel;
+	// 			outline_width = outline_sel;
 
-		} else {
+	// 	} else {
 
-			// outline is also thick for things that were previously selected
-			if (selections.in_sel(i)) {
-				outline_width = outline_sel;
-			};
+	// 		// outline is also thick for things that were previously selected
+	// 		if (selections.in_sel(i)) {
+	// 			outline_width = outline_sel;
+	// 		};
 
-		};
+	// 	};
 
-		return outline_width;
-	});
+	// 	return outline_width;
+	// });
 
-    // different point sizes for circles or squares
-    if (scatter_plot_type == 'circle') {
-        scatter_points.attr("r", set_sel_point_size);
-    } else {
-        scatter_points.attr("width", set_sel_point_size);
-	    scatter_points.attr("height", set_sel_point_size);
-    }
+	// // different point sizes for circles or squares
+	// if (scatter_plot_type == 'circle') {
+	// 		scatter_points.attr("r", set_sel_point_size);
+	// } else {
+	// 		scatter_points.attr("width", set_sel_point_size);
+	// 	scatter_points.attr("height", set_sel_point_size);
+	// }
 
 }
 
@@ -1047,7 +1047,7 @@ function set_sel_point_size (d,i)
 // selection brush end handler call back
 function sel_brush_end()
 {
-
+	console.debug(`sel_brush_end()`);
 	// find final selection indices
 	var extent = d3.event.target.extent();
 
