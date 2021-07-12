@@ -223,13 +223,13 @@
 }
 
 /************************/
-/* react components   */
+/* scatterplot selector react component   */
 /************************/
-#dac-selector {
+#dac-selector-svg
+{
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	display: none;
 }

@@ -982,7 +982,7 @@ $(document).ready(function() {
 
                     self.scatter_plot_react_render = ReactDOM.render(
                         selector,
-                      document.getElementById('dac-selector')
+                      document.getElementById('dac-selector-svg')
                     );
 
                   },

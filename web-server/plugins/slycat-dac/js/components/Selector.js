@@ -1,9 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import * as d3 from "d3v5";
-// import * as d3 from "d3v6";
-import * as fc from "d3fcv14";
-import * as fcWebgl from "d3fc-webgl";
+import * as d3 from "d3";
 
 class Selector extends React.PureComponent {
   constructor(props) {
@@ -12,45 +9,45 @@ class Selector extends React.PureComponent {
 
   render() {
 
-    // Don't render anything if we have no mds_coords
+    // Don't do anything if we have no mds_coords
     if (!this.props.mds_coords || this.props.mds_coords.length == 0) {
       return null;
     }
 
-    const data = this.props.mds_coords;
-    
+    // svg scatter plot
+    const selector = d3.select("#dac-selector-svg");
     const border = this.props.SCATTER_BORDER;
-    const xScale = d3.scaleLinear().domain([0 - border, 1 + border]);
-    const yScale = d3.scaleLinear().domain([0 - border, 1 + border]);
+    const x_scale = d3.scale.linear().domain([0 - border, 1 + border]);
+    const y_scale = d3.scale.linear().domain([0 - border, 1 + border]);
 
-    return (
-      <div>
-        {/* <div>This is the React scatter plot.</div>
-        <br />
-        <div>These are from redux state.</div>
-        <div>mds_coords is: {this.props.mds_coords}</div>
-        <br />
-        <div>These are from local state.</div>
-        <div>MAX_POINTS_ANIMATE is: {this.props.MAX_POINTS_ANIMATE}</div>
-        <div>SCATTER_PLOT_TYPE is: {this.props.SCATTER_PLOT_TYPE}</div>
-        <div>cont_colormap is: {this.props.cont_colormap}</div>
-        <div>SCATTER_BORDER is: {this.props.SCATTER_BORDER}</div>
-        <div>POINT_COLOR is: {this.props.POINT_COLOR}</div>
-        <div>POINT_SIZE is: {this.props.POINT_SIZE}</div>
-        <div>NO_SEL_COLOR is: {this.props.NO_SEL_COLOR}</div>
-        <div>SELECTION_COLOR is: {this.props.SELECTION_COLOR}</div>
-        <div>FOCUS_COLOR is: {this.props.FOCUS_COLOR}</div>
-        <div>COLOR_BY_LOW is: {this.props.COLOR_BY_LOW}</div>
-        <div>COLOR_BY_HIGH is: {this.props.COLOR_BY_HIGH}</div>
-        <div>OUTLINE_NO_SEL is: {this.props.OUTLINE_NO_SEL}</div>
-        <div>OUTLINE_SEL is: {this.props.OUTLINE_SEL}</div>
-        <div>var_include_columns is: {this.props.var_include_columns}</div>
-        <div>init_alpha_values is: {this.props.init_alpha_values}</div>
-        <div>init_color_by_col is: {this.props.init_color_by_col}</div>
-        <div>init_zoom_extent is: {this.props.init_zoom_extent}</div>
-        <div>init_subset_center is: {this.props.init_subset_center}</div> */}
-      </div>
-    );
+    // draw svg to size of container
+    const width = $("#dac-mds-pane").width();
+    const height = $("#dac-mds-pane").height();
+
+    // set correct viewing window
+    x_scale.range([0,width]);
+    y_scale.range([height,0]);
+
+    const brush = d3.svg.brush()
+      .x(x_scale)
+      .y(y_scale)
+    ;
+
+    // enable selection
+		selector.append("g")
+      .attr("class", "brush")
+      .call(brush)
+    ;
+
+    const brushReadyEvent = new CustomEvent("DACBrushReady", { 
+      detail: {
+        brush: brush,
+      } 
+    });
+    document.body.dispatchEvent(brushReadyEvent);
+
+    // Nothing to render from React, so returning null
+    return null;
   }
 }
 
