@@ -242,12 +242,12 @@ def _expire_session(sid):
     Assumes that the caller already holds session_cache_lock.
     """
     if sid in session_cache:
-        now = datetime.datetime.utcnow()
         session = session_cache[sid]
-        if now - session.accessed > slycat.web.server.config["slycat-web-server"]["remote-session-timeout"]:
-            cherrypy.log.error(
-                "Timing-out remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
-            del session_cache[sid]
+        with session as con:
+            if not con.list_Attributes():
+                cherrypy.log.error(
+                    "removing remote session for %s@%s from %s" % (session.username, session.hostname, session.client))
+                del session_cache[sid]
 
 def _session_monitor():
     while True:
