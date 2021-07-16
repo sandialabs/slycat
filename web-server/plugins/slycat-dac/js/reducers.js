@@ -1,5 +1,7 @@
 import {
-  SET_MDS_COORDS
+  SET_MDS_COORDS,
+  SET_ZOOM_EXTENT,
+  SET_ZOOM_FLAG,
 } from './actions';
 
 import _ from 'lodash';
@@ -19,6 +21,18 @@ export default function dac_reducer(state = initialState, action) {
           // and we don't want changes to it reflected in any components, or vice versa
           mds_coords: _.cloneDeep(action.mds_coords)
         }
+      })
+    case SET_ZOOM_EXTENT:
+      return Object.assign({}, state, {
+        // deep cloning extent because it's an array of arrays
+        // and we don't want changes to it reflected in any components, or vice versa
+        dac_zoom_extent: _.cloneDeep(action.extent)
+      })
+    case SET_ZOOM_FLAG:
+      return Object.assign({}, state, {
+        // deep cloning extent because it's an array of arrays
+        // and we don't want changes to it reflected in any components, or vice versa
+        dac_zoom_flag: _.cloneDeep(action.flag)
       })
 
     default:
