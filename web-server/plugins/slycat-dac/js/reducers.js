@@ -2,6 +2,7 @@ import {
   SET_MDS_COORDS,
   SET_ZOOM_EXTENT,
   SET_ZOOM_FLAG,
+  SET_SCATTERPLOT_SIZE,
 } from './actions';
 
 import _ from 'lodash';
@@ -33,6 +34,12 @@ export default function dac_reducer(state = initialState, action) {
         // deep cloning extent because it's an array of arrays
         // and we don't want changes to it reflected in any components, or vice versa
         dac_zoom_flag: _.cloneDeep(action.flag)
+      })
+    case SET_SCATTERPLOT_SIZE:
+      return Object.assign({}, state, {
+        // deep cloning extent because it's an array of arrays
+        // and we don't want changes to it reflected in any components, or vice versa
+        scatterplot_size: _.cloneDeep(action.size)
       })
 
     default:

@@ -43,7 +43,7 @@ import dac_reducer from './reducers';
 import { 
     setZoomExtent,
     setZoomFlag,
-  } from './actions';
+} from './actions';
 
 
 // wait for document ready
@@ -263,6 +263,7 @@ $(document).ready(function() {
                     const state_tree = {
                         dac_zoom_extent: "dac-zoom-extent" in bookmark ? bookmark["dac-zoom-extent"] : null,
                         dac_zoom_flag: "dac-zoom-flag" in bookmark ? bookmark["dac-zoom-flag"] : false,
+                        scatterplot_size: [],
                     }
                     // Create logger for redux
                     const loggerMiddleware = createLogger();

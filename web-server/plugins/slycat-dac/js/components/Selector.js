@@ -76,9 +76,13 @@ class Selector extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    console.debug(`Selector componentDidUpdate`);
+    // console.debug(`Selector componentDidUpdate`);
+    // Update scale domain and range
     this.setScaleDomain();
+    // console.debug(`prevProps is %o, prevState is %o, snaphost is %o`, prevProps, prevState, snapshot);
     this.setScaleRange();
+    // Update brush since size of pane could have changed
+    d3.select(this.el).selectAll('.brush').call(this.brush);
   }
 
   render() {
@@ -92,6 +96,7 @@ const mapStateToProps = (state) => {
   return {
     dac_zoom_extent: state.dac_zoom_extent,
     dac_zoom_flag: state.dac_zoom_flag,
+    scatterplot_size: state.scatterplot_size,
   };
 };
 
